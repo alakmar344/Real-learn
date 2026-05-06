@@ -23,6 +23,19 @@ function checkRateLimit(): boolean {
   return true;
 }
 
+/**
+ * Pipeline filter: strip heading-level markdown (# / ## / ###) from chat
+ * messages so casual replies don't look like document sections.
+ * Bold, italics, and emoji are preserved.
+ */
+function sanitizeChatMessage(text: string): string {
+  return text
+    .split("\n")
+    .map((line) => line.replace(/^#{1,6}\s+/, ""))
+    .join("\n")
+    .trim();
+}
+
 interface HistoryEntry {
   role: "user" | "assistant";
   content: string;
@@ -142,14 +155,14 @@ export async function POST(request: Request) {
       // Fallback: treat raw response as a plain chat message
       return NextResponse.json({
         type: "chat",
-        message: rawResponse.trim() || "I'm not sure how to answer that. Could you rephrase?",
+        message: sanitizeChatMessage(rawResponse.trim() || "I'm not sure how to answer that. Could you rephrase?"),
       });
     }
 
     if (parsed.type === "chat") {
       return NextResponse.json({
         type: "chat",
-        message: String(parsed.message || rawResponse.trim()),
+        message: sanitizeChatMessage(String(parsed.message || rawResponse.trim())),
       });
     }
 
