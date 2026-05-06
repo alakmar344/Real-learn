@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Story, Language, Level } from "@/types";
 import StoryCard from "@/components/StoryCard";
-import LessonPanel from "@/components/LessonPanel";
+import ConceptModal from "@/components/ConceptModal";
 import LanguageSelector from "@/components/LanguageSelector";
 import LevelBadge from "@/components/LevelBadge";
 import ChatInterface from "@/components/ChatInterface";
@@ -12,20 +12,20 @@ type Tab = "news" | "chat";
 
 function StorySkeleton() {
   return (
-    <div className="flex flex-col gap-4 bg-surface border border-border rounded-2xl p-4 animate-shimmer bg-gradient-to-r from-surface via-card to-surface bg-[length:200%_100%] shadow-sm">
+    <div className="flex flex-col gap-4 bg-card border border-border rounded-xl p-4 animate-shimmer bg-gradient-to-r from-card via-surface to-card bg-[length:200%_100%]">
       <div className="flex items-center justify-between">
-        <div className="h-5 w-28 rounded-full bg-card" />
-        <div className="h-4 w-16 rounded bg-card" />
+        <div className="h-5 w-28 rounded-full bg-surface" />
+        <div className="h-4 w-16 rounded bg-surface" />
       </div>
       <div className="space-y-2">
-        <div className="h-6 w-full rounded bg-card" />
-        <div className="h-6 w-4/5 rounded bg-card" />
+        <div className="h-6 w-full rounded bg-surface" />
+        <div className="h-6 w-4/5 rounded bg-surface" />
       </div>
       <div className="space-y-1.5">
-        <div className="h-4 w-full rounded bg-card" />
-        <div className="h-4 w-3/4 rounded bg-card" />
+        <div className="h-4 w-full rounded bg-surface" />
+        <div className="h-4 w-3/4 rounded bg-surface" />
       </div>
-      <div className="h-10 w-full rounded-xl bg-card" />
+      <div className="h-10 w-full rounded-lg bg-surface" />
     </div>
   );
 }
@@ -49,7 +49,7 @@ function SettingsModal({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-sm bg-surface border border-border rounded-2xl p-6 space-y-5 animate-slide-in-up sm:animate-fade-in shadow-xl"
+        className="w-full max-w-sm bg-card border border-border rounded-2xl p-6 space-y-5 animate-slide-in-up sm:animate-fade-in shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
@@ -79,7 +79,7 @@ function SettingsModal({
         </div>
         <button
           onClick={onClose}
-          className="w-full py-2.5 bg-accent text-white font-bold rounded-xl text-sm hover:bg-blue-700 transition-colors"
+          className="w-full py-2.5 bg-accent text-black font-bold rounded-xl text-sm hover:shadow-[0_0_12px_rgba(245,197,24,0.4)] transition-all"
         >
           Done
         </button>
@@ -357,9 +357,9 @@ export default function HomePage() {
         )}
       </main>
 
-      {/* Lesson Panel */}
+      {/* Concept Modal */}
       {selectedStory && (
-        <LessonPanel
+        <ConceptModal
           story={selectedStory}
           level={level}
           language={language}
