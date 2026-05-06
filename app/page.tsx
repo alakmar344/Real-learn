@@ -9,20 +9,20 @@ import LevelBadge from "@/components/LevelBadge";
 
 function StorySkeleton() {
   return (
-    <div className="flex flex-col gap-4 bg-card border border-border rounded-2xl p-4 animate-shimmer bg-gradient-to-r from-card via-surface to-card bg-[length:200%_100%]">
+    <div className="flex flex-col gap-4 bg-surface border border-border rounded-2xl p-4 animate-shimmer bg-gradient-to-r from-surface via-card to-surface bg-[length:200%_100%] shadow-sm">
       <div className="flex items-center justify-between">
-        <div className="h-5 w-28 rounded-full bg-border" />
-        <div className="h-4 w-16 rounded bg-border" />
+        <div className="h-5 w-28 rounded-full bg-card" />
+        <div className="h-4 w-16 rounded bg-card" />
       </div>
       <div className="space-y-2">
-        <div className="h-6 w-full rounded bg-border" />
-        <div className="h-6 w-4/5 rounded bg-border" />
+        <div className="h-6 w-full rounded bg-card" />
+        <div className="h-6 w-4/5 rounded bg-card" />
       </div>
       <div className="space-y-1.5">
-        <div className="h-4 w-full rounded bg-border" />
-        <div className="h-4 w-3/4 rounded bg-border" />
+        <div className="h-4 w-full rounded bg-card" />
+        <div className="h-4 w-3/4 rounded bg-card" />
       </div>
-      <div className="h-10 w-full rounded-xl bg-border" />
+      <div className="h-10 w-full rounded-xl bg-card" />
     </div>
   );
 }
@@ -42,11 +42,11 @@ function SettingsModal({
 }) {
   return (
     <div
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4 animate-fade-in"
+      className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4 animate-fade-in"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-sm bg-surface border border-border rounded-2xl p-6 space-y-5 animate-slide-in-up sm:animate-fade-in"
+        className="w-full max-w-sm bg-surface border border-border rounded-2xl p-6 space-y-5 animate-slide-in-up sm:animate-fade-in shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
@@ -54,7 +54,6 @@ function SettingsModal({
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-card transition-all"
-          >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -76,7 +75,7 @@ function SettingsModal({
         </div>
         <button
           onClick={onClose}
-          className="w-full py-2.5 bg-accent text-background font-bold rounded-xl text-sm"
+          className="w-full py-2.5 bg-accent text-white font-bold rounded-xl text-sm hover:bg-blue-700 transition-colors"
         >
           Done
         </button>
@@ -179,7 +178,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Top Navigation */}
-      <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-md border-b border-border">
+      <header className="sticky top-0 z-30 bg-surface/90 backdrop-blur-md border-b border-border shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
           {/* Logo */}
           <div className="flex items-center gap-2">
@@ -208,7 +207,7 @@ export default function HomePage() {
           {/* Mobile settings button */}
           <button
             onClick={() => setShowSettings(true)}
-            className="md:hidden p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-card transition-all"
+            className="md:hidden p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-card transition-all border border-transparent hover:border-border"
             aria-label="Settings"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -236,7 +235,7 @@ export default function HomePage() {
           <button
             onClick={() => fetchStories(true)}
             disabled={loading}
-            className="flex items-center gap-2 px-5 py-2.5 bg-card border border-border text-text-primary text-sm font-semibold rounded-xl hover:border-accent hover:text-accent transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+            className="flex items-center gap-2 px-5 py-2.5 bg-surface border border-border text-text-primary text-sm font-semibold rounded-xl hover:border-accent hover:text-accent hover:bg-accent-light transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0 shadow-sm"
           >
             <svg
               className={`w-4 h-4 ${loading ? "animate-spin" : ""}`}
@@ -259,7 +258,7 @@ export default function HomePage() {
       {/* Error state */}
       {error && (
         <div className="max-w-7xl mx-auto px-4 mb-6">
-          <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm flex items-center gap-3">
+          <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm flex items-center gap-3">
             <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
@@ -309,7 +308,7 @@ export default function HomePage() {
             </p>
             <button
               onClick={() => fetchStories(true)}
-              className="px-6 py-3 bg-accent text-background font-bold rounded-xl hover:bg-accent/90 transition-all"
+              className="px-6 py-3 bg-accent text-white font-bold rounded-xl hover:bg-blue-700 transition-all shadow-md"
             >
               Load Today&apos;s Stories →
             </button>

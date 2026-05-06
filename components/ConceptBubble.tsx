@@ -3,22 +3,22 @@
 import { Concept } from "@/types";
 
 const SUBJECT_COLORS: Record<string, string> = {
-  Physics: "bg-blue-500/10 text-blue-400 border-blue-500/30 hover:bg-blue-500/20",
-  Chemistry: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20",
-  Economics: "bg-amber-500/10 text-amber-400 border-amber-500/30 hover:bg-amber-500/20",
-  Biology: "bg-pink-500/10 text-pink-400 border-pink-500/30 hover:bg-pink-500/20",
-  CS: "bg-violet-500/10 text-violet-400 border-violet-500/30 hover:bg-violet-500/20",
-  History: "bg-red-500/10 text-red-400 border-red-500/30 hover:bg-red-500/20",
-  Geography: "bg-teal-500/10 text-teal-400 border-teal-500/30 hover:bg-teal-500/20",
-  Mathematics: "bg-orange-500/10 text-orange-400 border-orange-500/30 hover:bg-orange-500/20",
-  "Political Science": "bg-indigo-500/10 text-indigo-400 border-indigo-500/30 hover:bg-indigo-500/20",
-  "Environmental Science": "bg-green-500/10 text-green-400 border-green-500/30 hover:bg-green-500/20",
+  Physics: "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100",
+  Chemistry: "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100",
+  Economics: "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100",
+  Biology: "bg-pink-50 text-pink-700 border-pink-200 hover:bg-pink-100",
+  CS: "bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100",
+  History: "bg-red-50 text-red-700 border-red-200 hover:bg-red-100",
+  Geography: "bg-teal-50 text-teal-700 border-teal-200 hover:bg-teal-100",
+  Mathematics: "bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100",
+  "Political Science": "bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100",
+  "Environmental Science": "bg-green-50 text-green-700 border-green-200 hover:bg-green-100",
 };
 
 const DIFFICULTY_BADGE: Record<string, string> = {
-  Easy: "bg-green-500/20 text-green-400",
-  Medium: "bg-yellow-500/20 text-yellow-400",
-  Hard: "bg-red-500/20 text-red-400",
+  Easy: "bg-green-100 text-green-700",
+  Medium: "bg-yellow-100 text-yellow-700",
+  Hard: "bg-red-100 text-red-700",
 };
 
 interface ConceptBubbleProps {
@@ -36,7 +36,7 @@ export default function ConceptBubble({
 }: ConceptBubbleProps) {
   const colorClass =
     SUBJECT_COLORS[concept.subject] ||
-    "bg-gray-500/10 text-gray-400 border-gray-500/30 hover:bg-gray-500/20";
+    "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200";
 
   return (
     <button

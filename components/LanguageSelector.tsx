@@ -29,7 +29,7 @@ export default function LanguageSelector({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value as Language)}
-        className="bg-card border border-border text-text-primary text-sm rounded-lg px-2 py-1.5 focus:outline-none focus:border-accent cursor-pointer"
+        className="bg-surface border border-border text-text-primary text-sm rounded-lg px-2 py-1.5 focus:outline-none focus:border-accent cursor-pointer"
         aria-label="Select language"
       >
         {LANGUAGES.map((lang) => (
@@ -46,7 +46,7 @@ export default function LanguageSelector({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value as Language)}
-        className="appearance-none bg-card border border-border text-text-primary text-sm rounded-lg pl-3 pr-8 py-2 focus:outline-none focus:border-accent cursor-pointer transition-colors hover:border-accent/50"
+        className="appearance-none bg-surface border border-border text-text-primary text-sm rounded-lg pl-3 pr-8 py-2 focus:outline-none focus:border-accent cursor-pointer transition-colors hover:border-accent/50"
         aria-label="Select language"
       >
         {LANGUAGES.map((lang) => (

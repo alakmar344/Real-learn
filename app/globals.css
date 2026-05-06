@@ -3,13 +3,14 @@
 @tailwind utilities;
 
 :root {
-  --color-background: #0a0a0a;
-  --color-surface: #111111;
-  --color-card: #1a1a1a;
-  --color-border: #2a2a2a;
-  --color-accent: #f5c518;
-  --color-text-primary: #f0f0f0;
-  --color-text-secondary: #888888;
+  --color-background: #F8F7F2;
+  --color-surface: #FFFFFF;
+  --color-card: #F0EDE6;
+  --color-border: #DDD9CF;
+  --color-accent: #2563EB;
+  --color-accent-light: #EFF6FF;
+  --color-text-primary: #1E293B;
+  --color-text-secondary: #64748B;
 }
 
 * {
@@ -35,7 +36,7 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-background);
+  background: var(--color-card);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -222,5 +223,5 @@ body {
 /* Selection */
 ::selection {
   background: var(--color-accent);
-  color: var(--color-background);
+  color: #ffffff;
 }

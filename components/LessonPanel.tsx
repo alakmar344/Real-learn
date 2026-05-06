@@ -21,7 +21,7 @@ function ConceptsSkeleton() {
       {[1, 2, 3].map((i) => (
         <div
           key={i}
-          className="h-24 rounded-xl border border-border bg-surface animate-shimmer bg-gradient-to-r from-surface via-card to-surface bg-[length:200%_100%]"
+          className="h-24 rounded-xl border border-border bg-card animate-shimmer bg-gradient-to-r from-card via-surface to-card bg-[length:200%_100%]"
         />
       ))}
     </div>
@@ -34,7 +34,7 @@ function LessonSkeleton() {
       {[100, 90, 95, 85, 92, 88].map((w, i) => (
         <div
           key={i}
-          className="h-4 rounded animate-shimmer bg-gradient-to-r from-surface via-card to-surface bg-[length:200%_100%]"
+          className="h-4 rounded animate-shimmer bg-gradient-to-r from-card via-surface to-card bg-[length:200%_100%]"
           style={{ width: `${w}%` }}
         />
       ))}
@@ -155,12 +155,12 @@ export default function LessonPanel({
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 animate-fade-in"
+          className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 animate-fade-in"
         onClick={onClose}
       />
 
       {/* Panel */}
-      <div className="fixed inset-y-0 right-0 z-50 flex flex-col w-full md:w-[60%] lg:w-[40%] bg-surface border-l border-border shadow-2xl animate-slide-in-right md:animate-slide-in-right">
+      <div className="fixed inset-y-0 right-0 z-50 flex flex-col w-full md:w-[60%] lg:w-[40%] bg-surface border-l border-border shadow-2xl animate-slide-in-right">
         {/* Mobile: bottom sheet animation */}
         <div className="flex flex-col h-full">
           {/* Header */}
@@ -178,7 +178,7 @@ export default function LessonPanel({
             </div>
             <button
               onClick={onClose}
-              className="shrink-0 p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-card transition-all"
+              className="shrink-0 p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-card transition-all border border-transparent hover:border-border"
               aria-label="Close panel"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -196,7 +196,7 @@ export default function LessonPanel({
               </h3>
               {loadingConcepts && <ConceptsSkeleton />}
               {conceptError && (
-                <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-sm text-red-400">
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
                   {conceptError}
                   <button
                     onClick={fetchConcepts}
@@ -235,7 +235,7 @@ export default function LessonPanel({
                 {loadingLesson && <LessonSkeleton />}
 
                 {lessonError && (
-                  <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-sm text-red-400">
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
                     {lessonError}
                   </div>
                 )}
@@ -244,7 +244,7 @@ export default function LessonPanel({
                   <div className="animate-fade-in space-y-4">
                     {/* Key takeaway */}
                     {lesson.keyTakeaway && (
-                      <div className="p-3 bg-accent/10 border border-accent/30 rounded-xl">
+                      <div className="p-3 bg-accent-light border border-accent/20 rounded-xl">
                         <p className="text-xs font-semibold text-accent mb-1 tracking-wide uppercase">
                           Key Insight
                         </p>
@@ -255,7 +255,7 @@ export default function LessonPanel({
                     )}
 
                     {/* Lesson content */}
-                    <div className="prose prose-invert prose-sm max-w-none prose-headings:text-text-primary prose-p:text-text-secondary prose-p:leading-relaxed prose-strong:text-text-primary prose-code:text-accent prose-a:text-accent prose-li:text-text-secondary">
+                    <div className="prose prose-sm max-w-none prose-headings:text-text-primary prose-p:text-text-secondary prose-p:leading-relaxed prose-strong:text-text-primary prose-code:text-accent prose-a:text-accent prose-li:text-text-secondary">
                       <ReactMarkdown remarkPlugins={[remarkGfm]}>
                         {lesson.lesson}
                       </ReactMarkdown>
@@ -281,7 +281,7 @@ export default function LessonPanel({
                     {!showQuiz && (
                       <button
                         onClick={handleGenerateQuiz}
-                        className="w-full py-3 bg-card border border-border hover:border-accent text-text-primary font-semibold rounded-xl transition-all text-sm hover:bg-accent/5"
+                        className="w-full py-3 bg-surface border border-border hover:border-accent text-text-primary font-semibold rounded-xl transition-all text-sm hover:bg-accent-light hover:text-accent"
                       >
                         🧠 Test Yourself
                       </button>
@@ -299,7 +299,7 @@ export default function LessonPanel({
                     {[1, 2, 3].map((i) => (
                       <div
                         key={i}
-                        className="h-32 rounded-xl border border-border animate-shimmer bg-gradient-to-r from-surface via-card to-surface bg-[length:200%_100%]"
+                        className="h-32 rounded-xl border border-border animate-shimmer bg-gradient-to-r from-card via-surface to-card bg-[length:200%_100%]"
                       />
                     ))}
                   </div>
