@@ -54,7 +54,7 @@ function LessonRenderer({ message }: { message: ChatMessageData }) {
         return (
           <div
             key={idx}
-            className="flex items-center gap-2 py-1 text-xs text-emerald-400 opacity-60"
+            className="flex items-center gap-2 py-1 text-xs text-success opacity-60"
           >
             <span>✓</span>
             <span>Checkpoint passed</span>
