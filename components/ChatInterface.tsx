@@ -17,6 +17,7 @@ const SUGGESTIONS = [
   "Explain climate change simply",
   "What is quantum entanglement?",
 ];
+const MAX_HISTORY_SUMMARY_LENGTH = 240;
 
 function TypingIndicator() {
   return (
@@ -56,6 +57,18 @@ export default function ChatInterface({ level, language }: ChatInterfaceProps) {
     scrollToBottom();
   }, [messages, loading, scrollToBottom]);
 
+  const summarizeLessonForHistory = (message: ChatMessageData) => {
+    const firstText = message.segments?.find(
+      (seg) => seg.type === "text" && seg.content
+    );
+    if (!firstText?.content) return "[lesson provided]";
+    const cleaned = firstText.content.replace(/\s+/g, " ").trim();
+    if (!cleaned) return "[lesson provided]";
+    return cleaned.length > MAX_HISTORY_SUMMARY_LENGTH
+      ? `${cleaned.slice(0, MAX_HISTORY_SUMMARY_LENGTH)}…`
+      : cleaned;
+  };
+
   const sendMessage = useCallback(
     async (text: string) => {
       const trimmed = text.trim();
@@ -82,7 +95,7 @@ export default function ChatInterface({ level, language }: ChatInterfaceProps) {
           m.role === "user"
             ? m.content ?? ""
             : m.type === "lesson"
-            ? "[lesson provided]"
+            ? summarizeLessonForHistory(m)
             : m.content ?? "",
       }));
 

@@ -11,6 +11,9 @@ interface ChatMessageProps {
   message: ChatMessageData;
 }
 
+// Placeholder returned when no valid source is provided by the model.
+const PLACEHOLDER_SOURCE = "#";
+
 function LessonRenderer({ message }: { message: ChatMessageData }) {
   const segments = message.segments ?? [];
   // How many segments are currently visible (we reveal one at a time after each quiz)
@@ -74,7 +77,7 @@ function LessonRenderer({ message }: { message: ChatMessageData }) {
             </p>
             <div className="flex flex-wrap gap-2">
               {message.sources
-                .filter((s) => s && s !== "#")
+                .filter((s) => s && s !== PLACEHOLDER_SOURCE)
                 .map((source, i) => (
                   <SourceTag key={i} url={source} index={i} />
                 ))}
