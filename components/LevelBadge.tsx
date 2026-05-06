@@ -2,10 +2,10 @@
 
 import { Level } from "@/types";
 
-const LEVELS: { value: Level; label: string; emoji: string; color: string }[] = [
-  { value: "Class 6-8", label: "Class 6-8", emoji: "🟢", color: "text-green-400" },
-  { value: "Class 9-10", label: "Class 9-10", emoji: "🟡", color: "text-yellow-400" },
-  { value: "College / Advanced", label: "College", emoji: "🔵", color: "text-blue-400" },
+const LEVELS: { value: Level; label: string; emoji: string }[] = [
+  { value: "Class 6-8", label: "Class 6-8", emoji: "🟢" },
+  { value: "Class 9-10", label: "Class 9-10", emoji: "🟡" },
+  { value: "College / Advanced", label: "College", emoji: "🔵" },
 ];
 
 interface LevelBadgeProps {
@@ -20,7 +20,7 @@ export default function LevelBadge({ value, onChange, compact = false }: LevelBa
       <select
         value={value}
         onChange={(e) => onChange(e.target.value as Level)}
-        className="bg-surface border border-border text-text-primary text-sm rounded-lg px-2 py-1.5 focus:outline-none focus:border-accent cursor-pointer"
+        className="bg-card border border-border text-text-primary text-sm rounded-lg px-2 py-1.5 focus:outline-none focus:border-accent cursor-pointer"
         aria-label="Select level"
       >
         {LEVELS.map((l) => (
@@ -33,25 +33,22 @@ export default function LevelBadge({ value, onChange, compact = false }: LevelBa
   }
 
   return (
-    <div className="flex items-center gap-1 bg-surface border border-border rounded-lg p-1">
+    <div className="flex items-center gap-1 bg-card border border-border rounded-lg p-1">
       {LEVELS.map((l) => (
         <button
           key={l.value}
           onClick={() => onChange(l.value)}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
             value === l.value
-              ? "bg-accent text-white shadow-sm"
-              : "text-text-secondary hover:text-text-primary hover:bg-card"
+              ? "bg-accent text-black shadow-sm"
+              : "text-text-secondary hover:text-text-primary hover:bg-surface"
           }`}
         >
-          <span>{l.emoji}</span> copilot/fix-mobile-rendering-bugs
+          <span>{l.emoji}</span>
           <span className="hidden sm:inline">{l.label}</span>
-          <span className="sm:hidden">{l.label.split(" ").slice(1).join(" ") || l.label}</span>
-
-          
-          <span>{l.label}</span> main
         </button>
       ))}
     </div>
   );
 }
+

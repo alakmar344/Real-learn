@@ -3,12 +3,12 @@
 import { Story } from "@/types";
 
 const CATEGORY_COLORS: Record<string, string> = {
-  "Science & Space": "bg-blue-100 text-blue-700 border-blue-200",
-  Technology: "bg-violet-100 text-violet-700 border-violet-200",
-  Environment: "bg-emerald-100 text-emerald-700 border-emerald-200",
-  "Economics & Finance": "bg-amber-100 text-amber-700 border-amber-200",
-  "Health & Medicine": "bg-pink-100 text-pink-700 border-pink-200",
-  Geopolitics: "bg-red-100 text-red-700 border-red-200",
+  "Science & Space": "bg-blue-900/40 text-blue-400 border-blue-700/50",
+  Technology: "bg-violet-900/40 text-violet-400 border-violet-700/50",
+  Environment: "bg-emerald-900/40 text-emerald-400 border-emerald-700/50",
+  "Economics & Finance": "bg-amber-900/40 text-amber-400 border-amber-700/50",
+  "Health & Medicine": "bg-pink-900/40 text-pink-400 border-pink-700/50",
+  Geopolitics: "bg-red-900/40 text-red-400 border-red-700/50",
 };
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -29,12 +29,12 @@ interface StoryCardProps {
 export default function StoryCard({ story, onClick, index }: StoryCardProps) {
   const colorClass =
     CATEGORY_COLORS[story.category] ||
-    "bg-gray-500/20 text-gray-400 border-gray-500/30";
+    "bg-card text-text-secondary border-border";
   const icon = CATEGORY_ICONS[story.category] || "📰";
 
   return (
     <article
-      className="group relative flex flex-col bg-surface border border-border rounded-xl overflow-hidden hover:border-accent/40 transition-all duration-300 hover:shadow-lg hover:shadow-accent/10 hover:scale-[1.01] cursor-pointer animate-fade-in shadow-sm"
+      className="group relative flex flex-col bg-card border border-border rounded-xl overflow-hidden hover:border-accent transition-all duration-200 hover:scale-[1.02] cursor-pointer animate-fade-in shadow-sm"
       style={{ animationDelay: `${index * 80}ms` }}
       onClick={() => onClick(story)}
       role="button"
@@ -50,12 +50,12 @@ export default function StoryCard({ story, onClick, index }: StoryCardProps) {
           <span>{icon}</span>
           {story.category}
         </span>
-      <span className="text-xs text-text-secondary font-medium">{story.region}</span>
+        <span className="text-xs text-text-secondary font-medium">{story.region}</span>
       </div>
 
       {/* Content */}
       <div className="flex flex-col flex-1 p-3 gap-3">
-        <h2 className="text-base md:text-lg font-bold text-text-primary leading-snug group-hover:text-accent transition-colors line-clamp-3 font-serif">
+        <h2 className="text-base md:text-lg font-bold text-text-primary leading-snug line-clamp-2">
           {story.headline}
         </h2>
 
@@ -74,14 +74,13 @@ export default function StoryCard({ story, onClick, index }: StoryCardProps) {
 
       {/* CTA Button */}
       <div className="px-3 pb-3">
-        <div className="w-full py-2 bg-accent-light border border-accent/30 text-accent text-sm font-semibold rounded-lg text-center group-hover:bg-accent group-hover:text-white transition-all duration-300">
+        <div className="w-full py-2.5 bg-accent text-black text-sm font-bold rounded-lg text-center group-hover:shadow-[0_0_12px_rgba(245,197,24,0.4)] transition-all duration-200">
           Uncover the Science →
         </div>
       </div>
-
-      <div className="absolute inset-0 rounded-xl ring-1 ring-accent/0 group-hover:ring-accent/20 transition-all pointer-events-none" />
     </article>
   );
 }
 
 export { CATEGORY_COLORS, CATEGORY_ICONS };
+
