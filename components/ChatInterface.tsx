@@ -17,7 +17,7 @@ const SUGGESTIONS = [
   "Explain climate change simply",
   "What is quantum entanglement?",
 ];
-// Limit lesson summaries in history to avoid bloating the model context window.
+// Maximum length for lesson content when summarizing for API history to avoid context bloat.
 const MAX_HISTORY_SUMMARY_LENGTH = 240;
 
 function TypingIndicator() {

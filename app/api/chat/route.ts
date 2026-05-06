@@ -6,9 +6,9 @@ import { ChatSegment, QuizQuestion } from "@/types";
 const requestLog: number[] = [];
 const RATE_LIMIT = 40;
 const RATE_WINDOW = 60 * 1000;
-// Only include the most recent messages to fit the model context window and reduce latency.
+// Only include the most recent 10 messages to balance context vs latency within the model window.
 const MAX_HISTORY_MESSAGES = 10;
-// Trim each history entry to avoid token overflow and keep responses fast.
+// Trim each history entry to ~1000 chars to prevent token overflow and keep responses fast.
 const MAX_HISTORY_CONTENT_LENGTH = 1000;
 
 function checkRateLimit(): boolean {

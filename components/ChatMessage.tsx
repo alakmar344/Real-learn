@@ -11,7 +11,7 @@ interface ChatMessageProps {
   message: ChatMessageData;
 }
 
-// Placeholder returned when no valid source is provided by the model.
+// Value used to identify and filter out placeholder sources from the model.
 const PLACEHOLDER_SOURCE = "#";
 
 function LessonRenderer({ message }: { message: ChatMessageData }) {
