@@ -6,6 +6,9 @@ import StoryCard from "@/components/StoryCard";
 import LessonPanel from "@/components/LessonPanel";
 import LanguageSelector from "@/components/LanguageSelector";
 import LevelBadge from "@/components/LevelBadge";
+import ChatInterface from "@/components/ChatInterface";
+
+type Tab = "news" | "chat";
 
 function StorySkeleton() {
   return (
@@ -93,6 +96,7 @@ export default function HomePage() {
   const [language, setLanguage] = useState<Language>("English");
   const [level, setLevel] = useState<Level>("Class 9-10");
   const [showSettings, setShowSettings] = useState(false);
+  const [activeTab, setActiveTab] = useState<Tab>("news");
 
   // Load preferences from localStorage
   useEffect(() => {
@@ -219,6 +223,42 @@ export default function HomePage() {
         </div>
       </header>
 
+      {/* Tab Bar */}
+      <div className="sticky top-[57px] z-20 bg-background border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 flex items-center gap-1 h-11">
+          <button
+            onClick={() => setActiveTab("news")}
+            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${
+              activeTab === "news"
+                ? "bg-accent text-white"
+                : "text-text-secondary hover:text-text-primary hover:bg-card"
+            }`}
+          >
+            📰 Today&apos;s News
+          </button>
+          <button
+            onClick={() => setActiveTab("chat")}
+            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${
+              activeTab === "chat"
+                ? "bg-accent text-white"
+                : "text-text-secondary hover:text-text-primary hover:bg-card"
+            }`}
+          >
+            💬 Learn Anything
+          </button>
+        </div>
+      </div>
+
+      {/* Chat Mode */}
+      {activeTab === "chat" && (
+        <div className="fixed inset-0 top-[100px] z-10 flex flex-col bg-background">
+          <ChatInterface level={level} language={language} />
+        </div>
+      )}
+
+      {/* News Mode */}
+      {activeTab === "news" && (
+        <>
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-4 pt-10 pb-6">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
@@ -353,6 +393,8 @@ export default function HomePage() {
           by Google DeepMind · Powered by Gemma 4
         </p>
       </footer>
+        </>
+      )}
     </div>
   );
 }
