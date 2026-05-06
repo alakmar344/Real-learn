@@ -6,6 +6,8 @@ import { ChatSegment, QuizQuestion } from "@/types";
 const requestLog: number[] = [];
 const RATE_LIMIT = 40;
 const RATE_WINDOW = 60 * 1000;
+const MAX_HISTORY_MESSAGES = 10;
+const MAX_HISTORY_CONTENT_LENGTH = 1000;
 
 function checkRateLimit(): boolean {
   const now = Date.now();
@@ -114,9 +116,9 @@ export async function POST(request: Request) {
     // Build Gemma history: convert previous turns + add current user message
     const gemmaHistory: Array<{ role: "user" | "model"; content: string }> = [
       // Include up to last 10 messages for context, skip overly long entries
-      ...history.slice(-10).map((h) => ({
+      ...history.slice(-MAX_HISTORY_MESSAGES).map((h) => ({
         role: (h.role === "assistant" ? "model" : "user") as "user" | "model",
-        content: h.content.slice(0, 1000), // truncate to keep tokens reasonable
+        content: h.content.slice(0, MAX_HISTORY_CONTENT_LENGTH),
       })),
       {
         role: "user" as const,

@@ -170,7 +170,7 @@ export default function ChatInterface({ level, language }: ChatInterfaceProps) {
         {loading && <TypingIndicator />}
 
         {error && (
-          <div className="p-3 bg-red-950/30 border border-red-400/30 rounded-xl text-sm text-red-400 animate-fade-in">
+          <div className="p-3 bg-danger-light border border-danger/30 rounded-xl text-sm text-danger animate-fade-in">
             {error}
           </div>
         )}
