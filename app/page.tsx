@@ -177,7 +177,7 @@ export default function HomePage() {
   });
 
   return (
-    <div className="min-h-screen bg-background max-w-screen overflow-x-hidden">
+    <div className="min-h-screen bg-background w-full overflow-x-hidden">
       {/* Top Navigation */}
       <header className="sticky top-0 z-30 bg-surface/90 backdrop-blur-md border-b border-border shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
