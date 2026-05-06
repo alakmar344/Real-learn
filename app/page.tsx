@@ -54,7 +54,8 @@ function SettingsModal({
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-card transition-all"
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            ></button>
+             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
