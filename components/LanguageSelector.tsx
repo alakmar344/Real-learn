@@ -46,7 +46,7 @@ export default function LanguageSelector({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value as Language)}
-        className="appearance-none bg-surface border border-border text-text-primary text-sm rounded-lg pl-3 pr-8 py-2 focus:outline-none focus:border-accent cursor-pointer transition-colors hover:border-accent/50"
+        className="appearance-none bg-surface border border-border text-text-primary text-sm rounded-lg pl-3 pr-8 py-2 h-9 focus:outline-none focus:border-accent cursor-pointer transition-colors hover:border-accent/50"
         aria-label="Select language"
       >
         {LANGUAGES.map((lang) => (
@@ -56,7 +56,7 @@ export default function LanguageSelector({
         ))}
       </select>
       <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-text-secondary">
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </div>

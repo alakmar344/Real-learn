@@ -44,9 +44,12 @@ export default function LevelBadge({ value, onChange, compact = false }: LevelBa
               : "text-text-secondary hover:text-text-primary hover:bg-card"
           }`}
         >
-          <span>{l.emoji}</span>
+          <span>{l.emoji}</span> copilot/fix-mobile-rendering-bugs
           <span className="hidden sm:inline">{l.label}</span>
           <span className="sm:hidden">{l.label.split(" ").slice(1).join(" ") || l.label}</span>
+
+          
+          <span>{l.label}</span> main
         </button>
       ))}
     </div>
