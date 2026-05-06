@@ -9,13 +9,43 @@ interface ChatInterfaceProps {
   language: Language;
 }
 
-const SUGGESTIONS = [
-  "Explain how black holes form",
-  "Teach me about supply and demand",
-  "What is CRISPR and how does it work?",
-  "How does the internet actually work?",
-  "Explain climate change simply",
-  "What is quantum entanglement?",
+const SUGGESTION_CARDS = [
+  {
+    emoji: "🌍",
+    title: "Real-World Science",
+    description: "Concepts explained through today's news",
+    prompt: "Teach me a science concept from today's news",
+  },
+  {
+    emoji: "🧠",
+    title: "Deep Explanations",
+    description: "Complex topics made crystal clear",
+    prompt: "Explain how black holes form",
+  },
+  {
+    emoji: "📊",
+    title: "Economics & Finance",
+    description: "How money and markets work",
+    prompt: "Teach me about supply and demand",
+  },
+  {
+    emoji: "🧬",
+    title: "Biology & Health",
+    description: "Life science through real examples",
+    prompt: "What is CRISPR and how does it work?",
+  },
+  {
+    emoji: "💻",
+    title: "Technology & CS",
+    description: "How the digital world actually works",
+    prompt: "How does the internet actually work?",
+  },
+  {
+    emoji: "⚗️",
+    title: "Physics & Chemistry",
+    description: "Forces and matter made simple",
+    prompt: "What is quantum entanglement?",
+  },
 ];
 // Maximum length for lesson content when summarizing for API history to avoid context bloat.
 // 240 chars keeps a short excerpt (roughly 1–2 sentences) while staying token-efficient.
@@ -151,93 +181,149 @@ export default function ChatInterface({ level, language }: ChatInterfaceProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Messages area */}
-      <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
+      <div className="flex-1 overflow-y-auto">
         {isEmpty && !loading && (
-          <div className="flex flex-col items-center justify-center h-full pt-12 pb-4 text-center animate-fade-in">
-            <div className="w-14 h-14 bg-accent rounded-2xl flex items-center justify-center font-bold text-white text-xl mb-4">
-              RL
+          <div className="flex flex-col px-5 pt-8 pb-4 animate-fade-in">
+            {/* Brand label */}
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-px h-4 bg-text-secondary/30" />
+              <span className="text-xs font-semibold tracking-widest uppercase text-accent">
+                RealLearn AI
+              </span>
             </div>
-            <h2 className="text-text-primary font-bold text-xl mb-1">
-              Ask me anything
-            </h2>
-            <p className="text-text-secondary text-sm mb-5 max-w-xs">
-              I can explain concepts, answer questions, and give you a full
-              lesson with quiz checkpoints.
+
+            {/* Hero headline */}
+            <h1 className="text-4xl font-extrabold text-text-primary leading-tight mb-3">
+              Learn anything.{" "}
+              <br />
+              Think{" "}
+              <span className="text-accent italic font-extrabold">deeper</span>
+              <span className="text-text-primary">.</span>
+            </h1>
+
+            {/* Subtitle */}
+            <p className="text-text-secondary text-base leading-relaxed mb-6 max-w-sm">
+              Deep explanations with real-world clarity — for concepts that
+              demand more than a quick answer.
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-md">
-              {SUGGESTIONS.map((s) => (
+
+            {/* Horizontally scrollable suggestion cards */}
+            <div
+              className="flex gap-3 overflow-x-auto pb-2 -mx-5 px-5 snap-x snap-mandatory"
+              style={{ scrollbarWidth: "none" }}
+            >
+              {SUGGESTION_CARDS.map((card) => (
                 <button
-                  key={s}
-                  onClick={() => sendMessage(s)}
-                  className="text-left px-3 py-2 text-sm bg-surface border border-border rounded-lg text-text-secondary hover:border-accent hover:text-accent hover:bg-accent-light/10 transition-all"
+                  key={card.title}
+                  onClick={() => sendMessage(card.prompt)}
+                  className="shrink-0 w-44 snap-start text-left bg-surface border-2 border-accent/60 rounded-2xl p-4 hover:border-accent hover:shadow-md transition-all group"
                 >
-                  {s}
+                  <span className="text-2xl mb-2 block">{card.emoji}</span>
+                  <p className="font-bold text-text-primary text-sm leading-tight mb-1 group-hover:text-accent transition-colors">
+                    {card.title}
+                  </p>
+                  <p className="text-text-secondary text-xs leading-snug line-clamp-2">
+                    {card.description}
+                  </p>
                 </button>
               ))}
             </div>
+
+            {/* Swipe hint */}
+            <p className="text-accent text-xs font-mono mt-3 flex items-center gap-1 opacity-70">
+              ✨ Swipe for more ideas →
+            </p>
           </div>
         )}
 
-        {messages.map((msg) => (
-          <ChatMessage key={msg.id} message={msg} />
-        ))}
+        {/* Conversation messages */}
+        {messages.length > 0 && (
+          <div className="px-3 py-3 space-y-4">
+            {messages.map((msg) => (
+              <ChatMessage key={msg.id} message={msg} />
+            ))}
 
-        {loading && <TypingIndicator />}
+            {loading && <TypingIndicator />}
 
-        {error && (
-          <div className="p-3 bg-danger-light border border-danger/30 rounded-xl text-sm text-danger animate-fade-in">
-            {error}
+            {error && (
+              <div className="p-3 bg-danger-light border border-danger/30 rounded-xl text-sm text-danger animate-fade-in">
+                {error}
+              </div>
+            )}
+
+            <div ref={messagesEndRef} />
           </div>
         )}
 
-        <div ref={messagesEndRef} />
+        {/* Typing indicator when there are no messages yet */}
+        {isEmpty && loading && (
+          <div className="px-3 py-3">
+            <TypingIndicator />
+            <div ref={messagesEndRef} />
+          </div>
+        )}
+
+        {isEmpty && !loading && <div ref={messagesEndRef} />}
       </div>
 
       {/* Input area */}
-      <div className="shrink-0 border-t border-border p-2 bg-surface/80 backdrop-blur-sm">
+      <div className="shrink-0 border-t border-border px-4 py-3 bg-surface/90 backdrop-blur-sm space-y-2">
         {messages.length > 0 && (
           <button
             onClick={() => setMessages([])}
-            className="text-xs text-text-secondary hover:text-text-primary mb-2 transition-colors"
+            className="text-xs text-text-secondary hover:text-text-primary transition-colors"
           >
             ✕ Clear conversation
           </button>
         )}
-        <div className="flex items-end gap-2">
+
+        {/* Input row */}
+        <div className="flex items-end gap-2 bg-card border border-border rounded-2xl px-3 py-2 focus-within:border-accent transition-colors">
+          {/* Attachment icon — placeholder for future file upload feature */}
+          <button
+            type="button"
+            className="shrink-0 text-text-secondary/50 hover:text-text-secondary transition-colors pb-0.5 cursor-default"
+            aria-label="Attach (coming soon)"
+            tabIndex={-1}
+            disabled
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+            </svg>
+          </button>
+
           <textarea
             ref={inputRef}
-            rows={2}
+            rows={1}
             value={input}
             onChange={(e) => {
               setInput(e.target.value);
-              // Auto-resize
               e.target.style.height = "auto";
               e.target.style.height = `${Math.min(e.target.scrollHeight, 160)}px`;
             }}
             onKeyDown={handleKeyDown}
-            placeholder="Ask a question or say 'Teach me about…'"
+            placeholder="Ask anything — I love a challenge..."
             disabled={loading}
-            className="flex-1 resize-none bg-card border border-border rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent transition-colors disabled:opacity-50 leading-relaxed"
-            style={{ minHeight: "38px", maxHeight: "160px" }}
+            className="flex-1 resize-none bg-transparent text-sm text-text-primary placeholder:text-text-secondary/60 focus:outline-none disabled:opacity-50 leading-relaxed"
+            style={{ minHeight: "26px", maxHeight: "160px" }}
           />
+
+          {/* Send button */}
           <button
             onClick={() => sendMessage(input)}
             disabled={loading || !input.trim()}
-            className="shrink-0 w-9 h-9 bg-accent text-white rounded-lg flex items-center justify-center hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="shrink-0 w-9 h-9 bg-accent text-white rounded-xl flex items-center justify-center hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             aria-label="Send"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-              />
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
             </svg>
           </button>
         </div>
-        <p className="text-[10px] text-text-secondary mt-1.5 text-center opacity-60">
-          Press Enter to send · Shift+Enter for new line
+
+        {/* Footer disclaimer */}
+        <p className="text-[10px] text-text-secondary/50 text-center tracking-wide uppercase">
+          AI output may be inaccurate. Learn critically and verify important facts.
         </p>
       </div>
     </div>

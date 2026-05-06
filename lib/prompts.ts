@@ -114,7 +114,7 @@ CASE 2 — The student is asking a follow-up, having a conversation, or asking s
 Return this JSON:
 {
   "type": "chat",
-  "message": "Your conversational response in markdown. Be warm, smart, concise."
+  "message": "Your conversational response. Be warm, smart, and concise. Do NOT use heading-level markdown (no #, ##, ###). You may use **bold** for key terms and emoji, but keep the tone conversational, not document-like."
 }
 
 CRITICAL RULES:
