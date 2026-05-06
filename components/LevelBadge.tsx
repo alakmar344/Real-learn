@@ -20,7 +20,7 @@ export default function LevelBadge({ value, onChange, compact = false }: LevelBa
       <select
         value={value}
         onChange={(e) => onChange(e.target.value as Level)}
-        className="bg-card border border-border text-text-primary text-sm rounded-lg px-2 py-1.5 focus:outline-none focus:border-accent cursor-pointer"
+        className="bg-surface border border-border text-text-primary text-sm rounded-lg px-2 py-1.5 focus:outline-none focus:border-accent cursor-pointer"
         aria-label="Select level"
       >
         {LEVELS.map((l) => (
@@ -33,15 +33,15 @@ export default function LevelBadge({ value, onChange, compact = false }: LevelBa
   }
 
   return (
-    <div className="flex items-center gap-1 bg-card border border-border rounded-lg p-1">
+    <div className="flex items-center gap-1 bg-surface border border-border rounded-lg p-1">
       {LEVELS.map((l) => (
         <button
           key={l.value}
           onClick={() => onChange(l.value)}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
             value === l.value
-              ? "bg-surface text-text-primary shadow-sm border border-border"
-              : "text-text-secondary hover:text-text-primary"
+              ? "bg-accent text-white shadow-sm"
+              : "text-text-secondary hover:text-text-primary hover:bg-card"
           }`}
         >
           <span>{l.emoji}</span>

@@ -3,12 +3,12 @@
 import { Story } from "@/types";
 
 const CATEGORY_COLORS: Record<string, string> = {
-  "Science & Space": "bg-blue-500/20 text-blue-400 border-blue-500/30",
-  Technology: "bg-violet-500/20 text-violet-400 border-violet-500/30",
-  Environment: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-  "Economics & Finance": "bg-amber-500/20 text-amber-400 border-amber-500/30",
-  "Health & Medicine": "bg-pink-500/20 text-pink-400 border-pink-500/30",
-  Geopolitics: "bg-red-500/20 text-red-400 border-red-500/30",
+  "Science & Space": "bg-blue-100 text-blue-700 border-blue-200",
+  Technology: "bg-violet-100 text-violet-700 border-violet-200",
+  Environment: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  "Economics & Finance": "bg-amber-100 text-amber-700 border-amber-200",
+  "Health & Medicine": "bg-pink-100 text-pink-700 border-pink-200",
+  Geopolitics: "bg-red-100 text-red-700 border-red-200",
 };
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -34,7 +34,7 @@ export default function StoryCard({ story, onClick, index }: StoryCardProps) {
 
   return (
     <article
-      className="group relative flex flex-col bg-card border border-border rounded-2xl overflow-hidden hover:border-accent/40 transition-all duration-300 hover:shadow-xl hover:shadow-accent/5 hover:scale-[1.01] cursor-pointer animate-fade-in"
+      className="group relative flex flex-col bg-surface border border-border rounded-2xl overflow-hidden hover:border-accent/40 transition-all duration-300 hover:shadow-xl hover:shadow-accent/10 hover:scale-[1.01] cursor-pointer animate-fade-in shadow-sm"
       style={{ animationDelay: `${index * 80}ms` }}
       onClick={() => onClick(story)}
       role="button"
@@ -50,7 +50,7 @@ export default function StoryCard({ story, onClick, index }: StoryCardProps) {
           <span>{icon}</span>
           {story.category}
         </span>
-        <span className="text-xs text-text-secondary">{story.region}</span>
+      <span className="text-xs text-text-secondary font-medium">{story.region}</span>
       </div>
 
       {/* Content */}
@@ -74,12 +74,11 @@ export default function StoryCard({ story, onClick, index }: StoryCardProps) {
 
       {/* CTA Button */}
       <div className="px-4 pb-4">
-        <div className="w-full py-2.5 bg-accent/10 border border-accent/30 text-accent text-sm font-semibold rounded-xl text-center group-hover:bg-accent group-hover:text-background transition-all duration-300">
+        <div className="w-full py-2.5 bg-accent-light border border-accent/30 text-accent text-sm font-semibold rounded-xl text-center group-hover:bg-accent group-hover:text-white transition-all duration-300">
           Uncover the Science →
         </div>
       </div>
 
-      {/* Hover glow */}
       <div className="absolute inset-0 rounded-2xl ring-1 ring-accent/0 group-hover:ring-accent/20 transition-all pointer-events-none" />
     </article>
   );

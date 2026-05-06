@@ -34,14 +34,14 @@ function QuestionCard({
           if (!isRevealed) {
             optionClass +=
               selectedIndex === optIndex
-                ? "border-accent bg-accent/10 text-text-primary"
-                : "border-border bg-surface text-text-secondary hover:border-accent/50 hover:text-text-primary cursor-pointer";
+                ? "border-accent bg-accent-light text-text-primary"
+                : "border-border bg-surface text-text-secondary hover:border-accent/50 hover:text-text-primary hover:bg-accent-light/50 cursor-pointer";
           } else {
             if (optIndex === question.correctIndex) {
               optionClass +=
-                "border-emerald-500 bg-emerald-500/10 text-emerald-400";
+                "border-emerald-400 bg-emerald-50 text-emerald-700";
             } else if (selectedIndex === optIndex) {
-              optionClass += "border-red-500 bg-red-500/10 text-red-400";
+              optionClass += "border-red-400 bg-red-50 text-red-700";
             } else {
               optionClass += "border-border bg-surface text-text-secondary opacity-50";
             }
@@ -70,8 +70,8 @@ function QuestionCard({
           );
         })}
       </div>
-      {isRevealed && (
-        <div className="p-3 bg-surface border border-border rounded-lg text-xs text-text-secondary leading-relaxed animate-fade-in">
+              {isRevealed && (
+        <div className="p-3 bg-accent-light border border-accent/20 rounded-lg text-xs text-text-secondary leading-relaxed animate-fade-in">
           <span className="font-semibold text-accent mr-1">Explanation:</span>
           {question.explanation}
         </div>
@@ -129,7 +129,7 @@ export default function QuizBlock({ quiz, onComplete }: QuizBlockProps) {
         {quiz.questions.map((q, i) => (
           <div
             key={i}
-            className="p-4 bg-surface border border-border rounded-xl"
+          className="p-4 bg-surface border border-border rounded-xl shadow-sm"
           >
             <QuestionCard
               question={q}
@@ -145,7 +145,7 @@ export default function QuizBlock({ quiz, onComplete }: QuizBlockProps) {
       {!submitted && allAnswered && (
         <button
           onClick={handleSubmit}
-          className="w-full py-3 bg-accent text-background font-bold rounded-xl hover:bg-accent/90 transition-all text-sm tracking-wide"
+          className="w-full py-3 bg-accent text-white font-bold rounded-xl hover:bg-blue-700 transition-all text-sm tracking-wide shadow-md"
         >
           See My Score →
         </button>
