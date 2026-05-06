@@ -225,7 +225,7 @@ export default function HomePage() {
 
       {/* Tab Bar */}
       <div className="sticky top-[57px] z-20 bg-background border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 flex items-center gap-1 h-11">
+        <div className="max-w-7xl mx-auto px-4 flex items-center gap-1 h-10">
           <button
             onClick={() => setActiveTab("news")}
             className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${
@@ -249,9 +249,9 @@ export default function HomePage() {
         </div>
       </div>
 
-        {/* Chat Mode — positioned below header (57px) + tab bar (44px) = 101px */}
+      {/* Chat Mode — positioned below header (57px) + tab bar (40px) = 97px */}
       {activeTab === "chat" && (
-        <div className="fixed inset-0 top-[101px] z-10 flex flex-col bg-background">
+        <div className="fixed inset-0 top-[97px] z-10 flex flex-col bg-background">
           <ChatInterface level={level} language={language} />
         </div>
       )}
@@ -260,8 +260,8 @@ export default function HomePage() {
       {activeTab === "news" && (
         <>
       {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-4 pt-10 pb-6">
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+      <section className="max-w-7xl mx-auto px-4 pt-6 pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
           <div>
             <p className="text-text-secondary text-sm font-medium mb-1">{today}</p>
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-text-primary leading-tight">
@@ -276,7 +276,7 @@ export default function HomePage() {
           <button
             onClick={() => fetchStories(true)}
             disabled={loading}
-            className="flex items-center gap-2 px-5 py-2.5 bg-surface border border-border text-text-primary text-sm font-semibold rounded-xl hover:border-accent hover:text-accent hover:bg-accent-light transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0 shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-surface border border-border text-text-primary text-sm font-semibold rounded-lg hover:border-accent hover:text-accent hover:bg-accent-light transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0 shadow-sm"
           >
             <svg
               className={`w-4 h-4 ${loading ? "animate-spin" : ""}`}
@@ -298,8 +298,8 @@ export default function HomePage() {
 
       {/* Error state */}
       {error && (
-        <div className="max-w-7xl mx-auto px-4 mb-6">
-          <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm flex items-center gap-3">
+        <div className="max-w-7xl mx-auto px-4 mb-4">
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm flex items-center gap-3">
             <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
@@ -315,9 +315,9 @@ export default function HomePage() {
       )}
 
       {/* Stories Grid */}
-      <main className="max-w-7xl mx-auto px-4 pb-16">
+      <main className="max-w-7xl mx-auto px-4 pb-12">
         {loading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
               <StorySkeleton key={i} />
             ))}
@@ -325,7 +325,7 @@ export default function HomePage() {
         )}
 
         {!loading && stories.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
             {stories.map((story, i) => (
               <StoryCard
                 key={story.id}

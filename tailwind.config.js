@@ -8,14 +8,14 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        background: "#0a0a0a",
+        background: "#F8FAFC",
         surface: "#FFFFFF",
-        card: "#F0EDE6",
-        border: "#DDD9CF",
+        card: "#F1F5F9",
+        border: "#E2E8F0",
         accent: "#2563EB",
-        "accent-light": "#EFF6FF",
-        "text-primary": "#1E293B",
-        "text-secondary": "#64748B",
+        "accent-light": "#DBEAFE",
+        "text-primary": "#0F172A",
+        "text-secondary": "#475569",
         physics: "#1D4ED8",
         chemistry: "#059669",
         economics: "#D97706",

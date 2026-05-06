@@ -44,9 +44,9 @@ export default function InlineQuizCheckpoint({
                 : "border-border bg-card text-text-secondary hover:border-accent/50 hover:text-text-primary cursor-pointer";
           } else {
             if (idx === question.correctIndex) {
-              cls += "border-emerald-400 bg-emerald-950/30 text-emerald-400";
+              cls += "border-emerald-400 bg-emerald-50 text-emerald-700";
             } else if (selected === idx) {
-              cls += "border-red-400 bg-red-950/30 text-red-400";
+              cls += "border-red-400 bg-red-50 text-red-700";
             } else {
               cls += "border-border bg-card text-text-secondary opacity-40";
             }

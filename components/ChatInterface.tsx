@@ -136,7 +136,7 @@ export default function ChatInterface({ level, language }: ChatInterfaceProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Messages area */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+      <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
         {isEmpty && !loading && (
           <div className="flex flex-col items-center justify-center h-full pt-12 pb-4 text-center animate-fade-in">
             <div className="w-14 h-14 bg-accent rounded-2xl flex items-center justify-center font-bold text-white text-xl mb-4">
@@ -145,7 +145,7 @@ export default function ChatInterface({ level, language }: ChatInterfaceProps) {
             <h2 className="text-text-primary font-bold text-xl mb-1">
               Ask me anything
             </h2>
-            <p className="text-text-secondary text-sm mb-6 max-w-xs">
+            <p className="text-text-secondary text-sm mb-5 max-w-xs">
               I can explain concepts, answer questions, and give you a full
               lesson with quiz checkpoints.
             </p>
@@ -154,7 +154,7 @@ export default function ChatInterface({ level, language }: ChatInterfaceProps) {
                 <button
                   key={s}
                   onClick={() => sendMessage(s)}
-                  className="text-left px-3 py-2.5 text-sm bg-surface border border-border rounded-xl text-text-secondary hover:border-accent hover:text-accent hover:bg-accent-light/10 transition-all"
+                  className="text-left px-3 py-2 text-sm bg-surface border border-border rounded-lg text-text-secondary hover:border-accent hover:text-accent hover:bg-accent-light/10 transition-all"
                 >
                   {s}
                 </button>
@@ -179,7 +179,7 @@ export default function ChatInterface({ level, language }: ChatInterfaceProps) {
       </div>
 
       {/* Input area */}
-      <div className="shrink-0 border-t border-border p-3 bg-surface/80 backdrop-blur-sm">
+      <div className="shrink-0 border-t border-border p-2 bg-surface/80 backdrop-blur-sm">
         {messages.length > 0 && (
           <button
             onClick={() => setMessages([])}
@@ -202,13 +202,13 @@ export default function ChatInterface({ level, language }: ChatInterfaceProps) {
             onKeyDown={handleKeyDown}
             placeholder="Ask a question or say 'Teach me about…'"
             disabled={loading}
-            className="flex-1 resize-none bg-card border border-border rounded-xl px-4 py-2.5 text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent transition-colors disabled:opacity-50 leading-relaxed"
-            style={{ minHeight: "42px", maxHeight: "160px" }}
+            className="flex-1 resize-none bg-card border border-border rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent transition-colors disabled:opacity-50 leading-relaxed"
+            style={{ minHeight: "38px", maxHeight: "160px" }}
           />
           <button
             onClick={() => sendMessage(input)}
             disabled={loading || !input.trim()}
-            className="shrink-0 w-10 h-10 bg-accent text-white rounded-xl flex items-center justify-center hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="shrink-0 w-9 h-9 bg-accent text-white rounded-lg flex items-center justify-center hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             aria-label="Send"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
