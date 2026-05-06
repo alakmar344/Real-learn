@@ -105,6 +105,81 @@ export async function callGemma(
   }
 }
 
+export async function callGemmaWithHistory(
+  systemPrompt: string,
+  history: Array<{ role: "user" | "model"; content: string }>,
+  enableSearch: boolean = false,
+  temperature: number = 0.7
+): Promise<string> {
+  const apiKey = process.env.GEMMA_API_KEY;
+  if (!apiKey) {
+    throw new Error("GEMMA_API_KEY is not configured");
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 45000);
+
+  try {
+    const requestBody: Record<string, unknown> = {
+      system_instruction: {
+        parts: [{ text: systemPrompt }],
+      },
+      contents: history.map((msg) => ({
+        role: msg.role,
+        parts: [{ text: msg.content }],
+      })),
+      generationConfig: {
+        temperature,
+        maxOutputTokens: 6144,
+      },
+    };
+
+    if (enableSearch) {
+      requestBody.tools = [{ googleSearch: {} }];
+    }
+
+    const response = await fetch(`${GEMMA_API_BASE}?key=${apiKey}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(requestBody),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(
+        `Gemma API error: ${response.status} ${response.statusText} - ${errorText}`
+      );
+    }
+
+    const data: GemmaResponse = await response.json();
+
+    if (!data.candidates || data.candidates.length === 0) {
+      throw new Error("No candidates returned from Gemma API");
+    }
+
+    const candidate = data.candidates[0];
+    const text = candidate.content.parts.map((p) => p.text).join("");
+
+    if (candidate.groundingMetadata?.webSearchQueries) {
+      console.log(
+        "[Gemma] Web search queries:",
+        candidate.groundingMetadata.webSearchQueries
+      );
+    }
+
+    return text;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new Error("Gemma API request timed out after 45 seconds");
+    }
+    throw error;
+  }
+}
+
 export function parseJSON<T>(text: string): T | null {
   try {
     // Strip markdown code fences if present

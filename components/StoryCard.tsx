@@ -34,7 +34,7 @@ export default function StoryCard({ story, onClick, index }: StoryCardProps) {
 
   return (
     <article
-      className="group relative flex flex-col bg-surface border border-border rounded-2xl overflow-hidden hover:border-accent/40 transition-all duration-300 hover:shadow-xl hover:shadow-accent/10 hover:scale-[1.01] cursor-pointer animate-fade-in shadow-sm"
+      className="group relative flex flex-col bg-surface border border-border rounded-xl overflow-hidden hover:border-accent/40 transition-all duration-300 hover:shadow-lg hover:shadow-accent/10 hover:scale-[1.01] cursor-pointer animate-fade-in shadow-sm"
       style={{ animationDelay: `${index * 80}ms` }}
       onClick={() => onClick(story)}
       role="button"
@@ -43,7 +43,7 @@ export default function StoryCard({ story, onClick, index }: StoryCardProps) {
       aria-label={`Read story: ${story.headline}`}
     >
       {/* Category header */}
-      <div className="flex items-center justify-between px-4 pt-4 pb-0">
+      <div className="flex items-center justify-between px-3 pt-3 pb-0">
         <span
           className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${colorClass}`}
         >
@@ -54,7 +54,7 @@ export default function StoryCard({ story, onClick, index }: StoryCardProps) {
       </div>
 
       {/* Content */}
-      <div className="flex flex-col flex-1 p-4 gap-3">
+      <div className="flex flex-col flex-1 p-3 gap-3">
         <h2 className="text-base md:text-lg font-bold text-text-primary leading-snug group-hover:text-accent transition-colors line-clamp-3 font-serif">
           {story.headline}
         </h2>
@@ -73,13 +73,13 @@ export default function StoryCard({ story, onClick, index }: StoryCardProps) {
       </div>
 
       {/* CTA Button */}
-      <div className="px-4 pb-4">
-        <div className="w-full py-2.5 bg-accent-light border border-accent/30 text-accent text-sm font-semibold rounded-xl text-center group-hover:bg-accent group-hover:text-white transition-all duration-300">
+      <div className="px-3 pb-3">
+        <div className="w-full py-2 bg-accent-light border border-accent/30 text-accent text-sm font-semibold rounded-lg text-center group-hover:bg-accent group-hover:text-white transition-all duration-300">
           Uncover the Science →
         </div>
       </div>
 
-      <div className="absolute inset-0 rounded-2xl ring-1 ring-accent/0 group-hover:ring-accent/20 transition-all pointer-events-none" />
+      <div className="absolute inset-0 rounded-xl ring-1 ring-accent/0 group-hover:ring-accent/20 transition-all pointer-events-none" />
     </article>
   );
 }

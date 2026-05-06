@@ -68,3 +68,21 @@ export interface AppState {
   lesson: Lesson | null;
   quiz: Quiz | null;
 }
+
+// Chat feature types
+export interface ChatSegment {
+  type: "text" | "quiz";
+  content?: string; // markdown text for text segments
+  question?: QuizQuestion; // single question for quiz segments
+}
+
+export interface ChatMessageData {
+  id: string;
+  role: "user" | "assistant";
+  /** "chat" = normal conversational reply; "lesson" = structured lesson with quiz checkpoints */
+  type: "chat" | "lesson";
+  content?: string; // for type === "chat"
+  segments?: ChatSegment[]; // for type === "lesson"
+  sources?: string[];
+  timestamp: number;
+}
