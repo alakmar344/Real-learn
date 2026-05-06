@@ -46,7 +46,7 @@ export default function LevelBadge({ value, onChange, compact = false }: LevelBa
         >
           <span>{l.emoji}</span>
           <span className="hidden sm:inline">{l.label}</span>
-          <span className="sm:hidden">{l.label.split(" ")[0]}</span>
+          <span className="sm:hidden">{l.label.split(" ").slice(1).join(" ") || l.label}</span>
         </button>
       ))}
     </div>

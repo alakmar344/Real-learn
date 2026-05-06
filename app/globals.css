@@ -198,6 +198,19 @@ body {
   animation: slideInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Lesson panel: slide-up on mobile, slide-right on desktop */
+@media (max-width: 767px) {
+  .lesson-panel-animate {
+    animation: slideInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
+
+@media (min-width: 768px) {
+  .lesson-panel-animate {
+    animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
+
 /* Line clamp utilities */
 .line-clamp-2 {
   display: -webkit-box;

@@ -160,8 +160,7 @@ export default function LessonPanel({
       />
 
       {/* Panel */}
-      <div className="fixed inset-y-0 right-0 z-50 flex flex-col w-full md:w-[60%] lg:w-[40%] bg-surface border-l border-border shadow-2xl animate-slide-in-right">
-        {/* Mobile: bottom sheet animation */}
+      <div className="fixed inset-y-0 right-0 z-50 flex flex-col w-full md:w-[60%] lg:w-[40%] bg-surface md:border-l border-border shadow-2xl lesson-panel-animate">
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="shrink-0 flex items-start justify-between gap-4 p-4 md:p-6 border-b border-border">
