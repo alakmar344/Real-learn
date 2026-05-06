@@ -249,9 +249,9 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Chat Mode */}
+        {/* Chat Mode — positioned below header (57px) + tab bar (44px) = 101px */}
       {activeTab === "chat" && (
-        <div className="fixed inset-0 top-[100px] z-10 flex flex-col bg-background">
+        <div className="fixed inset-0 top-[101px] z-10 flex flex-col bg-background">
           <ChatInterface level={level} language={language} />
         </div>
       )}

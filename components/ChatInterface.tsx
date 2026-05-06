@@ -191,7 +191,7 @@ export default function ChatInterface({ level, language }: ChatInterfaceProps) {
         <div className="flex items-end gap-2">
           <textarea
             ref={inputRef}
-            rows={1}
+            rows={2}
             value={input}
             onChange={(e) => {
               setInput(e.target.value);

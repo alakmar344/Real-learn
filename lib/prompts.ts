@@ -125,7 +125,6 @@ CRITICAL RULES:
 
 export const QUIZ_PROMPT = `You are an expert educator creating assessment questions that test REAL understanding, not memorization.
 
-
 Generate exactly 3 multiple choice questions based on the lesson provided. Each question MUST:
 - Reference specific elements from the original news story (names, numbers, events)
 - Test understanding of the concept, not just recall of facts
