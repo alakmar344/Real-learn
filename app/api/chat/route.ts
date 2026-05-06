@@ -7,6 +7,7 @@ const requestLog: number[] = [];
 const RATE_LIMIT = 40;
 const RATE_WINDOW = 60 * 1000;
 // Only include the most recent 10 messages to balance context vs latency within the model window.
+// 10 is a conservative default for Gemma context size; adjust if larger windows are available.
 const MAX_HISTORY_MESSAGES = 10;
 // Trim each history entry to ~1000 chars to prevent token overflow and keep responses fast.
 const MAX_HISTORY_CONTENT_LENGTH = 1000;

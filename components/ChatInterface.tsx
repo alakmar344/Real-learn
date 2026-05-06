@@ -18,6 +18,7 @@ const SUGGESTIONS = [
   "What is quantum entanglement?",
 ];
 // Maximum length for lesson content when summarizing for API history to avoid context bloat.
+// 240 chars keeps a short excerpt (roughly 1–2 sentences) while staying token-efficient.
 const MAX_HISTORY_SUMMARY_LENGTH = 240;
 
 function TypingIndicator() {

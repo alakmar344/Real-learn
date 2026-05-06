@@ -11,8 +11,8 @@ interface ChatMessageProps {
   message: ChatMessageData;
 }
 
-// Value used to identify and filter out placeholder sources from the model.
-const PLACEHOLDER_SOURCE = "#";
+// Sentinel value used to filter out invalid sources returned by the model.
+const SOURCE_FILTER_SENTINEL = "#";
 
 function LessonRenderer({ message }: { message: ChatMessageData }) {
   const segments = message.segments ?? [];
@@ -77,7 +77,7 @@ function LessonRenderer({ message }: { message: ChatMessageData }) {
             </p>
             <div className="flex flex-wrap gap-2">
               {message.sources
-                .filter((s) => s && s !== PLACEHOLDER_SOURCE)
+                .filter((s) => s && s !== SOURCE_FILTER_SENTINEL)
                 .map((source, i) => (
                   <SourceTag key={i} url={source} index={i} />
                 ))}
