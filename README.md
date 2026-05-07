@@ -19,6 +19,7 @@ This repository is now split into two deployable parts:
 3. Start command: `npm start`
 4. Add env variables:
    - `GEMMA_API_KEY=...`
+   - `SERPER_API_KEY=...`
    - `FRONTEND_ORIGIN=https://<your-vercel-frontend>.vercel.app`
    - `PORT=10000` (optional on Render)
 

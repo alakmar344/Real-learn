@@ -7,6 +7,7 @@ import {
   parseJSON,
 } from "./lib/gemma.js";
 import { GENERATE_LESSON_PROMPT } from "./lib/prompts.js";
+import { fetchRealWorldContext } from "./lib/serper.js";
 import { isValidJourney } from "./validation.js";
 
 const LESSON_TIMEOUT_MS = 60000;
@@ -70,30 +71,23 @@ app.post("/api/generate-lesson", async (req, res) => {
   };
 
   try {
-    const userPrompt = `Question: ${question}\nLanguage: ${language}\nLevel: ${level}`;
+    const newsContext = await fetchRealWorldContext(question);
 
-    let raw;
-    try {
-      raw = await callGemma(
-        GENERATE_LESSON_PROMPT,
-        userPrompt,
-        true,
-        0.6,
-        LESSON_TIMEOUT_MS
-      );
-    } catch (error) {
-      if (!(error instanceof GemmaTimeoutError)) {
-        throw error;
-      }
+    const userPrompt = `Question: ${question}
+Language: ${language}
+Level: ${level}${
+      newsContext
+        ? `\n\nREAL WORLD CONTEXT FOR PART 3 (use this — do not search):\n${newsContext}`
+        : ""
+    }`;
 
-      raw = await callGemma(
-        GENERATE_LESSON_PROMPT,
-        userPrompt,
-        false,
-        0.6,
-        LESSON_TIMEOUT_MS
-      );
-    }
+    const raw = await callGemma(
+      GENERATE_LESSON_PROMPT,
+      userPrompt,
+      false,
+      0.6,
+      LESSON_TIMEOUT_MS
+    );
 
     const parsed = parseJSON(raw);
     if (!isValidJourney(parsed)) {
@@ -110,7 +104,7 @@ app.post("/api/generate-lesson", async (req, res) => {
     const timeoutMessage = formatGemmaTimeoutMessage(LESSON_TIMEOUT_MS);
     const message =
       error instanceof GemmaTimeoutError
-        ? `${timeoutMessage} on both lesson generation attempts (initial call with search, retry without search)`
+        ? timeoutMessage
         : error instanceof Error
         ? error.message
         : "Failed to generate lesson";
