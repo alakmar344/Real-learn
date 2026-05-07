@@ -19,10 +19,14 @@ interface GemmaResponse {
   }>;
 }
 
+export function formatGemmaTimeoutMessage(timeoutMs: number): string {
+  const timeoutSeconds = timeoutMs / 1000;
+  return `Gemma API request timed out after ${timeoutSeconds} seconds`;
+}
+
 export class GemmaTimeoutError extends Error {
   constructor(timeoutMs: number) {
-    const timeoutSeconds = timeoutMs / 1000;
-    super(`Gemma API request timed out after ${timeoutSeconds} seconds`);
+    super(formatGemmaTimeoutMessage(timeoutMs));
     this.name = "GemmaTimeoutError";
   }
 }

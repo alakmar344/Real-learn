@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
-import { callGemma, GemmaTimeoutError, parseJSON } from "@/lib/gemma";
+import {
+  callGemma,
+  formatGemmaTimeoutMessage,
+  GemmaTimeoutError,
+  parseJSON,
+} from "@/lib/gemma";
 import { GENERATE_LESSON_PROMPT } from "@/lib/prompts";
 import { LessonJourney, Level, Language } from "@/types";
 
@@ -70,7 +75,7 @@ export async function POST(request: Request) {
       } catch (retryError) {
         if (retryError instanceof GemmaTimeoutError) {
           throw new Error(
-            `${new GemmaTimeoutError(LESSON_TIMEOUT_MS).message} on both generate-lesson attempts (initial call with search, retry without search)`
+            `${formatGemmaTimeoutMessage(LESSON_TIMEOUT_MS)} on both generate-lesson attempts (initial call with search, retry without search)`
           );
         }
         throw retryError;
