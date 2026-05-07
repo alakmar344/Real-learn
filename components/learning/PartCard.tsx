@@ -161,7 +161,7 @@ export default function PartCard({
                 boxShadow: "0 0 32px rgba(245,197,24,0.4)",
               }}
             >
-              I&apos;ve Read This → Take Quiz
+              I've Read This → Take Quiz
             </button>
           )}
         </div>

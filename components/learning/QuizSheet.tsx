@@ -4,6 +4,10 @@ import { useMemo, useState } from "react";
 import { QuizQuestion as Question } from "@/types";
 import QuizQuestion from "@/components/learning/QuizQuestion";
 
+const TOTAL_QUESTIONS = 2;
+const LAST_QUESTION_INDEX = TOTAL_QUESTIONS - 1;
+const PERFECT_SCORE = TOTAL_QUESTIONS;
+
 interface Props {
   open: boolean;
   questions: Question[];
@@ -13,7 +17,9 @@ interface Props {
 
 export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
   const [current, setCurrent] = useState(0);
-  const [answers, setAnswers] = useState<Array<number | null>>([null, null]);
+  const [answers, setAnswers] = useState<Array<number | null>>(
+    Array.from({ length: TOTAL_QUESTIONS }, () => null)
+  );
 
   const currentQuestion = questions[current];
   const selected = answers[current];
@@ -39,20 +45,20 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
   };
 
   const nextAction = () => {
-    if (current === 0) {
-      setCurrent(1);
+    if (current < LAST_QUESTION_INDEX) {
+      setCurrent((prev) => prev + 1);
       return;
     }
 
-    if (score === 2) {
+    if (score === PERFECT_SCORE) {
       onPass(score);
       setCurrent(0);
-      setAnswers([null, null]);
+      setAnswers(Array.from({ length: TOTAL_QUESTIONS }, () => null));
       return;
     }
 
     setCurrent(0);
-    setAnswers([null, null]);
+    setAnswers(Array.from({ length: TOTAL_QUESTIONS }, () => null));
   };
 
   return (
@@ -106,15 +112,28 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
               width: "100%",
               borderRadius: 10,
               padding: "12px",
-              border: score === 2 && current === 1 ? "none" : "1.5px solid var(--border-default)",
-              background: score === 2 && current === 1 ? "var(--correct)" : "transparent",
-              color: score === 2 && current === 1 ? "white" : "var(--text-primary)",
+              border:
+                score === PERFECT_SCORE && current === LAST_QUESTION_INDEX
+                  ? "none"
+                  : "1.5px solid var(--border-default)",
+              background:
+                score === PERFECT_SCORE && current === LAST_QUESTION_INDEX
+                  ? "var(--correct)"
+                  : "transparent",
+              color:
+                score === PERFECT_SCORE && current === LAST_QUESTION_INDEX
+                  ? "white"
+                  : "var(--text-primary)",
               fontSize: 14,
               fontWeight: 600,
               cursor: "pointer",
             }}
           >
-            {current === 0 ? "Next Question →" : score === 2 ? "Unlock Next Part →" : "Read Again"}
+            {current < LAST_QUESTION_INDEX
+              ? "Next Question →"
+              : score === PERFECT_SCORE
+                ? "Unlock Next Part →"
+                : "Read Again"}
           </button>
         ) : null}
       </div>

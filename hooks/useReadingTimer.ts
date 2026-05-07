@@ -2,7 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-export function useReadingTimer(isActive: boolean, durationMs: number = 10000) {
+export function useReadingTimer(
+  isActive: boolean,
+  durationInMs: number = 10000
+) {
   const [startAt, setStartAt] = useState<number | null>(null);
   const [now, setNow] = useState<number>(Date.now());
 
@@ -26,16 +29,16 @@ export function useReadingTimer(isActive: boolean, durationMs: number = 10000) {
 
   return useMemo(() => {
     if (!isActive || !startAt) {
-      return { isComplete: false, remainingMs: durationMs, progress: 0 };
+      return { isComplete: false, remainingMs: durationInMs, progress: 0 };
     }
     const elapsed = now - startAt;
-    const clamped = Math.min(Math.max(elapsed, 0), durationMs);
-    const remainingMs = Math.max(0, durationMs - elapsed);
+    const clamped = Math.min(Math.max(elapsed, 0), durationInMs);
+    const remainingMs = Math.max(0, durationInMs - elapsed);
     const isComplete = remainingMs <= 0;
     return {
       isComplete,
       remainingMs,
-      progress: (clamped / durationMs) * 100,
+      progress: (clamped / durationInMs) * 100,
     };
-  }, [durationMs, isActive, now, startAt]);
+  }, [durationInMs, isActive, now, startAt]);
 }

@@ -83,7 +83,7 @@ export const useLessonStore = create<LessonStore>()(
           const nextUnlock = part === 3 ? 3 : ((part + 1) as 1 | 2 | 3);
           return {
             completedParts: completedSet,
-            unlockedPart: part === 3 ? 3 : nextUnlock,
+            unlockedPart: nextUnlock,
             partScores: { ...state.partScores, [part]: score },
             collapsedParts: Array.from(new Set([...state.collapsedParts, part])),
             showCompletion: completedSet.length === 3,

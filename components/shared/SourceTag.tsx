@@ -4,6 +4,7 @@ export default function SourceTag({ href }: { href: string }) {
       href={href}
       target="_blank"
       rel="noreferrer"
+      aria-label={`Source link: ${href}`}
       style={{
         display: "inline-flex",
         alignItems: "center",
