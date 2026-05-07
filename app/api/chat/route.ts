@@ -11,6 +11,9 @@ const RATE_WINDOW = 60 * 1000;
 const MAX_HISTORY_MESSAGES = 10;
 // Trim each history entry to ~1000 chars to prevent token overflow and keep responses fast.
 const MAX_HISTORY_CONTENT_LENGTH = 1000;
+const DEFAULT_FALLBACK_MESSAGE = "I'm not sure how to answer that. Could you rephrase?";
+const LESSON_RETRY_MESSAGE =
+  "Let me explain this in a simpler way. Could you ask again in one sentence?";
 
 function checkRateLimit(): boolean {
   const now = Date.now();
@@ -55,8 +58,7 @@ interface ChatResponse {
   sources?: string[];
 }
 
-function isTeachIntent(message: string): boolean {
-  const lower = message.toLowerCase();
+function isTeachIntent(lowerMessage: string): boolean {
   const keywords = [
     "teach me",
     "explain",
@@ -73,7 +75,25 @@ function isTeachIntent(message: string): boolean {
     "show me",
     "give me a lesson",
   ];
-  return keywords.some((kw) => lower.includes(kw));
+  return keywords.some((kw) => lowerMessage.includes(kw));
+}
+
+function shouldUseSearch(lowerMessage: string): boolean {
+  const searchKeywords = [
+    "latest",
+    "today",
+    "current",
+    "news",
+    "recent",
+    "right now",
+    "this week",
+  ];
+  const hasKeyword = searchKeywords.some((kw) => lowerMessage.includes(kw));
+  const currentYear = new Date().getFullYear();
+  const hasYearMention = [...lowerMessage.matchAll(/\b(?:in\s+)?(20\d{2})\b/g)]
+    .map((m) => Number(m[1]))
+    .some((year) => year >= 2020 && year <= currentYear + 1);
+  return hasKeyword || hasYearMention;
 }
 
 function validateSegments(raw: ChatResponse["segments"]): ChatSegment[] {
@@ -96,6 +116,36 @@ function validateSegments(raw: ChatResponse["segments"]): ChatSegment[] {
       };
       return { type: "quiz" as const, question: q };
     });
+}
+
+function buildLessonFromText(
+  content: string,
+  sources: string[] = []
+): {
+  type: "lesson";
+  segments: Array<{ type: "text"; content: string }>;
+  sources: string[];
+} {
+  return {
+    type: "lesson" as const,
+    segments: [{ type: "text" as const, content }],
+    sources,
+  };
+}
+
+function extractLessonText(parsed: ChatResponse | null, rawResponse: string): string {
+  // Fallback priority: lesson text segments -> chat message field -> raw model text.
+  const segmentText = Array.isArray(parsed?.segments)
+    ? parsed.segments
+        .filter((seg) => seg?.type === "text" && typeof seg.content === "string")
+        .map((seg) => seg.content?.trim() || "")
+        .filter(Boolean)
+        .join("\n\n")
+    : "";
+
+  if (segmentText) return segmentText;
+  if (typeof parsed?.message === "string" && parsed.message.trim()) return parsed.message.trim();
+  return rawResponse.trim();
 }
 
 export async function POST(request: Request) {
@@ -127,7 +177,9 @@ export async function POST(request: Request) {
       );
     }
 
-    const useSearch = isTeachIntent(message);
+    const lowerMessage = message.toLowerCase();
+    const isTeachRequest = isTeachIntent(lowerMessage);
+    const useSearch = shouldUseSearch(lowerMessage);
 
     // Build Gemma history: convert previous turns + add current user message
     const gemmaHistory: Array<{ role: "user" | "model"; content: string }> = [
@@ -146,32 +198,50 @@ export async function POST(request: Request) {
       CHAT_TUTOR_PROMPT,
       gemmaHistory,
       useSearch,
-      0.7
+      // Lower temperature improves JSON format stability and reduces invalid output variance.
+      0.4
     );
 
     const parsed = parseJSON<ChatResponse>(rawResponse);
 
     if (!parsed || !parsed.type) {
-      // Fallback: treat raw response as a plain chat message
+      const fallbackText = sanitizeChatMessage(
+        rawResponse.trim() || DEFAULT_FALLBACK_MESSAGE
+      );
+      if (isTeachRequest) {
+        return NextResponse.json(buildLessonFromText(fallbackText));
+      }
       return NextResponse.json({
         type: "chat",
-        message: sanitizeChatMessage(rawResponse.trim() || "I'm not sure how to answer that. Could you rephrase?"),
+        message: fallbackText,
       });
     }
 
     if (parsed.type === "chat") {
+      const chatMessage = sanitizeChatMessage(String(parsed.message || rawResponse.trim()));
+      if (isTeachRequest) {
+        return NextResponse.json(buildLessonFromText(chatMessage));
+      }
       return NextResponse.json({
         type: "chat",
-        message: sanitizeChatMessage(String(parsed.message || rawResponse.trim())),
+        message: chatMessage,
       });
     }
 
     // type === "lesson"
     const segments = validateSegments(parsed.segments);
     if (segments.length === 0) {
+      const fallbackText = sanitizeChatMessage(extractLessonText(parsed, rawResponse));
+      if (isTeachRequest) {
+        return NextResponse.json(
+          buildLessonFromText(
+            fallbackText || LESSON_RETRY_MESSAGE
+          )
+        );
+      }
       return NextResponse.json({
         type: "chat",
-        message: rawResponse.trim(),
+        message: fallbackText || DEFAULT_FALLBACK_MESSAGE,
       });
     }
 
