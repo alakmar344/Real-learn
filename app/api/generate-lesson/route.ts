@@ -43,7 +43,26 @@ export async function POST(request: Request) {
     }
 
     const userPrompt = `Question: ${question}\nLanguage: ${language}\nLevel: ${level}`;
-    const raw = await callGemma(GENERATE_LESSON_PROMPT, userPrompt, true, 0.6);
+    let raw: string;
+    try {
+      raw = await callGemma(GENERATE_LESSON_PROMPT, userPrompt, true, 0.6, 60000);
+    } catch (error) {
+      const isTimeoutError =
+        error instanceof Error &&
+        error.message.toLowerCase().includes("timed out");
+
+      if (!isTimeoutError) {
+        throw error;
+      }
+
+      raw = await callGemma(
+        GENERATE_LESSON_PROMPT,
+        userPrompt,
+        false,
+        0.6,
+        60000
+      );
+    }
     const parsed = parseJSON<LessonJourney>(raw);
 
     if (!isValidJourney(parsed)) {

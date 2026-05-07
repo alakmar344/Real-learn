@@ -23,7 +23,8 @@ export async function callGemma(
   systemPrompt: string,
   userMessage: string,
   enableSearch: boolean = true,
-  temperature: number = 0.7
+  temperature: number = 0.7,
+  timeoutMs: number = 30000
 ): Promise<string> {
   const apiKey = process.env.GEMMA_API_KEY;
   if (!apiKey) {
@@ -31,7 +32,7 @@ export async function callGemma(
   }
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 30000);
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const requestBody: Record<string, unknown> = {
@@ -99,7 +100,9 @@ export async function callGemma(
   } catch (error) {
     clearTimeout(timeoutId);
     if (error instanceof Error && error.name === "AbortError") {
-      throw new Error("Gemma API request timed out after 30 seconds");
+      throw new Error(
+        `Gemma API request timed out after ${Math.round(timeoutMs / 1000)} seconds`
+      );
     }
     throw error;
   }
