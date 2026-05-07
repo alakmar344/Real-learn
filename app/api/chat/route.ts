@@ -127,7 +127,7 @@ function validateSegments(raw: ChatResponse["segments"]): ChatSegment[] {
 
   explanation: String(s.explanation || ""),
 };
-
+}
 function buildLessonFromText(
   content: string,
   sources: string[] = []
