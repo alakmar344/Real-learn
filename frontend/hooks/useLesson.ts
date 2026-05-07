@@ -7,7 +7,7 @@ import { LessonJourney } from "@/types";
 
 const trimmedBackendUrl = (
   process.env.NEXT_PUBLIC_BACKEND_URL ||
-"https://real-learn-backenf.onrender.com"
+"https://real-learn.onrender.com"
 ).replace(/\/$/, "");
 
 type StreamEvent = {
