@@ -62,7 +62,7 @@ export async function POST(request: Request) {
       } catch (retryError) {
         if (retryError instanceof GemmaTimeoutError) {
           throw new Error(
-            "Gemma API request timed out on both generate-lesson attempts"
+            "Gemma API request timed out after 60 seconds on both generate-lesson attempts (initial call with search, retry without search)"
           );
         }
         throw retryError;

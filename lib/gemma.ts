@@ -21,9 +21,8 @@ interface GemmaResponse {
 
 export class GemmaTimeoutError extends Error {
   constructor(timeoutMs: number) {
-    super(
-      `Gemma API request timed out after ${Math.round(timeoutMs / 1000)} seconds`
-    );
+    const timeoutSeconds = timeoutMs / 1000;
+    super(`Gemma API request timed out after ${timeoutSeconds} seconds`);
     this.name = "GemmaTimeoutError";
   }
 }
