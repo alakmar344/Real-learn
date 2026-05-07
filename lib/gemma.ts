@@ -236,7 +236,11 @@ function closeTruncatedJSON(text: string): string {
  */
 export function parseJSON<T>(text: string): T | null {
   // ── Stage 0: strip markdown fences and leading prose ──────────────────────
-  let cleaned = text.trim();
+  let cleaned = text
+    .replace(/<think>[\s\S]*?<\/think>/gi, "")
+    .replace(/<thinking>[\s\S]*?<\/thinking>/gi, "")
+    .replace(/^\s*(?:thinking|thought|reasoning)\s*:\s*[\s\S]*?(?=[\[{])/i, "")
+    .trim();
   // Remove ```json ... ``` or ``` ... ``` fences (including mid-text ones)
   cleaned = cleaned.replace(/```(?:json)?\s*/gi, "").replace(/```\s*/g, "");
   cleaned = cleaned.trim();
