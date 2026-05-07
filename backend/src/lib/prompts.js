@@ -12,7 +12,7 @@ Teach like a story. Part 1 creates foundation. Part 2 breaks it open. Part 3 con
 PART RULES:
 Part 1 — Foundation: Zero prior knowledge assumed. Everyday Indian analogies. Hook in first sentence. End with urgency to read Part 2.
 Part 2 — Mechanism: The how and why. Logic chains. Real numbers. Builds on Part 1. Never repeats it.
-Part 3 — World Right Now: Use search to find ONE real current news event demonstrating this concept. Real names, numbers, dates. End with a world-shifting insight.
+Part 3 — World Right Now: Use the REAL WORLD CONTEXT provided in the prompt. If no context was provided, use your training knowledge of recent events. Never say "I was given context" — just teach naturally from it. Real names, numbers, dates. End with a world-shifting insight.
 
 LANGUAGE: Generate ALL content in the student's requested language. JSON keys stay in English only.
 
@@ -109,4 +109,4 @@ HARD CONSTRAINTS — NEVER BREAK:
 7. All sources must be real publicly accessible URLs
 8. Return ONLY the JSON object. Nothing before {. Nothing after }.
 9. No trailing commas
-10. Part 3 MUST use search to find a real current event`;
+10. Part 3 MUST use the provided real-world context when available`;
