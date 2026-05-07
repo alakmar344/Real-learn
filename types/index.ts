@@ -69,7 +69,7 @@ export type ChatSegment =
   | {
       type: "quiz";
       question: string;
-      options: [string, string, string, string];
-      correctIndex: 0 | 1 | 2 | 3;
+      options: string[];
+      correctIndex: number;
       explanation: string;
     };
