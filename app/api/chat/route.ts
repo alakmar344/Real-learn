@@ -105,18 +105,28 @@ function validateSegments(raw: ChatResponse["segments"]): ChatSegment[] {
         return { type: "text" as const, content: String(s.content || "") };
       }
       const q: QuizQuestion = {
-        question: String(s.question || ""),
-        options: Array.isArray(s.options)
-          ? s.options.slice(0, 4).map(String)
-          : ["A", "B", "C", "D"],
-        correctIndex: typeof s.correctIndex === "number"
-          ? Math.min(Math.max(0, s.correctIndex), 3)
-          : 0,
-        explanation: String(s.explanation || ""),
-      };
-      return { type: "quiz" as const, question: q };
-    });
-}
+  question: String(s.question || ""),
+
+  options:
+    Array.isArray(s.options) && s.options.length >= 4
+      ? [
+          String(s.options[0]),
+          String(s.options[1]),
+          String(s.options[2]),
+          String(s.options[3]),
+        ]
+      : ["A", "B", "C", "D"],
+
+  correctIndex:
+    s.correctIndex === 0 ||
+    s.correctIndex === 1 ||
+    s.correctIndex === 2 ||
+    s.correctIndex === 3
+      ? s.correctIndex
+      : 0,
+
+  explanation: String(s.explanation || ""),
+};
 
 function buildLessonFromText(
   content: string,
