@@ -61,8 +61,15 @@ export interface LessonJourney {
   parts: [LessonPart, LessonPart, LessonPart];
   keyTakeaways: [string, string, string];
 }
-export interface ChatSegment {
-  type: "text" | "quiz";
-  content?: string;
-  question?: QuizQuestion;
-}
+export type ChatSegment =
+  | {
+      type: "text";
+      content: string;
+    }
+  | {
+      type: "quiz";
+      question: string;
+      options: [string, string, string, string];
+      correctIndex: 0 | 1 | 2 | 3;
+      explanation: string;
+    };
