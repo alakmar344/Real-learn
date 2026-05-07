@@ -238,7 +238,7 @@ export function parseJSON<T>(text: string): T | null {
   // ── Stage 0: strip markdown fences and leading prose ──────────────────────
   let cleaned = text
     .replace(/<think(?:ing)?>[\s\S]*?<\/think(?:ing)?>/gi, "")
-    .replace(/^\s*(?:thinking|thought|reasoning)\s*:\s*/i, "")
+    .replace(/^\s*(?:thinking|thought|reasoning)\s*:\s*/gim, "")
     .trim();
   // Remove ```json ... ``` or ``` ... ``` fences (including mid-text ones)
   cleaned = cleaned.replace(/```(?:json)?\s*/gi, "").replace(/```\s*/g, "");
