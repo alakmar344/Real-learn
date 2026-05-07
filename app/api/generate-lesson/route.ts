@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { callGemma, parseJSON } from "@/lib/gemma";
+import { callGemma, GemmaTimeoutError, parseJSON } from "@/lib/gemma";
 import { GENERATE_LESSON_PROMPT } from "@/lib/prompts";
 import { LessonJourney, Level, Language } from "@/types";
 
@@ -47,21 +47,26 @@ export async function POST(request: Request) {
     try {
       raw = await callGemma(GENERATE_LESSON_PROMPT, userPrompt, true, 0.6, 60000);
     } catch (error) {
-      const isTimeoutError =
-        error instanceof Error &&
-        error.message.toLowerCase().includes("timed out");
-
-      if (!isTimeoutError) {
+      if (!(error instanceof GemmaTimeoutError)) {
         throw error;
       }
 
-      raw = await callGemma(
-        GENERATE_LESSON_PROMPT,
-        userPrompt,
-        false,
-        0.6,
-        60000
-      );
+      try {
+        raw = await callGemma(
+          GENERATE_LESSON_PROMPT,
+          userPrompt,
+          false,
+          0.6,
+          60000
+        );
+      } catch (retryError) {
+        if (retryError instanceof GemmaTimeoutError) {
+          throw new Error(
+            "Gemma API request timed out on both generate-lesson attempts"
+          );
+        }
+        throw retryError;
+      }
     }
     const parsed = parseJSON<LessonJourney>(raw);
 

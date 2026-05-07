@@ -19,6 +19,15 @@ interface GemmaResponse {
   }>;
 }
 
+export class GemmaTimeoutError extends Error {
+  constructor(timeoutMs: number) {
+    super(
+      `Gemma API request timed out after ${Math.round(timeoutMs / 1000)} seconds`
+    );
+    this.name = "GemmaTimeoutError";
+  }
+}
+
 export async function callGemma(
   systemPrompt: string,
   userMessage: string,
@@ -100,9 +109,7 @@ export async function callGemma(
   } catch (error) {
     clearTimeout(timeoutId);
     if (error instanceof Error && error.name === "AbortError") {
-      throw new Error(
-        `Gemma API request timed out after ${Math.round(timeoutMs / 1000)} seconds`
-      );
+      throw new GemmaTimeoutError(timeoutMs);
     }
     throw error;
   }
