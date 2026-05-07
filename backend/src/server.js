@@ -22,7 +22,7 @@ const configuredOrigins =
 const allowedOrigins =
   configuredOrigins.length > 0
     ? configuredOrigins
-    : ["https://reallearn.vercel.app"];
+    : ["https://reallearn-taupe.vercel.app"];
 
 app.get("/health", (_req, res) => {
   res.json({ ok: true });
