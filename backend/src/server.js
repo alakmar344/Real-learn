@@ -20,16 +20,18 @@ const configuredOrigins =
     .map((origin) => origin.trim())
     .filter(Boolean) ?? [];
 const allowedOrigins =
-  configuredOrigins.length > 0 ? configuredOrigins : ["http://localhost:3000"];
+  configuredOrigins.length > 0
+    ? configuredOrigins
+    : ["https://reallearn.vercel.app"];
 
-if (process.env.NODE_ENV === "production" && configuredOrigins.length === 0) {
-  throw new Error("FRONTEND_ORIGIN must be set in production");
-}
+app.get("/health", (_req, res) => {
+  res.json({ ok: true });
+});
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (origin && allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
       return callback(new Error("CORS origin denied"));
@@ -38,10 +40,6 @@ app.use(
   })
 );
 app.use(express.json({ limit: "1mb" }));
-
-app.get("/health", (_req, res) => {
-  res.json({ ok: true });
-});
 
 app.post("/api/generate-lesson", async (req, res) => {
   const question = req.body?.question?.trim();

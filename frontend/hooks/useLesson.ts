@@ -5,7 +5,10 @@ import { useCallback } from "react";
 import { useLessonStore } from "@/store/lessonStore";
 import { LessonJourney } from "@/types";
 
-const trimmedBackendUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:10000").replace(/\/$/, "");
+const trimmedBackendUrl = (
+  process.env.NEXT_PUBLIC_BACKEND_URL ||
+  "https://real-learn-backenf.onrender.com"
+).replace(/\/$/, "");
 
 type StreamEvent = {
   event: string;
