@@ -4,8 +4,10 @@ const GEMMA_API_BASE =
 interface GemmaResponse {
   candidates: Array<{
     content: {
-      parts: Array<{ text: string }>;
-    };
+      parts: Array<{
+  text: string;
+  thought?: boolean;
+}>;
     groundingMetadata?: {
       webSearchQueries?: string[];
       groundingChunks?: Array<{
@@ -92,8 +94,7 @@ export async function callGemma(
     }
 
     const candidate = data.candidates[0];
-    const text = candidate.content.parts.filter((p) => !(p as any).thought).map((p) => p.text).join("");
-
+    const text = candidate.content.parts.filter((p) => !p.thought).map((p) => p.text).join("");
     // Log grounding metadata for debugging
     if (candidate.groundingMetadata) {
       const meta = candidate.groundingMetadata;
@@ -174,8 +175,7 @@ export async function callGemmaWithHistory(
     }
 
     const candidate = data.candidates[0];
-    const text = candidate.content.parts.filter((p) => !(p as any).thought).map((p) => p.text).join("");
-
+    const text = candidate.content.parts.filter((p) => !p.thought).map((p) => p.text).join("");
     if (candidate.groundingMetadata?.webSearchQueries) {
       console.log(
         "[Gemma] Web search queries:",
