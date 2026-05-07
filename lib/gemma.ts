@@ -8,6 +8,7 @@ interface GemmaResponse {
         text: string;
         thought?: boolean;
       }>;
+    };
     groundingMetadata?: {
       webSearchQueries?: string[];
       groundingChunks?: Array<{
@@ -18,10 +19,10 @@ interface GemmaResponse {
         segment: { text: string };
       }>;
     };
-  };
+  }>;
 }
 
- function formatGemmaTimeoutMessage(timeoutMs: number): string {
+ export function formatGemmaTimeoutMessage(timeoutMs: number): string {
   const timeoutSeconds = timeoutMs / 1000;
   return `Gemma API request timed out after ${timeoutSeconds} seconds`;
 }
