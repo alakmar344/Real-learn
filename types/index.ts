@@ -33,7 +33,7 @@ export type Subject =
 /** A single MCQ question embedded inside a lesson part. */
 export interface QuizQuestion {
   question: string;
-  options: [];       // always 4 items
+  options: string[];       // always 4 items
   correctIndex: number;    // 0-3
   explanation: string;
 }
