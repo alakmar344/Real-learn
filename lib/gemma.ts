@@ -5,9 +5,9 @@ interface GemmaResponse {
   candidates: Array<{
     content: {
       parts: Array<{
-  text: string;
-  thought?: boolean;
-};
+        text: string;
+        thought?: boolean;
+      }>;
     groundingMetadata?: {
       webSearchQueries?: string[];
       groundingChunks?: Array<{
