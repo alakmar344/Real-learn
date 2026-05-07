@@ -3,6 +3,8 @@ import { callGemma, GemmaTimeoutError, parseJSON } from "@/lib/gemma";
 import { GENERATE_LESSON_PROMPT } from "@/lib/prompts";
 import { LessonJourney, Level, Language } from "@/types";
 
+const LESSON_TIMEOUT_MS = 60000;
+
 function isValidJourney(data: LessonJourney | null): data is LessonJourney {
   if (!data) return false;
   if (!Array.isArray(data.parts) || data.parts.length !== 3) return false;
@@ -45,7 +47,13 @@ export async function POST(request: Request) {
     const userPrompt = `Question: ${question}\nLanguage: ${language}\nLevel: ${level}`;
     let raw: string;
     try {
-      raw = await callGemma(GENERATE_LESSON_PROMPT, userPrompt, true, 0.6, 60000);
+      raw = await callGemma(
+        GENERATE_LESSON_PROMPT,
+        userPrompt,
+        true,
+        0.6,
+        LESSON_TIMEOUT_MS
+      );
     } catch (error) {
       if (!(error instanceof GemmaTimeoutError)) {
         throw error;
@@ -57,12 +65,13 @@ export async function POST(request: Request) {
           userPrompt,
           false,
           0.6,
-          60000
+          LESSON_TIMEOUT_MS
         );
       } catch (retryError) {
         if (retryError instanceof GemmaTimeoutError) {
+          const timeoutSeconds = LESSON_TIMEOUT_MS / 1000;
           throw new Error(
-            "Gemma API request timed out after 60 seconds on both generate-lesson attempts (initial call with search, retry without search)"
+            `Gemma API request timed out after ${timeoutSeconds} seconds on both generate-lesson attempts (initial call with search, retry without search)`
           );
         }
         throw retryError;
