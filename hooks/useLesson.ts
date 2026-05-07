@@ -40,9 +40,21 @@ export function useLesson() {
           }),
         });
 
-        const data = await response.json();
+        const contentType = response.headers.get("content-type") ?? "";
+        const isJson = contentType.includes("application/json");
+
+        if (!isJson) {
+          const text = await response.text();
+          throw new Error(text || "Unable to generate lesson");
+        }
+
+        const data = (await response.json()) as
+          | LessonJourney
+          | { error?: string };
         if (!response.ok) {
-          throw new Error(data.error || "Unable to generate lesson");
+          throw new Error(
+            ("error" in data && data.error) || "Unable to generate lesson"
+          );
         }
         setLesson(data as LessonJourney);
       } catch (error) {
