@@ -1,91 +1,50 @@
-# RealLearn — The World Is Your Textbook
+# RealLearn split deployment
 
-> Real news. Real concepts. No textbooks.
+This repository is now split into two deployable parts:
 
-**RealLearn** is an AI-powered learning platform that transforms today's global news events into interactive lessons. Every day, real things happen — rocket launches, economic crises, disease outbreaks, elections, tech breakthroughs. These events already contain every concept ever taught in school.
+- `frontend/` → Next.js app (deploy to **Vercel**)
+- `backend/` → Express API service (deploy to **Render**)
 
-RealLearn fetches today's real news, extracts the hidden academic concepts buried inside each story, and teaches those concepts **through** the story — not separately from it.
+## Frontend (Vercel)
 
-Built for the [Gemma 4 Good Hackathon](https://www.kaggle.com/competitions/gemma-4-good-hackathon) by Google DeepMind.
+1. Set project root to `frontend`
+2. Add env variable:
+   - `NEXT_PUBLIC_BACKEND_URL=https://<your-render-backend>.onrender.com`
+3. Build command: `npm run build`
 
----
+## Backend (Render)
 
-## Features
+1. Set root directory to `backend`
+2. Build command: `npm install`
+3. Start command: `npm start`
+4. Add env variables:
+   - `GEMMA_API_KEY=...`
+   - `FRONTEND_ORIGIN=https://<your-vercel-frontend>.vercel.app`
+   - `PORT=10000` (optional on Render)
 
-- 📰 **Daily News Feed** — 6 curated real-world stories across Science, Technology, Environment, Economics, Health, and Geopolitics
-- 🧠 **AI Concept Extraction** — Gemma 4 identifies 3-5 hidden academic concepts in every story
-- 📚 **Story-Anchored Lessons** — Learn physics, chemistry, economics, biology through actual news events
-- 🌍 **Multilingual** — Lessons in English, Hindi, Gujarati, Tamil, Bengali, Marathi, Telugu, Kannada
-- 🎯 **Adaptive Levels** — Class 6-8, Class 9-10, College / Advanced
-- ✅ **Interactive Quizzes** — Test your understanding with story-referenced MCQs
-- 🔍 **Google Search Grounding** — All lessons cite real, verifiable sources
+## Keep-alive behavior
 
-## Tech Stack
+The backend `/api/generate-lesson` endpoint now streams Server-Sent Events and sends heartbeat `ping` events every 15 seconds while Gemma is generating. This keeps the connection alive for long-running requests, and closes only after sending either:
 
-- **Frontend**: Next.js 15 (App Router) + TypeScript
-- **Styling**: Tailwind CSS
-- **AI Model**: Gemma 4 API (`gemma-4-26b-a4b-it`) via Google AI Studio
-- **Deployment**: Vercel
+- `lesson` + `done`, or
+- `error`
 
-## Getting Started
+## Local development
 
-1. Clone the repository
-2. Copy `.env.local.example` to `.env.local` and add your Gemma API key:
-   ```
-   GEMMA_API_KEY=your_key_here
-   ```
-3. Install dependencies:
-   ```bash
-   npm install
-   ```
-4. Run the development server:
-   ```bash
-   npm run dev
-   ```
-5. Open [http://localhost:3000](http://localhost:3000)
+Open two terminals:
 
-## API Routes
-
-| Route | Method | Description |
-|-------|--------|-------------|
-| `/api/fetch-stories` | GET | Fetches 6 of today's top news stories via Gemma 4 + Google Search |
-| `/api/extract-concepts` | POST | Extracts academic concepts hidden in a news story |
-| `/api/teach-concept` | POST | Generates a story-anchored lesson for a concept |
-| `/api/quiz` | POST | Generates 3 MCQ questions based on the lesson |
-
-## Project Structure
-
-```
-reallearn/
-├── app/
-│   ├── layout.tsx
-│   ├── page.tsx              (homepage / daily feed)
-│   ├── globals.css
-│   └── api/
-│       ├── fetch-stories/route.ts
-│       ├── extract-concepts/route.ts
-│       ├── teach-concept/route.ts
-│       └── quiz/route.ts
-├── components/
-│   ├── StoryCard.tsx
-│   ├── ConceptBubble.tsx
-│   ├── LessonPanel.tsx
-│   ├── QuizBlock.tsx
-│   ├── LanguageSelector.tsx
-│   ├── LevelBadge.tsx
-│   └── SourceTag.tsx
-├── lib/
-│   ├── gemma.ts              (Gemma 4 API client)
-│   └── prompts.ts            (system prompts)
-└── types/
-    └── index.ts
+### 1) Backend
+```bash
+cd backend
+npm install
+npm start
 ```
 
-## Environment Variables
+### 2) Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-| Variable | Description |
-|----------|-------------|
-| `GEMMA_API_KEY` | Your Google AI Studio API key for Gemma 4 |
-
-> ⚠️ Never commit your `.env.local` file. The API key must stay server-side only.
-
+The frontend uses `NEXT_PUBLIC_BACKEND_URL` from `frontend/.env.local`.
