@@ -5,6 +5,41 @@ import { useCallback } from "react";
 import { useLessonStore } from "@/store/lessonStore";
 import { LessonJourney } from "@/types";
 
+const FALLBACK_ERROR = "Unable to generate lesson";
+const MAX_ERROR_MESSAGE_LENGTH = 200;
+
+function normalizeServerErrorMessage(rawMessage: string) {
+  const firstLine = rawMessage.trim().split(/\r?\n/, 1)[0]?.trim() ?? "";
+  if (!firstLine || firstLine.startsWith("<")) {
+    return FALLBACK_ERROR;
+  }
+  return firstLine.slice(0, MAX_ERROR_MESSAGE_LENGTH);
+}
+
+function getApiErrorMessage(data: unknown) {
+  if (
+    data &&
+    typeof data === "object" &&
+    "error" in data &&
+    typeof data.error === "string"
+  ) {
+    return data.error;
+  }
+  return null;
+}
+
+function isLessonJourney(data: unknown): data is LessonJourney {
+  return (
+    !!data &&
+    typeof data === "object" &&
+    "question" in data &&
+    "parts" in data &&
+    "keyTakeaways" in data &&
+    Array.isArray(data.parts) &&
+    Array.isArray(data.keyTakeaways)
+  );
+}
+
 export function useLesson() {
   const router = useRouter();
   const {
@@ -45,18 +80,17 @@ export function useLesson() {
 
         if (!isJson) {
           const text = await response.text();
-          throw new Error(text || "Unable to generate lesson");
+          throw new Error(normalizeServerErrorMessage(text));
         }
 
-        const data = (await response.json()) as
-          | LessonJourney
-          | { error?: string };
+        const data: unknown = await response.json();
         if (!response.ok) {
-          throw new Error(
-            ("error" in data && data.error) || "Unable to generate lesson"
-          );
+          throw new Error(getApiErrorMessage(data) ?? FALLBACK_ERROR);
         }
-        setLesson(data as LessonJourney);
+        if (!isLessonJourney(data)) {
+          throw new Error("Received invalid lesson data");
+        }
+        setLesson(data);
       } catch (error) {
         setError(error instanceof Error ? error.message : "Failed to generate lesson");
       }
