@@ -1,3 +1,4 @@
+"use client";
 import { QuizQuestion as Question } from "@/types";
 
 interface Props {

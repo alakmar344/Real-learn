@@ -1,3 +1,4 @@
+"use client";
 export default function SourceTag({ href }: { href: string }) {
   return (
     <a

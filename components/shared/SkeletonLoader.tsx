@@ -1,3 +1,4 @@
+"use client";
 export default function SkeletonLoader({ height = 16 }: { height?: number }) {
   return (
     <div

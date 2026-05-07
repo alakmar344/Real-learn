@@ -1,3 +1,4 @@
+"use client";
 interface Props {
   unlockedPart: 1 | 2 | 3;
   completedParts: number[];

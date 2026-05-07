@@ -1,3 +1,4 @@
+"use client";
 export default function UnlockAnimation({ show }: { show: boolean }) {
   if (!show) return null;
   return (
