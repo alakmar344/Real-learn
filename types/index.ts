@@ -56,7 +56,8 @@ export type Subject =
   | "Geography"
   | "Mathematics"
   | "Political Science"
-  | "Environmental Science";
+  | "Environmental Science"
+  | "General";
 
 export interface AppState {
   language: Language;
@@ -69,20 +70,35 @@ export interface AppState {
   quiz: Quiz | null;
 }
 
-// Chat feature types
 export interface ChatSegment {
   type: "text" | "quiz";
-  content?: string; // markdown text for text segments
-  question?: QuizQuestion; // single question for quiz segments
+  content?: string;
+  question?: QuizQuestion;
 }
 
 export interface ChatMessageData {
   id: string;
   role: "user" | "assistant";
-  /** "chat" = normal conversational reply; "lesson" = structured lesson with quiz checkpoints */
   type: "chat" | "lesson";
-  content?: string; // for type === "chat"
-  segments?: ChatSegment[]; // for type === "lesson"
+  content?: string;
+  segments?: ChatSegment[];
   sources?: string[];
   timestamp: number;
+}
+
+export interface LessonPart {
+  partNumber: 1 | 2 | 3;
+  title: string;
+  subject: Subject;
+  content: string;
+  sources: string[];
+  quiz: QuizQuestion[];
+}
+
+export interface LessonJourney {
+  question: string;
+  language: Language;
+  level: Level;
+  parts: [LessonPart, LessonPart, LessonPart];
+  keyTakeaways: [string, string, string];
 }
