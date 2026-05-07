@@ -1,7 +1,14 @@
 import { NextResponse } from "next/server";
-import { callGemma, parseJSON } from "@/lib/gemma";
+import {
+  callGemma,
+  formatGemmaTimeoutMessage,
+  GemmaTimeoutError,
+  parseJSON,
+} from "@/lib/gemma";
 import { GENERATE_LESSON_PROMPT } from "@/lib/prompts";
 import { LessonJourney, Level, Language } from "@/types";
+
+const LESSON_TIMEOUT_MS = 60000;
 
 function isValidJourney(data: LessonJourney | null): data is LessonJourney {
   if (!data) return false;
@@ -43,7 +50,37 @@ export async function POST(request: Request) {
     }
 
     const userPrompt = `Question: ${question}\nLanguage: ${language}\nLevel: ${level}`;
-    const raw = await callGemma(GENERATE_LESSON_PROMPT, userPrompt, true, 0.6);
+    let raw: string;
+    try {
+      raw = await callGemma(
+        GENERATE_LESSON_PROMPT,
+        userPrompt,
+        true,
+        0.6,
+        LESSON_TIMEOUT_MS
+      );
+    } catch (error) {
+      if (!(error instanceof GemmaTimeoutError)) {
+        throw error;
+      }
+
+      try {
+        raw = await callGemma(
+          GENERATE_LESSON_PROMPT,
+          userPrompt,
+          false,
+          0.6,
+          LESSON_TIMEOUT_MS
+        );
+      } catch (retryError) {
+        if (retryError instanceof GemmaTimeoutError) {
+          throw new Error(
+            `${formatGemmaTimeoutMessage(LESSON_TIMEOUT_MS)} on both generate-lesson attempts (initial call with search, retry without search)`
+          );
+        }
+        throw retryError;
+      }
+    }
     const parsed = parseJSON<LessonJourney>(raw);
 
     if (!isValidJourney(parsed)) {
