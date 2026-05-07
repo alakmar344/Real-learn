@@ -5,7 +5,7 @@ import { useCallback } from "react";
 import { useLessonStore } from "@/store/lessonStore";
 import { LessonJourney } from "@/types";
 
-const backendBaseUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:10000").replace(/\/$/, "");
+const trimmedBackendUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:10000").replace(/\/$/, "");
 
 type StreamEvent = {
   event: string;
@@ -55,7 +55,7 @@ export function useLesson() {
       }
 
       try {
-        const response = await fetch(`${backendBaseUrl}/api/generate-lesson`, {
+        const response = await fetch(`${trimmedBackendUrl}/api/generate-lesson`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

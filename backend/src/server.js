@@ -14,11 +14,27 @@ const HEARTBEAT_INTERVAL_MS = 15000;
 
 const app = express();
 const port = Number(process.env.PORT || 10000);
+const configuredOrigins =
+  process.env.FRONTEND_ORIGIN
+    ?.split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean) ?? [];
+const allowedOrigins =
+  configuredOrigins.length > 0 ? configuredOrigins : ["http://localhost:3000"];
+
+if (process.env.NODE_ENV === "production" && configuredOrigins.length === 0) {
+  throw new Error("FRONTEND_ORIGIN must be set in production");
+}
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_ORIGIN?.split(",").map((origin) => origin.trim()) || "*",
-    methods: ["POST", "OPTIONS"],
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("CORS origin denied"));
+    },
+    methods: ["POST", "OPTIONS", "GET"],
   })
 );
 app.use(express.json({ limit: "1mb" }));
@@ -93,9 +109,10 @@ app.post("/api/generate-lesson", async (req, res) => {
     clearInterval(heartbeat);
     return res.end();
   } catch (error) {
+    const timeoutMessage = formatGemmaTimeoutMessage(LESSON_TIMEOUT_MS);
     const message =
       error instanceof GemmaTimeoutError
-        ? `${formatGemmaTimeoutMessage(LESSON_TIMEOUT_MS)} on both generate-lesson attempts (initial call with search, retry without search)`
+        ? `${timeoutMessage} on both lesson generation attempts (initial call with search, retry without search)`
         : error instanceof Error
         ? error.message
         : "Failed to generate lesson";
