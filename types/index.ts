@@ -1,38 +1,7 @@
-export interface Story {
-  id: string;
-  headline: string;
-  summary: string;
-  category: string;
-  region: string;
-  imagePrompt: string;
-  sourceUrl: string;
-  date: string;
-}
+// types/index.ts
+// Only types actually used by the active codebase.
 
-export interface Concept {
-  id: string;
-  name: string;
-  subject: string;
-  difficulty: "Easy" | "Medium" | "Hard";
-  teaser: string;
-}
-
-export interface Lesson {
-  lesson: string;
-  keyTakeaway: string;
-  sources: string[];
-}
-
-export interface QuizQuestion {
-  question: string;
-  options: string[];
-  correctIndex: number;
-  explanation: string;
-}
-
-export interface Quiz {
-  questions: QuizQuestion[];
-}
+// ─── Primitives ───────────────────────────────────────────────────────────────
 
 export type Language =
   | "English"
@@ -59,42 +28,32 @@ export type Subject =
   | "Environmental Science"
   | "General";
 
-export interface AppState {
-  language: Language;
-  level: Level;
-  stories: Story[];
-  selectedStory: Story | null;
-  concepts: Concept[];
-  selectedConcept: Concept | null;
-  lesson: Lesson | null;
-  quiz: Quiz | null;
+// ─── Quiz ─────────────────────────────────────────────────────────────────────
+
+/** A single MCQ question embedded inside a lesson part. */
+export interface QuizQuestion {
+  question: string;
+  options: [string, string, string, string];       // always 4 items
+  correctIndex: number;    // 0-3
+  explanation: string;
 }
 
-export interface ChatSegment {
-  type: "text" | "quiz";
-  content?: string;
-  question?: QuizQuestion;
-}
+// ─── Lesson Journey ───────────────────────────────────────────────────────────
 
-export interface ChatMessageData {
-  id: string;
-  role: "user" | "assistant";
-  type: "chat" | "lesson";
-  content?: string;
-  segments?: ChatSegment[];
-  sources?: string[];
-  timestamp: number;
-}
-
+/** One of the 3 unlockable parts in a lesson. */
 export interface LessonPart {
   partNumber: 1 | 2 | 3;
   title: string;
   subject: Subject;
-  content: string;
-  sources: string[];
-  quiz: QuizQuestion[];
+  content: string;         // markdown
+  sources: string[];       // real URLs
+  quiz: QuizQuestion[];    // always 2 questions
 }
 
+/**
+ * The complete lesson returned by /api/generate-lesson.
+ * Three sequential parts the student must unlock in order.
+ */
 export interface LessonJourney {
   question: string;
   language: Language;
