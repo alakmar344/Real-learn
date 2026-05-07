@@ -9,7 +9,7 @@ const FALLBACK_ERROR = "Unable to generate lesson";
 const MAX_ERROR_MESSAGE_LENGTH = 200;
 
 function normalizeServerErrorMessage(rawMessage: string) {
-  const firstLine = rawMessage.trim().split(/\r?\n/, 1)[0]?.trim() ?? "";
+  const firstLine = rawMessage.split(/\r?\n/, 1)[0]?.trim() ?? "";
   if (!firstLine || firstLine.startsWith("<")) {
     return FALLBACK_ERROR;
   }
@@ -29,14 +29,35 @@ function getApiErrorMessage(data: unknown) {
 }
 
 function isLessonJourney(data: unknown): data is LessonJourney {
+  if (!data || typeof data !== "object") return false;
+
+  const value = data as {
+    question?: unknown;
+    parts?: unknown;
+    keyTakeaways?: unknown;
+  };
+
+  if (typeof value.question !== "string") return false;
+  if (!Array.isArray(value.parts) || value.parts.length !== 3) return false;
+  if (!Array.isArray(value.keyTakeaways) || value.keyTakeaways.length !== 3) {
+    return false;
+  }
+
   return (
-    !!data &&
-    typeof data === "object" &&
-    "question" in data &&
-    "parts" in data &&
-    "keyTakeaways" in data &&
-    Array.isArray(data.parts) &&
-    Array.isArray(data.keyTakeaways)
+    value.parts.every(
+      (part, index) =>
+        !!part &&
+        typeof part === "object" &&
+        "partNumber" in part &&
+        part.partNumber === index + 1 &&
+        "title" in part &&
+        typeof part.title === "string" &&
+        "content" in part &&
+        typeof part.content === "string" &&
+        "quiz" in part &&
+        Array.isArray(part.quiz)
+    ) &&
+    value.keyTakeaways.every((takeaway) => typeof takeaway === "string")
   );
 }
 
