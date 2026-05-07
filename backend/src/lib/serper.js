@@ -52,7 +52,7 @@ export async function fetchRealWorldContext(topic, language) {
     return news
       .map(
         (item) =>
-          `- ${item.title} (${item.date ?? "recent"})\n  ${item.snippet ?? ""}\n  Source: ${item.link}`
+          `- ${item.title} (${item.date ?? "date unavailable"})\n  ${item.snippet ?? ""}\n  Source: ${item.link}`
       )
       .join("\n\n");
   } catch {
