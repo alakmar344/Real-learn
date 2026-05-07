@@ -98,49 +98,49 @@ function shouldUseSearch(lowerMessage: string): boolean {
 
 function validateSegments(raw: ChatResponse["segments"]): ChatSegment[] {
   if (!Array.isArray(raw)) return [];
+
   return raw
     .filter((s) => s && (s.type === "text" || s.type === "quiz"))
     .map((s) => {
       if (s.type === "text") {
-        return { type: "text" as const, content: String(s.content || "") };
+        return {
+          type: "text" as const,
+          content: String(s.content || ""),
+        };
       }
+
       const q: QuizQuestion = {
-  question: String(s.question || ""),
+        question: String(s.question || ""),
 
-  options:
-    Array.isArray(s.options) && s.options.length >= 4
-      ? [
-          String(s.options[0]),
-          String(s.options[1]),
-          String(s.options[2]),
-          String(s.options[3]),
-        ]
-      : ["A", "B", "C", "D"],
+        options:
+          Array.isArray(s.options) && s.options.length >= 4
+            ? [
+                String(s.options[0]),
+                String(s.options[1]),
+                String(s.options[2]),
+                String(s.options[3]),
+              ]
+            : ["A", "B", "C", "D"],
 
-  correctIndex:
-    s.correctIndex === 0 ||
-    s.correctIndex === 1 ||
-    s.correctIndex === 2 ||
-    s.correctIndex === 3
-      ? s.correctIndex
-      : 0,
+        correctIndex:
+          s.correctIndex === 0 ||
+          s.correctIndex === 1 ||
+          s.correctIndex === 2 ||
+          s.correctIndex === 3
+            ? s.correctIndex
+            : 0,
 
-  explanation: String(s.explanation || ""),
-};
-}
-function buildLessonFromText(
-  content: string,
-  sources: string[] = []
-): {
-  type: "lesson";
-  segments: Array<{ type: "text"; content: string }>;
-  sources: string[];
-} {
-  return {
-    type: "lesson" as const,
-    segments: [{ type: "text" as const, content }],
-    sources,
-  };
+        explanation: String(s.explanation || ""),
+      };
+
+      return {
+        type: "quiz" as const,
+        question: q.question,
+        options: q.options,
+        correctIndex: q.correctIndex,
+        explanation: q.explanation,
+      };
+    });
 }
 
 function extractLessonText(parsed: ChatResponse | null, rawResponse: string): string {
