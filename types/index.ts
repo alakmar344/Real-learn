@@ -73,3 +73,12 @@ export type ChatSegment =
       correctIndex: number;
       explanation: string;
     };
+export interface Concept {
+  title: string;
+  description: string;
+}
+
+export interface Story {
+  title: string;
+  content: string;
+}
