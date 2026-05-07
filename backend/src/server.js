@@ -71,7 +71,7 @@ app.post("/api/generate-lesson", async (req, res) => {
   };
 
   try {
-    const newsContext = await fetchRealWorldContext(question);
+    const newsContext = await fetchRealWorldContext(question, language);
 
     const userPrompt = `Question: ${question}
 Language: ${language}

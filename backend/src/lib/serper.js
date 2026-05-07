@@ -1,6 +1,28 @@
 const SERPER_API_KEY = process.env.SERPER_API_KEY;
+const SERPER_LANGUAGE_MAP = {
+  bengali: "bn",
+  english: "en",
+  gujarati: "gu",
+  hindi: "hi",
+  kannada: "kn",
+  malayalam: "ml",
+  marathi: "mr",
+  punjabi: "pa",
+  tamil: "ta",
+  telugu: "te",
+  urdu: "ur",
+};
 
-export async function fetchRealWorldContext(topic) {
+function normalizeSerperLanguage(language) {
+  if (!language) {
+    return "en";
+  }
+
+  const normalizedLanguage = language.trim().toLowerCase();
+  return SERPER_LANGUAGE_MAP[normalizedLanguage] ?? "en";
+}
+
+export async function fetchRealWorldContext(topic, language) {
   if (!SERPER_API_KEY) {
     return null;
   }
@@ -16,7 +38,7 @@ export async function fetchRealWorldContext(topic) {
         q: topic,
         num: 3,
         gl: "in",
-        hl: "en",
+        hl: normalizeSerperLanguage(language),
       }),
     });
 
