@@ -7,6 +7,7 @@ import {
 } from "@/lib/gemma";
 import { GENERATE_LESSON_PROMPT } from "@/lib/prompts";
 import { LessonJourney, Level, Language } from "@/types";
+export const maxDuration = 60;
 
 const LESSON_TIMEOUT_MS = 60000;
 
