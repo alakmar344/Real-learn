@@ -11,6 +11,9 @@ const RATE_WINDOW = 60 * 1000;
 const MAX_HISTORY_MESSAGES = 10;
 // Trim each history entry to ~1000 chars to prevent token overflow and keep responses fast.
 const MAX_HISTORY_CONTENT_LENGTH = 1000;
+const DEFAULT_FALLBACK_MESSAGE = "I'm not sure how to answer that. Could you rephrase?";
+const LESSON_RETRY_MESSAGE =
+  "Let me explain this in a simpler way. Could you ask again in one sentence?";
 
 function checkRateLimit(): boolean {
   const now = Date.now();
@@ -86,7 +89,10 @@ function shouldUseSearch(lowerMessage: string): boolean {
     "this week",
   ];
   const hasKeyword = searchKeywords.some((kw) => lowerMessage.includes(kw));
-  const hasYearMention = /(?:^|\s)(?:in\s+)?20\d{2}(?:\s|$)/.test(lowerMessage);
+  const currentYear = new Date().getFullYear();
+  const hasYearMention = [...lowerMessage.matchAll(/\b(?:in\s+)?(20\d{2})\b/g)]
+    .map((m) => Number(m[1]))
+    .some((year) => year >= 2020 && year <= currentYear + 1);
   return hasKeyword || hasYearMention;
 }
 
@@ -112,7 +118,14 @@ function validateSegments(raw: ChatResponse["segments"]): ChatSegment[] {
     });
 }
 
-function buildLessonFromText(content: string, sources: string[] = []) {
+function buildLessonFromText(
+  content: string,
+  sources: string[] = []
+): {
+  type: "lesson";
+  segments: Array<{ type: "text"; content: string }>;
+  sources: string[];
+} {
   return {
     type: "lesson" as const,
     segments: [{ type: "text" as const, content }],
@@ -121,6 +134,7 @@ function buildLessonFromText(content: string, sources: string[] = []) {
 }
 
 function extractLessonText(parsed: ChatResponse | null, rawResponse: string): string {
+  // Fallback priority: lesson text segments -> chat message field -> raw model text.
   const segmentText = Array.isArray(parsed?.segments)
     ? parsed.segments
         .filter((seg) => seg?.type === "text" && typeof seg.content === "string")
@@ -192,7 +206,7 @@ export async function POST(request: Request) {
 
     if (!parsed || !parsed.type) {
       const fallbackText = sanitizeChatMessage(
-        rawResponse.trim() || "I'm not sure how to answer that. Could you rephrase?"
+        rawResponse.trim() || DEFAULT_FALLBACK_MESSAGE
       );
       if (isTeachRequest) {
         return NextResponse.json(buildLessonFromText(fallbackText));
@@ -221,13 +235,13 @@ export async function POST(request: Request) {
       if (isTeachRequest) {
         return NextResponse.json(
           buildLessonFromText(
-            fallbackText || "Let me explain this in a simpler way. Could you ask again in one sentence?"
+            fallbackText || LESSON_RETRY_MESSAGE
           )
         );
       }
       return NextResponse.json({
         type: "chat",
-        message: fallbackText || "I can explain this—could you rephrase once?",
+        message: fallbackText || DEFAULT_FALLBACK_MESSAGE,
       });
     }
 
