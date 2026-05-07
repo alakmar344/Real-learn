@@ -7,6 +7,8 @@ import { LessonJourney } from "@/types";
 
 const FALLBACK_ERROR = "Unable to generate lesson";
 const MAX_ERROR_MESSAGE_LENGTH = 200;
+const EXPECTED_PARTS_COUNT = 3;
+const EXPECTED_KEY_TAKEAWAYS_COUNT = 3;
 
 function normalizeServerErrorMessage(rawMessage: string) {
   const firstLine = rawMessage.split(/\r?\n/, 1)[0]?.trim() ?? "";
@@ -38,8 +40,16 @@ function isLessonJourney(data: unknown): data is LessonJourney {
   };
 
   if (typeof value.question !== "string") return false;
-  if (!Array.isArray(value.parts) || value.parts.length !== 3) return false;
-  if (!Array.isArray(value.keyTakeaways) || value.keyTakeaways.length !== 3) {
+  if (
+    !Array.isArray(value.parts) ||
+    value.parts.length !== EXPECTED_PARTS_COUNT
+  ) {
+    return false;
+  }
+  if (
+    !Array.isArray(value.keyTakeaways) ||
+    value.keyTakeaways.length !== EXPECTED_KEY_TAKEAWAYS_COUNT
+  ) {
     return false;
   }
 
@@ -109,7 +119,9 @@ export function useLesson() {
           throw new Error(getApiErrorMessage(data) ?? FALLBACK_ERROR);
         }
         if (!isLessonJourney(data)) {
-          throw new Error("Received invalid lesson data");
+          throw new Error(
+            "Lesson data is missing required fields or has an invalid structure"
+          );
         }
         setLesson(data);
       } catch (error) {
