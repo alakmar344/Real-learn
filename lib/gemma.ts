@@ -18,7 +18,7 @@ interface GemmaResponse {
         segment: { text: string };
       }>;
     };
-  }>;
+  };
 }
 
 export function formatGemmaTimeoutMessage(timeoutMs: number): string {
