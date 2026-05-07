@@ -55,8 +55,7 @@ interface ChatResponse {
   sources?: string[];
 }
 
-function isTeachIntent(message: string): boolean {
-  const lower = message.toLowerCase();
+function isTeachIntent(lowerMessage: string): boolean {
   const keywords = [
     "teach me",
     "explain",
@@ -73,22 +72,22 @@ function isTeachIntent(message: string): boolean {
     "show me",
     "give me a lesson",
   ];
-  return keywords.some((kw) => lower.includes(kw));
+  return keywords.some((kw) => lowerMessage.includes(kw));
 }
 
-function shouldUseSearch(message: string): boolean {
-  const lower = message.toLowerCase();
+function shouldUseSearch(lowerMessage: string): boolean {
   const searchKeywords = [
     "latest",
     "today",
     "current",
     "news",
     "recent",
-    "in 202",
     "right now",
     "this week",
   ];
-  return searchKeywords.some((kw) => lower.includes(kw));
+  const hasKeyword = searchKeywords.some((kw) => lowerMessage.includes(kw));
+  const hasYearMention = /(?:^|\s)(?:in\s+)?20\d{2}(?:\s|$)/.test(lowerMessage);
+  return hasKeyword || hasYearMention;
 }
 
 function validateSegments(raw: ChatResponse["segments"]): ChatSegment[] {
@@ -164,8 +163,9 @@ export async function POST(request: Request) {
       );
     }
 
-    const isTeachRequest = isTeachIntent(message);
-    const useSearch = shouldUseSearch(message);
+    const lowerMessage = message.toLowerCase();
+    const isTeachRequest = isTeachIntent(lowerMessage);
+    const useSearch = shouldUseSearch(lowerMessage);
 
     // Build Gemma history: convert previous turns + add current user message
     const gemmaHistory: Array<{ role: "user" | "model"; content: string }> = [
@@ -184,6 +184,7 @@ export async function POST(request: Request) {
       CHAT_TUTOR_PROMPT,
       gemmaHistory,
       useSearch,
+      // Lower temperature improves JSON format stability and reduces invalid output variance.
       0.4
     );
 
