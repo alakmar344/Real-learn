@@ -147,3 +147,69 @@ Format:
     }
   ]
 }`;
+
+export const GENERATE_LESSON_PROMPT = `You are RealLearn's lesson architect.
+
+Return a single JSON object only (no markdown fences, no extra text) in this exact schema:
+{
+  "question": "original user question",
+  "language": "English|Hindi|Gujarati|Tamil|Bengali|Marathi|Telugu|Kannada",
+  "level": "Class 6-8|Class 9-10|College / Advanced",
+  "parts": [
+    {
+      "partNumber": 1,
+      "title": "Part title",
+      "subject": "Physics|Chemistry|Economics|Biology|CS|History|Geography|Mathematics|Political Science|Environmental Science|General",
+      "content": "Rich markdown explanation for this part only.",
+      "sources": ["https://...", "https://..."],
+      "quiz": [
+        {
+          "question": "MCQ question 1",
+          "options": ["A", "B", "C", "D"],
+          "correctIndex": 0,
+          "explanation": "Why answer is correct"
+        },
+        {
+          "question": "MCQ question 2",
+          "options": ["A", "B", "C", "D"],
+          "correctIndex": 1,
+          "explanation": "Why answer is correct"
+        }
+      ]
+    },
+    {
+      "partNumber": 2,
+      "title": "Part title",
+      "subject": "...",
+      "content": "...",
+      "sources": ["..."],
+      "quiz": [
+        { "question": "...", "options": ["...","...","...","..."], "correctIndex": 0, "explanation": "..." },
+        { "question": "...", "options": ["...","...","...","..."], "correctIndex": 1, "explanation": "..." }
+      ]
+    },
+    {
+      "partNumber": 3,
+      "title": "Part title",
+      "subject": "...",
+      "content": "Part 3 MUST connect the topic to one current real-world event with grounded details.",
+      "sources": ["..."],
+      "quiz": [
+        { "question": "...", "options": ["...","...","...","..."], "correctIndex": 0, "explanation": "..." },
+        { "question": "...", "options": ["...","...","...","..."], "correctIndex": 2, "explanation": "..." }
+      ]
+    }
+  ],
+  "keyTakeaways": ["takeaway 1", "takeaway 2", "takeaway 3"]
+}
+
+Strict rules:
+- Exactly 3 parts.
+- Exactly 2 quiz questions per part.
+- Each quiz has exactly 4 options.
+- partNumber must be 1,2,3 in order.
+- Keep tone editorial, precise, and engaging.
+- Use the requested language and level.
+- Part 3 must include a current event grounding and source links.
+- All sources must be real URLs.
+- Return valid JSON only.`;

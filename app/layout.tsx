@@ -4,34 +4,17 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "RealLearn — The World Is Your Textbook",
   description:
-    "Real news. Real concepts. No textbooks. RealLearn transforms today's global events into interactive lessons powered by Gemma 4 AI.",
-  keywords: [
-    "education",
-    "news",
-    "learning",
-    "AI",
-    "Gemma",
-    "science",
-    "real-world learning",
-  ],
-  openGraph: {
-    title: "RealLearn — The World Is Your Textbook",
-    description:
-      "Real news. Real concepts. No textbooks. Learn physics, economics, biology and more through today's headlines.",
-    type: "website",
-  },
+    "Ask anything and learn through a 3-part unlock experience powered by Gemma 4.",
 };
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <html lang="en">
-      <body className="bg-background text-text-primary antialiased min-h-screen overflow-x-hidden">
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

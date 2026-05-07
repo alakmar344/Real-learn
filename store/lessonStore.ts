@@ -1,0 +1,131 @@
+"use client";
+
+import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
+import { Language, LessonJourney, Level } from "@/types";
+
+interface LessonStore {
+  language: Language;
+  level: Level;
+  question: string;
+  lesson: LessonJourney | null;
+  isLoading: boolean;
+  error: string | null;
+  unlockedPart: 1 | 2 | 3;
+  completedParts: number[];
+  partScores: Record<1 | 2 | 3, number | null>;
+  collapsedParts: number[];
+  showCompletion: boolean;
+  showFollowUp: boolean;
+  setLanguage: (language: Language) => void;
+  setLevel: (level: Level) => void;
+  setQuestion: (question: string) => void;
+  startLoading: () => void;
+  setLesson: (lesson: LessonJourney) => void;
+  setError: (error: string | null) => void;
+  passPart: (part: 1 | 2 | 3, score: number) => void;
+  togglePartCollapse: (part: 1 | 2 | 3) => void;
+  resetForNextQuestion: (question: string) => void;
+  resetAll: () => void;
+}
+
+const initialState = {
+  language: "English" as Language,
+  level: "Class 9-10" as Level,
+  question: "",
+  lesson: null,
+  isLoading: false,
+  error: null,
+  unlockedPart: 1 as 1 | 2 | 3,
+  completedParts: [] as number[],
+  partScores: { 1: null, 2: null, 3: null } as Record<1 | 2 | 3, number | null>,
+  collapsedParts: [] as number[],
+  showCompletion: false,
+  showFollowUp: false,
+};
+
+export const useLessonStore = create<LessonStore>()(
+  persist(
+    (set) => ({
+      ...initialState,
+      setLanguage: (language) => set({ language }),
+      setLevel: (level) => set({ level }),
+      setQuestion: (question) => set({ question }),
+      startLoading: () =>
+        set({
+          isLoading: true,
+          error: null,
+          lesson: null,
+          unlockedPart: 1,
+          completedParts: [],
+          partScores: { 1: null, 2: null, 3: null },
+          collapsedParts: [],
+          showCompletion: false,
+          showFollowUp: false,
+        }),
+      setLesson: (lesson) =>
+        set({
+          lesson,
+          question: lesson.question,
+          isLoading: false,
+          error: null,
+          unlockedPart: 1,
+          completedParts: [],
+          partScores: { 1: null, 2: null, 3: null },
+          collapsedParts: [],
+          showCompletion: false,
+          showFollowUp: false,
+        }),
+      setError: (error) => set({ error, isLoading: false }),
+      passPart: (part, score) =>
+        set((state) => {
+          const completedSet = Array.from(new Set([...state.completedParts, part]));
+          const nextUnlock = part === 3 ? 3 : ((part + 1) as 1 | 2 | 3);
+          return {
+            completedParts: completedSet,
+            unlockedPart: nextUnlock,
+            partScores: { ...state.partScores, [part]: score },
+            collapsedParts: Array.from(new Set([...state.collapsedParts, part])),
+            showCompletion: completedSet.length === 3,
+            showFollowUp: completedSet.length === 3,
+          };
+        }),
+      togglePartCollapse: (part) =>
+        set((state) => ({
+          collapsedParts: state.collapsedParts.includes(part)
+            ? state.collapsedParts.filter((p) => p !== part)
+            : [...state.collapsedParts, part],
+        })),
+      resetForNextQuestion: (question) =>
+        set({
+          question,
+          lesson: null,
+          isLoading: false,
+          error: null,
+          unlockedPart: 1,
+          completedParts: [],
+          partScores: { 1: null, 2: null, 3: null },
+          collapsedParts: [],
+          showCompletion: false,
+          showFollowUp: false,
+        }),
+      resetAll: () => set({ ...initialState }),
+    }),
+    {
+      name: "reallearn-journey",
+      storage: createJSONStorage(() => sessionStorage),
+      partialize: (state) => ({
+        language: state.language,
+        level: state.level,
+        question: state.question,
+        lesson: state.lesson,
+        unlockedPart: state.unlockedPart,
+        completedParts: state.completedParts,
+        partScores: state.partScores,
+        collapsedParts: state.collapsedParts,
+        showCompletion: state.showCompletion,
+        showFollowUp: state.showFollowUp,
+      }),
+    }
+  )
+);
