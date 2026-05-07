@@ -21,7 +21,7 @@ interface GemmaResponse {
   };
 }
 
-export function formatGemmaTimeoutMessage(timeoutMs: number): string {
+ function formatGemmaTimeoutMessage(timeoutMs: number): string {
   const timeoutSeconds = timeoutMs / 1000;
   return `Gemma API request timed out after ${timeoutSeconds} seconds`;
 }
