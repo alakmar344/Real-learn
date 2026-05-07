@@ -11,7 +11,7 @@ const EXPECTED_PARTS_COUNT = 3;
 const EXPECTED_KEY_TAKEAWAYS_COUNT = 3;
 
 function normalizeServerErrorMessage(rawMessage: string) {
-  const firstLine = rawMessage.split(/\r?\n/, 1)[0]?.trim() ?? "";
+  const firstLine = rawMessage.split(/\r?\n/)[0]?.trim() ?? "";
   if (!firstLine || firstLine.startsWith("<")) {
     return FALLBACK_ERROR;
   }
@@ -125,7 +125,7 @@ export function useLesson() {
         }
         setLesson(data);
       } catch (error) {
-        setError(error instanceof Error ? error.message : "Failed to generate lesson");
+        setError(error instanceof Error ? error.message : FALLBACK_ERROR);
       }
     },
     [language, level, router, setError, setLesson, setQuestion, startLoading]
