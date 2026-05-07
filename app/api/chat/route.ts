@@ -76,6 +76,21 @@ function isTeachIntent(message: string): boolean {
   return keywords.some((kw) => lower.includes(kw));
 }
 
+function shouldUseSearch(message: string): boolean {
+  const lower = message.toLowerCase();
+  const searchKeywords = [
+    "latest",
+    "today",
+    "current",
+    "news",
+    "recent",
+    "in 202",
+    "right now",
+    "this week",
+  ];
+  return searchKeywords.some((kw) => lower.includes(kw));
+}
+
 function validateSegments(raw: ChatResponse["segments"]): ChatSegment[] {
   if (!Array.isArray(raw)) return [];
   return raw
@@ -96,6 +111,28 @@ function validateSegments(raw: ChatResponse["segments"]): ChatSegment[] {
       };
       return { type: "quiz" as const, question: q };
     });
+}
+
+function buildLessonFromText(content: string, sources: string[] = []) {
+  return {
+    type: "lesson" as const,
+    segments: [{ type: "text" as const, content }],
+    sources,
+  };
+}
+
+function extractLessonText(parsed: ChatResponse | null, rawResponse: string): string {
+  const segmentText = Array.isArray(parsed?.segments)
+    ? parsed.segments
+        .filter((seg) => seg?.type === "text" && typeof seg.content === "string")
+        .map((seg) => seg.content?.trim() || "")
+        .filter(Boolean)
+        .join("\n\n")
+    : "";
+
+  if (segmentText) return segmentText;
+  if (typeof parsed?.message === "string" && parsed.message.trim()) return parsed.message.trim();
+  return rawResponse.trim();
 }
 
 export async function POST(request: Request) {
@@ -127,7 +164,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const useSearch = isTeachIntent(message);
+    const isTeachRequest = isTeachIntent(message);
+    const useSearch = shouldUseSearch(message);
 
     // Build Gemma history: convert previous turns + add current user message
     const gemmaHistory: Array<{ role: "user" | "model"; content: string }> = [
@@ -146,32 +184,49 @@ export async function POST(request: Request) {
       CHAT_TUTOR_PROMPT,
       gemmaHistory,
       useSearch,
-      0.7
+      0.4
     );
 
     const parsed = parseJSON<ChatResponse>(rawResponse);
 
     if (!parsed || !parsed.type) {
-      // Fallback: treat raw response as a plain chat message
+      const fallbackText = sanitizeChatMessage(
+        rawResponse.trim() || "I'm not sure how to answer that. Could you rephrase?"
+      );
+      if (isTeachRequest) {
+        return NextResponse.json(buildLessonFromText(fallbackText));
+      }
       return NextResponse.json({
         type: "chat",
-        message: sanitizeChatMessage(rawResponse.trim() || "I'm not sure how to answer that. Could you rephrase?"),
+        message: fallbackText,
       });
     }
 
     if (parsed.type === "chat") {
+      const chatMessage = sanitizeChatMessage(String(parsed.message || rawResponse.trim()));
+      if (isTeachRequest) {
+        return NextResponse.json(buildLessonFromText(chatMessage));
+      }
       return NextResponse.json({
         type: "chat",
-        message: sanitizeChatMessage(String(parsed.message || rawResponse.trim())),
+        message: chatMessage,
       });
     }
 
     // type === "lesson"
     const segments = validateSegments(parsed.segments);
     if (segments.length === 0) {
+      const fallbackText = sanitizeChatMessage(extractLessonText(parsed, rawResponse));
+      if (isTeachRequest) {
+        return NextResponse.json(
+          buildLessonFromText(
+            fallbackText || "Let me explain this in a simpler way. Could you ask again in one sentence?"
+          )
+        );
+      }
       return NextResponse.json({
         type: "chat",
-        message: rawResponse.trim(),
+        message: fallbackText || "I can explain this—could you rephrase once?",
       });
     }
 
