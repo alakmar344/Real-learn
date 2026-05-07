@@ -61,3 +61,8 @@ export interface LessonJourney {
   parts: [LessonPart, LessonPart, LessonPart];
   keyTakeaways: [string, string, string];
 }
+export interface ChatSegment {
+  type: "text" | "quiz";
+  content?: string;
+  question?: QuizQuestion;
+}
