@@ -7,7 +7,7 @@ interface GemmaResponse {
       parts: Array<{
   text: string;
   thought?: boolean;
-}>;
+};
     groundingMetadata?: {
       webSearchQueries?: string[];
       groundingChunks?: Array<{
