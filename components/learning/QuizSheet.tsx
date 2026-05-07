@@ -20,7 +20,12 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
   const answered = selected !== null;
 
   const score = useMemo(
-    () => answers.reduce((acc, answer, i) => acc + (answer === questions[i]?.correctIndex ? 1 : 0), 0),
+    () =>
+      answers.reduce(
+        (acc: number, answer, i) =>
+          acc + (answer === questions[i]?.correctIndex ? 1 : 0),
+        0
+      ),
     [answers, questions]
   );
 
