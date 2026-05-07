@@ -157,6 +157,20 @@ function extractLessonText(parsed: ChatResponse | null, rawResponse: string): st
   if (typeof parsed?.message === "string" && parsed.message.trim()) return parsed.message.trim();
   return rawResponse.trim();
 }
+function buildLessonFromText(
+  content: string,
+  sources: string[] = []
+): {
+  type: "lesson";
+  segments: Array<{ type: "text"; content: string }>;
+  sources: string[];
+} {
+  return {
+    type: "lesson" as const,
+    segments: [{ type: "text" as const, content }],
+    sources,
+  };
+}
 
 export async function POST(request: Request) {
   if (!checkRateLimit()) {
