@@ -16,7 +16,28 @@ Instead of giving one generic answer, RealLearn teaches in stages, checks unders
 The Kaggle write-up explains the project story, motivation, and implementation choices made for the Gemma 4 Good Hackathon submission. It is useful for understanding the product vision and the decision-making behind the architecture.
 
 ---
+## Gemma 4 Usage
 
+RealLearn is powered by **Gemma 4 (gemma-4-26b-a4b-it)** through the Gemini API. We deliberately designed a sophisticated prompting and post-processing strategy to maximize reliability, educational quality, and consistency.
+
+### Key Technical Highlights
+
+- **Structured Output Enforcement**: A carefully engineered system prompt forces Gemma 4 to return a strict JSON schema with exactly three progressive parts. Each part includes rich educational content and precisely two multiple-choice quiz questions (4 options each).
+
+- **Native Multilingual Generation**: Lessons are generated directly in the learner’s chosen language (English, Hindi, Gujarati, Tamil, Bengali, Marathi, Telugu, or Kannada) rather than post-translation. This preserves cultural nuance and natural tone.
+
+- **Adaptive Difficulty Calibration**: The prompt dynamically adjusts depth, vocabulary, and complexity based on the selected learner level (Class 6–8, Class 9–10, or College/Advanced).
+
+- **Real-World Grounding via Serper**: Before calling Gemma, the backend fetches recent India-relevant news using Serper API. This context is injected into the prompt so **Part 3** naturally connects theory to current real-world events with actual names, dates, and numbers.
+
+- **Robustness Engineering**:
+  - 5-stage JSON repair pipeline (stripping thinking tokens, fixing markdown fences, handling truncated output, removing trailing commas, etc.)
+  - Strict schema validation before streaming to frontend
+  - Fallback mechanisms to ensure high lesson success rate
+
+This architecture allows us to reduce average generation time to **15-25 seconds** while maintaining high structural integrity and educational value.
+
+Gemma 4’s strong reasoning capabilities, combined with our deliberate prompting and reliability layer, enable RealLearn to deliver coherent, progressive, and context-aware learning journeys instead of generic one-shot answers.
 ## Table of Contents
 
 - [What RealLearn is](#what-reallearn-is)
