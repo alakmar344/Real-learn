@@ -10,7 +10,7 @@ Instead of giving one generic answer, RealLearn teaches in stages, checks unders
 ## Live Product, Demo, and Competition Write-up
 
 - **Live Product:** [https://reallearn-taupe.vercel.app/](https://reallearn-taupe.vercel.app/)
-- **Demo Video:** [Watch Demo Video](https://youtu.be/055k6ipoPOU)
+- **Demo Video:** [Watch Demo Video](https://youtu.be/60vcxKethgQ?si=Xd5dWI2By7pD2Mpa)
 - **Kaggle Write-up (Gemma 4 Good Hackathon):** [Read the write-up](https://www.kaggle.com/competitions/gemma-4-good-hackathon/writeups/new-writeup-1778215573161) 
 
 The Kaggle write-up explains the project story, motivation, and implementation choices made for the Gemma 4 Good Hackathon submission. It is useful for understanding the product vision and the decision-making behind the architecture.
