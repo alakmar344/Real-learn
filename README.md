@@ -1,7 +1,11 @@
 # RealLearn
 
 RealLearn is an AI-powered learning product that turns a single question into a structured, high-retention learning journey.
-Instead of giving one generic answer, RealLearn teaches in stages, checks understanding, and then connects learning to what is happening in the real world right now.
+Instead of giving one generic answer, RealLearn teaches in stages, checks understanding, and then connects learning to what is happening in the real-world right now.
+
+## Product Preview
+
+![RealLearn product preview](https://github.com/user-attachments/assets/835f71a3-ce53-415e-813f-00a2e57ecc51)
 
 ## Live Product, Demo, and Competition Write-up
 
@@ -19,7 +23,7 @@ The Kaggle write-up explains the project story, motivation, and implementation c
 - [What problem it solves](#what-problem-it-solves)
 - [How RealLearn works end-to-end](#how-reallearn-works-end-to-end)
 - [Detailed feature breakdown](#detailed-feature-breakdown)
-- [How RealLearn helps in the real world](#how-reallearn-helps-in-the-real-world)
+- [How RealLearn helps in the real-world](#how-reallearn-helps-in-the-real-world)
 - [Tech stack](#tech-stack)
 - [Architecture and deployment](#architecture-and-deployment)
 - [API behavior and SSE streaming](#api-behavior-and-sse-streaming)
@@ -150,7 +154,7 @@ The frontend stores journey state in session storage so progress and context rem
 
 ---
 
-## How RealLearn helps in the real world
+## How RealLearn helps in the real-world
 
 RealLearn is designed to fix concrete learning issues:
 
