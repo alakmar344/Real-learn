@@ -5,7 +5,7 @@ It is designed to make learning clear, engaging, and connected to the real world
 
 ## Demo
 
-🎥 https://youtu.be/055k6ipoPOU
+[Watch Demo Video](https://youtu.be/055k6ipoPOU)
 
 ## What RealLearn does
 
