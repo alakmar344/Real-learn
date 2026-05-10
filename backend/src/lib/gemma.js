@@ -13,6 +13,16 @@ export class GemmaTimeoutError extends Error {
   }
 }
 
+export class GemmaApiError extends Error {
+  constructor(status, statusText, details) {
+    super(`Gemma API error: ${status} ${statusText} - ${details}`);
+    this.name = "GemmaApiError";
+    this.status = status;
+    this.statusText = statusText;
+    this.details = details;
+  }
+}
+
 export async function callGemma(
   systemPrompt,
   userMessage,
@@ -62,9 +72,7 @@ export async function callGemma(
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(
-        `Gemma API error: ${response.status} ${response.statusText} - ${errorText}`
-      );
+      throw new GemmaApiError(response.status, response.statusText, errorText);
     }
 
     const data = await response.json();
