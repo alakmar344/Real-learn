@@ -2,6 +2,7 @@ const GEMMA_API_ROOT = "https://generativelanguage.googleapis.com/v1beta/models"
 const DEFAULT_GEMMA_MODEL = "gemma-4-26b-a4b-it";
 const DEFAULT_MAX_RETRIES = 2;
 const DEFAULT_RETRY_DELAY_MS = 700;
+const DEFAULT_MAX_RETRY_DELAY_MS = 5000;
 
 export function formatGemmaTimeoutMessage(timeoutMs) {
   const timeoutSeconds = timeoutMs / 1000;
@@ -41,8 +42,8 @@ function buildModelList() {
   return Array.from(new Set([primary, ...fallbacks]));
 }
 
-function buildGenerateUrl(model, apiKey) {
-  return `${GEMMA_API_ROOT}/${encodeURIComponent(model)}:generateContent?key=${apiKey}`;
+function buildGenerateUrl(model) {
+  return `${GEMMA_API_ROOT}/${encodeURIComponent(model)}:generateContent`;
 }
 
 function isRetryableGemmaError(error) {
@@ -76,6 +77,10 @@ export async function callGemma(
     process.env.GEMMA_RETRY_DELAY_MS,
     DEFAULT_RETRY_DELAY_MS
   );
+  const maxRetryDelayMs = parseNonNegativeInt(
+    process.env.GEMMA_MAX_RETRY_DELAY_MS,
+    DEFAULT_MAX_RETRY_DELAY_MS
+  );
   const requestBody = {
     system_instruction: {
       parts: [{ text: systemPrompt }],
@@ -107,10 +112,11 @@ export async function callGemma(
       const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
       try {
-        const response = await fetch(buildGenerateUrl(model, apiKey), {
+        const response = await fetch(buildGenerateUrl(model), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "x-goog-api-key": apiKey,
           },
           body: JSON.stringify(requestBody),
           signal: controller.signal,
@@ -129,7 +135,10 @@ export async function callGemma(
           throw new Error("No candidates returned from Gemma API");
         }
 
-        const candidate = data.candidates[0];
+        const candidate = data?.candidates?.[0];
+        if (!candidate) {
+          throw new Error("No candidates returned from Gemma API");
+        }
         const parts = candidate?.content?.parts;
 
         if (!Array.isArray(parts)) {
@@ -166,7 +175,10 @@ export async function callGemma(
 
         const isLastAttempt = attempt === maxRetries;
         if (!isLastAttempt && isRetryableGemmaError(normalizedError)) {
-          const waitMs = retryDelayMs * Math.pow(2, attempt);
+          const waitMs = Math.min(
+            retryDelayMs * Math.pow(2, attempt),
+            maxRetryDelayMs
+          );
           console.warn(
             `[Gemma] Retrying model "${model}" after attempt ${attempt + 1} failed`
           );
