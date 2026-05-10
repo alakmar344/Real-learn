@@ -1,5 +1,7 @@
-const GEMMA_API_BASE =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemma-4-26b-a4b-it:generateContent";
+const GEMMA_API_ROOT = "https://generativelanguage.googleapis.com/v1beta/models";
+const DEFAULT_GEMMA_MODEL = "gemma-4-26b-a4b-it";
+const DEFAULT_MAX_RETRIES = 2;
+const DEFAULT_RETRY_DELAY_MS = 700;
 
 export function formatGemmaTimeoutMessage(timeoutMs) {
   const timeoutSeconds = timeoutMs / 1000;
@@ -23,6 +25,35 @@ export class GemmaApiError extends Error {
   }
 }
 
+function parsePositiveInt(value, fallbackValue) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallbackValue;
+}
+
+function buildModelList() {
+  const primary = (process.env.GEMMA_MODEL || DEFAULT_GEMMA_MODEL).trim();
+  const fallbacks =
+    process.env.GEMMA_FALLBACK_MODELS?.split(",")
+      .map((model) => model.trim())
+      .filter(Boolean) ?? [];
+  return Array.from(new Set([primary, ...fallbacks]));
+}
+
+function buildGenerateUrl(model, apiKey) {
+  return `${GEMMA_API_ROOT}/${encodeURIComponent(model)}:generateContent?key=${apiKey}`;
+}
+
+function isRetryableGemmaError(error) {
+  if (error instanceof GemmaApiError) {
+    return error.status === 429 || (error.status >= 500 && error.status < 600);
+  }
+  return error instanceof TypeError;
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export async function callGemma(
   systemPrompt,
   userMessage,
@@ -34,80 +65,126 @@ export async function callGemma(
   if (!apiKey) {
     throw new Error("GEMMA_API_KEY is not configured");
   }
-
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-
-  try {
-    const requestBody = {
-      system_instruction: {
-        parts: [{ text: systemPrompt }],
+  const models = buildModelList();
+  const maxRetries = parsePositiveInt(
+    process.env.GEMMA_MAX_RETRIES,
+    DEFAULT_MAX_RETRIES
+  );
+  const retryDelayMs = parsePositiveInt(
+    process.env.GEMMA_RETRY_DELAY_MS,
+    DEFAULT_RETRY_DELAY_MS
+  );
+  const requestBody = {
+    system_instruction: {
+      parts: [{ text: systemPrompt }],
+    },
+    contents: [
+      {
+        role: "user",
+        parts: [{ text: userMessage }],
       },
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: userMessage }],
-        },
-      ],
-      generationConfig: {
-        temperature,
-        maxOutputTokens: 4096,
-      },
-    };
+    ],
+    generationConfig: {
+      temperature,
+      maxOutputTokens: 4096,
+    },
+  };
 
-    if (enableSearch) {
-      requestBody.tools = [{ googleSearch: {} }];
-    }
-
-    const response = await fetch(`${GEMMA_API_BASE}?key=${apiKey}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestBody),
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new GemmaApiError(response.status, response.statusText, errorText);
-    }
-
-    const data = await response.json();
-
-    if (!data.candidates || data.candidates.length === 0) {
-      throw new Error("No candidates returned from Gemma API");
-    }
-
-    const candidate = data.candidates[0];
-    const text = candidate.content.parts
-      .filter((p) => !p.thought)
-      .map((p) => p.text)
-      .join("");
-
-    if (candidate.groundingMetadata) {
-      const meta = candidate.groundingMetadata;
-      if (meta.webSearchQueries) {
-        console.log("[Gemma] Web search queries:", meta.webSearchQueries);
-      }
-      if (meta.groundingChunks) {
-        const sources = meta.groundingChunks
-          .filter((c) => c.web)
-          .map((c) => c.web?.uri);
-        console.log("[Gemma] Grounding sources:", sources);
-      }
-    }
-
-    return text;
-  } catch (error) {
-    clearTimeout(timeoutId);
-    if (error instanceof Error && error.name === "AbortError") {
-      throw new GemmaTimeoutError(timeoutMs);
-    }
-    throw error;
+  if (enableSearch) {
+    requestBody.tools = [{ googleSearch: {} }];
   }
+
+  let lastError = null;
+
+  for (let modelIndex = 0; modelIndex < models.length; modelIndex++) {
+    const model = models[modelIndex];
+    const isLastModel = modelIndex === models.length - 1;
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+      try {
+        const response = await fetch(buildGenerateUrl(model, apiKey), {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new GemmaApiError(response.status, response.statusText, errorText);
+        }
+
+        const data = await response.json();
+
+        if (!data.candidates || data.candidates.length === 0) {
+          throw new Error("No candidates returned from Gemma API");
+        }
+
+        const candidate = data.candidates[0];
+        const parts = candidate?.content?.parts;
+
+        if (!Array.isArray(parts)) {
+          throw new Error("No valid content returned from Gemma API");
+        }
+
+        const text = parts
+          .filter((p) => !p?.thought)
+          .map((p) => p?.text ?? "")
+          .join("");
+
+        if (candidate.groundingMetadata) {
+          const meta = candidate.groundingMetadata;
+          if (meta.webSearchQueries) {
+            console.log("[Gemma] Web search queries:", meta.webSearchQueries);
+          }
+          if (meta.groundingChunks) {
+            const sources = meta.groundingChunks
+              .filter((c) => c.web)
+              .map((c) => c.web?.uri);
+            console.log("[Gemma] Grounding sources:", sources);
+          }
+        }
+
+        return text;
+      } catch (error) {
+        clearTimeout(timeoutId);
+
+        const normalizedError =
+          error instanceof Error && error.name === "AbortError"
+            ? new GemmaTimeoutError(timeoutMs)
+            : error;
+        lastError = normalizedError;
+
+        const isLastAttempt = attempt === maxRetries;
+        if (!isLastAttempt && isRetryableGemmaError(normalizedError)) {
+          const waitMs = retryDelayMs * (attempt + 1);
+          console.warn(
+            `[Gemma] Retrying model "${model}" after attempt ${attempt + 1} failed`
+          );
+          await sleep(waitMs);
+          continue;
+        }
+
+        if (!isLastModel && isRetryableGemmaError(normalizedError)) {
+          console.warn(
+            `[Gemma] Switching to fallback model after retries failed for "${model}"`
+          );
+          break;
+        }
+
+        throw normalizedError;
+      }
+    }
+  }
+
+  throw lastError || new Error("Failed to generate lesson");
 }
 
 function closeTruncatedJSON(text) {
