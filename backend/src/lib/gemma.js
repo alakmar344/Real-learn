@@ -25,7 +25,7 @@ export class GemmaApiError extends Error {
   }
 }
 
-function parsePositiveInt(value, fallbackValue) {
+function parseNonNegativeInt(value, fallbackValue) {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallbackValue;
 }
@@ -66,11 +66,11 @@ export async function callGemma(
     throw new Error("GEMMA_API_KEY is not configured");
   }
   const models = buildModelList();
-  const maxRetries = parsePositiveInt(
+  const maxRetries = parseNonNegativeInt(
     process.env.GEMMA_MAX_RETRIES,
     DEFAULT_MAX_RETRIES
   );
-  const retryDelayMs = parsePositiveInt(
+  const retryDelayMs = parseNonNegativeInt(
     process.env.GEMMA_RETRY_DELAY_MS,
     DEFAULT_RETRY_DELAY_MS
   );
@@ -184,7 +184,10 @@ export async function callGemma(
     }
   }
 
-  throw lastError || new Error("Failed to generate lesson");
+  throw (
+    lastError ||
+    new Error("Unable to generate lesson after exhausting retries and fallback models")
+  );
 }
 
 function closeTruncatedJSON(text) {
