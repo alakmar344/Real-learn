@@ -135,10 +135,7 @@ export async function callGemma(
           throw new Error("No candidates returned from Gemma API");
         }
 
-        const candidate = data?.candidates?.[0];
-        if (!candidate) {
-          throw new Error("No candidates returned from Gemma API");
-        }
+        const candidate = data.candidates[0];
         const parts = candidate?.content?.parts;
 
         if (!Array.isArray(parts)) {
@@ -198,10 +195,7 @@ export async function callGemma(
     }
   }
 
-  throw (
-    lastError ||
-    new Error("Unable to generate lesson after exhausting retries and fallback models")
-  );
+  throw lastError || new Error("Unable to generate lesson after exhausting retries and fallback models");
 }
 
 function closeTruncatedJSON(text) {
