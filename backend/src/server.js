@@ -10,7 +10,12 @@ import { GENERATE_LESSON_PROMPT } from "./lib/prompts.js";
 import { fetchRealWorldContext } from "./lib/serper.js";
 import { isValidJourney } from "./validation.js";
 
-const LESSON_TIMEOUT_MS = 60000;
+const DEFAULT_LESSON_TIMEOUT_MS = 300000;
+const configuredLessonTimeoutMs = Number(process.env.LESSON_TIMEOUT_MS);
+const LESSON_TIMEOUT_MS =
+  Number.isFinite(configuredLessonTimeoutMs) && configuredLessonTimeoutMs > 0
+    ? configuredLessonTimeoutMs
+    : DEFAULT_LESSON_TIMEOUT_MS;
 const HEARTBEAT_INTERVAL_MS = 15000;
 
 const app = express();
