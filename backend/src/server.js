@@ -111,7 +111,7 @@ Level: ${level}${
     const message =
       error instanceof GemmaTimeoutError
         ? timeoutMessage
-        : error instanceof GemmaApiError && error.status >= 500
+        : error instanceof GemmaApiError && error.status >= 500 && error.status < 600
         ? "Gemma service is temporarily unavailable. Please try again in a moment."
         : error instanceof Error
         ? error.message
