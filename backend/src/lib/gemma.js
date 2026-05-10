@@ -27,7 +27,9 @@ export class GemmaApiError extends Error {
 
 function parseNonNegativeInt(value, fallbackValue) {
   const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallbackValue;
+  return Number.isFinite(parsed) && Number.isInteger(parsed) && parsed >= 0
+    ? parsed
+    : fallbackValue;
 }
 
 function buildModelList() {
@@ -139,14 +141,14 @@ export async function callGemma(
           .map((p) => p?.text ?? "")
           .join("");
 
-        if (candidate.groundingMetadata) {
-          const meta = candidate.groundingMetadata;
-          if (meta.webSearchQueries) {
+        const meta = candidate?.groundingMetadata;
+        if (meta) {
+          if (meta?.webSearchQueries) {
             console.log("[Gemma] Web search queries:", meta.webSearchQueries);
           }
-          if (meta.groundingChunks) {
+          if (Array.isArray(meta?.groundingChunks)) {
             const sources = meta.groundingChunks
-              .filter((c) => c.web)
+              .filter((c) => c?.web)
               .map((c) => c.web?.uri);
             console.log("[Gemma] Grounding sources:", sources);
           }
@@ -164,7 +166,7 @@ export async function callGemma(
 
         const isLastAttempt = attempt === maxRetries;
         if (!isLastAttempt && isRetryableGemmaError(normalizedError)) {
-          const waitMs = retryDelayMs * (attempt + 1);
+          const waitMs = retryDelayMs * Math.pow(2, attempt);
           console.warn(
             `[Gemma] Retrying model "${model}" after attempt ${attempt + 1} failed`
           );
