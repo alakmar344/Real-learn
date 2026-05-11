@@ -185,7 +185,8 @@ app.post("/api/generate-lesson", async (req, res) => {
   sendPing();
   const heartbeat = setInterval(sendPing, HEARTBEAT_INTERVAL_MS);
 
-  req.on("close", () => finishRequest("request socket closed"));
+  req.on("aborted", () => finishRequest("request aborted"));
+  res.on("close", () => finishRequest("response closed"));
   res.on("error", (error) => {
     console.error("[SSE] response error", { requestId, error });
     finishRequest("response error");
