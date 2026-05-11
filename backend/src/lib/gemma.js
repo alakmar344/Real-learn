@@ -222,15 +222,23 @@ export async function callGemma(
       const controller = new AbortController();
       const internalSignal = controller.signal;
       let removeParentAbortListener = null;
+      let parentAbortTriggered = false;
+      let timeoutTriggered = false;
       if (signal) {
-        const abortFromParent = () => controller.abort();
+        const abortFromParent = () => {
+          parentAbortTriggered = true;
+          controller.abort();
+        };
         signal.addEventListener("abort", abortFromParent, { once: true });
         removeParentAbortListener = () => {
           signal.removeEventListener("abort", abortFromParent);
         };
       }
 
-      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      const timeoutId = setTimeout(() => {
+        timeoutTriggered = true;
+        controller.abort();
+      }, timeoutMs);
 
       try {
         const startedAt = Date.now();
@@ -311,15 +319,7 @@ export async function callGemma(
         removeParentAbortListener?.();
 
         if (error.name === "AbortError") {
-          if (signal?.aborted) {
-            console.warn("[Gemma] request aborted by caller", {
-              callId,
-              model,
-              attempt: attempt + 1,
-            });
-            throw error;
-          }
-          if (internalSignal.aborted) {
+          if (timeoutTriggered) {
             console.warn("[Gemma] request timed out", {
               callId,
               model,
@@ -327,6 +327,14 @@ export async function callGemma(
               timeoutMs,
             });
             throw new GemmaTimeoutError(timeoutMs);
+          }
+          if (parentAbortTriggered || signal?.aborted) {
+            console.warn("[Gemma] request aborted by caller", {
+              callId,
+              model,
+              attempt: attempt + 1,
+            });
+            throw error;
           }
           console.warn("[Gemma] request aborted", {
             callId,
