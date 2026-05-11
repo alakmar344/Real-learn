@@ -29,6 +29,14 @@ interface LessonStore {
   resetAll: () => void;
 }
 
+function storeLog(action: string, details?: unknown) {
+  if (details === undefined) {
+    console.log(`[frontend][lessonStore] ${action}`);
+    return;
+  }
+  console.log(`[frontend][lessonStore] ${action}`, details);
+}
+
 const initialState = {
   language: "English" as Language,
   level: "Class 9-10" as Level,
@@ -48,10 +56,20 @@ export const useLessonStore = create<LessonStore>()(
   persist(
     (set) => ({
       ...initialState,
-      setLanguage: (language) => set({ language }),
-      setLevel: (level) => set({ level }),
-      setQuestion: (question) => set({ question }),
+      setLanguage: (language) => {
+        storeLog("setLanguage", { language });
+        set({ language });
+      },
+      setLevel: (level) => {
+        storeLog("setLevel", { level });
+        set({ level });
+      },
+      setQuestion: (question) => {
+        storeLog("setQuestion", { questionLength: question.length });
+        set({ question });
+      },
       startLoading: () =>
+        (storeLog("startLoading"),
         set({
           isLoading: true,
           error: null,
@@ -62,8 +80,13 @@ export const useLessonStore = create<LessonStore>()(
           collapsedParts: [],
           showCompletion: false,
           showFollowUp: false,
-        }),
+        })),
       setLesson: (lesson) =>
+        (storeLog("setLesson", {
+          questionLength: lesson.question?.length ?? 0,
+          partsCount: lesson.parts?.length ?? 0,
+          takeawaysCount: lesson.keyTakeaways?.length ?? 0,
+        }),
         set({
           lesson,
           question: lesson.question,
@@ -75,12 +98,21 @@ export const useLessonStore = create<LessonStore>()(
           collapsedParts: [],
           showCompletion: false,
           showFollowUp: false,
-        }),
-      setError: (error) => set({ error, isLoading: false }),
+        })),
+      setError: (error) => {
+        storeLog("setError", { error });
+        set({ error, isLoading: false });
+      },
       passPart: (part, score) =>
         set((state) => {
           const completedSet = Array.from(new Set([...state.completedParts, part]));
           const nextUnlock = part === 3 ? 3 : ((part + 1) as 1 | 2 | 3);
+          storeLog("passPart", {
+            part,
+            score,
+            completedParts: completedSet,
+            nextUnlock,
+          });
           return {
             completedParts: completedSet,
             unlockedPart: nextUnlock,
@@ -91,12 +123,15 @@ export const useLessonStore = create<LessonStore>()(
           };
         }),
       togglePartCollapse: (part) =>
-        set((state) => ({
-          collapsedParts: state.collapsedParts.includes(part)
+        set((state) => {
+          const collapsedParts = state.collapsedParts.includes(part)
             ? state.collapsedParts.filter((p) => p !== part)
-            : [...state.collapsedParts, part],
-        })),
+            : [...state.collapsedParts, part];
+          storeLog("togglePartCollapse", { part, collapsedParts });
+          return { collapsedParts };
+        }),
       resetForNextQuestion: (question) =>
+        (storeLog("resetForNextQuestion", { questionLength: question.length }),
         set({
           question,
           lesson: null,
@@ -108,8 +143,11 @@ export const useLessonStore = create<LessonStore>()(
           collapsedParts: [],
           showCompletion: false,
           showFollowUp: false,
-        }),
-      resetAll: () => set({ ...initialState }),
+        })),
+      resetAll: () => {
+        storeLog("resetAll");
+        set({ ...initialState });
+      },
     }),
     {
       name: "reallearn-journey",

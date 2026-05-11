@@ -147,6 +147,7 @@ export async function callGemma(
   if (!apiKey) {
     throw new Error("GEMMA_API_KEY is not configured");
   }
+  const callId = `gemma-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const models = ["gemma-4-26b-a4b-it"];
   const maxRetries = parseNonNegativeInt(
     process.env.GEMMA_MAX_RETRIES,
@@ -168,6 +169,20 @@ export async function callGemma(
     process.env.GEMMA_TIMEOUT_CIRCUIT_COOLDOWN_MS,
     DEFAULT_TIMEOUT_CIRCUIT_COOLDOWN_MS
   );
+  console.log("[Gemma] callGemma invoked", {
+    callId,
+    models,
+    maxRetries,
+    retryDelayMs,
+    maxRetryDelayMs,
+    timeoutMs,
+    timeoutCircuitFailureThreshold,
+    timeoutCircuitCooldownMs,
+    enableSearch,
+    temperature,
+    systemPromptLength: systemPrompt?.length ?? 0,
+    userMessageLength: userMessage?.length ?? 0,
+  });
   assertTimeoutCircuitClosed();
  const requestBody = {
   system_instruction: {
@@ -198,6 +213,12 @@ export async function callGemma(
     const isLastModel = modelIndex === models.length - 1;
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      console.log("[Gemma] attempt start", {
+        callId,
+        model,
+        attempt: attempt + 1,
+        maxAttempts: maxRetries + 1,
+      });
       const controller = new AbortController();
       const internalSignal = controller.signal;
 
@@ -209,6 +230,7 @@ export async function callGemma(
       const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
       try {
+        const startedAt = Date.now();
         const response = await fetch(buildGenerateUrl(model), {
           method: "POST",
           headers: {
@@ -220,6 +242,14 @@ export async function callGemma(
         });
 
         clearTimeout(timeoutId);
+        console.log("[Gemma] response received", {
+          callId,
+          model,
+          attempt: attempt + 1,
+          status: response.status,
+          ok: response.ok,
+          latencyMs: Date.now() - startedAt,
+        });
 
         if (!response.ok) {
           const errorText = await response.text();
@@ -243,6 +273,14 @@ export async function callGemma(
           .filter((p) => !p?.thought)
           .map((p) => p?.text ?? "")
           .join("");
+        console.log("[Gemma] parsed candidate text", {
+          callId,
+          model,
+          attempt: attempt + 1,
+          candidatesCount: data.candidates.length,
+          partsCount: parts.length,
+          textLength: text.length,
+        });
 
         const meta = candidate?.groundingMetadata;
         if (meta) {
@@ -258,11 +296,21 @@ export async function callGemma(
         }
 
         resetTimeoutCircuit();
+        console.log("[Gemma] callGemma success", {
+          callId,
+          model,
+          attempt: attempt + 1,
+        });
         return text;
       } catch (error) {
         clearTimeout(timeoutId);
 
         if (error.name === "AbortError") {
+            console.warn("[Gemma] request aborted", {
+              callId,
+              model,
+              attempt: attempt + 1,
+            });
             throw error;
         }
 
@@ -270,6 +318,13 @@ export async function callGemma(
           error instanceof Error && error.name === "AbortError"
             ? new GemmaTimeoutError(timeoutMs)
             : error;
+        console.warn("[Gemma] attempt failed", {
+          callId,
+          model,
+          attempt: attempt + 1,
+          errorName: normalizedError?.name,
+          errorMessage: normalizedError?.message,
+        });
         lastError = normalizedError;
         if (normalizedError instanceof GemmaTimeoutError) {
           const circuitOpened = recordTimeoutFailure(
@@ -290,6 +345,12 @@ export async function callGemma(
           console.warn(
             `[Gemma] Retrying model "${model}" after attempt ${attempt + 1} failed`
           );
+          console.warn("[Gemma] retry scheduled", {
+            callId,
+            model,
+            attempt: attempt + 1,
+            waitMs,
+          });
           await sleep(waitMs);
           continue;
         }
@@ -306,6 +367,11 @@ export async function callGemma(
     }
   }
 
+  console.error("[Gemma] callGemma exhausted all options", {
+    callId,
+    lastErrorName: lastError?.name,
+    lastErrorMessage: lastError?.message,
+  });
   throw lastError || new Error("Unable to generate lesson after exhausting retries and fallback models");
 }
 
