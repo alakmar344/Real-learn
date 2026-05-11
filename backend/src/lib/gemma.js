@@ -169,21 +169,22 @@ export async function callGemma(
     DEFAULT_TIMEOUT_CIRCUIT_COOLDOWN_MS
   );
   assertTimeoutCircuitClosed();
-  const requestBody = {
-    system_instruction: {
-      parts: [{ text: systemPrompt }],
+ const requestBody = {
+  system_instruction: {
+    parts: [{ text: systemPrompt }],
+  },
+  contents: [
+    {
+      role: "user",
+      parts: [{ text: userMessage }],
     },
-    contents: [
-      {
-        role: "user",
-        parts: [{ text: userMessage }],
-      },
-    ],
-    generationConfig: {
-  temperature,
-  maxOutputTokens: 8192,
-  thinking_config: {
-    thinking_budget: 0
+  ],
+  generationConfig: {
+    temperature,
+    maxOutputTokens: 8192,
+    thinking_config: {
+      thinking_budget: 0
+    }
   }
 };
   if (enableSearch) {
