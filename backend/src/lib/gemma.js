@@ -147,6 +147,7 @@ export async function callGemma(
   if (!apiKey) {
     throw new Error("GEMMA_API_KEY is not configured");
   }
+  // User requested to use Gemma 4 ONLY
   const models = ["gemma-4-26b-a4b-it"];
   const maxRetries = parseNonNegativeInt(
     process.env.GEMMA_MAX_RETRIES,
@@ -200,14 +201,15 @@ export async function callGemma(
       const controller = new AbortController();
       const internalSignal = controller.signal;
 
-      const combinedSignal = signal ? signal : internalSignal;
+      const abortHandler = () => controller.abort();
       if (signal) {
-          signal.addEventListener("abort", () => controller.abort());
+          signal.addEventListener("abort", abortHandler);
       }
 
       const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
       try {
+        console.info(`[Gemma] Attempt ${attempt + 1} using model: ${model}`);
         const response = await fetch(buildGenerateUrl(model), {
           method: "POST",
           headers: {
@@ -215,20 +217,22 @@ export async function callGemma(
             "x-goog-api-key": apiKey,
           },
           body: JSON.stringify(requestBody),
-          signal: combinedSignal,
+          signal: controller.signal,
         });
 
         clearTimeout(timeoutId);
 
         if (!response.ok) {
           const errorText = await response.text();
+          console.error(`[Gemma] API error ${response.status}: ${errorText}`);
           throw new GemmaApiError(response.status, response.statusText, errorText);
         }
 
         const data = await response.json();
 
         if (!data.candidates || data.candidates.length === 0) {
-          throw new Error("No candidates returned from Gemma API");
+          console.warn("[Gemma] No candidates returned (potential safety filter)");
+          throw new Error("No candidates returned from Gemma API (safety filter may have blocked the response)");
         }
 
         const candidate = data.candidates[0];
@@ -262,13 +266,15 @@ export async function callGemma(
         clearTimeout(timeoutId);
 
         if (error.name === "AbortError") {
-            throw error;
+            if (signal?.aborted) {
+                console.info("[Gemma] Request aborted by client");
+                throw error;
+            }
+            console.warn("[Gemma] Request timed out internally");
+            throw new GemmaTimeoutError(timeoutMs);
         }
 
-        const normalizedError =
-          error instanceof Error && error.name === "AbortError"
-            ? new GemmaTimeoutError(timeoutMs)
-            : error;
+        const normalizedError = error;
         lastError = normalizedError;
         if (normalizedError instanceof GemmaTimeoutError) {
           const circuitOpened = recordTimeoutFailure(
@@ -287,7 +293,7 @@ export async function callGemma(
             maxRetryDelayMs
           );
           console.warn(
-            `[Gemma] Retrying model "${model}" after attempt ${attempt + 1} failed`
+            `[Gemma] Retrying model "${model}" after error: ${normalizedError.message}`
           );
           await sleep(waitMs);
           continue;
@@ -301,6 +307,10 @@ export async function callGemma(
         }
 
         throw normalizedError;
+      } finally {
+        if (signal) {
+            signal.removeEventListener("abort", abortHandler);
+        }
       }
     }
   }

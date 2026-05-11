@@ -111,11 +111,14 @@ app.post("/api/generate-lesson", async (req, res) => {
     return res.status(400).json({ error: "Question is required" });
   }
   if (activeLessonRequests >= MAX_CONCURRENT_LESSON_REQUESTS) {
+    console.warn("[generate-lesson] Rejected due to concurrency limit", { activeLessonRequests });
     return res
       .status(503)
       .json({ error: "Server is busy. Please retry in a few seconds." });
   }
   activeLessonRequests += 1;
+  const requestId = Math.random().toString(36).substring(7);
+  console.info(`[generate-lesson:${requestId}] Starting request`, { question, language, level, active: activeLessonRequests });
 
   const controller = new AbortController();
 
@@ -125,18 +128,22 @@ app.post("/api/generate-lesson", async (req, res) => {
   res.setHeader("X-Accel-Buffering", "no");
   res.flushHeaders();
 
+  // Send initial comment to keep stream alive through proxies
+  res.write(": ok\n\n");
+
   let finished = false;
   const safeWrite = (chunk) => {
     try {
       if (res.writableEnded || res.finished) return false;
       return res.write(chunk);
     } catch (error) {
-      console.error("[SSE] write failed", error);
+      console.error(`[SSE:${requestId}] write failed`, error);
       return false;
     }
   };
-  const finishRequest = () => {
+  const finishRequest = (reason = "finished") => {
     if (finished) return;
+    console.info(`[generate-lesson:${requestId}] Request ending. Reason: ${reason}`);
     finished = true;
     controller.abort();
     clearInterval(heartbeat);
@@ -151,10 +158,10 @@ app.post("/api/generate-lesson", async (req, res) => {
     safeWrite(`event: ping\ndata: ${Date.now()}\n\n`);
   }, HEARTBEAT_INTERVAL_MS);
 
-  req.on("close", finishRequest);
+  req.on("close", () => finishRequest("client_closed"));
   res.on("error", (error) => {
-    console.error("[SSE] response error", error);
-    finishRequest();
+    console.error(`[SSE:${requestId}] response error`, error);
+    finishRequest("response_error");
   });
 
   const sendEvent = (event, payload) => {
@@ -168,7 +175,7 @@ app.post("/api/generate-lesson", async (req, res) => {
     try {
       newsContext = await fetchRealWorldContext(question, language);
     } catch (error) {
-      console.warn("[Serper] Context fetch failed, continuing without context", error);
+      console.warn(`[Serper:${requestId}] Context fetch failed, continuing without context`, error);
     }
 
     const userPrompt = `Question: ${question}
@@ -179,6 +186,7 @@ Level: ${level}${
         : ""
     }`;
 
+    console.info(`[generate-lesson:${requestId}] Calling Gemma API...`);
     const raw = await callGemma(
       GENERATE_LESSON_PROMPT,
       userPrompt,
@@ -192,6 +200,7 @@ Level: ${level}${
 
     const parsed = parseJSON(raw);
     if (parsed === null) {
+      console.error(`[generate-lesson:${requestId}] JSON parse failed`);
       sendEvent("error", {
         error: "Failed to parse AI response. Please try again.",
       });
@@ -200,6 +209,7 @@ Level: ${level}${
     }
     const normalized = normalizeJourney(parsed);
     if (!isValidJourney(normalized)) {
+      console.error(`[generate-lesson:${requestId}] Journey validation failed`);
       sendEvent("error", {
         error: "AI response format was invalid. Please try again.",
       });
@@ -207,13 +217,14 @@ Level: ${level}${
       return;
     }
 
+    console.info(`[generate-lesson:${requestId}] Success! Sending lesson.`);
     sendEvent("lesson", normalized);
     sendEvent("done", { ok: true });
     recordLessonResult(true);
   } catch (error) {
     if (finished) return;
     if (error.name === 'AbortError') {
-      console.log("[generate-lesson] Request aborted");
+      console.log(`[generate-lesson:${requestId}] Request aborted`);
       return;
     }
     const timeoutMessage = formatGemmaTimeoutMessage(LESSON_TIMEOUT_MS);
@@ -228,11 +239,11 @@ Level: ${level}${
         ? error.message
         : "Failed to generate lesson";
 
-    console.error("[generate-lesson]", error);
+    console.error(`[generate-lesson:${requestId}] Error:`, error);
     recordLessonResult(false);
     sendEvent("error", { error: message });
   } finally {
-    finishRequest();
+    finishRequest("cleanup");
   }
 });
 

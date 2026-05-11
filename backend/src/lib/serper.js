@@ -1,4 +1,5 @@
 const SERPER_API_KEY = process.env.SERPER_API_KEY;
+const SERPER_TIMEOUT_MS = 8000;
 const SERPER_LANGUAGE_MAP = {
   bengali: "bn",
   english: "en",
@@ -27,6 +28,9 @@ export async function fetchRealWorldContext(topic, language) {
     return null;
   }
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), SERPER_TIMEOUT_MS);
+
   try {
     const response = await fetch("https://google.serper.dev/news", {
       method: "POST",
@@ -40,7 +44,10 @@ export async function fetchRealWorldContext(topic, language) {
         gl: "in",
         hl: normalizeSerperLanguage(language),
       }),
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) return null;
 
@@ -55,7 +62,11 @@ export async function fetchRealWorldContext(topic, language) {
           `- ${item.title} (${item.date ?? "date unavailable"})\n  ${item.snippet ?? ""}\n  Source: ${item.link}`
       )
       .join("\n\n");
-  } catch {
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error.name === "AbortError") {
+        console.warn("[Serper] Context fetch timed out");
+    }
     return null;
   }
 }
