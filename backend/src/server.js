@@ -142,8 +142,6 @@ app.post("/api/generate-lesson", async (req, res) => {
     activeLessonRequests,
   });
 
-  const controller = new AbortController();
-
   res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
   res.setHeader("Cache-Control", "no-cache, no-transform");
   res.setHeader("Connection", "keep-alive");
@@ -164,7 +162,6 @@ app.post("/api/generate-lesson", async (req, res) => {
   const finishRequest = (reason = "completed") => {
     if (finished) return;
     finished = true;
-    controller.abort();
     clearInterval(heartbeat);
     decrementActiveLessonRequests();
     console.log("[generate-lesson] Finishing request", {
@@ -242,8 +239,7 @@ Level: ${level}${
       userPrompt,
       false,
       0.6,
-      LESSON_TIMEOUT_MS,
-      controller.signal
+      LESSON_TIMEOUT_MS
     );
     console.log("[Gemma] callGemma success", {
       requestId,
