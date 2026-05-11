@@ -273,6 +273,7 @@ Real-learn/
 ### Frontend
 
 - `NEXT_PUBLIC_BACKEND_URL=https://<your-render-backend>.onrender.com`
+- `NEXT_PUBLIC_STREAM_IDLE_TIMEOUT_MS=120000` (optional; frontend stream idle timeout in ms)
 
 ### Backend
 
@@ -287,6 +288,7 @@ Real-learn/
 - `SERPER_API_KEY=...`
 - `MAX_CONCURRENT_LESSON_REQUESTS=3` (optional; max in-flight lesson generations)
 - `LESSON_FAILURE_ALERT_THRESHOLD=5` (optional; log alert every N consecutive generation failures)
+- `SSE_HEARTBEAT_INTERVAL_MS=15000` (optional; heartbeat interval in ms for SSE keep-alive, capped at 55000)
 - `FRONTEND_ORIGIN=https://<your-vercel-frontend>.vercel.app`
 - `PORT=10000` (optional on Render)
 
