@@ -205,7 +205,6 @@ Level: ${level}${
     sendEvent("done", { ok: true });
     recordLessonResult(true);
     return finishRequest();
-
   } catch (error) {
     const timeoutMessage = formatGemmaTimeoutMessage(LESSON_TIMEOUT_MS);
     const message =
