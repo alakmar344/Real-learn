@@ -68,8 +68,8 @@ export const useLessonStore = create<LessonStore>()(
         storeLog("setQuestion", { questionLength: question.length });
         set({ question });
       },
-      startLoading: () =>
-        (storeLog("startLoading"),
+      startLoading: () => {
+        storeLog("startLoading");
         set({
           isLoading: true,
           error: null,
@@ -80,13 +80,14 @@ export const useLessonStore = create<LessonStore>()(
           collapsedParts: [],
           showCompletion: false,
           showFollowUp: false,
-        })),
-      setLesson: (lesson) =>
-        (storeLog("setLesson", {
+        });
+      },
+      setLesson: (lesson) => {
+        storeLog("setLesson", {
           questionLength: lesson.question?.length ?? 0,
           partsCount: lesson.parts?.length ?? 0,
           takeawaysCount: lesson.keyTakeaways?.length ?? 0,
-        }),
+        });
         set({
           lesson,
           question: lesson.question,
@@ -98,7 +99,8 @@ export const useLessonStore = create<LessonStore>()(
           collapsedParts: [],
           showCompletion: false,
           showFollowUp: false,
-        })),
+        });
+      },
       setError: (error) => {
         storeLog("setError", { error });
         set({ error, isLoading: false });
@@ -130,8 +132,8 @@ export const useLessonStore = create<LessonStore>()(
           storeLog("togglePartCollapse", { part, collapsedParts });
           return { collapsedParts };
         }),
-      resetForNextQuestion: (question) =>
-        (storeLog("resetForNextQuestion", { questionLength: question.length }),
+      resetForNextQuestion: (question) => {
+        storeLog("resetForNextQuestion", { questionLength: question.length });
         set({
           question,
           lesson: null,
@@ -143,7 +145,8 @@ export const useLessonStore = create<LessonStore>()(
           collapsedParts: [],
           showCompletion: false,
           showFollowUp: false,
-        })),
+        });
+      },
       resetAll: () => {
         storeLog("resetAll");
         set({ ...initialState });

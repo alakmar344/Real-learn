@@ -90,8 +90,8 @@ export async function fetchRealWorldContext(topic, language) {
       contextLength: context.length,
     });
     return context;
-  } catch {
-    console.error("[Serper] Context fetch failed with exception");
+  } catch (error) {
+    console.error("[Serper] Context fetch failed with exception", error);
     return null;
   }
 }
