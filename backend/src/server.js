@@ -136,6 +136,7 @@ app.post("/api/generate-lesson", async (req, res) => {
     res.end();
   };
   const heartbeat = setInterval(() => {
+    if (finished) return;
     const ok = safeWrite(`event: ping\ndata: ${Date.now()}\n\n`);
     if (!ok) {
       finishRequest();
@@ -150,7 +151,7 @@ app.post("/api/generate-lesson", async (req, res) => {
   });
   res.on("error", (error) => {
     console.error("[SSE] response error", error);
-    clearInterval(heartbeat);
+    finishRequest();
   });
 
   const sendEvent = (event, payload) => {
