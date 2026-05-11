@@ -221,13 +221,24 @@ export async function callGemma(
       });
       const controller = new AbortController();
       const internalSignal = controller.signal;
-
-      const combinedSignal = signal ? signal : internalSignal;
+      let removeParentAbortListener = null;
+      let parentAbortTriggered = false;
+      let timeoutTriggered = false;
       if (signal) {
-          signal.addEventListener("abort", () => controller.abort());
+        const abortFromParent = () => {
+          parentAbortTriggered = true;
+          controller.abort();
+        };
+        signal.addEventListener("abort", abortFromParent, { once: true });
+        removeParentAbortListener = () => {
+          signal.removeEventListener("abort", abortFromParent);
+        };
       }
 
-      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      const timeoutId = setTimeout(() => {
+        timeoutTriggered = true;
+        controller.abort();
+      }, timeoutMs);
 
       try {
         const startedAt = Date.now();
@@ -238,10 +249,11 @@ export async function callGemma(
             "x-goog-api-key": apiKey,
           },
           body: JSON.stringify(requestBody),
-          signal: combinedSignal,
+          signal: internalSignal,
         });
 
         clearTimeout(timeoutId);
+        removeParentAbortListener?.();
         console.log("[Gemma] response received", {
           callId,
           model,
@@ -304,14 +316,32 @@ export async function callGemma(
         return text;
       } catch (error) {
         clearTimeout(timeoutId);
+        removeParentAbortListener?.();
 
         if (error.name === "AbortError") {
-            console.warn("[Gemma] request aborted", {
+          if (timeoutTriggered) {
+            console.warn("[Gemma] request timed out", {
+              callId,
+              model,
+              attempt: attempt + 1,
+              timeoutMs,
+            });
+            throw new GemmaTimeoutError(timeoutMs);
+          }
+          if (parentAbortTriggered || signal?.aborted) {
+            console.warn("[Gemma] request aborted by caller", {
               callId,
               model,
               attempt: attempt + 1,
             });
             throw error;
+          }
+          console.warn("[Gemma] request aborted", {
+            callId,
+            model,
+            attempt: attempt + 1,
+          });
+          throw error;
         }
 
         const normalizedError =
