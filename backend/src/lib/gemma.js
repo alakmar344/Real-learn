@@ -75,11 +75,35 @@ function buildGenerateUrl(model) {
   return `${GEMMA_API_ROOT}/${encodeURIComponent(model)}:generateContent`;
 }
 
+function isRetryableNetworkGemmaError(error) {
+  if (!(error instanceof TypeError)) {
+    return false;
+  }
+
+  const message = error.message.toLowerCase();
+  return (
+    message.includes("fetch") ||
+    message.includes("network") ||
+    message.includes("load failed") ||
+    message.includes("econnreset") ||
+    message.includes("socket")
+  );
+}
+
 function isRetryableGemmaError(error) {
   if (error instanceof GemmaApiError) {
     return error.status === 429 || (error.status >= 500 && error.status < 600);
   }
-  return error instanceof TypeError;
+  return isRetryableNetworkGemmaError(error);
+}
+
+export function isGemmaServiceUnavailableError(error) {
+  return (
+    error instanceof GemmaTimeoutError ||
+    error instanceof GemmaCircuitOpenError ||
+    (error instanceof GemmaApiError && (error.status === 429 || error.status >= 500)) ||
+    isRetryableNetworkGemmaError(error)
+  );
 }
 
 function sleep(ms) {

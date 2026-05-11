@@ -33,7 +33,7 @@ RealLearn is powered by **Gemma 4 (gemma-4-26b-a4b-it)** through the Gemini API.
 - **Robustness Engineering**:
   - 5-stage JSON repair pipeline (stripping thinking tokens, fixing markdown fences, handling truncated output, removing trailing commas, etc.)
   - Strict schema validation before streaming to frontend
-  - Fallback mechanisms to ensure high lesson success rate
+  - Backup lesson generation when Gemma is temporarily unavailable after retries
 
 This architecture allows us to reduce average generation time to **15-25 seconds** while maintaining high structural integrity and educational value.
 
