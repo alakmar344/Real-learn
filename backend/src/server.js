@@ -87,7 +87,11 @@ app.get("/health", (_req, res) => {
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      const isAllowed = !origin ||
+                       origin === "null" ||
+                       origin === "undefined" ||
+                       allowedOrigins.includes(origin);
+      if (isAllowed) {
         return callback(null, true);
       }
       console.warn("[CORS] origin denied", { origin });
@@ -124,6 +128,7 @@ app.post("/api/generate-lesson", async (req, res) => {
   let finished = false;
   const safeWrite = (chunk) => {
     try {
+      if (res.writableEnded || res.finished) return false;
       return res.write(chunk);
     } catch (error) {
       console.error("[SSE] write failed", error);
@@ -142,10 +147,8 @@ app.post("/api/generate-lesson", async (req, res) => {
   };
   const heartbeat = setInterval(() => {
     if (finished) return;
-    const ok = safeWrite(`event: ping\ndata: ${Date.now()}\n\n`);
-    if (!ok) {
-      finishRequest();
-    }
+    // failures in heartbeat are non-fatal to maintain stream connectivity
+    safeWrite(`event: ping\ndata: ${Date.now()}\n\n`);
   }, HEARTBEAT_INTERVAL_MS);
 
   req.on("close", finishRequest);
