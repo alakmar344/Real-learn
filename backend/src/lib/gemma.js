@@ -181,8 +181,7 @@ export async function callGemma(
     ],
     generationConfig: {
       temperature,
-      maxOutputTokens: 4096,
-      response_mime_type: "application/json"
+      maxOutputTokens: 4096
     },
   };
 
