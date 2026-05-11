@@ -1,7 +1,12 @@
 function sortByPartNumber(a, b) {
-  const aPartNumber = Number.isFinite(a?.partNumber) ? a.partNumber : Number.MAX_SAFE_INTEGER;
-  const bPartNumber = Number.isFinite(b?.partNumber) ? b.partNumber : Number.MAX_SAFE_INTEGER;
-  return aPartNumber - bPartNumber;
+  const aHasPartNumber = Number.isInteger(a?.partNumber) && a.partNumber > 0;
+  const bHasPartNumber = Number.isInteger(b?.partNumber) && b.partNumber > 0;
+  if (aHasPartNumber && bHasPartNumber) {
+    return a.partNumber - b.partNumber;
+  }
+  if (aHasPartNumber) return -1;
+  if (bHasPartNumber) return 1;
+  return 0;
 }
 
 export function normalizeJourney(data) {

@@ -59,6 +59,15 @@ function recordLessonResult(success) {
   }
 }
 
+function decrementActiveLessonRequests() {
+  if (activeLessonRequests <= 0) {
+    console.warn("[generate-lesson] Active request counter underflow prevented");
+    activeLessonRequests = 0;
+    return;
+  }
+  activeLessonRequests -= 1;
+}
+
 const app = express();
 const port = Number(process.env.PORT || 10000);
 const configuredOrigins =
@@ -78,7 +87,7 @@ app.get("/health", (_req, res) => {
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (origin && allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
       console.warn("[CORS] origin denied", { origin });
@@ -123,7 +132,7 @@ app.post("/api/generate-lesson", async (req, res) => {
     if (finished) return;
     finished = true;
     clearInterval(heartbeat);
-    activeLessonRequests = Math.max(0, activeLessonRequests - 1);
+    decrementActiveLessonRequests();
     res.end();
   };
   const heartbeat = setInterval(() => {
@@ -137,7 +146,7 @@ app.post("/api/generate-lesson", async (req, res) => {
     if (finished) return;
     finished = true;
     clearInterval(heartbeat);
-    activeLessonRequests = Math.max(0, activeLessonRequests - 1);
+    decrementActiveLessonRequests();
   });
   res.on("error", (error) => {
     console.error("[SSE] response error", error);
