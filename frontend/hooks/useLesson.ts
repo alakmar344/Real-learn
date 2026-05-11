@@ -254,7 +254,17 @@ export function useLesson() {
         }
       }
     },
-    [language, level, router, setError, setLesson, setQuestion, startLoading]
+    [
+      language,
+      level,
+      router,
+      setError,
+      setLesson,
+      setQuestion,
+      startLoading,
+      trimmedBackendUrl,
+      STREAM_IDLE_TIMEOUT_MS,
+    ]
   );
 
   const restart = useCallback(() => {
