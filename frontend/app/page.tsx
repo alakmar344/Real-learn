@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "@/components/shared/Navbar";
 import QuestionInput from "@/components/homepage/QuestionInput";
 import LoadingCinematic from "@/components/shared/LoadingCinematic";
@@ -11,12 +11,26 @@ export default function HomePage() {
   const [loadingQuestion, setLoadingQuestion] = useState<string | null>(null);
   const { generateLesson } = useLesson();
 
+  useEffect(() => {
+    console.log("[frontend][HomePage] render state", {
+      questionLength: question.length,
+      hasLoadingQuestion: Boolean(loadingQuestion),
+    });
+  }, [question, loadingQuestion]);
+
   const submit = async () => {
     const normalized = question.trim();
-    if (!normalized) return;
+    if (!normalized) {
+      console.log("[frontend][HomePage] submit skipped: empty question");
+      return;
+    }
+    console.log("[frontend][HomePage] submit started", {
+      questionLength: normalized.length,
+    });
     setLoadingQuestion(normalized);
     await generateLesson(normalized, true);
     setLoadingQuestion(null);
+    console.log("[frontend][HomePage] submit finished");
   };
 
   return (

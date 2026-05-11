@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Navbar from "@/components/shared/Navbar";
 import ProgressRail from "@/components/learning/ProgressRail";
 import PartCard from "@/components/learning/PartCard";
@@ -37,6 +37,36 @@ export default function LearnPage() {
   const totalScore = useMemo(() => {
     return (partScores[1] ?? 0) + (partScores[2] ?? 0) + (partScores[3] ?? 0);
   }, [partScores]);
+
+  useEffect(() => {
+    console.log("[frontend][LearnPage] state snapshot", {
+      hasQuestion: Boolean(question),
+      hasLesson: Boolean(lesson),
+      isLoading,
+      error,
+      unlockedPart,
+      completedParts,
+      partScores,
+      collapsedParts,
+      showCompletion,
+      showFollowUp,
+      quizPart,
+      showUnlockFx,
+    });
+  }, [
+    question,
+    lesson,
+    isLoading,
+    error,
+    unlockedPart,
+    completedParts,
+    partScores,
+    collapsedParts,
+    showCompletion,
+    showFollowUp,
+    quizPart,
+    showUnlockFx,
+  ]);
 
   if (isLoading && question) {
     return <LoadingCinematic question={question} />;
@@ -107,8 +137,12 @@ export default function LearnPage() {
         {showFollowUp ? (
           <FollowUpBox
             onSubmit={async (nextQuestion) => {
+              console.log("[frontend][LearnPage] follow-up submit", {
+                nextQuestionLength: nextQuestion.length,
+              });
               await generateLesson(nextQuestion, false);
               window.scrollTo({ top: 0, behavior: "smooth" });
+              console.log("[frontend][LearnPage] follow-up completed + scrolled");
             }}
           />
         ) : null}
@@ -139,6 +173,10 @@ export default function LearnPage() {
           questions={activePart.quiz}
           onClose={() => setQuizPart(null)}
           onPass={(score) => {
+            console.log("[frontend][LearnPage] quiz passed", {
+              part: activePart.partNumber,
+              score,
+            });
             passPart(activePart.partNumber, score);
             setQuizPart(null);
             setShowUnlockFx(true);

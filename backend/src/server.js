@@ -33,6 +33,7 @@ const LESSON_FAILURE_ALERT_THRESHOLD =
     : DEFAULT_FAILURE_ALERT_THRESHOLD;
 let activeLessonRequests = 0;
 let consecutiveLessonFailures = 0;
+let lessonRequestCounter = 0;
 
 function validateStartupConfig() {
   const requiredVars = ["GEMMA_API_KEY"];
@@ -103,19 +104,37 @@ app.use(
 app.use(express.json({ limit: "1mb" }));
 
 app.post("/api/generate-lesson", async (req, res) => {
+  const requestId = `lesson-${Date.now()}-${++lessonRequestCounter}`;
   const question = req.body?.question?.trim();
   const language = req.body?.language ?? "English";
   const level = req.body?.level ?? "Class 9-10";
+  console.log("[generate-lesson] Incoming request", {
+    requestId,
+    questionLength: question?.length ?? 0,
+    language,
+    level,
+    activeLessonRequests,
+  });
 
   if (!question) {
+    console.warn("[generate-lesson] Missing question", { requestId });
     return res.status(400).json({ error: "Question is required" });
   }
   if (activeLessonRequests >= MAX_CONCURRENT_LESSON_REQUESTS) {
+    console.warn("[generate-lesson] Busy: concurrency limit reached", {
+      requestId,
+      activeLessonRequests,
+      maxConcurrent: MAX_CONCURRENT_LESSON_REQUESTS,
+    });
     return res
       .status(503)
       .json({ error: "Server is busy. Please retry in a few seconds." });
   }
   activeLessonRequests += 1;
+  console.log("[generate-lesson] Request accepted", {
+    requestId,
+    activeLessonRequests,
+  });
 
   const controller = new AbortController();
 
@@ -124,6 +143,7 @@ app.post("/api/generate-lesson", async (req, res) => {
   res.setHeader("Connection", "keep-alive");
   res.setHeader("X-Accel-Buffering", "no");
   res.flushHeaders();
+  console.log("[SSE] Headers flushed", { requestId });
 
   let finished = false;
   const safeWrite = (chunk) => {
@@ -131,16 +151,23 @@ app.post("/api/generate-lesson", async (req, res) => {
       if (res.writableEnded || res.finished) return false;
       return res.write(chunk);
     } catch (error) {
-      console.error("[SSE] write failed", error);
+      console.error("[SSE] write failed", { requestId, error });
       return false;
     }
   };
-  const finishRequest = () => {
+  const finishRequest = (reason = "completed") => {
     if (finished) return;
     finished = true;
     controller.abort();
     clearInterval(heartbeat);
     decrementActiveLessonRequests();
+    console.log("[generate-lesson] Finishing request", {
+      requestId,
+      reason,
+      activeLessonRequests,
+      writableEnded: res.writableEnded,
+      responseFinished: res.finished,
+    });
     if (!res.writableEnded) {
         res.end();
     }
@@ -148,27 +175,44 @@ app.post("/api/generate-lesson", async (req, res) => {
   const heartbeat = setInterval(() => {
     if (finished) return;
     // failures in heartbeat are non-fatal to maintain stream connectivity
-    safeWrite(`event: ping\ndata: ${Date.now()}\n\n`);
+    const pingPayload = Date.now();
+    const pingWritten = safeWrite(`event: ping\ndata: ${pingPayload}\n\n`);
+    console.log("[SSE] Ping emitted", { requestId, pingPayload, pingWritten });
   }, HEARTBEAT_INTERVAL_MS);
 
-  req.on("close", finishRequest);
+  req.on("close", () => finishRequest("request socket closed"));
   res.on("error", (error) => {
-    console.error("[SSE] response error", error);
-    finishRequest();
+    console.error("[SSE] response error", { requestId, error });
+    finishRequest("response error");
   });
 
   const sendEvent = (event, payload) => {
     const eventWritten = safeWrite(`event: ${event}\n`);
     const dataWritten = safeWrite(`data: ${JSON.stringify(payload)}\n\n`);
+    console.log("[SSE] Event emitted", {
+      requestId,
+      event,
+      eventWritten,
+      dataWritten,
+    });
     return eventWritten && dataWritten;
   };
 
   try {
     let newsContext = null;
     try {
+      console.log("[Serper] Context fetch start", { requestId });
       newsContext = await fetchRealWorldContext(question, language);
+      console.log("[Serper] Context fetch end", {
+        requestId,
+        hasContext: Boolean(newsContext),
+        contextLength: newsContext?.length ?? 0,
+      });
     } catch (error) {
-      console.warn("[Serper] Context fetch failed, continuing without context", error);
+      console.warn("[Serper] Context fetch failed, continuing without context", {
+        requestId,
+        error,
+      });
     }
 
     const userPrompt = `Question: ${question}
@@ -179,6 +223,12 @@ Level: ${level}${
         : ""
     }`;
 
+    console.log("[Gemma] callGemma start", {
+      requestId,
+      lessonTimeoutMs: LESSON_TIMEOUT_MS,
+      userPromptLength: userPrompt.length,
+      hasNewsContext: Boolean(newsContext),
+    });
     const raw = await callGemma(
       GENERATE_LESSON_PROMPT,
       userPrompt,
@@ -187,11 +237,16 @@ Level: ${level}${
       LESSON_TIMEOUT_MS,
       controller.signal
     );
+    console.log("[Gemma] callGemma success", {
+      requestId,
+      rawLength: raw.length,
+    });
 
     if (finished) return;
 
     const parsed = parseJSON(raw);
     if (parsed === null) {
+      console.warn("[generate-lesson] parseJSON returned null", { requestId });
       sendEvent("error", {
         error: "Failed to parse AI response. Please try again.",
       });
@@ -200,6 +255,9 @@ Level: ${level}${
     }
     const normalized = normalizeJourney(parsed);
     if (!isValidJourney(normalized)) {
+      console.warn("[generate-lesson] normalizeJourney/isValidJourney failed", {
+        requestId,
+      });
       sendEvent("error", {
         error: "AI response format was invalid. Please try again.",
       });
@@ -207,13 +265,18 @@ Level: ${level}${
       return;
     }
 
+    console.log("[generate-lesson] Streaming final lesson", {
+      requestId,
+      partsCount: normalized.parts?.length ?? 0,
+      takeawaysCount: normalized.keyTakeaways?.length ?? 0,
+    });
     sendEvent("lesson", normalized);
     sendEvent("done", { ok: true });
     recordLessonResult(true);
   } catch (error) {
     if (finished) return;
     if (error.name === 'AbortError') {
-      console.log("[generate-lesson] Request aborted");
+      console.log("[generate-lesson] Request aborted", { requestId });
       return;
     }
     const timeoutMessage = formatGemmaTimeoutMessage(LESSON_TIMEOUT_MS);
@@ -228,11 +291,11 @@ Level: ${level}${
         ? error.message
         : "Failed to generate lesson";
 
-    console.error("[generate-lesson]", error);
+    console.error("[generate-lesson] Request failed", { requestId, error });
     recordLessonResult(false);
     sendEvent("error", { error: message });
   } finally {
-    finishRequest();
+    finishRequest("finally cleanup");
   }
 });
 
