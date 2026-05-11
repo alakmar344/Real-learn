@@ -84,8 +84,11 @@ export function useLesson() {
 
         while (true) {
           const { value, done } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
+
+          if (value) {
+            buffer += decoder.decode(value, { stream: true });
+          }
+
           const { events, remainder } = parseSSEChunk(buffer);
           buffer = remainder;
 
@@ -93,6 +96,22 @@ export function useLesson() {
             if (entry.event === "lesson") {
               lesson = JSON.parse(entry.data) as LessonJourney;
               continue;
+            }
+            if (entry.event === "error") {
+              const payload = JSON.parse(entry.data) as { error?: string };
+              throw new Error(payload.error || "Unable to generate lesson");
+            }
+          }
+
+          if (done) break;
+        }
+
+        // Final check on remaining buffer if any
+        if (buffer.trim()) {
+           const { events } = parseSSEChunk(buffer + "\n\n");
+           for (const entry of events) {
+            if (entry.event === "lesson") {
+              lesson = JSON.parse(entry.data) as LessonJourney;
             }
             if (entry.event === "error") {
               const payload = JSON.parse(entry.data) as { error?: string };

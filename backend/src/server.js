@@ -124,7 +124,8 @@ app.post("/api/generate-lesson", async (req, res) => {
   let finished = false;
   const safeWrite = (chunk) => {
     try {
-      return res.write(chunk);
+      res.write(chunk);
+      return true;
     } catch (error) {
       console.error("[SSE] write failed", error);
       return false;
@@ -142,10 +143,7 @@ app.post("/api/generate-lesson", async (req, res) => {
   };
   const heartbeat = setInterval(() => {
     if (finished) return;
-    const ok = safeWrite(`event: ping\ndata: ${Date.now()}\n\n`);
-    if (!ok) {
-      finishRequest();
-    }
+    safeWrite(`event: ping\ndata: ${Date.now()}\n\n`);
   }, HEARTBEAT_INTERVAL_MS);
 
   req.on("close", finishRequest);
@@ -155,9 +153,9 @@ app.post("/api/generate-lesson", async (req, res) => {
   });
 
   const sendEvent = (event, payload) => {
-    const eventWritten = safeWrite(`event: ${event}\n`);
-    const dataWritten = safeWrite(`data: ${JSON.stringify(payload)}\n\n`);
-    return eventWritten && dataWritten;
+    const ok1 = safeWrite(`event: ${event}\n`);
+    const ok2 = safeWrite(`data: ${JSON.stringify(payload)}\n\n`);
+    return ok1 && ok2;
   };
 
   try {
