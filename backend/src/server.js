@@ -111,40 +111,47 @@ app.post("/api/generate-lesson", async (req, res) => {
     return res.status(400).json({ error: "Question is required" });
   }
   if (activeLessonRequests >= MAX_CONCURRENT_LESSON_REQUESTS) {
-    console.warn("[generate-lesson] Rejected due to concurrency limit", { activeLessonRequests });
+    console.warn("[generate-lesson] Rejected: Server busy", { active: activeLessonRequests });
     return res
       .status(503)
       .json({ error: "Server is busy. Please retry in a few seconds." });
   }
   activeLessonRequests += 1;
   const requestId = Math.random().toString(36).substring(7);
-  console.info(`[generate-lesson:${requestId}] Starting request`, { question, language, level, active: activeLessonRequests });
+  console.info(`[generate-lesson:${requestId}] START: ${question} (${language}, ${level})`);
 
   const controller = new AbortController();
 
   res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
-  res.setHeader("Cache-Control", "no-cache, no-transform");
+  res.setHeader("Cache-Control", "no-cache, no-transform, no-store, must-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
   res.setHeader("Connection", "keep-alive");
   res.setHeader("X-Accel-Buffering", "no");
   res.flushHeaders();
 
-  // Send initial comment to keep stream alive through proxies
+  // Establish stream immediately with an 'ok' comment
   res.write(": ok\n\n");
 
   let finished = false;
   const safeWrite = (chunk) => {
+    if (finished || res.writableEnded) return false;
     try {
-      if (res.writableEnded || res.finished) return false;
-      return res.write(chunk);
+      const canWriteMore = res.write(chunk);
+      if (!canWriteMore) {
+        console.warn(`[SSE:${requestId}] Backpressure detected (buffer full)`);
+      }
+      return true;
     } catch (error) {
-      console.error(`[SSE:${requestId}] write failed`, error);
+      console.error(`[SSE:${requestId}] FATAL Write Error:`, error);
       return false;
     }
   };
-  const finishRequest = (reason = "finished") => {
+
+  const finishRequest = (reason = "completed") => {
     if (finished) return;
-    console.info(`[generate-lesson:${requestId}] Request ending. Reason: ${reason}`);
     finished = true;
+    console.info(`[generate-lesson:${requestId}] END: ${reason}`);
     controller.abort();
     clearInterval(heartbeat);
     decrementActiveLessonRequests();
@@ -152,41 +159,41 @@ app.post("/api/generate-lesson", async (req, res) => {
         res.end();
     }
   };
+
   const heartbeat = setInterval(() => {
     if (finished) return;
-    // failures in heartbeat are non-fatal to maintain stream connectivity
-    safeWrite(`event: ping\ndata: ${Date.now()}\n\n`);
+    const ok = safeWrite(`event: ping\ndata: ${Date.now()}\n\n`);
+    if (!ok) {
+        console.error(`[SSE:${requestId}] Heartbeat write failed, closing connection.`);
+        finishRequest("heartbeat_failure");
+    }
   }, HEARTBEAT_INTERVAL_MS);
 
-  req.on("close", () => finishRequest("client_closed"));
-  res.on("error", (error) => {
-    console.error(`[SSE:${requestId}] response error`, error);
+  req.on("close", () => finishRequest("client_disconnect"));
+  res.on("error", (err) => {
+    console.error(`[SSE:${requestId}] Response error:`, err);
     finishRequest("response_error");
   });
 
   const sendEvent = (event, payload) => {
-    const eventWritten = safeWrite(`event: ${event}\n`);
-    const dataWritten = safeWrite(`data: ${JSON.stringify(payload)}\n\n`);
-    return eventWritten && dataWritten;
+    const success = safeWrite(`event: ${event}\ndata: ${JSON.stringify(payload)}\n\n`);
+    return success;
   };
 
   try {
     let newsContext = null;
     try {
+      console.info(`[generate-lesson:${requestId}] Fetching news context...`);
       newsContext = await fetchRealWorldContext(question, language);
     } catch (error) {
-      console.warn(`[Serper:${requestId}] Context fetch failed, continuing without context`, error);
+      console.warn(`[Serper:${requestId}] Failed to fetch context`, error);
     }
 
-    const userPrompt = `Question: ${question}
-Language: ${language}
-Level: ${level}${
-      newsContext
-        ? `\n\nREAL WORLD CONTEXT FOR PART 3 (use this — do not search):\n${newsContext}`
-        : ""
+    const userPrompt = `Question: ${question}\nLanguage: ${language}\nLevel: ${level}${
+      newsContext ? `\n\nREAL WORLD CONTEXT:\n${newsContext}` : ""
     }`;
 
-    console.info(`[generate-lesson:${requestId}] Calling Gemma API...`);
+    console.info(`[generate-lesson:${requestId}] Generating AI response...`);
     const raw = await callGemma(
       GENERATE_LESSON_PROMPT,
       userPrompt,
@@ -200,48 +207,35 @@ Level: ${level}${
 
     const parsed = parseJSON(raw);
     if (parsed === null) {
-      console.error(`[generate-lesson:${requestId}] JSON parse failed`);
-      sendEvent("error", {
-        error: "Failed to parse AI response. Please try again.",
-      });
-      recordLessonResult(false);
-      return;
-    }
-    const normalized = normalizeJourney(parsed);
-    if (!isValidJourney(normalized)) {
-      console.error(`[generate-lesson:${requestId}] Journey validation failed`);
-      sendEvent("error", {
-        error: "AI response format was invalid. Please try again.",
-      });
+      console.error(`[generate-lesson:${requestId}] AI returned invalid JSON`);
+      sendEvent("error", { error: "AI response parse failed. Please try again." });
       recordLessonResult(false);
       return;
     }
 
-    console.info(`[generate-lesson:${requestId}] Success! Sending lesson.`);
+    const normalized = normalizeJourney(parsed);
+    if (!isValidJourney(normalized)) {
+      console.error(`[generate-lesson:${requestId}] AI response failed schema validation`);
+      sendEvent("error", { error: "Invalid lesson format. Please retry." });
+      recordLessonResult(false);
+      return;
+    }
+
+    console.info(`[generate-lesson:${requestId}] SUCCESS: Lesson generated`);
     sendEvent("lesson", normalized);
     sendEvent("done", { ok: true });
     recordLessonResult(true);
   } catch (error) {
     if (finished) return;
-    if (error.name === 'AbortError') {
-      console.log(`[generate-lesson:${requestId}] Request aborted`);
-      return;
-    }
-    const timeoutMessage = formatGemmaTimeoutMessage(LESSON_TIMEOUT_MS);
-    const message =
-      error instanceof GemmaTimeoutError
-        ? timeoutMessage
-        : error instanceof GemmaCircuitOpenError
-        ? error.message
-        : error instanceof GemmaApiError && error.status >= 500 && error.status < 600
-        ? "Gemma service is temporarily unavailable. Please try again in a moment."
-        : error instanceof Error
-        ? error.message
-        : "Failed to generate lesson";
+    if (error.name === 'AbortError') return;
 
-    console.error(`[generate-lesson:${requestId}] Error:`, error);
-    recordLessonResult(false);
+    const message = error instanceof GemmaTimeoutError ? "Request timed out. Please try again."
+                  : error instanceof GemmaCircuitOpenError ? error.message
+                  : "Generation failed. Please try again later.";
+
+    console.error(`[generate-lesson:${requestId}] ERROR:`, error);
     sendEvent("error", { error: message });
+    recordLessonResult(false);
   } finally {
     finishRequest("cleanup");
   }

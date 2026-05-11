@@ -46,21 +46,26 @@ export function useLesson() {
   } = useLessonStore();
 
   const generateLesson = useCallback(
-    async (question: string, navigate: boolean = true) => {
+    async (question: string, navigate: boolean = true, retryCount: number = 0) => {
+      const MAX_RETRIES = 1;
       const normalized = question.trim();
       if (!normalized) return;
 
-      setQuestion(normalized);
-      startLoading();
-
-      if (navigate) {
-        router.push("/learn");
+      if (retryCount === 0) {
+        setQuestion(normalized);
+        startLoading();
+        if (navigate) {
+          router.push("/learn");
+        }
       }
 
       try {
         const response = await fetch(`${trimmedBackendUrl}/api/generate-lesson`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "text/event-stream"
+          },
           body: JSON.stringify({
             question: normalized,
             language,
@@ -81,45 +86,58 @@ export function useLesson() {
         const decoder = new TextDecoder();
         let buffer = "";
         let lesson: LessonJourney | null = null;
+        let isDone = false;
 
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-          const { events, remainder } = parseSSEChunk(buffer);
-          buffer = remainder;
+        try {
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
 
-          for (const entry of events) {
-            if (entry.event === "lesson") {
-              lesson = JSON.parse(entry.data) as LessonJourney;
-              continue;
-            }
-            if (entry.event === "error") {
-              const payload = JSON.parse(entry.data) as { error?: string };
-              throw new Error(payload.error || "Unable to generate lesson");
+            buffer += decoder.decode(value, { stream: true });
+            const { events, remainder } = parseSSEChunk(buffer);
+            buffer = remainder;
+
+            for (const entry of events) {
+              if (entry.event === "lesson") {
+                lesson = JSON.parse(entry.data) as LessonJourney;
+              } else if (entry.event === "error") {
+                const payload = JSON.parse(entry.data) as { error?: string };
+                throw new Error(payload.error || "Generation failed");
+              } else if (entry.event === "done") {
+                isDone = true;
+              }
             }
           }
+
+          // Process residual buffer
+          if (buffer.trim()) {
+            const { events } = parseSSEChunk(buffer + "\n\n");
+            for (const entry of events) {
+              if (entry.event === "lesson") {
+                lesson = JSON.parse(entry.data) as LessonJourney;
+              } else if (entry.event === "done") {
+                isDone = true;
+              }
+            }
+          }
+        } finally {
+          reader.releaseLock();
         }
 
-        // Process any residual buffer after the stream ends
-        if (buffer.trim()) {
-          const { events } = parseSSEChunk(buffer + "\n\n");
-          for (const entry of events) {
-            if (entry.event === "lesson") {
-              lesson = JSON.parse(entry.data) as LessonJourney;
-            } else if (entry.event === "error") {
-              const payload = JSON.parse(entry.data) as { error?: string };
-              throw new Error(payload.error || "Unable to generate lesson");
-            }
-          }
+        if (!lesson && !isDone && retryCount < MAX_RETRIES) {
+          console.warn(`Connection closed prematurely. Retrying... (Attempt ${retryCount + 1})`);
+          return generateLesson(question, navigate, retryCount + 1);
         }
 
         if (!lesson) {
-          throw new Error("Backend closed connection before returning a lesson");
+          throw new Error("Backend connection lost before lesson was received. Please try again.");
         }
 
         setLesson(lesson);
       } catch (error) {
+        if (retryCount < MAX_RETRIES && (error instanceof Error && error.message.includes("fetch"))) {
+           return generateLesson(question, navigate, retryCount + 1);
+        }
         setError(error instanceof Error ? error.message : "Failed to generate lesson");
       }
     },
