@@ -87,7 +87,7 @@ app.get("/health", (_req, res) => {
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (origin && allowedOrigins.includes(origin)) {
+      if (!origin || allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
       console.warn("[CORS] origin denied", { origin });
@@ -113,6 +113,8 @@ app.post("/api/generate-lesson", async (req, res) => {
   }
   activeLessonRequests += 1;
 
+  const controller = new AbortController();
+
   res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
   res.setHeader("Cache-Control", "no-cache, no-transform");
   res.setHeader("Connection", "keep-alive");
@@ -131,9 +133,12 @@ app.post("/api/generate-lesson", async (req, res) => {
   const finishRequest = () => {
     if (finished) return;
     finished = true;
+    controller.abort();
     clearInterval(heartbeat);
     decrementActiveLessonRequests();
-    res.end();
+    if (!res.writableEnded) {
+        res.end();
+    }
   };
   const heartbeat = setInterval(() => {
     if (finished) return;
@@ -176,8 +181,11 @@ Level: ${level}${
       userPrompt,
       false,
       0.6,
-      LESSON_TIMEOUT_MS
+      LESSON_TIMEOUT_MS,
+      controller.signal
     );
+
+    if (finished) return;
 
     const parsed = parseJSON(raw);
     if (parsed === null) {
@@ -185,7 +193,7 @@ Level: ${level}${
         error: "Failed to parse AI response. Please try again.",
       });
       recordLessonResult(false);
-      return finishRequest();
+      return;
     }
     const normalized = normalizeJourney(parsed);
     if (!isValidJourney(normalized)) {
@@ -193,14 +201,18 @@ Level: ${level}${
         error: "AI response format was invalid. Please try again.",
       });
       recordLessonResult(false);
-      return finishRequest();
+      return;
     }
 
     sendEvent("lesson", normalized);
     sendEvent("done", { ok: true });
     recordLessonResult(true);
-    return finishRequest();
   } catch (error) {
+    if (finished) return;
+    if (error.name === 'AbortError') {
+      console.log("[generate-lesson] Request aborted");
+      return;
+    }
     const timeoutMessage = formatGemmaTimeoutMessage(LESSON_TIMEOUT_MS);
     const message =
       error instanceof GemmaTimeoutError
@@ -216,7 +228,8 @@ Level: ${level}${
     console.error("[generate-lesson]", error);
     recordLessonResult(false);
     sendEvent("error", { error: message });
-    return finishRequest();
+  } finally {
+    finishRequest();
   }
 });
 

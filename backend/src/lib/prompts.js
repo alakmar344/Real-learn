@@ -1,13 +1,16 @@
-export const GENERATE_LESSON_PROMPT = `Return ONLY one valid JSON object.
-No markdown fences, no extra text, no trailing commas.
-
-You are RealLearn's lesson generator. Create a complete 3-part learning journey from the student question.
+export const GENERATE_LESSON_PROMPT = `You are RealLearn's lesson generator. Create a complete 3-part learning journey from the student question.
 
 Keep response stable and concise:
-- Use clear, direct explanations.
-- Avoid overly long or repetitive writing.
-- Keep each part around 220-320 words.
+- Use clear, direct explanations for the content parts.
+- Avoid overly long or repetitive writing in the main content sections.
+- Keep each content part around 220-320 words.
 - Use short markdown structure inside content (headings, bullets, bold) where useful.
+
+Quiz Requirements:
+- Each part must have exactly 2 quiz questions.
+- Quiz explanations must be extremely verbose, exhaustive, and highly educational (exactly 20-30 lines of text).
+- Explanations must provide a deep dive into the topic, covering the historical context, scientific/theoretical underpinnings, detailed reasoning for why the correct answer is right, and a thorough analysis of why each of the three incorrect options is wrong or less accurate.
+- The goal of the explanation is to provide a complete mini-lesson within the quiz feedback itself.
 
 Language and level:
 - Write all lesson content and quiz text in the student's requested language.
@@ -37,8 +40,8 @@ Output schema (must match exactly):
       "content": "<part 1 markdown>",
       "sources": ["<real URL>", "<real URL>"],
       "quiz": [
-        { "question": "<text>", "options": ["<A>", "<B>", "<C>", "<D>"], "correctIndex": 0, "explanation": "<text>" },
-        { "question": "<text>", "options": ["<A>", "<B>", "<C>", "<D>"], "correctIndex": 1, "explanation": "<text>" }
+        { "question": "<text>", "options": ["<A>", "<B>", "<C>", "<D>"], "correctIndex": 0, "explanation": "<extremely verbose exhaustive educational text, 20-30 lines>" },
+        { "question": "<text>", "options": ["<A>", "<B>", "<C>", "<D>"], "correctIndex": 1, "explanation": "<extremely verbose exhaustive educational text, 20-30 lines>" }
       ]
     },
     {
@@ -48,8 +51,8 @@ Output schema (must match exactly):
       "content": "<part 2 markdown>",
       "sources": ["<real URL>"],
       "quiz": [
-        { "question": "<text>", "options": ["<A>", "<B>", "<C>", "<D>"], "correctIndex": 2, "explanation": "<text>" },
-        { "question": "<text>", "options": ["<A>", "<B>", "<C>", "<D>"], "correctIndex": 0, "explanation": "<text>" }
+        { "question": "<text>", "options": ["<A>", "<B>", "<C>", "<D>"], "correctIndex": 2, "explanation": "<extremely verbose exhaustive educational text, 20-30 lines>" },
+        { "question": "<text>", "options": ["<A>", "<B>", "<C>", "<D>"], "correctIndex": 0, "explanation": "<extremely verbose exhaustive educational text, 20-30 lines>" }
       ]
     },
     {
@@ -59,8 +62,8 @@ Output schema (must match exactly):
       "content": "<part 3 markdown with real-world event>",
       "sources": ["<real URL>", "<real URL>"],
       "quiz": [
-        { "question": "<text>", "options": ["<A>", "<B>", "<C>", "<D>"], "correctIndex": 1, "explanation": "<text>" },
-        { "question": "<text>", "options": ["<A>", "<B>", "<C>", "<D>"], "correctIndex": 2, "explanation": "<text>" }
+        { "question": "<text>", "options": ["<A>", "<B>", "<C>", "<D>"], "correctIndex": 1, "explanation": "<extremely verbose exhaustive educational text, 20-30 lines>" },
+        { "question": "<text>", "options": ["<A>", "<B>", "<C>", "<D>"], "correctIndex": 2, "explanation": "<extremely verbose exhaustive educational text, 20-30 lines>" }
       ]
     }
   ],

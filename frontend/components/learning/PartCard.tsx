@@ -73,117 +73,163 @@ export default function PartCard({
         background: "var(--bg-surface)",
         boxShadow: "0 4px 24px rgba(0,0,0,0.4)",
         padding: "clamp(20px, 3vw, 32px)",
-        opacity: isUnlocked ? 1 : 0.4,
+        position: "relative",
+        overflow: "hidden",
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-        <span
-          style={{
-            borderRadius: 6,
-            border: "1px solid rgba(245,197,24,0.3)",
-            background: "var(--gold-dim)",
-            color: "var(--gold-primary)",
-            padding: "4px 10px",
-            fontSize: 11,
-            letterSpacing: "0.1em",
-            fontWeight: 600,
-          }}
-        >
-          PART {part.partNumber}
-        </span>
-        <span
-          style={{
-            borderRadius: 6,
-            border: `1px solid color-mix(in srgb, ${subjectColors[part.subject] ?? "var(--subject-general)"} 30%, transparent)`,
-            background: `color-mix(in srgb, ${subjectColors[part.subject] ?? "var(--subject-general)"} 12%, transparent)`,
-            color: subjectColors[part.subject] ?? "var(--subject-general)",
-            padding: "4px 10px",
-            fontSize: 11,
-            fontWeight: 500,
-          }}
-        >
-          {part.subject}
-        </span>
-      </div>
-
-      <h2 style={{ margin: "12px 0 0", fontSize: "clamp(22px, 3vw, 26px)", fontWeight: 600 }}>
-        {part.title}
-      </h2>
-
       <div
-        className="markdown-content"
         style={{
-          marginTop: 20,
-          fontSize: 15,
-          color: "#d0d0d0",
-          lineHeight: 1.85,
-          maxWidth: 640,
+          filter: isUnlocked ? "none" : "blur(12px)",
+          pointerEvents: isUnlocked ? "auto" : "none",
+          userSelect: isUnlocked ? "auto" : "none",
+          opacity: isUnlocked ? 1 : 0.4,
+          transition: "all 400ms ease",
         }}
       >
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>{part.content}</ReactMarkdown>
-      </div>
-
-      <div style={{ marginTop: 16, display: "flex", flexWrap: "wrap", gap: 8 }}>
-        {part.sources.map((source) => (
-          <SourceTag key={source} href={source} />
-        ))}
-      </div>
-
-      {isUnlocked && !isCompleted ? (
-        <div style={{ marginTop: 20 }}>
-          {!timer.isComplete ? (
-            <div style={{ height: 3, width: "100%", borderRadius: 999, background: "var(--border-subtle)", overflow: "hidden" }}>
-              <div
-                style={{
-                  width: `${timer.progress}%`,
-                  height: "100%",
-                  background: "var(--gold-primary)",
-                  transition: "width 100ms linear",
-                }}
-              />
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={onStartQuiz}
-              className="animate-fade-up"
-              style={{
-                marginTop: 4,
-                width: "100%",
-                height: 52,
-                borderRadius: 12,
-                border: "none",
-                background: "var(--gold-primary)",
-                color: "var(--bg-primary)",
-                fontSize: 15,
-                fontWeight: 700,
-                cursor: "pointer",
-                boxShadow: "0 0 32px rgba(245,197,24,0.4)",
-              }}
-            >
-              I’ve Read This → Take Quiz
-            </button>
-          )}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <span
+            style={{
+              borderRadius: 6,
+              border: "1px solid rgba(245,197,24,0.3)",
+              background: "var(--gold-dim)",
+              color: "var(--gold-primary)",
+              padding: "4px 10px",
+              fontSize: 11,
+              letterSpacing: "0.1em",
+              fontWeight: 600,
+            }}
+          >
+            PART {part.partNumber}
+          </span>
+          <span
+            style={{
+              borderRadius: 6,
+              border: `1px solid color-mix(in srgb, ${subjectColors[part.subject] ?? "var(--subject-general)"} 30%, transparent)`,
+              background: `color-mix(in srgb, ${subjectColors[part.subject] ?? "var(--subject-general)"} 12%, transparent)`,
+              color: subjectColors[part.subject] ?? "var(--subject-general)",
+              padding: "4px 10px",
+              fontSize: 11,
+              fontWeight: 500,
+            }}
+          >
+            {part.subject}
+          </span>
         </div>
-      ) : null}
 
-      {isCompleted && !isCollapsed ? (
-        <button
-          type="button"
-          onClick={onToggleCollapse}
+        <h2 style={{ margin: "12px 0 0", fontSize: "clamp(22px, 3vw, 26px)", fontWeight: 600 }}>
+          {part.title}
+        </h2>
+
+        <div
+          className="markdown-content"
           style={{
-            marginTop: 16,
-            border: "1px solid var(--border-default)",
-            borderRadius: 10,
-            background: "transparent",
-            color: "var(--text-secondary)",
-            padding: "8px 12px",
-            cursor: "pointer",
+            marginTop: 20,
+            fontSize: 15,
+            color: "#d0d0d0",
+            lineHeight: 1.85,
+            maxWidth: 640,
           }}
         >
-          Collapse part
-        </button>
-      ) : null}
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{part.content}</ReactMarkdown>
+        </div>
+
+        <div style={{ marginTop: 16, display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {part.sources.map((source) => (
+            <SourceTag key={source} href={source} />
+          ))}
+        </div>
+
+        {isUnlocked && !isCompleted ? (
+          <div style={{ marginTop: 20 }}>
+            {!timer.isComplete ? (
+              <div style={{ height: 3, width: "100%", borderRadius: 999, background: "var(--border-subtle)", overflow: "hidden" }}>
+                <div
+                  style={{
+                    width: `${timer.progress}%`,
+                    height: "100%",
+                    background: "var(--gold-primary)",
+                    transition: "width 100ms linear",
+                  }}
+                />
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={onStartQuiz}
+                className="animate-fade-up"
+                style={{
+                  marginTop: 4,
+                  width: "100%",
+                  height: 52,
+                  borderRadius: 12,
+                  border: "none",
+                  background: "var(--gold-primary)",
+                  color: "var(--bg-primary)",
+                  fontSize: 15,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  boxShadow: "0 0 32px rgba(245,197,24,0.4)",
+                }}
+              >
+                I’ve Read This → Take Quiz
+              </button>
+            )}
+          </div>
+        ) : null}
+
+        {isCompleted && !isCollapsed ? (
+          <button
+            type="button"
+            onClick={onToggleCollapse}
+            style={{
+              marginTop: 16,
+              border: "1px solid var(--border-default)",
+              borderRadius: 10,
+              background: "transparent",
+              color: "var(--text-secondary)",
+              padding: "8px 12px",
+              cursor: "pointer",
+            }}
+          >
+            Collapse part
+          </button>
+        ) : null}
+      </div>
+
+      {!isUnlocked && (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "rgba(10,10,10,0.2)",
+            zIndex: 10,
+          }}
+        >
+          <div
+            style={{
+              background: "rgba(20,20,20,0.8)",
+              padding: "16px 24px",
+              borderRadius: 16,
+              border: "1px solid var(--border-default)",
+              textAlign: "center",
+              backdropFilter: "blur(4px)",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+            }}
+          >
+            <span style={{ fontSize: 32, marginBottom: 8, display: "block" }}>🔒</span>
+            <h3 style={{ fontSize: 18, fontWeight: 600, color: "var(--text-primary)", margin: "0 0 4px" }}>
+              Part {part.partNumber} Locked
+            </h3>
+            <p style={{ fontSize: 13, color: "var(--text-tertiary)", margin: 0 }}>
+              Complete Part {part.partNumber - 1} quiz to unlock
+            </p>
+          </div>
+        </div>
+      )}
     </article>
   );
 }
