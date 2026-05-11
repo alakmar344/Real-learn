@@ -143,12 +143,7 @@ app.post("/api/generate-lesson", async (req, res) => {
     }
   }, HEARTBEAT_INTERVAL_MS);
 
-  req.on("close", () => {
-    if (finished) return;
-    finished = true;
-    clearInterval(heartbeat);
-    decrementActiveLessonRequests();
-  });
+  req.on("close", finishRequest);
   res.on("error", (error) => {
     console.error("[SSE] response error", error);
     finishRequest();

@@ -1,3 +1,7 @@
+const REQUIRED_PARTS_COUNT = 3;
+const REQUIRED_KEY_TAKEAWAYS_COUNT = 3;
+const REQUIRED_QUIZ_OPTIONS_COUNT = 4;
+
 function sortByPartNumber(a, b) {
   const aHasPartNumber = Number.isInteger(a?.partNumber) && a.partNumber > 0;
   const bHasPartNumber = Number.isInteger(b?.partNumber) && b.partNumber > 0;
@@ -18,7 +22,7 @@ export function normalizeJourney(data) {
     const normalizedParts = data.parts
       .filter((part) => part && typeof part === "object")
       .sort(sortByPartNumber)
-      .slice(0, 3)
+      .slice(0, REQUIRED_PARTS_COUNT)
       .map((part, index) => ({
         ...part,
         partNumber: index + 1,
@@ -27,7 +31,7 @@ export function normalizeJourney(data) {
   }
 
   if (Array.isArray(data.keyTakeaways)) {
-    normalized.keyTakeaways = data.keyTakeaways.slice(0, 3);
+    normalized.keyTakeaways = data.keyTakeaways.slice(0, REQUIRED_KEY_TAKEAWAYS_COUNT);
   }
 
   return normalized;
@@ -35,8 +39,11 @@ export function normalizeJourney(data) {
 
 export function isValidJourney(data) {
   if (!data || typeof data !== "object") return false;
-  if (!Array.isArray(data.parts) || data.parts.length !== 3) return false;
-  if (!Array.isArray(data.keyTakeaways) || data.keyTakeaways.length !== 3) {
+  if (!Array.isArray(data.parts) || data.parts.length !== REQUIRED_PARTS_COUNT) return false;
+  if (
+    !Array.isArray(data.keyTakeaways) ||
+    data.keyTakeaways.length !== REQUIRED_KEY_TAKEAWAYS_COUNT
+  ) {
     return false;
   }
 
@@ -51,7 +58,7 @@ export function isValidJourney(data) {
         (q) =>
           typeof q.question === "string" &&
           Array.isArray(q.options) &&
-          q.options.length === 4 &&
+          q.options.length === REQUIRED_QUIZ_OPTIONS_COUNT &&
           Number.isInteger(q.correctIndex) &&
           q.correctIndex >= 0 &&
           q.correctIndex < q.options.length &&
