@@ -5,11 +5,12 @@ import {
   formatGemmaTimeoutMessage,
   GemmaTimeoutError,
   GemmaApiError,
+  GemmaCircuitOpenError,
   parseJSON,
 } from "./lib/gemma.js";
 import { GENERATE_LESSON_PROMPT } from "./lib/prompts.js";
 import { fetchRealWorldContext } from "./lib/serper.js";
-import { isValidJourney } from "./validation.js";
+import { isValidJourney, normalizeJourney } from "./validation.js";
 
 const DEFAULT_LESSON_TIMEOUT_MS = 300000;
 const configuredLessonTimeoutMs = Number(process.env.LESSON_TIMEOUT_MS);
@@ -18,6 +19,54 @@ const LESSON_TIMEOUT_MS =
     ? configuredLessonTimeoutMs
     : DEFAULT_LESSON_TIMEOUT_MS;
 const HEARTBEAT_INTERVAL_MS = 15000;
+const DEFAULT_MAX_CONCURRENT_LESSON_REQUESTS = 3;
+const DEFAULT_FAILURE_ALERT_THRESHOLD = 5;
+const configuredMaxConcurrentRequests = Number(process.env.MAX_CONCURRENT_LESSON_REQUESTS);
+const MAX_CONCURRENT_LESSON_REQUESTS =
+  Number.isFinite(configuredMaxConcurrentRequests) && configuredMaxConcurrentRequests > 0
+    ? configuredMaxConcurrentRequests
+    : DEFAULT_MAX_CONCURRENT_LESSON_REQUESTS;
+const configuredFailureAlertThreshold = Number(process.env.LESSON_FAILURE_ALERT_THRESHOLD);
+const LESSON_FAILURE_ALERT_THRESHOLD =
+  Number.isFinite(configuredFailureAlertThreshold) && configuredFailureAlertThreshold > 0
+    ? configuredFailureAlertThreshold
+    : DEFAULT_FAILURE_ALERT_THRESHOLD;
+let activeLessonRequests = 0;
+let consecutiveLessonFailures = 0;
+
+function validateStartupConfig() {
+  const requiredVars = ["GEMMA_API_KEY"];
+  const missing = requiredVars.filter((key) => !process.env[key]?.trim());
+  if (missing.length > 0) {
+    throw new Error(`Missing required environment variables: ${missing.join(", ")}`);
+  }
+}
+
+function recordLessonResult(success) {
+  if (success) {
+    if (consecutiveLessonFailures >= LESSON_FAILURE_ALERT_THRESHOLD) {
+      console.info("[generate-lesson] Failure streak recovered");
+    }
+    consecutiveLessonFailures = 0;
+    return;
+  }
+
+  consecutiveLessonFailures += 1;
+  if (consecutiveLessonFailures % LESSON_FAILURE_ALERT_THRESHOLD === 0) {
+    console.warn(
+      `[generate-lesson] Repeated failures detected (${consecutiveLessonFailures} consecutive)`
+    );
+  }
+}
+
+function decrementActiveLessonRequests() {
+  if (activeLessonRequests <= 0) {
+    console.warn("[generate-lesson] Active request counter underflow prevented");
+    activeLessonRequests = 0;
+    return;
+  }
+  activeLessonRequests -= 1;
+}
 
 const app = express();
 const port = Number(process.env.PORT || 10000);
@@ -41,6 +90,7 @@ app.use(
       if (origin && allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
+      console.warn("[CORS] origin denied", { origin });
       return callback(new Error("CORS origin denied"));
     },
     methods: ["POST", "OPTIONS", "GET"],
@@ -56,6 +106,12 @@ app.post("/api/generate-lesson", async (req, res) => {
   if (!question) {
     return res.status(400).json({ error: "Question is required" });
   }
+  if (activeLessonRequests >= MAX_CONCURRENT_LESSON_REQUESTS) {
+    return res
+      .status(503)
+      .json({ error: "Server is busy. Please retry in a few seconds." });
+  }
+  activeLessonRequests += 1;
 
   res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
   res.setHeader("Cache-Control", "no-cache, no-transform");
@@ -63,21 +119,49 @@ app.post("/api/generate-lesson", async (req, res) => {
   res.setHeader("X-Accel-Buffering", "no");
   res.flushHeaders();
 
+  let finished = false;
+  const safeWrite = (chunk) => {
+    try {
+      return res.write(chunk);
+    } catch (error) {
+      console.error("[SSE] write failed", error);
+      return false;
+    }
+  };
+  const finishRequest = () => {
+    if (finished) return;
+    finished = true;
+    clearInterval(heartbeat);
+    decrementActiveLessonRequests();
+    res.end();
+  };
   const heartbeat = setInterval(() => {
-    res.write(`event: ping\ndata: ${Date.now()}\n\n`);
+    if (finished) return;
+    const ok = safeWrite(`event: ping\ndata: ${Date.now()}\n\n`);
+    if (!ok) {
+      finishRequest();
+    }
   }, HEARTBEAT_INTERVAL_MS);
 
-  req.on("close", () => {
-    clearInterval(heartbeat);
+  req.on("close", finishRequest);
+  res.on("error", (error) => {
+    console.error("[SSE] response error", error);
+    finishRequest();
   });
 
   const sendEvent = (event, payload) => {
-    res.write(`event: ${event}\n`);
-    res.write(`data: ${JSON.stringify(payload)}\n\n`);
+    const eventWritten = safeWrite(`event: ${event}\n`);
+    const dataWritten = safeWrite(`data: ${JSON.stringify(payload)}\n\n`);
+    return eventWritten && dataWritten;
   };
 
   try {
-    const newsContext = await fetchRealWorldContext(question, language);
+    let newsContext = null;
+    try {
+      newsContext = await fetchRealWorldContext(question, language);
+    } catch (error) {
+      console.warn("[Serper] Context fetch failed, continuing without context", error);
+    }
 
     const userPrompt = `Question: ${question}
 Language: ${language}
@@ -96,21 +180,33 @@ Level: ${level}${
     );
 
     const parsed = parseJSON(raw);
-    if (!isValidJourney(parsed)) {
-      sendEvent("error", { error: "Model returned invalid lesson format" });
-      clearInterval(heartbeat);
-      return res.end();
+    if (parsed === null) {
+      sendEvent("error", {
+        error: "Failed to parse AI response. Please try again.",
+      });
+      recordLessonResult(false);
+      return finishRequest();
+    }
+    const normalized = normalizeJourney(parsed);
+    if (!isValidJourney(normalized)) {
+      sendEvent("error", {
+        error: "AI response format was invalid. Please try again.",
+      });
+      recordLessonResult(false);
+      return finishRequest();
     }
 
-    sendEvent("lesson", parsed);
+    sendEvent("lesson", normalized);
     sendEvent("done", { ok: true });
-    clearInterval(heartbeat);
-    return res.end();
+    recordLessonResult(true);
+    return finishRequest();
   } catch (error) {
     const timeoutMessage = formatGemmaTimeoutMessage(LESSON_TIMEOUT_MS);
     const message =
       error instanceof GemmaTimeoutError
         ? timeoutMessage
+        : error instanceof GemmaCircuitOpenError
+        ? error.message
         : error instanceof GemmaApiError && error.status >= 500 && error.status < 600
         ? "Gemma service is temporarily unavailable. Please try again in a moment."
         : error instanceof Error
@@ -118,12 +214,18 @@ Level: ${level}${
         : "Failed to generate lesson";
 
     console.error("[generate-lesson]", error);
+    recordLessonResult(false);
     sendEvent("error", { error: message });
-    clearInterval(heartbeat);
-    return res.end();
+    return finishRequest();
   }
 });
 
-app.listen(port, () => {
-  console.log(`Backend listening on port ${port}`);
-});
+try {
+  validateStartupConfig();
+  app.listen(port, () => {
+    console.log(`Backend listening on port ${port}`);
+  });
+} catch (error) {
+  console.error("[startup] Backend configuration error:", error);
+  process.exit(1);
+}
