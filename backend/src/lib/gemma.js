@@ -180,11 +180,12 @@ export async function callGemma(
       },
     ],
     generationConfig: {
-      temperature,
-      maxOutputTokens: 4096
-    },
-  };
-
+  temperature,
+  maxOutputTokens: 8192,
+  thinking_config: {
+    thinking_budget: 0
+  }
+};
   if (enableSearch) {
     requestBody.tools = [{ googleSearch: {} }];
   }
