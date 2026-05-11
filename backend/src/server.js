@@ -138,7 +138,7 @@ app.post("/api/generate-lesson", async (req, res) => {
   const heartbeat = setInterval(() => {
     const ok = safeWrite(`event: ping\ndata: ${Date.now()}\n\n`);
     if (!ok) {
-      clearInterval(heartbeat);
+      finishRequest();
     }
   }, HEARTBEAT_INTERVAL_MS);
 
@@ -164,10 +164,7 @@ app.post("/api/generate-lesson", async (req, res) => {
     try {
       newsContext = await fetchRealWorldContext(question, language);
     } catch (error) {
-      console.warn(
-        "[Serper] Context fetch failed, continuing without context:",
-        error instanceof Error ? error.message : error
-      );
+      console.warn("[Serper] Context fetch failed, continuing without context", error);
     }
 
     const userPrompt = `Question: ${question}

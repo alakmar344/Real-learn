@@ -54,7 +54,7 @@ export function isValidJourney(data) {
           q.options.length === 4 &&
           Number.isInteger(q.correctIndex) &&
           q.correctIndex >= 0 &&
-          q.correctIndex <= 3 &&
+          q.correctIndex <= q.options.length - 1 &&
           typeof q.explanation === "string"
       )
   );

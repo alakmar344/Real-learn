@@ -37,8 +37,9 @@ export class GemmaApiError extends Error {
 export class GemmaCircuitOpenError extends Error {
   constructor(retryAfterMs) {
     const retryAfterSeconds = Math.ceil(retryAfterMs / 1000);
+    const secondsLabel = retryAfterSeconds === 1 ? "second" : "seconds";
     super(
-      `Gemma service is temporarily paused after repeated timeouts. Retry in about ${retryAfterSeconds} seconds`
+      `Gemma service is temporarily paused after repeated timeouts. Retry in about ${retryAfterSeconds} ${secondsLabel}`
     );
     this.name = "GemmaCircuitOpenError";
     this.retryAfterMs = retryAfterMs;
