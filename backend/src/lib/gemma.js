@@ -1,5 +1,7 @@
 const GEMMA_API_ROOT = "https://generativelanguage.googleapis.com/v1beta/models";
+// Primary model as requested: Gemma 4.
 const DEFAULT_GEMMA_MODEL = "gemma-4-26b-a4b-it";
+// No fallback models allowed as per "Use gemma 4 only" directive.
 const DEFAULT_GEMMA_FALLBACK_MODELS = [];
 const DEFAULT_MAX_RETRIES = 2;
 const DEFAULT_RETRY_DELAY_MS = 700;
@@ -228,10 +230,18 @@ export async function callGemma(
         const data = await response.json();
 
         if (!data.candidates || data.candidates.length === 0) {
+          if (data.promptFeedback?.blockReason) {
+             throw new Error(`Request blocked by AI safety: ${data.promptFeedback.blockReason}`);
+          }
           throw new Error("No candidates returned from Gemma API");
         }
 
         const candidate = data.candidates[0];
+
+        if (candidate.finishReason === "SAFETY") {
+          throw new Error("AI response was filtered due to safety concerns. Please try a different question.");
+        }
+
         const parts = candidate?.content?.parts;
 
         if (!Array.isArray(parts)) {
