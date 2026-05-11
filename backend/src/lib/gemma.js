@@ -140,7 +140,8 @@ export async function callGemma(
   userMessage,
   enableSearch = true,
   temperature = 0.7,
-  timeoutMs = 30000
+  timeoutMs = 30000,
+  signal = null
 ) {
   const apiKey = process.env.GEMMA_API_KEY;
   if (!apiKey) {
@@ -181,6 +182,7 @@ export async function callGemma(
     generationConfig: {
       temperature,
       maxOutputTokens: 4096,
+      response_mime_type: "application/json"
     },
   };
 
@@ -196,6 +198,13 @@ export async function callGemma(
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       const controller = new AbortController();
+      const internalSignal = controller.signal;
+
+      const combinedSignal = signal ? signal : internalSignal;
+      if (signal) {
+          signal.addEventListener("abort", () => controller.abort());
+      }
+
       const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
       try {
@@ -206,7 +215,7 @@ export async function callGemma(
             "x-goog-api-key": apiKey,
           },
           body: JSON.stringify(requestBody),
-          signal: controller.signal,
+          signal: combinedSignal,
         });
 
         clearTimeout(timeoutId);
@@ -251,6 +260,10 @@ export async function callGemma(
         return text;
       } catch (error) {
         clearTimeout(timeoutId);
+
+        if (error.name === "AbortError") {
+            throw error;
+        }
 
         const normalizedError =
           error instanceof Error && error.name === "AbortError"
@@ -310,7 +323,7 @@ function closeTruncatedJSON(text) {
       escaped = true;
       continue;
     }
-    if (ch === '"') {
+    if (ch === "\"") {
       inString = !inString;
       continue;
     }
@@ -323,7 +336,7 @@ function closeTruncatedJSON(text) {
   }
 
   let result = text.replace(/[,:\s]+$/, "");
-  if (inString) result += '"';
+  if (inString) result += "\"";
   while (stack.length > 0) result += stack.pop();
   return result;
 }

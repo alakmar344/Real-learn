@@ -1,7 +1,4 @@
-export const GENERATE_LESSON_PROMPT = `Return ONLY one valid JSON object.
-No markdown fences, no extra text, no trailing commas.
-
-You are RealLearn's lesson generator. Create a complete 3-part learning journey from the student question.
+export const GENERATE_LESSON_PROMPT = `You are RealLearn's lesson generator. Create a complete 3-part learning journey from the student question.
 
 Keep response stable and concise:
 - Use clear, direct explanations.
