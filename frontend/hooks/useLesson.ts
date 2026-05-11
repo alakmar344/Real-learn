@@ -9,6 +9,12 @@ const trimmedBackendUrl = (
   process.env.NEXT_PUBLIC_BACKEND_URL ||
 "https://real-learn.onrender.com"
 ).replace(/\/$/, "");
+const DEFAULT_STREAM_IDLE_TIMEOUT_MS = 120000;
+const configuredStreamIdleTimeoutMs = Number(process.env.NEXT_PUBLIC_STREAM_IDLE_TIMEOUT_MS);
+const STREAM_IDLE_TIMEOUT_MS =
+  Number.isFinite(configuredStreamIdleTimeoutMs) && configuredStreamIdleTimeoutMs > 0
+    ? configuredStreamIdleTimeoutMs
+    : DEFAULT_STREAM_IDLE_TIMEOUT_MS;
 
 type StreamEvent = {
   event: string;
@@ -78,17 +84,34 @@ export function useLesson() {
         router.push("/learn");
       }
 
+      const controller = new AbortController();
+      let idleTimedOut = false;
+      let idleTimeoutId: ReturnType<typeof setTimeout> | null = null;
+
       try {
+        const refreshIdleTimeout = () => {
+          if (idleTimeoutId) {
+            clearTimeout(idleTimeoutId);
+          }
+          idleTimeoutId = setTimeout(() => {
+            idleTimedOut = true;
+            controller.abort();
+          }, STREAM_IDLE_TIMEOUT_MS);
+        };
+        refreshIdleTimeout();
+
         logLessonDebug("sending POST /api/generate-lesson", { requestId });
         const response = await fetch(`${trimmedBackendUrl}/api/generate-lesson`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          signal: controller.signal,
           body: JSON.stringify({
             question: normalized,
             language,
             level,
           }),
         });
+        refreshIdleTimeout();
         logLessonDebug("received initial response", {
           requestId,
           status: response.status,
@@ -122,6 +145,7 @@ export function useLesson() {
           chunkCount += 1;
           totalBytes += value?.byteLength ?? 0;
           buffer += decoder.decode(value, { stream: true });
+          refreshIdleTimeout();
           logLessonDebug("stream chunk decoded", {
             requestId,
             chunkCount,
@@ -208,11 +232,26 @@ export function useLesson() {
         });
         setLesson(lesson);
       } catch (error) {
+        if (
+          idleTimedOut ||
+          (error instanceof DOMException && error.name === "AbortError")
+        ) {
+          setError(
+            `Connection closed after ${Math.round(
+              STREAM_IDLE_TIMEOUT_MS / 1000
+            )}s without keep-alive. Please try again.`
+          );
+          return;
+        }
         console.error("[frontend][useLesson] generateLesson failed", {
           requestId,
           error,
         });
         setError(error instanceof Error ? error.message : "Failed to generate lesson");
+      } finally {
+        if (idleTimeoutId) {
+          clearTimeout(idleTimeoutId);
+        }
       }
     },
     [language, level, router, setError, setLesson, setQuestion, startLoading]

@@ -18,7 +18,13 @@ const LESSON_TIMEOUT_MS =
   Number.isFinite(configuredLessonTimeoutMs) && configuredLessonTimeoutMs > 0
     ? configuredLessonTimeoutMs
     : DEFAULT_LESSON_TIMEOUT_MS;
-const HEARTBEAT_INTERVAL_MS = 15000;
+const DEFAULT_HEARTBEAT_INTERVAL_MS = 15000;
+const MAX_HEARTBEAT_INTERVAL_MS = 55000;
+const configuredHeartbeatIntervalMs = Number(process.env.SSE_HEARTBEAT_INTERVAL_MS);
+const HEARTBEAT_INTERVAL_MS =
+  Number.isFinite(configuredHeartbeatIntervalMs) && configuredHeartbeatIntervalMs > 0
+    ? Math.min(configuredHeartbeatIntervalMs, MAX_HEARTBEAT_INTERVAL_MS)
+    : DEFAULT_HEARTBEAT_INTERVAL_MS;
 const DEFAULT_MAX_CONCURRENT_LESSON_REQUESTS = 3;
 const DEFAULT_FAILURE_ALERT_THRESHOLD = 5;
 const configuredMaxConcurrentRequests = Number(process.env.MAX_CONCURRENT_LESSON_REQUESTS);
@@ -172,13 +178,15 @@ app.post("/api/generate-lesson", async (req, res) => {
         res.end();
     }
   };
-  const heartbeat = setInterval(() => {
+  const sendPing = () => {
     if (finished) return;
     // failures in heartbeat are non-fatal to maintain stream connectivity
     const pingPayload = Date.now();
     const pingWritten = safeWrite(`event: ping\ndata: ${pingPayload}\n\n`);
     console.log("[SSE] Ping emitted", { requestId, pingPayload, pingWritten });
-  }, HEARTBEAT_INTERVAL_MS);
+  };
+  sendPing();
+  const heartbeat = setInterval(sendPing, HEARTBEAT_INTERVAL_MS);
 
   req.on("close", () => finishRequest("request socket closed"));
   res.on("error", (error) => {
