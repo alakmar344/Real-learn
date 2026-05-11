@@ -278,11 +278,15 @@ Real-learn/
 
 - `GEMMA_API_KEY=...`
 - `GEMMA_MODEL=gemma-4-26b-a4b-it` (optional)
-- `GEMMA_FALLBACK_MODELS=model-a,model-b` (optional)
+- `GEMMA_FALLBACK_MODELS=model-a,model-b` (optional; defaults to `gemma-2-27b-it,gemma-1.1-7b-it`)
 - `GEMMA_MAX_RETRIES=2` (optional; retries per model on 429/5xx/network errors)
 - `GEMMA_RETRY_DELAY_MS=700` (optional base backoff in milliseconds)
 - `GEMMA_MAX_RETRY_DELAY_MS=5000` (optional cap for exponential backoff delay)
+- `GEMMA_TIMEOUT_CIRCUIT_FAILURE_THRESHOLD=5` (optional; open timeout circuit after this many consecutive timeout failures)
+- `GEMMA_TIMEOUT_CIRCUIT_COOLDOWN_MS=60000` (optional; circuit open cooldown duration in ms)
 - `SERPER_API_KEY=...`
+- `MAX_CONCURRENT_LESSON_REQUESTS=3` (optional; max in-flight lesson generations)
+- `LESSON_FAILURE_ALERT_THRESHOLD=5` (optional; log alert every N consecutive generation failures)
 - `FRONTEND_ORIGIN=https://<your-vercel-frontend>.vercel.app`
 - `PORT=10000` (optional on Render)
 

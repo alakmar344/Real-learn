@@ -1,8 +1,16 @@
 const GEMMA_API_ROOT = "https://generativelanguage.googleapis.com/v1beta/models";
 const DEFAULT_GEMMA_MODEL = "gemma-4-26b-a4b-it";
+const DEFAULT_GEMMA_FALLBACK_MODELS = ["gemma-2-27b-it", "gemma-1.1-7b-it"];
 const DEFAULT_MAX_RETRIES = 2;
 const DEFAULT_RETRY_DELAY_MS = 700;
 const DEFAULT_MAX_RETRY_DELAY_MS = 5000;
+const DEFAULT_TIMEOUT_CIRCUIT_FAILURE_THRESHOLD = 5;
+const DEFAULT_TIMEOUT_CIRCUIT_COOLDOWN_MS = 60000;
+const PARSE_JSON_LOG_PREVIEW_CHARS = 300;
+const timeoutCircuitState = {
+  consecutiveTimeouts: 0,
+  openUntil: 0,
+};
 
 export function formatGemmaTimeoutMessage(timeoutMs) {
   const timeoutSeconds = timeoutMs / 1000;
@@ -26,6 +34,17 @@ export class GemmaApiError extends Error {
   }
 }
 
+export class GemmaCircuitOpenError extends Error {
+  constructor(retryAfterMs) {
+    const retryAfterSeconds = Math.ceil(retryAfterMs / 1000);
+    super(
+      `Gemma service is temporarily paused after repeated timeouts. Retry in about ${retryAfterSeconds} seconds`
+    );
+    this.name = "GemmaCircuitOpenError";
+    this.retryAfterMs = retryAfterMs;
+  }
+}
+
 function parseNonNegativeInt(value, fallbackValue) {
   const parsed = Number(value);
   return Number.isFinite(parsed) && Number.isInteger(parsed) && parsed >= 0
@@ -33,12 +52,21 @@ function parseNonNegativeInt(value, fallbackValue) {
     : fallbackValue;
 }
 
+function parsePositiveInt(value, fallbackValue) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && Number.isInteger(parsed) && parsed > 0
+    ? parsed
+    : fallbackValue;
+}
+
 function buildModelList() {
   const primary = (process.env.GEMMA_MODEL || DEFAULT_GEMMA_MODEL).trim();
-  const fallbacks =
+  const configuredFallbacks =
     process.env.GEMMA_FALLBACK_MODELS?.split(",")
       .map((model) => model.trim())
       .filter(Boolean) ?? [];
+  const fallbacks =
+    configuredFallbacks.length > 0 ? configuredFallbacks : DEFAULT_GEMMA_FALLBACK_MODELS;
   return Array.from(new Set([primary, ...fallbacks]));
 }
 
@@ -55,6 +83,31 @@ function isRetryableGemmaError(error) {
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function assertTimeoutCircuitClosed() {
+  const now = Date.now();
+  if (timeoutCircuitState.openUntil > now) {
+    throw new GemmaCircuitOpenError(timeoutCircuitState.openUntil - now);
+  }
+}
+
+function recordTimeoutFailure(failureThreshold, cooldownMs) {
+  timeoutCircuitState.consecutiveTimeouts += 1;
+  if (timeoutCircuitState.consecutiveTimeouts >= failureThreshold) {
+    timeoutCircuitState.openUntil = Date.now() + cooldownMs;
+    timeoutCircuitState.consecutiveTimeouts = 0;
+    console.warn(
+      `[Gemma] Timeout circuit opened for ${cooldownMs}ms after repeated timeouts`
+    );
+    return true;
+  }
+  return false;
+}
+
+function resetTimeoutCircuit() {
+  timeoutCircuitState.consecutiveTimeouts = 0;
+  timeoutCircuitState.openUntil = 0;
 }
 
 export async function callGemma(
@@ -81,6 +134,15 @@ export async function callGemma(
     process.env.GEMMA_MAX_RETRY_DELAY_MS,
     DEFAULT_MAX_RETRY_DELAY_MS
   );
+  const timeoutCircuitFailureThreshold = parsePositiveInt(
+    process.env.GEMMA_TIMEOUT_CIRCUIT_FAILURE_THRESHOLD,
+    DEFAULT_TIMEOUT_CIRCUIT_FAILURE_THRESHOLD
+  );
+  const timeoutCircuitCooldownMs = parsePositiveInt(
+    process.env.GEMMA_TIMEOUT_CIRCUIT_COOLDOWN_MS,
+    DEFAULT_TIMEOUT_CIRCUIT_COOLDOWN_MS
+  );
+  assertTimeoutCircuitClosed();
   const requestBody = {
     system_instruction: {
       parts: [{ text: systemPrompt }],
@@ -160,6 +222,7 @@ export async function callGemma(
           }
         }
 
+        resetTimeoutCircuit();
         return text;
       } catch (error) {
         clearTimeout(timeoutId);
@@ -169,6 +232,15 @@ export async function callGemma(
             ? new GemmaTimeoutError(timeoutMs)
             : error;
         lastError = normalizedError;
+        if (normalizedError instanceof GemmaTimeoutError) {
+          const circuitOpened = recordTimeoutFailure(
+            timeoutCircuitFailureThreshold,
+            timeoutCircuitCooldownMs
+          );
+          if (circuitOpened) {
+            throw new GemmaCircuitOpenError(timeoutCircuitCooldownMs);
+          }
+        }
 
         const isLastAttempt = attempt === maxRetries;
         if (!isLastAttempt && isRetryableGemmaError(normalizedError)) {
@@ -295,7 +367,9 @@ export function parseJSON(text) {
     } catch {}
   }
 
-  console.error("[parseJSON] All 5 repair stages failed.");
-  console.error("[parseJSON] Raw text (first 600 chars):", text.slice(0, 600));
+  console.error("[parseJSON] All repair stages failed", {
+    preview: text.slice(0, PARSE_JSON_LOG_PREVIEW_CHARS),
+    rawLength: text.length,
+  });
   return null;
 }
