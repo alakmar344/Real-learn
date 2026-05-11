@@ -18,7 +18,7 @@ The Kaggle write-up explains the project story, motivation, and implementation c
 ---
 ## Gemma 4 Usage
 
-RealLearn is powered by **Gemma 4 (gemma-4-26b-a4b-it)** through the Gemini API. We deliberately designed a sophisticated prompting and post-processing strategy to maximize reliability, educational quality, and consistency.
+RealLearn is powered by **Gemma 4 (gemma-4-7b-it)** through the Gemini API. We deliberately designed a sophisticated prompting and post-processing strategy to maximize reliability, educational quality, and consistency.
 
 ### Key Technical Highlights
 
@@ -33,7 +33,7 @@ RealLearn is powered by **Gemma 4 (gemma-4-26b-a4b-it)** through the Gemini API.
 - **Robustness Engineering**:
   - 5-stage JSON repair pipeline (stripping thinking tokens, fixing markdown fences, handling truncated output, removing trailing commas, etc.)
   - Strict schema validation before streaming to frontend
-  - Backup lesson generation when Gemma is temporarily unavailable after retries
+  - Clear error messaging when Gemma is temporarily unavailable after retries
 
 This architecture allows us to reduce average generation time to **15-25 seconds** while maintaining high structural integrity and educational value.
 
@@ -277,7 +277,7 @@ Real-learn/
 ### Backend
 
 - `GEMMA_API_KEY=...`
-- `GEMMA_MODEL=gemma-4-26b-a4b-it` (optional)
+- `GEMMA_MODEL=gemma-4-7b-it` (optional)
 - `GEMMA_FALLBACK_MODELS=model-a,model-b` (optional; default is empty, so no fallback models are used unless configured)
 - `GEMMA_MAX_RETRIES=2` (optional; retries per model on 429/5xx/network errors)
 - `GEMMA_RETRY_DELAY_MS=700` (optional base backoff in milliseconds)

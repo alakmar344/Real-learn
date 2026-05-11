@@ -1,5 +1,5 @@
 const GEMMA_API_ROOT = "https://generativelanguage.googleapis.com/v1beta/models";
-const DEFAULT_GEMMA_MODEL = "gemma-4-26b-a4b-it";
+const DEFAULT_GEMMA_MODEL = "gemma-4-7b-it";
 const DEFAULT_GEMMA_FALLBACK_MODELS = [];
 const DEFAULT_MAX_RETRIES = 2;
 const DEFAULT_RETRY_DELAY_MS = 700;
