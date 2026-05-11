@@ -18,7 +18,7 @@ The Kaggle write-up explains the project story, motivation, and implementation c
 ---
 ## Gemma 4 Usage
 
-RealLearn is powered by **Gemma 4 (gemma-4-7b-it)** through the Gemini API. We deliberately designed a sophisticated prompting and post-processing strategy to maximize reliability, educational quality, and consistency.
+RealLearn is powered by **Gemma 4 (gemma-4-26b-a4b-it)** through the Gemini API. We deliberately designed a sophisticated prompting and post-processing strategy to maximize reliability, educational quality, and consistency.
 
 ### Key Technical Highlights
 
