@@ -147,7 +147,7 @@ export async function callGemma(
   if (!apiKey) {
     throw new Error("GEMMA_API_KEY is not configured");
   }
-  const models = buildModelList();
+  const models = ["gemma-4-26b-a4b-it"];
   const maxRetries = parseNonNegativeInt(
     process.env.GEMMA_MAX_RETRIES,
     DEFAULT_MAX_RETRIES

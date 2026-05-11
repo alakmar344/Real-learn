@@ -101,6 +101,19 @@ export function useLesson() {
           }
         }
 
+        // Process any residual buffer after the stream ends
+        if (buffer.trim()) {
+          const { events } = parseSSEChunk(buffer + "\n\n");
+          for (const entry of events) {
+            if (entry.event === "lesson") {
+              lesson = JSON.parse(entry.data) as LessonJourney;
+            } else if (entry.event === "error") {
+              const payload = JSON.parse(entry.data) as { error?: string };
+              throw new Error(payload.error || "Unable to generate lesson");
+            }
+          }
+        }
+
         if (!lesson) {
           throw new Error("Backend closed connection before returning a lesson");
         }
