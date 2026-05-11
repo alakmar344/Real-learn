@@ -6,10 +6,8 @@ import {
   GemmaTimeoutError,
   GemmaApiError,
   GemmaCircuitOpenError,
-  isGemmaServiceUnavailableError,
   parseJSON,
 } from "./lib/gemma.js";
-import { buildFallbackLesson } from "./lib/fallbackLesson.js";
 import { GENERATE_LESSON_PROMPT } from "./lib/prompts.js";
 import { fetchRealWorldContext } from "./lib/serper.js";
 import { isValidJourney, normalizeJourney } from "./validation.js";
@@ -203,14 +201,6 @@ Level: ${level}${
     recordLessonResult(true);
     return finishRequest();
   } catch (error) {
-    if (isGemmaServiceUnavailableError(error)) {
-      console.warn("[generate-lesson] Sending fallback lesson after Gemma failure");
-      sendEvent("lesson", buildFallbackLesson(question, language, level));
-      sendEvent("done", { ok: true, fallback: true });
-      recordLessonResult(true);
-      return finishRequest();
-    }
-
     const timeoutMessage = formatGemmaTimeoutMessage(LESSON_TIMEOUT_MS);
     const message =
       error instanceof GemmaTimeoutError
