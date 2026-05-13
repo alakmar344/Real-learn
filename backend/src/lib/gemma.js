@@ -1,6 +1,5 @@
 const GEMMA_API_ROOT = "https://generativelanguage.googleapis.com/v1beta/models";
-const DEFAULT_GEMMA_MODEL = "gemma-4-26b-a4b-it";
-const DEFAULT_GEMMA_FALLBACK_MODELS = [];
+const GEMMA_MODEL = "gemma-4-26b-a4b-it";
 const DEFAULT_MAX_RETRIES = 2;
 const DEFAULT_RETRY_DELAY_MS = 700;
 const DEFAULT_MAX_RETRY_DELAY_MS = 5000;
@@ -60,19 +59,16 @@ function parsePositiveInt(value, fallbackValue) {
     : fallbackValue;
 }
 
-function buildModelList() {
-  const primary = (process.env.GEMMA_MODEL || DEFAULT_GEMMA_MODEL).trim();
-  const configuredFallbacks =
-    process.env.GEMMA_FALLBACK_MODELS?.split(",")
-      .map((model) => model.trim())
-      .filter(Boolean) ?? [];
-  const fallbacks =
-    configuredFallbacks.length > 0 ? configuredFallbacks : DEFAULT_GEMMA_FALLBACK_MODELS;
-  return Array.from(new Set([primary, ...fallbacks]));
-}
-
 function buildGenerateUrl(model) {
   return `${GEMMA_API_ROOT}/${encodeURIComponent(model)}:generateContent`;
+}
+
+function stripThinkingTags(text) {
+  const source = typeof text === "string" ? text : String(text ?? "");
+  return source
+    .replace(/<think>[\s\S]*?<\/think>/gi, "")
+    .replace(/<thinking>[\s\S]*?<\/thinking>/gi, "")
+    .trim();
 }
 
 function isRetryableNetworkGemmaError(error) {
@@ -148,7 +144,8 @@ export async function callGemma(
     throw new Error("GEMMA_API_KEY is not configured");
   }
   const callId = `gemma-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-  const models = ["gemma-4-26b-a4b-it"];
+  const models = [GEMMA_MODEL];
+  const sanitizedSystemPrompt = stripThinkingTags(systemPrompt);
   const maxRetries = parseNonNegativeInt(
     process.env.GEMMA_MAX_RETRIES,
     DEFAULT_MAX_RETRIES
@@ -184,21 +181,22 @@ export async function callGemma(
     userMessageLength: userMessage?.length ?? 0,
   });
   assertTimeoutCircuitClosed();
- const requestBody = {
-  system_instruction: {
-    parts: [{ text: systemPrompt }],
-  },
-  contents: [
-    {
-      role: "user",
-      parts: [{ text: userMessage }],
+  const requestBody = {
+    system_instruction: {
+      parts: [{ text: sanitizedSystemPrompt }],
     },
-  ],
-  generationConfig: {
-    temperature,
-    maxOutputTokens: 4192
-  }
-};
+    contents: [
+      {
+        role: "user",
+        parts: [{ text: userMessage }],
+      },
+    ],
+    generationConfig: {
+      temperature,
+      maxOutputTokens: 4192,
+      enable_thinking: false,
+    },
+  };
   if (enableSearch) {
     requestBody.tools = [{ googleSearch: {} }];
   }
