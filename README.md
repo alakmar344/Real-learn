@@ -274,6 +274,8 @@ Real-learn/
 
 - `NEXT_PUBLIC_BACKEND_URL=https://<your-render-backend>.onrender.com`
 - `NEXT_PUBLIC_STREAM_IDLE_TIMEOUT_MS=120000` (optional; frontend stream idle timeout in ms)
+- `NEXT_PUBLIC_GENERATE_RETRY_ATTEMPTS=2` (optional; total frontend attempts for transient lesson-generation failures)
+- `NEXT_PUBLIC_GENERATE_RETRY_DELAY_MS=1500` (optional; base retry backoff in ms between frontend attempts)
 
 ### Backend
 

@@ -15,10 +15,31 @@ const STREAM_IDLE_TIMEOUT_MS =
   Number.isFinite(configuredStreamIdleTimeoutMs) && configuredStreamIdleTimeoutMs > 0
     ? configuredStreamIdleTimeoutMs
     : DEFAULT_STREAM_IDLE_TIMEOUT_MS;
+const DEFAULT_GENERATE_RETRY_ATTEMPTS = 2;
+const configuredGenerateRetryAttempts = Number(
+  process.env.NEXT_PUBLIC_GENERATE_RETRY_ATTEMPTS
+);
+const GENERATE_RETRY_ATTEMPTS =
+  Number.isFinite(configuredGenerateRetryAttempts) && configuredGenerateRetryAttempts > 0
+    ? Math.floor(configuredGenerateRetryAttempts)
+    : DEFAULT_GENERATE_RETRY_ATTEMPTS;
+const DEFAULT_GENERATE_RETRY_DELAY_MS = 1500;
+const configuredGenerateRetryDelayMs = Number(
+  process.env.NEXT_PUBLIC_GENERATE_RETRY_DELAY_MS
+);
+const GENERATE_RETRY_DELAY_MS =
+  Number.isFinite(configuredGenerateRetryDelayMs) && configuredGenerateRetryDelayMs > 0
+    ? configuredGenerateRetryDelayMs
+    : DEFAULT_GENERATE_RETRY_DELAY_MS;
+const MAX_GENERATE_RETRY_DELAY_MS = 8000;
 
 type StreamEvent = {
   event: string;
   data: string;
+};
+
+type RetryableError = Error & {
+  status?: number;
 };
 
 function logLessonDebug(stage: string, details?: unknown) {
@@ -30,7 +51,8 @@ function logLessonDebug(stage: string, details?: unknown) {
 }
 
 function parseSSEChunk(buffer: string): { events: StreamEvent[]; remainder: string } {
-  const blocks = buffer.split("\n\n");
+  const normalizedBuffer = buffer.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  const blocks = normalizedBuffer.split(/\n\n+/);
   const remainder = blocks.pop() ?? "";
   const events = blocks
     .map((block) => {
@@ -38,13 +60,47 @@ function parseSSEChunk(buffer: string): { events: StreamEvent[]; remainder: stri
       const event = lines.find((line) => line.startsWith("event:"))?.slice(6).trim();
       const data = lines
         .filter((line) => line.startsWith("data:"))
-        .map((line) => line.slice(5).trim())
+        .map((line) => line.slice(5).trimStart())
         .join("\n");
       if (!event || !data) return null;
       return { event, data };
     })
     .filter((value): value is StreamEvent => value !== null);
   return { events, remainder };
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isRetryableStatus(status?: number) {
+  if (!Number.isInteger(status)) return false;
+  return status === 408 || status === 425 || status === 429 || status === 500 || status === 502 || status === 503 || status === 504;
+}
+
+function isRetryableMessage(message: string) {
+  const normalized = message.toLowerCase();
+  return (
+    normalized.includes("temporarily") ||
+    normalized.includes("try again") ||
+    normalized.includes("timed out") ||
+    normalized.includes("timeout") ||
+    normalized.includes("network") ||
+    normalized.includes("fetch failed") ||
+    normalized.includes("unable to generate lesson") ||
+    normalized.includes("server is busy") ||
+    normalized.includes("connection closed")
+  );
+}
+
+function isRetryableError(error: unknown, idleTimedOut: boolean) {
+  if (idleTimedOut) return true;
+  if (!(error instanceof Error)) return false;
+  const retryableError = error as RetryableError;
+  if (isRetryableStatus(retryableError.status)) return true;
+  if (error instanceof DOMException && error.name === "AbortError") return true;
+  if (error instanceof TypeError) return true;
+  return isRetryableMessage(error.message);
 }
 
 export function useLesson() {
@@ -84,175 +140,212 @@ export function useLesson() {
         router.push("/learn");
       }
 
-      const controller = new AbortController();
-      let idleTimedOut = false;
-      let idleTimeoutId: ReturnType<typeof setTimeout> | null = null;
+      let lastError: unknown = null;
 
-      try {
-        const refreshIdleTimeout = () => {
-          if (idleTimeoutId) {
-            clearTimeout(idleTimeoutId);
-          }
-          idleTimeoutId = setTimeout(() => {
-            idleTimedOut = true;
-            controller.abort();
-          }, STREAM_IDLE_TIMEOUT_MS);
-        };
-        refreshIdleTimeout();
+      for (let attempt = 1; attempt <= GENERATE_RETRY_ATTEMPTS; attempt += 1) {
+        const controller = new AbortController();
+        let idleTimedOut = false;
+        let idleTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
-        logLessonDebug("sending POST /api/generate-lesson", { requestId });
-        const response = await fetch(`${trimmedBackendUrl}/api/generate-lesson`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          signal: controller.signal,
-          body: JSON.stringify({
-            question: normalized,
-            language,
-            level,
-          }),
-        });
-        refreshIdleTimeout();
-        logLessonDebug("received initial response", {
-          requestId,
-          status: response.status,
-          ok: response.ok,
-          hasBody: Boolean(response.body),
-        });
-
-        if (!response.ok) {
-          const errorPayload = await response.json().catch(() => null);
-          logLessonDebug("non-OK response payload", { requestId, errorPayload });
-          throw new Error(errorPayload?.error || "Unable to generate lesson");
-        }
-
-        const reader = response.body?.getReader();
-        if (!reader) {
-          throw new Error("No response stream from backend");
-        }
-
-        const decoder = new TextDecoder();
-        let buffer = "";
-        let lesson: LessonJourney | null = null;
-        let chunkCount = 0;
-        let totalBytes = 0;
-
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) {
-            logLessonDebug("stream reader done", { requestId, chunkCount, totalBytes });
-            break;
-          }
-          chunkCount += 1;
-          totalBytes += value?.byteLength ?? 0;
-          buffer += decoder.decode(value, { stream: true });
+        try {
+          const refreshIdleTimeout = () => {
+            if (idleTimeoutId) {
+              clearTimeout(idleTimeoutId);
+            }
+            idleTimeoutId = setTimeout(() => {
+              idleTimedOut = true;
+              controller.abort();
+            }, STREAM_IDLE_TIMEOUT_MS);
+          };
           refreshIdleTimeout();
-          logLessonDebug("stream chunk decoded", {
-            requestId,
-            chunkCount,
-            chunkBytes: value?.byteLength ?? 0,
-            bufferedChars: buffer.length,
+
+          logLessonDebug("sending POST /api/generate-lesson", { requestId, attempt });
+          const response = await fetch(`${trimmedBackendUrl}/api/generate-lesson`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            signal: controller.signal,
+            body: JSON.stringify({
+              question: normalized,
+              language,
+              level,
+            }),
           });
-          const { events, remainder } = parseSSEChunk(buffer);
-          buffer = remainder;
-          if (events.length > 0) {
-            logLessonDebug("parsed SSE events from chunk", {
+          refreshIdleTimeout();
+          logLessonDebug("received initial response", {
+            requestId,
+            attempt,
+            status: response.status,
+            ok: response.ok,
+            hasBody: Boolean(response.body),
+          });
+
+          if (!response.ok) {
+            const errorPayload = await response.json().catch(() => null);
+            logLessonDebug("non-OK response payload", { requestId, attempt, errorPayload });
+            const error = new Error(errorPayload?.error || "Unable to generate lesson") as RetryableError;
+            error.status = response.status;
+            throw error;
+          }
+
+          const reader = response.body?.getReader();
+          if (!reader) {
+            throw new Error("No response stream from backend");
+          }
+
+          const decoder = new TextDecoder();
+          let buffer = "";
+          let lesson: LessonJourney | null = null;
+          let chunkCount = 0;
+          let totalBytes = 0;
+
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) {
+              logLessonDebug("stream reader done", { requestId, attempt, chunkCount, totalBytes });
+              break;
+            }
+            chunkCount += 1;
+            totalBytes += value?.byteLength ?? 0;
+            buffer += decoder.decode(value, { stream: true });
+            refreshIdleTimeout();
+            logLessonDebug("stream chunk decoded", {
               requestId,
+              attempt,
               chunkCount,
-              events: events.map((entry) => entry.event),
-              remainderChars: remainder.length,
+              chunkBytes: value?.byteLength ?? 0,
+              bufferedChars: buffer.length,
             });
-          }
-
-          for (const entry of events) {
-            if (entry.event === "lesson") {
-              logLessonDebug("lesson event received", {
+            const { events, remainder } = parseSSEChunk(buffer);
+            buffer = remainder;
+            if (events.length > 0) {
+              logLessonDebug("parsed SSE events from chunk", {
                 requestId,
-                dataLength: entry.data.length,
+                attempt,
+                chunkCount,
+                events: events.map((entry) => entry.event),
+                remainderChars: remainder.length,
               });
-              lesson = JSON.parse(entry.data) as LessonJourney;
-              continue;
             }
-            if (entry.event === "ping") {
-              logLessonDebug("ping event received", { requestId, ping: entry.data });
-              continue;
-            }
-            if (entry.event === "done") {
-              logLessonDebug("done event received", { requestId, payload: entry.data });
-              continue;
-            }
-            if (entry.event === "error") {
-              const payload = JSON.parse(entry.data) as { error?: string };
-              logLessonDebug("error event received", { requestId, payload });
-              throw new Error(payload.error || "Unable to generate lesson");
-            }
-            logLessonDebug("unknown SSE event received", {
-              requestId,
-              event: entry.event,
-              payloadPreview: entry.data.slice(0, 120),
-            });
-          }
-        }
 
-        // Process any residual buffer after the stream ends
-        if (buffer.trim()) {
-          logLessonDebug("processing residual stream buffer", {
-            requestId,
-            residualChars: buffer.length,
-          });
-          const { events } = parseSSEChunk(buffer + "\n\n");
-          for (const entry of events) {
-            if (entry.event === "lesson") {
-              logLessonDebug("lesson event in residual buffer", {
+            for (const entry of events) {
+              if (entry.event === "lesson") {
+                logLessonDebug("lesson event received", {
+                  requestId,
+                  attempt,
+                  dataLength: entry.data.length,
+                });
+                lesson = JSON.parse(entry.data) as LessonJourney;
+                continue;
+              }
+              if (entry.event === "ping") {
+                logLessonDebug("ping event received", { requestId, attempt, ping: entry.data });
+                continue;
+              }
+              if (entry.event === "done") {
+                logLessonDebug("done event received", { requestId, attempt, payload: entry.data });
+                continue;
+              }
+              if (entry.event === "error") {
+                const payload = JSON.parse(entry.data) as { error?: string };
+                logLessonDebug("error event received", { requestId, attempt, payload });
+                throw new Error(payload.error || "Unable to generate lesson");
+              }
+              logLessonDebug("unknown SSE event received", {
                 requestId,
-                dataLength: entry.data.length,
-              });
-              lesson = JSON.parse(entry.data) as LessonJourney;
-            } else if (entry.event === "error") {
-              const payload = JSON.parse(entry.data) as { error?: string };
-              logLessonDebug("error event in residual buffer", { requestId, payload });
-              throw new Error(payload.error || "Unable to generate lesson");
-            } else {
-              logLessonDebug("non-lesson residual event", {
-                requestId,
+                attempt,
                 event: entry.event,
                 payloadPreview: entry.data.slice(0, 120),
               });
             }
           }
-        }
 
-        if (!lesson) {
-          throw new Error("Backend closed connection before returning a lesson");
-        }
+          if (buffer.trim()) {
+            logLessonDebug("processing residual stream buffer", {
+              requestId,
+              attempt,
+              residualChars: buffer.length,
+            });
+            const { events } = parseSSEChunk(buffer + "\n\n");
+            for (const entry of events) {
+              if (entry.event === "lesson") {
+                logLessonDebug("lesson event in residual buffer", {
+                  requestId,
+                  attempt,
+                  dataLength: entry.data.length,
+                });
+                lesson = JSON.parse(entry.data) as LessonJourney;
+              } else if (entry.event === "error") {
+                const payload = JSON.parse(entry.data) as { error?: string };
+                logLessonDebug("error event in residual buffer", { requestId, attempt, payload });
+                throw new Error(payload.error || "Unable to generate lesson");
+              } else {
+                logLessonDebug("non-lesson residual event", {
+                  requestId,
+                  attempt,
+                  event: entry.event,
+                  payloadPreview: entry.data.slice(0, 120),
+                });
+              }
+            }
+          }
 
-        logLessonDebug("setLesson with parsed payload", {
-          requestId,
-          partsCount: lesson.parts?.length ?? 0,
-          keyTakeaways: lesson.keyTakeaways?.length ?? 0,
-        });
-        setLesson(lesson);
-      } catch (error) {
-        if (
-          idleTimedOut ||
-          (error instanceof DOMException && error.name === "AbortError")
-        ) {
-          setError(
-            `Connection closed after ${Math.round(
-              STREAM_IDLE_TIMEOUT_MS / 1000
-            )}s without keep-alive. Please try again.`
-          );
+          if (!lesson) {
+            throw new Error("Backend closed connection before returning a lesson");
+          }
+
+          logLessonDebug("setLesson with parsed payload", {
+            requestId,
+            attempt,
+            partsCount: lesson.parts?.length ?? 0,
+            keyTakeaways: lesson.keyTakeaways?.length ?? 0,
+          });
+          setLesson(lesson);
           return;
-        }
-        console.error("[frontend][useLesson] generateLesson failed", {
-          requestId,
-          error,
-        });
-        setError(error instanceof Error ? error.message : "Failed to generate lesson");
-      } finally {
-        if (idleTimeoutId) {
-          clearTimeout(idleTimeoutId);
+        } catch (error) {
+          lastError = error;
+          const canRetry = attempt < GENERATE_RETRY_ATTEMPTS && isRetryableError(error, idleTimedOut);
+          logLessonDebug("attempt failed", {
+            requestId,
+            attempt,
+            canRetry,
+            error,
+          });
+
+          if (canRetry) {
+            const waitMs = Math.min(
+              GENERATE_RETRY_DELAY_MS * Math.pow(2, attempt - 1),
+              MAX_GENERATE_RETRY_DELAY_MS
+            );
+            await sleep(waitMs);
+            continue;
+          }
+
+          if (
+            idleTimedOut ||
+            (error instanceof DOMException && error.name === "AbortError")
+          ) {
+            setError(
+              `Connection closed after ${Math.round(
+                STREAM_IDLE_TIMEOUT_MS / 1000
+              )}s without keep-alive. Please try again.`
+            );
+            return;
+          }
+          console.error("[frontend][useLesson] generateLesson failed", {
+            requestId,
+            attempt,
+            error,
+          });
+          setError(error instanceof Error ? error.message : "Failed to generate lesson");
+          return;
+        } finally {
+          if (idleTimeoutId) {
+            clearTimeout(idleTimeoutId);
+          }
         }
       }
+
+      setError(lastError instanceof Error ? lastError.message : "Failed to generate lesson");
     },
     [language, level, router, setError, setLesson, setQuestion, startLoading]
   );
