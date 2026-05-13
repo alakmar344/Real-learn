@@ -64,10 +64,11 @@ function buildGenerateUrl(model) {
 }
 
 function stripThinkingTags(text) {
-  if (typeof text !== "string") {
-    return "";
-  }
-  return text.replace(/<think(?:ing)?>[\s\S]*?<\/think(?:ing)?>/gi, "").trim();
+  const source = typeof text === "string" ? text : String(text ?? "");
+  return source
+    .replace(/<think>[\s\S]*?<\/think>/gi, "")
+    .replace(/<thinking>[\s\S]*?<\/thinking>/gi, "")
+    .trim();
 }
 
 function isRetryableNetworkGemmaError(error) {
@@ -276,6 +277,7 @@ export async function callGemma(
         }
 
         const text = parts
+          .filter((p) => !p?.thought)
           .map((p) => p?.text ?? "")
           .join("");
         console.log("[Gemma] parsed candidate text", {
