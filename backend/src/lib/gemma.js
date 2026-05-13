@@ -148,7 +148,7 @@ export async function callGemma(
     throw new Error("GEMMA_API_KEY is not configured");
   }
   const callId = `gemma-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-  const models = ["gemma-4-26b-a4b-it"];
+  const models = buildModelList();
   const maxRetries = parseNonNegativeInt(
     process.env.GEMMA_MAX_RETRIES,
     DEFAULT_MAX_RETRIES
@@ -184,21 +184,24 @@ export async function callGemma(
     userMessageLength: userMessage?.length ?? 0,
   });
   assertTimeoutCircuitClosed();
- const requestBody = {
-  system_instruction: {
-    parts: [{ text: systemPrompt }],
-  },
-  contents: [
-    {
-      role: "user",
-      parts: [{ text: userMessage }],
+  const requestBody = {
+    system_instruction: {
+      parts: [{ text: systemPrompt }],
     },
-  ],
-  generationConfig: {
-    temperature,
-    maxOutputTokens: 4192
-  }
-};
+    contents: [
+      {
+        role: "user",
+        parts: [{ text: userMessage }],
+      },
+    ],
+    generationConfig: {
+      temperature,
+      maxOutputTokens: 4192,
+      thinkingConfig: {
+        thinkingBudget: 0,
+      },
+    },
+  };
   if (enableSearch) {
     requestBody.tools = [{ googleSearch: {} }];
   }
@@ -279,7 +282,6 @@ export async function callGemma(
         }
 
         const text = parts
-          .filter((p) => !p?.thought)
           .map((p) => p?.text ?? "")
           .join("");
         console.log("[Gemma] parsed candidate text", {
