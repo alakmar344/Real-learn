@@ -32,6 +32,7 @@ const GENERATE_RETRY_DELAY_MS =
     ? configuredGenerateRetryDelayMs
     : DEFAULT_GENERATE_RETRY_DELAY_MS;
 const MAX_GENERATE_RETRY_DELAY_MS = 8000;
+const RETRYABLE_STATUS_CODES = [408, 425, 429, 500, 502, 503, 504];
 
 type StreamEvent = {
   event: string;
@@ -51,8 +52,10 @@ function logLessonDebug(stage: string, details?: unknown) {
 }
 
 function parseSSEChunk(buffer: string): { events: StreamEvent[]; remainder: string } {
-  const normalizedBuffer = buffer.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-  const blocks = normalizedBuffer.split(/\n\n+/);
+  const normalizedBuffer = buffer.includes("\r")
+    ? buffer.replace(/\r\n/g, "\n").replace(/\r/g, "\n")
+    : buffer;
+  const blocks = normalizedBuffer.split("\n\n");
   const remainder = blocks.pop() ?? "";
   const events = blocks
     .map((block) => {
@@ -60,7 +63,10 @@ function parseSSEChunk(buffer: string): { events: StreamEvent[]; remainder: stri
       const event = lines.find((line) => line.startsWith("event:"))?.slice(6).trim();
       const data = lines
         .filter((line) => line.startsWith("data:"))
-        .map((line) => line.slice(5).trimStart())
+        .map((line) => {
+          const value = line.slice(5);
+          return value.startsWith(" ") ? value.slice(1) : value;
+        })
         .join("\n");
       if (!event || !data) return null;
       return { event, data };
@@ -70,12 +76,25 @@ function parseSSEChunk(buffer: string): { events: StreamEvent[]; remainder: stri
 }
 
 function sleep(ms: number) {
+  if (!Number.isFinite(ms) || ms <= 0) {
+    return Promise.resolve();
+  }
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function isRetryableStatus(status?: number) {
   if (!Number.isInteger(status)) return false;
-  return status === 408 || status === 425 || status === 429 || status === 500 || status === 502 || status === 503 || status === 504;
+  return RETRYABLE_STATUS_CODES.includes(status as number);
+}
+
+function isLikelyNetworkTypeError(error: TypeError) {
+  const normalized = error.message.toLowerCase();
+  return (
+    normalized.includes("fetch") ||
+    normalized.includes("network") ||
+    normalized.includes("load failed") ||
+    normalized.includes("failed to fetch")
+  );
 }
 
 function isRetryableMessage(message: string) {
@@ -99,7 +118,7 @@ function isRetryableError(error: unknown, idleTimedOut: boolean) {
   const retryableError = error as RetryableError;
   if (isRetryableStatus(retryableError.status)) return true;
   if (error instanceof DOMException && error.name === "AbortError") return true;
-  if (error instanceof TypeError) return true;
+  if (error instanceof TypeError) return isLikelyNetworkTypeError(error);
   return isRetryableMessage(error.message);
 }
 
