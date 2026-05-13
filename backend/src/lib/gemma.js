@@ -194,7 +194,6 @@ export async function callGemma(
     generationConfig: {
       temperature,
       maxOutputTokens: 4192,
-      enable_thinking: false,
     },
   };
   if (enableSearch) {

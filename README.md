@@ -278,7 +278,7 @@ Real-learn/
 ### Backend
 
 - `GEMMA_API_KEY=...`
-- `GEMMA_MODEL=gemma-4-7b-it` (optional)
+- `GEMMA_MODEL=gemma-4-26b-a4b-it` (optional)
 - `GEMMA_FALLBACK_MODELS=model-a,model-b` (optional; default is empty, so no fallback models are used unless configured)
 - `GEMMA_MAX_RETRIES=2` (optional; retries per model on 429/5xx/network errors)
 - `GEMMA_RETRY_DELAY_MS=700` (optional base backoff in milliseconds)
