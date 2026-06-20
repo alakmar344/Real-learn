@@ -44,7 +44,7 @@ export default function LoadingCinematic({ question, onCancel }: Props) {
           position: "absolute",
           inset: 0,
           background:
-            "radial-gradient(ellipse at 50% 50%, rgba(245,197,24,0.03) 0%, transparent 70%)",
+            "radial-gradient(ellipse at 50% 50%, rgba(26,58,92,0.04) 0%, transparent 70%)",
           animation: "loadingGlow 3s ease-in-out infinite",
         }}
       />
@@ -55,8 +55,8 @@ export default function LoadingCinematic({ question, onCancel }: Props) {
             width: 80,
             height: 80,
             borderRadius: "50%",
-            border: "3px solid rgba(245,197,24,0.3)",
-            borderTopColor: "var(--gold-primary)",
+            border: "3px solid rgba(26,58,92,0.15)",
+            borderTopColor: "var(--accent)",
             margin: "0 auto",
             display: "grid",
             placeItems: "center",
@@ -71,6 +71,7 @@ export default function LoadingCinematic({ question, onCancel }: Props) {
             marginTop: 18,
             color: "var(--text-secondary)",
             fontSize: "var(--text-base)",
+            fontFamily: "var(--font-lora)",
             animation: "fadeUp 350ms var(--ease-reveal)",
           }}
         >
@@ -79,7 +80,7 @@ export default function LoadingCinematic({ question, onCancel }: Props) {
         <p
           style={{
             marginTop: 12,
-            color: "var(--gold-primary)",
+            color: "var(--accent)",
             fontFamily: "var(--font-playfair)",
             fontStyle: "italic",
             fontSize: 20,

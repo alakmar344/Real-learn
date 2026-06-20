@@ -55,19 +55,19 @@ export default function QuizQuestion({ question, index, selectedIndex, answered,
           const showCorrectAnswer = answered && isCorrect;
           const isWrongSelected = answered && isSelected && !isCorrect;
 
-          let background = "var(--bg-card)";
+          let background = "var(--bg-surface)";
           let border = "1.5px solid var(--border-default)";
-          let color = "#d0d0d0";
+          let color = "var(--text-primary)";
 
           if (showCorrectAnswer) {
-            background = "rgba(16,185,129,0.08)";
-            border = "1.5px solid rgba(16,185,129,0.45)";
+            background = "var(--correct-bg)";
+            border = "1.5px solid rgba(26,107,58,0.4)";
             color = "var(--text-primary)";
           }
 
           if (isWrongSelected) {
             background = "var(--wrong-bg)";
-            border = "1.5px solid var(--wrong)";
+            border = "1.5px solid rgba(139,32,32,0.4)";
             color = "var(--text-primary)";
           }
 
@@ -128,9 +128,11 @@ export default function QuizQuestion({ question, index, selectedIndex, answered,
             padding: "12px 16px",
             borderRadius: "var(--radius-md)",
             borderLeft: `3px solid ${selectedIndex === question.correctIndex ? "var(--correct)" : "var(--wrong)"}`,
-            background: "var(--bg-card)",
+            background: "var(--bg-primary)",
             color: "var(--text-secondary)",
             fontSize: 13,
+            fontFamily: "var(--font-lora)",
+            fontStyle: "italic",
           }}
         >
           {question.explanation}

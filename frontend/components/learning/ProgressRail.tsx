@@ -49,12 +49,12 @@ export default function ProgressRail({ unlockedPart, completedParts }: Props) {
                   borderRadius: "50%",
                   display: "grid",
                   placeItems: "center",
-                  background: done ? "var(--correct)" : active ? "var(--gold-primary)" : "var(--bg-card)",
+                  background: done ? "var(--correct)" : active ? "var(--accent)" : "var(--bg-card)",
                   border: locked ? "1.5px solid var(--border-default)" : "none",
                   boxShadow: done
                     ? "var(--shadow-glow-correct)"
                     : active
-                      ? "var(--shadow-glow-gold)"
+                      ? "var(--shadow-glow-accent)"
                       : "none",
                 }}
               >
@@ -65,7 +65,7 @@ export default function ProgressRail({ unlockedPart, completedParts }: Props) {
                   marginTop: 8,
                   fontSize: 11,
                   fontWeight: 500,
-                  color: done ? "var(--correct)" : active ? "var(--gold-primary)" : "var(--text-tertiary)",
+                  color: done ? "var(--correct)" : active ? "var(--accent)" : "var(--text-tertiary)",
                 }}
               >
                 Part {part}
