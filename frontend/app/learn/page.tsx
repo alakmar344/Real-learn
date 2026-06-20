@@ -9,6 +9,8 @@ import CompletionScreen from "@/components/learning/CompletionScreen";
 import FollowUpBox from "@/components/learning/FollowUpBox";
 import UnlockAnimation from "@/components/learning/UnlockAnimation";
 import LoadingCinematic from "@/components/shared/LoadingCinematic";
+import ErrorState from "@/components/shared/ErrorState";
+import LiveRegion from "@/components/shared/LiveRegion";
 import { useLessonStore } from "@/store/lessonStore";
 import { useLesson } from "@/hooks/useLesson";
 
@@ -68,124 +70,197 @@ export default function LearnPage() {
     showUnlockFx,
   ]);
 
-  if (isLoading && question) {
-    return <LoadingCinematic question={question} />;
+  /* ── Error state ── */
+  if (error && !isLoading && !lesson) {
+    return (
+      <>
+        <LiveRegion />
+        <ErrorState
+          message={error}
+          onRetry={() => {
+            if (question) generateLesson(question, false);
+          }}
+          onHome={restart}
+        />
+      </>
+    );
   }
 
+  /* ── Loading cinematic ── */
+  if (isLoading && question) {
+    return (
+      <>
+        <LiveRegion />
+        <LoadingCinematic
+          question={question}
+          onCancel={() => {
+            resetAll();
+            restart();
+          }}
+        />
+      </>
+    );
+  }
+
+  /* ── No lesson yet ── */
   if (!lesson) {
     return (
-      <main style={{ minHeight: "100vh", background: "var(--bg-primary)", color: "var(--text-primary)", padding: 24 }}>
-        <p>{error ?? "No lesson loaded yet."}</p>
-        <button
-          type="button"
-          onClick={restart}
-          style={{ border: "1px solid var(--border-default)", borderRadius: 10, padding: "10px 14px", background: "transparent", color: "var(--text-primary)", cursor: "pointer" }}
-        >
-          Go Home
-        </button>
-      </main>
+      <>
+        <LiveRegion />
+        <main style={{ minHeight: "100vh", background: "var(--bg-primary)", color: "var(--text-primary)", padding: 24 }}>
+          <Navbar />
+          <div style={{ maxWidth: 640, margin: "80px auto", textAlign: "center" }}>
+            <p style={{ fontSize: 48, marginBottom: 16 }}>📚</p>
+            <h2 style={{ fontWeight: 600, marginBottom: 8 }}>No lesson loaded yet</h2>
+            <p style={{ color: "var(--text-secondary)", fontSize: 14, marginBottom: 24 }}>
+              Head back home and ask a question to start learning.
+            </p>
+            <button
+              type="button"
+              onClick={restart}
+              style={{
+                border: "none",
+                borderRadius: "var(--radius-md)",
+                padding: "12px 24px",
+                background: "var(--gold-primary)",
+                color: "var(--bg-primary)",
+                fontWeight: 700,
+                fontSize: 15,
+                cursor: "pointer",
+                minHeight: 44,
+              }}
+            >
+              Go Home →
+            </button>
+          </div>
+        </main>
+      </>
     );
   }
 
   const activePart = quizPart ? lesson.parts[quizPart - 1] : null;
 
   return (
-    <main style={{ minHeight: "100vh", background: "var(--bg-primary)", color: "var(--text-primary)" }}>
-      <div style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(10,10,10,0.9)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border-subtle)" }}>
-        <Navbar compact />
-        <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 12px" }}>
-          <span style={{ fontSize: 12, color: "var(--text-tertiary)", marginRight: 8 }}>Understanding:</span>
-          <span
-            style={{
-              fontFamily: "var(--font-playfair)",
-              fontStyle: "italic",
-              fontWeight: 600,
-              fontSize: 14,
-              color: "var(--gold-primary)",
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              display: "inline-block",
-              maxWidth: "100%",
-              verticalAlign: "bottom",
-            }}
-            title={lesson.question}
-          >
-            {lesson.question}
-          </span>
+    <>
+      <LiveRegion />
+      <main style={{ minHeight: "100vh", background: "var(--bg-primary)", color: "var(--text-primary)" }}>
+        <div
+          style={{
+            position: "sticky",
+            top: 0,
+            zIndex: 50,
+            background: "rgba(10,10,10,0.9)",
+            backdropFilter: "blur(12px)",
+            borderBottom: "1px solid var(--border-subtle)",
+          }}
+        >
+          <Navbar compact />
+          <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 12px" }}>
+            <span style={{ fontSize: 12, color: "var(--text-tertiary)", marginRight: 8 }}>Understanding:</span>
+            <span
+              style={{
+                fontFamily: "var(--font-playfair)",
+                fontStyle: "italic",
+                fontWeight: 600,
+                fontSize: 14,
+                color: "var(--gold-primary)",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                display: "inline-block",
+                maxWidth: "100%",
+                verticalAlign: "bottom",
+              }}
+              title={lesson.question}
+            >
+              {lesson.question}
+            </span>
+          </div>
         </div>
-      </div>
 
-      <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 64px" }}>
-        <ProgressRail unlockedPart={unlockedPart} completedParts={completedParts} />
+        <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 64px" }}>
+          <ProgressRail unlockedPart={unlockedPart} completedParts={completedParts} />
 
-        {lesson.parts.map((part) => (
-          <PartCard
-            key={part.partNumber}
-            part={part}
-            isUnlocked={part.partNumber <= unlockedPart}
-            isCompleted={completedParts.includes(part.partNumber)}
-            isCollapsed={collapsedParts.includes(part.partNumber)}
-            score={partScores[part.partNumber]}
-            onStartQuiz={() => setQuizPart(part.partNumber)}
-            onToggleCollapse={() => togglePartCollapse(part.partNumber)}
-          />
-        ))}
+          {lesson.parts.map((part) => (
+            <PartCard
+              key={part.partNumber}
+              part={part}
+              isUnlocked={part.partNumber <= unlockedPart}
+              isCompleted={completedParts.includes(part.partNumber)}
+              isCollapsed={collapsedParts.includes(part.partNumber)}
+              score={partScores[part.partNumber]}
+              onStartQuiz={() => setQuizPart(part.partNumber)}
+              onToggleCollapse={() => togglePartCollapse(part.partNumber)}
+            />
+          ))}
 
-        {showCompletion ? <CompletionScreen lesson={lesson} totalScore={totalScore} /> : null}
+          {showCompletion ? (
+            <CompletionScreen
+              lesson={lesson}
+              totalScore={totalScore}
+              onRestart={() => {
+                resetAll();
+                restart();
+              }}
+            />
+          ) : null}
 
-        {showFollowUp ? (
-          <FollowUpBox
-            onSubmit={async (nextQuestion) => {
-              console.log("[frontend][LearnPage] follow-up submit", {
-                nextQuestionLength: nextQuestion.length,
+          {showFollowUp ? (
+            <FollowUpBox
+              onSubmit={async (nextQuestion) => {
+                console.log("[frontend][LearnPage] follow-up submit", {
+                  nextQuestionLength: nextQuestion.length,
+                });
+                await generateLesson(nextQuestion, false);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                console.log("[frontend][LearnPage] follow-up completed + scrolled");
+              }}
+            />
+          ) : null}
+
+          {!showCompletion && (
+            <button
+              type="button"
+              onClick={() => {
+                resetAll();
+                restart();
+              }}
+              style={{
+                marginTop: 20,
+                borderRadius: "var(--radius-md)",
+                border: "1px solid var(--border-default)",
+                background: "transparent",
+                color: "var(--text-secondary)",
+                padding: "10px 14px",
+                cursor: "pointer",
+                minHeight: 44,
+              }}
+            >
+              Learn Something New
+            </button>
+          )}
+        </div>
+
+        {activePart ? (
+          <QuizSheet
+            open={quizPart !== null}
+            questions={activePart.quiz}
+            onClose={() => setQuizPart(null)}
+            onPass={(score) => {
+              console.log("[frontend][LearnPage] quiz passed", {
+                part: activePart.partNumber,
+                score,
               });
-              await generateLesson(nextQuestion, false);
-              window.scrollTo({ top: 0, behavior: "smooth" });
-              console.log("[frontend][LearnPage] follow-up completed + scrolled");
+              passPart(activePart.partNumber, score);
+              setQuizPart(null);
+              setShowUnlockFx(true);
+              window.setTimeout(() => setShowUnlockFx(false), 850);
             }}
           />
         ) : null}
 
-        <button
-          type="button"
-          onClick={() => {
-            resetAll();
-            restart();
-          }}
-          style={{
-            marginTop: 20,
-            borderRadius: 10,
-            border: "1px solid var(--border-default)",
-            background: "transparent",
-            color: "var(--text-secondary)",
-            padding: "10px 14px",
-            cursor: "pointer",
-          }}
-        >
-          Learn Something New
-        </button>
-      </div>
-
-      {activePart ? (
-        <QuizSheet
-          open={quizPart !== null}
-          questions={activePart.quiz}
-          onClose={() => setQuizPart(null)}
-          onPass={(score) => {
-            console.log("[frontend][LearnPage] quiz passed", {
-              part: activePart.partNumber,
-              score,
-            });
-            passPart(activePart.partNumber, score);
-            setQuizPart(null);
-            setShowUnlockFx(true);
-            window.setTimeout(() => setShowUnlockFx(false), 850);
-          }}
-        />
-      ) : null}
-
-      <UnlockAnimation show={showUnlockFx} />
-    </main>
+        <UnlockAnimation show={showUnlockFx} />
+      </main>
+    </>
   );
 }

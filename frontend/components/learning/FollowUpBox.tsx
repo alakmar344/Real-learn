@@ -13,36 +13,46 @@ export default function FollowUpBox({ onSubmit }: Props) {
   return (
     <section
       className="animate-fade-up"
+      aria-label="Ask a follow-up question"
       style={{
-        marginTop: 24,
-        borderRadius: 16,
+        marginTop: varSpaceLg,
+        borderRadius: "var(--radius-lg)",
         border: "1px solid var(--border-default)",
         background: "var(--bg-surface)",
-        padding: 16,
+        padding: varSpaceBase,
       }}
     >
       <p style={{ marginTop: 0, marginBottom: 10, color: "var(--text-secondary)", fontSize: 13 }}>
         Ask a follow-up and unlock a new 3-part journey.
       </p>
+      <label htmlFor="followup-input" style={{ display: "none" }}>
+        Follow-up question
+      </label>
       <textarea
+        id="followup-input"
         value={value}
         onChange={(e) => setValue(e.target.value)}
         placeholder="Go deeper..."
+        aria-label="Follow-up question"
         style={{
           width: "100%",
           minHeight: 80,
           resize: "vertical",
-          borderRadius: 12,
+          borderRadius: "var(--radius-md)",
           border: "1px solid var(--border-default)",
           background: "var(--bg-card)",
           color: "var(--text-primary)",
-          padding: 12,
+          padding: varSpaceMd,
           outline: "none",
+          fontFamily: "var(--font-inter)",
+          fontSize: 14,
         }}
       />
       <button
         type="button"
         disabled={loading || !value.trim()}
+        aria-busy={loading}
+        aria-label="Submit follow-up question"
         onClick={async () => {
           if (!value.trim()) return;
           setLoading(true);
@@ -53,12 +63,15 @@ export default function FollowUpBox({ onSubmit }: Props) {
         style={{
           marginTop: 10,
           border: "none",
-          borderRadius: 10,
+          borderRadius: "var(--radius-md)",
           padding: "10px 16px",
           fontWeight: 600,
-          background: "var(--gold-primary)",
+          background: loading || !value.trim() ? "#6d5a16" : "var(--gold-primary)",
           color: "var(--bg-primary)",
-          cursor: "pointer",
+          cursor: loading || !value.trim() ? "not-allowed" : "pointer",
+          fontSize: 14,
+          minHeight: 44,
+          transition: "background 200ms var(--ease-color)",
         }}
       >
         {loading ? "Generating..." : "Teach Me More →"}
@@ -66,3 +79,7 @@ export default function FollowUpBox({ onSubmit }: Props) {
     </section>
   );
 }
+
+const varSpaceMd = "var(--space-md)";
+const varSpaceBase = "var(--space-base)";
+const varSpaceLg = "var(--space-lg)";

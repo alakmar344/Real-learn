@@ -36,17 +36,21 @@ export default function PartCard({
   onToggleCollapse,
 }: Props) {
   const timer = useReadingTimer(isUnlocked && !isCompleted);
+  const contentId = `part-${part.partNumber}-content`;
 
+  /* ── Collapsed completed state ── */
   if (isCompleted && isCollapsed) {
     return (
       <button
         type="button"
         onClick={onToggleCollapse}
+        aria-expanded={false}
+        aria-controls={contentId}
         style={{
-          marginTop: 24,
+          marginTop: varSpaceLg,
           width: "100%",
           height: 52,
-          borderRadius: 12,
+          borderRadius: "var(--radius-md)",
           border: "1px solid rgba(16,185,129,0.2)",
           background: "rgba(16,185,129,0.08)",
           color: "var(--correct)",
@@ -55,6 +59,7 @@ export default function PartCard({
           justifyContent: "space-between",
           padding: "0 16px",
           cursor: "pointer",
+          minHeight: 44,
         }}
       >
         <span>✓ {part.title} · Completed</span>
@@ -66,18 +71,20 @@ export default function PartCard({
   return (
     <article
       className="animate-fade-up"
+      aria-label={`Part ${part.partNumber}: ${part.title}`}
       style={{
-        marginTop: 32,
-        borderRadius: 20,
+        marginTop: varSpaceXl,
+        borderRadius: "var(--radius-xl)",
         border: "1px solid var(--border-default)",
         background: "var(--bg-surface)",
-        boxShadow: "0 4px 24px rgba(0,0,0,0.4)",
-        padding: "clamp(20px, 3vw, 32px)",
+        boxShadow: "var(--shadow-md)",
+        padding: "clamp(16px, 4vw, 32px)",
         position: "relative",
         overflow: "hidden",
       }}
     >
       <div
+        id={contentId}
         style={{
           filter: isUnlocked ? "none" : "blur(12px)",
           pointerEvents: isUnlocked ? "auto" : "none",
@@ -86,10 +93,11 @@ export default function PartCard({
           transition: "all 400ms ease",
         }}
       >
+        {/* Part badge + subject */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
           <span
             style={{
-              borderRadius: 6,
+              borderRadius: "var(--radius-sm)",
               border: "1px solid rgba(245,197,24,0.3)",
               background: "var(--gold-dim)",
               color: "var(--gold-primary)",
@@ -103,7 +111,7 @@ export default function PartCard({
           </span>
           <span
             style={{
-              borderRadius: 6,
+              borderRadius: "var(--radius-sm)",
               border: `1px solid color-mix(in srgb, ${subjectColors[part.subject] ?? "var(--subject-general)"} 30%, transparent)`,
               background: `color-mix(in srgb, ${subjectColors[part.subject] ?? "var(--subject-general)"} 12%, transparent)`,
               color: subjectColors[part.subject] ?? "var(--subject-general)",
@@ -116,7 +124,7 @@ export default function PartCard({
           </span>
         </div>
 
-        <h2 style={{ margin: "12px 0 0", fontSize: "clamp(22px, 3vw, 26px)", fontWeight: 600 }}>
+        <h2 style={{ margin: "12px 0 0", fontSize: "clamp(20px, 4vw, 26px)", fontWeight: 600 }}>
           {part.title}
         </h2>
 
@@ -124,7 +132,7 @@ export default function PartCard({
           className="markdown-content"
           style={{
             marginTop: 20,
-            fontSize: 15,
+            fontSize: "var(--text-base)",
             color: "#d0d0d0",
             lineHeight: 1.85,
             maxWidth: 640,
@@ -133,16 +141,24 @@ export default function PartCard({
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{part.content}</ReactMarkdown>
         </div>
 
-        <div style={{ marginTop: 16, display: "flex", flexWrap: "wrap", gap: 8 }}>
+        <div style={{ marginTop: varSpaceBase, display: "flex", flexWrap: "wrap", gap: varSpaceSm }}>
           {part.sources.map((source) => (
             <SourceTag key={source} href={source} />
           ))}
         </div>
 
+        {/* Reading timer / Quiz button */}
         {isUnlocked && !isCompleted ? (
           <div style={{ marginTop: 20 }}>
             {!timer.isComplete ? (
-              <div style={{ height: 3, width: "100%", borderRadius: 999, background: "var(--border-subtle)", overflow: "hidden" }}>
+              <div
+                role="progressbar"
+                aria-valuenow={Math.round(timer.progress)}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label="Reading progress – please read the content before taking the quiz"
+                style={{ height: 3, width: "100%", borderRadius: 999, background: "var(--border-subtle)", overflow: "hidden" }}
+              >
                 <div
                   style={{
                     width: `${timer.progress}%`,
@@ -156,39 +172,45 @@ export default function PartCard({
               <button
                 type="button"
                 onClick={onStartQuiz}
+                aria-label={`Take quiz for Part ${part.partNumber}`}
                 className="animate-fade-up"
                 style={{
                   marginTop: 4,
                   width: "100%",
                   height: 52,
-                  borderRadius: 12,
+                  borderRadius: "var(--radius-md)",
                   border: "none",
                   background: "var(--gold-primary)",
                   color: "var(--bg-primary)",
-                  fontSize: 15,
+                  fontSize: "var(--text-base)",
                   fontWeight: 700,
                   cursor: "pointer",
-                  boxShadow: "0 0 32px rgba(245,197,24,0.4)",
+                  boxShadow: "var(--shadow-glow-gold)",
+                  minHeight: 44,
                 }}
               >
-                I’ve Read This → Take Quiz
+                I&apos;ve Read This → Take Quiz
               </button>
             )}
           </div>
         ) : null}
 
+        {/* Collapse completed part */}
         {isCompleted && !isCollapsed ? (
           <button
             type="button"
             onClick={onToggleCollapse}
+            aria-expanded={true}
+            aria-controls={contentId}
             style={{
-              marginTop: 16,
+              marginTop: varSpaceBase,
               border: "1px solid var(--border-default)",
-              borderRadius: 10,
+              borderRadius: "var(--radius-md)",
               background: "transparent",
               color: "var(--text-secondary)",
               padding: "8px 12px",
               cursor: "pointer",
+              minHeight: 44,
             }}
           >
             Collapse part
@@ -196,6 +218,7 @@ export default function PartCard({
         ) : null}
       </div>
 
+      {/* Locked overlay */}
       {!isUnlocked && (
         <div
           style={{
@@ -213,14 +236,14 @@ export default function PartCard({
             style={{
               background: "rgba(20,20,20,0.8)",
               padding: "16px 24px",
-              borderRadius: 16,
+              borderRadius: "var(--radius-lg)",
               border: "1px solid var(--border-default)",
               textAlign: "center",
               backdropFilter: "blur(4px)",
-              boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+              boxShadow: "var(--shadow-lg)",
             }}
           >
-            <span style={{ fontSize: 32, marginBottom: 8, display: "block" }}>🔒</span>
+            <span aria-hidden="true" style={{ fontSize: 32, marginBottom: 8, display: "block" }}>🔒</span>
             <h3 style={{ fontSize: 18, fontWeight: 600, color: "var(--text-primary)", margin: "0 0 4px" }}>
               Part {part.partNumber} Locked
             </h3>
@@ -233,3 +256,9 @@ export default function PartCard({
     </article>
   );
 }
+
+/* Design-token spacing helpers (avoid magic numbers) */
+const varSpaceSm = "var(--space-sm)";
+const varSpaceBase = "var(--space-base)";
+const varSpaceLg = "var(--space-lg)";
+const varSpaceXl = "var(--space-xl)";
