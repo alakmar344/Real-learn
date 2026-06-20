@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { QuizQuestion as Question } from "@/types";
 import QuizQuestion from "@/components/learning/QuizQuestion";
 
@@ -20,6 +20,8 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
   const [answers, setAnswers] = useState<Array<number | null>>(
     Array.from({ length: TOTAL_QUESTIONS }, () => null)
   );
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
 
   const currentQuestion = questions[current];
   const selected = answers[current];
@@ -34,6 +36,66 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
       ),
     [answers, questions]
   );
+
+  /* ── Focus trapping ── */
+  useEffect(() => {
+    if (!open) return;
+    previouslyFocusedRef.current = document.activeElement as HTMLElement;
+
+    const focusFirst = () => {
+      const focusable = sheetRef.current?.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable && focusable.length) focusable[0].focus();
+    };
+    /* Small delay so DOM renders first */
+    const id = setTimeout(focusFirst, 80);
+
+    return () => {
+      clearTimeout(id);
+      previouslyFocusedRef.current?.focus();
+    };
+  }, [open]);
+
+  const handleTabTrap = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key !== "Tab" || !sheetRef.current) return;
+      const focusable = sheetRef.current.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (!open) return;
+    document.addEventListener("keydown", handleTabTrap);
+    return () => document.removeEventListener("keydown", handleTabTrap);
+  }, [open, handleTabTrap]);
+
+  /* ── Escape to close ── */
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !answered) onClose();
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [open, answered, onClose]);
 
   if (!open) return null;
 
@@ -63,6 +125,9 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Quiz – Question ${current + 1} of ${TOTAL_QUESTIONS}`}
       onClick={answered ? undefined : onClose}
       style={{
         position: "fixed",
@@ -73,6 +138,7 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
       }}
     >
       <div
+        ref={sheetRef}
         className="animate-slide-bottom"
         onClick={(e) => e.stopPropagation()}
         style={{
@@ -84,14 +150,39 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
           overflowY: "auto",
           background: "var(--bg-surface)",
           borderTop: "1px solid var(--border-default)",
-          borderRadius: "24px 24px 0 0",
+          borderRadius: "var(--radius-2xl) var(--radius-2xl) 0 0",
           padding: "0 24px 40px",
         }}
       >
+        {/* Drag handle */}
         <div style={{ width: 40, height: 4, borderRadius: 2, background: "#333", margin: "12px auto 20px" }} />
-        <h3 style={{ margin: 0, fontFamily: "var(--font-inter)", fontWeight: 700, fontSize: 18 }}>Quick Check</h3>
+
+        {/* Close button */}
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close quiz"
+          style={{
+            position: "absolute",
+            top: 16,
+            right: 24,
+            background: "transparent",
+            border: "1px solid var(--border-default)",
+            borderRadius: "var(--radius-md)",
+            padding: "4px 10px",
+            color: "var(--text-secondary)",
+            cursor: "pointer",
+            fontSize: 14,
+          }}
+        >
+          ✕
+        </button>
+
+        <h3 style={{ margin: 0, fontFamily: "var(--font-inter)", fontWeight: 700, fontSize: 18 }}>
+          Quick Check
+        </h3>
         <p style={{ marginTop: 6, marginBottom: 16, fontSize: 13, color: "var(--text-secondary)" }}>
-          2 questions about what you just read
+          {TOTAL_QUESTIONS} questions about what you just read
         </p>
         <div style={{ borderBottom: "1px solid rgba(245,197,24,0.2)", marginBottom: 16 }} />
 
@@ -107,10 +198,17 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
           <button
             type="button"
             onClick={nextAction}
+            aria-label={
+              current < LAST_QUESTION_INDEX
+                ? "Next question"
+                : score === PERFECT_SCORE
+                  ? "Unlock next part"
+                  : "Read again"
+            }
             style={{
               marginTop: 18,
               width: "100%",
-              borderRadius: 10,
+              borderRadius: "var(--radius-md)",
               padding: "12px",
               border:
                 score === PERFECT_SCORE && current === LAST_QUESTION_INDEX
@@ -127,6 +225,7 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
               fontSize: 14,
               fontWeight: 600,
               cursor: "pointer",
+              transition: "background 200ms var(--ease-color)",
             }}
           >
             {current < LAST_QUESTION_INDEX

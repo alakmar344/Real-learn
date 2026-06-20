@@ -27,22 +27,28 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
   return (
     <form
       onSubmit={handleSubmit}
+      aria-label="Ask a question"
       style={{
         marginTop: 48,
         maxWidth: 640,
         width: "100%",
-        borderRadius: 16,
+        borderRadius: "var(--radius-lg)",
         border: "1.5px solid var(--border-default)",
         background: "var(--bg-surface)",
-        boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+        boxShadow: "var(--shadow-lg)",
       }}
     >
       <div style={{ padding: "20px 24px" }}>
+        <label htmlFor="question-input" style={{ display: "none" }}>
+          What do you want to understand today?
+        </label>
         <textarea
+          id="question-input"
           ref={textareaRef}
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           placeholder="What do you want to understand today?"
+          aria-label="Your question"
           style={{
             width: "100%",
             minHeight: 56,
@@ -58,14 +64,24 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           }}
         />
       </div>
-      <div style={{ borderTop: "1px solid var(--border-subtle)", padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+      <div
+        style={{
+          borderTop: "1px solid var(--border-subtle)",
+          padding: "12px 16px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 12,
+        }}
+      >
         <ExampleQuestions />
         <button
           type="submit"
           disabled={!question.trim()}
+          aria-label="Start learning"
           style={{
             border: "none",
-            borderRadius: 10,
+            borderRadius: "var(--radius-md)",
             padding: "10px 20px",
             fontSize: 14,
             fontWeight: 600,
@@ -73,6 +89,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
             background: question.trim() ? "var(--gold-primary)" : "#6d5a16",
             cursor: question.trim() ? "pointer" : "not-allowed",
             transition: "all 200ms var(--ease-color)",
+            minHeight: 44,
           }}
         >
           Teach Me →

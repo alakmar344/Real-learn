@@ -10,7 +10,12 @@ const messages = [
   "Almost ready...",
 ];
 
-export default function LoadingCinematic({ question }: { question: string }) {
+interface Props {
+  question: string;
+  onCancel?: () => void;
+}
+
+export default function LoadingCinematic({ question, onCancel }: Props) {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -22,6 +27,9 @@ export default function LoadingCinematic({ question }: { question: string }) {
 
   return (
     <div
+      role="alert"
+      aria-live="polite"
+      aria-label="Generating your lesson"
       style={{
         position: "fixed",
         inset: 0,
@@ -42,6 +50,7 @@ export default function LoadingCinematic({ question }: { question: string }) {
       />
       <div style={{ position: "relative", textAlign: "center", padding: 16 }}>
         <div
+          className="animate-spin"
           style={{
             width: 80,
             height: 80,
@@ -51,17 +60,17 @@ export default function LoadingCinematic({ question }: { question: string }) {
             margin: "0 auto",
             display: "grid",
             placeItems: "center",
-            animation: "spin 1s linear infinite",
           }}
         >
-          <span style={{ fontSize: 20 }}>📘</span>
+          <span aria-hidden="true" style={{ fontSize: 20 }}>📖</span>
         </div>
         <p
           key={index}
+          aria-live="polite"
           style={{
             marginTop: 18,
             color: "var(--text-secondary)",
-            fontSize: 15,
+            fontSize: "var(--text-base)",
             animation: "fadeUp 350ms var(--ease-reveal)",
           }}
         >
@@ -75,21 +84,35 @@ export default function LoadingCinematic({ question }: { question: string }) {
             fontStyle: "italic",
             fontSize: 20,
             maxWidth: 480,
+            marginLeft: "auto",
+            marginRight: "auto",
           }}
         >
-          “{question}”
+          &ldquo;{question}&rdquo;
         </p>
+
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            style={{
+              marginTop: varSpaceXl,
+              padding: "10px 20px",
+              borderRadius: "var(--radius-md)",
+              border: "1px solid var(--border-default)",
+              background: "transparent",
+              color: "var(--text-secondary)",
+              cursor: "pointer",
+              fontSize: 14,
+              minHeight: 44,
+            }}
+          >
+            Cancel
+          </button>
+        )}
       </div>
-      <style jsx>{`
-        @keyframes spin {
-          from {
-            transform: rotate(0deg);
-          }
-          to {
-            transform: rotate(360deg);
-          }
-        }
-      `}</style>
     </div>
   );
 }
+
+const varSpaceXl = "var(--space-xl)";
