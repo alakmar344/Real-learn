@@ -4,7 +4,7 @@ export default function UnlockAnimation({ show }: { show: boolean }) {
   if (!show) return null;
   return (
     <div
-      className="animate-gold-flash"
+      className="animate-accent-flash"
       aria-hidden="true"
       style={{
         position: "fixed",

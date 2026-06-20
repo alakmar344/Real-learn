@@ -1,59 +1,62 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Playfair+Display:wght@400;600;700;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:ital,wght@0,400;0,600;1,400;1,600&family=Playfair+Display:wght@700;900&family=JetBrains+Mono:wght@400;500&display=swap");
 
 :root {
   /* ── Typography ── */
   --font-playfair: "Playfair Display", Georgia, serif;
   --font-inter: "Inter", system-ui, sans-serif;
+  --font-lora: "Lora", Georgia, serif;
   --font-mono: "JetBrains Mono", monospace;
 
-  /* ── Backgrounds ── */
-  --bg-primary: #0a0a0a;
-  --bg-surface: #111111;
-  --bg-card: #1a1a1a;
-  --bg-card-hover: #202020;
+  /* ── Backgrounds — paper layers ── */
+  --bg-primary: #f5f0e8;
+  --bg-surface: #faf7f2;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f0ebe0;
 
-  /* ── Borders ── */
-  --border-subtle: #1f1f1f;
-  --border-default: #2a2a2a;
-  --border-glow: #f5c518;
+  /* ── Borders — ink lines ── */
+  --border-subtle: #e0d8cc;
+  --border-default: #c8bfb0;
+  --border-accent: #1a3a5c;
+  --border-glow: #1a3a5c;
 
-  /* ── Gold accent ── */
-  --gold-primary: #f5c518;
-  --gold-hover: #f7d147;
-  --gold-dim: rgba(245, 197, 24, 0.15);
-  --gold-glow: rgba(245, 197, 24, 0.3);
+  /* ── Accent — Oxford blue ── */
+  --accent: #1a3a5c;
+  --accent-hover: #2a5a8c;
+  --accent-dim: rgba(26, 58, 92, 0.08);
+  --accent-glow: rgba(26, 58, 92, 0.15);
+  --shadow-glow-accent: 0 2px 12px rgba(26, 58, 92, 0.2);
 
-  /* ── Text (WCAG AA compliant on #0a0a0a) ── */
-  --text-primary: #f0f0f0;     /* 12.6:1 ✓ */
-  --text-secondary: #9ca3af;   /* 5.7:1  ✓ (was #888888 → 4.5:1 borderline) */
-  --text-tertiary: #6b7280;    /* 4.6:1  ✓ (was #555555 → 3.0:1 ✗) */
-  --text-gold: #f5c518;
+  /* ── Text — ink hierarchy ── */
+  --text-primary: #1a1208;
+  --text-secondary: #4a3f2f;
+  --text-tertiary: #8a7a6a;
+  --text-gold: #1a3a5c;
 
   /* ── Semantic ── */
-  --correct: #10b981;
-  --correct-bg: rgba(16, 185, 129, 0.12);
-  --wrong: #ef4444;
-  --wrong-bg: rgba(239, 68, 68, 0.12);
-  --locked: #333333;
+  --correct: #1a6b3a;
+  --correct-bg: rgba(26, 107, 58, 0.08);
+  --wrong: #8b2020;
+  --wrong-bg: rgba(139, 32, 32, 0.08);
+  --locked: #c8bfb0;
 
-  /* ── Subject colours ── */
-  --subject-physics: #3b82f6;
-  --subject-chemistry: #10b981;
-  --subject-economics: #f59e0b;
-  --subject-biology: #ec4899;
-  --subject-cs: #8b5cf6;
-  --subject-history: #ef4444;
-  --subject-general: #f5c518;
+  /* ── Subject colours — muted academic palette ── */
+  --subject-physics: #1a3a5c;
+  --subject-chemistry: #1a6b3a;
+  --subject-economics: #7a4f1a;
+  --subject-biology: #6b1a4a;
+  --subject-cs: #2a1a6b;
+  --subject-history: #6b1a1a;
+  --subject-general: #1a3a5c;
 
-  /* ── Radii (standardised) ── */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
-  --radius-2xl: 28px;
+  /* ── Radii — tighter, editorial ── */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
 
   /* ── Type scale ── */
   --text-xs: 11px;
@@ -76,12 +79,11 @@
   --space-2xl: 48px;
   --space-3xl: 64px;
 
-  /* ── Shadows ── */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 24px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.5);
-  --shadow-glow-gold: 0 0 32px rgba(245, 197, 24, 0.4);
-  --shadow-glow-correct: 0 0 16px rgba(16, 185, 129, 0.3);
+  /* ── Shadows — paper depth ── */
+  --shadow-sm: 0 1px 4px rgba(60, 40, 10, 0.10);
+  --shadow-md: 0 2px 12px rgba(60, 40, 10, 0.12);
+  --shadow-lg: 0 4px 24px rgba(60, 40, 10, 0.15);
+  --shadow-glow-correct: 0 0 16px rgba(26, 107, 58, 0.2);
 
   /* ── Easing ── */
   --ease-reveal: cubic-bezier(0.16, 1, 0.3, 1);
@@ -118,12 +120,12 @@ pre {
 }
 
 ::selection {
-  background: var(--gold-primary);
-  color: var(--bg-primary);
+  background: #1a3a5c;
+  color: #faf7f2;
 }
 
 :focus-visible {
-  outline: 2px solid var(--gold-primary);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
@@ -139,11 +141,11 @@ pre {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-surface);
+  background: var(--bg-primary);
 }
 
 /* ── Keyframes ── */
-.gold-pulse-dot {
+.accent-pulse-dot {
   animation: pulseDot 1.6s ease-in-out infinite;
 }
 
@@ -162,15 +164,15 @@ pre {
   to { transform: translateY(0); }
 }
 
-@keyframes goldFlash {
-  0% { background: transparent; box-shadow: 0 0 0 rgba(245, 197, 24, 0); }
-  40% { background: rgba(245, 197, 24, 0.18); box-shadow: 0 0 40px rgba(245, 197, 24, 0.35); }
-  100% { background: transparent; box-shadow: 0 0 0 rgba(245, 197, 24, 0); }
+@keyframes accentFlash {
+  0% { background: transparent; box-shadow: 0 0 0 rgba(26, 58, 92, 0); }
+  40% { background: rgba(26, 58, 92, 0.12); box-shadow: 0 0 40px rgba(26, 58, 92, 0.25); }
+  100% { background: transparent; box-shadow: 0 0 0 rgba(26, 58, 92, 0); }
 }
 
 @keyframes unlockPop {
   0% { transform: scale(0.8); }
-  50% { transform: scale(1.05); box-shadow: 0 0 20px rgba(245, 197, 24, 0.25); }
+  50% { transform: scale(1.05); box-shadow: 0 0 20px rgba(26, 58, 92, 0.2); }
   100% { transform: scale(1); }
 }
 
@@ -215,7 +217,7 @@ pre {
 /* ── Animation utilities ── */
 .animate-fade-up { animation: fadeUp 500ms var(--ease-reveal) both; }
 .animate-slide-bottom { animation: slideFromBottom 400ms var(--ease-reveal) both; }
-.animate-gold-flash { animation: goldFlash 800ms var(--ease-reveal) both; }
+.animate-accent-flash { animation: accentFlash 800ms var(--ease-reveal) both; }
 .animate-unlock-pop { animation: unlockPop 500ms var(--ease-reveal) both; }
 .animate-shake { animation: shake 400ms var(--ease-reveal) both; }
 .animate-correct-pulse { animation: correctPulse 400ms var(--ease-reveal) both; }
@@ -256,6 +258,9 @@ pre {
 
 .markdown-content p {
   margin-bottom: var(--space-base);
+  font-family: var(--font-lora);
+  font-size: 16px;
+  line-height: 1.9;
 }
 
 .markdown-content strong {
@@ -264,23 +269,26 @@ pre {
 }
 
 .markdown-content em {
-  color: var(--text-gold);
+  color: var(--accent-hover);
   font-style: italic;
 }
 
 .markdown-content code {
   font-family: var(--font-mono), monospace;
   font-size: var(--text-sm);
-  background: var(--bg-card);
-  color: var(--text-gold);
+  background: #e8e0d0;
+  color: var(--accent);
   padding: 2px 6px;
   border-radius: var(--radius-sm);
+  border: 1px solid var(--border-default);
 }
 
 .markdown-content blockquote {
   margin: 20px 0;
-  border-left: 3px solid var(--gold-primary);
-  padding-left: var(--space-base);
+  border-left: 3px solid var(--accent);
+  background: rgba(26, 58, 92, 0.04);
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
   color: var(--text-secondary);
   font-style: italic;
 }

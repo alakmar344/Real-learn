@@ -65,14 +65,14 @@ export default function HomePage() {
                 gap: 8,
                 fontSize: 11,
                 letterSpacing: "0.15em",
-                color: "var(--gold-primary)",
+                color: "var(--accent)",
                 fontWeight: 500,
               }}
             >
               <span
-                className="gold-pulse-dot"
+                className="accent-pulse-dot"
                 aria-hidden="true"
-                style={{ width: 4, height: 4, borderRadius: "50%", background: "var(--gold-primary)" }}
+                style={{ width: 4, height: 4, borderRadius: "50%", background: "var(--accent)" }}
               />
               POWERED BY GEMMA 4
             </div>
@@ -84,6 +84,7 @@ export default function HomePage() {
                 lineHeight: 1.05,
                 color: "var(--text-primary)",
                 fontSize: "clamp(40px, 8vw, 64px)",
+                letterSpacing: "-0.02em",
               }}
             >
               The World Is
@@ -98,7 +99,7 @@ export default function HomePage() {
                     right: 0,
                     bottom: 4,
                     height: 3,
-                    background: "var(--gold-primary)",
+                    background: "var(--accent)",
                     transform: "skew(-1deg)",
                   }}
                 />
@@ -111,6 +112,8 @@ export default function HomePage() {
                 color: "var(--text-secondary)",
                 fontSize: "var(--text-lg)",
                 lineHeight: 1.6,
+                fontFamily: "var(--font-lora)",
+                fontStyle: "italic",
               }}
             >
               Ask anything. Learn in 3 unlockable parts. Prove you understand before going deeper.

@@ -11,7 +11,7 @@ interface Props {
 
 /* ── Confetti particles ── */
 const CONFETTI_COLORS = [
-  "var(--gold-primary)",
+  "#1a3a5c",
   "var(--correct)",
   "#3b82f6",
   "#ec4899",
@@ -80,8 +80,8 @@ export default function CompletionScreen({ lesson, totalScore, onRestart }: Prop
       style={{
         marginTop: 28,
         borderRadius: "var(--radius-xl)",
-        border: "1px solid rgba(16,185,129,0.3)",
-        background: "rgba(16,185,129,0.08)",
+        border: "1px solid rgba(26,107,58,0.25)",
+        background: "var(--correct-bg)",
         padding: "clamp(20px, 4vw, 32px)",
         position: "relative",
         overflow: "hidden",
@@ -148,8 +148,8 @@ export default function CompletionScreen({ lesson, totalScore, onRestart }: Prop
           >
             <span
               style={{
-                color: "var(--gold-primary)",
-                fontWeight: 700,
+              color: "var(--accent)",
+              fontWeight: 700,
                 flexShrink: 0,
                 width: 20,
                 textAlign: "center",

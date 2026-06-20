@@ -51,8 +51,8 @@ export default function PartCard({
           width: "100%",
           height: 52,
           borderRadius: "var(--radius-md)",
-          border: "1px solid rgba(16,185,129,0.2)",
-          background: "rgba(16,185,129,0.08)",
+          border: "1px solid rgba(26,107,58,0.25)",
+          background: "var(--correct-bg)",
           color: "var(--correct)",
           display: "flex",
           alignItems: "center",
@@ -75,14 +75,23 @@ export default function PartCard({
       style={{
         marginTop: varSpaceXl,
         borderRadius: "var(--radius-xl)",
-        border: "1px solid var(--border-default)",
-        background: "var(--bg-surface)",
+        border: "1px solid var(--border-subtle)",
+        background: "var(--bg-card)",
         boxShadow: "var(--shadow-md)",
         padding: "clamp(16px, 4vw, 32px)",
         position: "relative",
         overflow: "hidden",
       }}
     >
+      <div
+        aria-hidden="true"
+        style={{
+          height: 3,
+          background: "var(--accent)",
+          borderRadius: "var(--radius-lg) var(--radius-lg) 0 0",
+          margin: "calc(-1 * clamp(16px, 4vw, 32px)) calc(-1 * clamp(16px, 4vw, 32px)) 0",
+        }}
+      />
       <div
         id={contentId}
         style={{
@@ -98,12 +107,12 @@ export default function PartCard({
           <span
             style={{
               borderRadius: "var(--radius-sm)",
-              border: "1px solid rgba(245,197,24,0.3)",
-              background: "var(--gold-dim)",
-              color: "var(--gold-primary)",
+              border: "1px solid var(--border-accent)",
+              background: "var(--accent-dim)",
+              color: "var(--accent)",
               padding: "4px 10px",
               fontSize: 11,
-              letterSpacing: "0.1em",
+              letterSpacing: "0.12em",
               fontWeight: 600,
             }}
           >
@@ -124,7 +133,7 @@ export default function PartCard({
           </span>
         </div>
 
-        <h2 style={{ margin: "12px 0 0", fontSize: "clamp(20px, 4vw, 26px)", fontWeight: 600 }}>
+        <h2 style={{ margin: "12px 0 0", fontSize: "clamp(20px, 4vw, 26px)", fontWeight: 600, fontFamily: "var(--font-playfair)" }}>
           {part.title}
         </h2>
 
@@ -133,9 +142,10 @@ export default function PartCard({
           style={{
             marginTop: 20,
             fontSize: "var(--text-base)",
-            color: "#d0d0d0",
-            lineHeight: 1.85,
+            color: "var(--text-secondary)",
+            lineHeight: 1.9,
             maxWidth: 640,
+            fontFamily: "var(--font-lora)",
           }}
         >
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{part.content}</ReactMarkdown>
@@ -163,7 +173,7 @@ export default function PartCard({
                   style={{
                     width: `${timer.progress}%`,
                     height: "100%",
-                    background: "var(--gold-primary)",
+                    background: "var(--accent)",
                     transition: "width 100ms linear",
                   }}
                 />
@@ -180,12 +190,12 @@ export default function PartCard({
                   height: 52,
                   borderRadius: "var(--radius-md)",
                   border: "none",
-                  background: "var(--gold-primary)",
-                  color: "var(--bg-primary)",
+                  background: "var(--accent)",
+                  color: "#faf7f2",
                   fontSize: "var(--text-base)",
                   fontWeight: 700,
                   cursor: "pointer",
-                  boxShadow: "var(--shadow-glow-gold)",
+                  boxShadow: "var(--shadow-glow-accent)",
                   minHeight: 44,
                 }}
               >
@@ -228,13 +238,14 @@ export default function PartCard({
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            background: "rgba(10,10,10,0.2)",
+            background: "rgba(245,240,232,0.85)",
+            backdropFilter: "blur(6px)",
             zIndex: 10,
           }}
         >
           <div
             style={{
-              background: "rgba(20,20,20,0.8)",
+              background: "var(--bg-card)",
               padding: "16px 24px",
               borderRadius: "var(--radius-lg)",
               border: "1px solid var(--border-default)",

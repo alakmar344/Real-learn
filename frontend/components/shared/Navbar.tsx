@@ -46,7 +46,7 @@ export default function Navbar({ compact = false }: Props) {
         height: compact ? "auto" : 56,
         minHeight: 56,
         borderBottom: "1px solid var(--border-subtle)",
-        background: compact ? "rgba(10,10,10,0.9)" : "rgba(10,10,10,0.55)",
+        background: "rgba(245,240,232,0.92)",
         backdropFilter: "blur(12px)",
       }}
     >
@@ -75,8 +75,8 @@ export default function Navbar({ compact = false }: Props) {
             aria-hidden="true"
             style={{ width: 40, height: "auto" }}
           >
-            <rect width="120" height="40" rx="8" fill="#f5c518" />
-            <text x="10" y="27" fontFamily="Inter, sans-serif" fontWeight="800" fontSize="18" fill="#0a0a0a">
+            <rect width="120" height="40" rx="8" fill="#1a3a5c" />
+            <text x="10" y="27" fontFamily="Inter, sans-serif" fontWeight="800" fontSize="18" fill="#faf7f2">
               RL
             </text>
           </svg>
@@ -89,7 +89,7 @@ export default function Navbar({ compact = false }: Props) {
             }}
           >
             <span style={{ color: "var(--text-primary)" }}>Real</span>
-            <span style={{ color: "var(--gold-primary)" }}>Learn</span>
+            <span style={{ color: "var(--accent)" }}>Learn</span>
           </span>
         </Link>
 

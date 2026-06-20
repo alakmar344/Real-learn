@@ -148,14 +148,14 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
           bottom: 0,
           maxHeight: "85vh",
           overflowY: "auto",
-          background: "var(--bg-surface)",
-          borderTop: "1px solid var(--border-default)",
+          background: "var(--bg-card)",
+          borderTop: "2px solid var(--accent)",
           borderRadius: "var(--radius-2xl) var(--radius-2xl) 0 0",
           padding: "0 24px 40px",
         }}
       >
         {/* Drag handle */}
-        <div style={{ width: 40, height: 4, borderRadius: 2, background: "#333", margin: "12px auto 20px" }} />
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: "var(--border-default)", margin: "12px auto 20px" }} />
 
         {/* Close button */}
         <button
@@ -178,13 +178,13 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
           ✕
         </button>
 
-        <h3 style={{ margin: 0, fontFamily: "var(--font-inter)", fontWeight: 700, fontSize: 18 }}>
+        <h3 style={{ margin: 0, fontFamily: "var(--font-playfair)", fontWeight: 700, fontSize: 18 }}>
           Quick Check
         </h3>
         <p style={{ marginTop: 6, marginBottom: 16, fontSize: 13, color: "var(--text-secondary)" }}>
           {TOTAL_QUESTIONS} questions about what you just read
         </p>
-        <div style={{ borderBottom: "1px solid rgba(245,197,24,0.2)", marginBottom: 16 }} />
+        <div style={{ borderBottom: "1px solid var(--border-subtle)", marginBottom: 16 }} />
 
         <QuizQuestion
           question={currentQuestion}
