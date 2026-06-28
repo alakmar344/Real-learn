@@ -19,7 +19,6 @@ import {
   verifyClerkToken,
 } from "./lib/auth.js";
 import {
-  containsBannedUserInput,
   filterAIResponse,
   filterUserInput,
 } from "./lib/contentGuard.js";
