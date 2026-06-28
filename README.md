@@ -278,6 +278,12 @@ Real-learn/
 - `NEXT_PUBLIC_STREAM_IDLE_TIMEOUT_MS=120000` (optional; frontend stream idle timeout in ms)
 - `NEXT_PUBLIC_GENERATE_RETRY_ATTEMPTS=2` (optional; total frontend attempts for transient lesson-generation failures)
 - `NEXT_PUBLIC_GENERATE_RETRY_DELAY_MS=1500` (optional; base retry backoff in ms between frontend attempts)
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...` (production Clerk publishable key for Frontend API `https://clerk.reallearn.site`)
+- `CLERK_SECRET_KEY=sk_live_...` (production Clerk secret key; server-side only, keep secret)
+- `NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in`
+- `NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up`
+- `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/`
+- `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/`
 
 ### Backend
 
@@ -295,6 +301,11 @@ Real-learn/
 - `SSE_HEARTBEAT_INTERVAL_MS=15000` (optional; heartbeat interval in ms for SSE keep-alive, capped at 55000)
 - `FRONTEND_ORIGIN=https://<your-vercel-frontend>.vercel.app`
 - `PORT=10000` (optional on Render)
+- `CLERK_FRONTEND_API=https://clerk.reallearn.site` (production Clerk Frontend API; also the JWT issuer)
+- `CLERK_JWKS_URL=https://clerk.reallearn.site/.well-known/jwks.json` (optional; defaults to `${CLERK_FRONTEND_API}/.well-known/jwks.json`)
+- `CLERK_API_URL=https://api.clerk.com` (Clerk Backend API base URL)
+- `CLERK_SECRET_KEY=sk_live_...` (production Clerk secret key; keep secret)
+- `CLERK_JWT_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----"` (optional; enables networkless JWT verification, JWKS stays as fallback)
 
 ---
 
