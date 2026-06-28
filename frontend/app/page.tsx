@@ -111,24 +111,19 @@ export default function HomePage() {
           }}
         >
           <div style={{ width: "100%", maxWidth: 800 }}>
-            <div
+            <p
               style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                fontSize: 11,
-                letterSpacing: "0.15em",
-                color: "var(--accent)",
+                fontSize: 14,
+                letterSpacing: "0.1em",
+                color: "var(--text-tertiary)",
                 fontWeight: 500,
+                margin: "0 0 8px",
+                fontFamily: "var(--font-lora)",
+                fontStyle: "italic",
               }}
             >
-              <span
-                className="accent-pulse-dot"
-                aria-hidden="true"
-                style={{ width: 4, height: 4, borderRadius: "50%", background: "var(--accent)" }}
-              />
-              POWERED BY AI
-            </div>
+              "Education is the kindling of a flame, not the filling of a vessel."
+            </p>
             <h1
               style={{
                 margin: "20px 0 0",
