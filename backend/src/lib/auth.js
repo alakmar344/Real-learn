@@ -71,30 +71,37 @@ function isTrustedIssuer(issuer) {
 
 export async function verifyClerkToken(token) {
   try {
-    // If an explicit issuer is configured, pin verification to it.
-    // Otherwise derive the issuer from the token itself so the backend works
-    // with whatever Clerk instance the frontend is configured to use.
-    let issuer = CONFIGURED_FRONTEND_API;
-    if (!issuer) {
-      const claims = decodeJwt(token);
-      issuer = (claims.iss || "").replace(/\/$/, "");
-    }
+    // Always derive the issuer from the token, then check it against the trust
+    // list (the configured Frontend API + known Clerk domains). This makes the
+    // backend work whether the frontend uses the custom production domain
+    // (clerk.reallearn.site) or a *.clerk.accounts.dev dev instance, instead of
+    // rejecting everything that doesn't match a single hardcoded issuer.
+    const claims = decodeJwt(token);
+    const issuer = (claims.iss || "").replace(/\/$/, "");
 
     if (!isTrustedIssuer(issuer)) {
       return { valid: false, error: `Untrusted token issuer: ${issuer || "none"}` };
     }
 
+    // Use the configured JWKS URL only when it matches the token's issuer;
+    // otherwise fetch keys from the issuer's own well-known endpoint.
+    const jwksUrl =
+      CONFIGURED_JWKS_URL && issuer === CONFIGURED_FRONTEND_API
+        ? CONFIGURED_JWKS_URL
+        : "";
     const verifyOptions = { issuer };
-    const jwks = getJwksForIssuer(issuer, CONFIGURED_JWKS_URL);
+    const jwks = getJwksForIssuer(issuer, jwksUrl);
     try {
       const { payload } = await jwtVerify(token, jwks, verifyOptions);
       return { valid: true, payload };
     } catch (remoteError) {
       // If the JWKS endpoint is unreachable, fall back to the configured public
-      // key. Signature mismatches (a genuinely invalid token) are NOT retried.
-      const fallbackKey = isJwksFetchError(remoteError)
-        ? await getFallbackKey()
-        : null;
+      // key (only valid for the configured issuer). Signature mismatches (a
+      // genuinely invalid token) are NOT retried.
+      const fallbackKey =
+        isJwksFetchError(remoteError) && issuer === CONFIGURED_FRONTEND_API
+          ? await getFallbackKey()
+          : null;
       if (!fallbackKey) throw remoteError;
       console.warn(
         "[auth] JWKS unreachable, verifying with fallback public key",
@@ -120,7 +127,12 @@ function isJwksFetchError(error) {
     message.includes("fetch") ||
     message.includes("network") ||
     message.includes("jwks") ||
+    message.includes("json web key set") ||
+    message.includes("key set") ||
+    message.includes("200 ok") ||
     message.includes("getaddrinfo") ||
+    message.includes("econn") ||
+    message.includes("enotfound") ||
     message.includes("timeout")
   );
 }
@@ -133,6 +145,24 @@ export function extractBearerToken(req) {
   return authHeader.slice(7);
 }
 
+// Safe, non-verifying peek at a token's claims for diagnostics/logging.
+export function inspectToken(token) {
+  try {
+    const claims = decodeJwt(token);
+    const now = Math.floor(Date.now() / 1000);
+    return {
+      iss: claims.iss,
+      sub: claims.sub,
+      azp: claims.azp,
+      exp: claims.exp,
+      expired: typeof claims.exp === "number" ? claims.exp < now : null,
+      trustedIssuer: isTrustedIssuer((claims.iss || "").replace(/\/$/, "")),
+    };
+  } catch (error) {
+    return { error: error.message };
+  }
+}
+
 export async function requireAuth(req, res, next) {
   const token = extractBearerToken(req);
   if (!token) {
@@ -141,7 +171,11 @@ export async function requireAuth(req, res, next) {
 
   const result = await verifyClerkToken(token);
   if (!result.valid) {
-    console.warn("[auth] Token verification failed", { reason: result.error });
+    console.warn("[auth] Token verification failed", {
+      reason: result.error,
+      token: inspectToken(token),
+      configuredIssuer: CONFIGURED_FRONTEND_API,
+    });
     return res.status(401).json({ error: "Invalid or expired token." });
   }
 
