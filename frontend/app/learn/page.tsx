@@ -295,7 +295,7 @@ export default function LearnPage() {
           }}
         >
           <p style={{ margin: 0 }}>
-            You are talking to an AI (Google Gemma 4). Responses are AI-generated and are
+            You are talking to an AI. Responses are AI-generated and are
             <strong> not reviewed by humans before being shown</strong>. They may be inaccurate,
             incomplete, or outdated. Please verify important information with qualified professionals
             or authoritative sources. This service is not intended for children under 13.

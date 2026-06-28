@@ -10,7 +10,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "RealLearn — The World Is Your Textbook",
   description:
-    "Ask anything and learn through a 3-part unlock experience powered by Gemma 4.",
+    "Ask anything and unlock knowledge through progressive discovery."
 };
 
 export default function RootLayout({

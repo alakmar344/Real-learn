@@ -127,7 +127,7 @@ export default function HomePage() {
                 aria-hidden="true"
                 style={{ width: 4, height: 4, borderRadius: "50%", background: "var(--accent)" }}
               />
-              POWERED BY GEMMA 4
+              POWERED BY AI
             </div>
             <h1
               style={{
@@ -188,7 +188,7 @@ export default function HomePage() {
           }}
         >
           <p style={{ margin: 0 }}>
-            You are talking to an AI (Google Gemma 4). Responses are AI-generated and are
+            You are talking to an AI. Responses are AI-generated and are
             <strong> not reviewed by humans before being shown</strong>. They may be inaccurate,
             incomplete, or outdated. Please verify important information with qualified professionals
             or authoritative sources. This service is not intended for children under 13.
