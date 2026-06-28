@@ -5,12 +5,17 @@ import Navbar from "@/components/shared/Navbar";
 import QuestionInput from "@/components/homepage/QuestionInput";
 import LoadingCinematic from "@/components/shared/LoadingCinematic";
 import LiveRegion from "@/components/shared/LiveRegion";
+import PreSignInConsent from "@/components/shared/PreSignInConsent";
 import { useLesson } from "@/hooks/useLesson";
+import { useAuth } from "@clerk/nextjs";
+
+const LEGAL_CONSENT_KEY = "reallearn-legal-consent";
 
 export default function HomePage() {
   const [question, setQuestion] = useState("");
   const [loadingQuestion, setLoadingQuestion] = useState<string | null>(null);
   const { generateLesson } = useLesson();
+  const { isSignedIn, getToken } = useAuth();
 
   useEffect(() => {
     console.log("[frontend][HomePage] render state", {
@@ -18,6 +23,51 @@ export default function HomePage() {
       hasLoadingQuestion: Boolean(loadingQuestion),
     });
   }, [question, loadingQuestion]);
+
+  useEffect(() => {
+    const syncLegalConsent = async () => {
+      if (!isSignedIn) return;
+      const stored = localStorage.getItem(LEGAL_CONSENT_KEY);
+      if (!stored) return;
+      let parsed;
+      try {
+        parsed = JSON.parse(stored) as { accepted: boolean; timestamp: string };
+        if (!parsed.accepted) return;
+      } catch {
+        return;
+      }
+
+      try {
+        const backendUrl =
+          process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:10000";
+        const token = await getToken();
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+        };
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        const res = await fetch(`${backendUrl}/api/legal-consent`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            accepted: true,
+            timestamp: parsed.timestamp,
+          }),
+        });
+
+        if (res.ok) {
+          console.log("[frontend][HomePage] legal consent synced to backend", {
+            timestamp: parsed.timestamp,
+          });
+        }
+      } catch {
+        // best-effort
+      }
+    };
+    syncLegalConsent();
+  }, [isSignedIn, getToken]);
 
   const submit = async () => {
     const normalized = question.trim();
@@ -37,6 +87,7 @@ export default function HomePage() {
   return (
     <>
       <LiveRegion />
+      <PreSignInConsent />
       <main
         style={{
           minHeight: "100vh",
@@ -126,13 +177,28 @@ export default function HomePage() {
 
         <footer
           style={{
-            paddingBottom: 32,
+            padding: "20px 24px 32px",
             textAlign: "center",
             fontSize: 12,
-            color: "var(--text-tertiary)" /* was #333333 — now meets WCAG AA */,
+            color: "var(--text-tertiary)",
+            borderTop: "1px solid var(--border-subtle)",
+            lineHeight: 1.6,
           }}
         >
-          Available in 8 Indian languages · 3 learning levels
+          <p style={{ margin: 0 }}>
+            You are talking to an AI. Its answers can be inaccurate. This service is not intended
+            for children under 13.
+          </p>
+          <p style={{ margin: "4px 0 0" }}>
+            <a href="/legal?tab=privacy" style={{ color: "var(--text-tertiary)" }}>Privacy Policy</a>
+            {" · "}
+            <a href="/legal?tab=terms" style={{ color: "var(--text-tertiary)" }}>Terms of Service</a>
+            {" · "}
+            <a href="/legal" style={{ color: "var(--text-tertiary)" }}>Legal</a>
+          </p>
+          <p style={{ margin: "4px 0 0", fontSize: 11 }}>
+            © {new Date().getFullYear()} RealLearn. All rights reserved.
+          </p>
         </footer>
 
         {loadingQuestion ? (

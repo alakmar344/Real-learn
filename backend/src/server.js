@@ -18,6 +18,10 @@ import {
   inspectToken,
   verifyClerkToken,
 } from "./lib/auth.js";
+import {
+  containsBannedUserInput,
+  filterAIResponse,
+} from "./lib/contentGuard.js";
 
 const DEFAULT_LESSON_TIMEOUT_MS = 300000;
 const configuredLessonTimeoutMs = Number(process.env.LESSON_TIMEOUT_MS);
@@ -236,6 +240,83 @@ app.delete("/api/account", requireAuth, async (req, res) => {
   }
 });
 
+// Store the user's legal consent (Privacy Policy + Terms of Service) acceptance.
+// This is called after the user accepts the pre-sign-in consent and signs in.
+app.post("/api/legal-consent", requireAuth, async (req, res) => {
+  try {
+    const { accepted, timestamp } = req.body;
+
+    if (typeof accepted !== "boolean") {
+      return res.status(400).json({ error: "accepted (boolean) is required" });
+    }
+    if (!timestamp) {
+      return res.status(400).json({ error: "timestamp is required" });
+    }
+
+    const db = await getDb();
+    const collection = db.collection("agreements");
+
+    const agreement = {
+      accepted,
+      email: req.auth?.email || req.auth?.email_address || "",
+      clerkId: req.auth?.userId,
+      deviceIp: req.ip || req.connection?.remoteAddress || "unknown",
+      timestamp: new Date(timestamp),
+      type: "legal-consent",
+      createdAt: new Date(),
+    };
+
+    await collection.insertOne(agreement);
+    console.log("[api/legal-consent] Legal consent saved", {
+      clerkId: req.auth?.userId,
+      accepted,
+      timestamp,
+    });
+
+    res.json({ ok: true });
+  } catch (error) {
+    console.error("[api/legal-consent] Failed to save legal consent", error);
+    res.status(500).json({ error: "Failed to save legal consent" });
+  }
+});
+
+// Export all user data from MongoDB as JSON.
+app.get("/api/export-data", requireAuth, async (req, res) => {
+  try {
+    const userId = req.auth?.userId;
+    const email =
+      req.auth?.email ||
+      req.auth?.email_address ||
+      (Array.isArray(req.auth?.email_addresses) ? req.auth.email_addresses[0] : "") ||
+      "";
+
+    if (!userId) {
+      return res.status(400).json({ error: "Could not determine the user." });
+    }
+
+    const db = await getDb();
+    const filter = email ? { $or: [{ clerkId: userId }, { email }] } : { clerkId: userId };
+
+    const [agreements] = await Promise.all([
+      db.collection("agreements").find(filter).toArray(),
+    ]);
+
+    res.setHeader("Content-Type", "application/json");
+    res.setHeader("Content-Disposition", `attachment; filename="reallearn-data-${userId}.json"`);
+    res.json({
+      exportedAt: new Date().toISOString(),
+      user: {
+        clerkId: userId,
+        email,
+      },
+      agreements,
+    });
+  } catch (error) {
+    console.error("[api/export-data] Failed to export data", error);
+    res.status(500).json({ error: "Failed to export data" });
+  }
+});
+
 app.post("/api/generate-lesson", requireAuth, async (req, res) => {
   const requestId = `lesson-${Date.now()}-${++lessonRequestCounter}`;
   const question = req.body?.question?.trim();
@@ -252,6 +333,12 @@ app.post("/api/generate-lesson", requireAuth, async (req, res) => {
   if (!question) {
     console.warn("[generate-lesson] Missing question", { requestId });
     return res.status(400).json({ error: "Question is required" });
+  }
+
+  const inputFilter = filterUserInput(question);
+  if (!inputFilter.allowed) {
+    console.warn("[generate-lesson] Banned input blocked", { requestId, questionLength: question.length });
+    return res.status(400).json({ error: inputFilter.reason });
   }
   if (activeLessonRequests >= MAX_CONCURRENT_LESSON_REQUESTS) {
     console.warn("[generate-lesson] Busy: concurrency limit reached", {
@@ -373,6 +460,16 @@ Level: ${level}${
       requestId,
       rawLength: raw.length,
     });
+
+    const responseFilter = filterAIResponse(raw);
+    if (!responseFilter.allowed) {
+      console.warn("[generate-lesson] Banned AI response blocked", { requestId });
+      sendEvent("error", {
+        error: responseFilter.reason || "The generated content was flagged. Please try a different question.",
+      });
+      recordLessonResult(false);
+      return;
+    }
 
     if (finished) return;
 

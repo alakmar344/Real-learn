@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import CookieConsent from "@/components/shared/CookieConsent";
+import PreSignInConsent from "@/components/shared/PreSignInConsent";
 import AppShell from "@/components/shared/AppShell";
 import ThemeApplier from "@/components/shared/ThemeApplier";
 import "./globals.css";
@@ -23,6 +24,7 @@ export default function RootLayout({
           <ThemeApplier />
           <AppShell>{children}</AppShell>
           <CookieConsent />
+          <PreSignInConsent />
         </ClerkProvider>
       </body>
     </html>
