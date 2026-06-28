@@ -282,6 +282,32 @@ export default function LearnPage() {
         ) : null}
 
         <UnlockAnimation show={showUnlockFx} />
+
+        <footer
+          style={{
+            padding: "20px 24px 32px",
+            textAlign: "center",
+            fontSize: 12,
+            color: "var(--text-tertiary)",
+            borderTop: "1px solid var(--border-subtle)",
+            lineHeight: 1.6,
+          }}
+        >
+          <p style={{ margin: 0 }}>
+            You are talking to an AI. Its answers can be inaccurate. This service is not intended
+            for children under 13.
+          </p>
+          <p style={{ margin: "4px 0 0" }}>
+            <a href="/legal?tab=privacy" style={{ color: "var(--text-tertiary)" }}>Privacy Policy</a>
+            {" · "}
+            <a href="/legal?tab=terms" style={{ color: "var(--text-tertiary)" }}>Terms of Service</a>
+            {" · "}
+            <a href="/legal" style={{ color: "var(--text-tertiary)" }}>Legal</a>
+          </p>
+          <p style={{ margin: "4px 0 0", fontSize: 11 }}>
+            © {new Date().getFullYear()} RealLearn. All rights reserved.
+          </p>
+        </footer>
       </main>
     </>
   );

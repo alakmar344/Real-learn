@@ -93,6 +93,97 @@ export default function Sidebar({ open, onClose }: Props) {
     }
   };
 
+  const handleExportData = async () => {
+    try {
+      const backendUrl =
+        process.env.NEXT_PUBLIC_BACKEND_URL || "https://real-learn.onrender.com";
+      const token = await getToken();
+      const headers: Record<string, string> = {};
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
+      let backendData = null;
+      try {
+        const res = await fetch(`${backendUrl}/api/export-data`, {
+          method: "GET",
+          headers,
+        });
+        if (res.ok) {
+          backendData = await res.json();
+        }
+      } catch {
+        // backend export may fail if not authenticated
+      }
+
+      const localData: Record<string, unknown> = {};
+      try {
+        const savedJourneysKey = "reallearn-saved-journeys";
+        const savedJourneys = localStorage.getItem(savedJourneysKey);
+        if (savedJourneys) {
+          localData.savedJourneys = JSON.parse(savedJourneys);
+        }
+
+        localData.cookieConsent = (() => {
+          try {
+            return JSON.parse(localStorage.getItem("reallearn-cookie-consent") || "null");
+          } catch {
+            return null;
+          }
+        })();
+
+        localData.legalConsent = (() => {
+          try {
+            return JSON.parse(localStorage.getItem("reallearn-legal-consent") || "null");
+          } catch {
+            return null;
+          }
+        })();
+
+        localData.theme = (() => {
+          try {
+            return JSON.parse(localStorage.getItem("reallearn-theme") || "null");
+          } catch {
+            return null;
+          }
+        })();
+
+        localData.lessonState = (() => {
+          try {
+            return JSON.parse(localStorage.getItem("reallearn-lesson-store") || "null");
+          } catch {
+            return null;
+          }
+        })();
+      } catch {
+        // ignore local storage errors
+      }
+
+      const exportPayload = {
+        exportedAt: new Date().toISOString(),
+        backend: backendData,
+        local: localData,
+      };
+
+      const blob = new Blob([JSON.stringify(exportPayload, null, 2)], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `reallearn-export-${Date.now()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("[frontend][Sidebar] export data failed", err);
+      window.alert(
+        err instanceof Error
+          ? `Could not export data: ${err.message}`
+          : "Could not export data. Please try again."
+      );
+    }
+  };
+
   const email =
     user?.primaryEmailAddress?.emailAddress ||
     user?.emailAddresses?.[0]?.emailAddress ||
@@ -336,25 +427,41 @@ export default function Sidebar({ open, onClose }: Props) {
               >
                 Sign out
               </button>
-              <button
-                type="button"
-                onClick={handleDeleteData}
-                disabled={deleting}
-                style={{
-                  border: "1px solid var(--wrong)",
-                  borderRadius: "var(--radius-md)",
-                  background: "var(--wrong-bg)",
-                  color: "var(--wrong)",
-                  padding: "8px 12px",
-                  cursor: deleting ? "not-allowed" : "pointer",
-                  fontWeight: 600,
-                  fontSize: 13,
-                  minHeight: 40,
-                  opacity: deleting ? 0.6 : 1,
-                }}
-              >
-                {deleting ? "Deleting…" : "Delete my data"}
-              </button>
+               <button
+                 type="button"
+                 onClick={handleDeleteData}
+                 disabled={deleting}
+                 style={{
+                   border: "1px solid var(--wrong)",
+                   borderRadius: "var(--radius-md)",
+                   background: "var(--wrong-bg)",
+                   color: "var(--wrong)",
+                   padding: "8px 12px",
+                   cursor: deleting ? "not-allowed" : "pointer",
+                   fontWeight: 600,
+                   fontSize: 13,
+                   minHeight: 40,
+                   opacity: deleting ? 0.6 : 1,
+                 }}
+               >
+                 {deleting ? "Deleting…" : "Delete my data"}
+               </button>
+               <button
+                 type="button"
+                 onClick={handleExportData}
+                 style={{
+                   border: "1px solid var(--border-default)",
+                   borderRadius: "var(--radius-md)",
+                   background: "transparent",
+                   color: "var(--text-secondary)",
+                   padding: "8px 12px",
+                   cursor: "pointer",
+                   fontSize: 13,
+                   minHeight: 40,
+                 }}
+               >
+                 Export my data
+               </button>
             </div>
           )}
         </div>
