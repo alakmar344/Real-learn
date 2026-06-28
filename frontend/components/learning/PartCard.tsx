@@ -152,7 +152,7 @@ export default function PartCard({
         </div>
 
         <div style={{ marginTop: varSpaceBase, display: "flex", flexWrap: "wrap", gap: varSpaceSm }}>
-          {part.sources.map((source) => (
+          {(part.sources ?? []).map((source) => (
             <SourceTag key={source} href={source} />
           ))}
         </div>
