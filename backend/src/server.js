@@ -21,6 +21,7 @@ import {
 import {
   containsBannedUserInput,
   filterAIResponse,
+  filterUserInput,
 } from "./lib/contentGuard.js";
 
 const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "1.0";
