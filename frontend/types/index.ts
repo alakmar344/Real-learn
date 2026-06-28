@@ -41,7 +41,8 @@ export interface LessonPart {
 }
 
 export interface LessonJourney {
-  question: string;
+  question?: string;
+  topic?: string;
   language: Language;
   level: Level;
   parts: [LessonPart, LessonPart, LessonPart];

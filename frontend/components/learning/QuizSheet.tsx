@@ -23,7 +23,7 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
   const sheetRef = useRef<HTMLDivElement>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
 
-  const currentQuestion = questions[current];
+  const currentQuestion = questions?.[current];
   const selected = answers[current];
   const answered = selected !== null;
 
@@ -97,7 +97,7 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
     return () => document.removeEventListener("keydown", handler);
   }, [open, answered, onClose]);
 
-  if (!open) return null;
+  if (!open || !currentQuestion) return null;
 
   const selectAnswer = (index: number) => {
     if (answered) return;

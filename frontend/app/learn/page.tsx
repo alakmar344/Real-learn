@@ -48,10 +48,11 @@ export default function LearnPage() {
   /* ── Persist a completed journey to local storage (sidebar history) ── */
   useEffect(() => {
     if (!showCompletion || !lesson) return;
-    const id = journeySignature(lesson.question, lesson.parts[0]?.title);
+    const displayQuestion = lesson.question ?? lesson.topic ?? "";
+    const id = journeySignature(displayQuestion, lesson.parts[0]?.title);
     saveJourney({
       id,
-      question: lesson.question,
+      question: displayQuestion,
       language,
       level,
       lesson,
@@ -193,9 +194,9 @@ export default function LearnPage() {
                 maxWidth: "100%",
                 verticalAlign: "bottom",
               }}
-              title={lesson.question}
+              title={lesson.question ?? lesson.topic ?? ""}
             >
-              {lesson.question}
+              {lesson.question ?? lesson.topic ?? ""}
             </span>
           </div>
         </div>
@@ -266,7 +267,7 @@ export default function LearnPage() {
         {activePart ? (
           <QuizSheet
             open={quizPart !== null}
-            questions={activePart.quiz}
+            questions={activePart.quiz ?? []}
             onClose={() => setQuizPart(null)}
             onPass={(score) => {
               console.log("[frontend][LearnPage] quiz passed", {
