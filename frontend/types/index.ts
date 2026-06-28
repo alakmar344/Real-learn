@@ -47,3 +47,16 @@ export interface LessonJourney {
   parts: [LessonPart, LessonPart, LessonPart];
   keyTakeaways: [string, string, string];
 }
+
+export type Theme = "light" | "dark";
+
+export interface SavedJourney {
+  id: string;
+  question: string;
+  language: Language;
+  level: Level;
+  lesson: LessonJourney;
+  partScores: Record<1 | 2 | 3, number | null>;
+  totalScore: number;
+  savedAt: number;
+}

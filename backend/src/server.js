@@ -109,7 +109,7 @@ app.use(
       console.warn("[CORS] origin denied", { origin });
       return callback(new Error("CORS origin denied"));
     },
-    methods: ["POST", "OPTIONS", "GET"],
+    methods: ["POST", "OPTIONS", "GET", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
@@ -166,6 +166,73 @@ app.post("/api/agreement", requireAuth, async (req, res) => {
   } catch (error) {
     console.error("[api/agreement] Failed to save consent", error);
     res.status(500).json({ error: "Failed to save consent" });
+  }
+});
+
+// Delete every server-side trace of the authenticated user: their MongoDB
+// cookie-consent records AND their Clerk account. The frontend handles clearing
+// localStorage and signing out after this resolves. Irreversible by design.
+app.delete("/api/account", requireAuth, async (req, res) => {
+  const userId = req.auth?.userId;
+  const email =
+    req.auth?.email ||
+    req.auth?.email_address ||
+    (Array.isArray(req.auth?.email_addresses) ? req.auth.email_addresses[0] : "") ||
+    "";
+  console.log("[api/account] Delete request", { userId, hasEmail: Boolean(email) });
+
+  if (!userId) {
+    return res.status(400).json({ error: "Could not determine the user to delete." });
+  }
+
+  let agreementsDeleted = 0;
+  try {
+    const db = await getDb();
+    const filter = email ? { $or: [{ clerkId: userId }, { email }] } : { clerkId: userId };
+    const result = await db.collection("agreements").deleteMany(filter);
+    agreementsDeleted = result.deletedCount ?? 0;
+    console.log("[api/account] Mongo agreements deleted", { userId, agreementsDeleted });
+  } catch (error) {
+    console.error("[api/account] Failed to delete Mongo data", error);
+    return res.status(500).json({ error: "Failed to delete your stored data." });
+  }
+
+  // Delete the Clerk account via the Clerk Backend API.
+  const secret = process.env.CLERK_SECRET_KEY?.trim();
+  if (!secret) {
+    console.error("[api/account] CLERK_SECRET_KEY is not configured");
+    return res.status(500).json({
+      error:
+        "Account deletion is not configured on the server. Your stored data was removed, but the account could not be deleted.",
+    });
+  }
+
+  try {
+    const apiBase = (process.env.CLERK_API_URL || "https://api.clerk.com").replace(/\/$/, "");
+    const clerkRes = await fetch(`${apiBase}/v1/users/${encodeURIComponent(userId)}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${secret}` },
+    });
+
+    if (!clerkRes.ok) {
+      const payload = await clerkRes.text().catch(() => "");
+      console.error("[api/account] Clerk deletion failed", {
+        userId,
+        status: clerkRes.status,
+        payload: payload.slice(0, 500),
+      });
+      return res.status(502).json({
+        error: "Your stored data was removed, but the account could not be deleted. Please try again.",
+      });
+    }
+
+    console.log("[api/account] Clerk account deleted", { userId });
+    return res.json({ ok: true, agreementsDeleted, clerkDeleted: true });
+  } catch (error) {
+    console.error("[api/account] Clerk deletion error", error);
+    return res.status(502).json({
+      error: "Your stored data was removed, but the account could not be deleted. Please try again.",
+    });
   }
 });
 

@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { Language, LessonJourney, Level } from "@/types";
+import { Language, LessonJourney, Level, SavedJourney } from "@/types";
 
 interface LessonStore {
   language: Language;
@@ -27,6 +27,7 @@ interface LessonStore {
   togglePartCollapse: (part: 1 | 2 | 3) => void;
   resetForNextQuestion: (question: string) => void;
   resetAll: () => void;
+  loadJourney: (journey: SavedJourney) => void;
 }
 
 function storeLog(action: string, details?: unknown) {
@@ -150,6 +151,23 @@ export const useLessonStore = create<LessonStore>()(
       resetAll: () => {
         storeLog("resetAll");
         set({ ...initialState });
+      },
+      loadJourney: (journey) => {
+        storeLog("loadJourney", { id: journey.id, question: journey.question });
+        set({
+          lesson: journey.lesson,
+          question: journey.question,
+          language: journey.language,
+          level: journey.level,
+          isLoading: false,
+          error: null,
+          unlockedPart: 3,
+          completedParts: [1, 2, 3],
+          partScores: journey.partScores,
+          collapsedParts: [1, 2, 3],
+          showCompletion: true,
+          showFollowUp: true,
+        });
       },
     }),
     {

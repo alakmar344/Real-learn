@@ -1,42 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { UserButton, useAuth } from "@clerk/nextjs";
-import LanguageSelector from "@/components/shared/LanguageSelector";
-import LevelSelector from "@/components/shared/LevelSelector";
-import { useLessonStore } from "@/store/lessonStore";
 
 interface Props {
   compact?: boolean;
 }
 
 export default function Navbar({ compact = false }: Props) {
-  const { language, level, setLanguage, setLevel } = useLessonStore();
-  const { isSignedIn, isLoaded } = useAuth();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!menuOpen) return;
-    const handler = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [menuOpen]);
-
-  useEffect(() => {
-    if (!menuOpen) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setMenuOpen(false);
-    };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
-  }, [menuOpen]);
-
   return (
     <header
       style={{
@@ -46,11 +16,12 @@ export default function Navbar({ compact = false }: Props) {
         height: compact ? "auto" : 56,
         minHeight: 56,
         borderBottom: "1px solid var(--border-subtle)",
-        background: "rgba(245,240,232,0.92)",
+        background: "var(--bg-glass)",
         backdropFilter: "blur(12px)",
       }}
     >
       <div
+        className="navbar-inner"
         style={{
           maxWidth: 1024,
           margin: "0 auto",
@@ -58,7 +29,7 @@ export default function Navbar({ compact = false }: Props) {
           minHeight: compact ? "auto" : 56,
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-between",
+          justifyContent: "flex-start",
           gap: 12,
         }}
       >
@@ -91,93 +62,13 @@ export default function Navbar({ compact = false }: Props) {
             <span style={{ color: "var(--accent)" }}>Learn</span>
           </span>
         </Link>
-
-        <div
-          className="navbar-selectors-desktop"
-          style={{ display: "flex", alignItems: "center", gap: 8 }}
-        >
-          <LanguageSelector value={language} onChange={setLanguage} compact={compact} />
-          <LevelSelector value={level} onChange={setLevel} compact={compact} />
-          {isLoaded && isSignedIn && (
-            <div style={{ marginLeft: 8 }}>
-              <UserButton
-                appearance={{
-                  elements: {
-                    avatarBox: {
-                      width: 32,
-                      height: 32,
-                    },
-                  },
-                }}
-              />
-            </div>
-          )}
-        </div>
-
-        <button
-          type="button"
-          className="navbar-hamburger"
-          aria-label={menuOpen ? "Close menu" : "Open menu"}
-          aria-expanded={menuOpen}
-          aria-controls="navbar-mobile-menu"
-          onClick={() => setMenuOpen((v) => !v)}
-          style={{
-            display: "none",
-            background: "transparent",
-            border: "1px solid var(--border-default)",
-            borderRadius: "var(--radius-md)",
-            padding: "8px 10px",
-            color: "var(--text-primary)",
-            cursor: "pointer",
-            fontSize: 18,
-            lineHeight: 1,
-          }}
-        >
-          {menuOpen ? "✕" : "☰"}
-        </button>
       </div>
 
-      {menuOpen && (
-        <div
-          id="navbar-mobile-menu"
-          ref={menuRef}
-          role="menu"
-          className="animate-fade-up"
-          style={{
-            background: "var(--bg-surface)",
-            borderBottom: "1px solid var(--border-default)",
-            padding: "16px 24px 20px",
-            display: "flex",
-            flexDirection: "column",
-            gap: 12,
-          }}
-        >
-          <LanguageSelector value={language} onChange={setLanguage} compact={compact} />
-          <LevelSelector value={level} onChange={setLevel} compact={compact} />
-          {isLoaded && isSignedIn && (
-            <div style={{ display: "flex", justifyContent: "center", paddingTop: 8 }}>
-              <UserButton
-                appearance={{
-                  elements: {
-                    avatarBox: {
-                      width: 32,
-                      height: 32,
-                    },
-                  },
-                }}
-              />
-            </div>
-          )}
-        </div>
-      )}
-
       <style jsx>{`
-        @media (max-width: 640px) {
-          .navbar-selectors-desktop {
-            display: none !important;
-          }
-          .navbar-hamburger {
-            display: block !important;
+        /* Make room for the fixed sidebar toggle on small screens. */
+        @media (max-width: 900px) {
+          .navbar-inner {
+            padding-left: 64px !important;
           }
         }
       `}</style>
