@@ -1,8 +1,9 @@
 import { createRemoteJWKSet, jwtVerify, decodeJwt } from "jose";
 
-// Optional explicit override. When set, ONLY this issuer is trusted.
+// Clerk Frontend API URL — this is the token issuer. Override via env, defaults
+// to this app's production Clerk domain. When set, ONLY this issuer is trusted.
 const CONFIGURED_FRONTEND_API = (
-  process.env.CLERK_FRONTEND_API || ""
+  process.env.CLERK_FRONTEND_API || "https://clerk.reallearn.site"
 ).trim().replace(/\/$/, "");
 const CONFIGURED_JWKS_URL = (process.env.CLERK_JWKS_URL || "").trim();
 
@@ -30,7 +31,8 @@ function isTrustedIssuer(issuer) {
     return (
       hostname.endsWith(".clerk.accounts.dev") ||
       hostname.endsWith(".clerk.com") ||
-      hostname.endsWith(".accounts.dev")
+      hostname.endsWith(".accounts.dev") ||
+      hostname.endsWith(".reallearn.site")
     );
   } catch {
     return false;
