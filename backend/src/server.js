@@ -23,6 +23,51 @@ import {
   filterAIResponse,
 } from "./lib/contentGuard.js";
 
+const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "1.0";
+const TERMS_OF_SERVICE_VERSION = process.env.TERMS_OF_SERVICE_VERSION || "1.0";
+const DEFAULT_RATE_LIMIT_WINDOW_MS = 60000;
+const DEFAULT_RATE_LIMIT_MAX_REQUESTS = 20;
+const configuredRateLimitWindowMs = Number(process.env.RATE_LIMIT_WINDOW_MS);
+const RATE_LIMIT_WINDOW_MS =
+  Number.isFinite(configuredRateLimitWindowMs) && configuredRateLimitWindowMs > 0
+    ? configuredRateLimitWindowMs
+    : DEFAULT_RATE_LIMIT_WINDOW_MS;
+const configuredRateLimitMax = Number(process.env.RATE_LIMIT_MAX_REQUESTS);
+const RATE_LIMIT_MAX_REQUESTS =
+  Number.isFinite(configuredRateLimitMax) && configuredRateLimitMax > 0
+    ? configuredRateLimitMax
+    : DEFAULT_RATE_LIMIT_MAX_REQUESTS;
+const rateLimitStore = new Map();
+function getRateLimitKey(req) {
+  const ip = req.ip || req.connection?.remoteAddress || "unknown";
+  const token = extractBearerToken(req);
+  const identifier = token ? `user:${token.slice(0, 16)}` : `ip:${ip}`;
+  return identifier;
+}
+function isRateLimited(req) {
+  const key = getRateLimitKey(req);
+  const now = Date.now();
+  const record = rateLimitStore.get(key);
+  if (!record || now > record.resetAt) {
+    rateLimitStore.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return false;
+  }
+  record.count += 1;
+  if (record.count > RATE_LIMIT_MAX_REQUESTS) {
+    return true;
+  }
+  return false;
+}
+function resetRateLimitStore() {
+  const now = Date.now();
+  for (const [key, record] of rateLimitStore) {
+    if (now > record.resetAt) {
+      rateLimitStore.delete(key);
+    }
+  }
+}
+setInterval(resetRateLimitStore, RATE_LIMIT_WINDOW_MS);
+
 const DEFAULT_LESSON_TIMEOUT_MS = 300000;
 const configuredLessonTimeoutMs = Number(process.env.LESSON_TIMEOUT_MS);
 const LESSON_TIMEOUT_MS =
@@ -119,6 +164,36 @@ app.use(
 );
 app.use(express.json({ limit: "1mb" }));
 
+function securityHeaders(req, res, next) {
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader(
+    "Permissions-Policy",
+    "camera=(), microphone=(), geolocation=()"
+  );
+  if (process.env.NODE_ENV === "production") {
+    res.setHeader(
+      "Content-Security-Policy",
+      "default-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+    );
+  }
+  next();
+}
+
+app.use(securityHeaders);
+
+function rateLimit(req, res, next) {
+  if (isRateLimited(req)) {
+    console.warn("[rate-limit] Request blocked", {
+      endpoint: req.path,
+      key: getRateLimitKey(req),
+    });
+    return res.status(429).json({ error: "Too many requests. Please slow down." });
+  }
+  next();
+}
+
 app.get("/health", (_req, res) => {
   res.json({ ok: true });
 });
@@ -140,7 +215,7 @@ app.get("/api/auth-debug", async (req, res) => {
   });
 });
 
-app.post("/api/agreement", requireAuth, async (req, res) => {
+app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
   try {
     const { accepted, email, clerkId, deviceIp, timestamp } = req.body;
 
@@ -151,19 +226,22 @@ app.post("/api/agreement", requireAuth, async (req, res) => {
       return res.status(400).json({ error: "email and clerkId are required" });
     }
 
-    const db = await getDb();
-    const collection = db.collection("agreements");
+  const db = await getDb();
+  const collection = db.collection("agreements");
 
-    const agreement = {
-      accepted,
-      email,
-      clerkId,
-      deviceIp: deviceIp || "unknown",
-      timestamp: timestamp ? new Date(timestamp) : new Date(),
-      createdAt: new Date(),
-    };
+  const agreement = {
+    accepted,
+    email,
+    clerkId,
+    deviceIp: req.ip || req.connection?.remoteAddress || "unknown",
+    userAgent: req.headers["user-agent"] || "unknown",
+    timestamp: timestamp ? new Date(timestamp) : new Date(),
+    createdAt: new Date(),
+    privacyVersion: PRIVACY_POLICY_VERSION,
+    termsVersion: TERMS_OF_SERVICE_VERSION,
+  };
 
-    await collection.insertOne(agreement);
+  await collection.insertOne(agreement);
     console.log("[api/agreement] Consent saved", { email, clerkId, accepted });
 
     res.json({ ok: true });
@@ -242,7 +320,7 @@ app.delete("/api/account", requireAuth, async (req, res) => {
 
 // Store the user's legal consent (Privacy Policy + Terms of Service) acceptance.
 // This is called after the user accepts the pre-sign-in consent and signs in.
-app.post("/api/legal-consent", requireAuth, async (req, res) => {
+app.post("/api/legal-consent", rateLimit, requireAuth, async (req, res) => {
   try {
     const { accepted, timestamp } = req.body;
 
@@ -261,8 +339,11 @@ app.post("/api/legal-consent", requireAuth, async (req, res) => {
       email: req.auth?.email || req.auth?.email_address || "",
       clerkId: req.auth?.userId,
       deviceIp: req.ip || req.connection?.remoteAddress || "unknown",
+      userAgent: req.headers["user-agent"] || "unknown",
       timestamp: new Date(timestamp),
       type: "legal-consent",
+      privacyVersion: PRIVACY_POLICY_VERSION,
+      termsVersion: TERMS_OF_SERVICE_VERSION,
       createdAt: new Date(),
     };
 
@@ -281,7 +362,7 @@ app.post("/api/legal-consent", requireAuth, async (req, res) => {
 });
 
 // Export all user data from MongoDB as JSON.
-app.get("/api/export-data", requireAuth, async (req, res) => {
+app.get("/api/export-data", rateLimit, requireAuth, async (req, res) => {
   try {
     const userId = req.auth?.userId;
     const email =
@@ -317,7 +398,7 @@ app.get("/api/export-data", requireAuth, async (req, res) => {
   }
 });
 
-app.post("/api/generate-lesson", requireAuth, async (req, res) => {
+app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
   const requestId = `lesson-${Date.now()}-${++lessonRequestCounter}`;
   const question = req.body?.question?.trim();
   const language = req.body?.language ?? "English";
@@ -337,7 +418,21 @@ app.post("/api/generate-lesson", requireAuth, async (req, res) => {
 
   const inputFilter = filterUserInput(question);
   if (!inputFilter.allowed) {
-    console.warn("[generate-lesson] Banned input blocked", { requestId, questionLength: question.length });
+    const moderationEvent = {
+      timestamp: new Date().toISOString(),
+      requestId,
+      clerkId: req.auth?.userId || null,
+      email: req.auth?.email || req.auth?.email_address || null,
+      reason: inputFilter.reason,
+      type: "user-input-blocked",
+    };
+    console.warn("[moderation] Banned input blocked", moderationEvent);
+    try {
+      const db = await getDb();
+      await db.collection("moderationLogs").insertOne(moderationEvent);
+    } catch (error) {
+      console.error("[moderation] Failed to log moderation event", error);
+    }
     return res.status(400).json({ error: inputFilter.reason });
   }
   if (activeLessonRequests >= MAX_CONCURRENT_LESSON_REQUESTS) {
@@ -463,7 +558,21 @@ Level: ${level}${
 
     const responseFilter = filterAIResponse(raw);
     if (!responseFilter.allowed) {
-      console.warn("[generate-lesson] Banned AI response blocked", { requestId });
+      const moderationEvent = {
+        timestamp: new Date().toISOString(),
+        requestId,
+        clerkId: req.auth?.userId || null,
+        email: req.auth?.email || req.auth?.email_address || null,
+        reason: responseFilter.reason,
+        type: "ai-response-blocked",
+      };
+      console.warn("[moderation] Banned AI response blocked", moderationEvent);
+      try {
+        const db = await getDb();
+        await db.collection("moderationLogs").insertOne(moderationEvent);
+      } catch (error) {
+        console.error("[moderation] Failed to log moderation event", error);
+      }
       sendEvent("error", {
         error: responseFilter.reason || "The generated content was flagged. Please try a different question.",
       });

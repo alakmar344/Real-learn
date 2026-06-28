@@ -1,5 +1,6 @@
 import PrivacyPolicy from "../legal/privacy/page";
 import TermsOfService from "../legal/terms/page";
+import CookiePolicy from "../legal/cookies/page";
 import { Suspense } from "react";
 
 type SearchParams = Promise<{ tab?: string }>;
@@ -39,6 +40,7 @@ export default async function LegalPage({ searchParams }: { searchParams: Search
             marginBottom: 32,
             borderBottom: "1px solid var(--border-subtle)",
             paddingBottom: 0,
+            flexWrap: "wrap",
           }}
         >
           <a
@@ -69,10 +71,24 @@ export default async function LegalPage({ searchParams }: { searchParams: Search
           >
             Terms of Service
           </a>
+          <a
+            href="/legal?tab=cookies"
+            style={{
+              padding: "12px 20px",
+              textDecoration: "none",
+              fontWeight: 600,
+              fontSize: 14,
+              borderBottom: tab === "cookies" ? "2px solid var(--accent)" : "2px solid transparent",
+              color: tab === "cookies" ? "var(--accent)" : "var(--text-secondary)",
+              marginBottom: -1,
+            }}
+          >
+            Cookie Policy
+          </a>
         </div>
 
         <Suspense fallback={<p style={{ color: "var(--text-secondary)" }}>Loading...</p>}>
-          {tab === "terms" ? <TermsOfService /> : <PrivacyPolicy />}
+          {tab === "cookies" ? <CookiePolicy /> : tab === "terms" ? <TermsOfService /> : <PrivacyPolicy />}
         </Suspense>
       </div>
     </main>
