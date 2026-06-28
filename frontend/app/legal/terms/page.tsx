@@ -180,7 +180,7 @@ export default function TermsOfService() {
       </section>
 
       <section style={{ marginTop: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>16. Data Retention and Deletion</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>15. Data Retention and Deletion</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           We retain your account and conversation data only as long as necessary to provide the
           service or comply with legal obligations. When you delete your account, we delete your
@@ -191,7 +191,7 @@ export default function TermsOfService() {
       </section>
 
       <section style={{ marginTop: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>17. Accessibility</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>16. Accessibility</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           We strive to make our Service accessible to all users and aim to conform to WCAG 2.1
           Level AA standards. If you experience any accessibility issues, please contact us and

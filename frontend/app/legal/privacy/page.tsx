@@ -67,6 +67,7 @@ export default function PrivacyPolicy() {
         <ul style={{ fontSize: 14, color: "var(--text-secondary)", paddingLeft: 20, margin: 0 }}>
           <li style={{ marginBottom: 4 }}>To generate personalized learning content for you.</li>
           <li style={{ marginBottom: 4 }}>To track your progress and quiz performance.</li>
+          <li style={{ marginBottom: 4 }}>To analyze usage patterns through Google Analytics and improve our service.</li>
           <li style={{ marginBottom: 4 }}>To comply with legal obligations and age-appropriate content rules.</li>
           <li style={{ marginBottom: 4 }}>To improve our AI models and educational content quality.</li>
           <li>To communicate important service updates (if you provide contact consent).</li>
@@ -100,7 +101,8 @@ export default function PrivacyPolicy() {
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>6. Cookies and Local Storage</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           We use browser localStorage to store your consent preferences, theme settings, and saved
-          lessons. We do not use tracking cookies for advertising. Clerk, our authentication provider,
+          lessons. We use Google Analytics cookies (loaded only after consent) for service improvement.
+          We do not use tracking cookies for advertising. Clerk, our authentication provider,
           uses essential cookies for session management. For more details, please see our{" "}
           <a href="/legal?tab=cookies" style={{ color: "var(--accent)" }}>Cookie Policy</a>.
           You can clear your localStorage at any time through your browser settings or by using the
@@ -141,14 +143,21 @@ export default function PrivacyPolicy() {
           <li style={{ marginBottom: 4 }}>
             <strong>Google Gemma 4</strong> — AI content generation.
           </li>
+          <li style={{ marginBottom: 4 }}>
+            <strong>Google Analytics</strong> — Website analytics to understand usage patterns
+            and improve our service. Loaded only after cookie consent.
+          </li>
+          <li style={{ marginBottom: 4 }}>
+            <strong>Serper</strong> (google.serper.dev) — Real-world context fetching for learning content.
+          </li>
           <li>
-            <strong>Serper</strong> — Real-world context fetching for learning content.
+            <strong>ipify</strong> (api.ipify.org) — IP address detection for security and consent tracking.
           </li>
         </ul>
       </section>
 
       <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>10. Data Retention</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>9. Data Retention</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           We retain your account data (email, consent records) for as long as your account is active.
           When you delete your account, we delete your data from our servers within 30 days, except
@@ -190,24 +199,7 @@ export default function PrivacyPolicy() {
       </section>
 
       <section>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>14. Contact Us</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
-          If you have questions about this Privacy Policy or your data, please contact us at{" "}
-          <a href="mailto:support@reallearn.esamz.site" style={{ color: "var(--accent)" }}>
-            support@reallearn.esamz.site
-          </a>.
-          You may also visit our website at{" "}
-          <a
-            href="https://reallearn.esamz.site"
-            style={{ color: "var(--accent)" }}
-          >
-            reallearn.esamz.site
-          </a>.
-        </p>
-      </section>
-
-      <section style={{ marginTop: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>14. GDPR (European Users)</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>13. GDPR (European Users)</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           If you are in the European Economic Area, you have the right to access, rectify,
           erase, restrict, or object to processing of your personal data. You also have the
@@ -219,7 +211,7 @@ export default function PrivacyPolicy() {
       </section>
 
       <section style={{ marginTop: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>15. Accessibility</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>14. Accessibility</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           We are committed to making our Service accessible to all users. We aim to conform to
           WCAG 2.1 Level AA standards. If you encounter any accessibility barriers, please

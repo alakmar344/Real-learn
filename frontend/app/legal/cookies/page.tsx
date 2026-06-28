@@ -44,6 +44,11 @@ export default function CookiePolicy() {
             These are necessary for the Service to function.
           </li>
           <li style={{ marginBottom: 4 }}>
+            <strong>Analytics (Google Analytics):</strong> We use Google Analytics to understand
+            how users interact with our service and improve the learning experience. This is loaded
+            only after you give cookie consent and helps us track usage patterns and performance.
+          </li>
+          <li style={{ marginBottom: 4 }}>
             <strong>Local Storage:</strong> We use browser localStorage (not cookies) to store
             your consent preferences, theme settings, and saved lessons.
           </li>
@@ -58,8 +63,12 @@ export default function CookiePolicy() {
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>3. Third-Party Cookies</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           Our authentication provider Clerk may set cookies on your device. Please review
-          Clerk&apos;s privacy policy for details on how they use cookies. We do not use advertising
-          or tracking cookies.
+          Clerk&apos;s privacy policy for details on how they use cookies. We use Google Analytics,
+          a web analytics service provided by Google, which sets cookies to analyze how visitors
+          use our service. You can review Google&apos;s Privacy Policy at{" "}
+          <a href="https://policies.google.com/privacy" style={{ color: "var(--accent)" }}>
+            policies.google.com/privacy
+          </a>. We do not use advertising or tracking cookies for marketing purposes.
         </p>
       </section>
 
