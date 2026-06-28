@@ -122,7 +122,7 @@ export default function HomePage() {
                 fontStyle: "italic",
               }}
             >
-              "Education is the kindling of a flame, not the filling of a vessel."
+              &ldquo;Education is the kindling of a flame, not the filling of a vessel.&rdquo;
             </p>
             <h1
               style={{
