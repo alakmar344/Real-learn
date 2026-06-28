@@ -89,6 +89,27 @@ const allowedOrigins =
     ? configuredOrigins
     : ["https://reallearn.esamz.site"];
 
+// CORS and JSON body parsing MUST be registered before any route so that every
+// endpoint (including /api/agreement) receives CORS headers and a parsed body.
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      const isAllowed = !origin ||
+                       origin === "null" ||
+                       origin === "undefined" ||
+                       allowedOrigins.includes(origin);
+      if (isAllowed) {
+        return callback(null, true);
+      }
+      console.warn("[CORS] origin denied", { origin });
+      return callback(new Error("CORS origin denied"));
+    },
+    methods: ["POST", "OPTIONS", "GET"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+app.use(express.json({ limit: "1mb" }));
+
 app.get("/health", (_req, res) => {
   res.json({ ok: true });
 });
@@ -125,24 +146,6 @@ app.post("/api/agreement", requireAuth, async (req, res) => {
     res.status(500).json({ error: "Failed to save consent" });
   }
 });
-
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      const isAllowed = !origin ||
-                       origin === "null" ||
-                       origin === "undefined" ||
-                       allowedOrigins.includes(origin);
-      if (isAllowed) {
-        return callback(null, true);
-      }
-      console.warn("[CORS] origin denied", { origin });
-      return callback(new Error("CORS origin denied"));
-    },
-    methods: ["POST", "OPTIONS", "GET"],
-  })
-);
-app.use(express.json({ limit: "1mb" }));
 
 app.post("/api/generate-lesson", requireAuth, async (req, res) => {
   const requestId = `lesson-${Date.now()}-${++lessonRequestCounter}`;
