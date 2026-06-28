@@ -92,6 +92,10 @@ export default function CookieConsent() {
     } finally {
       setLoading(false);
     }
+
+    if (accepted) {
+      window.dispatchEvent(new Event("cookie-consent-accepted"));
+    }
   };
 
   if (!showBanner || !isSignedIn) return null;
