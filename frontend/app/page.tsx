@@ -111,24 +111,19 @@ export default function HomePage() {
           }}
         >
           <div style={{ width: "100%", maxWidth: 800 }}>
-            <div
+            <p
               style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                fontSize: 11,
-                letterSpacing: "0.15em",
-                color: "var(--accent)",
+                fontSize: 14,
+                letterSpacing: "0.1em",
+                color: "var(--text-tertiary)",
                 fontWeight: 500,
+                margin: "0 0 8px",
+                fontFamily: "var(--font-lora)",
+                fontStyle: "italic",
               }}
             >
-              <span
-                className="accent-pulse-dot"
-                aria-hidden="true"
-                style={{ width: 4, height: 4, borderRadius: "50%", background: "var(--accent)" }}
-              />
-              POWERED BY GEMMA 4
-            </div>
+              &ldquo;Education is the kindling of a flame, not the filling of a vessel.&rdquo;
+            </p>
             <h1
               style={{
                 margin: "20px 0 0",
@@ -188,7 +183,7 @@ export default function HomePage() {
           }}
         >
           <p style={{ margin: 0 }}>
-            You are talking to an AI (Google Gemma 4). Responses are AI-generated and are
+            You are talking to an AI. Responses are AI-generated and are
             <strong> not reviewed by humans before being shown</strong>. They may be inaccurate,
             incomplete, or outdated. Please verify important information with qualified professionals
             or authoritative sources. This service is not intended for children under 13.
