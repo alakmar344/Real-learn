@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { UserButton, useAuth } from "@clerk/nextjs";
 import LanguageSelector from "@/components/shared/LanguageSelector";
 import LevelSelector from "@/components/shared/LevelSelector";
 import { useLessonStore } from "@/store/lessonStore";
@@ -12,10 +13,10 @@ interface Props {
 
 export default function Navbar({ compact = false }: Props) {
   const { language, level, setLanguage, setLevel } = useLessonStore();
+  const { isSignedIn, isLoaded } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  /* Close mobile menu on outside click */
   useEffect(() => {
     if (!menuOpen) return;
     const handler = (e: MouseEvent) => {
@@ -27,7 +28,6 @@ export default function Navbar({ compact = false }: Props) {
     return () => document.removeEventListener("mousedown", handler);
   }, [menuOpen]);
 
-  /* Close on Escape */
   useEffect(() => {
     if (!menuOpen) return;
     const handler = (e: KeyboardEvent) => {
@@ -62,7 +62,6 @@ export default function Navbar({ compact = false }: Props) {
           gap: 12,
         }}
       >
-        {/* Logo / brand */}
         <Link
           href="/"
           aria-label="RealLearn – Home"
@@ -93,16 +92,28 @@ export default function Navbar({ compact = false }: Props) {
           </span>
         </Link>
 
-        {/* Desktop selectors */}
         <div
           className="navbar-selectors-desktop"
           style={{ display: "flex", alignItems: "center", gap: 8 }}
         >
           <LanguageSelector value={language} onChange={setLanguage} compact={compact} />
           <LevelSelector value={level} onChange={setLevel} compact={compact} />
+          {isLoaded && isSignedIn && (
+            <div style={{ marginLeft: 8 }}>
+              <UserButton
+                appearance={{
+                  elements: {
+                    avatarBox: {
+                      width: 32,
+                      height: 32,
+                    },
+                  },
+                }}
+              />
+            </div>
+          )}
         </div>
 
-        {/* Mobile hamburger */}
         <button
           type="button"
           className="navbar-hamburger"
@@ -126,7 +137,6 @@ export default function Navbar({ compact = false }: Props) {
         </button>
       </div>
 
-      {/* Mobile dropdown */}
       {menuOpen && (
         <div
           id="navbar-mobile-menu"
@@ -144,10 +154,23 @@ export default function Navbar({ compact = false }: Props) {
         >
           <LanguageSelector value={language} onChange={setLanguage} compact={compact} />
           <LevelSelector value={level} onChange={setLevel} compact={compact} />
+          {isLoaded && isSignedIn && (
+            <div style={{ display: "flex", justifyContent: "center", paddingTop: 8 }}>
+              <UserButton
+                appearance={{
+                  elements: {
+                    avatarBox: {
+                      width: 32,
+                      height: 32,
+                    },
+                  },
+                }}
+              />
+            </div>
+          )}
         </div>
       )}
 
-      {/* Responsive overrides */}
       <style jsx>{`
         @media (max-width: 640px) {
           .navbar-selectors-desktop {

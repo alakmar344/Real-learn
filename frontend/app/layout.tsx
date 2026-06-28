@@ -17,7 +17,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <ClerkProvider>
+        <ClerkProvider afterSignOutUrl="/">
           {children}
           <CookieConsent />
         </ClerkProvider>

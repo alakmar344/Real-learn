@@ -11,7 +11,7 @@ interface CookieConsentState {
 }
 
 export default function CookieConsent() {
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, getToken } = useAuth();
   const { user } = useUser();
   const [showBanner, setShowBanner] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -45,9 +45,17 @@ export default function CookieConsent() {
       const backendUrl =
         process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:10000";
 
+      const token = await getToken();
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
       await fetch(`${backendUrl}/api/agreement`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({
           accepted,
           email,

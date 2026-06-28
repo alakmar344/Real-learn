@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
+import { useAuth } from "@clerk/nextjs";
 import { useLessonStore } from "@/store/lessonStore";
 import { LessonJourney } from "@/types";
 
@@ -124,6 +125,7 @@ function isRetryableError(error: unknown, idleTimedOut: boolean) {
 
 export function useLesson() {
   const router = useRouter();
+  const { getToken } = useAuth();
   const {
     language,
     level,
@@ -179,9 +181,16 @@ export function useLesson() {
           refreshIdleTimeout();
 
           logLessonDebug("sending POST /api/generate-lesson", { requestId, attempt });
+          const token = await getToken();
+          const headers: Record<string, string> = {
+            "Content-Type": "application/json",
+          };
+          if (token) {
+            headers["Authorization"] = `Bearer ${token}`;
+          }
           const response = await fetch(`${trimmedBackendUrl}/api/generate-lesson`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers,
             signal: controller.signal,
             body: JSON.stringify({
               question: normalized,
@@ -366,7 +375,7 @@ export function useLesson() {
 
       setError(lastError instanceof Error ? lastError.message : "Failed to generate lesson");
     },
-    [language, level, router, setError, setLesson, setQuestion, startLoading]
+    [getToken, language, level, router, setError, setLesson, setQuestion, startLoading]
   );
 
   const restart = useCallback(() => {
