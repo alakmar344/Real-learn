@@ -47,11 +47,13 @@ export default function PrivacyPolicy() {
             level, quiz scores, and lesson progress.
           </li>
           <li style={{ marginBottom: 4 }}>
-            <strong>Device Information:</strong> Your IP address (for security and consent tracking).
+            <strong>Device Information:</strong> Your IP address and browser User-Agent (for security,
+            consent tracking, and rate limiting).
           </li>
           <li style={{ marginBottom: 4 }}>
-            <strong>Consent Records:</strong> Timestamps of when you accepted our Privacy Policy,
-            Terms of Service, and cookie consent.
+            <strong>Consent Records:</strong> Timestamps of when you accepted our Privacy Policy
+            (version 1.0), Terms of Service (version 1.0),
+            and cookie consent.
           </li>
           <li>
             <strong>Saved Lessons:</strong> Your completed learning journeys are stored locally on
@@ -83,13 +85,14 @@ export default function PrivacyPolicy() {
       </section>
 
       <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>5. Age Restrictions and Child Safety</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>5. AI-Generated Content</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
-          RealLearn is intended for users <strong>13 years of age and older</strong>. We do not
-          knowingly collect personal information from children under 13. If we become aware that a
-          child under 13 has provided us with personal information, we will take steps to delete
-          that information. We employ content filtering guardrails to prevent harmful, inappropriate,
-          or illegal content from being served to any user.
+          RealLearn generates content using Google Gemma 4, an AI model. All lesson content, quizzes,
+          and explanations are AI-generated and are <strong>not reviewed by humans before being shown</strong>.
+          AI-generated responses may be inaccurate, incomplete, or outdated. You should verify
+          important information with qualified professionals or authoritative sources. The Service
+          is for educational purposes only and does not provide professional advice (medical, legal,
+          financial, etc.).
         </p>
       </section>
 
@@ -97,8 +100,11 @@ export default function PrivacyPolicy() {
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>6. Cookies and Local Storage</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           We use browser localStorage to store your consent preferences, theme settings, and saved
-          lessons. We do not use tracking cookies for advertising. You can clear your localStorage
-          at any time through your browser settings or by using the &quot;Delete My Data&quot; feature in the app.
+          lessons. We do not use tracking cookies for advertising. Clerk, our authentication provider,
+          uses essential cookies for session management. For more details, please see our{" "}
+          <a href="/legal?tab=cookies" style={{ color: "var(--accent)" }}>Cookie Policy</a>.
+          You can clear your localStorage at any time through your browser settings or by using the
+          &quot;Delete My Data&quot; feature in the app.
         </p>
       </section>
 
@@ -142,11 +148,13 @@ export default function PrivacyPolicy() {
       </section>
 
       <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>9. Data Retention</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>10. Data Retention</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
-          We retain your data for as long as your account is active or as needed to provide
-          services. When you delete your account, we delete your data from our servers within a
-          reasonable timeframe, except where retention is required by law.
+          We retain your account data (email, consent records) for as long as your account is active.
+          When you delete your account, we delete your data from our servers within 30 days, except
+          where retention is required by law or for legitimate business purposes (e.g., fraud
+          prevention, security). Saved lessons stored in your browser&apos;s localStorage remain until
+          you clear them or use the &quot;Delete My Data&quot; feature.
         </p>
       </section>
 
@@ -182,16 +190,19 @@ export default function PrivacyPolicy() {
       </section>
 
       <section>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>13. CCPA / CPRA (California Residents)</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>14. Contact Us</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
-          If you are a California resident, you have the right to request disclosure of the
-          categories and specific pieces of personal information we collect, the purposes for
-          collecting, and the third parties with whom we share it. You also have the right to
-          request deletion of your personal information and to opt out of the sale or sharing
-          of your personal information. We do not sell or share personal information for
-          cross-context behavioral advertising. To exercise these rights, please use the
-          &quot;Export My Data&quot; and &quot;Delete My Data&quot; features in the app, or contact us
-          through our website.
+          If you have questions about this Privacy Policy or your data, please contact us at{" "}
+          <a href="mailto:support@reallearn.esamz.site" style={{ color: "var(--accent)" }}>
+            support@reallearn.esamz.site
+          </a>.
+          You may also visit our website at{" "}
+          <a
+            href="https://reallearn.esamz.site"
+            style={{ color: "var(--accent)" }}
+          >
+            reallearn.esamz.site
+          </a>.
         </p>
       </section>
 

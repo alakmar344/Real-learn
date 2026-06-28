@@ -70,6 +70,8 @@ export default function PreSignInConsent() {
           body: JSON.stringify({
             accepted: true,
             timestamp: consent.timestamp,
+            privacyVersion: "1.0",
+            termsVersion: "1.0",
           }),
         });
       } catch {

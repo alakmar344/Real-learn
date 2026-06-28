@@ -54,6 +54,8 @@ export default function HomePage() {
           body: JSON.stringify({
             accepted: true,
             timestamp: parsed.timestamp,
+            privacyVersion: "1.0",
+            termsVersion: "1.0",
           }),
         });
 
@@ -186,8 +188,10 @@ export default function HomePage() {
           }}
         >
           <p style={{ margin: 0 }}>
-            You are talking to an AI. Its answers can be inaccurate. This service is not intended
-            for children under 13.
+            You are talking to an AI (Google Gemma 4). Responses are AI-generated and are
+            <strong> not reviewed by humans before being shown</strong>. They may be inaccurate,
+            incomplete, or outdated. Please verify important information with qualified professionals
+            or authoritative sources. This service is not intended for children under 13.
           </p>
           <p style={{ margin: "4px 0 0" }}>
             <a href="/legal?tab=privacy" style={{ color: "var(--text-tertiary)" }}>Privacy Policy</a>
