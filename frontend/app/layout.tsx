@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import CookieConsent from "@/components/shared/CookieConsent";
+import AppShell from "@/components/shared/AppShell";
+import ThemeApplier from "@/components/shared/ThemeApplier";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -18,7 +20,8 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <ClerkProvider afterSignOutUrl="/">
-          {children}
+          <ThemeApplier />
+          <AppShell>{children}</AppShell>
           <CookieConsent />
         </ClerkProvider>
       </body>

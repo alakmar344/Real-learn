@@ -12,6 +12,7 @@ import LoadingCinematic from "@/components/shared/LoadingCinematic";
 import ErrorState from "@/components/shared/ErrorState";
 import LiveRegion from "@/components/shared/LiveRegion";
 import { useLessonStore } from "@/store/lessonStore";
+import { useSavedJourneysStore, journeySignature } from "@/store/savedJourneysStore";
 import { useLesson } from "@/hooks/useLesson";
 
 export default function LearnPage() {
@@ -21,6 +22,8 @@ export default function LearnPage() {
   const {
     question,
     lesson,
+    language,
+    level,
     isLoading,
     error,
     unlockedPart,
@@ -34,11 +37,30 @@ export default function LearnPage() {
     showFollowUp,
   } = useLessonStore();
 
+  const saveJourney = useSavedJourneysStore((s) => s.saveJourney);
+
   const { generateLesson, restart } = useLesson();
 
   const totalScore = useMemo(() => {
     return (partScores[1] ?? 0) + (partScores[2] ?? 0) + (partScores[3] ?? 0);
   }, [partScores]);
+
+  /* ── Persist a completed journey to local storage (sidebar history) ── */
+  useEffect(() => {
+    if (!showCompletion || !lesson) return;
+    const id = journeySignature(lesson.question, lesson.parts[0]?.title);
+    saveJourney({
+      id,
+      question: lesson.question,
+      language,
+      level,
+      lesson,
+      partScores,
+      totalScore,
+      savedAt: Date.now(),
+    });
+    console.log("[frontend][LearnPage] journey saved to history", { id });
+  }, [showCompletion, lesson, language, level, partScores, totalScore, saveJourney]);
 
   useEffect(() => {
     console.log("[frontend][LearnPage] state snapshot", {
@@ -149,7 +171,7 @@ export default function LearnPage() {
             position: "sticky",
             top: 0,
             zIndex: 50,
-            background: "rgba(245,240,232,0.92)",
+            background: "var(--bg-glass)",
             backdropFilter: "blur(12px)",
             borderBottom: "1px solid var(--border-subtle)",
           }}
