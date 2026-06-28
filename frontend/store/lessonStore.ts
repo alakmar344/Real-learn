@@ -91,7 +91,7 @@ export const useLessonStore = create<LessonStore>()(
         });
         set({
           lesson,
-          question: lesson.question,
+          question: lesson.question ?? lesson.topic ?? "",
           isLoading: false,
           error: null,
           unlockedPart: 1,

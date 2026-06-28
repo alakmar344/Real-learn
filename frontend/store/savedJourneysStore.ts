@@ -20,7 +20,9 @@ function journeyLog(action: string, details?: unknown) {
 }
 
 export function journeySignature(question: string, firstPartTitle?: string): string {
-  return `${question.trim().toLowerCase()}::${(firstPartTitle ?? "").trim().toLowerCase()}`;
+  const safeQuestion = (question ?? "").trim().toLowerCase();
+  const safeTitle = (firstPartTitle ?? "").trim().toLowerCase();
+  return `${safeQuestion}::${safeTitle}`;
 }
 
 export const useSavedJourneysStore = create<SavedJourneysStore>()(

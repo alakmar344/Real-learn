@@ -16,6 +16,9 @@ const letters = ["A", "B", "C", "D"];
 export default function QuizQuestion({ question, index, selectedIndex, answered, onSelect }: Props) {
   const optionRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
+  const options = question.options ?? [];
+  const optionCount = options.length;
+
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent, optionIndex: number) => {
       if (answered) return;
@@ -24,20 +27,19 @@ export default function QuizQuestion({ question, index, selectedIndex, answered,
         onSelect(optionIndex);
         return;
       }
-      /* Arrow-key navigation */
       let next = -1;
       if (e.key === "ArrowDown" || e.key === "ArrowRight") {
         e.preventDefault();
-        next = (optionIndex + 1) % question.options.length;
+        next = (optionIndex + 1) % optionCount;
       } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
         e.preventDefault();
-        next = (optionIndex - 1 + question.options.length) % question.options.length;
+        next = (optionIndex - 1 + optionCount) % optionCount;
       }
       if (next >= 0) {
         optionRefs.current[next]?.focus();
       }
     },
-    [answered, onSelect, question.options.length]
+    [answered, onSelect, optionCount]
   );
 
   return (
@@ -49,7 +51,7 @@ export default function QuizQuestion({ question, index, selectedIndex, answered,
         {question.question}
       </p>
       <div role="radiogroup" aria-label="Answer options">
-        {question.options.map((option, optionIndex) => {
+        {options.map((option, optionIndex) => {
           const isSelected = selectedIndex === optionIndex;
           const isCorrect = question.correctIndex === optionIndex;
           const showCorrectAnswer = answered && isCorrect;

@@ -17,6 +17,9 @@ export function normalizeJourney(data) {
   if (!data || typeof data !== "object") return data;
 
   const normalized = { ...data };
+  if (!normalized.question && normalized.topic) {
+    normalized.question = normalized.topic;
+  }
 
   if (Array.isArray(data.parts)) {
     const normalizedParts = data.parts
