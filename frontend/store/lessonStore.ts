@@ -154,7 +154,7 @@ export const useLessonStore = create<LessonStore>()(
     }),
     {
       name: "reallearn-journey",
-      storage: createJSONStorage(() => sessionStorage),
+      storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         language: state.language,
         level: state.level,

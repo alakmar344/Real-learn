@@ -11,6 +11,7 @@ import {
 import { GENERATE_LESSON_PROMPT } from "./lib/prompts.js";
 import { fetchRealWorldContext } from "./lib/serper.js";
 import { isValidJourney, normalizeJourney } from "./validation.js";
+import { getDb } from "./lib/mongodb.js";
 
 const DEFAULT_LESSON_TIMEOUT_MS = 300000;
 const configuredLessonTimeoutMs = Number(process.env.LESSON_TIMEOUT_MS);
@@ -89,6 +90,39 @@ const allowedOrigins =
 
 app.get("/health", (_req, res) => {
   res.json({ ok: true });
+});
+
+app.post("/api/agreement", async (req, res) => {
+  try {
+    const { accepted, email, clerkId, deviceIp, timestamp } = req.body;
+
+    if (typeof accepted !== "boolean") {
+      return res.status(400).json({ error: "accepted (boolean) is required" });
+    }
+    if (!email || !clerkId) {
+      return res.status(400).json({ error: "email and clerkId are required" });
+    }
+
+    const db = await getDb();
+    const collection = db.collection("agreements");
+
+    const agreement = {
+      accepted,
+      email,
+      clerkId,
+      deviceIp: deviceIp || "unknown",
+      timestamp: timestamp ? new Date(timestamp) : new Date(),
+      createdAt: new Date(),
+    };
+
+    await collection.insertOne(agreement);
+    console.log("[api/agreement] Consent saved", { email, clerkId, accepted });
+
+    res.json({ ok: true });
+  } catch (error) {
+    console.error("[api/agreement] Failed to save consent", error);
+    res.status(500).json({ error: "Failed to save consent" });
+  }
 });
 
 app.use(
