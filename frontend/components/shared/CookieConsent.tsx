@@ -26,6 +26,21 @@ export default function CookieConsent() {
 
   const saveConsent = async (accepted: boolean) => {
     setLoading(true);
+
+    // Dismiss the banner immediately once the user makes a choice. Persisting
+    // the consent to the backend is best-effort and must never keep the banner
+    // on screen if it fails (e.g. network/CORS/auth error).
+    const consent: CookieConsentState = {
+      accepted,
+      timestamp: new Date().toISOString(),
+    };
+    try {
+      localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(consent));
+    } catch {
+      // ignore storage errors (e.g. private mode)
+    }
+    setShowBanner(false);
+
     try {
       const email =
         user?.primaryEmailAddress?.emailAddress ||
@@ -53,7 +68,7 @@ export default function CookieConsent() {
         headers["Authorization"] = `Bearer ${token}`;
       }
 
-      await fetch(`${backendUrl}/api/agreement`, {
+      const response = await fetch(`${backendUrl}/api/agreement`, {
         method: "POST",
         headers,
         body: JSON.stringify({
@@ -61,16 +76,17 @@ export default function CookieConsent() {
           email,
           clerkId,
           deviceIp,
-          timestamp: new Date().toISOString(),
+          timestamp: consent.timestamp,
         }),
       });
 
-      const consent: CookieConsentState = {
-        accepted,
-        timestamp: new Date().toISOString(),
-      };
-      localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(consent));
-      setShowBanner(false);
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null);
+        console.error("[CookieConsent] Backend rejected consent", {
+          status: response.status,
+          payload,
+        });
+      }
     } catch (err) {
       console.error("[CookieConsent] Failed to save consent", err);
     } finally {
