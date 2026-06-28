@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import CookieConsent from "@/components/shared/CookieConsent";
+import GoogleAnalytics from "@/components/shared/GoogleAnalytics";
 import PreSignInConsent from "@/components/shared/PreSignInConsent";
 import AppShell from "@/components/shared/AppShell";
 import ThemeApplier from "@/components/shared/ThemeApplier";
@@ -20,6 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <GoogleAnalytics />
         <ClerkProvider afterSignOutUrl="/">
           <ThemeApplier />
           <AppShell>{children}</AppShell>
