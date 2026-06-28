@@ -269,6 +269,20 @@ export async function callGemma(
         }
 
         const candidate = data.candidates[0];
+        const finishReason = candidate?.finishReason;
+
+        if (finishReason === "SAFETY") {
+          throw new Error(
+            "Content was flagged by safety filters. Please try a different question or rephrase your request."
+          );
+        }
+
+        if (finishReason === "RECITATION") {
+          throw new Error(
+            "Response blocked due to content restrictions. Please try a different question."
+          );
+        }
+
         const parts = candidate?.content?.parts;
 
         if (!Array.isArray(parts)) {
