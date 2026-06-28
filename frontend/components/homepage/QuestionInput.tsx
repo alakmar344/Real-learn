@@ -1,6 +1,8 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
+import { useAuth } from "@clerk/nextjs";
+import { SignInButton } from "@clerk/nextjs";
 import ExampleQuestions from "@/components/homepage/ExampleQuestions";
 
 interface Props {
@@ -12,6 +14,7 @@ interface Props {
 export default function QuestionInput({ question, setQuestion, onSubmit }: Props) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [focused, setFocused] = useState(false);
+  const { isSignedIn } = useAuth();
 
   useEffect(() => {
     const textarea = textareaRef.current;
@@ -22,6 +25,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+    if (!isSignedIn) return;
     onSubmit();
   };
 
@@ -79,26 +83,50 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
         }}
       >
         <ExampleQuestions />
-        <button
-          type="submit"
-          disabled={!question.trim()}
-          aria-label="Start learning"
-          style={{
-            border: "none",
-            borderRadius: "var(--radius-md)",
-            padding: "10px 20px",
-            fontSize: 14,
-            fontWeight: 600,
-            color: "#faf7f2",
-            background: question.trim() ? "var(--accent)" : "var(--border-default)",
-            cursor: question.trim() ? "pointer" : "not-allowed",
-            transition: "all 200ms var(--ease-color)",
-            minHeight: 44,
-            boxShadow: "var(--shadow-sm)",
-          }}
-        >
-          Teach Me →
-        </button>
+        {isSignedIn ? (
+          <button
+            type="submit"
+            disabled={!question.trim()}
+            aria-label="Start learning"
+            style={{
+              border: "none",
+              borderRadius: "var(--radius-md)",
+              padding: "10px 20px",
+              fontSize: 14,
+              fontWeight: 600,
+              color: "#faf7f2",
+              background: question.trim() ? "var(--accent)" : "var(--border-default)",
+              cursor: question.trim() ? "pointer" : "not-allowed",
+              transition: "all 200ms var(--ease-color)",
+              minHeight: 44,
+              boxShadow: "var(--shadow-sm)",
+            }}
+          >
+            Teach Me →
+          </button>
+        ) : (
+          <SignInButton mode="modal">
+            <button
+              type="button"
+              aria-label="Sign in to start learning"
+              style={{
+                border: "none",
+                borderRadius: "var(--radius-md)",
+                padding: "10px 20px",
+                fontSize: 14,
+                fontWeight: 600,
+                color: "#faf7f2",
+                background: "var(--accent)",
+                cursor: "pointer",
+                transition: "all 200ms var(--ease-color)",
+                minHeight: 44,
+                boxShadow: "var(--shadow-sm)",
+              }}
+            >
+              Sign in to Learn →
+            </button>
+          </SignInButton>
+        )}
       </div>
     </form>
   );
