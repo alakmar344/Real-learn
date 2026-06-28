@@ -135,7 +135,7 @@ export default function CookieConsent() {
               fontWeight: 500,
             }}
           >
-            We use cookies to enhance your learning experience.
+            We use cookies and Google Analytics to enhance your learning experience.
           </p>
           <p
             style={{
@@ -145,7 +145,7 @@ export default function CookieConsent() {
               fontFamily: "var(--font-lora)",
             }}
           >
-            Accept to enable all cookies, or decline to disable them.
+            Accept to enable all cookies and analytics, or decline to disable them.
           </p>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
