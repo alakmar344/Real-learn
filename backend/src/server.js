@@ -12,6 +12,7 @@ import { GENERATE_LESSON_PROMPT } from "./lib/prompts.js";
 import { fetchRealWorldContext } from "./lib/serper.js";
 import { isValidJourney, normalizeJourney } from "./validation.js";
 import { getDb } from "./lib/mongodb.js";
+import { requireAuth } from "./lib/auth.js";
 
 const DEFAULT_LESSON_TIMEOUT_MS = 300000;
 const configuredLessonTimeoutMs = Number(process.env.LESSON_TIMEOUT_MS);
@@ -92,7 +93,7 @@ app.get("/health", (_req, res) => {
   res.json({ ok: true });
 });
 
-app.post("/api/agreement", async (req, res) => {
+app.post("/api/agreement", requireAuth, async (req, res) => {
   try {
     const { accepted, email, clerkId, deviceIp, timestamp } = req.body;
 
@@ -143,7 +144,7 @@ app.use(
 );
 app.use(express.json({ limit: "1mb" }));
 
-app.post("/api/generate-lesson", async (req, res) => {
+app.post("/api/generate-lesson", requireAuth, async (req, res) => {
   const requestId = `lesson-${Date.now()}-${++lessonRequestCounter}`;
   const question = req.body?.question?.trim();
   const language = req.body?.language ?? "English";
