@@ -12,7 +12,12 @@ import { GENERATE_LESSON_PROMPT } from "./lib/prompts.js";
 import { fetchRealWorldContext } from "./lib/serper.js";
 import { isValidJourney, normalizeJourney } from "./validation.js";
 import { getDb } from "./lib/mongodb.js";
-import { requireAuth } from "./lib/auth.js";
+import {
+  requireAuth,
+  extractBearerToken,
+  inspectToken,
+  verifyClerkToken,
+} from "./lib/auth.js";
 
 const DEFAULT_LESSON_TIMEOUT_MS = 300000;
 const configuredLessonTimeoutMs = Number(process.env.LESSON_TIMEOUT_MS);
@@ -112,6 +117,23 @@ app.use(express.json({ limit: "1mb" }));
 
 app.get("/health", (_req, res) => {
   res.json({ ok: true });
+});
+
+// Diagnostic endpoint: send the Clerk token as a Bearer header and it reports
+// exactly why verification passes/fails (issuer, expiry, trust). No secrets
+// leaked — only non-sensitive claim metadata.
+app.get("/api/auth-debug", async (req, res) => {
+  const token = extractBearerToken(req);
+  if (!token) {
+    return res.status(400).json({ error: "No Bearer token provided" });
+  }
+  const inspection = inspectToken(token);
+  const verification = await verifyClerkToken(token);
+  res.json({
+    token: inspection,
+    verified: verification.valid,
+    verifyError: verification.valid ? null : verification.error,
+  });
 });
 
 app.post("/api/agreement", requireAuth, async (req, res) => {
