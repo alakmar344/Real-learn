@@ -26,6 +26,7 @@ export function normalizeJourney(data) {
       .map((part, index) => ({
         ...part,
         partNumber: index + 1,
+        sources: Array.isArray(part.sources) ? part.sources : [],
       }));
     normalized.parts = normalizedParts;
   }
@@ -52,6 +53,7 @@ export function isValidJourney(data) {
       part?.partNumber === index + 1 &&
       typeof part.title === "string" &&
       typeof part.content === "string" &&
+      Array.isArray(part.sources) &&
       Array.isArray(part.quiz) &&
       part.quiz.length === 2 &&
       part.quiz.every(

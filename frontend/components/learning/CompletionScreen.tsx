@@ -135,7 +135,7 @@ export default function CompletionScreen({ lesson, totalScore, onRestart }: Prop
       {/* Key takeaways */}
       <div style={{ marginTop: varSpaceLg }}>
         <h4 style={{ margin: "0 0 var(--space-sm)", fontSize: 16, fontWeight: 600 }}>Key Takeaways</h4>
-        {lesson.keyTakeaways.map((takeaway, index) => (
+        {(lesson.keyTakeaways ?? []).map((takeaway, index) => (
           <div
             key={takeaway}
             style={{
