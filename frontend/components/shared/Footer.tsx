@@ -13,7 +13,7 @@ const Footer = () => (
   >
     <p style={{ margin: 0, display: "flex", justifyContent: "center", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
       <img src="/logo.svg" alt="RealLearn" style={{ height: 16 }} />
-      <span>© {new Date().getFullYear()} RealLearn</span>
+      <span>© {new Date().getFullYear()} alakmar344</span>
       <span>·</span>
       <span>AI-generated — not reviewed by humans</span>
       <span>·</span>

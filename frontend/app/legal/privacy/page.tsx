@@ -69,7 +69,7 @@ export default function PrivacyPolicy() {
           <li style={{ marginBottom: 4 }}>To track your progress and quiz performance.</li>
           <li style={{ marginBottom: 4 }}>To analyze usage patterns through Google Analytics and improve our service.</li>
           <li style={{ marginBottom: 4 }}>To comply with legal obligations and age-appropriate content rules.</li>
-          <li style={{ marginBottom: 4 }}>To improve our AI models and educational content quality.</li>
+          <li style={{ marginBottom: 4 }}>To improve our educational content quality and service experience.</li>
           <li>To communicate important service updates (if you provide contact consent).</li>
         </ul>
       </section>
@@ -94,6 +94,17 @@ export default function PrivacyPolicy() {
           important information with qualified professionals or authoritative sources. The Service
           is for educational purposes only and does not provide professional advice (medical, legal,
           financial, etc.).
+        </p>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+          <strong>RealLearn does not use your data to train, fine-tune, or improve any AI model.</strong>{" "}
+          Your questions are sent to Google&apos;s Gemma API for one-time inference only. We do not
+          store your questions or generated lessons on our servers. However, please note that your
+          questions are transmitted to Google&apos;s API, and Google&apos;s own terms of service may govern
+          how they handle that data. We recommend reviewing{" "}
+          <a href="https://policies.google.com/privacy" style={{ color: "var(--accent)" }}>
+            Google&apos;s Privacy Policy
+          </a>{" "}
+          for details on their data practices.
         </p>
       </section>
 
@@ -141,7 +152,9 @@ export default function PrivacyPolicy() {
             <strong>Clerk</strong> (clerk.com) — Authentication and user management.
           </li>
           <li style={{ marginBottom: 4 }}>
-            <strong>Google Gemma 4</strong> — AI content generation.
+            <strong>Google Gemma 4</strong> — AI content generation. Your question, chosen language,
+            and difficulty level are sent to Google&apos;s API for one-time inference. No user identity
+            is included in the API call. Google&apos;s own data practices apply to API requests.
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Google Analytics</strong> — Website analytics to understand usage patterns
