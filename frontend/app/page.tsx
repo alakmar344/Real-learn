@@ -12,9 +12,23 @@ import { useAuth, useUser } from "@clerk/nextjs";
 
 const LEGAL_CONSENT_KEY = "reallearn-legal-consent";
 
+const QUOTES = [
+  "Education is the kindling of a flame, not the filling of a vessel.",
+  "Live as if you were to die tomorrow. Learn as if you were to live forever.",
+  "The only true wisdom is in knowing you know nothing.",
+  "Learning never exhausts the mind.",
+  "The mind is not a vessel to be filled, but a fire to be kindled.",
+  "Tell me and I forget. Teach me and I remember. Involve me and I learn.",
+  "Education is not preparation for life; education is life itself.",
+  "The beautiful thing about learning is that nobody can take it away from you.",
+  "An investment in knowledge pays the best interest.",
+  "Curiosity is the wick in the candle of learning.",
+];
+
 export default function HomePage() {
   const [question, setQuestion] = useState("");
   const [loadingQuestion, setLoadingQuestion] = useState<string | null>(null);
+  const [quote, setQuote] = useState(() => QUOTES[Math.floor(Math.random() * QUOTES.length)]);
   const { generateLesson } = useLesson();
   const { isSignedIn, getToken } = useAuth();
   const { user } = useUser();
@@ -128,7 +142,7 @@ export default function HomePage() {
                 fontStyle: "italic",
               }}
             >
-              &ldquo;Education is the kindling of a flame, not the filling of a vessel.&rdquo;
+              {quote}
             </p>
             <h1
               style={{
