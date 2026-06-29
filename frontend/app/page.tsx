@@ -40,7 +40,7 @@ export default function HomePage() {
 
       try {
         const backendUrl =
-          process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:10000";
+          process.env.NEXT_PUBLIC_BACKEND_URL || "https://real-learn.onrender.com";
         const token = await getToken();
         const headers: Record<string, string> = {
           "Content-Type": "application/json",
