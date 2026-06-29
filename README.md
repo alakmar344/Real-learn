@@ -16,7 +16,7 @@ This isn't search. This isn't a chatbot. This is **teaching, on demand.**
 
 ## See It Live
 
-- 🚀 **Live Product:** [https://reallearn-taupe.vercel.app/](https://reallearn-taupe.vercel.app/)
+- 🚀 **Live Product:** [https://reallearn.site/](https://reallearn.site/)
 - 🎬 **Demo Video:** [Watch the Demo](https://youtu.be/zehBGs-xBC0)
 - 📄 **Info Page:** [See the Info Page](https://reallearn-info.vercel.app)
 - 🏆 **Kaggle Write-up (Gemma 4 Good Hackathon):** [Read the story behind it](https://www.kaggle.com/competitions/gemma-4-good-hackathon/writeups/new-writeup-1778215573161)

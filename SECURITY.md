@@ -12,7 +12,7 @@ If you discover a security vulnerability in RealLearn, please report it responsi
 
 **Do not open a public GitHub issue for security vulnerabilities.**
 
-Instead, please email us at: **support@reallearn.esamz.site**
+Instead, please email us at: **esamzai365@gmail.com**
 
 When reporting, please include:
 
@@ -41,7 +41,7 @@ RealLearn employs several security measures:
 
 ## Scope
 
-This policy applies to the RealLearn application hosted at reallearn-taupe.vercel.app and the backend API at real-learn.onrender.com.
+This policy applies to the RealLearn application hosted at reallearn.site and the backend API at real-learn.onrender.com.
 
 ## Recognition
 

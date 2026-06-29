@@ -200,13 +200,16 @@ export default function PrivacyPolicy() {
       <section style={{ marginBottom: 28 }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>12. Contact Us</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
-          If you have questions about this Privacy Policy or your data, please contact us through
-          our support channels or visit our website at{" "}
+          If you have questions about this Privacy Policy or your data, please contact us at{" "}
+          <a href="mailto:esamzai365@gmail.com" style={{ color: "var(--accent)" }}>
+            esamzai365@gmail.com
+          </a>{" "}
+          or visit our website at{" "}
           <a
-            href="https://reallearn.esamz.site"
+            href="https://reallearn.site"
             style={{ color: "var(--accent)" }}
           >
-            reallearn.esamz.site
+            reallearn.site
           </a>.
         </p>
       </section>

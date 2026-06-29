@@ -25,6 +25,8 @@ const Footer = () => (
       <a href="/legal?tab=terms" style={{ color: "inherit" }}>Terms</a>
       <span>·</span>
       <a href="/legal" style={{ color: "inherit" }}>Legal</a>
+      <span>·</span>
+      <a href="mailto:esamzai365@gmail.com" style={{ color: "inherit" }}>Support</a>
     </p>
   </footer>
 );

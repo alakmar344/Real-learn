@@ -157,15 +157,15 @@ export default function TermsOfService() {
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           If you have any questions about these Terms of Service or our legal policies, please
           contact us at{" "}
-          <a href="mailto:support@reallearn.esamz.site" style={{ color: "var(--accent)" }}>
-            support@reallearn.esamz.site
+          <a href="mailto:esamzai365@gmail.com" style={{ color: "var(--accent)" }}>
+            esamzai365@gmail.com
           </a>.
           You may also visit our website at{" "}
           <a
-            href="https://reallearn.esamz.site"
+            href="https://reallearn.site"
             style={{ color: "var(--accent)" }}
           >
-            reallearn.esamz.site
+            reallearn.site
           </a>.
         </p>
       </section>

@@ -93,8 +93,8 @@ export default function CookiePolicy() {
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>6. Contact Us</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           If you have questions about our use of cookies, please contact us at{" "}
-          <a href="mailto:support@reallearn.esamz.site" style={{ color: "var(--accent)" }}>
-            support@reallearn.esamz.site
+          <a href="mailto:esamzai365@gmail.com" style={{ color: "var(--accent)" }}>
+            esamzai365@gmail.com
           </a>.
         </p>
       </section>
