@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { UserButton, useAuth, useClerk, useUser } from "@clerk/nextjs";
+import { UserButton, useAuth, useClerk } from "@clerk/nextjs";
 import LanguageSelector from "@/components/shared/LanguageSelector";
 import LevelSelector from "@/components/shared/LevelSelector";
 import ThemeModal from "@/components/shared/ThemeModal";
@@ -25,7 +25,6 @@ export default function Sidebar({ open, onClose }: Props) {
   const router = useRouter();
   const { isLoaded, isSignedIn, getToken } = useAuth();
   const { signOut } = useClerk();
-  const { user } = useUser();
 
   const { language, level, setLanguage, setLevel, loadJourney, resetForNextQuestion } =
     useLessonStore();
@@ -398,7 +397,7 @@ export default function Sidebar({ open, onClose }: Props) {
             >
               <span style={{ fontSize: 11, color: "var(--text-tertiary)", fontWeight: 600 }}>Account</span>
               <div style={{ alignSelf: "flex-start" }}>
-                <UserButton afterSignOutUrl="/" />
+                <UserButton />
               </div>
               <button
                 type="button"
