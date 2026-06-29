@@ -8,7 +8,7 @@ import LiveRegion from "@/components/shared/LiveRegion";
 import PreSignInConsent from "@/components/shared/PreSignInConsent";
 import Footer from "@/components/shared/Footer";
 import { useLesson } from "@/hooks/useLesson";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
 
 const LEGAL_CONSENT_KEY = "reallearn-legal-consent";
 
@@ -17,6 +17,7 @@ export default function HomePage() {
   const [loadingQuestion, setLoadingQuestion] = useState<string | null>(null);
   const { generateLesson } = useLesson();
   const { isSignedIn, getToken } = useAuth();
+  const { user } = useUser();
 
   useEffect(() => {
     console.log("[frontend][HomePage] render state", {
@@ -55,6 +56,10 @@ export default function HomePage() {
           body: JSON.stringify({
             accepted: true,
             timestamp: parsed.timestamp,
+            email:
+              user?.primaryEmailAddress?.emailAddress ||
+              user?.emailAddresses?.[0]?.emailAddress ||
+              "",
             privacyVersion: "1.0",
             termsVersion: "1.0",
           }),

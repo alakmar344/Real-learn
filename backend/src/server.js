@@ -229,19 +229,26 @@ app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
   const db = await getDb();
   const collection = db.collection("agreements");
 
-  const agreement = {
-    accepted,
-    email,
-    clerkId,
-    deviceIp: req.ip || req.connection?.remoteAddress || "unknown",
-    userAgent: req.headers["user-agent"] || "unknown",
-    timestamp: timestamp ? new Date(timestamp) : new Date(),
-    createdAt: new Date(),
-    privacyVersion: PRIVACY_POLICY_VERSION,
-    termsVersion: TERMS_OF_SERVICE_VERSION,
+  const filter = { clerkId, type: "cookie-consent" };
+  const update = {
+    $set: {
+      accepted,
+      email,
+      clerkId,
+      deviceIp: req.ip || req.connection?.remoteAddress || "unknown",
+      userAgent: req.headers["user-agent"] || "unknown",
+      timestamp: timestamp ? new Date(timestamp) : new Date(),
+      privacyVersion: PRIVACY_POLICY_VERSION,
+      termsVersion: TERMS_OF_SERVICE_VERSION,
+      updatedAt: new Date(),
+    },
+    $setOnInsert: {
+      type: "cookie-consent",
+      createdAt: new Date(),
+    },
   };
 
-  await collection.insertOne(agreement);
+  await collection.updateOne(filter, update, { upsert: true });
     console.log("[api/agreement] Consent saved", { email, clerkId, accepted });
 
     res.json({ ok: true });
@@ -322,7 +329,7 @@ app.delete("/api/account", requireAuth, async (req, res) => {
 // This is called after the user accepts the pre-sign-in consent and signs in.
 app.post("/api/legal-consent", rateLimit, requireAuth, async (req, res) => {
   try {
-    const { accepted, timestamp } = req.body;
+    const { accepted, timestamp, email: bodyEmail } = req.body;
 
     if (typeof accepted !== "boolean") {
       return res.status(400).json({ error: "accepted (boolean) is required" });
@@ -333,23 +340,35 @@ app.post("/api/legal-consent", rateLimit, requireAuth, async (req, res) => {
 
     const db = await getDb();
     const collection = db.collection("agreements");
+    const clerkId = req.auth?.userId;
+    const email =
+      bodyEmail ||
+      req.auth?.email ||
+      req.auth?.email_address ||
+      "";
 
-    const agreement = {
-      accepted,
-      email: req.auth?.email || req.auth?.email_address || "",
-      clerkId: req.auth?.userId,
-      deviceIp: req.ip || req.connection?.remoteAddress || "unknown",
-      userAgent: req.headers["user-agent"] || "unknown",
-      timestamp: new Date(timestamp),
-      type: "legal-consent",
-      privacyVersion: PRIVACY_POLICY_VERSION,
-      termsVersion: TERMS_OF_SERVICE_VERSION,
-      createdAt: new Date(),
+    const filter = { clerkId, type: "legal-consent" };
+    const update = {
+      $set: {
+        accepted,
+        email,
+        clerkId,
+        deviceIp: req.ip || req.connection?.remoteAddress || "unknown",
+        userAgent: req.headers["user-agent"] || "unknown",
+        timestamp: new Date(timestamp),
+        type: "legal-consent",
+        privacyVersion: PRIVACY_POLICY_VERSION,
+        termsVersion: TERMS_OF_SERVICE_VERSION,
+        updatedAt: new Date(),
+      },
+      $setOnInsert: {
+        createdAt: new Date(),
+      },
     };
 
-    await collection.insertOne(agreement);
+    await collection.updateOne(filter, update, { upsert: true });
     console.log("[api/legal-consent] Legal consent saved", {
-      clerkId: req.auth?.userId,
+      clerkId,
       accepted,
       timestamp,
     });

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
 
 const LEGAL_CONSENT_KEY = "reallearn-legal-consent";
@@ -15,6 +15,7 @@ const ALLOWED_PATHS_WHEN_DECLINED = ["/sign-in", "/sign-up", "/legal"];
 
 export default function PreSignInConsent() {
   const { isSignedIn, getToken } = useAuth();
+  const { user } = useUser();
   const pathname = usePathname();
   const [showConsent, setShowConsent] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -70,6 +71,10 @@ export default function PreSignInConsent() {
           body: JSON.stringify({
             accepted: true,
             timestamp: consent.timestamp,
+            email:
+              user?.primaryEmailAddress?.emailAddress ||
+              user?.emailAddresses?.[0]?.emailAddress ||
+              "",
             privacyVersion: "1.0",
             termsVersion: "1.0",
           }),
