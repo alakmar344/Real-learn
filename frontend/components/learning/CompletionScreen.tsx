@@ -7,6 +7,7 @@ interface Props {
   lesson: LessonJourney;
   totalScore: number;
   onRestart?: () => void;
+  onRetake?: () => void;
 }
 
 /* ── Confetti particles ── */
@@ -52,7 +53,7 @@ function Confetti() {
   );
 }
 
-export default function CompletionScreen({ lesson, totalScore, onRestart }: Props) {
+export default function CompletionScreen({ lesson, totalScore, onRestart, onRetake }: Props) {
   const [showConfetti, setShowConfetti] = useState(true);
   const sectionRef = useRef<HTMLElement>(null);
 
@@ -163,26 +164,47 @@ export default function CompletionScreen({ lesson, totalScore, onRestart }: Prop
       </div>
 
       {/* Action buttons */}
-      {onRestart && (
-        <button
-          type="button"
-          onClick={onRestart}
-          style={{
-            marginTop: varSpaceLg,
-            border: "1px solid var(--border-default)",
-            borderRadius: "var(--radius-md)",
-            background: "transparent",
-            color: "var(--text-secondary)",
-            padding: "10px 18px",
-            cursor: "pointer",
-            fontSize: 14,
-            fontWeight: 600,
-            minHeight: 44,
-          }}
-        >
-          Learn Something New →
-        </button>
-      )}
+      <div style={{ marginTop: varSpaceLg, display: "flex", gap: varSpaceSm, flexWrap: "wrap" }}>
+        {onRetake && (
+          <button
+            type="button"
+            onClick={onRetake}
+            style={{
+              border: "1px solid var(--border-default)",
+              borderRadius: "var(--radius-md)",
+              background: "transparent",
+              color: "var(--text-secondary)",
+              padding: "10px 18px",
+              cursor: "pointer",
+              fontSize: 14,
+              fontWeight: 600,
+              minHeight: 44,
+            }}
+          >
+            Retake Quiz
+          </button>
+        )}
+        {onRestart && (
+          <button
+            type="button"
+            onClick={onRestart}
+            style={{
+              border: "none",
+              borderRadius: "var(--radius-md)",
+              background: "var(--accent)",
+              color: "#faf7f2",
+              padding: "10px 18px",
+              cursor: "pointer",
+              fontSize: 14,
+              fontWeight: 700,
+              minHeight: 44,
+              boxShadow: "var(--shadow-sm)",
+            }}
+          >
+            Continue Learning →
+          </button>
+        )}
+      </div>
     </section>
   );
 }

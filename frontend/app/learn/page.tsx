@@ -36,6 +36,7 @@ export default function LearnPage() {
     passPart,
     togglePartCollapse,
     resetAll,
+    resetProgress,
     showCompletion,
     showFollowUp,
   } = useLessonStore();
@@ -241,6 +242,10 @@ export default function LearnPage() {
             <CompletionScreen
               lesson={lesson}
               totalScore={totalScore}
+              onRetake={() => {
+                resetProgress();
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
               onRestart={() => {
                 resetAll();
                 restart();
