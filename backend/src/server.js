@@ -165,7 +165,7 @@ app.use(
 app.use(express.json({ limit: "1mb" }));
 
 function securityHeaders(req, res, next) {
-  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("X-Frame-Options", "SAMEORIGIN");
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
   res.setHeader("X-XSS-Protection", "0");
