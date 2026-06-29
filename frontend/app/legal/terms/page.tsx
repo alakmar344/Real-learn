@@ -162,10 +162,10 @@ export default function TermsOfService() {
           </a>.
           You may also visit our website at{" "}
           <a
-            href="https://reallearn.esamz.site"
+            href="https://reallearn.site"
             style={{ color: "var(--accent)" }}
           >
-            reallearn.esamz.site
+            reallearn.site
           </a>.
         </p>
       </section>

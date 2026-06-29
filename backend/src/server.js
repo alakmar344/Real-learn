@@ -141,7 +141,7 @@ const configuredOrigins =
 const allowedOrigins =
   configuredOrigins.length > 0
     ? configuredOrigins
-    : ["https://reallearn.esamz.site"];
+    : ["https://reallearn.site"];
 
 // CORS and JSON body parsing MUST be registered before any route so that every
 // endpoint (including /api/agreement) receives CORS headers and a parsed body.

@@ -41,7 +41,7 @@ RealLearn employs several security measures:
 
 ## Scope
 
-This policy applies to the RealLearn application hosted at reallearn-taupe.vercel.app and the backend API at real-learn.onrender.com.
+This policy applies to the RealLearn application hosted at reallearn.site and the backend API at real-learn.onrender.com.
 
 ## Recognition
 
