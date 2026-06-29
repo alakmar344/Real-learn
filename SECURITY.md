@@ -12,7 +12,7 @@ If you discover a security vulnerability in RealLearn, please report it responsi
 
 **Do not open a public GitHub issue for security vulnerabilities.**
 
-Instead, please email us at: **support@reallearn.esamz.site**
+Instead, please email us at: **esamzai365@gmail.com**
 
 When reporting, please include:
 

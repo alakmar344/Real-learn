@@ -66,4 +66,4 @@ By contributing, you agree that your contributions will be licensed under the [M
 
 ## Questions?
 
-If you have questions about contributing, please open an issue or contact us at support@reallearn.esamz.site.
+If you have questions about contributing, please open an issue or contact us at esamzai365@gmail.com.
