@@ -322,7 +322,7 @@ export default function Sidebar({ open, onClose }: Props) {
                       {journey.question}
                     </span>
                     <span style={{ display: "block", fontSize: 11, color: "var(--text-tertiary)", marginTop: 2 }}>
-                      {journey.language} · {journey.level} · {journey.totalScore}/3 ★
+                      {journey.language} · {journey.level} · {journey.totalScore}/6 ★
                     </span>
                   </button>
                   <button
