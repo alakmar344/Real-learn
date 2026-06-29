@@ -33,7 +33,7 @@
   /* ── Text — ink hierarchy ── */
   --text-primary: #1a1208;
   --text-secondary: #4a3f2f;
-  --text-tertiary: #8a7a6a;
+  --text-tertiary: #6b5a48;
   --text-gold: #1a3a5c;
 
   /* ── Semantic ── */
@@ -112,7 +112,7 @@ html[data-theme="dark"] {
 
   --text-primary: #f0e8da;
   --text-secondary: #c4b8a4;
-  --text-tertiary: #8a7e6c;
+  --text-tertiary: #a89880;
   --text-gold: #d8b878;
 
   --correct: #4caf6a;
