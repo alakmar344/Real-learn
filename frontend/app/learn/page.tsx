@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Navbar from "@/components/shared/Navbar";
 import ProgressRail from "@/components/learning/ProgressRail";
 import PartCard from "@/components/learning/PartCard";
@@ -12,9 +12,11 @@ import LoadingCinematic from "@/components/shared/LoadingCinematic";
 import ErrorState from "@/components/shared/ErrorState";
 import LiveRegion from "@/components/shared/LiveRegion";
 import Footer from "@/components/shared/Footer";
+import { showToast } from "@/components/shared/ToastContainer";
 import { useLessonStore } from "@/store/lessonStore";
 import { useSavedJourneysStore, journeySignature } from "@/store/savedJourneysStore";
 import { useLesson } from "@/hooks/useLesson";
+import { LessonJourney } from "@/types";
 
 export default function LearnPage() {
   const [quizPart, setQuizPart] = useState<1 | 2 | 3 | null>(null);
@@ -45,6 +47,23 @@ export default function LearnPage() {
   const totalScore = useMemo(() => {
     return (partScores[1] ?? 0) + (partScores[2] ?? 0) + (partScores[3] ?? 0);
   }, [partScores]);
+
+  const prevLessonRef = useRef<LessonJourney | null>(null);
+  const prevCompletionRef = useRef(false);
+
+  useEffect(() => {
+    if (lesson && prevLessonRef.current === null && !showCompletion) {
+      showToast("Lesson ready! Let's learn.", "success");
+    }
+    prevLessonRef.current = lesson;
+  }, [lesson, showCompletion]);
+
+  useEffect(() => {
+    if (showCompletion && !prevCompletionRef.current) {
+      showToast("Journey complete! 🎉", "success");
+    }
+    prevCompletionRef.current = showCompletion;
+  }, [showCompletion]);
 
   /* ── Persist a completed journey to local storage (sidebar history) ── */
   useEffect(() => {
@@ -279,6 +298,10 @@ export default function LearnPage() {
               setQuizPart(null);
               setShowUnlockFx(true);
               window.setTimeout(() => setShowUnlockFx(false), 850);
+              showToast(
+                score >= 1 ? "Correct! Well done." : "Part completed.",
+                score >= 1 ? "success" : "info"
+              );
             }}
           />
         ) : null}

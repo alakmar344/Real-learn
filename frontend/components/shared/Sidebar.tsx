@@ -6,6 +6,7 @@ import { useAuth, useClerk, useUser } from "@clerk/nextjs";
 import LanguageSelector from "@/components/shared/LanguageSelector";
 import LevelSelector from "@/components/shared/LevelSelector";
 import ThemeModal from "@/components/shared/ThemeModal";
+import { showToast } from "@/components/shared/ToastContainer";
 import { useLessonStore } from "@/store/lessonStore";
 import { useSavedJourneysStore } from "@/store/savedJourneysStore";
 import { useThemeStore } from "@/store/themeStore";
@@ -80,14 +81,16 @@ export default function Sidebar({ open, onClose }: Props) {
       }
 
       await signOut(() => {
+        showToast("Account deleted successfully", "success");
         router.push("/");
       });
     } catch (err) {
       console.error("[frontend][Sidebar] delete data failed", err);
-      window.alert(
+      showToast(
         err instanceof Error
           ? `Could not delete your data: ${err.message}`
-          : "Could not delete your data. Please try again."
+          : "Could not delete your data. Please try again.",
+        "error"
       );
       setDeleting(false);
     }
@@ -174,12 +177,14 @@ export default function Sidebar({ open, onClose }: Props) {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+      showToast("Data exported successfully", "success");
     } catch (err) {
       console.error("[frontend][Sidebar] export data failed", err);
-      window.alert(
+      showToast(
         err instanceof Error
           ? `Could not export data: ${err.message}`
-          : "Could not export data. Please try again."
+          : "Could not export data. Please try again.",
+        "error"
       );
     }
   };
