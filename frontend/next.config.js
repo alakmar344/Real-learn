@@ -26,8 +26,10 @@ const nextConfig = {
           },
           {
             key: "Content-Security-Policy",
-            value:
+            value: 
+            
               "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://*.clerk.accounts.dev https://*.clerk.com https://clerk.reallearn.site; style-src 'self' 'unsafe-inline'; img-src 'self' https://img.clerk.com https://www.google-analytics.com data:; connect-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://clerk.reallearn.site https://real-learn.onrender.com https://www.google-analytics.com https://www.googletagmanager.com https://api.ipify.org; frame-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://clerk.reallearn.site; font-src 'self'; base-uri 'self'; form-action 'self'",
+ 
           },
         ],
       },
