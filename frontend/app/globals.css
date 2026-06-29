@@ -413,3 +413,15 @@ pre {
     font-size: 18px;
   }
 }
+
+@media (max-width: 640px) {
+  .markdown-content {
+    font-size: var(--text-sm);
+  }
+  .markdown-content h2 {
+    font-size: 18px;
+  }
+  .markdown-content h3 {
+    font-size: 15px;
+  }
+}

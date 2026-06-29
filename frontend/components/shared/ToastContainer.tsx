@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 interface Toast {
   id: number;
@@ -21,10 +21,6 @@ export default function ToastContainer() {
 
   setToastsGlobal = setToasts;
 
-  const remove = useCallback((id: number) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  }, []);
-
   useEffect(() => {
     if (toasts.length === 0) return;
     const timer = window.setTimeout(() => {
@@ -35,7 +31,12 @@ export default function ToastContainer() {
 
   if (toasts.length === 0) return null;
 
-  const accent = toasts[0].type === "success" ? "var(--correct)" : toasts[0].type === "error" ? "var(--wrong)" : "var(--accent)";
+  const accent =
+    toasts[0].type === "success"
+      ? "var(--correct)"
+      : toasts[0].type === "error"
+        ? "var(--wrong)"
+        : "var(--accent)";
 
   return (
     <div

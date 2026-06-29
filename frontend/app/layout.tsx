@@ -6,6 +6,7 @@ import PreSignInConsent from "@/components/shared/PreSignInConsent";
 import AppShell from "@/components/shared/AppShell";
 import ThemeApplier from "@/components/shared/ThemeApplier";
 import ToastContainer from "@/components/shared/ToastContainer";
+import SkipToContent from "@/components/shared/SkipToContent";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -22,6 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <SkipToContent />
         <GoogleAnalytics />
         <ClerkProvider afterSignOutUrl="/">
           <ThemeApplier />
