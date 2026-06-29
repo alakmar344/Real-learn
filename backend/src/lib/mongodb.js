@@ -9,7 +9,7 @@ const MONGODB_DB = process.env.MONGODB_DB || "reallearn";
 let client = null;
 let clientPromise = null;
 
-export async function getMongoClient() {
+async function getMongoClient() {
   if (clientPromise) return clientPromise;
 
   client = new MongoClient(MONGODB_URI);

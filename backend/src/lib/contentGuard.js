@@ -32,11 +32,11 @@ function matchesBannedPattern(text, patterns) {
   return patterns.some((pattern) => pattern.test(normalized));
 }
 
-export function containsBannedUserInput(text) {
+function containsBannedUserInput(text) {
   return matchesBannedPattern(text, BANNED_PATTERNS);
 }
 
-export function containsBannedAIResponse(text) {
+function containsBannedAIResponse(text) {
   return matchesBannedPattern(text, [...BANNED_PATTERNS, ...BANNED_RESPONSE_PATTERNS]);
 }
 

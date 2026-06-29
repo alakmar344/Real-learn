@@ -8,7 +8,6 @@ interface SavedJourneysStore {
   journeys: SavedJourney[];
   saveJourney: (journey: SavedJourney) => void;
   removeJourney: (id: string) => void;
-  clearJourneys: () => void;
 }
 
 function journeyLog(action: string, details?: unknown) {
@@ -50,10 +49,6 @@ export const useSavedJourneysStore = create<SavedJourneysStore>()(
           journeyLog("removeJourney", { id });
           return { journeys: state.journeys.filter((j) => j.id !== id) };
         }),
-      clearJourneys: () => {
-        journeyLog("clearJourneys");
-        set({ journeys: [] });
-      },
     }),
     {
       name: "reallearn-saved-journeys",

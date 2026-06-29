@@ -93,7 +93,7 @@ function isRetryableGemmaError(error) {
   return isRetryableNetworkGemmaError(error);
 }
 
-export function isGemmaServiceUnavailableError(error) {
+function isGemmaServiceUnavailableError(error) {
   return (
     error instanceof GemmaTimeoutError ||
     error instanceof GemmaCircuitOpenError ||
