@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth, useClerk, useUser } from "@clerk/nextjs";
+import { UserButton, useAuth, useClerk } from "@clerk/nextjs";
 import LanguageSelector from "@/components/shared/LanguageSelector";
 import LevelSelector from "@/components/shared/LevelSelector";
 import ThemeModal from "@/components/shared/ThemeModal";
@@ -25,7 +25,6 @@ export default function Sidebar({ open, onClose }: Props) {
   const router = useRouter();
   const { isLoaded, isSignedIn, getToken } = useAuth();
   const { signOut } = useClerk();
-  const { user } = useUser();
 
   const { language, level, setLanguage, setLevel, loadJourney, resetForNextQuestion } =
     useLessonStore();
@@ -188,11 +187,6 @@ export default function Sidebar({ open, onClose }: Props) {
       );
     }
   };
-
-  const email =
-    user?.primaryEmailAddress?.emailAddress ||
-    user?.emailAddresses?.[0]?.emailAddress ||
-    "";
 
   return (
     <>
@@ -402,20 +396,9 @@ export default function Sidebar({ open, onClose }: Props) {
               }}
             >
               <span style={{ fontSize: 11, color: "var(--text-tertiary)", fontWeight: 600 }}>Account</span>
-              {email && (
-                <span
-                  title={email}
-                  style={{
-                    fontSize: 12,
-                    color: "var(--text-secondary)",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
-                >
-                  {email}
-                </span>
-              )}
+              <div style={{ alignSelf: "flex-start" }}>
+                <UserButton />
+              </div>
               <button
                 type="button"
                 onClick={() => signOut(() => router.push("/"))}
