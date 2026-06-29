@@ -6,6 +6,7 @@ import QuestionInput from "@/components/homepage/QuestionInput";
 import LoadingCinematic from "@/components/shared/LoadingCinematic";
 import LiveRegion from "@/components/shared/LiveRegion";
 import PreSignInConsent from "@/components/shared/PreSignInConsent";
+import Footer from "@/components/shared/Footer";
 import { useLesson } from "@/hooks/useLesson";
 import { useAuth } from "@clerk/nextjs";
 
@@ -172,33 +173,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <footer
-          style={{
-            padding: "20px 24px 32px",
-            textAlign: "center",
-            fontSize: 12,
-            color: "var(--text-tertiary)",
-            borderTop: "1px solid var(--border-subtle)",
-            lineHeight: 1.6,
-          }}
-        >
-          <p style={{ margin: 0 }}>
-            You are talking to an AI. Responses are AI-generated and are
-            <strong> not reviewed by humans before being shown</strong>. They may be inaccurate,
-            incomplete, or outdated. Please verify important information with qualified professionals
-            or authoritative sources. This service is not intended for children under 13.
-          </p>
-          <p style={{ margin: "4px 0 0" }}>
-            <a href="/legal?tab=privacy" style={{ color: "var(--text-tertiary)" }}>Privacy Policy</a>
-            {" · "}
-            <a href="/legal?tab=terms" style={{ color: "var(--text-tertiary)" }}>Terms of Service</a>
-            {" · "}
-            <a href="/legal" style={{ color: "var(--text-tertiary)" }}>Legal</a>
-          </p>
-          <p style={{ margin: "4px 0 0", fontSize: 11 }}>
-            © {new Date().getFullYear()} RealLearn. All rights reserved.
-          </p>
-        </footer>
+        <Footer />
 
         {loadingQuestion ? (
           <LoadingCinematic question={loadingQuestion} />
