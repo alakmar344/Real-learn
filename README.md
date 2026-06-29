@@ -55,6 +55,8 @@ This isn't search. This isn't a chatbot. This is **teaching, on demand.**
 - [Local Development](#local-development)
 - [Validation Commands](#validation-commands)
 - [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [Security](#security)
 - [License](#license)
 
 ---
@@ -434,10 +436,32 @@ npm run build
 
 ---
 
+## Contributing
+
+Contributions are welcome! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+
+Please also read our [Code of Conduct](./CODE_OF_CONDUCT.md) before participating.
+
+---
+
+## Security
+
+To report a security vulnerability, please see [SECURITY.md](./SECURITY.md). **Do not open public issues for security vulnerabilities.**
+
+---
+
+## Author
+
+Built by **[alakmar344](https://github.com/alakmar344)** for the **Gemma 4 Good Hackathon** on Kaggle.
+
+---
+
 ## License
 
 This project is licensed under the **MIT License**.
 See [LICENSE](./LICENSE) for the full text.
+
+Copyright (c) 2026 alakmar344.
 
 ---
 

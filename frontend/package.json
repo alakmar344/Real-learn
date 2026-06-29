@@ -1,6 +1,18 @@
 {
   "name": "reallearn",
   "version": "1.0.0",
+  "description": "AI-powered educational platform that turns any question into a structured 3-part learning journey",
+  "author": "alakmar344",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alakmar344/Real-learn.git",
+    "directory": "frontend"
+  },
+  "homepage": "https://reallearn-taupe.vercel.app",
+  "bugs": {
+    "url": "https://github.com/alakmar344/Real-learn/issues"
+  },
   "private": true,
   "scripts": {
     "dev": "next dev",

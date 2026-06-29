@@ -1,6 +1,14 @@
 {
   "name": "reallearn-backend",
   "version": "1.0.0",
+  "description": "Express API backend for RealLearn - AI-powered educational platform",
+  "author": "alakmar344",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alakmar344/Real-learn.git",
+    "directory": "backend"
+  },
   "private": true,
   "type": "module",
   "scripts": {

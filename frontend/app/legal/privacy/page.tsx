@@ -69,7 +69,7 @@ export default function PrivacyPolicy() {
           <li style={{ marginBottom: 4 }}>To track your progress and quiz performance.</li>
           <li style={{ marginBottom: 4 }}>To analyze usage patterns through Google Analytics and improve our service.</li>
           <li style={{ marginBottom: 4 }}>To comply with legal obligations and age-appropriate content rules.</li>
-          <li style={{ marginBottom: 4 }}>To improve our AI models and educational content quality.</li>
+          <li style={{ marginBottom: 4 }}>To improve our educational content quality and service experience.</li>
           <li>To communicate important service updates (if you provide contact consent).</li>
         </ul>
       </section>
