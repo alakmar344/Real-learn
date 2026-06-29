@@ -165,13 +165,12 @@ app.use(
 app.use(express.json({ limit: "1mb" }));
 
 function securityHeaders(req, res, next) {
-  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("X-Frame-Options", "SAMEORIGIN");
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
   res.setHeader("X-XSS-Protection", "0");
   res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
   res.setHeader("Cross-Origin-Resource-Policy", "same-origin");
-  res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
   res.setHeader(
     "Permissions-Policy",
     "camera=(), microphone=(), geolocation=(), interest-cohort=()"
@@ -283,12 +282,15 @@ app.delete("/api/account", requireAuth, async (req, res) => {
   }
 
   let agreementsDeleted = 0;
+  let moderationLogsDeleted = 0;
   try {
     const db = await getDb();
-    const filter = email ? { $or: [{ clerkId: userId }, { email }] } : { clerkId: userId };
+    const filter = userId ? { clerkId: userId } : {};
     const result = await db.collection("agreements").deleteMany(filter);
     agreementsDeleted = result.deletedCount ?? 0;
-    console.log("[api/account] Mongo agreements deleted", { userId, agreementsDeleted });
+    const modResult = await db.collection("moderationLogs").deleteMany(filter);
+    moderationLogsDeleted = modResult.deletedCount ?? 0;
+    console.log("[api/account] Mongo data deleted", { userId, agreementsDeleted, moderationLogsDeleted });
   } catch (error) {
     console.error("[api/account] Failed to delete Mongo data", error);
     return res.status(500).json({ error: "Failed to delete your stored data." });
@@ -324,7 +326,7 @@ app.delete("/api/account", requireAuth, async (req, res) => {
     }
 
     console.log("[api/account] Clerk account deleted", { userId });
-    return res.json({ ok: true, agreementsDeleted, clerkDeleted: true });
+    return res.json({ ok: true, agreementsDeleted, moderationLogsDeleted, clerkDeleted: true });
   } catch (error) {
     console.error("[api/account] Clerk deletion error", error);
     return res.status(502).json({
@@ -449,7 +451,6 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
       timestamp: new Date().toISOString(),
       requestId,
       clerkId: req.auth?.userId || null,
-      email: req.auth?.email || req.auth?.email_address || null,
       reason: inputFilter.reason,
       type: "user-input-blocked",
     };
@@ -589,7 +590,6 @@ Level: ${level}${
         timestamp: new Date().toISOString(),
         requestId,
         clerkId: req.auth?.userId || null,
-        email: req.auth?.email || req.auth?.email_address || null,
         reason: responseFilter.reason,
         type: "ai-response-blocked",
       };
