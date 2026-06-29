@@ -1,16 +1,0 @@
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    81    0     0  100    81      0    405 --:--:-- --:--:-- --:--:--   407
-HTTP/2 200
-date: Mon, 11 May 2026 06:26:32 GMT
-content-type: text/event-stream; charset=utf-8
-access-control-allow-origin: https://reallearn-taupe.vercel.app
-cache-control: no-cache, no-transform
-rndr-id: eea90848-b92a-4bb9
-server: cloudflare
-vary: Origin
-x-powered-by: Express
-x-render-origin-server: Render
-cf-cache-status: DYNAMIC
-cf-ray: 9f9f1cd84f9f1269-ORD
-alt-svc: h3=":443"; ma=86400

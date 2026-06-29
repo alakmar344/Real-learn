@@ -11,7 +11,8 @@ export type Language =
 
 export type Level = "Class 6-8" | "Class 9-10" | "College / Advanced";
 
-export type Subject =
+
+type Subject =
   | "Physics"
   | "Chemistry"
   | "Economics"
