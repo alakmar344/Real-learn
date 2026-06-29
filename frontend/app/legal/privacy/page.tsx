@@ -59,6 +59,11 @@ export default function PrivacyPolicy() {
             <strong>Saved Lessons:</strong> Your completed learning journeys are stored locally on
             your device (browser localStorage) for your convenience.
           </li>
+          <li>
+            <strong>Moderation Logs:</strong> Blocked inputs and flagged AI responses are logged
+            with a pseudonymous identifier for safety and abuse prevention. No email or personal
+            identifying information is stored with these logs.
+          </li>
         </ul>
       </section>
 
