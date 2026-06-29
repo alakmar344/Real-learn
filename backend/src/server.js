@@ -171,7 +171,6 @@ function securityHeaders(req, res, next) {
   res.setHeader("X-XSS-Protection", "0");
   res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
   res.setHeader("Cross-Origin-Resource-Policy", "same-origin");
-  res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
   res.setHeader(
     "Permissions-Policy",
     "camera=(), microphone=(), geolocation=(), interest-cohort=()"
