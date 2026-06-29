@@ -141,7 +141,7 @@ const configuredOrigins =
 const allowedOrigins =
   configuredOrigins.length > 0
     ? configuredOrigins
-    : ["https://reallearn.site"];
+    : ["https://reallearn.site", "https://real-learn.onrender.com", "http://localhost:3000", "http://localhost:10000"];
 
 // CORS and JSON body parsing MUST be registered before any route so that every
 // endpoint (including /api/agreement) receives CORS headers and a parsed body.
@@ -182,7 +182,7 @@ function securityHeaders(req, res, next) {
     );
     res.setHeader(
       "Content-Security-Policy",
-      "default-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+      "default-src 'none'; base-uri 'self'; form-action 'self'"
     );
   }
   next();
