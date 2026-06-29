@@ -27,6 +27,7 @@ interface LessonStore {
   togglePartCollapse: (part: 1 | 2 | 3) => void;
   resetForNextQuestion: (question: string) => void;
   resetAll: () => void;
+  resetProgress: () => void;
   loadJourney: (journey: SavedJourney) => void;
 }
 
@@ -148,10 +149,22 @@ export const useLessonStore = create<LessonStore>()(
           showFollowUp: false,
         });
       },
-      resetAll: () => {
-        storeLog("resetAll");
-        set({ ...initialState });
-      },
+  resetAll: () => {
+    storeLog("resetAll");
+    set({ ...initialState });
+  },
+  resetProgress: () => {
+    storeLog("resetProgress");
+    set((state) => ({
+      ...state,
+      unlockedPart: 1,
+      completedParts: [],
+      partScores: { 1: null, 2: null, 3: null },
+      collapsedParts: [],
+      showCompletion: false,
+      showFollowUp: false,
+    }));
+  },
       loadJourney: (journey) => {
         storeLog("loadJourney", { id: journey.id, question: journey.question });
         set({

@@ -32,7 +32,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         ☰
       </button>
       <Sidebar open={open} onClose={() => setOpen(false)} />
-      <div className="app-main">{children}</div>
+      <div id="main-content" className="app-main">{children}</div>
     </div>
   );
 }
