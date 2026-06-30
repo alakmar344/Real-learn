@@ -22,6 +22,7 @@ import {
   filterAIResponse,
   filterUserInput,
 } from "./lib/contentGuard.js";
+import { moderateText } from "./lib/moderation.js";
 
 const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "1.0";
 const TERMS_OF_SERVICE_VERSION = process.env.TERMS_OF_SERVICE_VERSION || "1.0";
@@ -119,6 +120,15 @@ function recordLessonResult(success) {
     console.warn(
       `[generate-lesson] Repeated failures detected (${consecutiveLessonFailures} consecutive)`
     );
+  }
+}
+
+async function logModerationEvent(event) {
+  try {
+    const db = await getDb();
+    await db.collection("moderationLogs").insertOne(event);
+  } catch (error) {
+    console.error("[moderation] Failed to log moderation event", error);
   }
 }
 
@@ -542,20 +552,44 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
   };
 
   try {
-    let newsContext = null;
-    try {
-      console.log("[Serper] Context fetch start", { requestId });
-      newsContext = await fetchRealWorldContext(question, language);
-      console.log("[Serper] Context fetch end", {
+    // Run LLM input moderation concurrently with the real-world context fetch
+    // so the safety check adds no latency in the common (allowed) case.
+    console.log("[Serper] Context fetch start", { requestId });
+    const [inputModeration, newsContextResult] = await Promise.all([
+      moderateText(question, "input"),
+      fetchRealWorldContext(question, language).catch((error) => {
+        console.warn("[Serper] Context fetch failed, continuing without context", {
+          requestId,
+          error,
+        });
+        return null;
+      }),
+    ]);
+    const newsContext = newsContextResult;
+    console.log("[Serper] Context fetch end", {
+      requestId,
+      hasContext: Boolean(newsContext),
+      contextLength: newsContext?.length ?? 0,
+    });
+
+    if (finished) return;
+    if (!inputModeration.allowed) {
+      const moderationEvent = {
+        timestamp: new Date().toISOString(),
         requestId,
-        hasContext: Boolean(newsContext),
-        contextLength: newsContext?.length ?? 0,
+        clerkId: req.auth?.userId || null,
+        reason: inputModeration.reason,
+        type: "user-input-moderated",
+      };
+      console.warn("[moderation] Input blocked by LLM moderation", moderationEvent);
+      await logModerationEvent(moderationEvent);
+      sendEvent("error", {
+        error:
+          inputModeration.reason ||
+          "Your question was flagged by our safety review. Please try a different question.",
       });
-    } catch (error) {
-      console.warn("[Serper] Context fetch failed, continuing without context", {
-        requestId,
-        error,
-      });
+      recordLessonResult(false);
+      return;
     }
 
     const userPrompt = `Question: ${question}
@@ -608,6 +642,30 @@ Level: ${level}${
     }
 
     if (finished) return;
+
+    // Second safety layer on the AI reply: LLM moderation in addition to the
+    // regex guard above. Fails open, so a moderation hiccup won't block a valid
+    // lesson — only a confident "block" verdict stops it.
+    const outputModeration = await moderateText(raw, "output");
+    if (finished) return;
+    if (!outputModeration.allowed) {
+      const moderationEvent = {
+        timestamp: new Date().toISOString(),
+        requestId,
+        clerkId: req.auth?.userId || null,
+        reason: outputModeration.reason,
+        type: "ai-response-moderated",
+      };
+      console.warn("[moderation] AI response blocked by LLM moderation", moderationEvent);
+      await logModerationEvent(moderationEvent);
+      sendEvent("error", {
+        error:
+          outputModeration.reason ||
+          "The generated content was flagged by our safety review. Please try a different question.",
+      });
+      recordLessonResult(false);
+      return;
+    }
 
     const parsed = parseJSON(raw);
     if (parsed === null) {
