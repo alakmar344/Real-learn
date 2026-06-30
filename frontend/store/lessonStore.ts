@@ -17,7 +17,6 @@ interface LessonStore {
   collapsedParts: number[];
   showCompletion: boolean;
   showFollowUp: boolean;
-  lessonStartTime: number | null;
   setLanguage: (language: Language) => void;
   setLevel: (level: Level) => void;
   setQuestion: (question: string) => void;
@@ -30,7 +29,6 @@ interface LessonStore {
   resetAll: () => void;
   resetProgress: () => void;
   loadJourney: (journey: SavedJourney) => void;
-  recordLessonTime: () => void;
 }
 
 function storeLog(action: string, details?: unknown) {
@@ -54,7 +52,6 @@ const initialState = {
   collapsedParts: [] as number[],
   showCompletion: false,
   showFollowUp: false,
-  lessonStartTime: null as number | null,
 };
 
 export const useLessonStore = create<LessonStore>()(
@@ -85,7 +82,6 @@ export const useLessonStore = create<LessonStore>()(
           collapsedParts: [],
           showCompletion: false,
           showFollowUp: false,
-          lessonStartTime: Date.now(),
         });
       },
       setLesson: (lesson) => {
@@ -151,25 +147,24 @@ export const useLessonStore = create<LessonStore>()(
           collapsedParts: [],
           showCompletion: false,
           showFollowUp: false,
-          lessonStartTime: null,
         });
       },
-      resetAll: () => {
-        storeLog("resetAll");
-        set({ ...initialState });
-      },
-      resetProgress: () => {
-        storeLog("resetProgress");
-        set((state) => ({
-          ...state,
-          unlockedPart: 1,
-          completedParts: [],
-          partScores: { 1: null, 2: null, 3: null },
-          collapsedParts: [],
-          showCompletion: false,
-          showFollowUp: false,
-        }));
-      },
+  resetAll: () => {
+    storeLog("resetAll");
+    set({ ...initialState });
+  },
+  resetProgress: () => {
+    storeLog("resetProgress");
+    set((state) => ({
+      ...state,
+      unlockedPart: 1,
+      completedParts: [],
+      partScores: { 1: null, 2: null, 3: null },
+      collapsedParts: [],
+      showCompletion: false,
+      showFollowUp: false,
+    }));
+  },
       loadJourney: (journey) => {
         storeLog("loadJourney", { id: journey.id, question: journey.question });
         set({
@@ -185,18 +180,8 @@ export const useLessonStore = create<LessonStore>()(
           collapsedParts: [1, 2, 3],
           showCompletion: true,
           showFollowUp: true,
-          lessonStartTime: null,
         });
       },
-      recordLessonTime: () =>
-        set((state) => {
-          if (!state.lessonStartTime) return {};
-          const elapsed = Date.now() - state.lessonStartTime;
-          storeLog("recordLessonTime", { elapsedMs: elapsed });
-          return {
-            lesson: state.lesson ? { ...state.lesson, _completionTime: elapsed } : null,
-          };
-        }),
     }),
     {
       name: "reallearn-journey",

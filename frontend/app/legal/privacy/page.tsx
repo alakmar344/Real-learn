@@ -75,7 +75,6 @@ export default function PrivacyPolicy() {
           <li style={{ marginBottom: 4 }}>To analyze usage patterns through Google Analytics and improve our service.</li>
           <li style={{ marginBottom: 4 }}>To comply with legal obligations and age-appropriate content rules.</li>
           <li style={{ marginBottom: 4 }}>To improve our educational content quality and service experience.</li>
-          <li style={{ marginBottom: 4 }}>To send achievement notifications and streak reminders (if enabled).</li>
           <li>To communicate important service updates (if you provide contact consent).</li>
         </ul>
       </section>
@@ -117,20 +116,13 @@ export default function PrivacyPolicy() {
       <section style={{ marginBottom: 28 }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>6. Cookies and Local Storage</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
-          We use browser localStorage to store your consent preferences, theme settings, saved
-          lessons, and achievement progress. We use Google Analytics cookies (loaded only after consent) for service improvement.
+          We use browser localStorage to store your consent preferences, theme settings, and saved
+          lessons. We use Google Analytics cookies (loaded only after consent) for service improvement.
           We do not use tracking cookies for advertising. Clerk, our authentication provider,
           uses essential cookies for session management. For more details, please see our{" "}
           <a href="/legal?tab=cookies" style={{ color: "var(--accent)" }}>Cookie Policy</a>.
           You can clear your localStorage at any time through your browser settings or by using the
           &quot;Delete My Data&quot; feature in the app.
-        </p>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
-          <strong>Browser Notifications:</strong> We use browser notifications to send you daily learning
-          reminders, streak milestones, and achievement unlocks. These notifications are handled locally
-          in your browser and no notification data is sent to our servers. You can enable or disable
-          these notifications through the Notification Settings in the app sidebar. All notification
-          preferences are stored only in your browser.
         </p>
       </section>
 

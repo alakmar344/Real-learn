@@ -6,8 +6,6 @@ import { UserButton, useAuth, useClerk } from "@clerk/nextjs";
 import LanguageSelector from "@/components/shared/LanguageSelector";
 import LevelSelector from "@/components/shared/LevelSelector";
 import ThemeModal from "@/components/shared/ThemeModal";
-import AchievementsPanel from "@/components/shared/AchievementsPanel";
-import NotificationSettings from "@/components/shared/NotificationSettings";
 import { showToast } from "@/components/shared/ToastContainer";
 import { useLessonStore } from "@/store/lessonStore";
 import { useSavedJourneysStore } from "@/store/savedJourneysStore";
@@ -263,99 +261,96 @@ export default function Sidebar({ open, onClose }: Props) {
         </div>
 
         {/* Saved journeys */}
-<div
-           style={{ flex: 1, overflowY: "auto", padding: "12px 12px 8px" }}>
-           <p
-             style={{
-               margin: "0 4px 8px",
-               fontSize: 11,
-               letterSpacing: "0.12em",
-               textTransform: "uppercase",
-               color: "var(--text-tertiary)",
-               fontWeight: 600,
-             }}
-           >
-             Saved lessons
-           </p>
+        <div style={{ flex: 1, overflowY: "auto", padding: "12px 12px 8px" }}>
+          <p
+            style={{
+              margin: "0 4px 8px",
+              fontSize: 11,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "var(--text-tertiary)",
+              fontWeight: 600,
+            }}
+          >
+            Saved lessons
+          </p>
 
-           {journeys.length === 0 ? (
-             <p
-               style={{
-                 margin: "8px 4px",
-                 fontSize: 13,
-                 color: "var(--text-tertiary)",
-                 fontStyle: "italic",
-                 lineHeight: 1.6,
-               }}
-             >
-               Complete a lesson and it&apos;ll be saved here so you can revisit it
-               anytime.
-             </p>
-           ) : (
-             <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 4 }}>
-               {journeys.map((journey) => (
-                 <li key={journey.id} style={{ position: "relative" }}>
-                   <button
-                     type="button"
-                     onClick={() => handleOpenJourney(journey)}
-                     title={journey.question}
-                     style={{
-                       width: "100%",
-                       textAlign: "left",
-                       border: "1px solid transparent",
-                       borderRadius: "var(--radius-md)",
-                       background: "transparent",
-                       color: "var(--text-primary)",
-                       padding: "10px 34px 10px 10px",
-                       cursor: "pointer",
-                       display: "block",
-                     }}
-                     onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-card-hover)")}
-                     onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                   >
-                     <span
-                       style={{
-                         display: "block",
-                         fontSize: 13,
-                         fontWeight: 500,
-                         lineHeight: 1.4,
-                         whiteSpace: "nowrap",
-                         overflow: "hidden",
-                         textOverflow: "ellipsis",
-                       }}
-                     >
-                       {journey.question}
-                     </span>
-                     <span style={{ display: "block", fontSize: 11, color: "var(--text-tertiary)", marginTop: 2 }}>
-                       {journey.language} · {journey.level} · {journey.totalScore}/6 ★
-                     </span>
-                   </button>
-                   <button
-                     type="button"
-                     aria-label="Remove saved lesson"
-                     onClick={() => removeJourney(journey.id)}
-                     style={{
-                       position: "absolute",
-                       top: 8,
-                       right: 6,
-                       border: "none",
-                       background: "transparent",
-                       color: "var(--text-tertiary)",
-                       cursor: "pointer",
-                       fontSize: 14,
-                       lineHeight: 1,
-                       padding: 4,
-                     }}
-                   >
-                     ✕
-                   </button>
-                 </li>
-               ))}
-             </ul>
-           )}
-
-           <AchievementsPanel />
-         </div>
+          {journeys.length === 0 ? (
+            <p
+              style={{
+                margin: "8px 4px",
+                fontSize: 13,
+                color: "var(--text-tertiary)",
+                fontStyle: "italic",
+                lineHeight: 1.6,
+              }}
+            >
+              Complete a lesson and it&apos;ll be saved here so you can revisit it
+              anytime.
+            </p>
+          ) : (
+            <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 4 }}>
+              {journeys.map((journey) => (
+                <li key={journey.id} style={{ position: "relative" }}>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenJourney(journey)}
+                    title={journey.question}
+                    style={{
+                      width: "100%",
+                      textAlign: "left",
+                      border: "1px solid transparent",
+                      borderRadius: "var(--radius-md)",
+                      background: "transparent",
+                      color: "var(--text-primary)",
+                      padding: "10px 34px 10px 10px",
+                      cursor: "pointer",
+                      display: "block",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-card-hover)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                  >
+                    <span
+                      style={{
+                        display: "block",
+                        fontSize: 13,
+                        fontWeight: 500,
+                        lineHeight: 1.4,
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {journey.question}
+                    </span>
+                    <span style={{ display: "block", fontSize: 11, color: "var(--text-tertiary)", marginTop: 2 }}>
+                      {journey.language} · {journey.level} · {journey.totalScore}/6 ★
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Remove saved lesson"
+                    onClick={() => removeJourney(journey.id)}
+                    style={{
+                      position: "absolute",
+                      top: 8,
+                      right: 6,
+                      border: "none",
+                      background: "transparent",
+                      color: "var(--text-tertiary)",
+                      cursor: "pointer",
+                      fontSize: 14,
+                      lineHeight: 1,
+                      padding: 4,
+                    }}
+                  >
+                    ✕
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
 
         {/* Bottom controls */}
         <div
@@ -396,8 +391,6 @@ export default function Sidebar({ open, onClose }: Props) {
             <span>{theme === "dark" ? "🌙 Night" : "☀️ Paper"} theme</span>
             <span style={{ color: "var(--text-tertiary)", fontSize: 12 }}>Change</span>
           </button>
-
-          <NotificationSettings />
 
           {/* Account */}
           {isLoaded && isSignedIn && (
