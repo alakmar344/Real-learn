@@ -15,9 +15,8 @@ Keep response stable and concise:
 
 Quiz Requirements:
 - Each part must have exactly 2 quiz questions.
-- Quiz explanations must be extremely verbose, exhaustive, and highly educational (exactly 20-30 lines of text).
-- Explanations must provide a deep dive into the topic, covering the historical context, scientific/theoretical underpinnings, detailed reasoning for why the correct answer is right, and a thorough analysis of why each of the three incorrect options is wrong or less accurate.
-- The goal of the explanation is to provide a complete mini-lesson within the quiz feedback itself.
+- Quiz explanations must be clear, educational, and concise (about 3-5 sentences).
+- Each explanation should state why the correct answer is right and briefly note why the main distractor is wrong. Be direct — do not pad or repeat.
 
 Language and level:
 - Write all lesson content and quiz text in the student's requested language.
@@ -47,8 +46,8 @@ Output schema (must match exactly):
       "content": "<part 1 markdown>",
       "sources": ["<real URL>", "<real URL>"],
       "quiz": [
-        { "question": "<text>", "options": ["<A>", "<B>", "<C>", "<D>"], "correctIndex": 0, "explanation": "<extremely verbose exhaustive educational text, 20-30 lines>" },
-        { "question": "<text>", "options": ["<A>", "<B>", "<C>", "<D>"], "correctIndex": 1, "explanation": "<extremely verbose exhaustive educational text, 20-30 lines>" }
+        { "question": "<text>", "options": ["<A>", "<B>", "<C>", "<D>"], "correctIndex": 0, "explanation": "<concise educational explanation, 3-5 sentences>" },
+        { "question": "<text>", "options": ["<A>", "<B>", "<C>", "<D>"], "correctIndex": 1, "explanation": "<concise educational explanation, 3-5 sentences>" }
       ]
     },
     {
@@ -58,8 +57,8 @@ Output schema (must match exactly):
       "content": "<part 2 markdown>",
       "sources": ["<real URL>"],
       "quiz": [
-        { "question": "<text>", "options": ["<A>", "<B>", "<C>", "<D>"], "correctIndex": 2, "explanation": "<extremely verbose exhaustive educational text, 20-30 lines>" },
-        { "question": "<text>", "options": ["<A>", "<B>", "<C>", "<D>"], "correctIndex": 0, "explanation": "<extremely verbose exhaustive educational text, 20-30 lines>" }
+        { "question": "<text>", "options": ["<A>", "<B>", "<C>", "<D>"], "correctIndex": 2, "explanation": "<concise educational explanation, 3-5 sentences>" },
+        { "question": "<text>", "options": ["<A>", "<B>", "<C>", "<D>"], "correctIndex": 0, "explanation": "<concise educational explanation, 3-5 sentences>" }
       ]
     },
     {
@@ -69,8 +68,8 @@ Output schema (must match exactly):
       "content": "<part 3 markdown with real-world event>",
       "sources": ["<real URL>", "<real URL>"],
       "quiz": [
-        { "question": "<text>", "options": ["<A>", "<B>", "<C>", "<D>"], "correctIndex": 1, "explanation": "<extremely verbose exhaustive educational text, 20-30 lines>" },
-        { "question": "<text>", "options": ["<A>", "<B>", "<C>", "<D>"], "correctIndex": 2, "explanation": "<extremely verbose exhaustive educational text, 20-30 lines>" }
+        { "question": "<text>", "options": ["<A>", "<B>", "<C>", "<D>"], "correctIndex": 1, "explanation": "<concise educational explanation, 3-5 sentences>" },
+        { "question": "<text>", "options": ["<A>", "<B>", "<C>", "<D>"], "correctIndex": 2, "explanation": "<concise educational explanation, 3-5 sentences>" }
       ]
     }
   ],
