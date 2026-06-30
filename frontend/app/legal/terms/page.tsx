@@ -90,18 +90,6 @@ export default function TermsOfService() {
       </section>
 
       <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>6a. Notifications and Gamification</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
-          We offer optional browser notifications to help you maintain your learning streak and celebrate
-          achievements. These notifications are delivered locally in your browser and do not transmit any
-          personal data to our servers. You can enable or disable notifications at any time through
-          the Notification Settings in the app sidebar. Our gamification features (streaks, XP, badges)
-          are stored locally in your browser and are designed to enhance your learning experience.
-          Continued use of these features indicates acceptance of this functionality.
-        </p>
-      </section>
-
-      <section style={{ marginBottom: 28 }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>7. Intellectual Property</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           The Service and its original content, features, and functionality are owned by RealLearn
