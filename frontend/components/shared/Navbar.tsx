@@ -78,44 +78,25 @@ export default function Navbar({ compact = false }: Props) {
           </span>
         </Link>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          {/* Streak counter */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {/* XP and Level - always show on larger screens */}
           <div
-            title={`Current streak: ${streak} day${streak !== 1 ? "s" : ""}`}
+            title={`${totalXP} XP • Level ${level} (${getLevelTitle()})`}
+            className="nav-stats"
             style={{
               display: "flex",
               alignItems: "center",
               gap: 4,
-              padding: "6px 10px",
-              borderRadius: "var(--radius-md)",
-              background: streak > 0 ? "rgba(26,107,58,0.1)" : "transparent",
-              color: streak > 0 ? "var(--correct)" : "var(--text-tertiary)",
-              fontSize: 13,
-              fontWeight: 600,
-            }}
-          >
-            <span aria-hidden="true">{streak > 0 ? "🔥" : "📖"}</span>
-            <span>{streak > 0 ? streak : "Start"}</span>
-          </div>
-
-          {/* XP and Level */}
-          <div
-            title={`${totalXP} XP • Level ${level} (${getLevelTitle()})`}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              padding: "6px 10px",
+              padding: "4px 8px",
               borderRadius: "var(--radius-md)",
               background: "rgba(26,58,92,0.06)",
               color: "var(--accent)",
-              fontSize: 13,
+              fontSize: 12,
               fontWeight: 600,
             }}
           >
             <span aria-hidden="true">★</span>
             <span>{totalXP}</span>
-            <span style={{ color: "var(--text-tertiary)", fontSize: 11 }}>Lv{level}</span>
           </div>
 
           {/* Notification bell */}
@@ -124,29 +105,55 @@ export default function Navbar({ compact = false }: Props) {
               type="button"
               onClick={() => requestPermission()}
               aria-label="Enable notifications"
-              title="Enable notifications for daily reminders"
+              title="Enable notifications"
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 4,
-                padding: "6px 10px",
+                justifyContent: "center",
+                width: 32,
+                height: 32,
                 borderRadius: "var(--radius-md)",
                 border: "1px solid var(--border-default)",
                 background: "transparent",
                 color: "var(--text-secondary)",
-                fontSize: 13,
+                fontSize: 14,
                 cursor: "pointer",
               }}
             >
-              <span aria-hidden="true">🔔</span>
-              <span style={{ fontSize: 11 }}>Notify</span>
+              🔔
             </button>
           )}
+
+          {/* Streak indicator - mobile optimized */}
+          <div
+            title={`Current streak: ${streak} day${streak !== 1 ? "s" : ""}`}
+            className="nav-streak"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 32,
+              height: 32,
+              borderRadius: "var(--radius-md)",
+              background: streak > 0 ? "rgba(26,107,58,0.1)" : "transparent",
+              color: streak > 0 ? "var(--correct)" : "var(--text-tertiary)",
+              fontSize: 14,
+            }}
+          >
+            {streak > 0 ? "🔥" : "📖"}
+          </div>
         </div>
       </div>
 
       <style jsx>{`
-        /* Make room for the fixed sidebar toggle on small screens. */
+        .nav-stats {
+          display: none;
+        }
+        @media (min-width: 640px) {
+          .nav-stats {
+            display: flex;
+          }
+        }
         @media (max-width: 900px) {
           .navbar-inner {
             padding-left: 64px !important;
