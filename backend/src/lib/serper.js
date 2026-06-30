@@ -1,4 +1,10 @@
 const SERPER_API_KEY = process.env.SERPER_API_KEY;
+const DEFAULT_SERPER_TIMEOUT_MS = 6000;
+const configuredSerperTimeoutMs = Number(process.env.SERPER_TIMEOUT_MS);
+const SERPER_TIMEOUT_MS =
+  Number.isFinite(configuredSerperTimeoutMs) && configuredSerperTimeoutMs > 0
+    ? configuredSerperTimeoutMs
+    : DEFAULT_SERPER_TIMEOUT_MS;
 const SERPER_LANGUAGE_MAP = {
   bengali: "bn",
   english: "en",
@@ -38,19 +44,36 @@ export async function fetchRealWorldContext(topic, language) {
       hl,
     });
     const startedAt = Date.now();
-    const response = await fetch("https://google.serper.dev/news", {
-      method: "POST",
-      headers: {
-        "X-API-KEY": SERPER_API_KEY,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        q: topic,
-        num: 3,
-        gl: "in",
-        hl,
-      }),
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), SERPER_TIMEOUT_MS);
+    let response;
+    try {
+      response = await fetch("https://google.serper.dev/news", {
+        method: "POST",
+        headers: {
+          "X-API-KEY": SERPER_API_KEY,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          q: topic,
+          num: 3,
+          gl: "in",
+          hl,
+        }),
+        signal: controller.signal,
+      });
+    } catch (fetchError) {
+      if (fetchError?.name === "AbortError") {
+        console.warn("[Serper] Request timed out; returning null context", {
+          requestId,
+          timeoutMs: SERPER_TIMEOUT_MS,
+        });
+        return null;
+      }
+      throw fetchError;
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     console.log("[Serper] Response received", {
       requestId,
