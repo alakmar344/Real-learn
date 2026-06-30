@@ -17,6 +17,8 @@ import { useLessonStore } from "@/store/lessonStore";
 import { useSavedJourneysStore, journeySignature } from "@/store/savedJourneysStore";
 import { useLesson } from "@/hooks/useLesson";
 import { LessonJourney } from "@/types";
+import { useAchievementStore } from "@/store/achievementStore";
+import { useNotificationStore } from "@/store/notificationStore";
 
 export default function LearnPage() {
   const [quizPart, setQuizPart] = useState<1 | 2 | 3 | null>(null);
@@ -39,11 +41,17 @@ export default function LearnPage() {
     resetProgress,
     showCompletion,
     showFollowUp,
+    recordLessonTime,
   } = useLessonStore();
 
   const saveJourney = useSavedJourneysStore((s) => s.saveJourney);
-
   const { generateLesson, restart } = useLesson();
+  const recordCompletion = useAchievementStore((s) => s.recordCompletion);
+  const unlockAchievement = useAchievementStore((s) => s.unlockAchievement);
+  const showAchievementNotification = useNotificationStore((s) => s.showAchievementNotification);
+  const completeDailyChallenge = useNotificationStore((s) => s.completeDailyChallenge);
+  const getTodayChallenge = useNotificationStore((s) => s.getTodayChallenge);
+  const addXP = useAchievementStore((s) => s.addXP);
 
   const totalScore = useMemo(() => {
     return (partScores[1] ?? 0) + (partScores[2] ?? 0) + (partScores[3] ?? 0);
@@ -71,6 +79,9 @@ export default function LearnPage() {
     if (!showCompletion || !lesson) return;
     const displayQuestion = lesson.question ?? lesson.topic ?? "";
     const id = journeySignature(displayQuestion, lesson.parts[0]?.title);
+    const subjects = lesson.parts.map((p) => p.subject);
+    const timeMs = lesson._completionTime ?? undefined;
+    
     saveJourney({
       id,
       question: displayQuestion,
@@ -82,6 +93,63 @@ export default function LearnPage() {
       savedAt: Date.now(),
     });
     console.log("[frontend][LearnPage] journey saved to history", { id });
+    
+    // Record completion for streak/XP tracking
+    recordCompletion(subjects, [language], timeMs);
+    
+    // Check and unlock achievements
+    const { lessonsCompleted, streak, languagesUsed, subjectsLearned, unlockedAchievements } = useAchievementStore.getState();
+    
+    // First lesson achievement
+    if (lessonsCompleted === 1 && !unlockedAchievements.includes("first_lesson")) {
+      unlockAchievement("first_lesson");
+      showAchievementNotification("Achievement Unlocked!", "First Lesson - Complete your first learning journey");
+    }
+    
+    // Perfect score achievement
+    if (totalScore === 6 && !unlockedAchievements.includes("perfect_score")) {
+      unlockAchievement("perfect_score");
+      addXP(100);
+      showAchievementNotification("Perfect Score!", "You got all questions correct!");
+    }
+    
+    // Streak achievements
+    if (streak >= 14 && !unlockedAchievements.includes("streak_14")) {
+      unlockAchievement("streak_14");
+      showAchievementNotification("Unstoppable!", "14 day learning streak - incredible dedication!");
+    } else if (streak >= 7 && !unlockedAchievements.includes("streak_7")) {
+      unlockAchievement("streak_7");
+      showAchievementNotification("Streak Milestone!", "7 day learning streak!");
+    } else if (streak >= 3 && !unlockedAchievements.includes("streak_3")) {
+      unlockAchievement("streak_3");
+      showAchievementNotification("On a Roll!", "3 day learning streak!");
+    }
+    
+    // Polyglot achievement
+    if (languagesUsed.length >= 3 && !unlockedAchievements.includes("polyglot")) {
+      unlockAchievement("polyglot");
+      showAchievementNotification("Polyglot!", "Using 3 languages for learning!");
+    }
+    
+    // Explorer achievement
+    if (subjectsLearned.length >= 5 && !unlockedAchievements.includes("explorer")) {
+      unlockAchievement("explorer");
+      showAchievementNotification("Explorer!", "Learning 5 different subjects!");
+    }
+    
+    // Master achievement
+    if (lessonsCompleted >= 20 && !unlockedAchievements.includes("master")) {
+      unlockAchievement("master");
+      showAchievementNotification("Master!", "Completed 20 lessons - you're a learning champion!");
+    }
+    
+    // Daily challenge
+    const todayChallenge = getTodayChallenge();
+    if (todayChallenge && !todayChallenge.completed) {
+      completeDailyChallenge();
+      addXP(todayChallenge.xpBonus);
+      showToast(`Daily challenge completed! +${todayChallenge.xpBonus} XP`, "success");
+    }
   }, [showCompletion, lesson, language, level, partScores, totalScore, saveJourney]);
 
   useEffect(() => {
@@ -299,6 +367,7 @@ export default function LearnPage() {
                 part: activePart.partNumber,
                 score,
               });
+              recordLessonTime();
               passPart(activePart.partNumber, score);
               setQuizPart(null);
               setShowUnlockFx(true);

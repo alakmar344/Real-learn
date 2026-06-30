@@ -1,12 +1,23 @@
 "use client";
 
 import Link from "next/link";
+import { useAchievementStore } from "@/store/achievementStore";
+import { useNotificationStore } from "@/store/notificationStore";
 
 interface Props {
   compact?: boolean;
 }
 
 export default function Navbar({ compact = false }: Props) {
+  const { totalXP, level, getLevelTitle, checkStreak } = useAchievementStore();
+  const { streak } = useAchievementStore();
+  const { permission, requestPermission } = useNotificationStore();
+
+  // Check streak on mount
+  if (typeof window !== "undefined") {
+    checkStreak();
+  }
+
   return (
     <header
       style={{
@@ -29,7 +40,7 @@ export default function Navbar({ compact = false }: Props) {
           minHeight: compact ? "auto" : 56,
           display: "flex",
           alignItems: "center",
-          justifyContent: "flex-start",
+          justifyContent: "space-between",
           gap: 12,
         }}
       >
@@ -62,6 +73,72 @@ export default function Navbar({ compact = false }: Props) {
             <span style={{ color: "var(--accent)" }}>Learn</span>
           </span>
         </Link>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          {/* Streak counter */}
+          <div
+            title={`Current streak: ${streak} day${streak !== 1 ? "s" : ""}`}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+              padding: "6px 10px",
+              borderRadius: "var(--radius-md)",
+              background: streak > 0 ? "rgba(26,107,58,0.1)" : "transparent",
+              color: streak > 0 ? "var(--correct)" : "var(--text-tertiary)",
+              fontSize: 13,
+              fontWeight: 600,
+            }}
+          >
+            <span aria-hidden="true">{streak > 0 ? "🔥" : "📖"}</span>
+            <span>{streak > 0 ? streak : "Start"}</span>
+          </div>
+
+          {/* XP and Level */}
+          <div
+            title={`${totalXP} XP • Level ${level} (${getLevelTitle()})`}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "6px 10px",
+              borderRadius: "var(--radius-md)",
+              background: "rgba(26,58,92,0.06)",
+              color: "var(--accent)",
+              fontSize: 13,
+              fontWeight: 600,
+            }}
+          >
+            <span aria-hidden="true">★</span>
+            <span>{totalXP}</span>
+            <span style={{ color: "var(--text-tertiary)", fontSize: 11 }}>Lv{level}</span>
+          </div>
+
+          {/* Notification bell */}
+          {permission !== "granted" && (
+            <button
+              type="button"
+              onClick={() => requestPermission()}
+              aria-label="Enable notifications"
+              title="Enable notifications for daily reminders"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                padding: "6px 10px",
+                borderRadius: "var(--radius-md)",
+                border: "1px solid var(--border-default)",
+                background: "transparent",
+                color: "var(--text-secondary)",
+                fontSize: 13,
+                cursor: "pointer",
+              }}
+            >
+              <span aria-hidden="true">🔔</span>
+              <span style={{ fontSize: 11 }}>Notify</span>
+            </button>
+          )}
+        </div>
       </div>
 
       <style jsx>{`

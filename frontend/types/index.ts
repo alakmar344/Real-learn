@@ -11,8 +11,7 @@ export type Language =
 
 export type Level = "Class 6-8" | "Class 9-10" | "College / Advanced";
 
-
-type Subject =
+export type Subject =
   | "Physics"
   | "Chemistry"
   | "Economics"
@@ -48,6 +47,7 @@ export interface LessonJourney {
   level: Level;
   parts: [LessonPart, LessonPart, LessonPart];
   keyTakeaways: [string, string, string];
+  _completionTime?: number;
 }
 
 export type Theme = "light" | "dark";
