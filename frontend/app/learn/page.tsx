@@ -150,7 +150,7 @@ export default function LearnPage() {
       addXP(todayChallenge.xpBonus);
       showToast(`Daily challenge completed! +${todayChallenge.xpBonus} XP`, "success");
     }
-  }, [showCompletion, lesson, language, level, partScores, totalScore, saveJourney, recordCompletion, unlockAchievement, showAchievementNotification, completeDailyChallenge, getTodayChallenge, addXP]);
+  }, [showCompletion, lesson, language, level, partScores, totalScore, saveJourney]);
 
   useEffect(() => {
     console.log("[frontend][LearnPage] state snapshot", {
@@ -362,22 +362,22 @@ export default function LearnPage() {
             open={quizPart !== null}
             questions={activePart.quiz ?? []}
             onClose={() => setQuizPart(null)}
-onPass={(score) => {
-               console.log("[frontend][LearnPage] quiz passed", {
-                 part: activePart.partNumber,
-                 score,
-               });
-               recordLessonTime();
-               passPart(activePart.partNumber, score);
-               setQuizPart(null);
-               setShowUnlockFx(true);
-               window.setTimeout(() => setShowUnlockFx(false), 850);
-               showToast(
-                 score >= 1 ? "Correct! Well done." : "Part completed.",
-                 score >= 1 ? "success" : "info"
-               );
-             }}
-           />
+            onPass={(score) => {
+              console.log("[frontend][LearnPage] quiz passed", {
+                part: activePart.partNumber,
+                score,
+              });
+              recordLessonTime();
+              passPart(activePart.partNumber, score);
+              setQuizPart(null);
+              setShowUnlockFx(true);
+              window.setTimeout(() => setShowUnlockFx(false), 850);
+              showToast(
+                score >= 1 ? "Correct! Well done." : "Part completed.",
+                score >= 1 ? "success" : "info"
+              );
+            }}
+          />
         ) : null}
 
         <UnlockAnimation show={showUnlockFx} />

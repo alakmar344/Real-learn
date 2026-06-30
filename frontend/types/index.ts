@@ -47,6 +47,7 @@ export interface LessonJourney {
   level: Level;
   parts: [LessonPart, LessonPart, LessonPart];
   keyTakeaways: [string, string, string];
+  _completionTime?: number;
 }
 
 export type Theme = "light" | "dark";
