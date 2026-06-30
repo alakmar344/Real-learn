@@ -201,7 +201,6 @@ export default function Sidebar({ open, onClose }: Props) {
         className={`app-sidebar${open ? " open" : ""}`}
         aria-label="Sidebar"
       >
-        {/* Header */}
         <div
           style={{
             padding: "16px 16px 12px",
@@ -262,102 +261,99 @@ export default function Sidebar({ open, onClose }: Props) {
           </button>
         </div>
 
-        {/* Saved journeys */}
-<div
-           style={{ flex: 1, overflowY: "auto", padding: "12px 12px 8px" }}>
-           <p
-             style={{
-               margin: "0 4px 8px",
-               fontSize: 11,
-               letterSpacing: "0.12em",
-               textTransform: "uppercase",
-               color: "var(--text-tertiary)",
-               fontWeight: 600,
-             }}
-           >
-             Saved lessons
-           </p>
+        <div style={{ flex: 1, overflowY: "auto", padding: "12px 12px 8px" }}>
+          <p
+            style={{
+              margin: "0 4px 8px",
+              fontSize: 11,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "var(--text-tertiary)",
+              fontWeight: 600,
+            }}
+          >
+            Saved lessons
+          </p>
 
-           {journeys.length === 0 ? (
-             <p
-               style={{
-                 margin: "8px 4px",
-                 fontSize: 13,
-                 color: "var(--text-tertiary)",
-                 fontStyle: "italic",
-                 lineHeight: 1.6,
-               }}
-             >
-               Complete a lesson and it&apos;ll be saved here so you can revisit it
-               anytime.
-             </p>
-           ) : (
-             <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 4 }}>
-               {journeys.map((journey) => (
-                 <li key={journey.id} style={{ position: "relative" }}>
-                   <button
-                     type="button"
-                     onClick={() => handleOpenJourney(journey)}
-                     title={journey.question}
-                     style={{
-                       width: "100%",
-                       textAlign: "left",
-                       border: "1px solid transparent",
-                       borderRadius: "var(--radius-md)",
-                       background: "transparent",
-                       color: "var(--text-primary)",
-                       padding: "10px 34px 10px 10px",
-                       cursor: "pointer",
-                       display: "block",
-                     }}
-                     onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-card-hover)")}
-                     onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                   >
-                     <span
-                       style={{
-                         display: "block",
-                         fontSize: 13,
-                         fontWeight: 500,
-                         lineHeight: 1.4,
-                         whiteSpace: "nowrap",
-                         overflow: "hidden",
-                         textOverflow: "ellipsis",
-                       }}
-                     >
-                       {journey.question}
-                     </span>
-                     <span style={{ display: "block", fontSize: 11, color: "var(--text-tertiary)", marginTop: 2 }}>
-                       {journey.language} · {journey.level} · {journey.totalScore}/6 ★
-                     </span>
-                   </button>
-                   <button
-                     type="button"
-                     aria-label="Remove saved lesson"
-                     onClick={() => removeJourney(journey.id)}
-                     style={{
-                       position: "absolute",
-                       top: 8,
-                       right: 6,
-                       border: "none",
-                       background: "transparent",
-                       color: "var(--text-tertiary)",
-                       cursor: "pointer",
-                       fontSize: 14,
-                       lineHeight: 1,
-                       padding: 4,
-                     }}
-                   >
-                     ✕
-                   </button>
-                 </li>
-               ))}
-             </ul>
-           )}
+          {journeys.length === 0 ? (
+            <p
+              style={{
+                margin: "8px 4px",
+                fontSize: 13,
+                color: "var(--text-tertiary)",
+                fontStyle: "italic",
+                lineHeight: 1.6,
+              }}
+            >
+              Complete a lesson and it&apos;ll be saved here so you can revisit it
+              anytime.
+            </p>
+          ) : (
+            <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 4 }}>
+              {journeys.map((journey) => (
+                <li key={journey.id} style={{ position: "relative" }}>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenJourney(journey)}
+                    title={journey.question}
+                    style={{
+                      width: "100%",
+                      textAlign: "left",
+                      border: "1px solid transparent",
+                      borderRadius: "var(--radius-md)",
+                      background: "transparent",
+                      color: "var(--text-primary)",
+                      padding: "10px 34px 10px 10px",
+                      cursor: "pointer",
+                      display: "block",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-card-hover)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                  >
+                    <span
+                      style={{
+                        display: "block",
+                        fontSize: 13,
+                        fontWeight: 500,
+                        lineHeight: 1.4,
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {journey.question}
+                    </span>
+                    <span style={{ display: "block", fontSize: 11, color: "var(--text-tertiary)", marginTop: 2 }}>
+                      {journey.language} · {journey.level} · {journey.totalScore}/6 ★
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Remove saved lesson"
+                    onClick={() => removeJourney(journey.id)}
+                    style={{
+                      position: "absolute",
+                      top: 8,
+                      right: 6,
+                      border: "none",
+                      background: "transparent",
+                      color: "var(--text-tertiary)",
+                      cursor: "pointer",
+                      fontSize: 14,
+                      lineHeight: 1,
+                      padding: 4,
+                    }}
+                  >
+                    ✕
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
 
-           <AchievementsPanel />
-         </div>
+          <AchievementsPanel />
+        </div>
 
-        {/* Bottom controls */}
         <div
           style={{
             borderTop: "1px solid var(--border-subtle)",
@@ -399,7 +395,6 @@ export default function Sidebar({ open, onClose }: Props) {
 
           <NotificationSettings />
 
-          {/* Account */}
           {isLoaded && isSignedIn && (
             <div
               style={{
@@ -430,41 +425,41 @@ export default function Sidebar({ open, onClose }: Props) {
               >
                 Sign out
               </button>
-               <button
-                 type="button"
-                 onClick={handleDeleteData}
-                 disabled={deleting}
-                 style={{
-                   border: "1px solid var(--wrong)",
-                   borderRadius: "var(--radius-md)",
-                   background: "var(--wrong-bg)",
-                   color: "var(--wrong)",
-                   padding: "8px 12px",
-                   cursor: deleting ? "not-allowed" : "pointer",
-                   fontWeight: 600,
-                   fontSize: 13,
-                   minHeight: 40,
-                   opacity: deleting ? 0.6 : 1,
-                 }}
-               >
-                 {deleting ? "Deleting…" : "Delete my data"}
-               </button>
-               <button
-                 type="button"
-                 onClick={handleExportData}
-                 style={{
-                   border: "1px solid var(--border-default)",
-                   borderRadius: "var(--radius-md)",
-                   background: "transparent",
-                   color: "var(--text-secondary)",
-                   padding: "8px 12px",
-                   cursor: "pointer",
-                   fontSize: 13,
-                   minHeight: 40,
-                 }}
-               >
-                 Export my data
-               </button>
+              <button
+                type="button"
+                onClick={handleDeleteData}
+                disabled={deleting}
+                style={{
+                  border: "1px solid var(--wrong)",
+                  borderRadius: "var(--radius-md)",
+                  background: "var(--wrong-bg)",
+                  color: "var(--wrong)",
+                  padding: "8px 12px",
+                  cursor: deleting ? "not-allowed" : "pointer",
+                  fontWeight: 600,
+                  fontSize: 13,
+                  minHeight: 40,
+                  opacity: deleting ? 0.6 : 1,
+                }}
+              >
+                {deleting ? "Deleting…" : "Delete my data"}
+              </button>
+              <button
+                type="button"
+                onClick={handleExportData}
+                style={{
+                  border: "1px solid var(--border-default)",
+                  borderRadius: "var(--radius-md)",
+                  background: "transparent",
+                  color: "var(--text-secondary)",
+                  padding: "8px 12px",
+                  cursor: "pointer",
+                  fontSize: 13,
+                  minHeight: 40,
+                }}
+              >
+                Export my data
+              </button>
             </div>
           )}
         </div>

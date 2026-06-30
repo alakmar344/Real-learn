@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
 import { useAchievementStore } from "@/store/achievementStore";
 import { useNotificationStore } from "@/store/notificationStore";
 
@@ -9,14 +10,17 @@ interface Props {
 }
 
 export default function Navbar({ compact = false }: Props) {
-  const { totalXP, level, getLevelTitle, checkStreak } = useAchievementStore();
-  const { streak } = useAchievementStore();
-  const { permission, requestPermission } = useNotificationStore();
+  const totalXP = useAchievementStore((s) => s.totalXP);
+  const level = useAchievementStore((s) => s.level);
+  const streak = useAchievementStore((s) => s.streak);
+  const checkStreak = useAchievementStore((s) => s.checkStreak);
+  const getLevelTitle = useAchievementStore((s) => s.getLevelTitle);
+  const permission = useNotificationStore((s) => s.permission);
+  const requestPermission = useNotificationStore((s) => s.requestPermission);
 
-  // Check streak on mount
-  if (typeof window !== "undefined") {
+  useEffect(() => {
     checkStreak();
-  }
+  }, [checkStreak]);
 
   return (
     <header
