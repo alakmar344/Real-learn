@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { UserButton, useAuth, useClerk } from "@clerk/nextjs";
 import LanguageSelector from "@/components/shared/LanguageSelector";
 import LevelSelector from "@/components/shared/LevelSelector";
+import ConfirmModal from "@/components/shared/ConfirmModal";
 import ThemeModal from "@/components/shared/ThemeModal";
 import { showToast } from "@/components/shared/ToastContainer";
 import { useLessonStore } from "@/store/lessonStore";
@@ -33,6 +34,8 @@ export default function Sidebar({ open, onClose }: Props) {
 
   const [themeOpen, setThemeOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [journeyToRemove, setJourneyToRemove] = useState<string | null>(null);
 
   const handleNewLesson = () => {
     resetForNextQuestion("");
@@ -48,11 +51,6 @@ export default function Sidebar({ open, onClose }: Props) {
   };
 
   const handleDeleteData = async () => {
-    const confirmed = window.confirm(
-      "Delete everything?\n\nThis will permanently delete your account, erase your stored cookie-consent records, and clear all saved lessons on this device. This cannot be undone."
-    );
-    if (!confirmed) return;
-
     setDeleting(true);
     try {
       const token = await getToken();
@@ -330,7 +328,7 @@ export default function Sidebar({ open, onClose }: Props) {
                   <button
                     type="button"
                     aria-label="Remove saved lesson"
-                    onClick={() => removeJourney(journey.id)}
+                    onClick={() => setJourneyToRemove(journey.id)}
                     style={{
                       position: "absolute",
                       top: 8,
@@ -425,7 +423,7 @@ export default function Sidebar({ open, onClose }: Props) {
               </button>
                <button
                  type="button"
-                 onClick={handleDeleteData}
+                 onClick={() => setDeleteConfirmOpen(true)}
                  disabled={deleting}
                  style={{
                    border: "1px solid var(--wrong)",
@@ -464,6 +462,38 @@ export default function Sidebar({ open, onClose }: Props) {
       </aside>
 
       <ThemeModal open={themeOpen} onClose={() => setThemeOpen(false)} />
+
+      <ConfirmModal
+        open={deleteConfirmOpen}
+        title="Delete everything?"
+        message="This will permanently delete your account, erase your stored cookie-consent records, and clear all saved lessons on this device. This cannot be undone."
+        confirmLabel="Delete everything"
+        cancelLabel="Keep my data"
+        destructive
+        onConfirm={() => {
+          setDeleteConfirmOpen(false);
+          handleDeleteData();
+        }}
+        onClose={() => setDeleteConfirmOpen(false)}
+      />
+
+      <ConfirmModal
+        open={journeyToRemove !== null}
+        title="Remove saved lesson?"
+        message={
+          journeyToRemove
+            ? `Remove "${journeys.find((j) => j.id === journeyToRemove)?.question ?? "this lesson"}" from your saved lessons?`
+            : ""
+        }
+        confirmLabel="Remove"
+        cancelLabel="Keep it"
+        destructive
+        onConfirm={() => {
+          if (journeyToRemove) removeJourney(journeyToRemove);
+          setJourneyToRemove(null);
+        }}
+        onClose={() => setJourneyToRemove(null)}
+      />
     </>
   );
 }
