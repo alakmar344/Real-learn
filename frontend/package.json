@@ -18,8 +18,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "verify:quiz": "node scripts/verify-quiz-shuffle.mjs"
+    "lint": "next lint"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.5.9",
