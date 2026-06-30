@@ -231,6 +231,14 @@ export default function Sidebar({ open, onClose }: Props) {
               <span style={{ color: "var(--text-primary)" }}>Real</span>
               <span style={{ color: "var(--accent)" }}>Learn</span>
             </span>
+            <button
+              type="button"
+              className="app-sidebar-close"
+              aria-label="Close menu"
+              onClick={onClose}
+            >
+              ✕
+            </button>
           </div>
           <button
             type="button"

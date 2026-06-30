@@ -1,28 +1,57 @@
+// Guardrail philosophy:
+// These patterns target genuinely harmful *intent* (requests for instructions to
+// do harm, or sexual/exploitative content) — NOT the mere mention of a sensitive
+// topic. Educational and historical subjects (e.g. World War 1 & 2, the atomic
+// bomb, terrorism as a topic, the Holocaust) must remain answerable, so we avoid
+// blanket keyword bans like "bomb" or "terror" that caused false positives.
+
 const BANNED_PATTERNS = [
-  /child\s*(sexual|porn|molest|abuse)/i,
-  /rape|sexual\s*violence/i,
-  /how\s*to\s*(kill|murder|harm|hurt|assault)/i,
-  /bomb|terror|terrorist|terrorism/i,
-  /suicide|self[\s-]*harm|self[\s-]*injury/i,
-  /hate\s*(speech|crime)|racist|racism|sexist|homophob/i,
-  /drug\s*(manufacture|cook|make|synthesize)|how\s*to\s*make\s*drugs/i,
-  /human\s*(trafficking|smuggling|cult)/i,
-  /child\s*labor|child\s*bride/i,
-  /revenge\s*porn|non[\s-]*consensual/i,
+  // ── Child sexual abuse / exploitation — always blocked ──
+  /child\s*(sexual|sex\b|porn|pornography|molest)/i,
+  /\b(csam|cp)\b.*\b(child|minor|kid)/i,
+  /(sexual|sexually)\s*(abus|exploit|explicit)\w*\s*(of\s*)?(a\s*)?(child|minor|kid)/i,
+  /(child|minor|kid)s?\s*(sexual|sexually|porn|nude|naked)/i,
+  /child\s*(bride|marriage)/i,
+
+  // ── Sexual violence ──
+  /\brape\b|sexual\s*(assault|violence)/i,
+  /revenge\s*porn|non[\s-]*consensual\s*(sex|porn|image|photo)/i,
   /bestiality|zoophilia/i,
-  /cannibal/i,
-  /hack\s*(bank|account|password|government)/i,
-  /identity\s*theft|fraud\s*(scheme|plan)/i,
-  /how\s*to\s*steal|how\s*to\s*rob|how\s*to\s*burglar/i,
-  /weapon\s*(manufacture|modify|3d\s*print)/i,
-  /explosive\s*(device|material|make)/i,
-  /poison\s*(someone|make|manufacture)/i,
-  /abuse\s*(child|minor|kid|children)/i,
+
+  // ── Weapons / explosives / drugs: block "how to make/build", not mentions ──
+  /how\s*(to|do\s*i|can\s*i|can\s*you)\s*(make|build|construct|create|assemble|manufacture|3d\s*print)\s*(a|an|the)?\s*(bomb|explosive|ied|grenade|pipe\s*bomb|molotov|landmine)/i,
+  /(bomb|explosive|ied)[\s-]*(making|building|recipe|instruction|tutorial|blueprint)/i,
+  /how\s*(to|do\s*i|can\s*i|can\s*you)\s*(make|build|3d\s*print|manufacture|obtain|get)\s*(a|an|the)?\s*(gun|firearm|silencer|ghost\s*gun|untraceable\s*weapon)/i,
+  /how\s*(to|do\s*i|can\s*i|can\s*you)\s*(make|synthesize|cook|manufacture|produce|grow)\s*(meth|methamphetamine|cocaine|crack|heroin|fentanyl|mdma|ecstasy|lsd|illegal\s*drugs)/i,
+
+  // ── Violence against a person (instructional intent) ──
+  /how\s*(to|do\s*i|can\s*i|can\s*you)\s*(kill|murder|poison|stab|strangle|assault|kidnap)\s*(someone|somebody|a\s*person|people|him|her|them|my\b)/i,
+  /how\s*(to|do\s*i|can\s*i|can\s*you)\s*(get\s*away\s*with|commit)\s*(a\s*)?(murder|killing|crime)/i,
+  /(plan|planning|carry\s*out|execute)\s*(a\s*)?(terror|terrorist|mass|school)\s*(attack|shooting|bombing)/i,
+
+  // ── Self-harm / suicide encouragement or methods ──
+  /how\s*(to|do\s*i|can\s*i)\s*(commit\s*)?(suicide|kill\s*myself|end\s*my\s*life)/i,
+  /(best|fastest|painless|easiest|most\s*effective)\s*way\s*to\s*(die|kill\s*myself|commit\s*suicide)/i,
+  /how\s*(to|do\s*i|can\s*i)\s*(cut|harm|hurt|injure)\s*myself/i,
+  /suicide\s*(method|technique|pact)/i,
+
+  // ── Hate content generation (intent to produce slurs/hate, not the topic) ──
+  /(generate|write|give\s*me|create|tell\s*me\s*a)\s*[\w\s]*(hate\s*speech|racist\s*(joke|slur)|ethnic\s*slur|slurs?)/i,
+
+  // ── Cybercrime / fraud (instructional intent) ──
+  /how\s*(to|do\s*i|can\s*i|can\s*you)\s*(hack|breach|break\s*into)\s*(a|an|my|someone|some\s*one|the)?\s*(bank|account|wifi|wi-fi|password|email|phone|government|system|network|server)/i,
+  /how\s*(to|do\s*i|can\s*i|can\s*you)\s*(steal|launder|counterfeit)\s*(money|cash|cards?|identit|funds)/i,
+  /(credit\s*card|identity)\s*(theft|fraud)\s*(how|guide|tutorial|step|tips)/i,
+
+  // ── Trafficking / smuggling (instructional intent) ──
+  /how\s*(to|do\s*i|can\s*i|can\s*you)\s*(traffic|smuggle)\s*(people|humans|a\s*person|drugs|weapons)/i,
 ];
 
+// Applied only to the AI's *response* — catches a model that slipped into a
+// refusal or returned disallowed content despite the prompt.
 const BANNED_RESPONSE_PATTERNS = [
-  /child\s*(sexual|porn|molest|abuse)/i,
-  /i\s*(cannot|won't|will\s*not)\s*(help|assist|provide|give)\s*(with|you|on)\s*(this|that|harmful|dangerous)/i,
+  /child\s*(sexual|porn|molest)/i,
+  /i\s*(cannot|can't|won't|will\s*not)\s*(help|assist|provide|give)\s*(with|you|on)\s*(this|that|harmful|dangerous)/i,
   /i['']m\s*(not\s*able|unable)\s*to\s*(assist|help|provide)/i,
 ];
 
