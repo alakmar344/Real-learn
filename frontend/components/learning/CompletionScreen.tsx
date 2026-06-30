@@ -62,6 +62,13 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
     return () => clearTimeout(id);
   }, []);
 
+  // Haptic feedback
+  useEffect(() => {
+    if (navigator.vibrate) {
+      navigator.vibrate([100, 50, 100, 50, 200]);
+    }
+  }, []);
+
   /* Announce to screen readers */
   useEffect(() => {
     const el = document.getElementById("sr-live-region");

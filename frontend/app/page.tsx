@@ -7,8 +7,10 @@ import LoadingCinematic from "@/components/shared/LoadingCinematic";
 import LiveRegion from "@/components/shared/LiveRegion";
 import PreSignInConsent from "@/components/shared/PreSignInConsent";
 import Footer from "@/components/shared/Footer";
+import DailyChallengeBanner from "@/components/homepage/DailyChallengeBanner";
 import { useLesson } from "@/hooks/useLesson";
 import { useAuth, useUser } from "@clerk/nextjs";
+import { useNotificationStore } from "@/store/notificationStore";
 
 const LEGAL_CONSENT_KEY = "reallearn-legal-consent";
 
@@ -28,10 +30,15 @@ const QUOTES = [
 export default function HomePage() {
   const [question, setQuestion] = useState("");
   const [loadingQuestion, setLoadingQuestion] = useState<string | null>(null);
-  const [quote, setQuote] = useState(() => QUOTES[Math.floor(Math.random() * QUOTES.length)]);
+  const [quote] = useState(() => QUOTES[Math.floor(Math.random() * QUOTES.length)]);
   const { generateLesson } = useLesson();
   const { isSignedIn, getToken } = useAuth();
   const { user } = useUser();
+  const checkDailyChallenge = useNotificationStore((s) => s.checkDailyChallenge);
+
+  useEffect(() => {
+    checkDailyChallenge();
+  }, [checkDailyChallenge]);
 
   useEffect(() => {
     console.log("[frontend][HomePage] render state", {
@@ -119,6 +126,8 @@ export default function HomePage() {
         }}
       >
         <Navbar />
+
+        <DailyChallengeBanner />
 
         <section
           style={{
