@@ -8,6 +8,39 @@ const TOTAL_QUESTIONS = 2;
 const LAST_QUESTION_INDEX = TOTAL_QUESTIONS - 1;
 const PERFECT_SCORE = TOTAL_QUESTIONS;
 
+/** Fisher-Yates shuffle of an index array. */
+function shuffledIndices(length: number): number[] {
+  const indices = Array.from({ length }, (_, i) => i);
+  for (let i = indices.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
+  return indices;
+}
+
+/**
+ * Return a copy of the question with its options re-ordered. The correct answer
+ * is guaranteed to land in a DIFFERENT position than it currently occupies (when
+ * there is more than one option), so on a retake the learner must find it again.
+ */
+function reshuffleQuestion(question: Question): Question {
+  const options = question.options ?? [];
+  if (options.length <= 1) return question;
+
+  const currentCorrect = question.correctIndex;
+  let order = shuffledIndices(options.length);
+  // Re-roll until the correct answer moves to a new slot (bounded for safety).
+  for (let attempt = 0; attempt < 16 && order.indexOf(currentCorrect) === currentCorrect; attempt += 1) {
+    order = shuffledIndices(options.length);
+  }
+
+  return {
+    ...question,
+    options: order.map((i) => options[i]),
+    correctIndex: order.indexOf(currentCorrect),
+  };
+}
+
 interface Props {
   open: boolean;
   questions: Question[];
@@ -20,10 +53,24 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
   const [answers, setAnswers] = useState<Array<number | null>>(
     Array.from({ length: TOTAL_QUESTIONS }, () => null)
   );
+  // Local working copy of the questions whose option order we control. On a
+  // failed attempt the options are reshuffled so the learner has to find the
+  // correct answer again.
+  const [quizQuestions, setQuizQuestions] = useState<Question[]>(questions ?? []);
+  const [shuffledHint, setShuffledHint] = useState(false);
   const sheetRef = useRef<HTMLDivElement>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
 
-  const currentQuestion = questions?.[current];
+  // Reset to the original (unshuffled) questions whenever the source changes
+  // (e.g. a new part) or the sheet is (re)opened.
+  useEffect(() => {
+    setQuizQuestions(questions ?? []);
+    setCurrent(0);
+    setAnswers(Array.from({ length: TOTAL_QUESTIONS }, () => null));
+    setShuffledHint(false);
+  }, [questions, open]);
+
+  const currentQuestion = quizQuestions?.[current];
   const selected = answers[current];
   const answered = selected !== null;
 
@@ -31,10 +78,10 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
     () =>
       answers.reduce(
         (acc: number, answer, i) =>
-          acc + (answer === questions[i]?.correctIndex ? 1 : 0),
+          acc + (answer === quizQuestions[i]?.correctIndex ? 1 : 0),
         0
       ),
-    [answers, questions]
+    [answers, quizQuestions]
   );
 
   /* ── Focus trapping ── */
@@ -101,6 +148,7 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
 
   const selectAnswer = (index: number) => {
     if (answered) return;
+    setShuffledHint(false);
     const next = [...answers];
     next[current] = index;
     setAnswers(next);
@@ -116,11 +164,16 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
       onPass(score);
       setCurrent(0);
       setAnswers(Array.from({ length: TOTAL_QUESTIONS }, () => null));
+      setShuffledHint(false);
       return;
     }
 
+    // Failed attempt → retake. Reshuffle every question's options so the
+    // correct answer moves to a new position and must be found again.
+    setQuizQuestions((prev) => prev.map(reshuffleQuestion));
     setCurrent(0);
     setAnswers(Array.from({ length: TOTAL_QUESTIONS }, () => null));
+    setShuffledHint(true);
   };
 
   return (
@@ -185,6 +238,28 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
           {TOTAL_QUESTIONS} questions about what you just read
         </p>
         <div style={{ borderBottom: "1px solid var(--border-subtle)", marginBottom: 16 }} />
+
+        {shuffledHint ? (
+          <div
+            className="animate-fade-up"
+            role="status"
+            style={{
+              marginBottom: 16,
+              padding: "10px 14px",
+              borderRadius: "var(--radius-md)",
+              border: "1px solid var(--border-default)",
+              background: "var(--bg-primary)",
+              color: "var(--text-secondary)",
+              fontSize: 13,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            <span aria-hidden="true">🔀</span>
+            Answers reshuffled — the correct one has moved. Find it again!
+          </div>
+        ) : null}
 
         <QuizQuestion
           question={currentQuestion}
