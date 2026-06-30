@@ -376,7 +376,29 @@ pre {
   display: none;
 }
 
+/* Close button lives inside the drawer; only shown on mobile where the drawer
+   overlays content and the hamburger toggle is hidden behind it. */
+.app-sidebar-close {
+  display: none;
+}
+
 @media (max-width: 900px) {
+  .app-sidebar-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-default);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+  }
   .app-main {
     margin-left: 0;
   }
