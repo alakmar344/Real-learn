@@ -3,43 +3,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { QuizQuestion as Question } from "@/types";
 import QuizQuestion from "@/components/learning/QuizQuestion";
+import { reshuffleQuestion } from "@/lib/quizShuffle";
 
 const TOTAL_QUESTIONS = 2;
 const LAST_QUESTION_INDEX = TOTAL_QUESTIONS - 1;
 const PERFECT_SCORE = TOTAL_QUESTIONS;
-
-/** Fisher-Yates shuffle of an index array. */
-function shuffledIndices(length: number): number[] {
-  const indices = Array.from({ length }, (_, i) => i);
-  for (let i = indices.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [indices[i], indices[j]] = [indices[j], indices[i]];
-  }
-  return indices;
-}
-
-/**
- * Return a copy of the question with its options re-ordered. The correct answer
- * is guaranteed to land in a DIFFERENT position than it currently occupies (when
- * there is more than one option), so on a retake the learner must find it again.
- */
-function reshuffleQuestion(question: Question): Question {
-  const options = question.options ?? [];
-  if (options.length <= 1) return question;
-
-  const currentCorrect = question.correctIndex;
-  let order = shuffledIndices(options.length);
-  // Re-roll until the correct answer moves to a new slot (bounded for safety).
-  for (let attempt = 0; attempt < 16 && order.indexOf(currentCorrect) === currentCorrect; attempt += 1) {
-    order = shuffledIndices(options.length);
-  }
-
-  return {
-    ...question,
-    options: order.map((i) => options[i]),
-    correctIndex: order.indexOf(currentCorrect),
-  };
-}
 
 interface Props {
   open: boolean;
