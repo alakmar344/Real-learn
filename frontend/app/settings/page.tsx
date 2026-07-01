@@ -1,10 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { UserButton, useAuth, useClerk } from "@clerk/nextjs";
+import { Theme, Language, Level } from "@/types";
 import ConfirmModal from "@/components/shared/ConfirmModal";
 import { showToast } from "@/components/shared/ToastContainer";
+import { usePreferenceStore } from "@/store/preferenceStore";
+import LanguageSelector from "@/components/shared/LanguageSelector";
+import LevelSelector from "@/components/shared/LevelSelector";
+
+const THEMES: { value: Theme; label: string; hint: string; swatch: string }[] = [
+  {
+    value: "light",
+    label: "Paper",
+    hint: "Warm cream — the classic textbook look",
+    swatch: "#f5f0e8",
+  },
+  {
+    value: "dark",
+    label: "Night",
+    hint: "Easy on the eyes for late-night study",
+    swatch: "#14110c",
+  },
+];
 
 const BACKEND_URL = (
   process.env.NEXT_PUBLIC_BACKEND_URL || "https://real-learn.onrender.com"
@@ -15,8 +34,24 @@ export default function SettingsPage() {
   const { isLoaded, isSignedIn, getToken } = useAuth();
   const { signOut } = useClerk();
 
+  const theme = usePreferenceStore((s) => s.theme);
+  const language = usePreferenceStore((s) => s.language);
+  const level = usePreferenceStore((s) => s.level);
+  const setTheme = usePreferenceStore((s) => s.setTheme);
+  const setLanguage = usePreferenceStore((s) => s.setLanguage);
+  const setLevel = usePreferenceStore((s) => s.setLevel);
+
   const [deleting, setDeleting] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [savingPrefs, setSavingPrefs] = useState(false);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("reallearn-preferences-onboarding", "true");
+    } catch {
+      // ignore
+    }
+  }, []);
 
   const handleDeleteData = async () => {
     setDeleting(true);
@@ -219,8 +254,126 @@ export default function SettingsPage() {
           Settings
         </h1>
         <p style={{ color: "var(--text-secondary)", marginBottom: 32, fontSize: 14 }}>
-          Manage your account and data preferences.
+          Manage your account, data, and preferences.
         </p>
+
+        {/* Preferences Section */}
+        <section
+          style={{
+            border: "1px solid var(--border-default)",
+            borderRadius: "var(--radius-lg)",
+            padding: 24,
+            marginBottom: 24,
+            background: "var(--bg-card)",
+          }}
+        >
+          <h2
+            style={{
+              fontSize: 16,
+              fontWeight: 700,
+              marginBottom: 4,
+              color: "var(--text-primary)",
+            }}
+          >
+            Preferences
+          </h2>
+          <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 20 }}>
+            Appearance, language, and learning level are saved on this device.
+          </p>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <div>
+              <label
+                style={{
+                  display: "block",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "var(--text-secondary)",
+                  marginBottom: 8,
+                }}
+              >
+                Theme
+              </label>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {THEMES.map((opt) => {
+                  const active = theme === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setTheme(opt.value)}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12,
+                        textAlign: "left",
+                        padding: "10px 12px",
+                        borderRadius: "var(--radius-md)",
+                        border: active ? "2px solid var(--accent)" : "1px solid var(--border-default)",
+                        background: active ? "var(--accent-dim)" : "var(--bg-surface)",
+                        cursor: "pointer",
+                        minHeight: 44,
+                      }}
+                    >
+                      <span
+                        aria-hidden="true"
+                        style={{
+                          width: 28,
+                          height: 28,
+                          borderRadius: "50%",
+                          background: opt.swatch,
+                          border: "1px solid var(--border-default)",
+                          flexShrink: 0,
+                        }}
+                      />
+                      <span style={{ flex: 1 }}>
+                        <span style={{ display: "block", fontWeight: 600, fontSize: 14, color: "var(--text-primary)" }}>
+                          {opt.label}
+                        </span>
+                        <span style={{ display: "block", fontSize: 12, color: "var(--text-tertiary)" }}>{opt.hint}</span>
+                      </span>
+                      {active && (
+                        <span aria-hidden="true" style={{ color: "var(--accent)", fontSize: 16 }}>
+                          ✓
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <label
+                style={{
+                  display: "block",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "var(--text-secondary)",
+                  marginBottom: 8,
+                }}
+              >
+                Language
+              </label>
+              <LanguageSelector value={language} onChange={setLanguage} />
+            </div>
+
+            <div>
+              <label
+                style={{
+                  display: "block",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "var(--text-secondary)",
+                  marginBottom: 8,
+                }}
+              >
+                Learning level
+              </label>
+              <LevelSelector value={level} onChange={setLevel} />
+            </div>
+          </div>
+        </section>
 
         {/* Account Section */}
         <section

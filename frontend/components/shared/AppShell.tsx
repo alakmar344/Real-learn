@@ -2,24 +2,38 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
 import Sidebar from "@/components/shared/Sidebar";
+import PreferenceModal from "@/components/shared/PreferenceModal";
 import EngagementLayer from "@/components/shared/EngagementLayer";
 
 const HIDE_SIDEBAR_PREFIXES = ["/sign-in", "/sign-up"];
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { isLoaded, isSignedIn } = useAuth();
   const [open, setOpen] = useState(false);
+  const [showFirstPrefs, setShowFirstPrefs] = useState(false);
 
   const hideSidebar = HIDE_SIDEBAR_PREFIXES.some((p) => pathname?.startsWith(p));
 
-  // Close the mobile drawer whenever the route changes.
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
 
-  // While the mobile drawer is open, lock background scroll and allow Escape to
-  // close it — both expected behaviours for a mobile slide-out menu.
+  useEffect(() => {
+    if (!isLoaded) return;
+    if (!isSignedIn) return;
+    try {
+      const done = localStorage.getItem("reallearn-preferences-onboarding");
+      if (!done) {
+        setTimeout(() => setShowFirstPrefs(true), 0);
+      }
+    } catch {
+      // ignore
+    }
+  }, [isLoaded, isSignedIn]);
+
   useEffect(() => {
     if (!open) return;
     const previousOverflow = document.body.style.overflow;
@@ -35,7 +49,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }, [open]);
 
   if (hideSidebar) {
-    return <>{children}</>;
+    return (
+      <>
+        {children}
+        <PreferenceModal open={showFirstPrefs} onClose={() => setShowFirstPrefs(false)} />
+      </>
+    );
   }
 
   return (
@@ -51,6 +70,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <Sidebar open={open} onClose={() => setOpen(false)} />
       <div id="main-content" className="app-main">{children}</div>
       <EngagementLayer />
+      <PreferenceModal open={showFirstPrefs} onClose={() => setShowFirstPrefs(false)} />
     </div>
   );
 }

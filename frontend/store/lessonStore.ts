@@ -2,11 +2,9 @@
 
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { Language, LessonJourney, Level, SavedJourney } from "@/types";
+import { LessonJourney } from "@/types";
 
 interface LessonStore {
-  language: Language;
-  level: Level;
   question: string;
   lesson: LessonJourney | null;
   isLoading: boolean;
@@ -17,8 +15,6 @@ interface LessonStore {
   collapsedParts: number[];
   showCompletion: boolean;
   showFollowUp: boolean;
-  setLanguage: (language: Language) => void;
-  setLevel: (level: Level) => void;
   setQuestion: (question: string) => void;
   startLoading: () => void;
   setLesson: (lesson: LessonJourney) => void;
@@ -28,7 +24,7 @@ interface LessonStore {
   resetForNextQuestion: (question: string) => void;
   resetAll: () => void;
   resetProgress: () => void;
-  loadJourney: (journey: SavedJourney) => void;
+  loadJourney: (journey: { question: string; lesson: LessonJourney; unlockedPart: 1 | 2 | 3; completedParts: number[]; partScores: Record<1 | 2 | 3, number | null> }) => void;
 }
 
 function storeLog(action: string, details?: unknown) {
@@ -40,8 +36,6 @@ function storeLog(action: string, details?: unknown) {
 }
 
 const initialState = {
-  language: "English" as Language,
-  level: "Class 9-10" as Level,
   question: "",
   lesson: null,
   isLoading: false,
@@ -58,14 +52,6 @@ export const useLessonStore = create<LessonStore>()(
   persist(
     (set) => ({
       ...initialState,
-      setLanguage: (language) => {
-        storeLog("setLanguage", { language });
-        set({ language });
-      },
-      setLevel: (level) => {
-        storeLog("setLevel", { level });
-        set({ level });
-      },
       setQuestion: (question) => {
         storeLog("setQuestion", { questionLength: question.length });
         set({ question });
@@ -149,32 +135,30 @@ export const useLessonStore = create<LessonStore>()(
           showFollowUp: false,
         });
       },
-  resetAll: () => {
-    storeLog("resetAll");
-    set({ ...initialState });
-  },
-  resetProgress: () => {
-    storeLog("resetProgress");
-    set((state) => ({
-      ...state,
-      unlockedPart: 1,
-      completedParts: [],
-      partScores: { 1: null, 2: null, 3: null },
-      collapsedParts: [],
-      showCompletion: false,
-      showFollowUp: false,
-    }));
-  },
+      resetAll: () => {
+        storeLog("resetAll");
+        set({ ...initialState });
+      },
+      resetProgress: () => {
+        storeLog("resetProgress");
+        set((state) => ({
+          ...state,
+          unlockedPart: 1,
+          completedParts: [],
+          partScores: { 1: null, 2: null, 3: null },
+          collapsedParts: [],
+          showCompletion: false,
+          showFollowUp: false,
+        }));
+      },
       loadJourney: (journey) => {
-        storeLog("loadJourney", { id: journey.id, question: journey.question });
+        storeLog("loadJourney", { id: journey.lesson.question, question: journey.question });
         const completedParts = journey.completedParts ?? [1, 2, 3];
         const isComplete = completedParts.length === 3;
         const unlockedPart = journey.unlockedPart ?? 3;
         set({
           lesson: journey.lesson,
           question: journey.question,
-          language: journey.language,
-          level: journey.level,
           isLoading: false,
           error: null,
           unlockedPart,
@@ -190,8 +174,6 @@ export const useLessonStore = create<LessonStore>()(
       name: "reallearn-journey",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
-        language: state.language,
-        level: state.level,
         question: state.question,
         lesson: state.lesson,
         unlockedPart: state.unlockedPart,

@@ -1,14 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
-import { useThemeStore } from "@/store/themeStore";
+import { usePreferenceStore } from "@/store/preferenceStore";
 
-/**
- * Syncs the persisted theme to the <html data-theme> attribute so the CSS
- * variable overrides in globals.css take effect. Rendered once near the root.
- */
 export default function ThemeApplier() {
-  const theme = useThemeStore((s) => s.theme);
+  const theme = usePreferenceStore((s) => s.theme);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;

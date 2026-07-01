@@ -3,13 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
-import LanguageSelector from "@/components/shared/LanguageSelector";
-import LevelSelector from "@/components/shared/LevelSelector";
 import ConfirmModal from "@/components/shared/ConfirmModal";
 import ThemeModal from "@/components/shared/ThemeModal";
 import { useLessonStore } from "@/store/lessonStore";
 import { useSavedJourneysStore } from "@/store/savedJourneysStore";
-import { useThemeStore } from "@/store/themeStore";
 import { SavedJourney } from "@/types";
 
 interface Props {
@@ -21,22 +18,19 @@ export default function Sidebar({ open, onClose }: Props) {
   const router = useRouter();
   const { isLoaded, isSignedIn } = useAuth();
 
-  const { language, level, setLanguage, setLevel, loadJourney, resetForNextQuestion } =
-    useLessonStore();
   const { journeys, removeJourney } = useSavedJourneysStore();
-  const theme = useThemeStore((s) => s.theme);
 
   const [themeOpen, setThemeOpen] = useState(false);
   const [journeyToRemove, setJourneyToRemove] = useState<string | null>(null);
 
   const handleNewLesson = () => {
-    resetForNextQuestion("");
     onClose();
     router.push("/");
   };
 
   const handleOpenJourney = (journey: SavedJourney) => {
     console.log("[frontend][Sidebar] open journey", { id: journey.id });
+    const loadJourney = useLessonStore.getState().loadJourney;
     loadJourney(journey);
     onClose();
     router.push("/learn");
@@ -53,7 +47,6 @@ export default function Sidebar({ open, onClose }: Props) {
         className={`app-sidebar${open ? " open" : ""}`}
         aria-label="Sidebar"
       >
-        {/* Header */}
         <div
           style={{
             padding: "16px 16px 12px",
@@ -114,7 +107,6 @@ export default function Sidebar({ open, onClose }: Props) {
           </button>
         </div>
 
-        {/* Saved journeys */}
         <div style={{ flex: 1, overflowY: "auto", padding: "12px 12px 8px" }}>
           <p
             style={{
@@ -209,7 +201,6 @@ export default function Sidebar({ open, onClose }: Props) {
           )}
         </div>
 
-        {/* Bottom controls */}
         <div
           style={{
             borderTop: "1px solid var(--border-subtle)",
@@ -219,15 +210,6 @@ export default function Sidebar({ open, onClose }: Props) {
             gap: 10,
           }}
         >
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <span style={{ fontSize: 11, color: "var(--text-tertiary)", fontWeight: 600 }}>Level</span>
-            <LevelSelector value={level} onChange={setLevel} />
-            <span style={{ fontSize: 11, color: "var(--text-tertiary)", fontWeight: 600, marginTop: 2 }}>
-              Language
-            </span>
-            <LanguageSelector value={language} onChange={setLanguage} />
-          </div>
-
           <button
             type="button"
             onClick={() => setThemeOpen(true)}
@@ -245,8 +227,8 @@ export default function Sidebar({ open, onClose }: Props) {
               minHeight: 44,
             }}
           >
-            <span>{theme === "dark" ? "🌙 Night" : "☀️ Paper"} theme</span>
-            <span style={{ color: "var(--text-tertiary)", fontSize: 12 }}>Change</span>
+            <span>Theme</span>
+            <span style={{ color: "var(--text-tertiary)", fontSize: 12 }}>Open</span>
           </button>
 
           {/* Settings */}
