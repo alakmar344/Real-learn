@@ -20,7 +20,7 @@ export default function PrivacyPolicy() {
         Privacy Policy
       </h2>
       <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
-        Last updated: June 28, 2026
+        Last updated: July 1, 2026
       </p>
 
       <section style={{ marginBottom: 28 }}>
@@ -55,9 +55,21 @@ export default function PrivacyPolicy() {
             (version 1.0), Terms of Service (version 1.0),
             and cookie consent.
           </li>
-          <li>
+          <li style={{ marginBottom: 4 }}>
             <strong>Saved Lessons:</strong> Your completed learning journeys are stored locally on
             your device (browser localStorage) for your convenience.
+          </li>
+          <li>
+            <strong>Learning Progress &amp; Achievements (stored locally):</strong> To power our
+            engagement features, we keep a record on your device of your experience points (XP) and
+            level, your daily learning streak and any streak &quot;freezes&quot;, your daily goal and
+            progress toward it, an activity history of the days you studied (dates and how many
+            parts you completed each day), the achievement badges you have earned, and aggregate
+            counts such as lessons completed, quizzes passed, perfect scores, follow-up questions
+            asked, and which languages and subjects you have explored. This information is stored
+            only in your browser&apos;s localStorage. It is <strong>not transmitted to or stored on
+            our servers</strong>, and clearing your browser data or using &quot;Delete My Data&quot;
+            removes it.
           </li>
           <li>
             <strong>Moderation Logs:</strong> Blocked inputs and flagged AI responses are logged
@@ -72,6 +84,11 @@ export default function PrivacyPolicy() {
         <ul style={{ fontSize: 14, color: "var(--text-secondary)", paddingLeft: 20, margin: 0 }}>
           <li style={{ marginBottom: 4 }}>To generate personalized learning content for you.</li>
           <li style={{ marginBottom: 4 }}>To track your progress and quiz performance.</li>
+          <li style={{ marginBottom: 4 }}>
+            To power gamification and engagement features — experience points, levels, daily
+            streaks, daily goals, and achievement badges — which are calculated and stored locally
+            on your device to help you build a learning habit.
+          </li>
           <li style={{ marginBottom: 4 }}>To analyze usage patterns through Google Analytics and improve our service.</li>
           <li style={{ marginBottom: 4 }}>To comply with legal obligations and age-appropriate content rules.</li>
           <li style={{ marginBottom: 4 }}>To improve our educational content quality and service experience.</li>
@@ -83,7 +100,9 @@ export default function PrivacyPolicy() {
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>4. Data Storage and Security</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           Your account data (email, consent records) is stored securely in MongoDB. Your saved
-          lessons and preferences are stored in your browser&apos;s localStorage. We use industry-standard
+          lessons, preferences, and all learning-progress and achievement data (XP, level, streaks,
+          daily goals, activity history, and badges) are stored in your browser&apos;s localStorage
+          on your own device and never leave it. We use industry-standard
           security measures including Clerk for authentication and encrypted connections (HTTPS).
           However, no method of electronic storage is 100% secure, and we cannot guarantee absolute
           security.
@@ -116,8 +135,9 @@ export default function PrivacyPolicy() {
       <section style={{ marginBottom: 28 }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>6. Cookies and Local Storage</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
-          We use browser localStorage to store your consent preferences, theme settings, and saved
-          lessons. We use Google Analytics cookies (loaded only after consent) for service improvement.
+          We use browser localStorage to store your consent preferences, theme settings, saved
+          lessons, and your learning-progress and achievement data (XP, level, streaks, daily goals,
+          activity history, and badges). We use Google Analytics cookies (loaded only after consent) for service improvement.
           We do not use tracking cookies for advertising. Clerk, our authentication provider,
           uses essential cookies for session management. For more details, please see our{" "}
           <a href="/legal?tab=cookies" style={{ color: "var(--accent)" }}>Cookie Policy</a>.
@@ -231,12 +251,26 @@ export default function PrivacyPolicy() {
         </p>
       </section>
 
-      <section style={{ marginTop: 28 }}>
+      <section style={{ marginBottom: 28 }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>14. Accessibility</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           We are committed to making our Service accessible to all users. We aim to conform to
           WCAG 2.1 Level AA standards. If you encounter any accessibility barriers, please
           contact us and we will work to address them.
+        </p>
+      </section>
+
+      <section>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>15. Sharing Your Results</h3>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+          When you finish a learning journey, RealLearn lets you optionally share a result card.
+          This card is generated entirely on your device and may include the question you asked,
+          your quiz score, your level, and your current streak. Nothing is shared automatically —
+          a share card is only created and sent when you tap the share or copy button. If you
+          choose to share, the image and text are handed to your own device&apos;s share sheet,
+          clipboard, or downloads, and any onward distribution (for example to a social network or
+          messaging app) is controlled by you and governed by the privacy policy of the destination
+          you select. RealLearn does not upload, store, or receive a copy of shared result cards.
         </p>
       </section>
     </article>
