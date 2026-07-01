@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Sidebar from "@/components/shared/Sidebar";
+import EngagementLayer from "@/components/shared/EngagementLayer";
 
 const HIDE_SIDEBAR_PREFIXES = ["/sign-in", "/sign-up"];
 
@@ -49,6 +50,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       </button>
       <Sidebar open={open} onClose={() => setOpen(false)} />
       <div id="main-content" className="app-main">{children}</div>
+      <EngagementLayer />
     </div>
   );
 }

@@ -14,6 +14,7 @@ import LiveRegion from "@/components/shared/LiveRegion";
 import Footer from "@/components/shared/Footer";
 import { showToast } from "@/components/shared/ToastContainer";
 import { useLessonStore } from "@/store/lessonStore";
+import { useProgressStore } from "@/store/progressStore";
 import { useSavedJourneysStore, journeySignature } from "@/store/savedJourneysStore";
 import { useLesson } from "@/hooks/useLesson";
 import { LessonJourney } from "@/types";
@@ -42,6 +43,10 @@ export default function LearnPage() {
   } = useLessonStore();
 
   const saveJourney = useSavedJourneysStore((s) => s.saveJourney);
+
+  const recordPartPassed = useProgressStore((s) => s.recordPartPassed);
+  const recordLessonCompleted = useProgressStore((s) => s.recordLessonCompleted);
+  const recordFollowUp = useProgressStore((s) => s.recordFollowUp);
 
   const { generateLesson, restart } = useLesson();
 
@@ -261,6 +266,7 @@ export default function LearnPage() {
                 console.log("[frontend][LearnPage] follow-up submit", {
                   nextQuestionLength: nextQuestion.length,
                 });
+                recordFollowUp();
                 await generateLesson(nextQuestion, false);
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 console.log("[frontend][LearnPage] follow-up completed + scrolled");
@@ -302,6 +308,20 @@ export default function LearnPage() {
                 score,
               });
               passPart(activePart.partNumber, score);
+
+              // ── Engagement: award XP, streak, daily-goal, badges ──
+              const maxPerPart = activePart.quiz?.length ?? 2;
+              recordPartPassed({
+                score,
+                maxPerPart,
+                language,
+                subject: activePart.subject,
+              });
+              if (activePart.partNumber === 3) {
+                const finalTotal = (partScores[1] ?? 0) + (partScores[2] ?? 0) + score;
+                recordLessonCompleted({ totalScore: finalTotal, language });
+              }
+
               setQuizPart(null);
               setShowUnlockFx(true);
               window.setTimeout(() => setShowUnlockFx(false), 850);

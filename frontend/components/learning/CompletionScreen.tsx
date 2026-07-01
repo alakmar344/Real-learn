@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { LessonJourney } from "@/types";
+import ShareResult from "@/components/learning/ShareResult";
 
 interface Props {
   lesson: LessonJourney;
@@ -162,6 +163,9 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
           </div>
         ))}
       </div>
+
+      {/* Share your result */}
+      <ShareResult question={lesson.question ?? lesson.topic ?? ""} totalScore={totalScore} maxScore={maxScore} />
 
       {/* Action buttons */}
       <div style={{ marginTop: varSpaceLg, display: "flex", gap: varSpaceSm, flexWrap: "wrap" }}>

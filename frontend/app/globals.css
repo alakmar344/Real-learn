@@ -272,6 +272,66 @@ pre {
 }
 .animate-spin { animation: spin 1s linear infinite; }
 
+/* ── Engagement / gamification animations ── */
+@keyframes flameFlicker {
+  0%, 100% { transform: scale(1) rotate(-1deg); filter: brightness(1); }
+  25% { transform: scale(1.08) rotate(2deg); filter: brightness(1.15); }
+  50% { transform: scale(0.96) rotate(-2deg); filter: brightness(0.95); }
+  75% { transform: scale(1.05) rotate(1deg); filter: brightness(1.1); }
+}
+.flame-flicker { animation: flameFlicker 1.8s ease-in-out infinite; transform-origin: 50% 80%; }
+
+@keyframes xpPopIn {
+  0% { opacity: 0; transform: translateY(8px) scale(0.9); }
+  15% { opacity: 1; transform: translateY(0) scale(1.05); }
+  30% { transform: translateY(0) scale(1); }
+  80% { opacity: 1; transform: translateY(-4px); }
+  100% { opacity: 0; transform: translateY(-18px); }
+}
+.animate-xp-pop { animation: xpPopIn 1.8s var(--ease-reveal) both; }
+
+@keyframes badgePop {
+  0% { opacity: 0; transform: scale(0.4) rotate(-12deg); }
+  55% { opacity: 1; transform: scale(1.15) rotate(4deg); }
+  75% { transform: scale(0.96) rotate(-2deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+.animate-badge-pop { animation: badgePop 700ms var(--ease-reveal) both; }
+
+@keyframes levelBurst {
+  0% { opacity: 0; transform: scale(0.6); }
+  40% { opacity: 1; transform: scale(1.08); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.animate-level-burst { animation: levelBurst 620ms var(--ease-reveal) both; }
+
+@keyframes ringSweep {
+  0% { opacity: 0.15; transform: scale(0.8); }
+  60% { opacity: 0.5; }
+  100% { opacity: 0; transform: scale(2.2); }
+}
+.animate-ring-sweep { animation: ringSweep 900ms var(--ease-reveal) both; }
+
+@keyframes overlayFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-overlay-fade { animation: overlayFade 260ms var(--ease-color) both; }
+
+@keyframes sheen {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(220%); }
+}
+.animate-sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,0.35) 50%, transparent 70%);
+  transform: translateX(-120%);
+  animation: sheen 1.6s var(--ease-reveal) 200ms both;
+  pointer-events: none;
+}
+
 /* ── Respect reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   *,
