@@ -13,7 +13,7 @@
  * making higher levels feel earned.
  */
 export function xpToNextLevel(level: number): number {
-  return 100 + (Math.max(1, level) - 1) * 50;
+  return 100 + (Math.max(1, level) - 1) * 75;
 }
 
 export interface LevelInfo {
@@ -61,21 +61,22 @@ export function levelTitle(level: number): string {
 
 /* ─────────────────────────── XP awards ─────────────────────────── */
 
-/** XP for passing one part's quiz. `score` = correct answers in that part. */
+/** XP for passing one part's quiz. `score` = correct answers in that part.
+ * Deliberately modest so a single journey is a small step, not a huge jump. */
 export function xpForPart(score: number): number {
-  return 20 + Math.max(0, score) * 15;
+  return 5 + Math.max(0, score) * 5;
 }
 
 /** Bonus XP for finishing a whole 3-part journey. */
 export function xpForLessonComplete(totalScore: number, maxScore = 6): number {
-  const base = 60;
-  const perfect = totalScore >= maxScore ? 100 : 0;
+  const base = 10;
+  const perfect = totalScore >= maxScore ? 15 : 0;
   return base + perfect;
 }
 
 /** A small streak kicker applied on lesson completion (capped so it stays sane). */
 export function xpForStreak(streak: number): number {
-  return Math.min(50, Math.max(0, streak - 1) * 5);
+  return Math.min(15, Math.max(0, streak - 1) * 3);
 }
 
 /* ─────────────────────────── Dates & streaks ─────────────────────────── */

@@ -1,18 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useProgressStore } from "@/store/progressStore";
-import { levelInfo } from "@/lib/achievements";
+import { levelInfo, dayKey } from "@/lib/achievements";
 import { useMounted } from "@/hooks/useMounted";
-import { dayKey } from "@/lib/achievements";
-import StatsPanel from "@/components/shared/StatsPanel";
 
-/** Compact navbar widget: streak flame, level ring, daily-goal dots. Opens the
- * full StatsPanel on click. This is the persistent "growing self" the whole
- * engagement loop revolves around. */
+/** Compact navbar widget: streak flame, level ring, daily-goal dots. Navigates
+ * to the full /progress dashboard on click. This is the persistent "growing
+ * self" the whole engagement loop revolves around. */
 export default function ProgressHub() {
   const mounted = useMounted();
-  const [open, setOpen] = useState(false);
+  const router = useRouter();
 
   const xp = useProgressStore((s) => s.xp);
   const streak = useProgressStore((s) => s.streak);
@@ -38,7 +36,7 @@ export default function ProgressHub() {
     <>
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={() => router.push("/progress")}
         aria-label={`Level ${info.level}, ${streak} day streak, daily goal ${todayCount} of ${dailyGoal}. Open progress.`}
         title="Your progress"
         style={{
@@ -109,8 +107,6 @@ export default function ProgressHub() {
 
         <span style={{ position: "absolute", width: 0, height: 0, overflow: "hidden" }}>{pct}%</span>
       </button>
-
-      <StatsPanel open={open} onClose={() => setOpen(false)} />
 
       <style jsx>{`
         @media (max-width: 420px) {
