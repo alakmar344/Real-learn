@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Theme } from "@/types";
-import { useThemeStore } from "@/store/themeStore";
+import { usePreferenceStore } from "@/store/preferenceStore";
 
 interface Props {
   open: boolean;
@@ -25,7 +25,8 @@ const OPTIONS: { value: Theme; label: string; hint: string; swatch: string }[] =
 ];
 
 export default function ThemeModal({ open, onClose }: Props) {
-  const { theme, setTheme } = useThemeStore();
+  const theme = usePreferenceStore((s) => s.theme);
+  const setTheme = usePreferenceStore((s) => s.setTheme);
 
   useEffect(() => {
     if (!open) return;

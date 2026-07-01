@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { useLessonStore } from "@/store/lessonStore";
+import { usePreferenceStore } from "@/store/preferenceStore";
 import { LessonJourney } from "@/types";
 
 const trimmedBackendUrl = (
@@ -127,14 +128,14 @@ export function useLesson() {
   const router = useRouter();
   const { getToken } = useAuth();
   const {
-    language,
-    level,
     setQuestion,
     startLoading,
     setLesson,
     setError,
     resetForNextQuestion,
   } = useLessonStore();
+  const language = usePreferenceStore((s) => s.language);
+  const level = usePreferenceStore((s) => s.level);
 
   const generateLesson = useCallback(
     async (question: string, navigate: boolean = true) => {

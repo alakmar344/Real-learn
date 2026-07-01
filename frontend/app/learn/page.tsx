@@ -14,6 +14,7 @@ import LiveRegion from "@/components/shared/LiveRegion";
 import Footer from "@/components/shared/Footer";
 import { showToast } from "@/components/shared/ToastContainer";
 import { useLessonStore } from "@/store/lessonStore";
+import { usePreferenceStore } from "@/store/preferenceStore";
 import { useProgressStore } from "@/store/progressStore";
 import { useSavedJourneysStore, journeySignature } from "@/store/savedJourneysStore";
 import { useLesson } from "@/hooks/useLesson";
@@ -26,8 +27,6 @@ export default function LearnPage() {
   const {
     question,
     lesson,
-    language,
-    level,
     isLoading,
     error,
     unlockedPart,
@@ -41,6 +40,9 @@ export default function LearnPage() {
     showCompletion,
     showFollowUp,
   } = useLessonStore();
+
+  const language = usePreferenceStore((s) => s.language);
+  const level = usePreferenceStore((s) => s.level);
 
   const saveJourney = useSavedJourneysStore((s) => s.saveJourney);
 
