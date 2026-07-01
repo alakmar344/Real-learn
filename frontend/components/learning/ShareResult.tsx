@@ -44,89 +44,187 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
 
   const info = levelInfo(xp);
 
-  const summaryText = `I scored ${totalScore}/${maxScore} learning "${question}" on RealLearn 📚 (Level ${info.level} · ${streak}-day streak 🔥) — https://reallearn.site/`;
+  const summaryText = `don't believe me? just saw this on RealLearn and now I'm built different 🔥 https://reallearn.site/`;
 
   function drawCard(): Promise<Blob | null> {
     return new Promise((resolve) => {
-      const W = 1200;
-      const H = 630;
+      const W = 1080;
+      const H = 1920;
       const canvas = document.createElement("canvas");
       canvas.width = W;
       canvas.height = H;
       const ctx = canvas.getContext("2d");
       if (!ctx) return resolve(null);
 
-      // Background — paper cream with a subtle oxford panel.
-      ctx.fillStyle = "#f5f0e8";
+      // Vibrant neon background gradient
+      const bgGrad = ctx.createLinearGradient(0, 0, W, H);
+      bgGrad.addColorStop(0, "#ff00cc");
+      bgGrad.addColorStop(0.35, "#7b2ff7");
+      bgGrad.addColorStop(0.65, "#2f80ed");
+      bgGrad.addColorStop(1, "#00d2ff");
+      ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, W, H);
-      ctx.fillStyle = "#1a3a5c";
-      ctx.fillRect(0, 0, W, 12);
-      ctx.fillRect(0, H - 12, W, 12);
 
-      // Brand
-      ctx.fillStyle = "#1a3a5c";
-      ctx.font = "800 46px Inter, sans-serif";
-      ctx.fillText("Real", 72, 108);
-      const realW = ctx.measureText("Real").width;
-      ctx.fillStyle = "#2a5a8c";
-      ctx.fillText("Learn", 72 + realW, 108);
+      // Decorative diagonal stripes
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+      ctx.lineWidth = 40;
+      for (let i = -H; i < W + H; i += 80) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i + H, H);
+        ctx.stroke();
+      }
 
-      ctx.fillStyle = "#6b5a48";
-      ctx.font = "400 22px Inter, sans-serif";
-      ctx.fillText("The World Is Your Textbook", 74, 142);
+      // Sparkle / star decorations
+      const drawStar = (cx: number, cy: number, r: number, rot: number) => {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(rot);
+        ctx.beginPath();
+        for (let i = 0; i < 5; i++) {
+          const angle = (i * 4 * Math.PI) / 5 - Math.PI / 2;
+          const x = Math.cos(angle) * r;
+          const y = Math.sin(angle) * r;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.fillStyle = "rgba(255,255,255,0.3)";
+        ctx.fill();
+        ctx.restore();
+      };
+      drawStar(160, 420, 60, 0.3);
+      drawStar(W - 140, 560, 80, 0.7);
+      drawStar(120, 1100, 50, 1.1);
+      drawStar(W - 160, 1350, 90, 0.5);
+      drawStar(260, 1550, 40, 0.9);
 
-      // Question
-      ctx.fillStyle = "#1a1208";
-      ctx.font = "700 52px Georgia, serif";
-      const qLines = wrapText(ctx, `“${question}”`, W - 144, 3);
-      qLines.forEach((ln, i) => ctx.fillText(ln, 72, 250 + i * 66));
+      // Top brand — comedic huge logo
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "900 140px Inter, sans-serif";
+      ctx.shadowColor = "rgba(0,0,0,0.3)";
+      ctx.shadowBlur = 40;
+      ctx.fillText("Real", W / 2 - 180, 240);
+      ctx.fillStyle = "#ffe600";
+      ctx.fillText("Learn", W / 2 + 120, 240);
+      ctx.shadowBlur = 0;
 
-      // Score ring
-      const cx = W - 210;
-      const cy = 210;
-      const r = 96;
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "500 40px Inter, sans-serif";
+      ctx.fillText("THE WORLD IS YOUR TEXTBOOK", W / 2, 310);
+
+      // Glitch accent bar
+      ctx.fillStyle = "#ffe600";
+      ctx.fillRect(100, 360, W - 200, 14);
+
+      // Question box — glass card
+      const boxX = 80;
+      const boxY = 420;
+      const boxW = W - 160;
+      const boxH = 420;
+      ctx.fillStyle = "rgba(255, 255, 255, 0.12)";
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.roundRect(boxX, boxY, boxW, boxH, 40);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "400 46px Inter, sans-serif";
+      ctx.fillText("⚡ LESSON PROMPT ⚡", W / 2, boxY + 70);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "700 60px Georgia, serif";
+      const qLines = wrapText(ctx, question, boxW - 40, 4);
+      const qStartY = boxY + 160;
+      qLines.forEach((ln, i) => ctx.fillText(ln, W / 2, qStartY + i * 90));
+      ctx.textAlign = "left";
+
+      // Score halo
+      const cx = W / 2;
+      const cy = H / 2 + 280;
+      const r = 190;
       const pct = totalScore / maxScore;
-      ctx.lineWidth = 18;
-      ctx.strokeStyle = "#e0d8cc";
+
+      // Outer glow
+      const glowGrad = ctx.createRadialGradient(cx, cy, r * 0.6, cx, cy, r * 1.6);
+      glowGrad.addColorStop(0, "rgba(255, 230, 0, 0.6)");
+      glowGrad.addColorStop(1, "rgba(255, 230, 0, 0)");
+      ctx.fillStyle = glowGrad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r * 1.6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Ring background
+      ctx.lineWidth = 38;
+      ctx.strokeStyle = "rgba(255,255,255,0.2)";
       ctx.beginPath();
       ctx.arc(cx, cy, r, 0, Math.PI * 2);
       ctx.stroke();
-      ctx.strokeStyle = totalScore >= maxScore ? "#c9a227" : "#1a6b3a";
+
+      // Score ring
+      ctx.strokeStyle = totalScore >= maxScore ? "#ffe600" : "#ffffff";
+      ctx.lineCap = "round";
       ctx.beginPath();
       ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + pct * Math.PI * 2);
       ctx.stroke();
-      ctx.fillStyle = "#1a1208";
+      ctx.lineCap = "butt";
+
       ctx.textAlign = "center";
-      ctx.font = "800 56px Inter, sans-serif";
-      ctx.fillText(`${totalScore}/${maxScore}`, cx, cy + 8);
-      ctx.font = "400 22px Inter, sans-serif";
-      ctx.fillStyle = "#6b5a48";
-      ctx.fillText("SCORE", cx, cy + 44);
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "900 140px Inter, sans-serif";
+      ctx.fillText(`${totalScore}`, cx, cy + 30);
+      ctx.font = "600 36px Inter, sans-serif";
+      ctx.fillStyle = "rgba(255,255,255,0.9)";
+      ctx.fillText(`out of ${maxScore}`, cx, cy + 80);
+      ctx.fillStyle = "#ffe600";
+      ctx.fillText(totalScore >= maxScore ? "PERFECT 🔥" : "JOURNEY COMPLETE", cx, cy + 130);
       ctx.textAlign = "left";
 
-      // Footer stats pills
+      // Stats row — glass pills
       const pills = [
         `⭐  Level ${info.level} · ${levelTitle(info.level)}`,
-        `🔥  ${streak}-day streak`,
+        `🔥 ${streak}-day streak`,
         totalScore >= maxScore ? "🏆  Perfect run" : "✅  Journey complete",
       ];
-      ctx.font = "600 26px Inter, sans-serif";
-      let px = 72;
-      const py = H - 96;
+      ctx.font = "700 36px Inter, sans-serif";
+      let px = 90;
+      const py = H - 340;
       pills.forEach((p) => {
-        const w = ctx.measureText(p).width + 44;
-        ctx.fillStyle = "#ffffff";
-        ctx.strokeStyle = "#c8bfb0";
-        ctx.lineWidth = 2;
-        const rr = 26;
+        const w = ctx.measureText(p).width + 60;
+        ctx.fillStyle = "rgba(255, 255, 255, 0.18)";
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.6)";
+        ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.roundRect(px, py, w, 52, rr);
+        ctx.roundRect(px, py, w, 76, 38);
         ctx.fill();
         ctx.stroke();
-        ctx.fillStyle = "#1a3a5c";
-        ctx.fillText(p, px + 22, py + 35);
-        px += w + 18;
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(p, px + 30, py + 50);
+        px += w + 24;
       });
+
+      // CTA banner
+      const ctaY = H - 210;
+      ctx.fillStyle = "#ffe600";
+      ctx.shadowColor = "rgba(0,0,0,0.35)";
+      ctx.shadowBlur = 30;
+      ctx.beginPath();
+      ctx.roundRect(80, ctaY, W - 160, 130, 20);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#1a0a66";
+      ctx.font = "900 52px Inter, sans-serif";
+      ctx.fillText("👉  REALLEARN.SITE  👈", W / 2, ctaY + 82);
+
+      // Bottom tag
+      ctx.fillStyle = "rgba(255,255,255,0.8)";
+      ctx.font = "400 30px Inter, sans-serif";
+      ctx.fillText("Share this if you’re smarter now", W / 2, H - 60);
 
       canvas.toBlob((b) => resolve(b), "image/png");
     });
