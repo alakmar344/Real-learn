@@ -166,19 +166,12 @@ export const useProgressStore = create<ProgressState>()(
           const { dailyCount: baseDaily } = normalizeDaily(prev, today);
           const nextDailyCount = baseDaily + 1;
 
-          // Streak resolves on the day's first activity.
-          const streakRes = resolveStreak(prev.lastActiveDay, prev.streak, prev.streakFreezes, today);
-
           const draft: ProgressState = {
             ...prev,
             xp: prev.xp + gained,
             partsPassed: prev.partsPassed + 1,
             perfectParts: prev.perfectParts + (isPerfect ? 1 : 0),
             lastActivityHour: hour,
-            streak: streakRes.streak,
-            longestStreak: Math.max(prev.longestStreak, streakRes.streak),
-            streakFreezes: prev.streakFreezes - streakRes.freezesUsed,
-            lastActiveDay: today,
             dailyCount: nextDailyCount,
             dailyCountDay: today,
             history: { ...prev.history, [today]: (prev.history[today] ?? 0) + 1 },
@@ -192,22 +185,27 @@ export const useProgressStore = create<ProgressState>()(
 
           const extra: Celebration[] = [{ kind: "xp", amount: gained, reason: isPerfect ? "Perfect part!" : "Part passed" }];
 
-          // Streak milestone celebration (only when it actually advanced today).
-          if (streakRes.advanced && draft.streak >= 2 && prev.lastActiveDay !== today) {
-            extra.push({ kind: "streak", streak: draft.streak });
-          }
-
-          // Daily goal met — fire once per day.
-          if (nextDailyCount >= draft.dailyGoal && prev.dailyGoalMetDay !== today) {
+          // ── Streak is earned by COMPLETING THE DAILY GOAL, not by mere
+          //    activity. It advances at most once per day, the moment the
+          //    day's target is reached. ──
+          const goalReached = nextDailyCount >= draft.dailyGoal;
+          const alreadyMetToday = prev.dailyGoalMetDay === today;
+          if (goalReached && !alreadyMetToday) {
+            const streakRes = resolveStreak(prev.lastActiveDay, prev.streak, prev.streakFreezes, today);
+            draft.streak = streakRes.streak;
+            draft.longestStreak = Math.max(prev.longestStreak, streakRes.streak);
+            draft.streakFreezes = prev.streakFreezes - streakRes.freezesUsed;
+            draft.lastActiveDay = today;
             draft.dailyGoalsMet = prev.dailyGoalsMet + 1;
             draft.dailyGoalMetDay = today;
             extra.push({ kind: "daily-goal", goal: draft.dailyGoal });
+            extra.push({ kind: "streak", streak: draft.streak });
           }
 
           const celebrations = withDerivedCelebrations(prev, draft, extra);
           draft.celebrations = [...prev.celebrations, ...celebrations];
 
-          log("recordPartPassed", { gained, score, streak: draft.streak, daily: `${nextDailyCount}/${draft.dailyGoal}` });
+          log("recordPartPassed", { gained, score, streak: draft.streak, daily: `${nextDailyCount}/${draft.dailyGoal}`, goalMet: goalReached && !alreadyMetToday });
           return draft;
         }),
 
