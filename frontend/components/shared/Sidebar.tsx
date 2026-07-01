@@ -139,8 +139,8 @@ export default function Sidebar({ open, onClose }: Props) {
                 lineHeight: 1.6,
               }}
             >
-              Complete a lesson and it&apos;ll be saved here so you can revisit it
-              anytime.
+              Ask a question and your lesson will be saved here automatically. You can
+              return anytime to continue where you left off.
             </p>
           ) : (
             <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 4 }}>
@@ -179,6 +179,9 @@ export default function Sidebar({ open, onClose }: Props) {
                     </span>
                     <span style={{ display: "block", fontSize: 11, color: "var(--text-tertiary)", marginTop: 2 }}>
                       {journey.language} · {journey.level} · {journey.totalScore}/6 ★
+                      {(journey.completedParts ?? [1, 2, 3]).length < 3 && (
+                        <span> · Part {journey.unlockedPart ?? 1}</span>
+                      )}
                     </span>
                   </button>
                   <button

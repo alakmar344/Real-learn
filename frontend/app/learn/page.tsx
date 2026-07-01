@@ -66,9 +66,9 @@ export default function LearnPage() {
     prevCompletionRef.current = showCompletion;
   }, [showCompletion]);
 
-  /* ── Persist a completed journey to local storage (sidebar history) ── */
+  /* ── Persist journey to local storage on generation and on progress changes ── */
   useEffect(() => {
-    if (!showCompletion || !lesson) return;
+    if (!lesson) return;
     const displayQuestion = lesson.question ?? lesson.topic ?? "";
     const id = journeySignature(displayQuestion, lesson.parts[0]?.title);
     saveJourney({
@@ -80,9 +80,11 @@ export default function LearnPage() {
       partScores,
       totalScore,
       savedAt: Date.now(),
+      unlockedPart,
+      completedParts,
     });
-    console.log("[frontend][LearnPage] journey saved to history", { id });
-  }, [showCompletion, lesson, language, level, partScores, totalScore, saveJourney]);
+    console.log("[frontend][LearnPage] journey saved to history", { id, completedParts, totalScore });
+  }, [lesson, language, level, partScores, totalScore, unlockedPart, completedParts, saveJourney]);
 
   useEffect(() => {
     console.log("[frontend][LearnPage] state snapshot", {
