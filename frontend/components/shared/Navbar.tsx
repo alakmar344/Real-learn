@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import ProgressHub from "@/components/shared/ProgressHub";
 
 interface Props {
   compact?: boolean;
@@ -62,6 +63,8 @@ export default function Navbar({ compact = false }: Props) {
             <span style={{ color: "var(--accent)" }}>Learn</span>
           </span>
         </Link>
+
+        <ProgressHub />
       </div>
 
       <style jsx>{`

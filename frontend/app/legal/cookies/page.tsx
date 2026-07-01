@@ -20,7 +20,7 @@ export default function CookiePolicy() {
         Cookie Policy
       </h2>
       <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
-        Last updated: June 28, 2026
+        Last updated: July 1, 2026
       </p>
 
       <section style={{ marginBottom: 28 }}>
@@ -50,7 +50,9 @@ export default function CookiePolicy() {
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Local Storage:</strong> We use browser localStorage (not cookies) to store
-            your consent preferences, theme settings, and saved lessons.
+            your consent preferences, theme settings, saved lessons, and your learning-progress and
+            achievement data (experience points, level, daily streaks, daily goals, activity
+            history, and badges). This data stays on your device and is not sent to our servers.
           </li>
           <li>
             <strong>Essential Cookies:</strong> We may use strictly necessary cookies for security

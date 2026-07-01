@@ -116,6 +116,14 @@ export default function SettingsPage() {
             return null;
           }
         })();
+
+        localData.progress = (() => {
+          try {
+            return JSON.parse(localStorage.getItem("reallearn-progress") || "null");
+          } catch {
+            return null;
+          }
+        })();
       } catch {
         // ignore local storage errors
       }

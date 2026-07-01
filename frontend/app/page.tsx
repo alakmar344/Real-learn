@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Navbar from "@/components/shared/Navbar";
 import QuestionInput from "@/components/homepage/QuestionInput";
+import HomeStats from "@/components/homepage/HomeStats";
 import LoadingCinematic from "@/components/shared/LoadingCinematic";
 import LiveRegion from "@/components/shared/LiveRegion";
 import PreSignInConsent from "@/components/shared/PreSignInConsent";
@@ -91,8 +92,8 @@ export default function HomePage() {
     syncLegalConsent();
   }, [isSignedIn, getToken]);
 
-  const submit = async () => {
-    const normalized = question.trim();
+  const submit = async (override?: string) => {
+    const normalized = (override ?? question).trim();
     if (!normalized) {
       console.log("[frontend][HomePage] submit skipped: empty question");
       return;
@@ -189,6 +190,8 @@ export default function HomePage() {
             <div style={{ display: "flex", justifyContent: "center" }}>
               <QuestionInput question={question} setQuestion={setQuestion} onSubmit={submit} />
             </div>
+
+            <HomeStats onStartTopic={(topic) => submit(topic)} />
           </div>
         </section>
 

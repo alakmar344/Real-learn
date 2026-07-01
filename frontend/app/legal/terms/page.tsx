@@ -20,7 +20,7 @@ export default function TermsOfService() {
         Terms of Service
       </h2>
       <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
-        Last updated: June 28, 2026
+        Last updated: July 1, 2026
       </p>
 
       <section style={{ marginBottom: 28 }}>
@@ -37,8 +37,11 @@ export default function TermsOfService() {
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           RealLearn is an AI-powered educational platform that generates 3-part learning journeys
           (Foundation, Mechanism, Real World) for user-requested topics. The service includes
-          interactive quizzes, progress tracking, and multilingual support. RealLearn is intended
-          for educational purposes only.
+          interactive quizzes, progress tracking, and multilingual support. It also includes
+          optional engagement features — experience points (XP), levels, daily learning streaks,
+          daily goals, achievement badges, and shareable result cards — that are stored locally on
+          your device to help you build a learning habit. RealLearn is intended for educational
+          purposes only.
         </p>
       </section>
 
@@ -72,7 +75,11 @@ export default function TermsOfService() {
           <li style={{ marginBottom: 4 }}>To generate content that is harmful, violent, sexually explicit, or discriminatory.</li>
           <li style={{ marginBottom: 4 }}>To interfere with or disrupt the integrity or performance of the Service.</li>
           <li style={{ marginBottom: 4 }}>To attempt to gain unauthorized access to the Service or related systems.</li>
-          <li>To reverse engineer, decompile, or attempt to extract the source code of the Service.</li>
+          <li style={{ marginBottom: 4 }}>To reverse engineer, decompile, or attempt to extract the source code of the Service.</li>
+          <li>
+            To use scripts, bots, automation, or other artificial means to inflate or manipulate
+            engagement metrics such as XP, levels, streaks, daily goals, or achievement badges.
+          </li>
         </ul>
       </section>
 
@@ -197,6 +204,24 @@ export default function TermsOfService() {
           We strive to make our Service accessible to all users and aim to conform to WCAG 2.1
           Level AA standards. If you experience any accessibility issues, please contact us and
           we will make reasonable efforts to address them.
+        </p>
+      </section>
+
+      <section style={{ marginTop: 28 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>17. Gamification &amp; Virtual Rewards</h3>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+          The Service offers engagement features including experience points (XP), levels, daily
+          streaks, streak freezes, daily goals, and achievement badges (collectively,
+          &quot;Virtual Rewards&quot;). Virtual Rewards are provided for motivational and entertainment
+          purposes only. They have <strong>no monetary value</strong>, cannot be purchased,
+          redeemed, transferred, or exchanged for cash or any other benefit, and confer no
+          ownership rights. Because this data is stored locally in your browser, it is tied to that
+          browser and device and may be lost if you clear your browser data, switch devices or
+          browsers, or use the &quot;Delete My Data&quot; feature. We may add, modify, reset, or
+          discontinue any Virtual Reward or engagement feature at any time without notice or
+          liability. Shareable result cards are generated on your device; you are responsible for
+          any content you choose to share and for complying with the terms of any platform you
+          share to.
         </p>
       </section>
     </article>
