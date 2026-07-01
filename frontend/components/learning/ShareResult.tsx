@@ -44,7 +44,7 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
 
   const info = levelInfo(xp);
 
-  const summaryText = `don't believe me? just saw this on RealLearn and now I'm built different 🔥 https://reallearn.site/`;
+  const summaryText = `can you pass this? 💀 score: ${totalScore}/${maxScore} on RealLearn — https://reallearn.site/`;
 
   function drawCard(): Promise<Blob | null> {
     return new Promise((resolve) => {
@@ -56,116 +56,155 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
       const ctx = canvas.getContext("2d");
       if (!ctx) return resolve(null);
 
-      // Vibrant neon background gradient
-      const bgGrad = ctx.createLinearGradient(0, 0, W, H);
-      bgGrad.addColorStop(0, "#ff00cc");
-      bgGrad.addColorStop(0.35, "#7b2ff7");
-      bgGrad.addColorStop(0.65, "#2f80ed");
-      bgGrad.addColorStop(1, "#00d2ff");
+      // Rich dark gradient — purple core to teal edges
+      const bgGrad = ctx.createRadialGradient(W / 2, H * 0.35, 80, W / 2, H / 2, H);
+      bgGrad.addColorStop(0, "#6c3c97");
+      bgGrad.addColorStop(0.45, "#3b1566");
+      bgGrad.addColorStop(0.85, "#0f2b46");
+      bgGrad.addColorStop(1, "#051b2c");
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, W, H);
 
-      // Decorative diagonal stripes
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
-      ctx.lineWidth = 40;
-      for (let i = -H; i < W + H; i += 80) {
+      // Soft glowing orbs for depth
+      const orb = (ox: number, oy: number, r: number, color: string) => {
+        const g = ctx.createRadialGradient(ox, oy, r * 0.1, ox, oy, r);
+        g.addColorStop(0, color);
+        g.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = g;
         ctx.beginPath();
-        ctx.moveTo(i, 0);
-        ctx.lineTo(i + H, H);
+        ctx.arc(ox, oy, r, 0, Math.PI * 2);
+        ctx.fill();
+      };
+      orb(W * 0.15, H * 0.12, 340, "rgba(120, 60, 200, 0.35)");
+      orb(W * 0.85, H * 0.22, 280, "rgba(0, 180, 220, 0.25)");
+      orb(W * 0.5, H * 0.75, 420, "rgba(0, 140, 180, 0.15)");
+
+      // Subtle grid texture
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.04)";
+      ctx.lineWidth = 1;
+      for (let gx = 0; gx < W; gx += 54) {
+        ctx.beginPath();
+        ctx.moveTo(gx, 0);
+        ctx.lineTo(gx, H);
+        ctx.stroke();
+      }
+      for (let gy = 0; gy < H; gy += 54) {
+        ctx.beginPath();
+        ctx.moveTo(0, gy);
+        ctx.lineTo(W, gy);
         ctx.stroke();
       }
 
-      // Sparkle / star decorations
-      const drawStar = (cx: number, cy: number, r: number, rot: number) => {
-        ctx.save();
-        ctx.translate(cx, cy);
-        ctx.rotate(rot);
-        ctx.beginPath();
-        for (let i = 0; i < 5; i++) {
-          const angle = (i * 4 * Math.PI) / 5 - Math.PI / 2;
-          const x = Math.cos(angle) * r;
-          const y = Math.sin(angle) * r;
-          if (i === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
-        ctx.closePath();
-        ctx.fillStyle = "rgba(255,255,255,0.3)";
-        ctx.fill();
-        ctx.restore();
-      };
-      drawStar(160, 420, 60, 0.3);
-      drawStar(W - 140, 560, 80, 0.7);
-      drawStar(120, 1100, 50, 1.1);
-      drawStar(W - 160, 1350, 90, 0.5);
-      drawStar(260, 1550, 40, 0.9);
-
-      // Top brand — comedic huge logo
+      // Brand header
       ctx.textAlign = "center";
+      ctx.font = "900 92px Inter, sans-serif";
       ctx.fillStyle = "#ffffff";
-      ctx.font = "900 140px Inter, sans-serif";
-      ctx.shadowColor = "rgba(0,0,0,0.3)";
-      ctx.shadowBlur = 40;
-      ctx.fillText("Real", W / 2 - 180, 240);
-      ctx.fillStyle = "#ffe600";
-      ctx.fillText("Learn", W / 2 + 120, 240);
-      ctx.shadowBlur = 0;
+      ctx.fillText("Real", W / 2 + 10, 180);
+      ctx.fillStyle = "#00e0c6";
+      ctx.fillText("Learn", W / 2 + 10, 280);
+      ctx.font = "600 36px Inter, sans-serif";
+      ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
+      ctx.fillText("THE WORLD IS YOUR TEXTBOOK", W / 2, 340);
+      ctx.textAlign = "left";
 
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "500 40px Inter, sans-serif";
-      ctx.fillText("THE WORLD IS YOUR TEXTBOOK", W / 2, 310);
-
-      // Glitch accent bar
-      ctx.fillStyle = "#ffe600";
-      ctx.fillRect(100, 360, W - 200, 14);
-
-      // Question box — glass card
-      const boxX = 80;
-      const boxY = 420;
-      const boxW = W - 160;
-      const boxH = 420;
-      ctx.fillStyle = "rgba(255, 255, 255, 0.12)";
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
+      // Decorative accent line
+      const lineGrad = ctx.createLinearGradient(80, 0, W - 80, 0);
+      lineGrad.addColorStop(0, "rgba(255, 255, 255, 0)");
+      lineGrad.addColorStop(0.5, "rgba(255, 255, 255, 0.55)");
+      lineGrad.addColorStop(1, "rgba(255, 255, 255, 0)");
+      ctx.strokeStyle = lineGrad;
       ctx.lineWidth = 4;
       ctx.beginPath();
-      ctx.roundRect(boxX, boxY, boxW, boxH, 40);
+      ctx.moveTo(80, 400);
+      ctx.lineTo(W - 80, 400);
+      ctx.stroke();
+      ctx.lineWidth = 1;
+
+      // Question area
+      const boxY = 460;
+      ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(72, boxY, W - 144, 480, 40);
       ctx.fill();
       ctx.stroke();
 
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "400 46px Inter, sans-serif";
-      ctx.fillText("⚡ LESSON PROMPT ⚡", W / 2, boxY + 70);
+      // Edge accent dots (simulate corner tech lights)
+      const dot = (dx: number, dy: number) => {
+        ctx.beginPath();
+        ctx.arc(72 + dx, boxY + dy, 6, 0, Math.PI * 2);
+        ctx.fillStyle = "#00e0c6";
+        ctx.fill();
+      };
+      dot(0, 0);
+      dot(W - 72 - 72, 0);
+      dot(0, 480);
+      dot(W - 72 - 72, 480);
+
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#00e0c6";
+      ctx.font = "600 42px Inter, sans-serif";
+      ctx.fillText("QUESTION", W / 2, boxY + 70);
 
       ctx.fillStyle = "#ffffff";
-      ctx.font = "700 60px Georgia, serif";
-      const qLines = wrapText(ctx, question, boxW - 40, 4);
+      ctx.font = "700 56px Georgia, serif";
+      const qLines = wrapText(ctx, question, W - 184, 4);
       const qStartY = boxY + 160;
       qLines.forEach((ln, i) => ctx.fillText(ln, W / 2, qStartY + i * 90));
       ctx.textAlign = "left";
 
-      // Score halo
+      // Stats row — clean bordered glass pills
+      const pills = [
+        { text: `⭐ Level ${info.level} · ${levelTitle(info.level)}`, color: "#7a47f0" },
+        { text: `🔥 ${streak}-day streak`, color: "#ff5a7e" },
+        totalScore >= maxScore ? { text: "🏆 Perfect run", color: "#00e0c6" } : { text: "✅ Completed", color: "#00e0c6" },
+      ];
+      ctx.font = "700 34px Inter, sans-serif";
+      let px = 72;
+      const py = H - 560;
+      pills.forEach((p) => {
+        const w = ctx.measureText(p.text).width + 48;
+        const ph = 66;
+        // glass background
+        ctx.fillStyle = "rgba(255, 255, 255, 0.12)";
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(px, py, w, ph, 20);
+        ctx.fill();
+        ctx.stroke();
+        // colored left rail
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.roundRect(px, py + 10, 6, ph - 20, 3);
+        ctx.fill();
+        // text
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(p.text, px + 30, py + 42);
+        px += w + 20;
+      });
+
+      // Score block — centered vertical composition
       const cx = W / 2;
-      const cy = H / 2 + 280;
-      const r = 190;
-      const pct = totalScore / maxScore;
+      const cy = H - 310;
+      const r = 160;
 
-      // Outer glow
-      const glowGrad = ctx.createRadialGradient(cx, cy, r * 0.6, cx, cy, r * 1.6);
-      glowGrad.addColorStop(0, "rgba(255, 230, 0, 0.6)");
-      glowGrad.addColorStop(1, "rgba(255, 230, 0, 0)");
-      ctx.fillStyle = glowGrad;
-      ctx.beginPath();
-      ctx.arc(cx, cy, r * 1.6, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Ring background
-      ctx.lineWidth = 38;
-      ctx.strokeStyle = "rgba(255,255,255,0.2)";
+      // Thin decorative ring track
+      ctx.lineWidth = 18;
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
       ctx.beginPath();
       ctx.arc(cx, cy, r, 0, Math.PI * 2);
       ctx.stroke();
 
-      // Score ring
-      ctx.strokeStyle = totalScore >= maxScore ? "#ffe600" : "#ffffff";
+      const pct = totalScore / maxScore;
+
+      // Progress arc
+      const arcGrad = ctx.createLinearGradient(cx - r, cy, cx + r, cy);
+      arcGrad.addColorStop(0, "#00e0c6");
+      arcGrad.addColorStop(1, "#7a47f0");
+      ctx.strokeStyle = arcGrad;
+      ctx.lineWidth = 18;
       ctx.lineCap = "round";
       ctx.beginPath();
       ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + pct * Math.PI * 2);
@@ -173,58 +212,45 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
       ctx.lineCap = "butt";
 
       ctx.textAlign = "center";
+
+      // Big score
+      ctx.font = "900 130px Inter, sans-serif";
       ctx.fillStyle = "#ffffff";
-      ctx.font = "900 140px Inter, sans-serif";
-      ctx.fillText(`${totalScore}`, cx, cy + 30);
-      ctx.font = "600 36px Inter, sans-serif";
-      ctx.fillStyle = "rgba(255,255,255,0.9)";
-      ctx.fillText(`out of ${maxScore}`, cx, cy + 80);
-      ctx.fillStyle = "#ffe600";
-      ctx.fillText(totalScore >= maxScore ? "PERFECT 🔥" : "JOURNEY COMPLETE", cx, cy + 130);
+      ctx.shadowColor = "rgba(0,0,0,0.25)";
+      ctx.shadowBlur = 25;
+      ctx.fillText(`${totalScore}`, cx, cy + 32);
+      ctx.shadowBlur = 0;
+
+      ctx.font = "600 34px Inter, sans-serif";
+      ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
+      ctx.fillText(`/ ${maxScore}`, cx, cy + 32);
+
+      ctx.font = "700 32px Inter, sans-serif";
+      ctx.fillStyle = "#00e0c6";
+      ctx.fillText(totalScore >= maxScore ? "PERFECT" : "COMPLETED", cx, cy + 80);
+
       ctx.textAlign = "left";
 
-      // Stats row — glass pills
-      const pills = [
-        `⭐  Level ${info.level} · ${levelTitle(info.level)}`,
-        `🔥 ${streak}-day streak`,
-        totalScore >= maxScore ? "🏆  Perfect run" : "✅  Journey complete",
-      ];
-      ctx.font = "700 36px Inter, sans-serif";
-      let px = 90;
-      const py = H - 340;
-      pills.forEach((p) => {
-        const w = ctx.measureText(p).width + 60;
-        ctx.fillStyle = "rgba(255, 255, 255, 0.18)";
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.6)";
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.roundRect(px, py, w, 76, 38);
-        ctx.fill();
-        ctx.stroke();
-        ctx.fillStyle = "#ffffff";
-        ctx.fillText(p, px + 30, py + 50);
-        px += w + 24;
-      });
-
-      // CTA banner
-      const ctaY = H - 210;
-      ctx.fillStyle = "#ffe600";
-      ctx.shadowColor = "rgba(0,0,0,0.35)";
-      ctx.shadowBlur = 30;
+      // CTA band — prominent but structured
+      const ctaY = H - 130;
+      ctx.fillStyle = "#00e0c6";
+      ctx.shadowColor = "rgba(0, 224, 198, 0.35)";
+      ctx.shadowBlur = 35;
       ctx.beginPath();
-      ctx.roundRect(80, ctaY, W - 160, 130, 20);
+      ctx.roundRect(72, ctaY, W - 144, 100, 18);
       ctx.fill();
       ctx.shadowBlur = 0;
 
-      ctx.textAlign = "center";
-      ctx.fillStyle = "#1a0a66";
-      ctx.font = "900 52px Inter, sans-serif";
-      ctx.fillText("👉  REALLEARN.SITE  👈", W / 2, ctaY + 82);
+      // subtle inner top line highlight
+      ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
+      ctx.beginPath();
+      ctx.roundRect(72, ctaY, W - 144, 8, 8);
+      ctx.fill();
 
-      // Bottom tag
-      ctx.fillStyle = "rgba(255,255,255,0.8)";
-      ctx.font = "400 30px Inter, sans-serif";
-      ctx.fillText("Share this if you’re smarter now", W / 2, H - 60);
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#051b2c";
+      ctx.font = "900 46px Inter, sans-serif";
+      ctx.fillText("👉  REALLEARN.SITE  👈", W / 2, ctaY + 65);
 
       canvas.toBlob((b) => resolve(b), "image/png");
     });
