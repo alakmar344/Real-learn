@@ -2,12 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { UserButton, useAuth, useClerk } from "@clerk/nextjs";
+import { useAuth } from "@clerk/nextjs";
 import LanguageSelector from "@/components/shared/LanguageSelector";
 import LevelSelector from "@/components/shared/LevelSelector";
 import ConfirmModal from "@/components/shared/ConfirmModal";
 import ThemeModal from "@/components/shared/ThemeModal";
-import { showToast } from "@/components/shared/ToastContainer";
 import { useLessonStore } from "@/store/lessonStore";
 import { useSavedJourneysStore } from "@/store/savedJourneysStore";
 import { useThemeStore } from "@/store/themeStore";
@@ -18,14 +17,9 @@ interface Props {
   onClose: () => void;
 }
 
-const BACKEND_URL = (
-  process.env.NEXT_PUBLIC_BACKEND_URL || "https://real-learn.onrender.com"
-).replace(/\/$/, "");
-
 export default function Sidebar({ open, onClose }: Props) {
   const router = useRouter();
-  const { isLoaded, isSignedIn, getToken } = useAuth();
-  const { signOut } = useClerk();
+  const { isLoaded, isSignedIn } = useAuth();
 
   const { language, level, setLanguage, setLevel, loadJourney, resetForNextQuestion } =
     useLessonStore();
@@ -33,8 +27,6 @@ export default function Sidebar({ open, onClose }: Props) {
   const theme = useThemeStore((s) => s.theme);
 
   const [themeOpen, setThemeOpen] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [journeyToRemove, setJourneyToRemove] = useState<string | null>(null);
 
   const handleNewLesson = () => {
@@ -48,142 +40,6 @@ export default function Sidebar({ open, onClose }: Props) {
     loadJourney(journey);
     onClose();
     router.push("/learn");
-  };
-
-  const handleDeleteData = async () => {
-    setDeleting(true);
-    try {
-      const token = await getToken();
-      const headers: Record<string, string> = {};
-      if (token) headers["Authorization"] = `Bearer ${token}`;
-
-      const res = await fetch(`${BACKEND_URL}/api/account`, {
-        method: "DELETE",
-        headers,
-      });
-      const payload = await res.json().catch(() => null);
-      console.log("[frontend][Sidebar] delete account response", {
-        status: res.status,
-        payload,
-      });
-      if (!res.ok) {
-        throw new Error(payload?.error || "Failed to delete account");
-      }
-
-      // Clear all local persistence (saved journeys, consent, theme, lesson state).
-      try {
-        localStorage.clear();
-      } catch {
-        // ignore storage errors
-      }
-
-      await signOut(() => {
-        showToast("Account deleted successfully", "success");
-        router.push("/");
-      });
-    } catch (err) {
-      console.error("[frontend][Sidebar] delete data failed", err);
-      showToast(
-        err instanceof Error
-          ? `Could not delete your data: ${err.message}`
-          : "Could not delete your data. Please try again.",
-        "error"
-      );
-      setDeleting(false);
-    }
-  };
-
-  const handleExportData = async () => {
-    try {
-      const backendUrl =
-        process.env.NEXT_PUBLIC_BACKEND_URL || "https://real-learn.onrender.com";
-      const token = await getToken();
-      const headers: Record<string, string> = {};
-      if (token) headers["Authorization"] = `Bearer ${token}`;
-
-      let backendData = null;
-      try {
-        const res = await fetch(`${backendUrl}/api/export-data`, {
-          method: "GET",
-          headers,
-        });
-        if (res.ok) {
-          backendData = await res.json();
-        }
-      } catch {
-        // backend export may fail if not authenticated
-      }
-
-      const localData: Record<string, unknown> = {};
-      try {
-        const savedJourneysKey = "reallearn-saved-journeys";
-        const savedJourneys = localStorage.getItem(savedJourneysKey);
-        if (savedJourneys) {
-          localData.savedJourneys = JSON.parse(savedJourneys);
-        }
-
-        localData.cookieConsent = (() => {
-          try {
-            return JSON.parse(localStorage.getItem("reallearn-cookie-consent") || "null");
-          } catch {
-            return null;
-          }
-        })();
-
-        localData.legalConsent = (() => {
-          try {
-            return JSON.parse(localStorage.getItem("reallearn-legal-consent") || "null");
-          } catch {
-            return null;
-          }
-        })();
-
-        localData.theme = (() => {
-          try {
-            return JSON.parse(localStorage.getItem("reallearn-theme") || "null");
-          } catch {
-            return null;
-          }
-        })();
-
-        localData.lessonState = (() => {
-          try {
-            return JSON.parse(localStorage.getItem("reallearn-lesson-store") || "null");
-          } catch {
-            return null;
-          }
-        })();
-      } catch {
-        // ignore local storage errors
-      }
-
-      const exportPayload = {
-        exportedAt: new Date().toISOString(),
-        backend: backendData,
-        local: localData,
-      };
-
-      const blob = new Blob([JSON.stringify(exportPayload, null, 2)], {
-        type: "application/json",
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `reallearn-export-${Date.now()}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      showToast("Data exported successfully", "success");
-    } catch (err) {
-      console.error("[frontend][Sidebar] export data failed", err);
-      showToast(
-        err instanceof Error
-          ? `Could not export data: ${err.message}`
-          : "Could not export data. Please try again.",
-        "error"
-      );
-    }
   };
 
   return (
@@ -283,8 +139,8 @@ export default function Sidebar({ open, onClose }: Props) {
                 lineHeight: 1.6,
               }}
             >
-              Complete a lesson and it&apos;ll be saved here so you can revisit it
-              anytime.
+              Ask a question and your lesson will be saved here automatically. You can
+              return anytime to continue where you left off.
             </p>
           ) : (
             <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 4 }}>
@@ -323,6 +179,9 @@ export default function Sidebar({ open, onClose }: Props) {
                     </span>
                     <span style={{ display: "block", fontSize: 11, color: "var(--text-tertiary)", marginTop: 2 }}>
                       {journey.language} · {journey.level} · {journey.totalScore}/6 ★
+                      {(journey.completedParts ?? [1, 2, 3]).length < 3 && (
+                        <span> · Part {journey.unlockedPart ?? 1}</span>
+                      )}
                     </span>
                   </button>
                   <button
@@ -390,92 +249,33 @@ export default function Sidebar({ open, onClose }: Props) {
             <span style={{ color: "var(--text-tertiary)", fontSize: 12 }}>Change</span>
           </button>
 
-          {/* Account */}
+          {/* Settings */}
           {isLoaded && isSignedIn && (
-            <div
+            <button
+              type="button"
+              onClick={() => { onClose(); router.push("/settings"); }}
               style={{
-                borderTop: "1px solid var(--border-subtle)",
-                paddingTop: 10,
                 display: "flex",
-                flexDirection: "column",
-                gap: 8,
+                alignItems: "center",
+                justifyContent: "space-between",
+                border: "1px solid var(--border-default)",
+                borderRadius: "var(--radius-md)",
+                background: "var(--bg-card)",
+                color: "var(--text-primary)",
+                padding: "10px 12px",
+                cursor: "pointer",
+                fontSize: 13,
+                minHeight: 44,
               }}
             >
-              <span style={{ fontSize: 11, color: "var(--text-tertiary)", fontWeight: 600 }}>Account</span>
-              <div style={{ alignSelf: "flex-start" }}>
-                <UserButton />
-              </div>
-              <button
-                type="button"
-                onClick={() => signOut(() => router.push("/"))}
-                style={{
-                  border: "1px solid var(--border-default)",
-                  borderRadius: "var(--radius-md)",
-                  background: "transparent",
-                  color: "var(--text-secondary)",
-                  padding: "8px 12px",
-                  cursor: "pointer",
-                  fontSize: 13,
-                  minHeight: 40,
-                }}
-              >
-                Sign out
-              </button>
-               <button
-                 type="button"
-                 onClick={() => setDeleteConfirmOpen(true)}
-                 disabled={deleting}
-                 style={{
-                   border: "1px solid var(--wrong)",
-                   borderRadius: "var(--radius-md)",
-                   background: "var(--wrong-bg)",
-                   color: "var(--wrong)",
-                   padding: "8px 12px",
-                   cursor: deleting ? "not-allowed" : "pointer",
-                   fontWeight: 600,
-                   fontSize: 13,
-                   minHeight: 40,
-                   opacity: deleting ? 0.6 : 1,
-                 }}
-               >
-                 {deleting ? "Deleting…" : "Delete my data"}
-               </button>
-               <button
-                 type="button"
-                 onClick={handleExportData}
-                 style={{
-                   border: "1px solid var(--border-default)",
-                   borderRadius: "var(--radius-md)",
-                   background: "transparent",
-                   color: "var(--text-secondary)",
-                   padding: "8px 12px",
-                   cursor: "pointer",
-                   fontSize: 13,
-                   minHeight: 40,
-                 }}
-               >
-                 Export my data
-               </button>
-            </div>
+              <span>⚙️ Settings</span>
+              <span style={{ color: "var(--text-tertiary)", fontSize: 12 }}>Account & data</span>
+            </button>
           )}
         </div>
       </aside>
 
       <ThemeModal open={themeOpen} onClose={() => setThemeOpen(false)} />
-
-      <ConfirmModal
-        open={deleteConfirmOpen}
-        title="Delete everything?"
-        message="This will permanently delete your account, erase your stored cookie-consent records, and clear all saved lessons on this device. This cannot be undone."
-        confirmLabel="Delete everything"
-        cancelLabel="Keep my data"
-        destructive
-        onConfirm={() => {
-          setDeleteConfirmOpen(false);
-          handleDeleteData();
-        }}
-        onClose={() => setDeleteConfirmOpen(false)}
-      />
 
       <ConfirmModal
         open={journeyToRemove !== null}

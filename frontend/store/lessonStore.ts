@@ -167,6 +167,9 @@ export const useLessonStore = create<LessonStore>()(
   },
       loadJourney: (journey) => {
         storeLog("loadJourney", { id: journey.id, question: journey.question });
+        const completedParts = journey.completedParts ?? [1, 2, 3];
+        const isComplete = completedParts.length === 3;
+        const unlockedPart = journey.unlockedPart ?? 3;
         set({
           lesson: journey.lesson,
           question: journey.question,
@@ -174,12 +177,12 @@ export const useLessonStore = create<LessonStore>()(
           level: journey.level,
           isLoading: false,
           error: null,
-          unlockedPart: 3,
-          completedParts: [1, 2, 3],
+          unlockedPart,
+          completedParts,
           partScores: journey.partScores,
-          collapsedParts: [1, 2, 3],
-          showCompletion: true,
-          showFollowUp: true,
+          collapsedParts: isComplete ? [1, 2, 3] : completedParts,
+          showCompletion: isComplete,
+          showFollowUp: isComplete,
         });
       },
     }),

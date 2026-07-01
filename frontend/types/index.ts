@@ -61,4 +61,6 @@ export interface SavedJourney {
   partScores: Record<1 | 2 | 3, number | null>;
   totalScore: number;
   savedAt: number;
+  unlockedPart: 1 | 2 | 3;
+  completedParts: number[];
 }
