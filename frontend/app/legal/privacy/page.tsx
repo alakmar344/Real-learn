@@ -20,7 +20,7 @@ export default function PrivacyPolicy() {
         Privacy Policy
       </h2>
       <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
-        Last updated: July 1, 2026
+        Last updated: July 2, 2026
       </p>
 
       <section style={{ marginBottom: 28 }}>
@@ -52,8 +52,21 @@ export default function PrivacyPolicy() {
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Consent Records:</strong> Timestamps of when you accepted our Privacy Policy
-            (version 1.0), Terms of Service (version 1.0),
+            (version 1.1), Terms of Service (version 1.1),
             and cookie consent.
+          </li>
+          <li style={{ marginBottom: 4 }}>
+            <strong>Cached Lessons (temporary, not linked to you):</strong> To make the Service
+            faster, generated lessons may be temporarily cached on our servers, keyed by a
+            one-way hash of the question text, language, and level. Cached lessons contain no
+            account information, are not linked to your identity, and expire automatically
+            (typically within a few hours).
+          </li>
+          <li style={{ marginBottom: 4 }}>
+            <strong>Voice Input (optional):</strong> If you choose to use the microphone button,
+            your speech is converted to text by your browser&apos;s built-in speech recognition.
+            We never receive, record, or store your audio — only the resulting text appears in
+            the question box, exactly as if you had typed it. See Section 16 for details.
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Saved Lessons:</strong> Your completed learning journeys are stored locally on
@@ -120,9 +133,17 @@ export default function PrivacyPolicy() {
           financial, etc.).
         </p>
         <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+          Lesson content is written in a natural, conversational, human-like style — but it is
+          entirely AI-generated. Nothing in the Service is written or reviewed by a human tutor
+          before you see it.
+        </p>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
           <strong>RealLearn does not use your data to train, fine-tune, or improve any AI model.</strong>{" "}
           Your questions are sent to Google&apos;s Gemma API for one-time inference only. We do not
-          store your questions or generated lessons on our servers. However, please note that your
+          store your questions or generated lessons in a form linked to your account. To improve
+          speed, a generated lesson may be kept in a short-lived server-side cache keyed by a
+          one-way hash of the question text (not by your identity) and is deleted automatically
+          when it expires. However, please note that your
           questions are transmitted to Google&apos;s API, and Google&apos;s own terms of service may govern
           how they handle that data. We recommend reviewing{" "}
           <a href="https://policies.google.com/privacy" style={{ color: "var(--accent)" }}>
@@ -188,8 +209,16 @@ export default function PrivacyPolicy() {
           <li style={{ marginBottom: 4 }}>
             <strong>Serper</strong> (google.serper.dev) — Real-world context fetching for learning content.
           </li>
-          <li>
+          <li style={{ marginBottom: 4 }}>
             <strong>ipify</strong> (api.ipify.org) — IP address detection for security and consent tracking.
+          </li>
+          <li>
+            <strong>Browser Speech Services (Web Speech API)</strong> — Voice input and
+            &quot;Listen&quot; playback are provided by your own browser. Depending on your browser
+            and device, speech recognition may be processed by the browser vendor&apos;s speech
+            service (for example, Google for Chrome), and text-to-speech is typically processed on
+            your device. RealLearn never receives or stores your audio; your browser vendor&apos;s
+            privacy policy governs that processing.
           </li>
         </ul>
       </section>
@@ -200,7 +229,9 @@ export default function PrivacyPolicy() {
           We retain your account data (email, consent records) for as long as your account is active.
           When you delete your account, we delete your data from our servers within 30 days, except
           where retention is required by law or for legitimate business purposes (e.g., fraud
-          prevention, security). Saved lessons stored in your browser&apos;s localStorage remain until
+          prevention, security). Anonymously cached lessons expire and are deleted automatically,
+          typically within a few hours of being generated. Saved lessons stored in your
+          browser&apos;s localStorage remain until
           you clear them or use the &quot;Delete My Data&quot; feature.
         </p>
       </section>
@@ -272,6 +303,32 @@ export default function PrivacyPolicy() {
           messaging app) is controlled by you and governed by the privacy policy of the destination
           you select. RealLearn does not upload, store, or receive a copy of shared result cards.
         </p>
+      </section>
+
+      <section style={{ marginTop: 28 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
+          16. Voice Features (Microphone &amp; Read-Aloud)
+        </h3>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+          RealLearn offers two optional voice features, both powered by your browser&apos;s built-in
+          Web Speech API:
+        </p>
+        <ul style={{ fontSize: 14, color: "var(--text-secondary)", paddingLeft: 20, margin: "8px 0 0" }}>
+          <li style={{ marginBottom: 4 }}>
+            <strong>Voice input:</strong> The microphone is used only while you actively hold a
+            voice-input session, and only after you grant your browser permission. Your speech is
+            converted to text by the browser (or the browser vendor&apos;s speech service) and the
+            resulting text is placed into the question box. <strong>We never receive, transmit,
+            record, or store your audio on our servers.</strong> You can revoke microphone
+            permission at any time in your browser settings; the feature is entirely optional and
+            typing always works.
+          </li>
+          <li>
+            <strong>Listen (read-aloud):</strong> The &quot;Listen&quot; button reads lesson content
+            aloud using your browser&apos;s text-to-speech voices. This happens on your device;
+            no audio or usage of this feature is sent to our servers.
+          </li>
+        </ul>
       </section>
     </article>
   );

@@ -29,8 +29,8 @@ import {
   setCachedLesson,
 } from "./lib/lessonCache.js";
 
-const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "1.0";
-const TERMS_OF_SERVICE_VERSION = process.env.TERMS_OF_SERVICE_VERSION || "1.0";
+const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "1.1";
+const TERMS_OF_SERVICE_VERSION = process.env.TERMS_OF_SERVICE_VERSION || "1.1";
 const DEFAULT_RATE_LIMIT_WINDOW_MS = 60000;
 const DEFAULT_RATE_LIMIT_MAX_REQUESTS = 20;
 const configuredRateLimitWindowMs = Number(process.env.RATE_LIMIT_WINDOW_MS);
