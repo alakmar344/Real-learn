@@ -1,0 +1,156 @@
+// Two-tier lesson cache — a speed tactic that makes repeat questions instant.
+//
+// Tier 1: in-memory LRU — sub-millisecond hits on this instance.
+// Tier 2: MongoDB with a TTL index — survives restarts and is shared across
+//         instances, so any server in the fleet benefits from any other's work.
+//
+// A cached lesson was already moderated (regex + LLM) and schema-validated the
+// first time it was generated, so a cache hit legitimately skips Serper, the
+// Gemma generation call, AND both moderation passes — turning a ~20-60s
+// pipeline into a single lookup.
+//
+// TTL is deliberately modest (default 6 hours) because Part 3 of every lesson
+// is grounded in "what's happening in the real world right now".
+
+import crypto from "node:crypto";
+import { getDb } from "./mongodb.js";
+
+const DEFAULT_LESSON_CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
+const DEFAULT_LESSON_CACHE_MAX_MEMORY_ENTRIES = 200;
+const CACHE_COLLECTION = "lessonCache";
+
+function parsePositiveInt(value, fallbackValue) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallbackValue;
+}
+
+const LESSON_CACHE_TTL_MS = parsePositiveInt(
+  process.env.LESSON_CACHE_TTL_MS,
+  DEFAULT_LESSON_CACHE_TTL_MS
+);
+const LESSON_CACHE_MAX_MEMORY_ENTRIES = parsePositiveInt(
+  process.env.LESSON_CACHE_MAX_MEMORY_ENTRIES,
+  DEFAULT_LESSON_CACHE_MAX_MEMORY_ENTRIES
+);
+
+export function isLessonCacheEnabled() {
+  const raw = (process.env.LESSON_CACHE_ENABLED || "true").trim().toLowerCase();
+  return !["false", "0", "off", "no"].includes(raw);
+}
+
+// Insertion-ordered Map used as an LRU: reads re-insert, writes evict oldest.
+const memoryCache = new Map();
+
+function memoryGet(key) {
+  const entry = memoryCache.get(key);
+  if (!entry) return null;
+  if (entry.expiresAt <= Date.now()) {
+    memoryCache.delete(key);
+    return null;
+  }
+  // Refresh recency.
+  memoryCache.delete(key);
+  memoryCache.set(key, entry);
+  return entry.lesson;
+}
+
+function memorySet(key, lesson, expiresAt) {
+  if (memoryCache.has(key)) memoryCache.delete(key);
+  memoryCache.set(key, { lesson, expiresAt });
+  while (memoryCache.size > LESSON_CACHE_MAX_MEMORY_ENTRIES) {
+    const oldestKey = memoryCache.keys().next().value;
+    memoryCache.delete(oldestKey);
+  }
+}
+
+/**
+ * Deterministic cache key for a lesson request. Case and extra whitespace in
+ * the question don't change the key, so trivially different phrasings of the
+ * exact same question still hit the cache.
+ */
+export function lessonCacheKey(question, language, level) {
+  const normalizedQuestion = String(question ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+  const material = `${normalizedQuestion}|${language ?? ""}|${level ?? ""}`;
+  return crypto.createHash("sha256").update(material).digest("hex");
+}
+
+let ttlIndexEnsured = false;
+async function ensureTtlIndex(db) {
+  if (ttlIndexEnsured) return;
+  ttlIndexEnsured = true;
+  try {
+    await db
+      .collection(CACHE_COLLECTION)
+      .createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+    await db.collection(CACHE_COLLECTION).createIndex({ key: 1 }, { unique: true });
+  } catch (error) {
+    // Index creation failing must never break lesson generation.
+    ttlIndexEnsured = false;
+    console.warn("[lessonCache] Failed to ensure indexes", error?.message);
+  }
+}
+
+/**
+ * Look up a cached lesson. Never throws — any storage error degrades to a
+ * cache miss so the normal generation path takes over.
+ */
+export async function getCachedLesson(key) {
+  if (!isLessonCacheEnabled()) return null;
+
+  const fromMemory = memoryGet(key);
+  if (fromMemory) {
+    console.log("[lessonCache] Memory hit", { key: key.slice(0, 12) });
+    return fromMemory;
+  }
+
+  try {
+    const db = await getDb();
+    const doc = await db.collection(CACHE_COLLECTION).findOne({ key });
+    if (!doc?.lesson) return null;
+    const expiresAt = doc.expiresAt instanceof Date ? doc.expiresAt.getTime() : 0;
+    if (expiresAt <= Date.now()) return null; // TTL monitor may lag; enforce here.
+    memorySet(key, doc.lesson, expiresAt);
+    console.log("[lessonCache] Mongo hit", { key: key.slice(0, 12) });
+    return doc.lesson;
+  } catch (error) {
+    console.warn("[lessonCache] Lookup failed; treating as miss", error?.message);
+    return null;
+  }
+}
+
+/**
+ * Store a fully validated lesson in both tiers. Fire-and-forget safe: all
+ * errors are swallowed after logging.
+ */
+export function setCachedLesson(key, lesson) {
+  if (!isLessonCacheEnabled() || !lesson) return;
+
+  const expiresAtMs = Date.now() + LESSON_CACHE_TTL_MS;
+  memorySet(key, lesson, expiresAtMs);
+
+  (async () => {
+    try {
+      const db = await getDb();
+      await ensureTtlIndex(db);
+      await db.collection(CACHE_COLLECTION).updateOne(
+        { key },
+        {
+          $set: {
+            key,
+            lesson,
+            expiresAt: new Date(expiresAtMs),
+            updatedAt: new Date(),
+          },
+          $setOnInsert: { createdAt: new Date() },
+        },
+        { upsert: true }
+      );
+      console.log("[lessonCache] Lesson stored", { key: key.slice(0, 12) });
+    } catch (error) {
+      console.warn("[lessonCache] Store failed (non-fatal)", error?.message);
+    }
+  })();
+}

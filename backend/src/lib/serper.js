@@ -5,6 +5,36 @@ const SERPER_TIMEOUT_MS =
   Number.isFinite(configuredSerperTimeoutMs) && configuredSerperTimeoutMs > 0
     ? configuredSerperTimeoutMs
     : DEFAULT_SERPER_TIMEOUT_MS;
+// Short-lived in-memory context cache: repeated questions (and client-side
+// retries of the same request) skip a whole network round-trip to Serper.
+const DEFAULT_SERPER_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+const configuredSerperCacheTtlMs = Number(process.env.SERPER_CACHE_TTL_MS);
+const SERPER_CACHE_TTL_MS =
+  Number.isFinite(configuredSerperCacheTtlMs) && configuredSerperCacheTtlMs > 0
+    ? configuredSerperCacheTtlMs
+    : DEFAULT_SERPER_CACHE_TTL_MS;
+const SERPER_CACHE_MAX_ENTRIES = 200;
+const contextCache = new Map();
+
+function contextCacheGet(cacheKey) {
+  const entry = contextCache.get(cacheKey);
+  if (!entry) return undefined;
+  if (entry.expiresAt <= Date.now()) {
+    contextCache.delete(cacheKey);
+    return undefined;
+  }
+  return entry.context;
+}
+
+function contextCacheSet(cacheKey, context) {
+  if (contextCache.has(cacheKey)) contextCache.delete(cacheKey);
+  contextCache.set(cacheKey, { context, expiresAt: Date.now() + SERPER_CACHE_TTL_MS });
+  while (contextCache.size > SERPER_CACHE_MAX_ENTRIES) {
+    const oldestKey = contextCache.keys().next().value;
+    contextCache.delete(oldestKey);
+  }
+}
+
 const SERPER_LANGUAGE_MAP = {
   bengali: "bn",
   english: "en",
@@ -37,6 +67,15 @@ export async function fetchRealWorldContext(topic, language) {
   try {
     const requestId = `serper-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const hl = normalizeSerperLanguage(language);
+    const cacheKey = `${hl}:${String(topic ?? "").trim().toLowerCase().replace(/\s+/g, " ")}`;
+    const cached = contextCacheGet(cacheKey);
+    if (cached !== undefined) {
+      console.log("[Serper] Cache hit; skipping network call", {
+        requestId,
+        hasContext: Boolean(cached),
+      });
+      return cached;
+    }
     console.log("[Serper] Request start", {
       requestId,
       topicLength: topic?.length ?? 0,
@@ -99,6 +138,7 @@ export async function fetchRealWorldContext(topic, language) {
 
     if (news.length === 0) {
       console.log("[Serper] No news items found");
+      contextCacheSet(cacheKey, null);
       return null;
     }
 
@@ -112,6 +152,7 @@ export async function fetchRealWorldContext(topic, language) {
       requestId,
       contextLength: context.length,
     });
+    contextCacheSet(cacheKey, context);
     return context;
   } catch (error) {
     console.error("[Serper] Context fetch failed with exception", error);

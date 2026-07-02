@@ -23,6 +23,11 @@ import {
   filterUserInput,
 } from "./lib/contentGuard.js";
 import { moderateText } from "./lib/moderation.js";
+import {
+  lessonCacheKey,
+  getCachedLesson,
+  setCachedLesson,
+} from "./lib/lessonCache.js";
 
 const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "1.0";
 const TERMS_OF_SERVICE_VERSION = process.env.TERMS_OF_SERVICE_VERSION || "1.0";
@@ -473,6 +478,28 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
     }
     return res.status(400).json({ error: inputFilter.reason });
   }
+
+  // SPEED TACTIC: two-tier lesson cache. Identical (question, language, level)
+  // requests are served instantly from memory/Mongo — no Serper, no Gemma, no
+  // LLM moderation (the cached lesson already passed every check when it was
+  // first generated). Cache hits also bypass the concurrency gate because they
+  // cost almost nothing.
+  const cacheKey = lessonCacheKey(question, language, level);
+  const cachedLesson = await getCachedLesson(cacheKey);
+  if (cachedLesson) {
+    console.log("[generate-lesson] Cache hit — serving instantly", { requestId });
+    res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
+    res.setHeader("Cache-Control", "no-cache, no-transform");
+    res.setHeader("Connection", "keep-alive");
+    res.setHeader("X-Accel-Buffering", "no");
+    res.flushHeaders();
+    res.write(`event: lesson\ndata: ${JSON.stringify(cachedLesson)}\n\n`);
+    res.write(`event: done\ndata: ${JSON.stringify({ ok: true })}\n\n`);
+    res.end();
+    recordLessonResult(true);
+    return;
+  }
+
   if (activeLessonRequests >= MAX_CONCURRENT_LESSON_REQUESTS) {
     console.warn("[generate-lesson] Busy: concurrency limit reached", {
       requestId,
@@ -618,6 +645,12 @@ Level: ${level}${
       rawLength: raw.length,
     });
 
+    // SPEED TACTIC: kick off the LLM output-moderation call immediately and
+    // let it run concurrently with the regex guard, JSON parsing, and schema
+    // validation below instead of blocking each step in sequence. moderateText
+    // never rejects (it fails open), so the floating promise is safe.
+    const outputModerationPromise = moderateText(raw, "output");
+
     const responseFilter = filterAIResponse(raw);
     if (!responseFilter.allowed) {
       const moderationEvent = {
@@ -643,30 +676,6 @@ Level: ${level}${
 
     if (finished) return;
 
-    // Second safety layer on the AI reply: LLM moderation in addition to the
-    // regex guard above. Fails open, so a moderation hiccup won't block a valid
-    // lesson — only a confident "block" verdict stops it.
-    const outputModeration = await moderateText(raw, "output");
-    if (finished) return;
-    if (!outputModeration.allowed) {
-      const moderationEvent = {
-        timestamp: new Date().toISOString(),
-        requestId,
-        clerkId: req.auth?.userId || null,
-        reason: outputModeration.reason,
-        type: "ai-response-moderated",
-      };
-      console.warn("[moderation] AI response blocked by LLM moderation", moderationEvent);
-      await logModerationEvent(moderationEvent);
-      sendEvent("error", {
-        error:
-          outputModeration.reason ||
-          "The generated content was flagged by our safety review. Please try a different question.",
-      });
-      recordLessonResult(false);
-      return;
-    }
-
     const parsed = parseJSON(raw);
     if (parsed === null) {
       console.warn("[generate-lesson] parseJSON returned null", { requestId });
@@ -687,6 +696,35 @@ Level: ${level}${
       recordLessonResult(false);
       return;
     }
+
+    // Second safety layer on the AI reply: LLM moderation in addition to the
+    // regex guard above. It ran concurrently with parsing/validation, so by
+    // now it is usually already resolved. Fails open, so a moderation hiccup
+    // won't block a valid lesson — only a confident "block" verdict stops it.
+    const outputModeration = await outputModerationPromise;
+    if (finished) return;
+    if (!outputModeration.allowed) {
+      const moderationEvent = {
+        timestamp: new Date().toISOString(),
+        requestId,
+        clerkId: req.auth?.userId || null,
+        reason: outputModeration.reason,
+        type: "ai-response-moderated",
+      };
+      console.warn("[moderation] AI response blocked by LLM moderation", moderationEvent);
+      await logModerationEvent(moderationEvent);
+      sendEvent("error", {
+        error:
+          outputModeration.reason ||
+          "The generated content was flagged by our safety review. Please try a different question.",
+      });
+      recordLessonResult(false);
+      return;
+    }
+
+    // Store the fully moderated + validated lesson so repeat requests are
+    // instant (fire-and-forget; failures are non-fatal).
+    setCachedLesson(cacheKey, normalized);
 
     console.log("[generate-lesson] Streaming final lesson", {
       requestId,
