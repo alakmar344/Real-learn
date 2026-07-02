@@ -1,8 +1,8 @@
 "use client";
 
 // "Listen to this answer" — reads a piece of lesson content aloud using the
-// browser's built-in text-to-speech (Web Speech API). Renders nothing when the
-// browser doesn't support speech synthesis.
+// browser's built-in text-to-speech (Web Speech API). Shows a disabled button
+// when the browser doesn't support speech synthesis.
 
 import { markdownToPlainText, speechLangFor, useTextToSpeech } from "@/hooks/useSpeech";
 
@@ -18,7 +18,31 @@ interface Props {
 export default function ListenButton({ text, language, label = "Listen to this section" }: Props) {
   const { supported, speaking, speak, stop } = useTextToSpeech();
 
-  if (!supported) return null;
+  if (!supported) {
+    return (
+      <span
+        aria-label="Read-aloud not supported in this browser"
+        title="Read-aloud requires Chrome, Edge, or Safari"
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          borderRadius: "var(--radius-sm)",
+          border: "1px solid var(--border-subtle)",
+          background: "transparent",
+          color: "var(--text-tertiary)",
+          padding: "4px 10px",
+          fontSize: 12,
+          fontWeight: 600,
+          opacity: 0.45,
+          cursor: "not-allowed",
+        }}
+      >
+        <span aria-hidden="true" style={{ fontSize: 13, lineHeight: 1 }}>🔊</span>
+        Listen
+      </span>
+    );
+  }
 
   return (
     <button
