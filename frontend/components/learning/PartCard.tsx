@@ -5,6 +5,8 @@ import remarkGfm from "remark-gfm";
 import { useReadingTimer } from "@/hooks/useReadingTimer";
 import { LessonPart } from "@/types";
 import SourceTag from "@/components/shared/SourceTag";
+import ListenButton from "@/components/shared/ListenButton";
+import { useLessonStore } from "@/store/lessonStore";
 
 const subjectColors: Record<string, string> = {
   Physics: "var(--subject-physics)",
@@ -37,6 +39,7 @@ export default function PartCard({
 }: Props) {
   const timer = useReadingTimer(isUnlocked && !isCompleted);
   const contentId = `part-${part.partNumber}-content`;
+  const lessonLanguage = useLessonStore((s) => s.lesson?.language);
 
   /* ── Collapsed completed state ── */
   if (isCompleted && isCollapsed) {
@@ -118,19 +121,28 @@ export default function PartCard({
           >
             PART {part.partNumber}
           </span>
-          <span
-            style={{
-              borderRadius: "var(--radius-sm)",
-              border: `1px solid color-mix(in srgb, ${subjectColors[part.subject] ?? "var(--subject-general)"} 30%, transparent)`,
-              background: `color-mix(in srgb, ${subjectColors[part.subject] ?? "var(--subject-general)"} 12%, transparent)`,
-              color: subjectColors[part.subject] ?? "var(--subject-general)",
-              padding: "4px 10px",
-              fontSize: 11,
-              fontWeight: 500,
-            }}
-          >
-            {part.subject}
-          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <span
+              style={{
+                borderRadius: "var(--radius-sm)",
+                border: `1px solid color-mix(in srgb, ${subjectColors[part.subject] ?? "var(--subject-general)"} 30%, transparent)`,
+                background: `color-mix(in srgb, ${subjectColors[part.subject] ?? "var(--subject-general)"} 12%, transparent)`,
+                color: subjectColors[part.subject] ?? "var(--subject-general)",
+                padding: "4px 10px",
+                fontSize: 11,
+                fontWeight: 500,
+              }}
+            >
+              {part.subject}
+            </span>
+            {isUnlocked ? (
+              <ListenButton
+                text={`${part.title}. ${part.content}`}
+                language={lessonLanguage}
+                label={`Listen to Part ${part.partNumber}`}
+              />
+            ) : null}
+          </div>
         </div>
 
         <h2 style={{ margin: "12px 0 0", fontSize: "clamp(20px, 4vw, 26px)", fontWeight: 600, fontFamily: "var(--font-playfair)" }}>

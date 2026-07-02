@@ -4,6 +4,8 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { SignInButton } from "@clerk/nextjs";
 import ExampleQuestions from "@/components/homepage/ExampleQuestions";
+import MicButton from "@/components/shared/MicButton";
+import { usePreferenceStore } from "@/store/preferenceStore";
 
 interface Props {
   question: string;
@@ -14,7 +16,9 @@ interface Props {
 export default function QuestionInput({ question, setQuestion, onSubmit }: Props) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [focused, setFocused] = useState(false);
+  const [interimSpeech, setInterimSpeech] = useState("");
   const { isSignedIn } = useAuth();
+  const language = usePreferenceStore((s) => s.language);
 
   useEffect(() => {
     const textarea = textareaRef.current;
@@ -71,6 +75,14 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
             fontFamily: "var(--font-lora)",
           }}
         />
+        {interimSpeech ? (
+          <p
+            aria-live="polite"
+            style={{ margin: "6px 0 0", fontSize: 13, color: "var(--text-tertiary)", fontStyle: "italic" }}
+          >
+            🎙 {interimSpeech}
+          </p>
+        ) : null}
       </div>
       <div
         style={{
@@ -83,7 +95,15 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
         }}
       >
         <ExampleQuestions />
-        {isSignedIn ? (
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <MicButton
+            language={language}
+            onTranscript={(text) =>
+              setQuestion(question.trim() ? `${question.trim()} ${text}` : text)
+            }
+            onInterim={setInterimSpeech}
+          />
+          {isSignedIn ? (
           <button
             type="submit"
             disabled={!question.trim()}
@@ -126,7 +146,8 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
               Sign in to Learn →
             </button>
           </SignInButton>
-        )}
+          )}
+        </div>
       </div>
     </form>
   );
