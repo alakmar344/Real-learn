@@ -7,6 +7,7 @@
 // moderation hiccup must never block a valid lesson. It only blocks when the
 // classifier explicitly and confidently says the content is harmful.
 
+import crypto from "node:crypto";
 import { parseJSON } from "./gemma.js";
 
 const GEMMA_API_ROOT = "https://generativelanguage.googleapis.com/v1beta/models";
@@ -19,6 +20,42 @@ const MODERATION_TIMEOUT_MS =
     : DEFAULT_MODERATION_TIMEOUT_MS;
 // Keep moderation input bounded so a huge payload can't blow up latency/cost.
 const MAX_MODERATION_INPUT_CHARS = 12000;
+
+// Verdict cache: identical text gets the same verdict without a second LLM
+// round-trip. This makes client retries and repeated questions noticeably
+// faster while keeping safety behavior identical (the verdict itself is what
+// gets cached, blocked or allowed).
+const DEFAULT_MODERATION_CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
+const configuredCacheTtlMs = Number(process.env.MODERATION_CACHE_TTL_MS);
+const MODERATION_CACHE_TTL_MS =
+  Number.isFinite(configuredCacheTtlMs) && configuredCacheTtlMs > 0
+    ? configuredCacheTtlMs
+    : DEFAULT_MODERATION_CACHE_TTL_MS;
+const MODERATION_CACHE_MAX_ENTRIES = 500;
+const verdictCache = new Map();
+
+function verdictCacheKey(kind, snippet) {
+  return crypto.createHash("sha256").update(`${kind}|${snippet}`).digest("hex");
+}
+
+function verdictCacheGet(key) {
+  const entry = verdictCache.get(key);
+  if (!entry) return null;
+  if (entry.expiresAt <= Date.now()) {
+    verdictCache.delete(key);
+    return null;
+  }
+  return entry.verdict;
+}
+
+function verdictCacheSet(key, verdict) {
+  if (verdictCache.has(key)) verdictCache.delete(key);
+  verdictCache.set(key, { verdict, expiresAt: Date.now() + MODERATION_CACHE_TTL_MS });
+  while (verdictCache.size > MODERATION_CACHE_MAX_ENTRIES) {
+    const oldestKey = verdictCache.keys().next().value;
+    verdictCache.delete(oldestKey);
+  }
+}
 
 function isModerationEnabled() {
   const raw = (process.env.MODERATION_ENABLED || "true").trim().toLowerCase();
@@ -68,6 +105,16 @@ export async function moderateText(text, kind = "input") {
       ? text.slice(0, MAX_MODERATION_INPUT_CHARS)
       : text;
   const label = kind === "output" ? "AI-generated lesson" : "student question";
+
+  const cacheKey = verdictCacheKey(kind, snippet);
+  const cachedVerdict = verdictCacheGet(cacheKey);
+  if (cachedVerdict) {
+    console.log("[moderation] Verdict cache hit; skipping LLM call", {
+      kind,
+      allowed: cachedVerdict.allowed,
+    });
+    return cachedVerdict;
+  }
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), MODERATION_TIMEOUT_MS);
@@ -125,16 +172,22 @@ export async function moderateText(text, kind = "input") {
         latencyMs: Date.now() - startedAt,
         reason: verdict.reason,
       });
-      return {
+      const blockedResult = {
         allowed: false,
         reason:
           typeof verdict.reason === "string" && verdict.reason.trim()
             ? verdict.reason.trim()
             : "This content was flagged by our safety review. Please try a different question.",
       };
+      // Only definitive verdicts are cached — fail-open results from errors or
+      // timeouts are never stored, so a hiccup can't be replayed from cache.
+      verdictCacheSet(cacheKey, blockedResult);
+      return blockedResult;
     }
 
-    return { allowed: true };
+    const allowedResult = { allowed: true };
+    verdictCacheSet(cacheKey, allowedResult);
+    return allowedResult;
   } catch (error) {
     if (error?.name === "AbortError") {
       console.warn("[moderation] Timed out; failing open", {

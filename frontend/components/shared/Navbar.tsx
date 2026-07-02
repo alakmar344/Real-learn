@@ -46,8 +46,8 @@ export default function Navbar({ compact = false }: Props) {
             aria-hidden="true"
             style={{ width: 40, height: "auto" }}
           >
-            <rect width="120" height="40" rx="8" fill="#1a3a5c" />
-            <text x="10" y="27" fontFamily="Inter, sans-serif" fontWeight="800" fontSize="18" fill="#faf7f2">
+            <rect width="120" height="40" rx="8" fill="var(--accent)" />
+            <text x="10" y="27" fontFamily="Inter, sans-serif" fontWeight="800" fontSize="18" fill="var(--on-accent)">
               RL
             </text>
           </svg>

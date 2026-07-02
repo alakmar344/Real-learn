@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import MicButton from "@/components/shared/MicButton";
+import { usePreferenceStore } from "@/store/preferenceStore";
 
 interface Props {
   onSubmit: (question: string) => Promise<void>;
@@ -9,6 +11,8 @@ interface Props {
 export default function FollowUpBox({ onSubmit }: Props) {
   const [value, setValue] = useState("");
   const [loading, setLoading] = useState(false);
+  const [interimSpeech, setInterimSpeech] = useState("");
+  const language = usePreferenceStore((s) => s.language);
 
   return (
     <section
@@ -48,6 +52,22 @@ export default function FollowUpBox({ onSubmit }: Props) {
           fontSize: 14,
         }}
       />
+      {interimSpeech ? (
+        <p
+          aria-live="polite"
+          style={{ margin: "6px 0 0", fontSize: 13, color: "var(--text-tertiary)", fontStyle: "italic" }}
+        >
+          🎙 {interimSpeech}
+        </p>
+      ) : null}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10 }}>
+        <MicButton
+          language={language}
+          onTranscript={(text) =>
+            setValue((current) => (current.trim() ? `${current.trim()} ${text}` : text))
+          }
+          onInterim={setInterimSpeech}
+        />
       <button
         type="button"
         disabled={loading || !value.trim()}
@@ -61,13 +81,13 @@ export default function FollowUpBox({ onSubmit }: Props) {
           setLoading(false);
         }}
         style={{
-          marginTop: 10,
+          marginTop: 0,
           border: "none",
           borderRadius: "var(--radius-md)",
           padding: "10px 16px",
           fontWeight: 600,
           background: loading || !value.trim() ? "var(--border-default)" : "var(--accent)",
-          color: loading || !value.trim() ? "var(--text-tertiary)" : "#faf7f2",
+          color: loading || !value.trim() ? "var(--text-tertiary)" : "var(--on-accent)",
           cursor: loading || !value.trim() ? "not-allowed" : "pointer",
           fontSize: 14,
           minHeight: 44,
@@ -76,6 +96,7 @@ export default function FollowUpBox({ onSubmit }: Props) {
       >
         {loading ? "Generating..." : "Teach Me More →"}
       </button>
+      </div>
     </section>
   );
 }

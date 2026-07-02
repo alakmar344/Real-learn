@@ -113,7 +113,7 @@ export default function ConfirmModal({
                 : "1px solid var(--accent)",
               borderRadius: "var(--radius-md)",
               background: destructive ? "var(--wrong-bg)" : "var(--accent)",
-              color: destructive ? "var(--wrong)" : "#faf7f2",
+              color: destructive ? "var(--wrong)" : "var(--on-accent)",
               padding: "10px 18px",
               cursor: "pointer",
               fontSize: 14,

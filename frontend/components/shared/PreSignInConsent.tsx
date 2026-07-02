@@ -75,8 +75,8 @@ export default function PreSignInConsent() {
               user?.primaryEmailAddress?.emailAddress ||
               user?.emailAddresses?.[0]?.emailAddress ||
               "",
-            privacyVersion: "1.0",
-            termsVersion: "1.0",
+            privacyVersion: "1.1",
+            termsVersion: "1.1",
           }),
         });
       } catch {
@@ -199,7 +199,7 @@ export default function PreSignInConsent() {
                 padding: "10px 20px",
                 fontSize: 14,
                 fontWeight: 600,
-                color: "#faf7f2",
+                color: "var(--on-accent)",
                 background: "var(--accent)",
                 cursor: loading ? "not-allowed" : "pointer",
                 opacity: loading ? 0.6 : 1,
@@ -290,7 +290,7 @@ export default function PreSignInConsent() {
                 padding: "10px 20px",
                 fontSize: 14,
                 fontWeight: 600,
-                color: "#faf7f2",
+                color: "var(--on-accent)",
                 background: "var(--accent)",
                 cursor: "pointer",
                 minHeight: 44,

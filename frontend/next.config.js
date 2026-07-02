@@ -16,9 +16,11 @@ const nextConfig = {
           { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
           { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
           {
+            // microphone=(self) is required for the voice-input (speech
+            // recognition) feature; everything else stays fully denied.
             key: "Permissions-Policy",
             value:
-              "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+              "camera=(), microphone=(self), geolocation=(), interest-cohort=()",
           },
           {
             key: "Strict-Transport-Security",

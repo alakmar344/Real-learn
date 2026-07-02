@@ -22,7 +22,7 @@ export default function SkipToContent() {
         el.style.zIndex = "9999";
         el.style.padding = "8px 16px";
         el.style.background = "var(--accent)";
-        el.style.color = "#faf7f2";
+        el.style.color = "var(--on-accent)";
         el.style.borderRadius = "var(--radius-md)";
         el.style.textDecoration = "none";
         el.style.fontWeight = "600";

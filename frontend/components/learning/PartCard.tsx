@@ -5,6 +5,8 @@ import remarkGfm from "remark-gfm";
 import { useReadingTimer } from "@/hooks/useReadingTimer";
 import { LessonPart } from "@/types";
 import SourceTag from "@/components/shared/SourceTag";
+import ListenButton from "@/components/shared/ListenButton";
+import { useLessonStore } from "@/store/lessonStore";
 
 const subjectColors: Record<string, string> = {
   Physics: "var(--subject-physics)",
@@ -37,6 +39,7 @@ export default function PartCard({
 }: Props) {
   const timer = useReadingTimer(isUnlocked && !isCompleted);
   const contentId = `part-${part.partNumber}-content`;
+  const lessonLanguage = useLessonStore((s) => s.lesson?.language);
 
   /* ── Collapsed completed state ── */
   if (isCompleted && isCollapsed) {
@@ -87,7 +90,7 @@ export default function PartCard({
         aria-hidden="true"
         style={{
           height: 3,
-          background: "var(--accent)",
+          background: "var(--accent-gradient)",
           borderRadius: "var(--radius-lg) var(--radius-lg) 0 0",
           margin: "calc(-1 * clamp(16px, 4vw, 32px)) calc(-1 * clamp(16px, 4vw, 32px)) 0",
         }}
@@ -118,19 +121,28 @@ export default function PartCard({
           >
             PART {part.partNumber}
           </span>
-          <span
-            style={{
-              borderRadius: "var(--radius-sm)",
-              border: `1px solid color-mix(in srgb, ${subjectColors[part.subject] ?? "var(--subject-general)"} 30%, transparent)`,
-              background: `color-mix(in srgb, ${subjectColors[part.subject] ?? "var(--subject-general)"} 12%, transparent)`,
-              color: subjectColors[part.subject] ?? "var(--subject-general)",
-              padding: "4px 10px",
-              fontSize: 11,
-              fontWeight: 500,
-            }}
-          >
-            {part.subject}
-          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <span
+              style={{
+                borderRadius: "var(--radius-sm)",
+                border: `1px solid color-mix(in srgb, ${subjectColors[part.subject] ?? "var(--subject-general)"} 30%, transparent)`,
+                background: `color-mix(in srgb, ${subjectColors[part.subject] ?? "var(--subject-general)"} 12%, transparent)`,
+                color: subjectColors[part.subject] ?? "var(--subject-general)",
+                padding: "4px 10px",
+                fontSize: 11,
+                fontWeight: 500,
+              }}
+            >
+              {part.subject}
+            </span>
+            {isUnlocked ? (
+              <ListenButton
+                text={`${part.title}. ${part.content}`}
+                language={lessonLanguage}
+                label={`Listen to Part ${part.partNumber}`}
+              />
+            ) : null}
+          </div>
         </div>
 
         <h2 style={{ margin: "12px 0 0", fontSize: "clamp(20px, 4vw, 26px)", fontWeight: 600, fontFamily: "var(--font-playfair)" }}>
@@ -191,7 +203,7 @@ export default function PartCard({
                   borderRadius: "var(--radius-md)",
                   border: "none",
                   background: "var(--accent)",
-                  color: "#faf7f2",
+                  color: "var(--on-accent)",
                   fontSize: "var(--text-base)",
                   fontWeight: 700,
                   cursor: "pointer",
@@ -238,7 +250,7 @@ export default function PartCard({
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            background: "rgba(245,240,232,0.85)",
+            background: "var(--bg-glass)",
             backdropFilter: "blur(6px)",
             zIndex: 10,
           }}
