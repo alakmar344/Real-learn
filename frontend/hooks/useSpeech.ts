@@ -3,8 +3,7 @@
 // Browser speech utilities:
 // - useTextToSpeech: reads text aloud via the Web Speech API (speechSynthesis)
 // - useSpeechRecognition: voice input via the Web Speech API (SpeechRecognition)
-// Both degrade gracefully — `supported` is false where the APIs are missing,
-// so callers can simply hide their buttons.
+// Both degrade gracefully — `supported` is false where the APIs are missing.
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Language } from "@/types";
@@ -62,15 +61,65 @@ function chunkForSpeech(text: string, maxLen = 200): string[] {
   return chunks;
 }
 
+/**
+ * Score a SpeechSynthesisVoice by how natural / high-quality it sounds.
+ * Higher = better. Heuristics tuned for Chrome, Edge, Safari desktop.
+ */
+function scoreVoice(voice: SpeechSynthesisVoice, targetLang: string): number {
+  let score = 0;
+  const name = voice.name.toLowerCase();
+  const lang = voice.lang;
+
+  // Exact language match beats prefix match.
+  if (lang === targetLang) score += 30;
+  else if (lang.startsWith(targetLang.split("-")[0])) score += 10;
+
+  // Premium / neural voice providers — these sound dramatically more human.
+  if (name.includes("google")) score += 25;          // Google neural voices (Chrome)
+  if (name.includes("microsoft")) score += 20;       // Microsoft Edge natural voices
+  if (name.includes("apple")) score += 18;           // Apple enhanced / Siri voices (Safari)
+  if (name.includes("natural")) score += 15;
+  if (name.includes("neural")) score += 15;
+  if (name.includes("enhanced")) score += 12;
+  if (name.includes("premium")) score += 12;
+  if (name.includes("wavenet")) score += 20;
+  if (name.includes("journey")) score += 18;         // Google Journey voices
+  if (name.includes("studio")) score += 16;          // Google Studio voices
+
+  // Penalize obviously low-quality voices.
+  if (name.includes("compact")) score -= 10;
+  if (name.includes("basic")) score -= 8;
+
+  return score;
+}
+
+function pickBestVoice(voices: SpeechSynthesisVoice[], lang: string): SpeechSynthesisVoice | null {
+  if (!voices.length) return null;
+  const langBase = lang.split("-")[0];
+  // Only consider voices that match the target language (exact or prefix).
+  const candidates = voices.filter(
+    (v) => v.lang === lang || v.lang.startsWith(langBase),
+  );
+  if (!candidates.length) return null;
+  return candidates.reduce((best, v) =>
+    scoreVoice(v, lang) > scoreVoice(best, lang) ? v : best,
+  );
+}
+
 export function useTextToSpeech() {
   const [supported, setSupported] = useState(false);
   const [speaking, setSpeaking] = useState(false);
-  // Incremented on every speak()/stop() so stale utterance callbacks from a
-  // cancelled session can't clobber the state of a newer one.
   const sessionRef = useRef(0);
 
   useEffect(() => {
     setSupported(typeof window !== "undefined" && "speechSynthesis" in window);
+    // Pre-load voices (Chrome loads them asynchronously).
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+      };
+    }
     return () => {
       sessionRef.current += 1;
       if (typeof window !== "undefined" && "speechSynthesis" in window) {
@@ -96,10 +145,7 @@ export function useTextToSpeech() {
     const cleaned = text.trim();
     if (!cleaned) return;
 
-    const voices = synth.getVoices();
-    const exactVoice = voices.find((v) => v.lang === lang);
-    const prefixVoice = voices.find((v) => v.lang.startsWith(lang.split("-")[0]));
-    const voice = exactVoice ?? prefixVoice ?? null;
+    const voice = pickBestVoice(synth.getVoices(), lang);
 
     const chunks = chunkForSpeech(cleaned);
     setSpeaking(true);
@@ -107,7 +153,10 @@ export function useTextToSpeech() {
       const utterance = new SpeechSynthesisUtterance(chunk);
       utterance.lang = lang;
       if (voice) utterance.voice = voice;
-      utterance.rate = 1;
+      // Slightly slower rate + subtle pitch lift makes speech sound far more
+      // human compared to the default flat robot voice at rate 1.
+      utterance.rate = 0.88;
+      utterance.pitch = 1.04;
       utterance.onerror = () => {
         if (sessionRef.current === session) setSpeaking(false);
       };
@@ -129,7 +178,14 @@ interface UseSpeechRecognitionOptions {
 }
 
 export function useSpeechRecognition({ lang, onResult }: UseSpeechRecognitionOptions) {
-  const [supported, setSupported] = useState(false);
+  // Check support synchronously on first client render so the button never
+  // flashes from hidden → visible (which also causes layout shift).
+  const [supported] = useState(() => {
+    if (typeof window === "undefined") return false;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const w = window as any;
+    return Boolean(w.SpeechRecognition || w.webkitSpeechRecognition);
+  });
   const [listening, setListening] = useState(false);
   const [interimTranscript, setInterimTranscript] = useState("");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -140,10 +196,6 @@ export function useSpeechRecognition({ lang, onResult }: UseSpeechRecognitionOpt
   langRef.current = lang;
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const w = window as any;
-    setSupported(Boolean(w.SpeechRecognition || w.webkitSpeechRecognition));
     return () => {
       recognitionRef.current?.abort?.();
       recognitionRef.current = null;
@@ -187,7 +239,6 @@ export function useSpeechRecognition({ lang, onResult }: UseSpeechRecognitionOpt
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recognition.onerror = (event: any) => {
       console.warn("[useSpeechRecognition] error", event?.error);
-      // onend fires afterwards and handles cleanup.
     };
 
     recognitionRef.current = recognition;
