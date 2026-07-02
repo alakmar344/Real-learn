@@ -13,7 +13,7 @@ interface Props {
 
 /* ── Confetti particles ── */
 const CONFETTI_COLORS = [
-  "#1a3a5c",
+  "var(--accent)",
   "var(--correct)",
   "#3b82f6",
   "#ec4899",
@@ -196,7 +196,7 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
               border: "none",
               borderRadius: "var(--radius-md)",
               background: "var(--accent)",
-              color: "#faf7f2",
+              color: "var(--on-accent)",
               padding: "10px 18px",
               cursor: "pointer",
               fontSize: 14,

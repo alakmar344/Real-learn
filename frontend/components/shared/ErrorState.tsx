@@ -47,7 +47,7 @@ export default function ErrorState({ message, onRetry, onHome }: Props) {
                 border: "none",
                 borderRadius: "var(--radius-md)",
                 background: "var(--accent)",
-                color: "#faf7f2",
+                color: "var(--on-accent)",
                 padding: "10px 20px",
                 fontSize: 14,
                 fontWeight: 700,

@@ -62,8 +62,8 @@ export default function Sidebar({ open, onClose }: Props) {
             }}
           >
             <svg viewBox="0 0 120 40" fill="none" aria-hidden="true" style={{ width: 36, height: "auto" }}>
-              <rect width="120" height="40" rx="8" fill="#1a3a5c" />
-              <text x="10" y="27" fontFamily="Inter, sans-serif" fontWeight="800" fontSize="18" fill="#faf7f2">
+              <rect width="120" height="40" rx="8" fill="var(--accent)" />
+              <text x="10" y="27" fontFamily="Inter, sans-serif" fontWeight="800" fontSize="18" fill="var(--on-accent)">
                 RL
               </text>
             </svg>
@@ -96,7 +96,7 @@ export default function Sidebar({ open, onClose }: Props) {
               borderRadius: "var(--radius-md)",
               padding: "10px 14px",
               background: "var(--accent)",
-              color: "#faf7f2",
+              color: "var(--on-accent)",
               fontWeight: 700,
               fontSize: 14,
               cursor: "pointer",

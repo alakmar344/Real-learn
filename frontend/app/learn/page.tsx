@@ -176,7 +176,7 @@ export default function LearnPage() {
                 borderRadius: "var(--radius-md)",
                 padding: "12px 24px",
                 background: "var(--accent)",
-                color: "#faf7f2",
+                color: "var(--on-accent)",
                 fontWeight: 700,
                 fontSize: 15,
                 cursor: "pointer",

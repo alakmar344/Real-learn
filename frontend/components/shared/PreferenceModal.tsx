@@ -279,7 +279,7 @@ export default function PreferenceModal({ open, onClose }: Props) {
               border: "none",
               borderRadius: "var(--radius-md)",
               background: "var(--accent)",
-              color: "#faf7f2",
+              color: "var(--on-accent)",
               padding: "10px 18px",
               cursor: saving ? "not-allowed" : "pointer",
               fontSize: 14,

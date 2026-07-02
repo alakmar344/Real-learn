@@ -65,7 +65,7 @@ function XpChip({ item }: { item: Extract<Celebration, { kind: "xp" }> }) {
         className="animate-xp-pop"
         style={{
           background: "var(--accent)",
-          color: "#faf7f2",
+          color: "var(--on-accent)",
           borderRadius: 999,
           padding: "7px 16px",
           fontWeight: 800,

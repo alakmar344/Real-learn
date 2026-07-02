@@ -90,7 +90,7 @@ export default function PartCard({
         aria-hidden="true"
         style={{
           height: 3,
-          background: "var(--accent)",
+          background: "var(--accent-gradient)",
           borderRadius: "var(--radius-lg) var(--radius-lg) 0 0",
           margin: "calc(-1 * clamp(16px, 4vw, 32px)) calc(-1 * clamp(16px, 4vw, 32px)) 0",
         }}
@@ -203,7 +203,7 @@ export default function PartCard({
                   borderRadius: "var(--radius-md)",
                   border: "none",
                   background: "var(--accent)",
-                  color: "#faf7f2",
+                  color: "var(--on-accent)",
                   fontSize: "var(--text-base)",
                   fontWeight: 700,
                   cursor: "pointer",
@@ -250,7 +250,7 @@ export default function PartCard({
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            background: "rgba(245,240,232,0.85)",
+            background: "var(--bg-glass)",
             backdropFilter: "blur(6px)",
             zIndex: 10,
           }}

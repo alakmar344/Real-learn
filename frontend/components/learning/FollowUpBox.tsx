@@ -87,7 +87,7 @@ export default function FollowUpBox({ onSubmit }: Props) {
           padding: "10px 16px",
           fontWeight: 600,
           background: loading || !value.trim() ? "var(--border-default)" : "var(--accent)",
-          color: loading || !value.trim() ? "var(--text-tertiary)" : "#faf7f2",
+          color: loading || !value.trim() ? "var(--text-tertiary)" : "var(--on-accent)",
           cursor: loading || !value.trim() ? "not-allowed" : "pointer",
           fontSize: 14,
           minHeight: 44,

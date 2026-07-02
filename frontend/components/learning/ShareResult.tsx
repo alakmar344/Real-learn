@@ -299,7 +299,7 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
     border: primary ? "none" : "1px solid var(--border-default)",
     borderRadius: "var(--radius-md)",
     background: primary ? "var(--accent)" : "transparent",
-    color: primary ? "#faf7f2" : "var(--text-secondary)",
+    color: primary ? "var(--on-accent)" : "var(--text-secondary)",
     padding: "10px 18px",
     cursor: "pointer",
     fontSize: 14,

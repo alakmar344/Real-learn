@@ -175,7 +175,7 @@ export default function CookieConsent() {
               padding: "8px 16px",
               fontSize: 13,
               fontWeight: 600,
-              color: "#faf7f2",
+              color: "var(--on-accent)",
               background: "var(--accent)",
               cursor: loading ? "not-allowed" : "pointer",
               opacity: loading ? 0.6 : 1,
