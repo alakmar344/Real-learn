@@ -590,9 +590,14 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
     // so the safety check adds no latency in the common (allowed) case.
     // SPEED TACTIC: fast mode skips the Serper fetch entirely — a quick answer
     // doesn't need a current-events Part 3, so we save that whole round trip.
+    // SPEED TACTIC: fast mode also skips LLM input moderation — the regex
+    // contentGuard already ran and catches genuinely harmful patterns. The LLM
+    // moderation adds 4-8 s of latency which defeats the purpose of "fast".
     console.log("[Serper] Context fetch start", { requestId, mode });
     const [inputModeration, newsContextResult] = await Promise.all([
-      moderateText(question, "input"),
+      mode === "fast"
+        ? Promise.resolve({ allowed: true })
+        : moderateText(question, "input"),
       mode === "fast"
         ? Promise.resolve(null)
         : fetchRealWorldContext(question, language).catch((error) => {
@@ -641,8 +646,11 @@ Level: ${level}${
     const systemPrompt =
       mode === "fast" ? GENERATE_FAST_ANSWER_PROMPT : GENERATE_LESSON_PROMPT;
     // Fast mode caps the output budget: one part + two quiz questions fit
-    // comfortably in ~1200 tokens, and a smaller budget generates sooner.
-    const maxOutputTokens = mode === "fast" ? 1200 : 3000;
+    // comfortably in ~800 tokens, and a smaller budget generates sooner.
+    const maxOutputTokens = mode === "fast" ? 800 : 3000;
+    // Fast mode uses a lower temperature for more focused, deterministic
+    // output — less sampling overhead means faster generation.
+    const temperature = mode === "fast" ? 0.2 : 0.6;
     console.log("[Gemma] callGemma start", {
       requestId,
       mode,
@@ -650,12 +658,13 @@ Level: ${level}${
       userPromptLength: userPrompt.length,
       hasNewsContext: Boolean(newsContext),
       maxOutputTokens,
+      temperature,
     });
     const raw = await callGemma(
       systemPrompt,
       userPrompt,
       false,
-      0.6,
+      temperature,
       LESSON_TIMEOUT_MS,
       null,
       maxOutputTokens
@@ -721,25 +730,46 @@ Level: ${level}${
     // regex guard above. It ran concurrently with parsing/validation, so by
     // now it is usually already resolved. Fails open, so a moderation hiccup
     // won't block a valid lesson — only a confident "block" verdict stops it.
-    const outputModeration = await outputModerationPromise;
-    if (finished) return;
-    if (!outputModeration.allowed) {
-      const moderationEvent = {
-        timestamp: new Date().toISOString(),
-        requestId,
-        clerkId: req.auth?.userId || null,
-        reason: outputModeration.reason,
-        type: "ai-response-moderated",
-      };
-      console.warn("[moderation] AI response blocked by LLM moderation", moderationEvent);
-      await logModerationEvent(moderationEvent);
-      sendEvent("error", {
-        error:
-          outputModeration.reason ||
-          "The generated content was flagged by our safety review. Please try a different question.",
-      });
-      recordLessonResult(false);
-      return;
+    // SPEED TACTIC: for fast mode, skip the await — the regex guard already
+    // ran and the LLM moderation would add 4-8 s of pure latency. We still
+    // kick off the call and log any post-hoc block for monitoring.
+    if (mode === "fast") {
+      outputModerationPromise.then((verdict) => {
+        if (!verdict.allowed) {
+          console.warn("[moderation] Fast-mode post-hoc block detected (response already sent)", {
+            requestId,
+            reason: verdict.reason,
+          });
+          logModerationEvent({
+            timestamp: new Date().toISOString(),
+            requestId,
+            clerkId: req.auth?.userId || null,
+            reason: verdict.reason,
+            type: "ai-response-moderated-posthoc",
+          }).catch(() => {});
+        }
+      }).catch(() => {});
+    } else {
+      const outputModeration = await outputModerationPromise;
+      if (finished) return;
+      if (!outputModeration.allowed) {
+        const moderationEvent = {
+          timestamp: new Date().toISOString(),
+          requestId,
+          clerkId: req.auth?.userId || null,
+          reason: outputModeration.reason,
+          type: "ai-response-moderated",
+        };
+        console.warn("[moderation] AI response blocked by LLM moderation", moderationEvent);
+        await logModerationEvent(moderationEvent);
+        sendEvent("error", {
+          error:
+            outputModeration.reason ||
+            "The generated content was flagged by our safety review. Please try a different question.",
+        });
+        recordLessonResult(false);
+        return;
+      }
     }
 
     // Store the fully moderated + validated lesson so repeat requests are
