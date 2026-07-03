@@ -237,6 +237,12 @@ export async function callGemma(
 
       try {
         const startedAt = Date.now();
+        console.log("==== GEMMA DEBUG ====");
+        console.log("MODEL:", model);
+        console.log("API KEY START:", apiKey?.slice(0, 10));
+        console.log("API KEY LENGTH:", apiKey?.length);
+        console.log("URL:", `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`);
+        console.log("====================");
         const response = await fetch(buildGenerateUrl(model, apiKey), {
           method: "POST",
           headers: {
