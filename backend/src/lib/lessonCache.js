@@ -68,12 +68,12 @@ function memorySet(key, lesson, expiresAt) {
  * the question don't change the key, so trivially different phrasings of the
  * exact same question still hit the cache.
  */
-export function lessonCacheKey(question, language, level) {
+export function lessonCacheKey(question, language, level, mode = "explain") {
   const normalizedQuestion = String(question ?? "")
     .trim()
     .toLowerCase()
     .replace(/\s+/g, " ");
-  const material = `${normalizedQuestion}|${language ?? ""}|${level ?? ""}`;
+  const material = `${normalizedQuestion}|${language ?? ""}|${level ?? ""}|${mode ?? "explain"}`;
   return crypto.createHash("sha256").update(material).digest("hex");
 }
 

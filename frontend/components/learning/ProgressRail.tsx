@@ -1,11 +1,13 @@
 "use client";
 
 interface Props {
-  unlockedPart: 1 | 2 | 3;
+  unlockedPart: number;
   completedParts: number[];
+  /** Total parts in this journey — 1 for fast mode, 3 for explain mode. */
+  totalParts?: number;
 }
 
-function NodeIcon({ part, unlockedPart, completedParts }: { part: 1 | 2 | 3; unlockedPart: 1 | 2 | 3; completedParts: number[] }) {
+function NodeIcon({ part, unlockedPart, completedParts }: { part: number; unlockedPart: number; completedParts: number[] }) {
   const done = completedParts.includes(part);
   const active = !done && part <= unlockedPart;
 
@@ -14,7 +16,43 @@ function NodeIcon({ part, unlockedPart, completedParts }: { part: 1 | 2 | 3; unl
   return <span aria-hidden="true" style={{ color: "var(--text-tertiary)", fontSize: 14 }}>🔒</span>;
 }
 
-export default function ProgressRail({ unlockedPart, completedParts }: Props) {
+export default function ProgressRail({ unlockedPart, completedParts, totalParts = 3 }: Props) {
+  /* ── Fast mode: a single direct answer — show a light badge, not a rail ── */
+  if (totalParts <= 1) {
+    const done = completedParts.includes(1);
+    return (
+      <div
+        aria-label="Quick answer mode"
+        style={{
+          marginTop: varSpaceXl,
+          display: "flex",
+          justifyContent: "center",
+        }}
+      >
+        <span
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            padding: "6px 16px",
+            borderRadius: 999,
+            fontSize: 12,
+            fontWeight: 600,
+            letterSpacing: "0.04em",
+            color: done ? "var(--correct)" : "var(--accent)",
+            background: done ? "var(--correct-bg)" : "var(--accent-dim)",
+            border: `1px solid ${done ? "var(--correct)" : "var(--accent)"}`,
+          }}
+        >
+          <span aria-hidden="true">{done ? "✓" : "⚡"}</span>
+          {done ? "Quick answer mastered" : "Fast mode — one quick answer"}
+        </span>
+      </div>
+    );
+  }
+
+  const parts = Array.from({ length: totalParts }, (_, i) => i + 1);
+
   return (
     <nav
       aria-label="Learning progress"
@@ -26,7 +64,7 @@ export default function ProgressRail({ unlockedPart, completedParts }: Props) {
         alignItems: "flex-start",
       }}
     >
-      {[1, 2, 3].map((part, index) => {
+      {parts.map((part, index) => {
         const done = completedParts.includes(part);
         const active = !done && part <= unlockedPart;
         const locked = !done && !active;
@@ -58,7 +96,7 @@ export default function ProgressRail({ unlockedPart, completedParts }: Props) {
                       : "none",
                 }}
               >
-                <NodeIcon part={part as 1 | 2 | 3} unlockedPart={unlockedPart} completedParts={completedParts} />
+                <NodeIcon part={part} unlockedPart={unlockedPart} completedParts={completedParts} />
               </div>
               <span
                 style={{
@@ -71,7 +109,7 @@ export default function ProgressRail({ unlockedPart, completedParts }: Props) {
                 Part {part}
               </span>
             </div>
-            {index < 2 ? (
+            {index < parts.length - 1 ? (
               <div
                 aria-hidden="true"
                 style={{

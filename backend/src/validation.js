@@ -1,6 +1,16 @@
-const REQUIRED_PARTS_COUNT = 3;
-const REQUIRED_KEY_TAKEAWAYS_COUNT = 3;
 const REQUIRED_QUIZ_OPTIONS_COUNT = 4;
+
+// Per-mode structural expectations.
+// - "explain": the classic 3-part learning journey.
+// - "fast": one direct answer part, two quick takeaways.
+const MODE_RULES = {
+  explain: { partsCount: 3, keyTakeawaysCount: 3 },
+  fast: { partsCount: 1, keyTakeawaysCount: 2 },
+};
+
+export function getModeRules(mode) {
+  return MODE_RULES[mode] ?? MODE_RULES.explain;
+}
 
 function sortByPartNumber(a, b) {
   const aHasPartNumber = Number.isInteger(a?.partNumber) && a.partNumber > 0;
@@ -13,10 +23,11 @@ function sortByPartNumber(a, b) {
   return 0;
 }
 
-export function normalizeJourney(data) {
+export function normalizeJourney(data, mode = "explain") {
   if (!data || typeof data !== "object") return data;
+  const rules = getModeRules(mode);
 
-  const normalized = { ...data };
+  const normalized = { ...data, mode };
   if (!normalized.question && normalized.topic) {
     normalized.question = normalized.topic;
   }
@@ -25,7 +36,7 @@ export function normalizeJourney(data) {
     const normalizedParts = data.parts
       .filter((part) => part && typeof part === "object")
       .sort(sortByPartNumber)
-      .slice(0, REQUIRED_PARTS_COUNT)
+      .slice(0, rules.partsCount)
       .map((part, index) => ({
         ...part,
         partNumber: index + 1,
@@ -35,18 +46,20 @@ export function normalizeJourney(data) {
   }
 
   if (Array.isArray(data.keyTakeaways)) {
-    normalized.keyTakeaways = data.keyTakeaways.slice(0, REQUIRED_KEY_TAKEAWAYS_COUNT);
+    normalized.keyTakeaways = data.keyTakeaways.slice(0, rules.keyTakeawaysCount);
   }
 
   return normalized;
 }
 
-export function isValidJourney(data) {
+export function isValidJourney(data, mode = "explain") {
   if (!data || typeof data !== "object") return false;
-  if (!Array.isArray(data.parts) || data.parts.length !== REQUIRED_PARTS_COUNT) return false;
+  const rules = getModeRules(mode);
+  if (!Array.isArray(data.parts) || data.parts.length !== rules.partsCount) return false;
   if (
     !Array.isArray(data.keyTakeaways) ||
-    data.keyTakeaways.length !== REQUIRED_KEY_TAKEAWAYS_COUNT
+    data.keyTakeaways.length < 1 ||
+    data.keyTakeaways.length > rules.keyTakeawaysCount
   ) {
     return false;
   }

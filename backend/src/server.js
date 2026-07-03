@@ -8,7 +8,10 @@ import {
   GemmaCircuitOpenError,
   parseJSON,
 } from "./lib/gemma.js";
-import { GENERATE_LESSON_PROMPT } from "./lib/prompts.js";
+import {
+  GENERATE_LESSON_PROMPT,
+  GENERATE_FAST_ANSWER_PROMPT,
+} from "./lib/prompts.js";
 import { fetchRealWorldContext } from "./lib/serper.js";
 import { isValidJourney, normalizeJourney } from "./validation.js";
 import { getDb } from "./lib/mongodb.js";
@@ -447,11 +450,15 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
   const question = req.body?.question?.trim();
   const language = req.body?.language ?? "English";
   const level = req.body?.level ?? "Class 9-10";
+  // "fast" → one direct answer part, minimal latency (no Serper, smaller
+  // output budget). Anything else → the classic 3-part explanation journey.
+  const mode = req.body?.mode === "fast" ? "fast" : "explain";
   console.log("[generate-lesson] Incoming request", {
     requestId,
     questionLength: question?.length ?? 0,
     language,
     level,
+    mode,
     activeLessonRequests,
   });
 
@@ -484,7 +491,7 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
   // LLM moderation (the cached lesson already passed every check when it was
   // first generated). Cache hits also bypass the concurrency gate because they
   // cost almost nothing.
-  const cacheKey = lessonCacheKey(question, language, level);
+  const cacheKey = lessonCacheKey(question, language, level, mode);
   const cachedLesson = await getCachedLesson(cacheKey);
   if (cachedLesson) {
     console.log("[generate-lesson] Cache hit — serving instantly", { requestId });
@@ -581,16 +588,20 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
   try {
     // Run LLM input moderation concurrently with the real-world context fetch
     // so the safety check adds no latency in the common (allowed) case.
-    console.log("[Serper] Context fetch start", { requestId });
+    // SPEED TACTIC: fast mode skips the Serper fetch entirely — a quick answer
+    // doesn't need a current-events Part 3, so we save that whole round trip.
+    console.log("[Serper] Context fetch start", { requestId, mode });
     const [inputModeration, newsContextResult] = await Promise.all([
       moderateText(question, "input"),
-      fetchRealWorldContext(question, language).catch((error) => {
-        console.warn("[Serper] Context fetch failed, continuing without context", {
-          requestId,
-          error,
-        });
-        return null;
-      }),
+      mode === "fast"
+        ? Promise.resolve(null)
+        : fetchRealWorldContext(question, language).catch((error) => {
+            console.warn("[Serper] Context fetch failed, continuing without context", {
+              requestId,
+              error,
+            });
+            return null;
+          }),
     ]);
     const newsContext = newsContextResult;
     console.log("[Serper] Context fetch end", {
@@ -627,18 +638,27 @@ Level: ${level}${
         : ""
     }`;
 
+    const systemPrompt =
+      mode === "fast" ? GENERATE_FAST_ANSWER_PROMPT : GENERATE_LESSON_PROMPT;
+    // Fast mode caps the output budget: one part + two quiz questions fit
+    // comfortably in ~1200 tokens, and a smaller budget generates sooner.
+    const maxOutputTokens = mode === "fast" ? 1200 : 3000;
     console.log("[Gemma] callGemma start", {
       requestId,
+      mode,
       lessonTimeoutMs: LESSON_TIMEOUT_MS,
       userPromptLength: userPrompt.length,
       hasNewsContext: Boolean(newsContext),
+      maxOutputTokens,
     });
     const raw = await callGemma(
-      GENERATE_LESSON_PROMPT,
+      systemPrompt,
       userPrompt,
       false,
       0.6,
-      LESSON_TIMEOUT_MS
+      LESSON_TIMEOUT_MS,
+      null,
+      maxOutputTokens
     );
     console.log("[Gemma] callGemma success", {
       requestId,
@@ -685,8 +705,8 @@ Level: ${level}${
       recordLessonResult(false);
       return;
     }
-    const normalized = normalizeJourney(parsed);
-    if (!isValidJourney(normalized)) {
+    const normalized = normalizeJourney(parsed, mode);
+    if (!isValidJourney(normalized, mode)) {
       console.warn("[generate-lesson] normalizeJourney/isValidJourney failed", {
         requestId,
       });

@@ -2,7 +2,9 @@
 
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { Theme, Language, Level } from "@/types";
+import { Theme, Language, Level, LessonMode } from "@/types";
+
+const VALID_THEMES: Theme[] = ["light", "dark", "twilight"];
 
 function readExistingPreferences(): { theme?: Theme; language?: Language; level?: Level } {
   const result: { theme?: Theme; language?: Language; level?: Level } = {};
@@ -10,7 +12,7 @@ function readExistingPreferences(): { theme?: Theme; language?: Language; level?
     const themeRaw = localStorage.getItem("reallearn-theme");
     if (themeRaw) {
       const theme = JSON.parse(themeRaw) as Theme;
-      if (theme === "light" || theme === "dark") result.theme = theme;
+      if (VALID_THEMES.includes(theme)) result.theme = theme;
     }
 
     const journeyRaw = localStorage.getItem("reallearn-journey");
@@ -35,9 +37,11 @@ interface PreferenceStore {
   theme: Theme;
   language: Language;
   level: Level;
+  mode: LessonMode;
   setTheme: (theme: Theme) => void;
   setLanguage: (language: Language) => void;
   setLevel: (level: Level) => void;
+  setMode: (mode: LessonMode) => void;
 }
 
 function prefLog(action: string, details?: unknown) {
@@ -51,9 +55,14 @@ export const usePreferenceStore = create<PreferenceStore>()(
       theme: existing.theme ?? "light",
       language: existing.language ?? "English",
       level: existing.level ?? "Class 9-10",
+      mode: "fast",
       setTheme: (theme) => {
         prefLog("setTheme", { theme });
         set({ theme });
+      },
+      setMode: (mode) => {
+        prefLog("setMode", { mode });
+        set({ mode });
       },
       setLanguage: (language) => {
         prefLog("setLanguage", { language });

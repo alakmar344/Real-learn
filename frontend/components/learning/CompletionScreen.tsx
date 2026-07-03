@@ -63,13 +63,14 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
     return () => clearTimeout(id);
   }, []);
 
+  // 2 quiz questions per part — fast mode (1 part) is out of 2, explain (3 parts) out of 6.
+  const maxScore = (lesson.parts?.length ?? 3) * 2;
+
   /* Announce to screen readers */
   useEffect(() => {
     const el = document.getElementById("sr-live-region");
-    if (el) el.textContent = "Journey complete! Your score is " + totalScore + " out of 6.";
-  }, [totalScore]);
-
-  const maxScore = 6;
+    if (el) el.textContent = "Journey complete! Your score is " + totalScore + " out of " + maxScore + ".";
+  }, [totalScore, maxScore]);
   const pct = Math.round((totalScore / maxScore) * 100);
   const circumference = 2 * Math.PI * 42;
   const offset = circumference - (pct / 100) * circumference;
@@ -127,7 +128,9 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
 
         <div>
           <div style={{ fontSize: 36, marginBottom: 4 }}>🎉</div>
-          <h3 style={{ margin: 0, fontSize: 28, fontWeight: 600 }}>Journey Complete</h3>
+          <h3 style={{ margin: 0, fontSize: 28, fontWeight: 600 }}>
+            {(lesson.parts?.length ?? 3) === 1 ? "Quick Answer Mastered" : "Journey Complete"}
+          </h3>
           <p style={{ marginTop: 4, color: "var(--text-secondary)", fontSize: 14 }}>
             You scored <strong style={{ color: "var(--correct)" }}>{totalScore}/{maxScore}</strong> — {pct >= 80 ? "Excellent work!" : pct >= 50 ? "Good effort!" : "Keep practising!"}
           </p>

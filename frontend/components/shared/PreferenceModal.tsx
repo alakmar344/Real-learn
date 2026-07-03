@@ -1,23 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Theme, Language, Level } from "@/types";
+import { Language, Level } from "@/types";
 import { usePreferenceStore } from "@/store/preferenceStore";
+import { THEME_OPTIONS } from "@/lib/themes";
 
-const THEMES: { value: Theme; label: string; hint: string; swatch: string }[] = [
-  {
-    value: "light",
-    label: "Paper",
-    hint: "Warm cream — the classic textbook look",
-    swatch: "#f5f0e8",
-  },
-  {
-    value: "dark",
-    label: "Night",
-    hint: "Easy on the eyes for late-night study",
-    swatch: "#14110c",
-  },
-];
+const THEMES = THEME_OPTIONS;
 
 const LANGUAGES: Language[] = [
   "English",
@@ -156,7 +144,7 @@ export default function PreferenceModal({ open, onClose }: Props) {
                         width: 28,
                         height: 28,
                         borderRadius: "50%",
-                        background: opt.swatch,
+                        background: `linear-gradient(135deg, ${opt.swatch} 55%, ${opt.accent} 55%)`,
                         border: "1px solid var(--border-default)",
                         flexShrink: 0,
                       }}

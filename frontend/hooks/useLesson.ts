@@ -136,6 +136,7 @@ export function useLesson() {
   } = useLessonStore();
   const language = usePreferenceStore((s) => s.language);
   const level = usePreferenceStore((s) => s.level);
+  const mode = usePreferenceStore((s) => s.mode);
 
   const generateLesson = useCallback(
     async (question: string, navigate: boolean = true) => {
@@ -152,6 +153,7 @@ export function useLesson() {
         questionLength: normalized.length,
         language,
         level,
+        mode,
         backendUrl: trimmedBackendUrl,
       });
 
@@ -197,6 +199,7 @@ export function useLesson() {
               question: normalized,
               language,
               level,
+              mode,
             }),
           });
           refreshIdleTimeout();
@@ -376,7 +379,7 @@ export function useLesson() {
 
       setError(lastError instanceof Error ? lastError.message : "Failed to generate lesson");
     },
-    [getToken, language, level, router, setError, setLesson, setQuestion, startLoading]
+    [getToken, language, level, mode, router, setError, setLesson, setQuestion, startLoading]
   );
 
   const restart = useCallback(() => {

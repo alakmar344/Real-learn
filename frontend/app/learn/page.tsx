@@ -21,7 +21,7 @@ import { useLesson } from "@/hooks/useLesson";
 import { LessonJourney } from "@/types";
 
 export default function LearnPage() {
-  const [quizPart, setQuizPart] = useState<1 | 2 | 3 | null>(null);
+  const [quizPart, setQuizPart] = useState<number | null>(null);
   const [showUnlockFx, setShowUnlockFx] = useState(false);
 
   const {
@@ -52,8 +52,14 @@ export default function LearnPage() {
 
   const { generateLesson, restart } = useLesson();
 
+  const totalParts = lesson?.parts?.length ?? 3;
+  const isFastMode = totalParts === 1;
+
   const totalScore = useMemo(() => {
-    return (partScores[1] ?? 0) + (partScores[2] ?? 0) + (partScores[3] ?? 0);
+    return Object.values(partScores).reduce<number>(
+      (sum, score) => sum + (score ?? 0),
+      0
+    );
   }, [partScores]);
 
   const prevLessonRef = useRef<LessonJourney | null>(null);
@@ -209,6 +215,23 @@ export default function LearnPage() {
         >
           <Navbar compact />
           <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 12px" }}>
+            <span
+              style={{
+                display: "inline-block",
+                marginRight: 8,
+                padding: "2px 10px",
+                borderRadius: 999,
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: "0.05em",
+                color: "var(--accent)",
+                background: "var(--accent-dim)",
+                border: "1px solid var(--accent)",
+                verticalAlign: "middle",
+              }}
+            >
+              {isFastMode ? "⚡ FAST" : "📚 EXPLAIN"}
+            </span>
             <span style={{ fontSize: 12, color: "var(--text-tertiary)", marginRight: 8 }}>Understanding:</span>
             <span
               style={{
@@ -232,7 +255,7 @@ export default function LearnPage() {
         </div>
 
         <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 64px" }}>
-          <ProgressRail unlockedPart={unlockedPart} completedParts={completedParts} />
+          <ProgressRail unlockedPart={unlockedPart} completedParts={completedParts} totalParts={totalParts} />
 
           {lesson.parts.map((part) => (
             <PartCard
@@ -319,8 +342,15 @@ export default function LearnPage() {
                 language,
                 subject: activePart.subject,
               });
-              if (activePart.partNumber === 3) {
-                const finalTotal = (partScores[1] ?? 0) + (partScores[2] ?? 0) + score;
+              if (activePart.partNumber === totalParts) {
+                const finalTotal = lesson.parts.reduce(
+                  (sum, p) =>
+                    sum +
+                    (p.partNumber === activePart.partNumber
+                      ? score
+                      : partScores[p.partNumber] ?? 0),
+                  0
+                );
                 recordLessonCompleted({ totalScore: finalTotal, language });
               }
 
