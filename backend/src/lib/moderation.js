@@ -121,12 +121,11 @@ export async function moderateText(text, kind = "input") {
   const startedAt = Date.now();
   try {
     const response = await fetch(
-      `${GEMMA_API_ROOT}/${encodeURIComponent(MODERATION_MODEL)}:generateContent`,
+      `${GEMMA_API_ROOT}/${encodeURIComponent(MODERATION_MODEL)}:generateContent?key=${encodeURIComponent(apiKey)}`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-goog-api-key": apiKey,
         },
         body: JSON.stringify({
           system_instruction: { parts: [{ text: MODERATION_SYSTEM_PROMPT }] },

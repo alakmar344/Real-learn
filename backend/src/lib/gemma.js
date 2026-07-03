@@ -59,8 +59,8 @@ function parsePositiveInt(value, fallbackValue) {
     : fallbackValue;
 }
 
-function buildGenerateUrl(model) {
-  return `${GEMMA_API_ROOT}/${encodeURIComponent(model)}:generateContent`;
+function buildGenerateUrl(model, apiKey) {
+  return `${GEMMA_API_ROOT}/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
 }
 
 function stripThinkingTags(text) {
@@ -237,11 +237,10 @@ export async function callGemma(
 
       try {
         const startedAt = Date.now();
-        const response = await fetch(buildGenerateUrl(model), {
+        const response = await fetch(buildGenerateUrl(model, apiKey), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "x-goog-api-key": apiKey,
           },
           body: JSON.stringify(requestBody),
           signal: internalSignal,
