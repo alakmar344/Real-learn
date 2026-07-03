@@ -1,4 +1,5 @@
-const GEMMA_API_ROOT = "https://generativelanguage.googleapis.com/v1beta/models";
+import { GoogleGenerativeAI, GoogleGenerativeAIError, GoogleGenerativeAIFetchError, GoogleGenerativeAIResponseError, GoogleGenerativeAIAbortError } from "@google/generative-ai";
+
 const GEMMA_MODEL = process.env.GEMMA_MODEL || "gemma-4-26b-a4b-it";
 const DEFAULT_MAX_RETRIES = 2;
 const DEFAULT_RETRY_DELAY_MS = 700;
@@ -6,6 +7,20 @@ const DEFAULT_MAX_RETRY_DELAY_MS = 5000;
 const DEFAULT_TIMEOUT_CIRCUIT_FAILURE_THRESHOLD = 5;
 const DEFAULT_TIMEOUT_CIRCUIT_COOLDOWN_MS = 60000;
 const PARSE_JSON_LOG_PREVIEW_CHARS = 300;
+
+let genAI = null;
+
+function getGenAI() {
+  if (!genAI) {
+    const apiKey = process.env.GEMMA_API_KEY;
+    if (!apiKey) {
+      throw new Error("GEMMA_API_KEY is not configured");
+    }
+    genAI = new GoogleGenerativeAI(apiKey);
+  }
+  return genAI;
+}
+
 const timeoutCircuitState = {
   consecutiveTimeouts: 0,
   openUntil: 0,
@@ -57,10 +72,6 @@ function parsePositiveInt(value, fallbackValue) {
   return Number.isFinite(parsed) && Number.isInteger(parsed) && parsed > 0
     ? parsed
     : fallbackValue;
-}
-
-function buildGenerateUrl(model, apiKey) {
-  return `${GEMMA_API_ROOT}/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
 }
 
 function stripThinkingTags(text) {
@@ -131,6 +142,56 @@ function resetTimeoutCircuit() {
   timeoutCircuitState.openUntil = 0;
 }
 
+function normalizeSdkError(error) {
+  if (error instanceof GoogleGenerativeAIAbortError) {
+    return new GemmaTimeoutError(0);
+  }
+  if (error instanceof GoogleGenerativeAIFetchError) {
+    const details = Array.isArray(error.errorDetails)
+      ? error.errorDetails.map((d) => (typeof d === "string" ? d : JSON.stringify(d))).join(", ")
+      : String(error.errorDetails ?? "");
+    return new GemmaApiError(
+      error.status ?? 0,
+      error.statusText ?? "Unknown",
+      details || error.message
+    );
+  }
+  if (error instanceof GoogleGenerativeAIResponseError) {
+    const message = typeof error.response === "string" ? error.response : JSON.stringify(error.response);
+    return new Error(message || error.message);
+  }
+  if (error instanceof GoogleGenerativeAIError) {
+    return new Error(error.message);
+  }
+  return error;
+}
+
+function extractTextParts(candidate) {
+  const parts = candidate?.content?.parts;
+  if (!Array.isArray(parts)) {
+    return "";
+  }
+  return parts
+    .filter((p) => !p?.thought)
+    .map((p) => p?.text ?? "")
+    .join("");
+}
+
+function extractGroundingMetadata(candidate) {
+  const meta = candidate?.groundingMetadata;
+  if (!meta) return undefined;
+  const result = {};
+  if (Array.isArray(meta?.webSearchQueries)) {
+    result.webSearchQueries = meta.webSearchQueries;
+  }
+  if (Array.isArray(meta?.groundingChunks)) {
+    result.sources = meta.groundingChunks
+      .filter((c) => c?.web)
+      .map((c) => c.web?.uri);
+  }
+  return Object.keys(result).length > 0 ? result : undefined;
+}
+
 export async function callGemma(
   systemPrompt,
   userMessage,
@@ -178,28 +239,10 @@ export async function callGemma(
     timeoutCircuitCooldownMs,
     enableSearch,
     temperature,
-    systemPromptLength: systemPrompt?.length ?? 0,
+    systemPromptLength: sanitizedSystemPrompt?.length ?? 0,
     userMessageLength: userMessage?.length ?? 0,
   });
   assertTimeoutCircuitClosed();
-  const requestBody = {
-    system_instruction: {
-      parts: [{ text: sanitizedSystemPrompt }],
-    },
-    contents: [
-      {
-        role: "user",
-        parts: [{ text: userMessage }],
-      },
-    ],
-    generationConfig: {
-      temperature,
-      maxOutputTokens,
-    },
-  };
-  if (enableSearch) {
-    requestBody.tools = [{ googleSearch: {} }];
-  }
 
   let lastError = null;
 
@@ -237,20 +280,29 @@ export async function callGemma(
 
       try {
         const startedAt = Date.now();
-        console.log("==== GEMMA DEBUG ====");
-        console.log("MODEL:", model);
-        console.log("API KEY START:", apiKey?.slice(0, 10));
-        console.log("API KEY LENGTH:", apiKey?.length);
-        console.log("URL:", `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`);
-        console.log("====================");
-        const response = await fetch(buildGenerateUrl(model, apiKey), {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(requestBody),
-          signal: internalSignal,
+        console.log("[Gemma] SDK model", {
+          callId,
+          model,
+          attempt: attempt + 1,
         });
+
+        const genAIInstance = getGenAI();
+        const sdkModel = genAIInstance.getGenerativeModel({
+          model,
+          systemInstruction: sanitizedSystemPrompt,
+          tools: enableSearch ? [{ googleSearch: {} }] : undefined,
+          generationConfig: {
+            temperature,
+            maxOutputTokens,
+          },
+        });
+
+        const requestOptions = { signal: internalSignal };
+        const result = await sdkModel.generateContent(
+          userMessage,
+          requestOptions
+        );
+        const response = result.response;
 
         clearTimeout(timeoutId);
         removeParentAbortListener?.();
@@ -258,23 +310,20 @@ export async function callGemma(
           callId,
           model,
           attempt: attempt + 1,
-          status: response.status,
-          ok: response.ok,
+          candidatesCount: response?.candidates?.length ?? 0,
           latencyMs: Date.now() - startedAt,
         });
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new GemmaApiError(response.status, response.statusText, errorText);
-        }
-
-        const data = await response.json();
-
-        if (!data.candidates || data.candidates.length === 0) {
+        if (!response.candidates || response.candidates.length === 0) {
+          if (response.promptFeedback?.blockReason) {
+            throw new GoogleGenerativeAIResponseError(
+              `Response was blocked due to ${response.promptFeedback.blockReason}: ${response.promptFeedback.blockReasonMessage ?? ""}`
+            );
+          }
           throw new Error("No candidates returned from Gemma API");
         }
 
-        const candidate = data.candidates[0];
+        const candidate = response.candidates[0];
         const finishReason = candidate?.finishReason;
 
         if (finishReason === "SAFETY") {
@@ -289,35 +338,22 @@ export async function callGemma(
           );
         }
 
-        const parts = candidate?.content?.parts;
-
-        if (!Array.isArray(parts)) {
-          throw new Error("No valid content returned from Gemma API");
-        }
-
-        const text = parts
-          .filter((p) => !p?.thought)
-          .map((p) => p?.text ?? "")
-          .join("");
+        const text = extractTextParts(candidate);
         console.log("[Gemma] parsed candidate text", {
           callId,
           model,
           attempt: attempt + 1,
-          candidatesCount: data.candidates.length,
-          partsCount: parts.length,
+          candidatesCount: response.candidates.length,
           textLength: text.length,
         });
 
-        const meta = candidate?.groundingMetadata;
-        if (meta) {
-          if (meta?.webSearchQueries) {
-            console.log("[Gemma] Web search queries:", meta.webSearchQueries);
+        const grounding = extractGroundingMetadata(candidate);
+        if (grounding) {
+          if (grounding.webSearchQueries) {
+            console.log("[Gemma] Web search queries:", grounding.webSearchQueries);
           }
-          if (Array.isArray(meta?.groundingChunks)) {
-            const sources = meta.groundingChunks
-              .filter((c) => c?.web)
-              .map((c) => c.web?.uri);
-            console.log("[Gemma] Grounding sources:", sources);
+          if (grounding.sources) {
+            console.log("[Gemma] Grounding sources:", grounding.sources);
           }
         }
 
@@ -332,7 +368,7 @@ export async function callGemma(
         clearTimeout(timeoutId);
         removeParentAbortListener?.();
 
-        if (error.name === "AbortError") {
+        if (error instanceof GoogleGenerativeAIAbortError || (error instanceof Error && error.name === "AbortError")) {
           if (timeoutTriggered) {
             console.warn("[Gemma] request timed out", {
               callId,
@@ -340,7 +376,16 @@ export async function callGemma(
               attempt: attempt + 1,
               timeoutMs,
             });
-            throw new GemmaTimeoutError(timeoutMs);
+            const timeoutError = new GemmaTimeoutError(timeoutMs);
+            lastError = timeoutError;
+            const circuitOpened = recordTimeoutFailure(
+              timeoutCircuitFailureThreshold,
+              timeoutCircuitCooldownMs
+            );
+            if (circuitOpened) {
+              throw new GemmaCircuitOpenError(timeoutCircuitCooldownMs);
+            }
+            continue;
           }
           if (parentAbortTriggered || signal?.aborted) {
             console.warn("[Gemma] request aborted by caller", {
@@ -358,10 +403,7 @@ export async function callGemma(
           throw error;
         }
 
-        const normalizedError =
-          error instanceof Error && error.name === "AbortError"
-            ? new GemmaTimeoutError(timeoutMs)
-            : error;
+        const normalizedError = normalizeSdkError(error);
         console.warn("[Gemma] attempt failed", {
           callId,
           model,
@@ -434,7 +476,7 @@ function closeTruncatedJSON(text) {
       escaped = true;
       continue;
     }
-    if (ch === "\"") {
+    if (ch === '"') {
       inString = !inString;
       continue;
     }
@@ -447,7 +489,7 @@ function closeTruncatedJSON(text) {
   }
 
   let result = text.replace(/[,:\s]+$/, "");
-  if (inString) result += "\"";
+  if (inString) result += '"';
   while (stack.length > 0) result += stack.pop();
   return result;
 }
