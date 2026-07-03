@@ -11,7 +11,7 @@ import crypto from "node:crypto";
 import { parseJSON } from "./gemma.js";
 
 const GEMMA_API_ROOT = "https://generativelanguage.googleapis.com/v1beta/models";
-const MODERATION_MODEL = process.env.MODERATION_MODEL || "gemma-3-4b-it";
+const MODERATION_MODEL = process.env.MODERATION_MODEL || "gemma-4-26b-a4b-it";
 const DEFAULT_MODERATION_TIMEOUT_MS = 8000;
 const configuredTimeoutMs = Number(process.env.MODERATION_TIMEOUT_MS);
 const MODERATION_TIMEOUT_MS =
