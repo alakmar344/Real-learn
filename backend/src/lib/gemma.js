@@ -260,6 +260,14 @@ export async function callGemma(
 
         if (!response.ok) {
           const errorText = await response.text();
+          console.error("[Gemma] API error response", {
+            callId,
+            model,
+            url: buildGenerateUrl(model),
+            status: response.status,
+            statusText: response.statusText,
+            errorBody: errorText.slice(0, 500),
+          });
           throw new GemmaApiError(response.status, response.statusText, errorText);
         }
 
