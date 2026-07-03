@@ -1,28 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Theme } from "@/types";
 import { usePreferenceStore } from "@/store/preferenceStore";
+import { THEME_OPTIONS } from "@/lib/themes";
 
 interface Props {
   open: boolean;
   onClose: () => void;
 }
 
-const OPTIONS: { value: Theme; label: string; hint: string; swatch: string }[] = [
-  {
-    value: "light",
-    label: "Paper",
-    hint: "Warm cream — the classic textbook look",
-    swatch: "#f5f0e8",
-  },
-  {
-    value: "dark",
-    label: "Night",
-    hint: "Easy on the eyes for late-night study",
-    swatch: "#14110c",
-  },
-];
+const OPTIONS = THEME_OPTIONS;
 
 export default function ThemeModal({ open, onClose }: Props) {
   const theme = usePreferenceStore((s) => s.theme);
@@ -118,7 +105,7 @@ export default function ThemeModal({ open, onClose }: Props) {
                     width: 32,
                     height: 32,
                     borderRadius: "50%",
-                    background: opt.swatch,
+                    background: `linear-gradient(135deg, ${opt.swatch} 55%, ${opt.accent} 55%)`,
                     border: "1px solid var(--border-default)",
                     flexShrink: 0,
                   }}

@@ -6,6 +6,22 @@ import { SignInButton } from "@clerk/nextjs";
 import ExampleQuestions from "@/components/homepage/ExampleQuestions";
 import MicButton from "@/components/shared/MicButton";
 import { usePreferenceStore } from "@/store/preferenceStore";
+import { LessonMode } from "@/types";
+
+const MODES: { value: LessonMode; icon: string; label: string; hint: string }[] = [
+  {
+    value: "fast",
+    icon: "⚡",
+    label: "Fast",
+    hint: "One instant, direct answer",
+  },
+  {
+    value: "explain",
+    icon: "📚",
+    label: "Explain",
+    hint: "Deep 3-part journey with real-world context",
+  },
+];
 
 interface Props {
   question: string;
@@ -19,6 +35,9 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
   const [interimSpeech, setInterimSpeech] = useState("");
   const { isSignedIn } = useAuth();
   const language = usePreferenceStore((s) => s.language);
+  const mode = usePreferenceStore((s) => s.mode);
+  const setMode = usePreferenceStore((s) => s.setMode);
+  const activeMode = MODES.find((m) => m.value === mode) ?? MODES[0];
 
   useEffect(() => {
     const textarea = textareaRef.current;
@@ -84,6 +103,60 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           </p>
         ) : null}
       </div>
+      {/* ── Answer-mode toggle: Fast (1 direct part) vs Explain (3-part journey) ── */}
+      <div
+        style={{
+          padding: "0 16px 12px",
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          flexWrap: "wrap",
+        }}
+      >
+        <div
+          role="radiogroup"
+          aria-label="Answer mode"
+          style={{
+            display: "inline-flex",
+            padding: 3,
+            gap: 2,
+            borderRadius: 999,
+            border: "1px solid var(--border-subtle)",
+            background: "var(--bg-surface)",
+          }}
+        >
+          {MODES.map((opt) => {
+            const active = mode === opt.value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                title={opt.hint}
+                onClick={() => setMode(opt.value)}
+                style={{
+                  border: "none",
+                  borderRadius: 999,
+                  padding: "6px 14px",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  minHeight: 32,
+                  color: active ? "var(--on-accent)" : "var(--text-secondary)",
+                  background: active ? "var(--accent-gradient)" : "transparent",
+                  boxShadow: active ? "var(--shadow-glow-accent)" : "none",
+                  transition: "all 200ms var(--ease-color)",
+                }}
+              >
+                <span aria-hidden="true" style={{ marginRight: 6 }}>{opt.icon}</span>
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+        <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>{activeMode.hint}</span>
+      </div>
       <div
         style={{
           borderTop: "1px solid var(--border-subtle)",
@@ -122,7 +195,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
               boxShadow: "var(--shadow-sm)",
             }}
           >
-            Teach Me →
+            {mode === "fast" ? "Answer Fast ⚡" : "Teach Me →"}
           </button>
         ) : (
           <SignInButton mode="modal">

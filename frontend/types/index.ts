@@ -11,6 +11,13 @@ export type Language =
 
 export type Level = "Class 6-8" | "Class 9-10" | "College / Advanced";
 
+/**
+ * How the AI answers:
+ * - "fast": one direct answer part, generated very quickly (ChatGPT-style).
+ * - "explain": the classic deep 3-part learning journey.
+ */
+export type LessonMode = "fast" | "explain";
+
 
 type Subject =
   | "Physics"
@@ -33,7 +40,7 @@ export interface QuizQuestion {
 }
 
 export interface LessonPart {
-  partNumber: 1 | 2 | 3;
+  partNumber: number;
   title: string;
   subject: Subject;
   content: string;
@@ -46,11 +53,13 @@ export interface LessonJourney {
   topic?: string;
   language: Language;
   level: Level;
-  parts: [LessonPart, LessonPart, LessonPart];
-  keyTakeaways: [string, string, string];
+  /** "fast" journeys have 1 part; "explain" journeys have 3. */
+  mode?: LessonMode;
+  parts: LessonPart[];
+  keyTakeaways: string[];
 }
 
-export type Theme = "light" | "dark";
+export type Theme = "light" | "dark" | "twilight";
 
 export interface SavedJourney {
   id: string;
@@ -58,9 +67,9 @@ export interface SavedJourney {
   language: Language;
   level: Level;
   lesson: LessonJourney;
-  partScores: Record<1 | 2 | 3, number | null>;
+  partScores: Record<number, number | null>;
   totalScore: number;
   savedAt: number;
-  unlockedPart: 1 | 2 | 3;
+  unlockedPart: number;
   completedParts: number[];
 }

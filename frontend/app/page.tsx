@@ -185,7 +185,7 @@ export default function HomePage() {
                 fontStyle: "italic",
               }}
             >
-              Ask anything. Learn in 3 unlockable parts. Prove you understand before going deeper.
+              Ask anything. Get an instant answer in Fast mode, or master it in a 3-part Explain journey.
             </p>
             <div style={{ display: "flex", justifyContent: "center" }}>
               <QuestionInput question={question} setQuestion={setQuestion} onSubmit={submit} />

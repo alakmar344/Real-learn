@@ -3,25 +3,28 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { UserButton, useAuth, useClerk } from "@clerk/nextjs";
-import { Theme, Language, Level } from "@/types";
+import { LessonMode } from "@/types";
 import ConfirmModal from "@/components/shared/ConfirmModal";
 import { showToast } from "@/components/shared/ToastContainer";
 import { usePreferenceStore } from "@/store/preferenceStore";
 import LanguageSelector from "@/components/shared/LanguageSelector";
 import LevelSelector from "@/components/shared/LevelSelector";
+import { THEME_OPTIONS } from "@/lib/themes";
 
-const THEMES: { value: Theme; label: string; hint: string; swatch: string }[] = [
+const THEMES = THEME_OPTIONS;
+
+const MODES: { value: LessonMode; label: string; hint: string; icon: string }[] = [
   {
-    value: "light",
-    label: "Paper",
-    hint: "Warm cream — the classic textbook look",
-    swatch: "#f5f0e8",
+    value: "fast",
+    label: "Fast",
+    icon: "⚡",
+    hint: "One instant, direct answer — quick like a chat reply",
   },
   {
-    value: "dark",
-    label: "Night",
-    hint: "Easy on the eyes for late-night study",
-    swatch: "#14110c",
+    value: "explain",
+    label: "Explain",
+    icon: "📚",
+    hint: "Deep 3-part journey with quizzes and real-world context",
   },
 ];
 
@@ -37,9 +40,11 @@ export default function SettingsPage() {
   const theme = usePreferenceStore((s) => s.theme);
   const language = usePreferenceStore((s) => s.language);
   const level = usePreferenceStore((s) => s.level);
+  const mode = usePreferenceStore((s) => s.mode);
   const setTheme = usePreferenceStore((s) => s.setTheme);
   const setLanguage = usePreferenceStore((s) => s.setLanguage);
   const setLevel = usePreferenceStore((s) => s.setLevel);
+  const setMode = usePreferenceStore((s) => s.setMode);
 
   const [deleting, setDeleting] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -321,11 +326,62 @@ export default function SettingsPage() {
                           width: 28,
                           height: 28,
                           borderRadius: "50%",
-                          background: opt.swatch,
+                          background: `linear-gradient(135deg, ${opt.swatch} 55%, ${opt.accent} 55%)`,
                           border: "1px solid var(--border-default)",
                           flexShrink: 0,
                         }}
                       />
+                      <span style={{ flex: 1 }}>
+                        <span style={{ display: "block", fontWeight: 600, fontSize: 14, color: "var(--text-primary)" }}>
+                          {opt.label}
+                        </span>
+                        <span style={{ display: "block", fontSize: 12, color: "var(--text-tertiary)" }}>{opt.hint}</span>
+                      </span>
+                      {active && (
+                        <span aria-hidden="true" style={{ color: "var(--accent)", fontSize: 16 }}>
+                          ✓
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <label
+                style={{
+                  display: "block",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "var(--text-secondary)",
+                  marginBottom: 8,
+                }}
+              >
+                Answer mode
+              </label>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {MODES.map((opt) => {
+                  const active = mode === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setMode(opt.value)}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12,
+                        textAlign: "left",
+                        padding: "10px 12px",
+                        borderRadius: "var(--radius-md)",
+                        border: active ? "2px solid var(--accent)" : "1px solid var(--border-default)",
+                        background: active ? "var(--accent-dim)" : "var(--bg-surface)",
+                        cursor: "pointer",
+                        minHeight: 44,
+                      }}
+                    >
+                      <span aria-hidden="true" style={{ fontSize: 20, flexShrink: 0 }}>{opt.icon}</span>
                       <span style={{ flex: 1 }}>
                         <span style={{ display: "block", fontWeight: 600, fontSize: 14, color: "var(--text-primary)" }}>
                           {opt.label}

@@ -9,9 +9,9 @@ interface LessonStore {
   lesson: LessonJourney | null;
   isLoading: boolean;
   error: string | null;
-  unlockedPart: 1 | 2 | 3;
+  unlockedPart: number;
   completedParts: number[];
-  partScores: Record<1 | 2 | 3, number | null>;
+  partScores: Record<number, number | null>;
   collapsedParts: number[];
   showCompletion: boolean;
   showFollowUp: boolean;
@@ -19,12 +19,12 @@ interface LessonStore {
   startLoading: () => void;
   setLesson: (lesson: LessonJourney) => void;
   setError: (error: string | null) => void;
-  passPart: (part: 1 | 2 | 3, score: number) => void;
-  togglePartCollapse: (part: 1 | 2 | 3) => void;
+  passPart: (part: number, score: number) => void;
+  togglePartCollapse: (part: number) => void;
   resetForNextQuestion: (question: string) => void;
   resetAll: () => void;
   resetProgress: () => void;
-  loadJourney: (journey: { question: string; lesson: LessonJourney; unlockedPart: 1 | 2 | 3; completedParts: number[]; partScores: Record<1 | 2 | 3, number | null> }) => void;
+  loadJourney: (journey: { question: string; lesson: LessonJourney; unlockedPart: number; completedParts: number[]; partScores: Record<number, number | null> }) => void;
 }
 
 function storeLog(action: string, details?: unknown) {
@@ -40,9 +40,9 @@ const initialState = {
   lesson: null,
   isLoading: false,
   error: null,
-  unlockedPart: 1 as 1 | 2 | 3,
+  unlockedPart: 1,
   completedParts: [] as number[],
-  partScores: { 1: null, 2: null, 3: null } as Record<1 | 2 | 3, number | null>,
+  partScores: { 1: null, 2: null, 3: null } as Record<number, number | null>,
   collapsedParts: [] as number[],
   showCompletion: false,
   showFollowUp: false,
@@ -95,11 +95,15 @@ export const useLessonStore = create<LessonStore>()(
       },
       passPart: (part, score) =>
         set((state) => {
+          // Fast-mode lessons have a single part; explanation lessons have 3.
+          const totalParts = state.lesson?.parts?.length ?? 3;
           const completedSet = Array.from(new Set([...state.completedParts, part]));
-          const nextUnlock = part === 3 ? 3 : ((part + 1) as 1 | 2 | 3);
+          const nextUnlock = Math.min(part + 1, totalParts);
+          const isComplete = completedSet.length >= totalParts;
           storeLog("passPart", {
             part,
             score,
+            totalParts,
             completedParts: completedSet,
             nextUnlock,
           });
@@ -108,8 +112,8 @@ export const useLessonStore = create<LessonStore>()(
             unlockedPart: nextUnlock,
             partScores: { ...state.partScores, [part]: score },
             collapsedParts: Array.from(new Set([...state.collapsedParts, part])),
-            showCompletion: completedSet.length === 3,
-            showFollowUp: completedSet.length === 3,
+            showCompletion: isComplete,
+            showFollowUp: isComplete,
           };
         }),
       togglePartCollapse: (part) =>
@@ -153,9 +157,11 @@ export const useLessonStore = create<LessonStore>()(
       },
       loadJourney: (journey) => {
         storeLog("loadJourney", { id: journey.lesson.question, question: journey.question });
-        const completedParts = journey.completedParts ?? [1, 2, 3];
-        const isComplete = completedParts.length === 3;
-        const unlockedPart = journey.unlockedPart ?? 3;
+        const totalParts = journey.lesson?.parts?.length ?? 3;
+        const allPartNumbers = Array.from({ length: totalParts }, (_, i) => i + 1);
+        const completedParts = journey.completedParts ?? allPartNumbers;
+        const isComplete = completedParts.length >= totalParts;
+        const unlockedPart = journey.unlockedPart ?? totalParts;
         set({
           lesson: journey.lesson,
           question: journey.question,
@@ -164,7 +170,7 @@ export const useLessonStore = create<LessonStore>()(
           unlockedPart,
           completedParts,
           partScores: journey.partScores,
-          collapsedParts: isComplete ? [1, 2, 3] : completedParts,
+          collapsedParts: isComplete ? allPartNumbers : completedParts,
           showCompletion: isComplete,
           showFollowUp: isComplete,
         });

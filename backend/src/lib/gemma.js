@@ -137,7 +137,8 @@ export async function callGemma(
   enableSearch = true,
   temperature = 0.7,
   timeoutMs = 30000,
-  signal = null
+  signal = null,
+  maxOutputTokens = 3000
 ) {
   const apiKey = process.env.GEMMA_API_KEY;
   if (!apiKey) {
@@ -193,7 +194,7 @@ export async function callGemma(
     ],
     generationConfig: {
       temperature,
-      maxOutputTokens: 3000,
+      maxOutputTokens,
     },
   };
   if (enableSearch) {
