@@ -1,6 +1,6 @@
-import { GoogleGenAI, ApiError } from "@google/genai";
+import Cloudflare from "cloudflare";
 
-const GEMMA_MODEL = process.env.GEMMA_MODEL || "gemma-4-26b-a4b-it";
+const GEMMA_MODEL = process.env.GEMMA_MODEL || "@cf/google/gemma-4-26b-a4b-it";
 const DEFAULT_MAX_RETRIES = 2;
 const DEFAULT_RETRY_DELAY_MS = 700;
 const DEFAULT_MAX_RETRY_DELAY_MS = 5000;
@@ -8,20 +8,21 @@ const DEFAULT_TIMEOUT_CIRCUIT_FAILURE_THRESHOLD = 5;
 const DEFAULT_TIMEOUT_CIRCUIT_COOLDOWN_MS = 60000;
 const PARSE_JSON_LOG_PREVIEW_CHARS = 300;
 
-let genAI = null;
+let cachedClient = null;
 
-function getGenAI() {
-  if (!genAI) {
-    const project = process.env.GOOGLE_CLOUD_PROJECT;
-    if (!project) {
-      throw new Error("GOOGLE_CLOUD_PROJECT is not configured");
-    }
-    const location = process.env.GOOGLE_CLOUD_LOCATION || "us-central1";
-    // Credentials are resolved via Application Default Credentials (ADC):
-    // point GOOGLE_APPLICATION_CREDENTIALS at the service account JSON key file.
-    genAI = new GoogleGenAI({ vertexai: true, project, location });
+function resolveModel(model) {
+  if (model.startsWith("@cf/")) return model;
+  return `@cf/${model}`;
+}
+
+function getClient() {
+  if (cachedClient) return cachedClient;
+  const apiToken = process.env.CLOUDFLARE_API_TOKEN?.trim();
+  if (!apiToken) {
+    throw new Error("CLOUDFLARE_API_TOKEN is not configured");
   }
-  return genAI;
+  cachedClient = new Cloudflare({ apiToken, maxRetries: 0 });
+  return cachedClient;
 }
 
 const timeoutCircuitState = {
@@ -154,37 +155,14 @@ function isAbortError(error) {
 }
 
 function normalizeSdkError(error) {
-  if (error instanceof ApiError) {
+  if (error instanceof Cloudflare.APIConnectionError) {
+    return new TypeError(`network error: ${error.message}`);
+  }
+  if (error instanceof Cloudflare.APIError) {
     const status = typeof error.status === "number" ? error.status : 0;
-    return new GemmaApiError(status, error.name ?? "ApiError", error.message);
+    return new GemmaApiError(status, error.name ?? "APIError", error.message);
   }
   return error;
-}
-
-function extractTextParts(candidate) {
-  const parts = candidate?.content?.parts;
-  if (!Array.isArray(parts)) {
-    return "";
-  }
-  return parts
-    .filter((p) => !p?.thought)
-    .map((p) => p?.text ?? "")
-    .join("");
-}
-
-function extractGroundingMetadata(candidate) {
-  const meta = candidate?.groundingMetadata;
-  if (!meta) return undefined;
-  const result = {};
-  if (Array.isArray(meta?.webSearchQueries)) {
-    result.webSearchQueries = meta.webSearchQueries;
-  }
-  if (Array.isArray(meta?.groundingChunks)) {
-    result.sources = meta.groundingChunks
-      .filter((c) => c?.web)
-      .map((c) => c.web?.uri);
-  }
-  return Object.keys(result).length > 0 ? result : undefined;
 }
 
 export async function callGemma(
@@ -196,11 +174,18 @@ export async function callGemma(
   signal = null,
   maxOutputTokens = 3000
 ) {
-  if (!process.env.GOOGLE_CLOUD_PROJECT?.trim()) {
-    throw new Error("GOOGLE_CLOUD_PROJECT is not configured");
+  if (!process.env.CLOUDFLARE_API_TOKEN?.trim() || !process.env.CLOUDFLARE_ACCOUNT_ID?.trim()) {
+    throw new Error(
+      "CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID are not configured"
+    );
+  }
+  if (enableSearch) {
+    console.warn(
+      "[Gemma] enableSearch requested but web-search grounding is not supported; continuing without it"
+    );
   }
   const callId = `gemma-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-  const models = [GEMMA_MODEL];
+  const model = resolveModel(GEMMA_MODEL);
   const sanitizedSystemPrompt = stripThinkingTags(systemPrompt);
   const maxRetries = parseNonNegativeInt(
     process.env.GEMMA_MAX_RETRIES,
@@ -224,7 +209,7 @@ export async function callGemma(
   );
   console.log("[Gemma] callGemma invoked", {
     callId,
-    models,
+    model,
     maxRetries,
     retryDelayMs,
     maxRetryDelayMs,
@@ -240,168 +225,107 @@ export async function callGemma(
 
   let lastError = null;
 
-  for (let modelIndex = 0; modelIndex < models.length; modelIndex++) {
-    const model = models[modelIndex];
-    const isLastModel = modelIndex === models.length - 1;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    console.log("[Gemma] attempt start", {
+      callId,
+      model,
+      attempt: attempt + 1,
+      maxAttempts: maxRetries + 1,
+    });
+    const controller = new AbortController();
+    const internalSignal = controller.signal;
+    let removeParentAbortListener = null;
+    let parentAbortTriggered = false;
+    let timeoutTriggered = false;
+    if (signal) {
+      const abortFromParent = () => {
+        parentAbortTriggered = true;
+        controller.abort();
+      };
+      signal.addEventListener("abort", abortFromParent, { once: true });
+      removeParentAbortListener = () => {
+        signal.removeEventListener("abort", abortFromParent);
+      };
+    }
 
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-      console.log("[Gemma] attempt start", {
+    const timeoutId = setTimeout(() => {
+      timeoutTriggered = true;
+      controller.abort();
+    }, timeoutMs);
+
+    try {
+      const startedAt = Date.now();
+      console.log("[Gemma] SDK model", {
         callId,
         model,
         attempt: attempt + 1,
-        maxAttempts: maxRetries + 1,
       });
-      const controller = new AbortController();
-      const internalSignal = controller.signal;
-      let removeParentAbortListener = null;
-      let parentAbortTriggered = false;
-      let timeoutTriggered = false;
-      if (signal) {
-        const abortFromParent = () => {
-          parentAbortTriggered = true;
-          controller.abort();
-        };
-        signal.addEventListener("abort", abortFromParent, { once: true });
-        removeParentAbortListener = () => {
-          signal.removeEventListener("abort", abortFromParent);
-        };
+
+      const client = getClient();
+      const messages = [
+        { role: "system", content: sanitizedSystemPrompt },
+        { role: "user", content: userMessage },
+      ];
+
+      const result = await client.ai.run(
+        model,
+        {
+          account_id: process.env.CLOUDFLARE_ACCOUNT_ID.trim(),
+          messages,
+          temperature,
+          max_tokens: maxOutputTokens,
+        },
+        { signal: internalSignal }
+      );
+
+      clearTimeout(timeoutId);
+      removeParentAbortListener?.();
+      console.log("[Gemma] response received", {
+        callId,
+        model,
+        attempt: attempt + 1,
+        latencyMs: Date.now() - startedAt,
+      });
+
+      if (result == null) {
+        throw new Error("Empty result returned from Cloudflare Workers AI");
       }
+      const text = stripThinkingTags(
+        typeof result === "string"
+          ? result
+          : result?.response ??
+              result?.choices?.[0]?.message?.content ??
+              ""
+      );
 
-      const timeoutId = setTimeout(() => {
-        timeoutTriggered = true;
-        controller.abort();
-      }, timeoutMs);
+      console.log("[Gemma] parsed response text", {
+        callId,
+        model,
+        attempt: attempt + 1,
+        textLength: text.length,
+      });
 
-      try {
-        const startedAt = Date.now();
-        console.log("[Gemma] SDK model", {
-          callId,
-          model,
-          attempt: attempt + 1,
-        });
+      resetTimeoutCircuit();
+      console.log("[Gemma] callGemma success", {
+        callId,
+        model,
+        attempt: attempt + 1,
+      });
+      return text;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      removeParentAbortListener?.();
 
-        const genAIInstance = getGenAI();
-        const response = await genAIInstance.models.generateContent({
-          model,
-          contents: [{ role: "user", parts: [{ text: userMessage }] }],
-          config: {
-            systemInstruction: sanitizedSystemPrompt,
-            tools: enableSearch ? [{ googleSearch: {} }] : undefined,
-            temperature,
-            maxOutputTokens,
-            abortSignal: internalSignal,
-          },
-        });
-
-        clearTimeout(timeoutId);
-        removeParentAbortListener?.();
-        console.log("[Gemma] response received", {
-          callId,
-          model,
-          attempt: attempt + 1,
-          candidatesCount: response?.candidates?.length ?? 0,
-          latencyMs: Date.now() - startedAt,
-        });
-
-        if (!response.candidates || response.candidates.length === 0) {
-          if (response.promptFeedback?.blockReason) {
-            throw new Error(
-              `Response was blocked due to ${response.promptFeedback.blockReason}: ${response.promptFeedback.blockReasonMessage ?? ""}`
-            );
-          }
-          throw new Error("No candidates returned from Gemma API");
-        }
-
-        const candidate = response.candidates[0];
-        const finishReason = candidate?.finishReason;
-
-        if (finishReason === "SAFETY") {
-          throw new Error(
-            "Content was flagged by safety filters. Please try a different question or rephrase your request."
-          );
-        }
-
-        if (finishReason === "RECITATION") {
-          throw new Error(
-            "Response blocked due to content restrictions. Please try a different question."
-          );
-        }
-
-        const text = extractTextParts(candidate);
-        console.log("[Gemma] parsed candidate text", {
-          callId,
-          model,
-          attempt: attempt + 1,
-          candidatesCount: response.candidates.length,
-          textLength: text.length,
-        });
-
-        const grounding = extractGroundingMetadata(candidate);
-        if (grounding) {
-          if (grounding.webSearchQueries) {
-            console.log("[Gemma] Web search queries:", grounding.webSearchQueries);
-          }
-          if (grounding.sources) {
-            console.log("[Gemma] Grounding sources:", grounding.sources);
-          }
-        }
-
-        resetTimeoutCircuit();
-        console.log("[Gemma] callGemma success", {
-          callId,
-          model,
-          attempt: attempt + 1,
-        });
-        return text;
-      } catch (error) {
-        clearTimeout(timeoutId);
-        removeParentAbortListener?.();
-
-        if (isAbortError(error)) {
-          if (timeoutTriggered) {
-            console.warn("[Gemma] request timed out", {
-              callId,
-              model,
-              attempt: attempt + 1,
-              timeoutMs,
-            });
-            const timeoutError = new GemmaTimeoutError(timeoutMs);
-            lastError = timeoutError;
-            const circuitOpened = recordTimeoutFailure(
-              timeoutCircuitFailureThreshold,
-              timeoutCircuitCooldownMs
-            );
-            if (circuitOpened) {
-              throw new GemmaCircuitOpenError(timeoutCircuitCooldownMs);
-            }
-            continue;
-          }
-          if (parentAbortTriggered || signal?.aborted) {
-            console.warn("[Gemma] request aborted by caller", {
-              callId,
-              model,
-              attempt: attempt + 1,
-            });
-            throw error;
-          }
-          console.warn("[Gemma] request aborted", {
+      if (isAbortError(error)) {
+        if (timeoutTriggered) {
+          console.warn("[Gemma] request timed out", {
             callId,
             model,
             attempt: attempt + 1,
+            timeoutMs,
           });
-          throw error;
-        }
-
-        const normalizedError = normalizeSdkError(error);
-        console.warn("[Gemma] attempt failed", {
-          callId,
-          model,
-          attempt: attempt + 1,
-          errorName: normalizedError?.name,
-          errorMessage: normalizedError?.message,
-        });
-        lastError = normalizedError;
-        if (normalizedError instanceof GemmaTimeoutError) {
+          const timeoutError = new GemmaTimeoutError(timeoutMs);
+          lastError = timeoutError;
           const circuitOpened = recordTimeoutFailure(
             timeoutCircuitFailureThreshold,
             timeoutCircuitCooldownMs
@@ -409,36 +333,63 @@ export async function callGemma(
           if (circuitOpened) {
             throw new GemmaCircuitOpenError(timeoutCircuitCooldownMs);
           }
+          continue;
         }
-
-        const isLastAttempt = attempt === maxRetries;
-        if (!isLastAttempt && isRetryableGemmaError(normalizedError)) {
-          const waitMs = Math.min(
-            retryDelayMs * Math.pow(2, attempt),
-            maxRetryDelayMs
-          );
-          console.warn(
-            `[Gemma] Retrying model "${model}" after attempt ${attempt + 1} failed`
-          );
-          console.warn("[Gemma] retry scheduled", {
+        if (parentAbortTriggered || signal?.aborted) {
+          console.warn("[Gemma] request aborted by caller", {
             callId,
             model,
             attempt: attempt + 1,
-            waitMs,
           });
-          await sleep(waitMs);
-          continue;
+          throw error;
         }
-
-        if (!isLastModel && isRetryableGemmaError(normalizedError)) {
-          console.warn(
-            `[Gemma] Switching to fallback model after retries failed for "${model}"`
-          );
-          break;
-        }
-
-        throw normalizedError;
+        console.warn("[Gemma] request aborted", {
+          callId,
+          model,
+          attempt: attempt + 1,
+        });
+        throw error;
       }
+
+      const normalizedError = normalizeSdkError(error);
+      console.warn("[Gemma] attempt failed", {
+        callId,
+        model,
+        attempt: attempt + 1,
+        errorName: normalizedError?.name,
+        errorMessage: normalizedError?.message,
+      });
+      lastError = normalizedError;
+      if (normalizedError instanceof GemmaTimeoutError) {
+        const circuitOpened = recordTimeoutFailure(
+          timeoutCircuitFailureThreshold,
+          timeoutCircuitCooldownMs
+        );
+        if (circuitOpened) {
+          throw new GemmaCircuitOpenError(timeoutCircuitCooldownMs);
+        }
+      }
+
+      const isLastAttempt = attempt === maxRetries;
+      if (!isLastAttempt && isRetryableGemmaError(normalizedError)) {
+        const waitMs = Math.min(
+          retryDelayMs * Math.pow(2, attempt),
+          maxRetryDelayMs
+        );
+        console.warn(
+          `[Gemma] Retrying after attempt ${attempt + 1} failed`
+        );
+        console.warn("[Gemma] retry scheduled", {
+          callId,
+          model,
+          attempt: attempt + 1,
+          waitMs,
+        });
+        await sleep(waitMs);
+        continue;
+      }
+
+      throw normalizedError;
     }
   }
 
@@ -447,7 +398,7 @@ export async function callGemma(
     lastErrorName: lastError?.name,
     lastErrorMessage: lastError?.message,
   });
-  throw lastError || new Error("Unable to generate lesson after exhausting retries and fallback models");
+  throw lastError || new Error("Unable to generate lesson after exhausting retries");
 }
 
 function closeTruncatedJSON(text) {

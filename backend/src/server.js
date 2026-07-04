@@ -107,10 +107,14 @@ let consecutiveLessonFailures = 0;
 let lessonRequestCounter = 0;
 
 function validateStartupConfig() {
-  const requiredVars = ["GOOGLE_CLOUD_PROJECT"];
-  const missing = requiredVars.filter((key) => !process.env[key]?.trim());
-  if (missing.length > 0) {
-    throw new Error(`Missing required environment variables: ${missing.join(", ")}`);
+  const hasCloudflareConfig = Boolean(
+    process.env.CLOUDFLARE_API_TOKEN?.trim() &&
+      process.env.CLOUDFLARE_ACCOUNT_ID?.trim()
+  );
+  if (!hasCloudflareConfig) {
+    throw new Error(
+      "Missing required environment variables: set CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID"
+    );
   }
 }
 
