@@ -1,7 +1,6 @@
 import Cloudflare from "cloudflare";
 
-const GEMMA_MODEL = process.env.GEMMA_MODEL || "gemma-4-26b-a4b-it";
-const DEFAULT_MODEL_CREATOR = "google";
+const GEMMA_MODEL = process.env.GEMMA_MODEL || "@cf/google/gemma-4-26b-a4b-it";
 const DEFAULT_MAX_RETRIES = 2;
 const DEFAULT_RETRY_DELAY_MS = 700;
 const DEFAULT_MAX_RETRY_DELAY_MS = 5000;
@@ -13,9 +12,7 @@ let cachedClient = null;
 
 function resolveModel(model) {
   if (model.startsWith("@cf/")) return model;
-  return model.includes("/")
-    ? `@cf/${model}`
-    : `@cf/${DEFAULT_MODEL_CREATOR}/${model}`;
+  return `@cf/${model}`;
 }
 
 function getClient() {

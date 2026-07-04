@@ -372,7 +372,7 @@ Real-learn/
 ### Backend
 
 - `CLOUDFLARE_API_TOKEN=...` + `CLOUDFLARE_ACCOUNT_ID=...` *(Cloudflare Workers AI. Create a token with the "Workers AI" permission in the Cloudflare dashboard)*
-- `GEMMA_MODEL=gemma-4-26b-a4b-it` *(optional; model ID. Un-namespaced IDs are auto-prefixed to `@cf/google/…`)
+- `GEMMA_MODEL=@cf/google/gemma-4-26b-a4b-it` *(optional; Workers AI model ID)*
 - `GEMMA_MAX_RETRIES=2` *(optional; retries per model on 429/5xx/network errors)*
 - `GEMMA_RETRY_DELAY_MS=700` *(optional; base backoff in ms)*
 - `GEMMA_MAX_RETRY_DELAY_MS=5000` *(optional; cap for exponential backoff)*
