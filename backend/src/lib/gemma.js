@@ -6,8 +6,6 @@ const DEFAULT_TIMEOUT_CIRCUIT_FAILURE_THRESHOLD = 5;
 const DEFAULT_TIMEOUT_CIRCUIT_COOLDOWN_MS = 60000;
 const PARSE_JSON_LOG_PREVIEW_CHARS = 300;
 
-const CF_API_BASE = "https://api.cloudflare.com/client/v4";
-
 function resolveModel(model) {
   if (model.startsWith("@cf/")) return model;
   return `@cf/${model}`;
@@ -151,7 +149,15 @@ function normalizeApiError(error) {
 
 async function callWorkersAI(accountId, model, body, signal) {
   const apiToken = process.env.CLOUDFLARE_API_TOKEN.trim();
-  const url = `${CF_API_BASE}/accounts/${accountId}/ai/run/${model}`;
+  const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/v1/chat/completions`;
+
+  const payload = {
+    model,
+    messages: body.messages,
+    temperature: body.temperature,
+    max_tokens: body.max_tokens,
+    stream: false,
+  };
 
   const response = await fetch(url, {
     method: "POST",
@@ -159,7 +165,7 @@ async function callWorkersAI(accountId, model, body, signal) {
       Authorization: `Bearer ${apiToken}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(body),
+    body: JSON.stringify(payload),
     signal,
   });
 
@@ -186,12 +192,14 @@ async function callWorkersAI(accountId, model, body, signal) {
   }
 
   const data = await response.json();
-  if (!data.success) {
-    const msg =
-      data.errors?.[0]?.message || "Cloudflare Workers AI returned success=false";
-    throw new GemmaApiError(500, "APIError", msg);
+  if (data.error) {
+    throw new GemmaApiError(
+      data.error.code || 500,
+      "APIError",
+      data.error.message || JSON.stringify(data.error)
+    );
   }
-  return data.result;
+  return data;
 }
 
 async function handleStreamingResponse(response) {
@@ -209,36 +217,38 @@ async function handleStreamingResponse(response) {
     buffer = lines.pop() || "";
 
     for (const line of lines) {
-      if (line.startsWith("data: ")) {
-        const payload = line.slice(6).trim();
-        if (payload === "[DONE]") continue;
-        try {
-          const chunk = JSON.parse(payload);
-          const token =
-            chunk.response ??
-            chunk.choices?.[0]?.delta?.content ??
-            "";
-          fullText += token;
-        } catch {}
-      }
-    }
-  }
-
-  if (buffer.startsWith("data: ")) {
-    const payload = buffer.slice(6).trim();
-    if (payload !== "[DONE]") {
+      const trimmed = line.trim();
+      if (!trimmed || !trimmed.startsWith("data: ")) continue;
+      const payload = trimmed.slice(6);
+      if (payload === "[DONE]") continue;
       try {
         const chunk = JSON.parse(payload);
         const token =
-          chunk.response ??
           chunk.choices?.[0]?.delta?.content ??
+          chunk.choices?.[0]?.message?.content ??
+          chunk.response ??
           "";
         fullText += token;
       } catch {}
     }
   }
 
-  return { response: fullText };
+  if (buffer.trim().startsWith("data: ")) {
+    const payload = buffer.trim().slice(6);
+    if (payload !== "[DONE]") {
+      try {
+        const chunk = JSON.parse(payload);
+        const token =
+          chunk.choices?.[0]?.delta?.content ??
+          chunk.choices?.[0]?.message?.content ??
+          chunk.response ??
+          "";
+        fullText += token;
+      } catch {}
+    }
+  }
+
+  return { choices: [{ message: { content: fullText } }] };
 }
 
 export async function callGemma(
@@ -368,8 +378,8 @@ export async function callGemma(
       const text = stripThinkingTags(
         typeof result === "string"
           ? result
-          : result?.response ??
-              result?.choices?.[0]?.message?.content ??
+          : result?.choices?.[0]?.message?.content ??
+              result?.response ??
               ""
       );
 
