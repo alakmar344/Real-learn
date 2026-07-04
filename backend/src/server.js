@@ -661,7 +661,9 @@ Level: ${level}${
       mode === "fast" ? GENERATE_FAST_ANSWER_PROMPT : GENERATE_LESSON_PROMPT;
     // Fast mode caps the output budget: one part + two quiz questions fit
     // comfortably in ~800 tokens, and a smaller budget generates sooner.
-    const maxOutputTokens = mode === "fast" ? 800 : 3000;
+    // Explain mode needs ~1000-1200 tokens per part (content + quiz), plus
+    // overhead, so 4000 provides adequate headroom for the full 3-part journey.
+    const maxOutputTokens = mode === "fast" ? 800 : 4000;
     // Fast mode uses a lower temperature for more focused, deterministic
     // output — less sampling overhead means faster generation.
     const temperature = mode === "fast" ? 0.2 : 0.6;
