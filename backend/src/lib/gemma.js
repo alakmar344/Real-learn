@@ -1,5 +1,3 @@
-import Cloudflare from "cloudflare";
-
 const GEMMA_MODEL = process.env.GEMMA_MODEL || "@cf/google/gemma-4-26b-a4b-it";
 const DEFAULT_MAX_RETRIES = 2;
 const DEFAULT_RETRY_DELAY_MS = 700;
@@ -8,21 +6,11 @@ const DEFAULT_TIMEOUT_CIRCUIT_FAILURE_THRESHOLD = 5;
 const DEFAULT_TIMEOUT_CIRCUIT_COOLDOWN_MS = 60000;
 const PARSE_JSON_LOG_PREVIEW_CHARS = 300;
 
-let cachedClient = null;
+const CF_API_BASE = "https://api.cloudflare.com/client/v4";
 
 function resolveModel(model) {
   if (model.startsWith("@cf/")) return model;
   return `@cf/${model}`;
-}
-
-function getClient() {
-  if (cachedClient) return cachedClient;
-  const apiToken = process.env.CLOUDFLARE_API_TOKEN?.trim();
-  if (!apiToken) {
-    throw new Error("CLOUDFLARE_API_TOKEN is not configured");
-  }
-  cachedClient = new Cloudflare({ apiToken, maxRetries: 0 });
-  return cachedClient;
 }
 
 const timeoutCircuitState = {
@@ -154,15 +142,103 @@ function isAbortError(error) {
   );
 }
 
-function normalizeSdkError(error) {
-  if (error instanceof Cloudflare.APIConnectionError) {
-    return new TypeError(`network error: ${error.message}`);
-  }
-  if (error instanceof Cloudflare.APIError) {
-    const status = typeof error.status === "number" ? error.status : 0;
-    return new GemmaApiError(status, error.name ?? "APIError", error.message);
+function normalizeApiError(error) {
+  if (error instanceof GemmaApiError || error instanceof TypeError) {
+    return error;
   }
   return error;
+}
+
+async function callWorkersAI(accountId, model, body, signal) {
+  const apiToken = process.env.CLOUDFLARE_API_TOKEN.trim();
+  const url = `${CF_API_BASE}/accounts/${accountId}/ai/run/${model}`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+    signal,
+  });
+
+  const contentType = response.headers.get("content-type") || "";
+
+  if (!response.ok) {
+    let details = response.statusText;
+    try {
+      if (contentType.includes("application/json")) {
+        const errBody = await response.json();
+        details =
+          errBody.errors?.[0]?.message ||
+          errBody.error ||
+          JSON.stringify(errBody);
+      } else {
+        details = (await response.text()).slice(0, 500);
+      }
+    } catch {}
+    throw new GemmaApiError(response.status, response.statusText, details);
+  }
+
+  if (contentType.includes("text/event-stream")) {
+    return await handleStreamingResponse(response);
+  }
+
+  const data = await response.json();
+  if (!data.success) {
+    const msg =
+      data.errors?.[0]?.message || "Cloudflare Workers AI returned success=false";
+    throw new GemmaApiError(500, "APIError", msg);
+  }
+  return data.result;
+}
+
+async function handleStreamingResponse(response) {
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let fullText = "";
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    const lines = buffer.split("\n");
+    buffer = lines.pop() || "";
+
+    for (const line of lines) {
+      if (line.startsWith("data: ")) {
+        const payload = line.slice(6).trim();
+        if (payload === "[DONE]") continue;
+        try {
+          const chunk = JSON.parse(payload);
+          const token =
+            chunk.response ??
+            chunk.choices?.[0]?.delta?.content ??
+            "";
+          fullText += token;
+        } catch {}
+      }
+    }
+  }
+
+  if (buffer.startsWith("data: ")) {
+    const payload = buffer.slice(6).trim();
+    if (payload !== "[DONE]") {
+      try {
+        const chunk = JSON.parse(payload);
+        const token =
+          chunk.response ??
+          chunk.choices?.[0]?.delta?.content ??
+          "";
+        fullText += token;
+      } catch {}
+    }
+  }
+
+  return { response: fullText };
 }
 
 export async function callGemma(
@@ -255,27 +331,26 @@ export async function callGemma(
 
     try {
       const startedAt = Date.now();
-      console.log("[Gemma] SDK model", {
+      console.log("[Gemma] API request", {
         callId,
         model,
         attempt: attempt + 1,
       });
 
-      const client = getClient();
       const messages = [
         { role: "system", content: sanitizedSystemPrompt },
         { role: "user", content: userMessage },
       ];
 
-      const result = await client.ai.run(
+      const result = await callWorkersAI(
+        process.env.CLOUDFLARE_ACCOUNT_ID.trim(),
         model,
         {
-          account_id: process.env.CLOUDFLARE_ACCOUNT_ID.trim(),
           messages,
           temperature,
           max_tokens: maxOutputTokens,
         },
-        { signal: internalSignal }
+        internalSignal
       );
 
       clearTimeout(timeoutId);
@@ -351,7 +426,7 @@ export async function callGemma(
         throw error;
       }
 
-      const normalizedError = normalizeSdkError(error);
+      const normalizedError = normalizeApiError(error);
       console.warn("[Gemma] attempt failed", {
         callId,
         model,
