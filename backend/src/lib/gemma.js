@@ -260,7 +260,7 @@ export async function callGemma(
   temperature = 0.7,
   timeoutMs = 30000,
   signal = null,
-  maxOutputTokens = 3000
+  maxOutputTokens = 4000
 ) {
   if (!process.env.CLOUDFLARE_API_TOKEN?.trim() || !process.env.CLOUDFLARE_ACCOUNT_ID?.trim()) {
     throw new Error(
