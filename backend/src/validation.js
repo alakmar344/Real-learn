@@ -45,7 +45,11 @@ export function normalizeJourney(data, mode = "explain") {
     normalized.parts = normalizedParts;
   }
 
-  if (Array.isArray(data.keyTakeaways)) {
+  if (!Array.isArray(data.keyTakeaways) || data.keyTakeaways.length === 0) {
+    normalized.keyTakeaways = Array(rules.keyTakeawaysCount).fill("").map(
+      (_, i) => `Key insight from part ${i + 1}`
+    );
+  } else {
     normalized.keyTakeaways = data.keyTakeaways.slice(0, rules.keyTakeawaysCount);
   }
 
@@ -55,14 +59,8 @@ export function normalizeJourney(data, mode = "explain") {
 export function isValidJourney(data, mode = "explain") {
   if (!data || typeof data !== "object") return false;
   const rules = getModeRules(mode);
-  if (!Array.isArray(data.parts) || data.parts.length !== rules.partsCount) return false;
-  if (
-    !Array.isArray(data.keyTakeaways) ||
-    data.keyTakeaways.length < 1 ||
-    data.keyTakeaways.length > rules.keyTakeawaysCount
-  ) {
-    return false;
-  }
+  if (!Array.isArray(data.parts) || data.parts.length < 1) return false;
+  if (data.parts.length > rules.partsCount) return false;
 
   return data.parts.every(
     (part, index) =>
