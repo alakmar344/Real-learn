@@ -107,10 +107,15 @@ let consecutiveLessonFailures = 0;
 let lessonRequestCounter = 0;
 
 function validateStartupConfig() {
-  const requiredVars = ["GROQ_API_KEY"];
-  const missing = requiredVars.filter((key) => !process.env[key]?.trim());
-  if (missing.length > 0) {
-    throw new Error(`Missing required environment variables: ${missing.join(", ")}`);
+  const hasGroqKey = Boolean(process.env.GROQ_API_KEY?.trim());
+  const hasGatewayKey = Boolean(
+    process.env.AI_GATEWAY_API_KEY?.trim() ||
+      process.env.VERCEL_OIDC_TOKEN?.trim()
+  );
+  if (!hasGroqKey && !hasGatewayKey) {
+    throw new Error(
+      "Missing required environment variables: set GROQ_API_KEY (direct Groq) or AI_GATEWAY_API_KEY (Vercel AI Gateway)"
+    );
   }
 }
 

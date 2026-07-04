@@ -1,6 +1,13 @@
 import Groq from "groq-sdk";
+import OpenAI from "openai";
 
 const GEMMA_MODEL = process.env.GEMMA_MODEL || "gemma-4-26b-a4b-it";
+// Vercel AI Gateway's OpenAI-compatible Chat Completions endpoint.
+// https://vercel.com/docs/ai-gateway/sdks-and-apis
+const DEFAULT_GATEWAY_BASE_URL = "https://ai-gateway.vercel.sh/v1";
+// Gateway model IDs are namespaced as "creator/model-name"
+// (e.g. "google/gemma-4-26b-a4b-it").
+const DEFAULT_GATEWAY_MODEL_CREATOR = "google";
 const DEFAULT_MAX_RETRIES = 2;
 const DEFAULT_RETRY_DELAY_MS = 700;
 const DEFAULT_MAX_RETRY_DELAY_MS = 5000;
@@ -8,19 +15,69 @@ const DEFAULT_TIMEOUT_CIRCUIT_FAILURE_THRESHOLD = 5;
 const DEFAULT_TIMEOUT_CIRCUIT_COOLDOWN_MS = 60000;
 const PARSE_JSON_LOG_PREVIEW_CHARS = 300;
 
-let groqClient = null;
+let cachedClient = null;
+let cachedClientProvider = null;
 
-function getGroq() {
-  if (!groqClient) {
+function getGatewayApiKey() {
+  // AI_GATEWAY_API_KEY is the standard key; VERCEL_OIDC_TOKEN is issued
+  // automatically on Vercel deployments and also authenticates the gateway.
+  return (
+    process.env.AI_GATEWAY_API_KEY?.trim() ||
+    process.env.VERCEL_OIDC_TOKEN?.trim() ||
+    ""
+  );
+}
+
+export function resolveGemmaProvider() {
+  const explicit = process.env.GEMMA_PROVIDER?.trim().toLowerCase();
+  if (explicit === "groq" || explicit === "gateway") {
+    return explicit;
+  }
+  if (explicit) {
+    console.warn(
+      `[Gemma] Unknown GEMMA_PROVIDER "${explicit}" (expected "groq" or "gateway"); auto-detecting from configured keys`
+    );
+  }
+  // Auto-detect: prefer direct Groq when its key is present (preserves
+  // existing deployments), otherwise fall back to the Vercel AI Gateway.
+  if (process.env.GROQ_API_KEY?.trim()) return "groq";
+  if (getGatewayApiKey()) return "gateway";
+  return "groq";
+}
+
+function getClient(provider) {
+  if (cachedClient && cachedClientProvider === provider) {
+    return cachedClient;
+  }
+  // Retries are handled by our own retry loop below, so disable the SDKs'
+  // built-in retry mechanism to avoid compounding delays.
+  if (provider === "gateway") {
+    const apiKey = getGatewayApiKey();
+    if (!apiKey) {
+      throw new Error("AI_GATEWAY_API_KEY is not configured");
+    }
+    cachedClient = new OpenAI({
+      apiKey,
+      baseURL:
+        process.env.AI_GATEWAY_BASE_URL?.trim() || DEFAULT_GATEWAY_BASE_URL,
+      maxRetries: 0,
+    });
+  } else {
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
       throw new Error("GROQ_API_KEY is not configured");
     }
-    // Retries are handled by our own retry loop below, so disable the SDK's
-    // built-in retry mechanism to avoid compounding delays.
-    groqClient = new Groq({ apiKey, maxRetries: 0 });
+    cachedClient = new Groq({ apiKey, maxRetries: 0 });
   }
-  return groqClient;
+  cachedClientProvider = provider;
+  return cachedClient;
+}
+
+function resolveModelForProvider(model, provider) {
+  if (provider === "gateway" && !model.includes("/")) {
+    return `${DEFAULT_GATEWAY_MODEL_CREATOR}/${model}`;
+  }
+  return model;
 }
 
 const timeoutCircuitState = {
@@ -153,11 +210,14 @@ function isAbortError(error) {
 }
 
 function normalizeSdkError(error) {
-  if (error instanceof Groq.APIConnectionError) {
+  if (
+    error instanceof Groq.APIConnectionError ||
+    error instanceof OpenAI.APIConnectionError
+  ) {
     // Surface transient connection problems as a retryable network error.
     return new TypeError(`network error: ${error.message}`);
   }
-  if (error instanceof Groq.APIError) {
+  if (error instanceof Groq.APIError || error instanceof OpenAI.APIError) {
     const status = typeof error.status === "number" ? error.status : 0;
     return new GemmaApiError(status, error.name ?? "APIError", error.message);
   }
@@ -173,19 +233,24 @@ export async function callGemma(
   signal = null,
   maxOutputTokens = 3000
 ) {
-  if (!process.env.GROQ_API_KEY?.trim()) {
+  const provider = resolveGemmaProvider();
+  if (provider === "groq" && !process.env.GROQ_API_KEY?.trim()) {
     throw new Error("GROQ_API_KEY is not configured");
   }
+  if (provider === "gateway" && !getGatewayApiKey()) {
+    throw new Error("AI_GATEWAY_API_KEY is not configured");
+  }
   if (enableSearch) {
-    // The Groq API has no built-in web-search grounding tool (the Vertex AI
-    // googleSearch tool this replaced). Real-world context is injected into
-    // the prompt upstream via Serper instead.
+    // Neither the Groq API nor the Vercel AI Gateway chat-completions path
+    // exposes the web-search grounding tool this replaced (Vertex AI
+    // googleSearch). Real-world context is injected into the prompt upstream
+    // via Serper instead.
     console.warn(
-      "[Gemma] enableSearch requested but web-search grounding is not supported on the Groq API; continuing without it"
+      "[Gemma] enableSearch requested but web-search grounding is not supported; continuing without it"
     );
   }
   const callId = `gemma-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-  const models = [GEMMA_MODEL];
+  const models = [resolveModelForProvider(GEMMA_MODEL, provider)];
   const sanitizedSystemPrompt = stripThinkingTags(systemPrompt);
   const maxRetries = parseNonNegativeInt(
     process.env.GEMMA_MAX_RETRIES,
@@ -209,6 +274,7 @@ export async function callGemma(
   );
   console.log("[Gemma] callGemma invoked", {
     callId,
+    provider,
     models,
     maxRetries,
     retryDelayMs,
@@ -265,19 +331,25 @@ export async function callGemma(
           attempt: attempt + 1,
         });
 
-        const groq = getGroq();
-        const response = await groq.chat.completions.create(
-          {
-            model,
-            messages: [
-              { role: "system", content: sanitizedSystemPrompt },
-              { role: "user", content: userMessage },
-            ],
-            temperature,
-            max_completion_tokens: maxOutputTokens,
-          },
-          { signal: internalSignal }
-        );
+        const client = getClient(provider);
+        const requestBody = {
+          model,
+          messages: [
+            { role: "system", content: sanitizedSystemPrompt },
+            { role: "user", content: userMessage },
+          ],
+          temperature,
+        };
+        // Groq prefers the newer max_completion_tokens parameter; the Vercel
+        // AI Gateway's provider endpoints advertise max_tokens.
+        if (provider === "gateway") {
+          requestBody.max_tokens = maxOutputTokens;
+        } else {
+          requestBody.max_completion_tokens = maxOutputTokens;
+        }
+        const response = await client.chat.completions.create(requestBody, {
+          signal: internalSignal,
+        });
 
         clearTimeout(timeoutId);
         removeParentAbortListener?.();
@@ -290,7 +362,7 @@ export async function callGemma(
         });
 
         if (!response.choices || response.choices.length === 0) {
-          throw new Error("No choices returned from Groq API");
+          throw new Error(`No choices returned from ${provider === "gateway" ? "Vercel AI Gateway" : "Groq API"}`);
         }
 
         const choice = response.choices[0];

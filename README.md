@@ -287,7 +287,7 @@ RealLearn was designed to fix concrete, everyday learning frustrations:
 - **Runtime:** Node.js (ES Modules)
 - **Framework:** Express
 - **Transport:** JSON + Server-Sent Events (SSE) streaming
-- **AI:** Gemma 4 via the Groq API (`groq-sdk`)
+- **AI:** Gemma 4 via the Groq API (`groq-sdk`) or the Vercel AI Gateway (OpenAI-compatible)
 - **Real-world context:** Serper News API
 - **Auth:** Clerk JWT verification via `jose` (remote JWKS + offline fallback)
 - **Persistence:** MongoDB (consent records, moderation logs)
@@ -371,8 +371,11 @@ Real-learn/
 
 ### Backend
 
-- `GROQ_API_KEY=...` *(required; Groq API key from https://console.groq.com/keys)*
-- `GEMMA_MODEL=gemma-4-26b-a4b-it` *(optional; Groq model ID, defaults to gemma-4-26b-a4b-it)*
+- `GROQ_API_KEY=...` *(Groq API key from https://console.groq.com/keys; required unless using the Vercel AI Gateway)*
+- `AI_GATEWAY_API_KEY=...` *(Vercel AI Gateway key; alternative to GROQ_API_KEY — routes calls through the gateway's OpenAI-compatible endpoint. On Vercel deployments, `VERCEL_OIDC_TOKEN` works too)*
+- `GEMMA_PROVIDER=groq|gateway` *(optional; forces the provider. Default: auto — Groq if `GROQ_API_KEY` is set, otherwise the gateway)*
+- `AI_GATEWAY_BASE_URL=https://ai-gateway.vercel.sh/v1` *(optional; override the gateway endpoint)*
+- `GEMMA_MODEL=gemma-4-26b-a4b-it` *(optional; model ID. Un-namespaced IDs are auto-prefixed with `google/` on the gateway, e.g. `google/gemma-4-26b-a4b-it`)*
 - `GEMMA_MAX_RETRIES=2` *(optional; retries per model on 429/5xx/network errors)*
 - `GEMMA_RETRY_DELAY_MS=700` *(optional; base backoff in ms)*
 - `GEMMA_MAX_RETRY_DELAY_MS=5000` *(optional; cap for exponential backoff)*
