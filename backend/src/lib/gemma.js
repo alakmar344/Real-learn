@@ -186,7 +186,14 @@ async function callWorkersAI(accountId, model, body, signal) {
     return await handleStreamingResponse(response);
   }
 
+  if (!contentType.includes("application/json")) {
+    const text = await response.text();
+    console.log("[Gemma] non-JSON response:", text.slice(0, 300));
+    return text;
+  }
+
   const data = await response.json();
+  console.log("[Gemma] API response keys:", Object.keys(data));
   if (data.error) {
     throw new GemmaApiError(
       data.error.code || 500,
@@ -370,19 +377,37 @@ export async function callGemma(
       if (result == null) {
         throw new Error("Empty result returned from Cloudflare Workers AI");
       }
-      const text = stripThinkingTags(
-        typeof result === "string"
-          ? result
-          : result?.choices?.[0]?.message?.content ??
-              result?.response ??
-              ""
-      );
+      console.log("[Gemma] raw result structure", {
+        callId,
+        type: typeof result,
+        keys: typeof result === "object" ? Object.keys(result) : null,
+        preview: JSON.stringify(result).slice(0, 500),
+      });
+
+      let text;
+      if (typeof result === "string") {
+        text = result;
+      } else {
+        text =
+          result?.choices?.[0]?.message?.content ??
+          result?.choices?.[0]?.text ??
+          result?.result?.response ??
+          result?.response ??
+          result?.message?.content ??
+          result?.content ??
+          "";
+        if (typeof text !== "string") {
+          text = JSON.stringify(text);
+        }
+      }
+      text = stripThinkingTags(text);
 
       console.log("[Gemma] parsed response text", {
         callId,
         model,
         attempt: attempt + 1,
         textLength: text.length,
+        textPreview: text.slice(0, 300),
       });
 
       resetTimeoutCircuit();

@@ -676,6 +676,7 @@ Level: ${level}${
     console.log("[Gemma] callGemma success", {
       requestId,
       rawLength: raw.length,
+      rawPreview: raw.slice(0, 500),
     });
 
     // SPEED TACTIC: kick off the LLM output-moderation call immediately and
@@ -711,7 +712,7 @@ Level: ${level}${
 
     const parsed = parseJSON(raw);
     if (parsed === null) {
-      console.warn("[generate-lesson] parseJSON returned null", { requestId });
+      console.warn("[generate-lesson] parseJSON returned null", { requestId, rawPreview: raw?.slice?.(0, 500) });
       sendEvent("error", {
         error: "Failed to parse AI response. Please try again.",
       });
@@ -722,6 +723,21 @@ Level: ${level}${
     if (!isValidJourney(normalized, mode)) {
       console.warn("[generate-lesson] normalizeJourney/isValidJourney failed", {
         requestId,
+        parsedKeys: Object.keys(parsed),
+        hasParts: Array.isArray(parsed.parts),
+        partsCount: parsed.parts?.length,
+        hasKeyTakeaways: Array.isArray(parsed.keyTakeaways),
+        keyTakeawaysCount: parsed.keyTakeaways?.length,
+        samplePart: parsed.parts?.[0]
+          ? {
+              keys: Object.keys(parsed.parts[0]),
+              hasTitle: typeof parsed.parts[0].title === "string",
+              hasContent: typeof parsed.parts[0].content === "string",
+              hasQuiz: Array.isArray(parsed.parts[0].quiz),
+              quizLength: parsed.parts[0].quiz?.length,
+            }
+          : null,
+        rawPreview: raw?.slice?.(0, 1000),
       });
       sendEvent("error", {
         error: "AI response format was invalid. Please try again.",
