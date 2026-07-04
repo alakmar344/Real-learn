@@ -1,14 +1,6 @@
 import Cloudflare from "cloudflare";
-import Groq from "groq-sdk";
-import OpenAI from "openai";
 
 const GEMMA_MODEL = process.env.GEMMA_MODEL || "gemma-4-26b-a4b-it";
-// Vercel AI Gateway's OpenAI-compatible Chat Completions endpoint.
-// https://vercel.com/docs/ai-gateway/sdks-and-apis
-const DEFAULT_GATEWAY_BASE_URL = "https://ai-gateway.vercel.sh/v1";
-// Gateway model IDs are namespaced as "creator/model-name"
-// (e.g. "google/gemma-4-26b-a4b-it"); Cloudflare Workers AI model IDs as
-// "@cf/creator/model-name" (e.g. "@cf/google/gemma-4-26b-a4b-it").
 const DEFAULT_MODEL_CREATOR = "google";
 const DEFAULT_MAX_RETRIES = 2;
 const DEFAULT_RETRY_DELAY_MS = 700;
@@ -18,91 +10,22 @@ const DEFAULT_TIMEOUT_CIRCUIT_COOLDOWN_MS = 60000;
 const PARSE_JSON_LOG_PREVIEW_CHARS = 300;
 
 let cachedClient = null;
-let cachedClientProvider = null;
 
-function getGatewayApiKey() {
-  // AI_GATEWAY_API_KEY is the standard key; VERCEL_OIDC_TOKEN is issued
-  // automatically on Vercel deployments and also authenticates the gateway.
-  return (
-    process.env.AI_GATEWAY_API_KEY?.trim() ||
-    process.env.VERCEL_OIDC_TOKEN?.trim() ||
-    ""
-  );
+function resolveModel(model) {
+  if (model.startsWith("@cf/")) return model;
+  return model.includes("/")
+    ? `@cf/${model}`
+    : `@cf/${DEFAULT_MODEL_CREATOR}/${model}`;
 }
 
-function hasCloudflareConfig() {
-  return Boolean(
-    process.env.CLOUDFLARE_API_TOKEN?.trim() &&
-      process.env.CLOUDFLARE_ACCOUNT_ID?.trim()
-  );
-}
-
-export function resolveGemmaProvider() {
-  const explicit = process.env.GEMMA_PROVIDER?.trim().toLowerCase();
-  if (
-    explicit === "cloudflare" ||
-    explicit === "groq" ||
-    explicit === "gateway"
-  ) {
-    return explicit;
+function getClient() {
+  if (cachedClient) return cachedClient;
+  const apiToken = process.env.CLOUDFLARE_API_TOKEN?.trim();
+  if (!apiToken) {
+    throw new Error("CLOUDFLARE_API_TOKEN is not configured");
   }
-  if (explicit) {
-    console.warn(
-      `[Gemma] Unknown GEMMA_PROVIDER "${explicit}" (expected "cloudflare", "groq" or "gateway"); auto-detecting from configured keys`
-    );
-  }
-  // Auto-detect: Cloudflare Workers AI is the primary provider; direct Groq
-  // and the Vercel AI Gateway remain as fallbacks for existing deployments.
-  if (hasCloudflareConfig()) return "cloudflare";
-  if (process.env.GROQ_API_KEY?.trim()) return "groq";
-  if (getGatewayApiKey()) return "gateway";
-  return "cloudflare";
-}
-
-function getClient(provider) {
-  if (cachedClient && cachedClientProvider === provider) {
-    return cachedClient;
-  }
-  // Retries are handled by our own retry loop below, so disable the SDKs'
-  // built-in retry mechanism to avoid compounding delays.
-  if (provider === "cloudflare") {
-    const apiToken = process.env.CLOUDFLARE_API_TOKEN?.trim();
-    if (!apiToken) {
-      throw new Error("CLOUDFLARE_API_TOKEN is not configured");
-    }
-    cachedClient = new Cloudflare({ apiToken, maxRetries: 0 });
-  } else if (provider === "gateway") {
-    const apiKey = getGatewayApiKey();
-    if (!apiKey) {
-      throw new Error("AI_GATEWAY_API_KEY is not configured");
-    }
-    cachedClient = new OpenAI({
-      apiKey,
-      baseURL:
-        process.env.AI_GATEWAY_BASE_URL?.trim() || DEFAULT_GATEWAY_BASE_URL,
-      maxRetries: 0,
-    });
-  } else {
-    const apiKey = process.env.GROQ_API_KEY;
-    if (!apiKey) {
-      throw new Error("GROQ_API_KEY is not configured");
-    }
-    cachedClient = new Groq({ apiKey, maxRetries: 0 });
-  }
-  cachedClientProvider = provider;
+  cachedClient = new Cloudflare({ apiToken, maxRetries: 0 });
   return cachedClient;
-}
-
-function resolveModelForProvider(model, provider) {
-  if (provider === "gateway" && !model.includes("/")) {
-    return `${DEFAULT_MODEL_CREATOR}/${model}`;
-  }
-  if (provider === "cloudflare" && !model.startsWith("@cf/")) {
-    return model.includes("/")
-      ? `@cf/${model}`
-      : `@cf/${DEFAULT_MODEL_CREATOR}/${model}`;
-  }
-  return model;
 }
 
 const timeoutCircuitState = {
@@ -235,19 +158,10 @@ function isAbortError(error) {
 }
 
 function normalizeSdkError(error) {
-  if (
-    error instanceof Cloudflare.APIConnectionError ||
-    error instanceof Groq.APIConnectionError ||
-    error instanceof OpenAI.APIConnectionError
-  ) {
-    // Surface transient connection problems as a retryable network error.
+  if (error instanceof Cloudflare.APIConnectionError) {
     return new TypeError(`network error: ${error.message}`);
   }
-  if (
-    error instanceof Cloudflare.APIError ||
-    error instanceof Groq.APIError ||
-    error instanceof OpenAI.APIError
-  ) {
+  if (error instanceof Cloudflare.APIError) {
     const status = typeof error.status === "number" ? error.status : 0;
     return new GemmaApiError(status, error.name ?? "APIError", error.message);
   }
@@ -263,29 +177,18 @@ export async function callGemma(
   signal = null,
   maxOutputTokens = 3000
 ) {
-  const provider = resolveGemmaProvider();
-  if (provider === "cloudflare" && !hasCloudflareConfig()) {
+  if (!process.env.CLOUDFLARE_API_TOKEN?.trim() || !process.env.CLOUDFLARE_ACCOUNT_ID?.trim()) {
     throw new Error(
       "CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID are not configured"
     );
   }
-  if (provider === "groq" && !process.env.GROQ_API_KEY?.trim()) {
-    throw new Error("GROQ_API_KEY is not configured");
-  }
-  if (provider === "gateway" && !getGatewayApiKey()) {
-    throw new Error("AI_GATEWAY_API_KEY is not configured");
-  }
   if (enableSearch) {
-    // None of the supported providers (Cloudflare Workers AI, Groq, Vercel
-    // AI Gateway) exposes the web-search grounding tool this replaced
-    // (Vertex AI googleSearch). Real-world context is injected into the
-    // prompt upstream via Serper instead.
     console.warn(
       "[Gemma] enableSearch requested but web-search grounding is not supported; continuing without it"
     );
   }
   const callId = `gemma-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-  const models = [resolveModelForProvider(GEMMA_MODEL, provider)];
+  const model = resolveModel(GEMMA_MODEL);
   const sanitizedSystemPrompt = stripThinkingTags(systemPrompt);
   const maxRetries = parseNonNegativeInt(
     process.env.GEMMA_MAX_RETRIES,
@@ -309,8 +212,7 @@ export async function callGemma(
   );
   console.log("[Gemma] callGemma invoked", {
     callId,
-    provider,
-    models,
+    model,
     maxRetries,
     retryDelayMs,
     maxRetryDelayMs,
@@ -326,189 +228,107 @@ export async function callGemma(
 
   let lastError = null;
 
-  for (let modelIndex = 0; modelIndex < models.length; modelIndex++) {
-    const model = models[modelIndex];
-    const isLastModel = modelIndex === models.length - 1;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    console.log("[Gemma] attempt start", {
+      callId,
+      model,
+      attempt: attempt + 1,
+      maxAttempts: maxRetries + 1,
+    });
+    const controller = new AbortController();
+    const internalSignal = controller.signal;
+    let removeParentAbortListener = null;
+    let parentAbortTriggered = false;
+    let timeoutTriggered = false;
+    if (signal) {
+      const abortFromParent = () => {
+        parentAbortTriggered = true;
+        controller.abort();
+      };
+      signal.addEventListener("abort", abortFromParent, { once: true });
+      removeParentAbortListener = () => {
+        signal.removeEventListener("abort", abortFromParent);
+      };
+    }
 
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-      console.log("[Gemma] attempt start", {
+    const timeoutId = setTimeout(() => {
+      timeoutTriggered = true;
+      controller.abort();
+    }, timeoutMs);
+
+    try {
+      const startedAt = Date.now();
+      console.log("[Gemma] SDK model", {
         callId,
         model,
         attempt: attempt + 1,
-        maxAttempts: maxRetries + 1,
       });
-      const controller = new AbortController();
-      const internalSignal = controller.signal;
-      let removeParentAbortListener = null;
-      let parentAbortTriggered = false;
-      let timeoutTriggered = false;
-      if (signal) {
-        const abortFromParent = () => {
-          parentAbortTriggered = true;
-          controller.abort();
-        };
-        signal.addEventListener("abort", abortFromParent, { once: true });
-        removeParentAbortListener = () => {
-          signal.removeEventListener("abort", abortFromParent);
-        };
+
+      const client = getClient();
+      const messages = [
+        { role: "system", content: sanitizedSystemPrompt },
+        { role: "user", content: userMessage },
+      ];
+
+      const result = await client.ai.run(
+        model,
+        {
+          account_id: process.env.CLOUDFLARE_ACCOUNT_ID.trim(),
+          messages,
+          temperature,
+          max_tokens: maxOutputTokens,
+        },
+        { signal: internalSignal }
+      );
+
+      clearTimeout(timeoutId);
+      removeParentAbortListener?.();
+      console.log("[Gemma] response received", {
+        callId,
+        model,
+        attempt: attempt + 1,
+        latencyMs: Date.now() - startedAt,
+      });
+
+      if (result == null) {
+        throw new Error("Empty result returned from Cloudflare Workers AI");
       }
+      const text = stripThinkingTags(
+        typeof result === "string"
+          ? result
+          : result?.response ??
+              result?.choices?.[0]?.message?.content ??
+              ""
+      );
 
-      const timeoutId = setTimeout(() => {
-        timeoutTriggered = true;
-        controller.abort();
-      }, timeoutMs);
+      console.log("[Gemma] parsed response text", {
+        callId,
+        model,
+        attempt: attempt + 1,
+        textLength: text.length,
+      });
 
-      try {
-        const startedAt = Date.now();
-        console.log("[Gemma] SDK model", {
-          callId,
-          model,
-          attempt: attempt + 1,
-        });
+      resetTimeoutCircuit();
+      console.log("[Gemma] callGemma success", {
+        callId,
+        model,
+        attempt: attempt + 1,
+      });
+      return text;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      removeParentAbortListener?.();
 
-        const client = getClient(provider);
-        const messages = [
-          { role: "system", content: sanitizedSystemPrompt },
-          { role: "user", content: userMessage },
-        ];
-
-        let text;
-        let finishReason = null;
-        if (provider === "cloudflare") {
-          // Cloudflare Workers AI: POST /accounts/{account_id}/ai/run/{model}
-          const result = await client.ai.run(
-            model,
-            {
-              account_id: process.env.CLOUDFLARE_ACCOUNT_ID.trim(),
-              messages,
-              temperature,
-              max_tokens: maxOutputTokens,
-            },
-            { signal: internalSignal }
-          );
-
-          clearTimeout(timeoutId);
-          removeParentAbortListener?.();
-          console.log("[Gemma] response received", {
+      if (isAbortError(error)) {
+        if (timeoutTriggered) {
+          console.warn("[Gemma] request timed out", {
             callId,
             model,
             attempt: attempt + 1,
-            latencyMs: Date.now() - startedAt,
+            timeoutMs,
           });
-
-          if (result == null) {
-            throw new Error("Empty result returned from Cloudflare Workers AI");
-          }
-          text = stripThinkingTags(
-            typeof result === "string"
-              ? result
-              : result?.response ??
-                  result?.choices?.[0]?.message?.content ??
-                  ""
-          );
-        } else {
-          const requestBody = { model, messages, temperature };
-          // Groq prefers the newer max_completion_tokens parameter; the
-          // Vercel AI Gateway's provider endpoints advertise max_tokens.
-          if (provider === "gateway") {
-            requestBody.max_tokens = maxOutputTokens;
-          } else {
-            requestBody.max_completion_tokens = maxOutputTokens;
-          }
-          const response = await client.chat.completions.create(requestBody, {
-            signal: internalSignal,
-          });
-
-          clearTimeout(timeoutId);
-          removeParentAbortListener?.();
-          console.log("[Gemma] response received", {
-            callId,
-            model,
-            attempt: attempt + 1,
-            choicesCount: response?.choices?.length ?? 0,
-            latencyMs: Date.now() - startedAt,
-          });
-
-          if (!response.choices || response.choices.length === 0) {
-            throw new Error(`No choices returned from ${provider === "gateway" ? "Vercel AI Gateway" : "Groq API"}`);
-          }
-
-          const choice = response.choices[0];
-          finishReason = choice?.finish_reason;
-
-          if (finishReason === "content_filter") {
-            throw new Error(
-              "Content was flagged by safety filters. Please try a different question or rephrase your request."
-            );
-          }
-
-          text = stripThinkingTags(choice?.message?.content ?? "");
-        }
-
-        console.log("[Gemma] parsed response text", {
-          callId,
-          model,
-          attempt: attempt + 1,
-          finishReason,
-          textLength: text.length,
-        });
-
-        resetTimeoutCircuit();
-        console.log("[Gemma] callGemma success", {
-          callId,
-          model,
-          attempt: attempt + 1,
-        });
-        return text;
-      } catch (error) {
-        clearTimeout(timeoutId);
-        removeParentAbortListener?.();
-
-        if (isAbortError(error)) {
-          if (timeoutTriggered) {
-            console.warn("[Gemma] request timed out", {
-              callId,
-              model,
-              attempt: attempt + 1,
-              timeoutMs,
-            });
-            const timeoutError = new GemmaTimeoutError(timeoutMs);
-            lastError = timeoutError;
-            const circuitOpened = recordTimeoutFailure(
-              timeoutCircuitFailureThreshold,
-              timeoutCircuitCooldownMs
-            );
-            if (circuitOpened) {
-              throw new GemmaCircuitOpenError(timeoutCircuitCooldownMs);
-            }
-            continue;
-          }
-          if (parentAbortTriggered || signal?.aborted) {
-            console.warn("[Gemma] request aborted by caller", {
-              callId,
-              model,
-              attempt: attempt + 1,
-            });
-            throw error;
-          }
-          console.warn("[Gemma] request aborted", {
-            callId,
-            model,
-            attempt: attempt + 1,
-          });
-          throw error;
-        }
-
-        const normalizedError = normalizeSdkError(error);
-        console.warn("[Gemma] attempt failed", {
-          callId,
-          model,
-          attempt: attempt + 1,
-          errorName: normalizedError?.name,
-          errorMessage: normalizedError?.message,
-        });
-        lastError = normalizedError;
-        if (normalizedError instanceof GemmaTimeoutError) {
+          const timeoutError = new GemmaTimeoutError(timeoutMs);
+          lastError = timeoutError;
           const circuitOpened = recordTimeoutFailure(
             timeoutCircuitFailureThreshold,
             timeoutCircuitCooldownMs
@@ -516,36 +336,63 @@ export async function callGemma(
           if (circuitOpened) {
             throw new GemmaCircuitOpenError(timeoutCircuitCooldownMs);
           }
+          continue;
         }
-
-        const isLastAttempt = attempt === maxRetries;
-        if (!isLastAttempt && isRetryableGemmaError(normalizedError)) {
-          const waitMs = Math.min(
-            retryDelayMs * Math.pow(2, attempt),
-            maxRetryDelayMs
-          );
-          console.warn(
-            `[Gemma] Retrying model "${model}" after attempt ${attempt + 1} failed`
-          );
-          console.warn("[Gemma] retry scheduled", {
+        if (parentAbortTriggered || signal?.aborted) {
+          console.warn("[Gemma] request aborted by caller", {
             callId,
             model,
             attempt: attempt + 1,
-            waitMs,
           });
-          await sleep(waitMs);
-          continue;
+          throw error;
         }
-
-        if (!isLastModel && isRetryableGemmaError(normalizedError)) {
-          console.warn(
-            `[Gemma] Switching to fallback model after retries failed for "${model}"`
-          );
-          break;
-        }
-
-        throw normalizedError;
+        console.warn("[Gemma] request aborted", {
+          callId,
+          model,
+          attempt: attempt + 1,
+        });
+        throw error;
       }
+
+      const normalizedError = normalizeSdkError(error);
+      console.warn("[Gemma] attempt failed", {
+        callId,
+        model,
+        attempt: attempt + 1,
+        errorName: normalizedError?.name,
+        errorMessage: normalizedError?.message,
+      });
+      lastError = normalizedError;
+      if (normalizedError instanceof GemmaTimeoutError) {
+        const circuitOpened = recordTimeoutFailure(
+          timeoutCircuitFailureThreshold,
+          timeoutCircuitCooldownMs
+        );
+        if (circuitOpened) {
+          throw new GemmaCircuitOpenError(timeoutCircuitCooldownMs);
+        }
+      }
+
+      const isLastAttempt = attempt === maxRetries;
+      if (!isLastAttempt && isRetryableGemmaError(normalizedError)) {
+        const waitMs = Math.min(
+          retryDelayMs * Math.pow(2, attempt),
+          maxRetryDelayMs
+        );
+        console.warn(
+          `[Gemma] Retrying after attempt ${attempt + 1} failed`
+        );
+        console.warn("[Gemma] retry scheduled", {
+          callId,
+          model,
+          attempt: attempt + 1,
+          waitMs,
+        });
+        await sleep(waitMs);
+        continue;
+      }
+
+      throw normalizedError;
     }
   }
 
@@ -554,7 +401,7 @@ export async function callGemma(
     lastErrorName: lastError?.name,
     lastErrorMessage: lastError?.message,
   });
-  throw lastError || new Error("Unable to generate lesson after exhausting retries and fallback models");
+  throw lastError || new Error("Unable to generate lesson after exhausting retries");
 }
 
 function closeTruncatedJSON(text) {

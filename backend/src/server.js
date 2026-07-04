@@ -111,14 +111,9 @@ function validateStartupConfig() {
     process.env.CLOUDFLARE_API_TOKEN?.trim() &&
       process.env.CLOUDFLARE_ACCOUNT_ID?.trim()
   );
-  const hasGroqKey = Boolean(process.env.GROQ_API_KEY?.trim());
-  const hasGatewayKey = Boolean(
-    process.env.AI_GATEWAY_API_KEY?.trim() ||
-      process.env.VERCEL_OIDC_TOKEN?.trim()
-  );
-  if (!hasCloudflareConfig && !hasGroqKey && !hasGatewayKey) {
+  if (!hasCloudflareConfig) {
     throw new Error(
-      "Missing required environment variables: set CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID (Cloudflare Workers AI), GROQ_API_KEY (direct Groq), or AI_GATEWAY_API_KEY (Vercel AI Gateway)"
+      "Missing required environment variables: set CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID"
     );
   }
 }

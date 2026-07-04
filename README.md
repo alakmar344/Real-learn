@@ -287,7 +287,7 @@ RealLearn was designed to fix concrete, everyday learning frustrations:
 - **Runtime:** Node.js (ES Modules)
 - **Framework:** Express
 - **Transport:** JSON + Server-Sent Events (SSE) streaming
-- **AI:** Gemma 4 via Cloudflare Workers AI (`cloudflare` SDK), with direct Groq (`groq-sdk`) and the Vercel AI Gateway (OpenAI-compatible) as fallbacks
+- **AI:** Gemma 4 via Cloudflare Workers AI (`cloudflare` SDK)
 - **Real-world context:** Serper News API
 - **Auth:** Clerk JWT verification via `jose` (remote JWKS + offline fallback)
 - **Persistence:** MongoDB (consent records, moderation logs)
@@ -371,12 +371,8 @@ Real-learn/
 
 ### Backend
 
-- `CLOUDFLARE_API_TOKEN=...` + `CLOUDFLARE_ACCOUNT_ID=...` *(primary; Cloudflare Workers AI. Create a token with the "Workers AI" permission in the Cloudflare dashboard)*
-- `GROQ_API_KEY=...` *(fallback; direct Groq API key from https://console.groq.com/keys)*
-- `AI_GATEWAY_API_KEY=...` *(fallback; Vercel AI Gateway key — routes calls through the gateway's OpenAI-compatible endpoint. On Vercel deployments, `VERCEL_OIDC_TOKEN` works too)*
-- `GEMMA_PROVIDER=cloudflare|groq|gateway` *(optional; forces the provider. Default: auto-detected from configured credentials, preferring Cloudflare)*
-- `AI_GATEWAY_BASE_URL=https://ai-gateway.vercel.sh/v1` *(optional; override the gateway endpoint)*
-- `GEMMA_MODEL=gemma-4-26b-a4b-it` *(optional; model ID. Un-namespaced IDs are auto-prefixed per provider: `@cf/google/…` on Cloudflare, `google/…` on the gateway)*
+- `CLOUDFLARE_API_TOKEN=...` + `CLOUDFLARE_ACCOUNT_ID=...` *(Cloudflare Workers AI. Create a token with the "Workers AI" permission in the Cloudflare dashboard)*
+- `GEMMA_MODEL=gemma-4-26b-a4b-it` *(optional; model ID. Un-namespaced IDs are auto-prefixed to `@cf/google/…`)
 - `GEMMA_MAX_RETRIES=2` *(optional; retries per model on 429/5xx/network errors)*
 - `GEMMA_RETRY_DELAY_MS=700` *(optional; base backoff in ms)*
 - `GEMMA_MAX_RETRY_DELAY_MS=5000` *(optional; cap for exponential backoff)*
