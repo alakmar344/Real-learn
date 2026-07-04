@@ -371,7 +371,10 @@ Real-learn/
 
 ### Backend
 
-- `GEMMA_API_KEY=...` *(required)*
+- `GOOGLE_CLOUD_PROJECT=...` *(required; GCP project ID for Vertex AI)*
+- `GOOGLE_CLOUD_LOCATION=us-central1` *(optional; Vertex AI region, defaults to us-central1)*
+- `GOOGLE_APPLICATION_CREDENTIALS=/path/to/key.json` *(standard ADC var; path to a service account JSON key with the "Vertex AI User" role)*
+- `GEMMA_API_KEY` *(no longer needed — model calls now go through Vertex AI)*
 - `GEMMA_MAX_RETRIES=2` *(optional; retries per model on 429/5xx/network errors)*
 - `GEMMA_RETRY_DELAY_MS=700` *(optional; base backoff in ms)*
 - `GEMMA_MAX_RETRY_DELAY_MS=5000` *(optional; cap for exponential backoff)*

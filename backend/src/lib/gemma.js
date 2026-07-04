@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI, GoogleGenerativeAIError, GoogleGenerativeAIFetchError, GoogleGenerativeAIResponseError, GoogleGenerativeAIAbortError } from "@google/generative-ai";
+import { GoogleGenAI, ApiError } from "@google/genai";
 
 const GEMMA_MODEL = process.env.GEMMA_MODEL || "gemma-4-26b-a4b-it";
 const DEFAULT_MAX_RETRIES = 2;
@@ -12,11 +12,14 @@ let genAI = null;
 
 function getGenAI() {
   if (!genAI) {
-    const apiKey = process.env.GEMMA_API_KEY;
-    if (!apiKey) {
-      throw new Error("GEMMA_API_KEY is not configured");
+    const project = process.env.GOOGLE_CLOUD_PROJECT;
+    if (!project) {
+      throw new Error("GOOGLE_CLOUD_PROJECT is not configured");
     }
-    genAI = new GoogleGenerativeAI(apiKey);
+    const location = process.env.GOOGLE_CLOUD_LOCATION || "us-central1";
+    // Credentials are resolved via Application Default Credentials (ADC):
+    // point GOOGLE_APPLICATION_CREDENTIALS at the service account JSON key file.
+    genAI = new GoogleGenAI({ vertexai: true, project, location });
   }
   return genAI;
 }
@@ -142,26 +145,18 @@ function resetTimeoutCircuit() {
   timeoutCircuitState.openUntil = 0;
 }
 
+function isAbortError(error) {
+  return (
+    error instanceof Error &&
+    (error.name === "AbortError" ||
+      (typeof error.message === "string" && /\baborted\b/i.test(error.message)))
+  );
+}
+
 function normalizeSdkError(error) {
-  if (error instanceof GoogleGenerativeAIAbortError) {
-    return new GemmaTimeoutError(0);
-  }
-  if (error instanceof GoogleGenerativeAIFetchError) {
-    const details = Array.isArray(error.errorDetails)
-      ? error.errorDetails.map((d) => (typeof d === "string" ? d : JSON.stringify(d))).join(", ")
-      : String(error.errorDetails ?? "");
-    return new GemmaApiError(
-      error.status ?? 0,
-      error.statusText ?? "Unknown",
-      details || error.message
-    );
-  }
-  if (error instanceof GoogleGenerativeAIResponseError) {
-    const message = typeof error.response === "string" ? error.response : JSON.stringify(error.response);
-    return new Error(message || error.message);
-  }
-  if (error instanceof GoogleGenerativeAIError) {
-    return new Error(error.message);
+  if (error instanceof ApiError) {
+    const status = typeof error.status === "number" ? error.status : 0;
+    return new GemmaApiError(status, error.name ?? "ApiError", error.message);
   }
   return error;
 }
@@ -201,9 +196,8 @@ export async function callGemma(
   signal = null,
   maxOutputTokens = 3000
 ) {
-  const apiKey = process.env.GEMMA_API_KEY;
-  if (!apiKey) {
-    throw new Error("GEMMA_API_KEY is not configured");
+  if (!process.env.GOOGLE_CLOUD_PROJECT?.trim()) {
+    throw new Error("GOOGLE_CLOUD_PROJECT is not configured");
   }
   const callId = `gemma-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const models = [GEMMA_MODEL];
@@ -287,22 +281,17 @@ export async function callGemma(
         });
 
         const genAIInstance = getGenAI();
-        const sdkModel = genAIInstance.getGenerativeModel({
+        const response = await genAIInstance.models.generateContent({
           model,
-          systemInstruction: sanitizedSystemPrompt,
-          tools: enableSearch ? [{ googleSearch: {} }] : undefined,
-          generationConfig: {
+          contents: [{ role: "user", parts: [{ text: userMessage }] }],
+          config: {
+            systemInstruction: sanitizedSystemPrompt,
+            tools: enableSearch ? [{ googleSearch: {} }] : undefined,
             temperature,
             maxOutputTokens,
+            abortSignal: internalSignal,
           },
         });
-
-        const requestOptions = { signal: internalSignal };
-        const result = await sdkModel.generateContent(
-          userMessage,
-          requestOptions
-        );
-        const response = result.response;
 
         clearTimeout(timeoutId);
         removeParentAbortListener?.();
@@ -316,7 +305,7 @@ export async function callGemma(
 
         if (!response.candidates || response.candidates.length === 0) {
           if (response.promptFeedback?.blockReason) {
-            throw new GoogleGenerativeAIResponseError(
+            throw new Error(
               `Response was blocked due to ${response.promptFeedback.blockReason}: ${response.promptFeedback.blockReasonMessage ?? ""}`
             );
           }
@@ -368,7 +357,7 @@ export async function callGemma(
         clearTimeout(timeoutId);
         removeParentAbortListener?.();
 
-        if (error instanceof GoogleGenerativeAIAbortError || (error instanceof Error && error.name === "AbortError")) {
+        if (isAbortError(error)) {
           if (timeoutTriggered) {
             console.warn("[Gemma] request timed out", {
               callId,
