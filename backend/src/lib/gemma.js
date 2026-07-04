@@ -6,11 +6,6 @@ const DEFAULT_TIMEOUT_CIRCUIT_FAILURE_THRESHOLD = 5;
 const DEFAULT_TIMEOUT_CIRCUIT_COOLDOWN_MS = 60000;
 const PARSE_JSON_LOG_PREVIEW_CHARS = 300;
 
-function resolveModel(model) {
-  if (model.startsWith("@cf/")) return model;
-  return `@cf/${model}`;
-}
-
 const timeoutCircuitState = {
   consecutiveTimeouts: 0,
   openUntil: 0,
@@ -271,7 +266,7 @@ export async function callGemma(
     );
   }
   const callId = `gemma-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-  const model = resolveModel(GEMMA_MODEL);
+  const model = GEMMA_MODEL;
   const sanitizedSystemPrompt = stripThinkingTags(systemPrompt);
   const maxRetries = parseNonNegativeInt(
     process.env.GEMMA_MAX_RETRIES,
