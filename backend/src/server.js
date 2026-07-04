@@ -107,7 +107,7 @@ let consecutiveLessonFailures = 0;
 let lessonRequestCounter = 0;
 
 function validateStartupConfig() {
-  const requiredVars = ["GOOGLE_CLOUD_PROJECT"];
+  const requiredVars = ["GROQ_API_KEY"];
   const missing = requiredVars.filter((key) => !process.env[key]?.trim());
   if (missing.length > 0) {
     throw new Error(`Missing required environment variables: ${missing.join(", ")}`);

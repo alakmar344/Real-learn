@@ -111,7 +111,7 @@ Everything you do is **persisted automatically**, so you can close the tab and p
 
 ## Powered by Gemma 4
 
-RealLearn runs on **Gemma 4 (`gemma-4-26b-a4b-it`)** via the Gemini API — and we didn't just call the model and hope for the best. We engineered a sophisticated prompting and reliability layer around it to guarantee educational quality and structural consistency on every single request.
+RealLearn runs on **Gemma 4 (`gemma-4-26b-a4b-it`)** via the Groq API — and we didn't just call the model and hope for the best. We engineered a sophisticated prompting and reliability layer around it to guarantee educational quality and structural consistency on every single request.
 
 ### Key Technical Highlights
 
@@ -287,7 +287,7 @@ RealLearn was designed to fix concrete, everyday learning frustrations:
 - **Runtime:** Node.js (ES Modules)
 - **Framework:** Express
 - **Transport:** JSON + Server-Sent Events (SSE) streaming
-- **AI:** Gemma 4 via the Gemini API
+- **AI:** Gemma 4 via the Groq API (`groq-sdk`)
 - **Real-world context:** Serper News API
 - **Auth:** Clerk JWT verification via `jose` (remote JWKS + offline fallback)
 - **Persistence:** MongoDB (consent records, moderation logs)
@@ -371,10 +371,8 @@ Real-learn/
 
 ### Backend
 
-- `GOOGLE_CLOUD_PROJECT=...` *(required; GCP project ID for Vertex AI)*
-- `GOOGLE_CLOUD_LOCATION=us-central1` *(optional; Vertex AI region, defaults to us-central1)*
-- `GOOGLE_APPLICATION_CREDENTIALS=/path/to/key.json` *(standard ADC var; path to a service account JSON key with the "Vertex AI User" role)*
-- `GEMMA_API_KEY` *(no longer needed — model calls now go through Vertex AI)*
+- `GROQ_API_KEY=...` *(required; Groq API key from https://console.groq.com/keys)*
+- `GEMMA_MODEL=gemma-4-26b-a4b-it` *(optional; Groq model ID, defaults to gemma-4-26b-a4b-it)*
 - `GEMMA_MAX_RETRIES=2` *(optional; retries per model on 429/5xx/network errors)*
 - `GEMMA_RETRY_DELAY_MS=700` *(optional; base backoff in ms)*
 - `GEMMA_MAX_RETRY_DELAY_MS=5000` *(optional; cap for exponential backoff)*

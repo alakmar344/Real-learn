@@ -1,4 +1,4 @@
-import { GoogleGenAI, ApiError } from "@google/genai";
+import Groq from "groq-sdk";
 
 const GEMMA_MODEL = process.env.GEMMA_MODEL || "gemma-4-26b-a4b-it";
 const DEFAULT_MAX_RETRIES = 2;
@@ -8,20 +8,19 @@ const DEFAULT_TIMEOUT_CIRCUIT_FAILURE_THRESHOLD = 5;
 const DEFAULT_TIMEOUT_CIRCUIT_COOLDOWN_MS = 60000;
 const PARSE_JSON_LOG_PREVIEW_CHARS = 300;
 
-let genAI = null;
+let groqClient = null;
 
-function getGenAI() {
-  if (!genAI) {
-    const project = process.env.GOOGLE_CLOUD_PROJECT;
-    if (!project) {
-      throw new Error("GOOGLE_CLOUD_PROJECT is not configured");
+function getGroq() {
+  if (!groqClient) {
+    const apiKey = process.env.GROQ_API_KEY;
+    if (!apiKey) {
+      throw new Error("GROQ_API_KEY is not configured");
     }
-    const location = process.env.GOOGLE_CLOUD_LOCATION || "us-central1";
-    // Credentials are resolved via Application Default Credentials (ADC):
-    // point GOOGLE_APPLICATION_CREDENTIALS at the service account JSON key file.
-    genAI = new GoogleGenAI({ vertexai: true, project, location });
+    // Retries are handled by our own retry loop below, so disable the SDK's
+    // built-in retry mechanism to avoid compounding delays.
+    groqClient = new Groq({ apiKey, maxRetries: 0 });
   }
-  return genAI;
+  return groqClient;
 }
 
 const timeoutCircuitState = {
@@ -154,37 +153,15 @@ function isAbortError(error) {
 }
 
 function normalizeSdkError(error) {
-  if (error instanceof ApiError) {
+  if (error instanceof Groq.APIConnectionError) {
+    // Surface transient connection problems as a retryable network error.
+    return new TypeError(`network error: ${error.message}`);
+  }
+  if (error instanceof Groq.APIError) {
     const status = typeof error.status === "number" ? error.status : 0;
-    return new GemmaApiError(status, error.name ?? "ApiError", error.message);
+    return new GemmaApiError(status, error.name ?? "APIError", error.message);
   }
   return error;
-}
-
-function extractTextParts(candidate) {
-  const parts = candidate?.content?.parts;
-  if (!Array.isArray(parts)) {
-    return "";
-  }
-  return parts
-    .filter((p) => !p?.thought)
-    .map((p) => p?.text ?? "")
-    .join("");
-}
-
-function extractGroundingMetadata(candidate) {
-  const meta = candidate?.groundingMetadata;
-  if (!meta) return undefined;
-  const result = {};
-  if (Array.isArray(meta?.webSearchQueries)) {
-    result.webSearchQueries = meta.webSearchQueries;
-  }
-  if (Array.isArray(meta?.groundingChunks)) {
-    result.sources = meta.groundingChunks
-      .filter((c) => c?.web)
-      .map((c) => c.web?.uri);
-  }
-  return Object.keys(result).length > 0 ? result : undefined;
 }
 
 export async function callGemma(
@@ -196,8 +173,16 @@ export async function callGemma(
   signal = null,
   maxOutputTokens = 3000
 ) {
-  if (!process.env.GOOGLE_CLOUD_PROJECT?.trim()) {
-    throw new Error("GOOGLE_CLOUD_PROJECT is not configured");
+  if (!process.env.GROQ_API_KEY?.trim()) {
+    throw new Error("GROQ_API_KEY is not configured");
+  }
+  if (enableSearch) {
+    // The Groq API has no built-in web-search grounding tool (the Vertex AI
+    // googleSearch tool this replaced). Real-world context is injected into
+    // the prompt upstream via Serper instead.
+    console.warn(
+      "[Gemma] enableSearch requested but web-search grounding is not supported on the Groq API; continuing without it"
+    );
   }
   const callId = `gemma-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const models = [GEMMA_MODEL];
@@ -280,18 +265,19 @@ export async function callGemma(
           attempt: attempt + 1,
         });
 
-        const genAIInstance = getGenAI();
-        const response = await genAIInstance.models.generateContent({
-          model,
-          contents: [{ role: "user", parts: [{ text: userMessage }] }],
-          config: {
-            systemInstruction: sanitizedSystemPrompt,
-            tools: enableSearch ? [{ googleSearch: {} }] : undefined,
+        const groq = getGroq();
+        const response = await groq.chat.completions.create(
+          {
+            model,
+            messages: [
+              { role: "system", content: sanitizedSystemPrompt },
+              { role: "user", content: userMessage },
+            ],
             temperature,
-            maxOutputTokens,
-            abortSignal: internalSignal,
+            max_completion_tokens: maxOutputTokens,
           },
-        });
+          { signal: internalSignal }
+        );
 
         clearTimeout(timeoutId);
         removeParentAbortListener?.();
@@ -299,52 +285,31 @@ export async function callGemma(
           callId,
           model,
           attempt: attempt + 1,
-          candidatesCount: response?.candidates?.length ?? 0,
+          choicesCount: response?.choices?.length ?? 0,
           latencyMs: Date.now() - startedAt,
         });
 
-        if (!response.candidates || response.candidates.length === 0) {
-          if (response.promptFeedback?.blockReason) {
-            throw new Error(
-              `Response was blocked due to ${response.promptFeedback.blockReason}: ${response.promptFeedback.blockReasonMessage ?? ""}`
-            );
-          }
-          throw new Error("No candidates returned from Gemma API");
+        if (!response.choices || response.choices.length === 0) {
+          throw new Error("No choices returned from Groq API");
         }
 
-        const candidate = response.candidates[0];
-        const finishReason = candidate?.finishReason;
+        const choice = response.choices[0];
+        const finishReason = choice?.finish_reason;
 
-        if (finishReason === "SAFETY") {
+        if (finishReason === "content_filter") {
           throw new Error(
             "Content was flagged by safety filters. Please try a different question or rephrase your request."
           );
         }
 
-        if (finishReason === "RECITATION") {
-          throw new Error(
-            "Response blocked due to content restrictions. Please try a different question."
-          );
-        }
-
-        const text = extractTextParts(candidate);
-        console.log("[Gemma] parsed candidate text", {
+        const text = stripThinkingTags(choice?.message?.content ?? "");
+        console.log("[Gemma] parsed choice text", {
           callId,
           model,
           attempt: attempt + 1,
-          candidatesCount: response.candidates.length,
+          finishReason,
           textLength: text.length,
         });
-
-        const grounding = extractGroundingMetadata(candidate);
-        if (grounding) {
-          if (grounding.webSearchQueries) {
-            console.log("[Gemma] Web search queries:", grounding.webSearchQueries);
-          }
-          if (grounding.sources) {
-            console.log("[Gemma] Grounding sources:", grounding.sources);
-          }
-        }
 
         resetTimeoutCircuit();
         console.log("[Gemma] callGemma success", {
