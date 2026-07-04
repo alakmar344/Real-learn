@@ -1,3 +1,4 @@
+import Cloudflare from "cloudflare";
 import Groq from "groq-sdk";
 import OpenAI from "openai";
 
@@ -6,8 +7,9 @@ const GEMMA_MODEL = process.env.GEMMA_MODEL || "gemma-4-26b-a4b-it";
 // https://vercel.com/docs/ai-gateway/sdks-and-apis
 const DEFAULT_GATEWAY_BASE_URL = "https://ai-gateway.vercel.sh/v1";
 // Gateway model IDs are namespaced as "creator/model-name"
-// (e.g. "google/gemma-4-26b-a4b-it").
-const DEFAULT_GATEWAY_MODEL_CREATOR = "google";
+// (e.g. "google/gemma-4-26b-a4b-it"); Cloudflare Workers AI model IDs as
+// "@cf/creator/model-name" (e.g. "@cf/google/gemma-4-26b-a4b-it").
+const DEFAULT_MODEL_CREATOR = "google";
 const DEFAULT_MAX_RETRIES = 2;
 const DEFAULT_RETRY_DELAY_MS = 700;
 const DEFAULT_MAX_RETRY_DELAY_MS = 5000;
@@ -28,21 +30,33 @@ function getGatewayApiKey() {
   );
 }
 
+function hasCloudflareConfig() {
+  return Boolean(
+    process.env.CLOUDFLARE_API_TOKEN?.trim() &&
+      process.env.CLOUDFLARE_ACCOUNT_ID?.trim()
+  );
+}
+
 export function resolveGemmaProvider() {
   const explicit = process.env.GEMMA_PROVIDER?.trim().toLowerCase();
-  if (explicit === "groq" || explicit === "gateway") {
+  if (
+    explicit === "cloudflare" ||
+    explicit === "groq" ||
+    explicit === "gateway"
+  ) {
     return explicit;
   }
   if (explicit) {
     console.warn(
-      `[Gemma] Unknown GEMMA_PROVIDER "${explicit}" (expected "groq" or "gateway"); auto-detecting from configured keys`
+      `[Gemma] Unknown GEMMA_PROVIDER "${explicit}" (expected "cloudflare", "groq" or "gateway"); auto-detecting from configured keys`
     );
   }
-  // Auto-detect: prefer direct Groq when its key is present (preserves
-  // existing deployments), otherwise fall back to the Vercel AI Gateway.
+  // Auto-detect: Cloudflare Workers AI is the primary provider; direct Groq
+  // and the Vercel AI Gateway remain as fallbacks for existing deployments.
+  if (hasCloudflareConfig()) return "cloudflare";
   if (process.env.GROQ_API_KEY?.trim()) return "groq";
   if (getGatewayApiKey()) return "gateway";
-  return "groq";
+  return "cloudflare";
 }
 
 function getClient(provider) {
@@ -51,7 +65,13 @@ function getClient(provider) {
   }
   // Retries are handled by our own retry loop below, so disable the SDKs'
   // built-in retry mechanism to avoid compounding delays.
-  if (provider === "gateway") {
+  if (provider === "cloudflare") {
+    const apiToken = process.env.CLOUDFLARE_API_TOKEN?.trim();
+    if (!apiToken) {
+      throw new Error("CLOUDFLARE_API_TOKEN is not configured");
+    }
+    cachedClient = new Cloudflare({ apiToken, maxRetries: 0 });
+  } else if (provider === "gateway") {
     const apiKey = getGatewayApiKey();
     if (!apiKey) {
       throw new Error("AI_GATEWAY_API_KEY is not configured");
@@ -75,7 +95,12 @@ function getClient(provider) {
 
 function resolveModelForProvider(model, provider) {
   if (provider === "gateway" && !model.includes("/")) {
-    return `${DEFAULT_GATEWAY_MODEL_CREATOR}/${model}`;
+    return `${DEFAULT_MODEL_CREATOR}/${model}`;
+  }
+  if (provider === "cloudflare" && !model.startsWith("@cf/")) {
+    return model.includes("/")
+      ? `@cf/${model}`
+      : `@cf/${DEFAULT_MODEL_CREATOR}/${model}`;
   }
   return model;
 }
@@ -211,13 +236,18 @@ function isAbortError(error) {
 
 function normalizeSdkError(error) {
   if (
+    error instanceof Cloudflare.APIConnectionError ||
     error instanceof Groq.APIConnectionError ||
     error instanceof OpenAI.APIConnectionError
   ) {
     // Surface transient connection problems as a retryable network error.
     return new TypeError(`network error: ${error.message}`);
   }
-  if (error instanceof Groq.APIError || error instanceof OpenAI.APIError) {
+  if (
+    error instanceof Cloudflare.APIError ||
+    error instanceof Groq.APIError ||
+    error instanceof OpenAI.APIError
+  ) {
     const status = typeof error.status === "number" ? error.status : 0;
     return new GemmaApiError(status, error.name ?? "APIError", error.message);
   }
@@ -234,6 +264,11 @@ export async function callGemma(
   maxOutputTokens = 3000
 ) {
   const provider = resolveGemmaProvider();
+  if (provider === "cloudflare" && !hasCloudflareConfig()) {
+    throw new Error(
+      "CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID are not configured"
+    );
+  }
   if (provider === "groq" && !process.env.GROQ_API_KEY?.trim()) {
     throw new Error("GROQ_API_KEY is not configured");
   }
@@ -241,10 +276,10 @@ export async function callGemma(
     throw new Error("AI_GATEWAY_API_KEY is not configured");
   }
   if (enableSearch) {
-    // Neither the Groq API nor the Vercel AI Gateway chat-completions path
-    // exposes the web-search grounding tool this replaced (Vertex AI
-    // googleSearch). Real-world context is injected into the prompt upstream
-    // via Serper instead.
+    // None of the supported providers (Cloudflare Workers AI, Groq, Vercel
+    // AI Gateway) exposes the web-search grounding tool this replaced
+    // (Vertex AI googleSearch). Real-world context is injected into the
+    // prompt upstream via Serper instead.
     console.warn(
       "[Gemma] enableSearch requested but web-search grounding is not supported; continuing without it"
     );
@@ -332,50 +367,85 @@ export async function callGemma(
         });
 
         const client = getClient(provider);
-        const requestBody = {
-          model,
-          messages: [
-            { role: "system", content: sanitizedSystemPrompt },
-            { role: "user", content: userMessage },
-          ],
-          temperature,
-        };
-        // Groq prefers the newer max_completion_tokens parameter; the Vercel
-        // AI Gateway's provider endpoints advertise max_tokens.
-        if (provider === "gateway") {
-          requestBody.max_tokens = maxOutputTokens;
-        } else {
-          requestBody.max_completion_tokens = maxOutputTokens;
-        }
-        const response = await client.chat.completions.create(requestBody, {
-          signal: internalSignal,
-        });
+        const messages = [
+          { role: "system", content: sanitizedSystemPrompt },
+          { role: "user", content: userMessage },
+        ];
 
-        clearTimeout(timeoutId);
-        removeParentAbortListener?.();
-        console.log("[Gemma] response received", {
-          callId,
-          model,
-          attempt: attempt + 1,
-          choicesCount: response?.choices?.length ?? 0,
-          latencyMs: Date.now() - startedAt,
-        });
-
-        if (!response.choices || response.choices.length === 0) {
-          throw new Error(`No choices returned from ${provider === "gateway" ? "Vercel AI Gateway" : "Groq API"}`);
-        }
-
-        const choice = response.choices[0];
-        const finishReason = choice?.finish_reason;
-
-        if (finishReason === "content_filter") {
-          throw new Error(
-            "Content was flagged by safety filters. Please try a different question or rephrase your request."
+        let text;
+        let finishReason = null;
+        if (provider === "cloudflare") {
+          // Cloudflare Workers AI: POST /accounts/{account_id}/ai/run/{model}
+          const result = await client.ai.run(
+            model,
+            {
+              account_id: process.env.CLOUDFLARE_ACCOUNT_ID.trim(),
+              messages,
+              temperature,
+              max_tokens: maxOutputTokens,
+            },
+            { signal: internalSignal }
           );
+
+          clearTimeout(timeoutId);
+          removeParentAbortListener?.();
+          console.log("[Gemma] response received", {
+            callId,
+            model,
+            attempt: attempt + 1,
+            latencyMs: Date.now() - startedAt,
+          });
+
+          if (result == null) {
+            throw new Error("Empty result returned from Cloudflare Workers AI");
+          }
+          text = stripThinkingTags(
+            typeof result === "string"
+              ? result
+              : result?.response ??
+                  result?.choices?.[0]?.message?.content ??
+                  ""
+          );
+        } else {
+          const requestBody = { model, messages, temperature };
+          // Groq prefers the newer max_completion_tokens parameter; the
+          // Vercel AI Gateway's provider endpoints advertise max_tokens.
+          if (provider === "gateway") {
+            requestBody.max_tokens = maxOutputTokens;
+          } else {
+            requestBody.max_completion_tokens = maxOutputTokens;
+          }
+          const response = await client.chat.completions.create(requestBody, {
+            signal: internalSignal,
+          });
+
+          clearTimeout(timeoutId);
+          removeParentAbortListener?.();
+          console.log("[Gemma] response received", {
+            callId,
+            model,
+            attempt: attempt + 1,
+            choicesCount: response?.choices?.length ?? 0,
+            latencyMs: Date.now() - startedAt,
+          });
+
+          if (!response.choices || response.choices.length === 0) {
+            throw new Error(`No choices returned from ${provider === "gateway" ? "Vercel AI Gateway" : "Groq API"}`);
+          }
+
+          const choice = response.choices[0];
+          finishReason = choice?.finish_reason;
+
+          if (finishReason === "content_filter") {
+            throw new Error(
+              "Content was flagged by safety filters. Please try a different question or rephrase your request."
+            );
+          }
+
+          text = stripThinkingTags(choice?.message?.content ?? "");
         }
 
-        const text = stripThinkingTags(choice?.message?.content ?? "");
-        console.log("[Gemma] parsed choice text", {
+        console.log("[Gemma] parsed response text", {
           callId,
           model,
           attempt: attempt + 1,

@@ -111,7 +111,7 @@ Everything you do is **persisted automatically**, so you can close the tab and p
 
 ## Powered by Gemma 4
 
-RealLearn runs on **Gemma 4 (`gemma-4-26b-a4b-it`)** via the Groq API — and we didn't just call the model and hope for the best. We engineered a sophisticated prompting and reliability layer around it to guarantee educational quality and structural consistency on every single request.
+RealLearn runs on **Gemma 4 (`gemma-4-26b-a4b-it`)** via Cloudflare Workers AI — and we didn't just call the model and hope for the best. We engineered a sophisticated prompting and reliability layer around it to guarantee educational quality and structural consistency on every single request.
 
 ### Key Technical Highlights
 
@@ -287,7 +287,7 @@ RealLearn was designed to fix concrete, everyday learning frustrations:
 - **Runtime:** Node.js (ES Modules)
 - **Framework:** Express
 - **Transport:** JSON + Server-Sent Events (SSE) streaming
-- **AI:** Gemma 4 via the Groq API (`groq-sdk`) or the Vercel AI Gateway (OpenAI-compatible)
+- **AI:** Gemma 4 via Cloudflare Workers AI (`cloudflare` SDK), with direct Groq (`groq-sdk`) and the Vercel AI Gateway (OpenAI-compatible) as fallbacks
 - **Real-world context:** Serper News API
 - **Auth:** Clerk JWT verification via `jose` (remote JWKS + offline fallback)
 - **Persistence:** MongoDB (consent records, moderation logs)
@@ -371,11 +371,12 @@ Real-learn/
 
 ### Backend
 
-- `GROQ_API_KEY=...` *(Groq API key from https://console.groq.com/keys; required unless using the Vercel AI Gateway)*
-- `AI_GATEWAY_API_KEY=...` *(Vercel AI Gateway key; alternative to GROQ_API_KEY — routes calls through the gateway's OpenAI-compatible endpoint. On Vercel deployments, `VERCEL_OIDC_TOKEN` works too)*
-- `GEMMA_PROVIDER=groq|gateway` *(optional; forces the provider. Default: auto — Groq if `GROQ_API_KEY` is set, otherwise the gateway)*
+- `CLOUDFLARE_API_TOKEN=...` + `CLOUDFLARE_ACCOUNT_ID=...` *(primary; Cloudflare Workers AI. Create a token with the "Workers AI" permission in the Cloudflare dashboard)*
+- `GROQ_API_KEY=...` *(fallback; direct Groq API key from https://console.groq.com/keys)*
+- `AI_GATEWAY_API_KEY=...` *(fallback; Vercel AI Gateway key — routes calls through the gateway's OpenAI-compatible endpoint. On Vercel deployments, `VERCEL_OIDC_TOKEN` works too)*
+- `GEMMA_PROVIDER=cloudflare|groq|gateway` *(optional; forces the provider. Default: auto-detected from configured credentials, preferring Cloudflare)*
 - `AI_GATEWAY_BASE_URL=https://ai-gateway.vercel.sh/v1` *(optional; override the gateway endpoint)*
-- `GEMMA_MODEL=gemma-4-26b-a4b-it` *(optional; model ID. Un-namespaced IDs are auto-prefixed with `google/` on the gateway, e.g. `google/gemma-4-26b-a4b-it`)*
+- `GEMMA_MODEL=gemma-4-26b-a4b-it` *(optional; model ID. Un-namespaced IDs are auto-prefixed per provider: `@cf/google/…` on Cloudflare, `google/…` on the gateway)*
 - `GEMMA_MAX_RETRIES=2` *(optional; retries per model on 429/5xx/network errors)*
 - `GEMMA_RETRY_DELAY_MS=700` *(optional; base backoff in ms)*
 - `GEMMA_MAX_RETRY_DELAY_MS=5000` *(optional; cap for exponential backoff)*
