@@ -370,6 +370,12 @@ export async function callGemma(
       if (result == null) {
         throw new Error("Empty result returned from Cloudflare Workers AI");
       }
+      console.log("[Gemma] raw result structure", {
+        callId,
+        type: typeof result,
+        keys: typeof result === "object" ? Object.keys(result) : null,
+        preview: JSON.stringify(result).slice(0, 500),
+      });
       const text = stripThinkingTags(
         typeof result === "string"
           ? result
@@ -383,6 +389,7 @@ export async function callGemma(
         model,
         attempt: attempt + 1,
         textLength: text.length,
+        textPreview: text.slice(0, 300),
       });
 
       resetTimeoutCircuit();
