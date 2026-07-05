@@ -61,115 +61,117 @@ function chunkForSpeech(text: string, maxLen = 200): string[] {
   return chunks;
 }
 
-/**
- * Score a SpeechSynthesisVoice by how natural / high-quality it sounds.
- * Higher = better. Heuristics tuned for Chrome, Edge, Safari desktop.
- */
-function scoreVoice(voice: SpeechSynthesisVoice, targetLang: string): number {
-  let score = 0;
-  const name = voice.name.toLowerCase();
-  const lang = voice.lang;
-
-  // Exact language match beats prefix match.
-  if (lang === targetLang) score += 30;
-  else if (lang.startsWith(targetLang.split("-")[0])) score += 10;
-
-  // Premium / neural voice providers — these sound dramatically more human.
-  if (name.includes("google")) score += 25;          // Google neural voices (Chrome)
-  if (name.includes("microsoft")) score += 20;       // Microsoft Edge natural voices
-  if (name.includes("apple")) score += 18;           // Apple enhanced / Siri voices (Safari)
-  if (name.includes("natural")) score += 15;
-  if (name.includes("neural")) score += 15;
-  if (name.includes("enhanced")) score += 12;
-  if (name.includes("premium")) score += 12;
-  if (name.includes("wavenet")) score += 20;
-  if (name.includes("journey")) score += 18;         // Google Journey voices
-  if (name.includes("studio")) score += 16;          // Google Studio voices
-
-  // Penalize obviously low-quality voices.
-  if (name.includes("compact")) score -= 10;
-  if (name.includes("basic")) score -= 8;
-
-  return score;
-}
-
-function pickBestVoice(voices: SpeechSynthesisVoice[], lang: string): SpeechSynthesisVoice | null {
-  if (!voices.length) return null;
-  const langBase = lang.split("-")[0];
-  // Only consider voices that match the target language (exact or prefix).
-  const candidates = voices.filter(
-    (v) => v.lang === lang || v.lang.startsWith(langBase),
-  );
-  if (!candidates.length) return null;
-  return candidates.reduce((best, v) =>
-    scoreVoice(v, lang) > scoreVoice(best, lang) ? v : best,
-  );
-}
-
-export function useTextToSpeech() {
+export function useEdgeTts() {
   const [supported, setSupported] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const [loading, setLoading] = useState(false);
   const sessionRef = useRef(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const objectUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
-    setSupported(typeof window !== "undefined" && "speechSynthesis" in window);
-    // Pre-load voices (Chrome loads them asynchronously).
-    if (typeof window !== "undefined" && "speechSynthesis" in window) {
-      window.speechSynthesis.getVoices();
-      window.speechSynthesis.onvoiceschanged = () => {
-        window.speechSynthesis.getVoices();
-      };
-    }
+    setSupported(typeof window !== "undefined" && typeof Audio !== "undefined");
     return () => {
       sessionRef.current += 1;
-      if (typeof window !== "undefined" && "speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = "";
+        audioRef.current.load();
+        audioRef.current = null;
+      }
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+        objectUrlRef.current = null;
       }
     };
   }, []);
 
   const stop = useCallback(() => {
-    sessionRef.current += 1;
-    if (typeof window !== "undefined" && "speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = "";
+      audioRef.current.load();
+      audioRef.current = null;
+    }
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
     }
     setSpeaking(false);
+    setLoading(false);
   }, []);
 
-  const speak = useCallback((text: string, lang: string) => {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
-    const synth = window.speechSynthesis;
+  const speak = useCallback(async (text: string, lang: string) => {
+    if (typeof window === "undefined") return;
     const session = ++sessionRef.current;
-    synth.cancel();
+    stop();
 
     const cleaned = text.trim();
     if (!cleaned) return;
 
-    const voice = pickBestVoice(synth.getVoices(), lang);
+    setLoading(true);
 
-    const chunks = chunkForSpeech(cleaned);
-    setSpeaking(true);
-    chunks.forEach((chunk, index) => {
-      const utterance = new SpeechSynthesisUtterance(chunk);
-      utterance.lang = lang;
-      if (voice) utterance.voice = voice;
-      // Slightly slower rate + subtle pitch lift makes speech sound far more
-      // human compared to the default flat robot voice at rate 1.
-      utterance.rate = 0.88;
-      utterance.pitch = 1.04;
-      utterance.onerror = () => {
-        if (sessionRef.current === session) setSpeaking(false);
-      };
-      if (index === chunks.length - 1) {
-        utterance.onend = () => {
-          if (sessionRef.current === session) setSpeaking(false);
-        };
+    try {
+      const backendUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || "https://real-learn.onrender.com").replace(/\/$/, "");
+      const response = await fetch(`${backendUrl}/api/tts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: cleaned, lang }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `TTS API error: ${response.status}`);
       }
-      synth.speak(utterance);
-    });
-  }, []);
 
-  return { supported, speaking, speak, stop };
+      if (sessionRef.current !== session) return;
+
+      const blob = await response.blob();
+      if (!blob.size) {
+        throw new Error("Empty audio response");
+      }
+
+      if (sessionRef.current !== session) return;
+
+      const objectUrl = URL.createObjectURL(blob);
+      objectUrlRef.current = objectUrl;
+
+      const audio = new Audio(objectUrl);
+      audioRef.current = audio;
+      setSpeaking(true);
+      setLoading(false);
+
+      audio.onended = () => {
+        if (sessionRef.current === session) {
+          setSpeaking(false);
+        }
+        if (objectUrlRef.current === objectUrl) {
+          URL.revokeObjectURL(objectUrl);
+          objectUrlRef.current = null;
+        }
+        audioRef.current = null;
+      };
+
+      audio.onerror = () => {
+        if (sessionRef.current === session) {
+          setSpeaking(false);
+        }
+        if (objectUrlRef.current === objectUrl) {
+          URL.revokeObjectURL(objectUrl);
+          objectUrlRef.current = null;
+        }
+        audioRef.current = null;
+      };
+
+      await audio.play();
+    } catch (error) {
+      console.error("[edge-tts] speak failed", error);
+      setSpeaking(false);
+      setLoading(false);
+    }
+  }, [stop]);
+
+  return { supported, speaking, loading, speak, stop };
 }
 
 interface UseSpeechRecognitionOptions {

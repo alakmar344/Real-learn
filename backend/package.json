@@ -18,8 +18,10 @@
   "dependencies": {
     "cloudflare": "^6.5.0",
     "cors": "^2.8.5",
+    "edge-tts": "^1.0.1",
     "express": "^4.21.2",
     "jose": "^6.2.3",
-    "mongodb": "^7.4.0"
+    "mongodb": "^7.4.0",
+    "node-edge-tts": "^1.2.10"
   }
 }

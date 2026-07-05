@@ -1,10 +1,9 @@
 "use client";
 
-// "Listen to this answer" — reads a piece of lesson content aloud using the
-// browser's built-in text-to-speech (Web Speech API). Shows a disabled button
-// when the browser doesn't support speech synthesis.
+// "Listen to this answer" — reads a piece of lesson content aloud using
+// Microsoft Edge's online TTS service via the backend API.
 
-import { markdownToPlainText, speechLangFor, useTextToSpeech } from "@/hooks/useSpeech";
+import { markdownToPlainText, speechLangFor, useEdgeTts } from "@/hooks/useSpeech";
 
 interface Props {
   /** The (markdown) text to read aloud. */
@@ -16,13 +15,13 @@ interface Props {
 }
 
 export default function ListenButton({ text, language, label = "Listen to this section" }: Props) {
-  const { supported, speaking, speak, stop } = useTextToSpeech();
+  const { supported, speaking, loading, speak, stop } = useEdgeTts();
 
   if (!supported) {
     return (
       <span
         aria-label="Read-aloud not supported in this browser"
-        title="Read-aloud requires Chrome, Edge, or Safari"
+        title="Read-aloud requires a modern browser"
         style={{
           display: "inline-flex",
           alignItems: "center",
@@ -74,9 +73,9 @@ export default function ListenButton({ text, language, label = "Listen to this s
       }}
     >
       <span aria-hidden="true" style={{ fontSize: 13, lineHeight: 1 }}>
-        {speaking ? "◼" : "🔊"}
+        {loading ? "⏳" : speaking ? "◼" : "🔊"}
       </span>
-      {speaking ? "Stop" : "Listen"}
+      {loading ? "Generating..." : speaking ? "Stop" : "Listen"}
     </button>
   );
 }
