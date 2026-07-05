@@ -59,7 +59,10 @@ export default function HomeStats({ onStartTopic }: Props) {
 
   const info = levelInfo(xp);
   const topic = DAILY_TOPICS[dayOfYear(new Date()) % DAILY_TOPICS.length];
-  const inProgress = journeys.find((j) => (j.completedParts ?? [1, 2, 3]).length < 3);
+  const inProgress = journeys.find((j) => {
+    const totalParts = j.lesson?.parts?.length ?? 3;
+    return (j.completedParts ?? []).length < totalParts;
+  });
   const hasActivity = xp > 0 || journeys.length > 0;
 
   return (

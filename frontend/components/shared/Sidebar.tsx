@@ -171,7 +171,7 @@ export default function Sidebar({ open, onClose }: Props) {
                     </span>
                     <span style={{ display: "block", fontSize: 11, color: "var(--text-tertiary)", marginTop: 2 }}>
                       {journey.language} · {journey.level} · {journey.totalScore}/6 ★
-                      {(journey.completedParts ?? [1, 2, 3]).length < 3 && (
+                      {(journey.completedParts ?? []).length < (journey.lesson?.parts?.length ?? 3) && (
                         <span> · Part {journey.unlockedPart ?? 1}</span>
                       )}
                     </span>
