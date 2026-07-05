@@ -253,18 +253,11 @@ const allowedOrigins =
     : [
         "https://reallearn.site",
         "https://real-learn.onrender.com",
-        "http://localhost:3000",
-        "http://localhost:10000",
-        "http://localhost:3001",
-        "http://localhost:5173",
       ];
 
 function isOriginAllowed(origin) {
   if (!origin) return true;
-  if (allowedOrigins.includes(origin)) return true;
-  if (origin.includes(".daytonaproxy01.net")) return true;
-  if (origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:")) return true;
-  return false;
+  return allowedOrigins.includes(origin);
 }
 
 // CORS and JSON body parsing MUST be registered before any route so that every

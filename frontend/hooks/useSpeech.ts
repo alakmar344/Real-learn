@@ -121,7 +121,7 @@ export function useEdgeTts() {
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
-      const backendUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:10000").replace(/\/$/, "");
+      const backendUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || "https://real-learn.onrender.com").replace(/\/$/, "");
       const response = await fetch(`${backendUrl}/api/tts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
