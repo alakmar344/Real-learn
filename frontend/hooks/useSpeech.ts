@@ -149,6 +149,7 @@ export function useEdgeTts() {
       objectUrlRef.current = objectUrl;
 
       const audio = new Audio(objectUrl);
+      audio.preload = "auto";
       audioRef.current = audio;
       setSpeaking(true);
       setLoading(false);
@@ -157,25 +158,34 @@ export function useEdgeTts() {
         if (sessionRef.current === session) {
           setSpeaking(false);
         }
-        if (objectUrlRef.current === objectUrl) {
-          URL.revokeObjectURL(objectUrl);
-          objectUrlRef.current = null;
-        }
-        audioRef.current = null;
+        cleanupAudio(objectUrl);
       };
 
       audio.onerror = () => {
+        const audioErr = audio.error ? ` media code=${audio.error.code}` : "";
+        console.error("[edge-tts] audio playback error", {
+          blobType: blob.type,
+          blobSize: blob.size,
+          audioErr,
+        });
         if (sessionRef.current === session) {
+          setError("Audio playback failed");
           setSpeaking(false);
         }
-        if (objectUrlRef.current === objectUrl) {
-          URL.revokeObjectURL(objectUrl);
-          objectUrlRef.current = null;
-        }
-        audioRef.current = null;
+        cleanupAudio(objectUrl);
       };
 
-      await audio.play();
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((playError) => {
+          console.error("[edge-tts] audio play() rejected", playError);
+          if (sessionRef.current === session) {
+            setError("Audio playback failed");
+            setSpeaking(false);
+          }
+          cleanupAudio(objectUrl);
+        });
+      }
     } catch (err) {
       clearTimeout(timeoutId);
       const message = err instanceof Error ? err.message : "Speech failed";
@@ -185,6 +195,19 @@ export function useEdgeTts() {
       setLoading(false);
     }
   }, [stop]);
+
+  const cleanupAudio = useCallback((objectUrl: string) => {
+    if (objectUrlRef.current === objectUrl) {
+      URL.revokeObjectURL(objectUrl);
+      objectUrlRef.current = null;
+    }
+    if (audioRef.current && audioRef.current.src && audioRef.current.src.includes(objectUrl)) {
+      audioRef.current.pause();
+      audioRef.current.src = '';
+      audioRef.current.load();
+      audioRef.current = null;
+    }
+  }, []);
 
   return { supported, speaking, loading, error, speak, stop, clearError };
 }
