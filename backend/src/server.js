@@ -615,7 +615,7 @@ app.post("/api/tts", rateLimit, async (req, res) => {
     const rate = typeof req.body?.rate === "string" && req.body.rate.trim() ? req.body.rate.trim() : "default";
     const pitch = typeof req.body?.pitch === "string" && req.body.pitch.trim() ? req.body.pitch.trim() : "default";
     const volume = typeof req.body?.volume === "string" && req.body.volume.trim() ? req.body.volume.trim() : "default";
-    const outputFormat = "audio-24khz-96kbitrate-mono-mp3";
+    const outputFormat = "audio-24khz-48kbitrate-mono-mp3";
 
     const tts = new EdgeTTS({
       voice,
@@ -633,25 +633,21 @@ app.post("/api/tts", rateLimit, async (req, res) => {
     await tts.ttsPromise(text, outFile);
 
     const stat = fs.statSync(outFile);
+    const fileBuffer = Buffer.from(await fs.promises.readFile(outFile));
+
     res.setHeader("Content-Type", "audio/mpeg");
-    res.setHeader("Content-Length", stat.size);
+    res.setHeader("Content-Length", fileBuffer.length);
     res.setHeader("Content-Disposition", "inline; filename=\"speech.mp3\"");
     res.setHeader("Cache-Control", "no-store");
 
-    const stream = fs.createReadStream(outFile);
-    stream.on("error", () => {
-      if (!res.writableEnded) {
-        res.status(500).json({ error: "Failed to read generated audio." });
-      }
-    });
-    stream.pipe(res);
+    res.send(fileBuffer);
 
-    stream.on("close", () => {
-      fs.unlink(outFile, () => {});
-    });
+    fs.unlink(outFile, () => {});
   } catch (error) {
     console.error("[api/tts] Failed to synthesize speech", error);
-    res.status(500).json({ error: "Failed to synthesize speech." });
+    if (!res.writableEnded) {
+      res.status(500).json({ error: "Failed to synthesize speech." });
+    }
   }
 });
 
