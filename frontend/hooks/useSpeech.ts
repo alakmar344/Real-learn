@@ -65,6 +65,7 @@ export function useEdgeTts() {
   const [supported, setSupported] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const sessionRef = useRef(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const objectUrlRef = useRef<string | null>(null);
@@ -86,6 +87,8 @@ export function useEdgeTts() {
     };
   }, []);
 
+  const clearError = useCallback(() => setError(null), []);
+
   const stop = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause();
@@ -99,6 +102,7 @@ export function useEdgeTts() {
     }
     setSpeaking(false);
     setLoading(false);
+    setError(null);
   }, []);
 
   const speak = useCallback(async (text: string, lang: string) => {
@@ -110,14 +114,22 @@ export function useEdgeTts() {
     if (!cleaned) return;
 
     setLoading(true);
+    setError(null);
+
+    const controller = new AbortController();
+    const timeoutMs = 45000;
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
-      const backendUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || "https://real-learn.onrender.com").replace(/\/$/, "");
+      const backendUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:10000").replace(/\/$/, "");
       const response = await fetch(`${backendUrl}/api/tts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: cleaned, lang }),
+        signal: controller.signal,
+        cache: "no-store",
       });
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -164,14 +176,17 @@ export function useEdgeTts() {
       };
 
       await audio.play();
-    } catch (error) {
-      console.error("[edge-tts] speak failed", error);
+    } catch (err) {
+      clearTimeout(timeoutId);
+      const message = err instanceof Error ? err.message : "Speech failed";
+      console.error("[edge-tts] speak failed", message, err);
+      setError(message);
       setSpeaking(false);
       setLoading(false);
     }
   }, [stop]);
 
-  return { supported, speaking, loading, speak, stop };
+  return { supported, speaking, loading, error, speak, stop, clearError };
 }
 
 interface UseSpeechRecognitionOptions {
