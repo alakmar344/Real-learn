@@ -213,3 +213,115 @@ concern again.
 - Validate for "good enough to use" rather than "exactly matches spec"
   where partial content is still usable — it turns truncation into a
   degraded-but-working response instead of a hard failure.
+
+---
+
+## Session 2026-07-05: Fast mode broken (explain worked) + full bug sweep + security hardening
+
+### The headline bug — why Fast mode failed while Explain mode worked
+
+**Symptom:** Explain mode generated lessons normally; Fast mode consistently
+failed with `AI response format was invalid. Please try again.`
+
+**Root cause (three factors compounding):**
+1. Gemma 4 is a *thinking* model — its internal chain-of-thought counts
+   against `max_tokens` even though the backend strips it from the visible
+   text. That overhead is roughly constant regardless of answer length.
+2. Fast mode's output budget was only 2000 tokens (vs 4000 for explain), so
+   thinking + JSON regularly hit the cap and the JSON was truncated mid-quiz.
+3. The validator required **exactly 2 complete quiz questions per part**.
+   Explain mode survived truncation because the earlier leniency fix accepts
+   1–3 parts — a truncated *trailing* part is simply dropped. Fast mode has
+   only ONE part, so any truncation landed inside that single part's quiz and
+   invalidated the entire response. Fast mode had zero slack; explain had lots.
+
+**Fixes applied:**
+- `backend/src/server.js` — both modes now use `maxOutputTokens = 4000`.
+  `max_tokens` is a ceiling, not a target: a short fast answer still finishes
+  early, so the larger cap costs no latency — it only prevents truncation.
+- `backend/src/validation.js` — `normalizeJourney` now *salvages* partial
+  output: malformed/half-written quiz questions are filtered out, and parts
+  without a title, content, or at least one complete quiz question are
+  dropped. `isValidJourney` accepts 1–2 quiz questions per part instead of
+  exactly 2.
+- `backend/src/lib/prompts.js` — fast prompt now explicitly instructs the
+  model not to think out loud and to start the reply with `{` immediately,
+  reducing wasted thinking tokens.
+- `frontend/components/learning/QuizSheet.tsx` — quiz length was hardcoded to
+  2 (`TOTAL_QUESTIONS = 2`). A salvaged 1-question quiz could never be passed
+  (score could never reach the hardcoded perfect score of 2 → learner stuck in
+  an infinite retake loop). The sheet now derives count/score from the actual
+  questions array.
+
+### All other bugs found in the sweep (and their fixes)
+
+| # | Severity | File | Bug | Fix |
+|---|---|---|---|---|
+| 1 | **High (security)** | `backend/src/server.js` | Rate-limit key used `token.slice(0, 16)` — the first 16 chars of a JWT are the base64 *header*, identical for every user. All signed-in users collapsed into ONE shared 20-req/min bucket, so a handful of users (or one abuser) rate-limited everyone. | Key is now a SHA-256 hash of the full token. |
+| 2 | **High (security)** | `backend/src/lib/auth.js` | Token issuer trust included any `*.clerk.accounts.dev` / `*.accounts.dev` hostname. Anyone can create a free Clerk dev instance on those shared domains and mint perfectly valid tokens that passed `requireAuth`. | Production now trusts only the configured issuer, an explicit `CLERK_ADDITIONAL_ISSUERS` allowlist, and `*.reallearn.site`. Wildcard dev domains are honored only when `NODE_ENV !== "production"`. |
+| 3 | **High (security, IDOR)** | `backend/src/server.js` | `POST /api/agreement` took `clerkId` (and email) from the request **body** — any authenticated user could overwrite any other user's consent record by posting their clerkId. | `clerkId` is now always taken from the verified token (`req.auth.userId`); body email is length-validated with token email as fallback. |
+| 4 | **Medium (security)** | `backend/src/server.js` | CORS explicitly allowed the literal origins `"null"` and `"undefined"`. `Origin: null` is what sandboxed iframes and `file://` pages send — any local HTML file could call the API with a victim's token. | Removed; only missing-Origin (non-browser) requests and the allowlist pass. |
+| 5 | **Medium (security)** | `backend/src/server.js` | `GET /api/auth-debug` was an unauthenticated, un-rate-limited token verification oracle exposed in production. | Now rate-limited and returns 404 in production unless `AUTH_DEBUG_ENABLED=true`. |
+| 6 | **Medium** | `backend/src/server.js` | `trust proxy` was never set. Behind Render's proxy `req.ip` is the proxy's own address → all anonymous visitors shared one rate-limit bucket, and consent records stored the wrong "deviceIp". | `app.set("trust proxy", 1)`. |
+| 7 | **Medium (security)** | `backend/src/server.js` | No length cap on `question` (bodies up to 1 MB accepted) and `language`/`level` were interpolated into the LLM prompt as **arbitrary strings** — a prompt-injection & cost-abuse channel that bypassed the question content filter. | Question capped at 1000 chars; `language` and `level` validated against the exact allowlists the UI offers; JSON body limit reduced 1 MB → 100 KB. Frontend textarea got a matching `maxLength`. |
+| 8 | Low (security) | `backend/src/server.js` | `DELETE /api/account` had no rate limit (each call fans out to Mongo + the Clerk Backend API). | Added `rateLimit`. |
+| 9 | Low | `backend/src/server.js` | 429/503 responses carried no `Retry-After` header, so well-behaved clients couldn't back off correctly. | Added `Retry-After` to both. |
+| 10 | Low | `backend/src/lib/moderation.js` | `MODERATION_MODEL` env var was read but **silently ignored** — moderation always runs on `GEMMA_MODEL`. Misleading dead configuration. | Removed the dead constant; documented the actual behavior. |
+| 11 | Low | `backend/src/validation.js` | Fallback key-takeaways said "Key insight from part 2/3" even for one-part fast lessons (parts that don't exist). | Fallback now derives from the actual part titles. |
+| 12 | Trivial | `backend/src/lib/gemma.js` | `normalizeApiError()` returned its argument unchanged on every path — dead code. | Removed. |
+| 13 | Hardening | `backend/src/server.js` | `X-Powered-By: Express` header leaked the framework. | `app.disable("x-powered-by")`. |
+
+### Advanced security features added this session
+
+- **Per-user rate limiting that actually works** (hashed full-token keys +
+  `trust proxy` so per-IP buckets are real IPs, not the proxy).
+- **Strict input validation layer** on `/api/generate-lesson`: question length
+  cap, language/level allowlists (anti-prompt-injection), 100 KB body limit.
+- **Issuer pinning** for Clerk JWT verification in production, with an
+  explicit `CLERK_ADDITIONAL_ISSUERS` escape hatch.
+- **Debug endpoint lockdown**: `/api/auth-debug` is production-gated behind
+  `AUTH_DEBUG_ENABLED` and rate limited.
+- **CORS tightening**: removed the `null`/`undefined` origin bypass.
+- **IDOR elimination**: all consent writes are keyed by the verified token
+  identity, never by client-supplied IDs.
+- **`Retry-After` headers** on throttling responses; `X-Powered-By` removed.
+- New env vars documented in `backend/.env.example`
+  (`RATE_LIMIT_WINDOW_MS`, `RATE_LIMIT_MAX_REQUESTS`, `AUTH_DEBUG_ENABLED`,
+  `CLERK_ADDITIONAL_ISSUERS`).
+
+### Legal documents synchronized with the code (v1.2)
+
+The Privacy Policy and Terms of Service described a product that no longer
+matched the code. Updated both (now version 1.2, dated 2026-07-05), and bumped
+the default `PRIVACY_POLICY_VERSION` / `TERMS_OF_SERVICE_VERSION` on the
+backend and the versions sent by `PreSignInConsent`:
+
+- **Fast mode now exists in the legal text** — both documents only described
+  "3-part learning journeys"; they now cover Fast (1-part) vs Explain (3-part).
+- **Correct AI provider** — both documents claimed questions were "sent to
+  Google's Gemma API". The code has called **Cloudflare Workers AI** (hosting
+  Google's Gemma open model) since the provider migration; the policies now
+  say so and link Cloudflare's privacy policy. Cloudflare added to the
+  third-party services list.
+- **Moderation logs** — policy now states they're deleted with your account
+  (matching the `/api/account` implementation).
+- **Serper** — clarified it's used only for Explain mode's Real-World part.
+- **Cache key** — now correctly described as hash of question + language +
+  level + answer mode.
+- **Security description** — updated to reflect the real measures (verified
+  session tokens, HSTS, security headers, rate limiting, input validation,
+  automated moderation).
+- **ToS moderation section** — now discloses both filter layers (pattern +
+  AI classifier), pseudonymous logging, and rate/size limits.
+
+### Verification performed
+
+- `node --check` passes on every edited backend file.
+- Unit-tested the salvage logic: complete fast lesson ✓ valid; truncated
+  2nd quiz question ✓ salvaged to a valid 1-question quiz; part with no
+  usable quiz ✓ rejected; explain journey truncated in part 3 ✓ degrades to a
+  valid 2-part journey; out-of-range `correctIndex` ✓ filtered.
+- Booted the server: `/health` ✓, invalid language → 400 path present,
+  auth required ✓, `X-Powered-By` gone ✓, security headers present ✓,
+  `/api/auth-debug` returns 404 with `NODE_ENV=production` ✓.
+- Frontend `tsc --noEmit` passes with zero errors.

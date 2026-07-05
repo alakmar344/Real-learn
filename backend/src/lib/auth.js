@@ -50,20 +50,39 @@ function getJwksForIssuer(issuer, explicitJwksUrl) {
   return jwks;
 }
 
-// Only trust Clerk-issued tokens. Accepts standard Clerk domains plus any
-// explicitly configured issuer.
+// Extra issuers can be allowlisted explicitly (comma-separated), e.g. a
+// specific dev instance: CLERK_ADDITIONAL_ISSUERS=https://xyz.clerk.accounts.dev
+const ADDITIONAL_ISSUERS = (process.env.CLERK_ADDITIONAL_ISSUERS || "")
+  .split(",")
+  .map((issuer) => issuer.trim().replace(/\/$/, ""))
+  .filter(Boolean);
+
+// Only trust tokens from OUR issuer(s).
+//
+// SECURITY: previously any hostname ending in ".clerk.accounts.dev" /
+// ".accounts.dev" was trusted. Anyone can create a free Clerk dev instance on
+// those domains, so an attacker could mint perfectly valid tokens from THEIR
+// OWN Clerk app and pass authentication here. Wildcard dev domains are now
+// only accepted outside production; production trusts the configured issuer,
+// explicit allowlist entries, and this app's own domain.
 function isTrustedIssuer(issuer) {
   if (!issuer) return false;
   if (CONFIGURED_FRONTEND_API && issuer === CONFIGURED_FRONTEND_API) return true;
+  if (ADDITIONAL_ISSUERS.includes(issuer)) return true;
   try {
     const { hostname, protocol } = new URL(issuer);
     if (protocol !== "https:") return false;
-    return (
-      hostname.endsWith(".clerk.accounts.dev") ||
-      hostname.endsWith(".clerk.com") ||
-      hostname.endsWith(".accounts.dev") ||
-      hostname.endsWith(".reallearn.site")
-    );
+    if (hostname === "reallearn.site" || hostname.endsWith(".reallearn.site")) {
+      return true;
+    }
+    // Shared multi-tenant Clerk dev domains: development convenience only.
+    if (process.env.NODE_ENV !== "production") {
+      return (
+        hostname.endsWith(".clerk.accounts.dev") ||
+        hostname.endsWith(".accounts.dev")
+      );
+    }
+    return false;
   } catch {
     return false;
   }

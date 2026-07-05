@@ -75,8 +75,8 @@ export default function PreSignInConsent() {
               user?.primaryEmailAddress?.emailAddress ||
               user?.emailAddresses?.[0]?.emailAddress ||
               "",
-            privacyVersion: "1.1",
-            termsVersion: "1.1",
+            privacyVersion: "1.2",
+            termsVersion: "1.2",
           }),
         });
       } catch {

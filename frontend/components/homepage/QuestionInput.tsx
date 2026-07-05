@@ -78,6 +78,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           onChange={(e) => setQuestion(e.target.value)}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
+          maxLength={1000}
           placeholder="What do you want to understand today?"
           aria-label="Your question"
           style={{
