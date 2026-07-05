@@ -459,7 +459,7 @@ app.post("/api/legal-consent", rateLimit, requireAuth, async (req, res) => {
       },
     };
 
-    await collection.updateOne(filter, update, { upsert: true });
+await collection.updateOne(filter, update, { upsert: true });
     console.log("[api/legal-consent] Legal consent saved", {
       clerkId,
       accepted,
@@ -470,6 +470,33 @@ app.post("/api/legal-consent", rateLimit, requireAuth, async (req, res) => {
   } catch (error) {
     console.error("[api/legal-consent] Failed to save legal consent", error);
     res.status(500).json({ error: "Failed to save legal consent" });
+  }
+});
+
+// Get the user's current legal consent status.
+app.get("/api/legal-consent/status", rateLimit, requireAuth, async (req, res) => {
+  try {
+    const clerkId = req.auth?.userId;
+
+    if (!clerkId) {
+      return res.status(400).json({ error: "Could not determine the authenticated user" });
+    }
+
+    const db = await getDb();
+    const agreement = await db.collection("agreements").findOne({ clerkId, type: "legal-consent" });
+
+    if (agreement) {
+      res.json({
+        accepted: agreement.accepted,
+        privacyVersion: agreement.privacyVersion,
+        termsVersion: agreement.termsVersion,
+      });
+    } else {
+      res.json({ accepted: false });
+    }
+  } catch (error) {
+    console.error("[api/legal-consent/status] Failed to fetch status", error);
+    res.status(500).json({ error: "Failed to fetch consent status" });
   }
 });
 

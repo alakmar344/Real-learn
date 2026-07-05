@@ -5,46 +5,160 @@ import { useAuth, useUser } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
 
 const LEGAL_CONSENT_KEY = "reallearn-legal-consent";
+const CURRENT_PRIVACY_VERSION = "1.2";
+const CURRENT_TERMS_VERSION = "1.2";
 
 interface LegalConsentState {
   accepted: boolean;
   timestamp: string;
+  privacyVersion?: string;
+  termsVersion?: string;
 }
 
 const ALLOWED_PATHS_WHEN_DECLINED = ["/sign-in", "/sign-up", "/legal"];
+
+const POLICY_CHANGES = [
+  "Added Voice Features section explaining microphone and read-aloud functionality.",
+  "Updated AI Content section to clarify that lessons may be cached server-side (temporarily, anonymously) for performance.",
+  "Clarified data retention policies for cached lessons and moderation logs.",
+  "Added Accessibility commitment (WCAG 2.1 Level AA).",
+  "Added Sharing Results section explaining shareable result cards.",
+];
+
+const TERMS_CHANGES = [
+  "Added Gamification & Virtual Rewards section explaining XP, levels, streaks, and badges.",
+  "Added Voice Features section detailing speech-to-text and text-to-speech functionality.",
+  "Clarified AI content disclaimer regarding fully machine-generated lessons.",
+  "Updated data retention and deletion policies.",
+  "Added Accessibility commitment (WCAG 2.1 Level AA).",
+];
 
 export default function PreSignInConsent() {
   const { isSignedIn, getToken } = useAuth();
   const { user } = useUser();
   const pathname = usePathname();
   const [showConsent, setShowConsent] = useState(false);
+  const [showReacceptConsent, setShowReacceptConsent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [declined, setDeclined] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem(LEGAL_CONSENT_KEY);
-    if (!stored) {
-      setShowConsent(true);
-    } else {
-      try {
-        const parsed = JSON.parse(stored) as LegalConsentState;
-        if (parsed.accepted) {
-          setShowConsent(false);
+    const checkConsent = async () => {
+      if (!isSignedIn && user === undefined) return;
+      const stored = localStorage.getItem(LEGAL_CONSENT_KEY);
+
+      if (!isSignedIn) {
+        if (!stored) {
+          setShowConsent(true);
         } else {
-          setDeclined(true);
-          setShowConsent(false);
+          try {
+            const parsed = JSON.parse(stored) as LegalConsentState;
+            if (parsed.accepted &&
+                parsed.privacyVersion === CURRENT_PRIVACY_VERSION &&
+                parsed.termsVersion === CURRENT_TERMS_VERSION) {
+              setShowConsent(false);
+            } else if (parsed.accepted) {
+              setShowReacceptConsent(true);
+            } else {
+              setDeclined(true);
+              setShowConsent(false);
+            }
+          } catch {
+            setShowConsent(true);
+          }
+        }
+        return;
+      }
+
+      try {
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "https://real-learn.onrender.com";
+        const token = await getToken();
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+        };
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(`${backendUrl}/api/legal-consent/status`, {
+          method: "GET",
+          headers,
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const mongoAccepted = data.accepted &&
+            data.privacyVersion === CURRENT_PRIVACY_VERSION &&
+            data.termsVersion === CURRENT_TERMS_VERSION;
+
+          if (!mongoAccepted || !stored) {
+            setShowConsent(true);
+          } else {
+            try {
+              const parsed = JSON.parse(stored) as LegalConsentState;
+              if (parsed.accepted &&
+                  parsed.privacyVersion === CURRENT_PRIVACY_VERSION &&
+                  parsed.termsVersion === CURRENT_TERMS_VERSION) {
+                setShowConsent(false);
+              } else {
+                setShowReacceptConsent(true);
+              }
+            } catch {
+              setShowConsent(true);
+            }
+          }
+        } else if (!stored) {
+          setShowConsent(true);
+        } else {
+          try {
+            const parsed = JSON.parse(stored) as LegalConsentState;
+            if (parsed.accepted &&
+                parsed.privacyVersion === CURRENT_PRIVACY_VERSION &&
+                parsed.termsVersion === CURRENT_TERMS_VERSION) {
+              setShowConsent(false);
+            } else if (parsed.accepted) {
+              setShowReacceptConsent(true);
+            } else {
+              setDeclined(true);
+              setShowConsent(false);
+            }
+          } catch {
+            setShowConsent(true);
+          }
         }
       } catch {
-        setShowConsent(true);
+        if (!stored) {
+          setShowConsent(true);
+        } else {
+          try {
+            const parsed = JSON.parse(stored) as LegalConsentState;
+            if (parsed.accepted &&
+                parsed.privacyVersion === CURRENT_PRIVACY_VERSION &&
+                parsed.termsVersion === CURRENT_TERMS_VERSION) {
+              setShowConsent(false);
+            } else if (parsed.accepted) {
+              setShowReacceptConsent(true);
+            } else {
+              setDeclined(true);
+              setShowConsent(false);
+            }
+          } catch {
+            setShowConsent(true);
+          }
+        }
       }
-    }
-  }, []);
+    };
+
+    checkConsent();
+  }, [isSignedIn, getToken, user]);
 
   const saveConsent = async (accepted: boolean) => {
     setLoading(true);
     const consent: LegalConsentState = {
       accepted,
       timestamp: new Date().toISOString(),
+      privacyVersion: CURRENT_PRIVACY_VERSION,
+      termsVersion: CURRENT_TERMS_VERSION,
     };
 
     try {
@@ -75,8 +189,8 @@ export default function PreSignInConsent() {
               user?.primaryEmailAddress?.emailAddress ||
               user?.emailAddresses?.[0]?.emailAddress ||
               "",
-            privacyVersion: "1.2",
-            termsVersion: "1.2",
+            privacyVersion: CURRENT_PRIVACY_VERSION,
+            termsVersion: CURRENT_TERMS_VERSION,
           }),
         });
       } catch {
@@ -85,6 +199,7 @@ export default function PreSignInConsent() {
     }
 
     setShowConsent(false);
+    setShowReacceptConsent(false);
     setLoading(false);
     if (!accepted) {
       setDeclined(true);
@@ -189,6 +304,138 @@ export default function PreSignInConsent() {
             >
               Decline
             </button>
+            <button
+              type="button"
+              onClick={() => saveConsent(true)}
+              disabled={loading}
+              style={{
+                border: "none",
+                borderRadius: "var(--radius-md)",
+                padding: "10px 20px",
+                fontSize: 14,
+                fontWeight: 600,
+                color: "var(--on-accent)",
+                background: "var(--accent)",
+                cursor: loading ? "not-allowed" : "pointer",
+                opacity: loading ? 0.6 : 1,
+                minHeight: 44,
+              }}
+            >
+              {loading ? "Saving..." : "Accept & Continue"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (showReacceptConsent) {
+    return (
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 200,
+          background: "rgba(0,0,0,0.6)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 24,
+        }}
+      >
+        <div
+          style={{
+            background: "var(--bg-card)",
+            borderRadius: "var(--radius-lg)",
+            padding: "32px 28px",
+            maxWidth: 560,
+            width: "100%",
+            maxHeight: "90vh",
+            overflowY: "auto",
+            border: "1px solid var(--border-subtle)",
+            boxShadow: "var(--shadow-lg)",
+          }}
+        >
+          <h2
+            style={{
+              fontFamily: "var(--font-playfair)",
+              fontWeight: 800,
+              fontSize: 22,
+              marginBottom: 12,
+            }}
+          >
+            Updated Policies — Please Review
+          </h2>
+
+          <div style={{ fontSize: 14, color: "var(--text-secondary)", lineHeight: 1.7, marginBottom: 20 }}>
+            <p style={{ marginBottom: 12 }}>
+              We have updated our Privacy Policy and Terms of Service. Please review the changes
+              below and accept to continue using RealLearn.
+            </p>
+
+            <h3 style={{ fontWeight: 600, fontSize: 15, marginBottom: 8, marginTop: 16 }}>
+              Privacy Policy Changes (v1.1 to v1.2):
+            </h3>
+            <ul style={{ paddingLeft: 20, margin: 0, fontSize: 14, color: "var(--text-secondary)" }}>
+              {POLICY_CHANGES.map((change, index) => (
+                <li key={`pp-${index}`} style={{ marginBottom: 6 }}>
+                  {change}
+                </li>
+              ))}
+            </ul>
+
+            <h3 style={{ fontWeight: 600, fontSize: 15, marginBottom: 8, marginTop: 16 }}>
+              Terms of Service Changes (v1.1 to v1.2):
+            </h3>
+            <ul style={{ paddingLeft: 20, margin: 0, fontSize: 14, color: "var(--text-secondary)" }}>
+              {TERMS_CHANGES.map((change, index) => (
+                <li key={`tos-${index}`} style={{ marginBottom: 6 }}>
+                  {change}
+                </li>
+              ))}
+            </ul>
+
+            <p style={{ marginTop: 16 }}>
+              By clicking <strong>Accept</strong>, you confirm that you agree to our updated{" "}
+              <a
+                href="/legal?tab=privacy"
+                style={{ color: "var(--accent)" }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                Privacy Policy
+              </a>{" "}
+              and{" "}
+              <a
+                href="/legal?tab=terms"
+                style={{ color: "var(--accent)" }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                Terms of Service
+              </a>.
+            </p>
+          </div>
+
+          <div style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>
+            <a
+              href="/legal?tab=privacy"
+              style={{
+                border: "1px solid var(--border-default)",
+                borderRadius: "var(--radius-md)",
+                padding: "10px 20px",
+                fontSize: 14,
+                fontWeight: 500,
+                color: "var(--text-secondary)",
+                textDecoration: "none",
+                background: "transparent",
+                minHeight: 44,
+                display: "inline-flex",
+                alignItems: "center",
+                cursor: loading ? "not-allowed" : "pointer",
+                opacity: loading ? 0.6 : 1,
+              }}
+            >
+              Review Policies
+            </a>
             <button
               type="button"
               onClick={() => saveConsent(true)}
