@@ -250,18 +250,29 @@ const configuredOrigins =
 const allowedOrigins =
   configuredOrigins.length > 0
     ? configuredOrigins
-    : ["https://reallearn.site", "https://real-learn.onrender.com", "http://localhost:3000", "http://localhost:10000"];
+    : [
+        "https://reallearn.site",
+        "https://real-learn.onrender.com",
+        "http://localhost:3000",
+        "http://localhost:10000",
+        "http://localhost:3001",
+        "http://localhost:5173",
+      ];
+
+function isOriginAllowed(origin) {
+  if (!origin) return true;
+  if (allowedOrigins.includes(origin)) return true;
+  if (origin.includes(".daytonaproxy01.net")) return true;
+  if (origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:")) return true;
+  return false;
+}
 
 // CORS and JSON body parsing MUST be registered before any route so that every
 // endpoint (including /api/agreement) receives CORS headers and a parsed body.
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no Origin header (curl, server-to-server, some
-      // same-origin requests). Do NOT allow the literal strings "null" /
-      // "undefined": "null" is what sandboxed iframes and file:// pages send,
-      // which would let any local HTML file call the API with a victim token.
-      const isAllowed = !origin || allowedOrigins.includes(origin);
+      const isAllowed = isOriginAllowed(origin);
       if (isAllowed) {
         return callback(null, true);
       }
