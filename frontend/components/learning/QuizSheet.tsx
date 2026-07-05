@@ -5,10 +5,6 @@ import { QuizQuestion as Question } from "@/types";
 import QuizQuestion from "@/components/learning/QuizQuestion";
 import { reshuffleQuestion } from "@/lib/quizShuffle";
 
-const TOTAL_QUESTIONS = 2;
-const LAST_QUESTION_INDEX = TOTAL_QUESTIONS - 1;
-const PERFECT_SCORE = TOTAL_QUESTIONS;
-
 interface Props {
   open: boolean;
   questions: Question[];
@@ -17,9 +13,17 @@ interface Props {
 }
 
 export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
+  // Derive the quiz length from the actual questions instead of hardcoding 2.
+  // The backend can legitimately deliver a salvaged single-question quiz
+  // (e.g. when the model's output was truncated); with a hardcoded total of 2
+  // such a quiz could never be passed and the learner would be stuck forever.
+  const totalQuestions = Math.max(questions?.length ?? 0, 1);
+  const lastQuestionIndex = totalQuestions - 1;
+  const perfectScore = totalQuestions;
+
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState<Array<number | null>>(
-    Array.from({ length: TOTAL_QUESTIONS }, () => null)
+    Array.from({ length: totalQuestions }, () => null)
   );
   // Local working copy of the questions whose option order we control. On a
   // failed attempt the options are reshuffled so the learner has to find the
@@ -34,7 +38,7 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
   useEffect(() => {
     setQuizQuestions(questions ?? []);
     setCurrent(0);
-    setAnswers(Array.from({ length: TOTAL_QUESTIONS }, () => null));
+    setAnswers(Array.from({ length: Math.max(questions?.length ?? 0, 1) }, () => null));
     setShuffledHint(false);
   }, [questions, open]);
 
@@ -123,15 +127,15 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
   };
 
   const nextAction = () => {
-    if (current < LAST_QUESTION_INDEX) {
+    if (current < lastQuestionIndex) {
       setCurrent((prev) => prev + 1);
       return;
     }
 
-    if (score === PERFECT_SCORE) {
+    if (score === perfectScore) {
       onPass(score);
       setCurrent(0);
-      setAnswers(Array.from({ length: TOTAL_QUESTIONS }, () => null));
+      setAnswers(Array.from({ length: totalQuestions }, () => null));
       setShuffledHint(false);
       return;
     }
@@ -140,7 +144,7 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
     // correct answer moves to a new position and must be found again.
     setQuizQuestions((prev) => prev.map(reshuffleQuestion));
     setCurrent(0);
-    setAnswers(Array.from({ length: TOTAL_QUESTIONS }, () => null));
+    setAnswers(Array.from({ length: totalQuestions }, () => null));
     setShuffledHint(true);
   };
 
@@ -148,7 +152,7 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
     <div
       role="dialog"
       aria-modal="true"
-      aria-label={`Quiz – Question ${current + 1} of ${TOTAL_QUESTIONS}`}
+      aria-label={`Quiz – Question ${current + 1} of ${totalQuestions}`}
       onClick={answered ? undefined : onClose}
       style={{
         position: "fixed",
@@ -203,7 +207,7 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
           Quick Check
         </h3>
         <p style={{ marginTop: 6, marginBottom: 16, fontSize: 13, color: "var(--text-secondary)" }}>
-          {TOTAL_QUESTIONS} questions about what you just read
+          {totalQuestions} question{totalQuestions === 1 ? "" : "s"} about what you just read
         </p>
         <div style={{ borderBottom: "1px solid var(--border-subtle)", marginBottom: 16 }} />
 
@@ -242,9 +246,9 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
             type="button"
             onClick={nextAction}
             aria-label={
-              current < LAST_QUESTION_INDEX
+              current < lastQuestionIndex
                 ? "Next question"
-                : score === PERFECT_SCORE
+                : score === perfectScore
                   ? "Unlock next part"
                   : "Read again"
             }
@@ -254,15 +258,15 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
               borderRadius: "var(--radius-md)",
               padding: "12px",
               border:
-                score === PERFECT_SCORE && current === LAST_QUESTION_INDEX
+                score === perfectScore && current === lastQuestionIndex
                   ? "none"
                   : "1.5px solid var(--border-default)",
               background:
-                score === PERFECT_SCORE && current === LAST_QUESTION_INDEX
+                score === perfectScore && current === lastQuestionIndex
                   ? "var(--correct)"
                   : "transparent",
               color:
-                score === PERFECT_SCORE && current === LAST_QUESTION_INDEX
+                score === perfectScore && current === lastQuestionIndex
                   ? "white"
                   : "var(--text-primary)",
               fontSize: 14,
@@ -271,9 +275,9 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
               transition: "background 200ms var(--ease-color)",
             }}
           >
-            {current < LAST_QUESTION_INDEX
+            {current < lastQuestionIndex
               ? "Next Question →"
-              : score === PERFECT_SCORE
+              : score === perfectScore
                 ? "Unlock Next Part →"
                 : "Read Again"}
           </button>

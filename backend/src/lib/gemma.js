@@ -135,13 +135,6 @@ function isAbortError(error) {
   );
 }
 
-function normalizeApiError(error) {
-  if (error instanceof GemmaApiError || error instanceof TypeError) {
-    return error;
-  }
-  return error;
-}
-
 async function callWorkersAI(accountId, model, body, signal) {
   const apiToken = process.env.CLOUDFLARE_API_TOKEN.trim();
   const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/v1/chat/completions`;
@@ -456,7 +449,7 @@ export async function callGemma(
         throw error;
       }
 
-      const normalizedError = normalizeApiError(error);
+      const normalizedError = error;
       console.warn("[Gemma] attempt failed", {
         callId,
         model,

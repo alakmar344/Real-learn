@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import cors from "cors";
 import express from "express";
 import {
@@ -32,8 +33,23 @@ import {
   setCachedLesson,
 } from "./lib/lessonCache.js";
 
-const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "1.1";
-const TERMS_OF_SERVICE_VERSION = process.env.TERMS_OF_SERVICE_VERSION || "1.1";
+const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "1.2";
+const TERMS_OF_SERVICE_VERSION = process.env.TERMS_OF_SERVICE_VERSION || "1.2";
+
+// ── Input validation limits (security: bound prompt size and lock free-text
+// fields that are interpolated into the LLM prompt to known values) ──
+const MAX_QUESTION_LENGTH = 1000;
+const ALLOWED_LANGUAGES = new Set([
+  "English",
+  "Hindi",
+  "Gujarati",
+  "Tamil",
+  "Bengali",
+  "Marathi",
+  "Telugu",
+  "Kannada",
+]);
+const ALLOWED_LEVELS = new Set(["Class 6-8", "Class 9-10", "College / Advanced"]);
 const DEFAULT_RATE_LIMIT_WINDOW_MS = 60000;
 const DEFAULT_RATE_LIMIT_MAX_REQUESTS = 20;
 const configuredRateLimitWindowMs = Number(process.env.RATE_LIMIT_WINDOW_MS);
@@ -50,7 +66,12 @@ const rateLimitStore = new Map();
 function getRateLimitKey(req) {
   const ip = req.ip || req.connection?.remoteAddress || "unknown";
   const token = extractBearerToken(req);
-  const identifier = token ? `user:${token.slice(0, 16)}` : `ip:${ip}`;
+  // Hash the WHOLE token. A prefix of a JWT is just the base64 header, which
+  // is identical for every user — slicing it collapsed all signed-in users
+  // into a single shared rate-limit bucket.
+  const identifier = token
+    ? `user:${crypto.createHash("sha256").update(token).digest("hex").slice(0, 32)}`
+    : `ip:${ip}`;
   return identifier;
 }
 function isRateLimited(req) {
@@ -164,6 +185,11 @@ function decrementActiveLessonRequests() {
 }
 
 const app = express();
+// Behind Render/most PaaS proxies req.ip would otherwise be the proxy's own
+// address, collapsing every anonymous visitor into one rate-limit bucket and
+// recording the wrong IP in consent records.
+app.set("trust proxy", 1);
+app.disable("x-powered-by");
 const port = Number(process.env.PORT || 10000);
 const configuredOrigins =
   process.env.FRONTEND_ORIGIN
@@ -180,10 +206,11 @@ const allowedOrigins =
 app.use(
   cors({
     origin: (origin, callback) => {
-      const isAllowed = !origin ||
-                       origin === "null" ||
-                       origin === "undefined" ||
-                       allowedOrigins.includes(origin);
+      // Allow requests with no Origin header (curl, server-to-server, some
+      // same-origin requests). Do NOT allow the literal strings "null" /
+      // "undefined": "null" is what sandboxed iframes and file:// pages send,
+      // which would let any local HTML file call the API with a victim token.
+      const isAllowed = !origin || allowedOrigins.includes(origin);
       if (isAllowed) {
         return callback(null, true);
       }
@@ -194,7 +221,9 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-app.use(express.json({ limit: "1mb" }));
+// Every legitimate request body here is tiny (a question + a few enum
+// fields). 100kb still leaves huge headroom while blunting memory abuse.
+app.use(express.json({ limit: "100kb" }));
 
 function securityHeaders(req, res, next) {
   res.setHeader("X-Frame-Options", "SAMEORIGIN");
@@ -228,6 +257,7 @@ function rateLimit(req, res, next) {
       endpoint: req.path,
       key: getRateLimitKey(req),
     });
+    res.setHeader("Retry-After", Math.ceil(RATE_LIMIT_WINDOW_MS / 1000));
     return res.status(429).json({ error: "Too many requests. Please slow down." });
   }
   next();
@@ -239,8 +269,16 @@ app.get("/health", (_req, res) => {
 
 // Diagnostic endpoint: send the Clerk token as a Bearer header and it reports
 // exactly why verification passes/fails (issuer, expiry, trust). No secrets
-// leaked — only non-sensitive claim metadata.
-app.get("/api/auth-debug", async (req, res) => {
+// leaked — only non-sensitive claim metadata. Security: disabled in
+// production unless AUTH_DEBUG_ENABLED=true (it is an unauthenticated
+// token-verification oracle), and always rate limited.
+app.get("/api/auth-debug", rateLimit, async (req, res) => {
+  const authDebugEnabled =
+    process.env.AUTH_DEBUG_ENABLED === "true" ||
+    process.env.NODE_ENV !== "production";
+  if (!authDebugEnabled) {
+    return res.status(404).json({ error: "Not found" });
+  }
   const token = extractBearerToken(req);
   if (!token) {
     return res.status(400).json({ error: "No Bearer token provided" });
@@ -256,13 +294,26 @@ app.get("/api/auth-debug", async (req, res) => {
 
 app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
   try {
-    const { accepted, email, clerkId, deviceIp, timestamp } = req.body;
+    const { accepted, email: bodyEmail, timestamp } = req.body;
 
     if (typeof accepted !== "boolean") {
       return res.status(400).json({ error: "accepted (boolean) is required" });
     }
-    if (!email || !clerkId) {
-      return res.status(400).json({ error: "email and clerkId are required" });
+
+    // Security (IDOR fix): the clerkId is ALWAYS taken from the verified
+    // token, never from the request body — otherwise any signed-in user
+    // could overwrite any other user's consent record.
+    const clerkId = req.auth?.userId;
+    if (!clerkId) {
+      return res.status(400).json({ error: "Could not determine the authenticated user" });
+    }
+    const email =
+      (typeof bodyEmail === "string" && bodyEmail.length <= 320 ? bodyEmail : "") ||
+      req.auth?.email ||
+      req.auth?.email_address ||
+      "";
+    if (!email) {
+      return res.status(400).json({ error: "email is required" });
     }
 
   const db = await getDb();
@@ -300,7 +351,7 @@ app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
 // Delete every server-side trace of the authenticated user: their MongoDB
 // cookie-consent records AND their Clerk account. The frontend handles clearing
 // localStorage and signing out after this resolves. Irreversible by design.
-app.delete("/api/account", requireAuth, async (req, res) => {
+app.delete("/api/account", rateLimit, requireAuth, async (req, res) => {
   const userId = req.auth?.userId;
   const email =
     req.auth?.email ||
@@ -480,6 +531,26 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
     console.warn("[generate-lesson] Missing question", { requestId });
     return res.status(400).json({ error: "Question is required" });
   }
+  if (question.length > MAX_QUESTION_LENGTH) {
+    console.warn("[generate-lesson] Question too long", {
+      requestId,
+      questionLength: question.length,
+    });
+    return res.status(400).json({
+      error: `Question is too long (max ${MAX_QUESTION_LENGTH} characters).`,
+    });
+  }
+  // Security: language/level are interpolated into the LLM prompt. Lock them
+  // to the values the app actually offers so they can't be used to smuggle
+  // arbitrary instructions (prompt injection) past the question filters.
+  if (!ALLOWED_LANGUAGES.has(language)) {
+    console.warn("[generate-lesson] Invalid language", { requestId, language });
+    return res.status(400).json({ error: "Unsupported language." });
+  }
+  if (!ALLOWED_LEVELS.has(level)) {
+    console.warn("[generate-lesson] Invalid level", { requestId, level });
+    return res.status(400).json({ error: "Unsupported level." });
+  }
 
   const inputFilter = filterUserInput(question);
   if (!inputFilter.allowed) {
@@ -527,6 +598,7 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
       activeLessonRequests,
       maxConcurrent: MAX_CONCURRENT_LESSON_REQUESTS,
     });
+    res.setHeader("Retry-After", 5);
     return res
       .status(503)
       .json({ error: "Server is busy. Please retry in a few seconds." });
@@ -659,11 +731,16 @@ Level: ${level}${
 
     const systemPrompt =
       mode === "fast" ? GENERATE_FAST_ANSWER_PROMPT : GENERATE_LESSON_PROMPT;
-    // Fast mode caps the output budget: one part + two quiz questions fit
-    // comfortably in ~2000 tokens, and a smaller budget generates sooner.
-    // Explain mode needs ~1000-1200 tokens per part (content + quiz), plus
-    // overhead, so 4000 provides adequate headroom for the full 3-part journey.
-    const maxOutputTokens = mode === "fast" ? 2000 : 4000;
+    // IMPORTANT: max_tokens is a CEILING, not a target — a short fast answer
+    // still finishes early, so a generous cap costs no latency. Gemma's
+    // internal "thinking" output counts against this cap even though we strip
+    // it from the text, and that overhead is roughly constant. With only 2000
+    // tokens, thinking + JSON regularly truncated fast mode's single part
+    // mid-quiz, and a one-part lesson has no slack: the whole response failed
+    // validation ("AI response format was invalid") every time. Explain mode
+    // survived the same truncation because a dropped *trailing* part still
+    // leaves a valid 1-2 part journey. Both modes now get the same headroom.
+    const maxOutputTokens = 4000;
     // Fast mode uses a lower temperature for more focused, deterministic
     // output — less sampling overhead means faster generation.
     const temperature = mode === "fast" ? 0.2 : 0.6;

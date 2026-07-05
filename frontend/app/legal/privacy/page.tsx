@@ -20,15 +20,18 @@ export default function PrivacyPolicy() {
         Privacy Policy
       </h2>
       <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
-        Last updated: July 2, 2026
+        Last updated: July 5, 2026 (version 1.2)
       </p>
 
       <section style={{ marginBottom: 28 }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>1. What RealLearn Is</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
-          RealLearn is an AI-powered educational platform that generates 3-part learning journeys
-          (Foundation, Mechanism, Real World) for any topic you ask about. It is powered by Google
-          Gemma 4 and designed to help students learn through interactive quizzes and structured content.
+          RealLearn is an AI-powered educational platform. Depending on the answer mode you choose,
+          it generates either a quick single-part direct answer (&quot;Fast&quot; mode) or a 3-part
+          learning journey (Foundation, Mechanism, Real World — &quot;Explain&quot; mode) for any
+          topic you ask about. It is powered by Google&apos;s Gemma 4 open model, served through
+          Cloudflare Workers AI, and designed to help students learn through interactive quizzes
+          and structured content.
         </p>
       </section>
 
@@ -43,8 +46,8 @@ export default function PrivacyPolicy() {
             authentication provider, Clerk).
           </li>
           <li style={{ marginBottom: 4 }}>
-            <strong>Usage Data:</strong> The questions you ask, your selected language and learning
-            level, quiz scores, and lesson progress.
+            <strong>Usage Data:</strong> The questions you ask, your selected answer mode (Fast or
+            Explain), language and learning level, quiz scores, and lesson progress.
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Device Information:</strong> Your IP address and browser User-Agent (for security,
@@ -52,13 +55,13 @@ export default function PrivacyPolicy() {
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Consent Records:</strong> Timestamps of when you accepted our Privacy Policy
-            (version 1.1), Terms of Service (version 1.1),
+            (version 1.2), Terms of Service (version 1.2),
             and cookie consent.
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Cached Lessons (temporary, not linked to you):</strong> To make the Service
             faster, generated lessons may be temporarily cached on our servers, keyed by a
-            one-way hash of the question text, language, and level. Cached lessons contain no
+            one-way hash of the question text, language, level, and answer mode. Cached lessons contain no
             account information, are not linked to your identity, and expire automatically
             (typically within a few hours).
           </li>
@@ -86,8 +89,9 @@ export default function PrivacyPolicy() {
           </li>
           <li>
             <strong>Moderation Logs:</strong> Blocked inputs and flagged AI responses are logged
-            with a pseudonymous identifier for safety and abuse prevention. No email or personal
-            identifying information is stored with these logs.
+            with a pseudonymous account identifier for safety and abuse prevention. No email or
+            other personal identifying information is stored with these logs, and they are deleted
+            along with your other server-side data when you delete your account.
           </li>
         </ul>
       </section>
@@ -116,16 +120,19 @@ export default function PrivacyPolicy() {
           lessons, preferences, and all learning-progress and achievement data (XP, level, streaks,
           daily goals, activity history, and badges) are stored in your browser&apos;s localStorage
           on your own device and never leave it. We use industry-standard
-          security measures including Clerk for authentication and encrypted connections (HTTPS).
-          However, no method of electronic storage is 100% secure, and we cannot guarantee absolute
-          security.
+          security measures including Clerk for authentication with cryptographically verified
+          session tokens, encrypted connections (HTTPS with HSTS), strict browser security headers,
+          request rate limiting, size limits and validation on all input, and automated content
+          moderation. However, no method of electronic storage is 100% secure, and we cannot
+          guarantee absolute security.
         </p>
       </section>
 
       <section style={{ marginBottom: 28 }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>5. AI-Generated Content</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
-          RealLearn generates content using Google Gemma 4, an AI model. All lesson content, quizzes,
+          RealLearn generates content using Google&apos;s Gemma 4 open AI model, hosted on Cloudflare
+          Workers AI. All lesson content (in both Fast and Explain modes), quizzes,
           and explanations are AI-generated and are <strong>not reviewed by humans before being shown</strong>.
           AI-generated responses may be inaccurate, incomplete, or outdated. You should verify
           important information with qualified professionals or authoritative sources. The Service
@@ -139,15 +146,16 @@ export default function PrivacyPolicy() {
         </p>
         <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
           <strong>RealLearn does not use your data to train, fine-tune, or improve any AI model.</strong>{" "}
-          Your questions are sent to Google&apos;s Gemma API for one-time inference only. We do not
+          Your questions are sent to Cloudflare Workers AI (which hosts the Gemma model) for
+          one-time inference only. We do not
           store your questions or generated lessons in a form linked to your account. To improve
           speed, a generated lesson may be kept in a short-lived server-side cache keyed by a
           one-way hash of the question text (not by your identity) and is deleted automatically
           when it expires. However, please note that your
-          questions are transmitted to Google&apos;s API, and Google&apos;s own terms of service may govern
-          how they handle that data. We recommend reviewing{" "}
-          <a href="https://policies.google.com/privacy" style={{ color: "var(--accent)" }}>
-            Google&apos;s Privacy Policy
+          questions are transmitted to Cloudflare&apos;s API, and Cloudflare&apos;s own terms may
+          govern how they handle that data. We recommend reviewing{" "}
+          <a href="https://www.cloudflare.com/privacypolicy/" style={{ color: "var(--accent)" }}>
+            Cloudflare&apos;s Privacy Policy
           </a>{" "}
           for details on their data practices.
         </p>
@@ -198,16 +206,21 @@ export default function PrivacyPolicy() {
             <strong>Clerk</strong> (clerk.com) — Authentication and user management.
           </li>
           <li style={{ marginBottom: 4 }}>
-            <strong>Google Gemma 4</strong> — AI content generation. Your question, chosen language,
-            and difficulty level are sent to Google&apos;s API for one-time inference. No user identity
-            is included in the API call. Google&apos;s own data practices apply to API requests.
+            <strong>Cloudflare Workers AI</strong> (cloudflare.com) — AI content generation using
+            Google&apos;s Gemma 4 open model hosted on Cloudflare&apos;s network. Your question,
+            chosen language, and difficulty level are sent to Cloudflare&apos;s API for one-time
+            inference (for both lesson generation and automated content moderation). No user
+            identity is included in the API call. Cloudflare&apos;s own data practices apply to API
+            requests.
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Google Analytics</strong> — Website analytics to understand usage patterns
             and improve our service. Loaded only after cookie consent.
           </li>
           <li style={{ marginBottom: 4 }}>
-            <strong>Serper</strong> (google.serper.dev) — Real-world context fetching for learning content.
+            <strong>Serper</strong> (google.serper.dev) — Real-world news context fetching for the
+            &quot;Real World&quot; part of Explain-mode lessons. Only your question topic and
+            language are sent; Fast-mode answers do not use this service.
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>ipify</strong> (api.ipify.org) — IP address detection for security and consent tracking.

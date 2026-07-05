@@ -1,7 +1,10 @@
 import crypto from "node:crypto";
 import { callGemma, parseJSON } from "./gemma.js";
 
-const MODERATION_MODEL = process.env.MODERATION_MODEL || "gemma-4-26b-a4b-it";
+// NOTE: moderation runs through the same model configured by GEMMA_MODEL
+// (callGemma has no per-call model override). A separate MODERATION_MODEL
+// env var used to be read here but was silently ignored — removed to avoid
+// misleading configuration.
 const DEFAULT_MODERATION_TIMEOUT_MS = 8000;
 const configuredTimeoutMs = Number(process.env.MODERATION_TIMEOUT_MS);
 const MODERATION_TIMEOUT_MS =
