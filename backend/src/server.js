@@ -1,6 +1,10 @@
 import crypto from "node:crypto";
 import cors from "cors";
 import express from "express";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   callGemma,
   formatGemmaTimeoutMessage,
@@ -32,6 +36,53 @@ import {
   getCachedLesson,
   setCachedLesson,
 } from "./lib/lessonCache.js";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+let EdgeTTS = null;
+try {
+  const mod = await import("node-edge-tts");
+  EdgeTTS = mod.EdgeTTS || null;
+} catch (error) {
+  console.error("[tts] Failed to load node-edge-tts via ESM import", error);
+}
+
+const TTS_TEMP_DIR = path.join("/tmp", "reallearn-tts");
+if (!fs.existsSync(TTS_TEMP_DIR)) {
+  fs.mkdirSync(TTS_TEMP_DIR, { recursive: true });
+}
+
+const TTS_RATE_LIMIT_WINDOW_MS = 60000;
+const TTS_RATE_LIMIT_MAX = 30;
+const ttsRateLimitStore = new Map();
+function getTtsRateLimitKey(req) {
+  const ip = req.ip || req.connection?.remoteAddress || "unknown";
+  const token = extractBearerToken(req);
+  return token ? `user:${crypto.createHash("sha256").update(token).digest("hex").slice(0, 32)}` : `ip:${ip}`;
+}
+function isTtsRateLimited(req) {
+  const key = getTtsRateLimitKey(req);
+  const now = Date.now();
+  const record = ttsRateLimitStore.get(key);
+  if (!record || now > record.resetAt) {
+    ttsRateLimitStore.set(key, { count: 1, resetAt: now + TTS_RATE_LIMIT_WINDOW_MS });
+    return false;
+  }
+  record.count += 1;
+  return record.count > TTS_RATE_LIMIT_MAX;
+}
+
+const SPEECH_LANG_TO_VOICE = {
+  "en-IN": "en-IN-NeerjaNeural",
+  "hi-IN": "hi-IN-SwaraNeural",
+  "gu-IN": "gu-IN-NiranjanNeural",
+  "ta-IN": "ta-IN-ValluvarNeural",
+  "bn-IN": "bn-IN-NabanitaNeural",
+  "mr-IN": "mr-IN-AarohiNeural",
+  "te-IN": "te-IN-MohanNeural",
+  "kn-IN": "kn-IN-SapnaNeural",
+  "en-US": "en-US-AriaNeural",
+};
 
 const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "1.2";
 const TERMS_OF_SERVICE_VERSION = process.env.TERMS_OF_SERVICE_VERSION || "1.2";
@@ -534,6 +585,69 @@ app.get("/api/export-data", rateLimit, requireAuth, async (req, res) => {
   } catch (error) {
     console.error("[api/export-data] Failed to export data", error);
     res.status(500).json({ error: "Failed to export data" });
+  }
+});
+
+app.post("/api/tts", rateLimit, async (req, res) => {
+  try {
+    if (!EdgeTTS) {
+      return res.status(500).json({ error: "TTS service is not available." });
+    }
+    if (isTtsRateLimited(req)) {
+      res.setHeader("Retry-After", Math.ceil(TTS_RATE_LIMIT_WINDOW_MS / 1000));
+      return res.status(429).json({ error: "Too many requests. Please slow down." });
+    }
+
+    const text = typeof req.body?.text === "string" ? req.body.text.trim() : "";
+    if (!text) {
+      return res.status(400).json({ error: "text is required" });
+    }
+    if (text.length > 2000) {
+      return res.status(400).json({ error: "Text is too long (max 2000 characters)." });
+    }
+
+    const lang = typeof req.body?.lang === "string" ? req.body.lang.trim() : "en-IN";
+    const voice = SPEECH_LANG_TO_VOICE[lang] || SPEECH_LANG_TO_VOICE["en-IN"] || "en-IN-NeerjaNeural";
+    const rate = typeof req.body?.rate === "string" && req.body.rate.trim() ? req.body.rate.trim() : "default";
+    const pitch = typeof req.body?.pitch === "string" && req.body.pitch.trim() ? req.body.pitch.trim() : "default";
+    const volume = typeof req.body?.volume === "string" && req.body.volume.trim() ? req.body.volume.trim() : "default";
+    const outputFormat = "audio-24khz-96kbitrate-mono-mp3";
+
+    const tts = new EdgeTTS({
+      voice,
+      lang,
+      outputFormat,
+      rate: rate === "default" ? undefined : rate,
+      pitch: pitch === "default" ? undefined : pitch,
+      volume: volume === "default" ? undefined : volume,
+      timeout: 30000,
+    });
+
+    const safeName = crypto.createHash("sha256").update(`${text}-${voice}-${lang}-${Date.now()}`).digest("hex").slice(0, 16);
+    const outFile = path.join(TTS_TEMP_DIR, `${safeName}.mp3`);
+
+    await tts.ttsPromise(text, outFile);
+
+    const stat = fs.statSync(outFile);
+    res.setHeader("Content-Type", "audio/mpeg");
+    res.setHeader("Content-Length", stat.size);
+    res.setHeader("Content-Disposition", "inline; filename=\"speech.mp3\"");
+    res.setHeader("Cache-Control", "no-store");
+
+    const stream = fs.createReadStream(outFile);
+    stream.on("error", () => {
+      if (!res.writableEnded) {
+        res.status(500).json({ error: "Failed to read generated audio." });
+      }
+    });
+    stream.pipe(res);
+
+    stream.on("close", () => {
+      fs.unlink(outFile, () => {});
+    });
+  } catch (error) {
+    console.error("[api/tts] Failed to synthesize speech", error);
+    res.status(500).json({ error: "Failed to synthesize speech." });
   }
 });
 
