@@ -4,14 +4,14 @@
 // CookieConsent, the home page sync). Keeping the version constants and the
 // localStorage access in ONE place prevents two past bugs:
 //  - components posting stale hardcoded versions ("1.0") that fought the
-//    v1.2 re-consent check, and
+//    current-version re-consent check, and
 //  - raw `localStorage` access crashing the whole app when storage is blocked
 //    (Chrome "Block all cookies", private mode, embedded webviews).
 
 export const LEGAL_CONSENT_KEY = "reallearn-legal-consent";
 export const COOKIE_CONSENT_KEY = "reallearn-cookie-consent";
-export const CURRENT_PRIVACY_VERSION = "1.2";
-export const CURRENT_TERMS_VERSION = "1.2";
+export const CURRENT_PRIVACY_VERSION = "1.3";
+export const CURRENT_TERMS_VERSION = "1.3";
 
 export interface LegalConsentState {
   accepted: boolean;

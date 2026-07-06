@@ -46,7 +46,7 @@ export default function HomePage() {
 
   // Sync a consent accepted BEFORE sign-in to the backend, once per user.
   // Previously this posted hardcoded version "1.0" on EVERY home visit —
-  // fighting the v1.2 re-consent check and wasting a request per page load.
+  // fighting the current-version re-consent check and wasting a request per page load.
   useEffect(() => {
     const syncLegalConsent = async () => {
       if (!isSignedIn || !user?.id) return;
