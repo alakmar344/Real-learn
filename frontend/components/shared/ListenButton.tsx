@@ -67,9 +67,9 @@ export default function ListenButton({ text, language, label = "Listen to this s
           alignItems: "center",
           gap: 6,
           borderRadius: "var(--radius-sm)",
-          border: speaking ? "1px solid var(--accent)" : showError ? "1px solid #b91c1c" : "1px solid var(--border-default)",
+          border: speaking ? "1px solid var(--accent)" : showError ? "1px solid var(--wrong)" : "1px solid var(--border-default)",
           background: speaking ? "var(--accent-dim)" : showError ? "rgba(185, 28, 28, 0.08)" : "transparent",
-          color: speaking ? "var(--accent)" : showError ? "#b91c1c" : "var(--text-secondary)",
+          color: speaking ? "var(--accent)" : showError ? "var(--wrong)" : "var(--text-secondary)",
           padding: "4px 10px",
           fontSize: 12,
           fontWeight: 600,
@@ -88,7 +88,7 @@ export default function ListenButton({ text, language, label = "Listen to this s
           role="alert"
           style={{
             fontSize: 11,
-            color: "#b91c1c",
+            color: "var(--wrong)",
             lineHeight: 1.3,
             maxWidth: 240,
             overflow: "hidden",

@@ -1,14 +1,15 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:ital,wght@0,400;0,600;1,400;1,600&family=Playfair+Display:wght@700;900&family=JetBrains+Mono:wght@400;500&display=swap");
+
+/* Fonts are self-hosted via next/font in app/layout.tsx, which defines
+   --font-inter / --font-lora / --font-playfair / --font-mono. The old Google
+   Fonts @import was placed after the Tailwind directives (making it invalid
+   CSS) AND blocked by our CSP — so remote fonts never actually loaded. */
 
 :root {
-  /* ── Typography ── */
-  --font-playfair: "Playfair Display", Georgia, serif;
-  --font-inter: "Inter", system-ui, sans-serif;
-  --font-lora: "Lora", Georgia, serif;
-  --font-mono: "JetBrains Mono", monospace;
+  /* Native UI (form controls, scrollbars, autofill) follows the theme. */
+  color-scheme: light;
 
   /* ── Backgrounds — paper layers, brightened and airier ── */
   --bg-primary: #f7f3ec;
@@ -96,6 +97,7 @@
 
 /* ── Dark theme (Night) — luminous teal ink on deep slate ── */
 html[data-theme="dark"] {
+  color-scheme: dark;
   --bg-primary: #0b100f;
   --bg-surface: #121917;
   --bg-card: #18211e;
@@ -143,6 +145,7 @@ html[data-theme="dark"] {
 
 /* ── Twilight theme — deep indigo night with a violet-to-rose glow ── */
 html[data-theme="twilight"] {
+  color-scheme: dark;
   --bg-primary: #12101f;
   --bg-surface: #181529;
   --bg-card: #1e1a33;
@@ -195,6 +198,8 @@ html[data-theme="twilight"] .markdown-content code {
 
 html {
   transition: background 200ms var(--ease-color);
+  /* Firefox scrollbar theming (webkit rules below cover Chromium/Safari). */
+  scrollbar-color: var(--border-default) var(--bg-primary);
 }
 
 * {
@@ -212,15 +217,24 @@ body {
 
 body {
   overflow-x: hidden;
-  /* Subtle ambient accent wash — gives every page a gentle sense of light
-     without disturbing the aesthetic. The companion tint deepens each theme's
-     personality (indigo on Paper, blue on Night, rose on Twilight). */
+}
+
+/* Subtle ambient accent wash — gives every page a gentle sense of light
+   without disturbing the aesthetic. The companion tint deepens each theme's
+   personality (indigo on Paper, blue on Night, rose on Twilight).
+   Painted on a fixed pseudo-element instead of body + background-attachment:
+   fixed, which iOS Safari doesn't support and repaints jankily. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
   background:
     radial-gradient(1100px 520px at 88% -8%, var(--accent-glow), transparent 62%),
     radial-gradient(900px 480px at -10% 104%, var(--accent-dim), transparent 58%),
     radial-gradient(760px 440px at 50% 118%, color-mix(in srgb, var(--accent-companion) 9%, transparent), transparent 60%),
     var(--bg-primary);
-  background-attachment: fixed;
 }
 
 h1,
@@ -478,6 +492,8 @@ pre {
 /* ── App shell — left sidebar layout ── */
 .app-shell {
   min-height: 100vh;
+  /* dvh tracks the iOS Safari dynamic toolbar; vh above is the fallback. */
+  min-height: 100dvh;
 }
 
 .app-main {

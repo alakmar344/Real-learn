@@ -26,7 +26,7 @@ export default function ErrorState({ message, onRetry, onHome }: Props) {
           textAlign: "center",
           padding: varSpaceXl,
           borderRadius: "var(--radius-xl)",
-          border: "1px solid rgba(239,68,68,0.25)",
+          border: "1px solid color-mix(in srgb, var(--wrong) 25%, transparent)",
           background: "var(--bg-surface)",
           boxShadow: "var(--shadow-md)",
         }}
