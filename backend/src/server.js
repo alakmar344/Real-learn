@@ -442,10 +442,14 @@ app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
     if (!clerkId) {
       return res.status(400).json({ error: "Could not determine the authenticated user" });
     }
+    // Security: prefer the VERIFIED token email over the client-supplied one.
+    // If the body email won, a user could stamp someone else's address onto
+    // their own consent record, which would then leak into that person's
+    // /api/export-data results (the export filter matches on email).
     const email =
-      (typeof bodyEmail === "string" && bodyEmail.length <= 320 ? bodyEmail : "") ||
       req.auth?.email ||
       req.auth?.email_address ||
+      (typeof bodyEmail === "string" && bodyEmail.length <= 320 ? bodyEmail : "") ||
       "";
     if (!email) {
       return res.status(400).json({ error: "email is required" });
@@ -576,12 +580,14 @@ app.post("/api/legal-consent", rateLimit, requireAuth, async (req, res) => {
     if (!clerkId) {
       return res.status(400).json({ error: "Could not determine the authenticated user" });
     }
-    // Security: only accept a sane string email from the body (it previously
-    // accepted any JSON value, letting arbitrary structures into the record).
+    // Security: prefer the VERIFIED token email; only fall back to a sane
+    // string body email when the token carries none. A client-supplied email
+    // that won here could stamp someone else's address onto this record and
+    // leak it into that person's /api/export-data results.
     const email =
-      (typeof bodyEmail === "string" && bodyEmail.length <= 320 ? bodyEmail : "") ||
       req.auth?.email ||
       req.auth?.email_address ||
+      (typeof bodyEmail === "string" && bodyEmail.length <= 320 ? bodyEmail : "") ||
       "";
 
     const filter = { clerkId, type: "legal-consent" };
@@ -699,8 +705,15 @@ app.post("/api/tts", rateLimit, async (req, res) => {
       return res.status(400).json({ error: "Text is too long (max 2000 characters)." });
     }
 
-    const lang = typeof req.body?.lang === "string" ? req.body.lang.trim() : "en-IN";
-    const voice = SPEECH_LANG_TO_VOICE[lang] || SPEECH_LANG_TO_VOICE["en-IN"] || "en-IN-NeerjaNeural";
+    // Security: `lang` is interpolated unescaped into the SSML document by
+    // node-edge-tts (xml:lang="..."), so an arbitrary string here is an SSML
+    // injection channel — the same class of hole the prosody patterns below
+    // close. Lock it to the exact languages we support.
+    const requestedLang = typeof req.body?.lang === "string" ? req.body.lang.trim() : "";
+    const lang = Object.prototype.hasOwnProperty.call(SPEECH_LANG_TO_VOICE, requestedLang)
+      ? requestedLang
+      : "en-IN";
+    const voice = SPEECH_LANG_TO_VOICE[lang] || "en-IN-NeerjaNeural";
     // Security: prosody values are embedded in SSML — accept only strict
     // "+10%" / "-2Hz"-style values, reject anything else outright.
     const rate = sanitizeTtsProsody(req.body?.rate, TTS_RATE_VOLUME_PATTERN);
@@ -772,7 +785,11 @@ app.post("/api/tts", rateLimit, async (req, res) => {
 
 app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
   const requestId = `lesson-${Date.now()}-${++lessonRequestCounter}`;
-  const question = req.body?.question?.trim();
+  // Robustness: a non-string question (e.g. {"question": 123}) must not throw —
+  // this handler has no outer try/catch, so a TypeError here becomes an
+  // unhandled promise rejection that kills the whole process on Node >= 15.
+  const question =
+    typeof req.body?.question === "string" ? req.body.question.trim() : "";
   const language = req.body?.language ?? "English";
   const level = req.body?.level ?? "Class 9-10";
   // "fast" → one direct answer part, minimal latency (no Serper, smaller
