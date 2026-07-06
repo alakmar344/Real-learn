@@ -10,8 +10,12 @@ import PreSignInConsent from "@/components/shared/PreSignInConsent";
 import Footer from "@/components/shared/Footer";
 import { useLesson } from "@/hooks/useLesson";
 import { useAuth, useUser } from "@clerk/nextjs";
-
-const LEGAL_CONSENT_KEY = "reallearn-legal-consent";
+import {
+  CURRENT_PRIVACY_VERSION,
+  CURRENT_TERMS_VERSION,
+  readLegalConsent,
+  writeLegalConsent,
+} from "@/lib/legalConsent";
 
 const QUOTES = [
   "Education is the kindling of a flame, not the filling of a vessel.",
@@ -29,30 +33,26 @@ const QUOTES = [
 export default function HomePage() {
   const [question, setQuestion] = useState("");
   const [loadingQuestion, setLoadingQuestion] = useState<string | null>(null);
-  const [quote, setQuote] = useState(() => QUOTES[Math.floor(Math.random() * QUOTES.length)]);
+  // Pick the quote after mount: choosing randomly during render made the SSR
+  // HTML and the client's first render disagree → hydration error + flicker.
+  const [quote, setQuote] = useState("");
   const { generateLesson } = useLesson();
   const { isSignedIn, getToken } = useAuth();
   const { user } = useUser();
 
   useEffect(() => {
-    console.log("[frontend][HomePage] render state", {
-      questionLength: question.length,
-      hasLoadingQuestion: Boolean(loadingQuestion),
-    });
-  }, [question, loadingQuestion]);
+    setQuote(QUOTES[Math.floor(Math.random() * QUOTES.length)]);
+  }, []);
 
+  // Sync a consent accepted BEFORE sign-in to the backend, once per user.
+  // Previously this posted hardcoded version "1.0" on EVERY home visit —
+  // fighting the v1.2 re-consent check and wasting a request per page load.
   useEffect(() => {
     const syncLegalConsent = async () => {
-      if (!isSignedIn) return;
-      const stored = localStorage.getItem(LEGAL_CONSENT_KEY);
-      if (!stored) return;
-      let parsed;
-      try {
-        parsed = JSON.parse(stored) as { accepted: boolean; timestamp: string };
-        if (!parsed.accepted) return;
-      } catch {
-        return;
-      }
+      if (!isSignedIn || !user?.id) return;
+      const parsed = readLegalConsent();
+      if (!parsed?.accepted) return;
+      if (parsed.syncedClerkId === user.id) return;
 
       try {
         const backendUrl =
@@ -75,22 +75,20 @@ export default function HomePage() {
               user?.primaryEmailAddress?.emailAddress ||
               user?.emailAddresses?.[0]?.emailAddress ||
               "",
-            privacyVersion: "1.0",
-            termsVersion: "1.0",
+            privacyVersion: parsed.privacyVersion || CURRENT_PRIVACY_VERSION,
+            termsVersion: parsed.termsVersion || CURRENT_TERMS_VERSION,
           }),
         });
 
         if (res.ok) {
-          console.log("[frontend][HomePage] legal consent synced to backend", {
-            timestamp: parsed.timestamp,
-          });
+          writeLegalConsent({ ...parsed, syncedClerkId: user.id });
         }
       } catch {
         // best-effort
       }
     };
     syncLegalConsent();
-  }, [isSignedIn, getToken]);
+  }, [isSignedIn, getToken, user?.id]);
 
   const submit = async (override?: string) => {
     const normalized = (override ?? question).trim();
@@ -143,7 +141,7 @@ export default function HomePage() {
                 fontStyle: "italic",
               }}
             >
-              {quote}
+              {quote || " "}
             </p>
             <h1
               style={{

@@ -3,17 +3,14 @@
 import { useEffect, useState } from "react";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
-
-const LEGAL_CONSENT_KEY = "reallearn-legal-consent";
-const CURRENT_PRIVACY_VERSION = "1.2";
-const CURRENT_TERMS_VERSION = "1.2";
-
-interface LegalConsentState {
-  accepted: boolean;
-  timestamp: string;
-  privacyVersion?: string;
-  termsVersion?: string;
-}
+import {
+  CURRENT_PRIVACY_VERSION,
+  CURRENT_TERMS_VERSION,
+  isConsentCurrent,
+  readLegalConsent,
+  writeLegalConsent,
+  type LegalConsentState,
+} from "@/lib/legalConsent";
 
 const ALLOWED_PATHS_WHEN_DECLINED = ["/sign-in", "/sign-up", "/legal"];
 
@@ -43,30 +40,29 @@ export default function PreSignInConsent() {
   const [declined, setDeclined] = useState(false);
 
   useEffect(() => {
+    const applyLocalRecord = (parsed: LegalConsentState | null) => {
+      if (!parsed) {
+        setShowConsent(true);
+      } else if (isConsentCurrent(parsed)) {
+        setShowConsent(false);
+      } else if (parsed.accepted) {
+        setShowReacceptConsent(true);
+      } else {
+        setDeclined(true);
+        setShowConsent(false);
+      }
+    };
+
     const checkConsent = async () => {
       if (!isSignedIn && user === undefined) return;
-      const stored = localStorage.getItem(LEGAL_CONSENT_KEY);
+      const parsed = readLegalConsent();
 
-      if (!isSignedIn) {
-        if (!stored) {
-          setShowConsent(true);
-        } else {
-          try {
-            const parsed = JSON.parse(stored) as LegalConsentState;
-            if (parsed.accepted &&
-                parsed.privacyVersion === CURRENT_PRIVACY_VERSION &&
-                parsed.termsVersion === CURRENT_TERMS_VERSION) {
-              setShowConsent(false);
-            } else if (parsed.accepted) {
-              setShowReacceptConsent(true);
-            } else {
-              setDeclined(true);
-              setShowConsent(false);
-            }
-          } catch {
-            setShowConsent(true);
-          }
-        }
+      // BANDWIDTH: when the local record is accepted at the current versions,
+      // trust it and skip the backend status round-trip entirely. The backend
+      // is only consulted when the local record is missing or stale (e.g. a
+      // returning user on a new device).
+      if (!isSignedIn || isConsentCurrent(parsed)) {
+        applyLocalRecord(parsed);
         return;
       }
 
@@ -87,65 +83,31 @@ export default function PreSignInConsent() {
 
         if (response.ok) {
           const data = await response.json();
-          const mongoAccepted = data.accepted &&
+          const mongoAccepted =
+            data.accepted &&
             data.privacyVersion === CURRENT_PRIVACY_VERSION &&
             data.termsVersion === CURRENT_TERMS_VERSION;
 
-          if (!mongoAccepted || !stored) {
-            setShowConsent(true);
+          if (mongoAccepted) {
+            // Backend already has current consent — refresh the local record
+            // so future loads skip this fetch.
+            writeLegalConsent({
+              accepted: true,
+              timestamp: new Date().toISOString(),
+              privacyVersion: CURRENT_PRIVACY_VERSION,
+              termsVersion: CURRENT_TERMS_VERSION,
+            });
+            setShowConsent(false);
+          } else if (parsed?.accepted) {
+            setShowReacceptConsent(true);
           } else {
-            try {
-              const parsed = JSON.parse(stored) as LegalConsentState;
-              if (parsed.accepted &&
-                  parsed.privacyVersion === CURRENT_PRIVACY_VERSION &&
-                  parsed.termsVersion === CURRENT_TERMS_VERSION) {
-                setShowConsent(false);
-              } else {
-                setShowReacceptConsent(true);
-              }
-            } catch {
-              setShowConsent(true);
-            }
-          }
-        } else if (!stored) {
-          setShowConsent(true);
-        } else {
-          try {
-            const parsed = JSON.parse(stored) as LegalConsentState;
-            if (parsed.accepted &&
-                parsed.privacyVersion === CURRENT_PRIVACY_VERSION &&
-                parsed.termsVersion === CURRENT_TERMS_VERSION) {
-              setShowConsent(false);
-            } else if (parsed.accepted) {
-              setShowReacceptConsent(true);
-            } else {
-              setDeclined(true);
-              setShowConsent(false);
-            }
-          } catch {
             setShowConsent(true);
           }
+        } else {
+          applyLocalRecord(parsed);
         }
       } catch {
-        if (!stored) {
-          setShowConsent(true);
-        } else {
-          try {
-            const parsed = JSON.parse(stored) as LegalConsentState;
-            if (parsed.accepted &&
-                parsed.privacyVersion === CURRENT_PRIVACY_VERSION &&
-                parsed.termsVersion === CURRENT_TERMS_VERSION) {
-              setShowConsent(false);
-            } else if (parsed.accepted) {
-              setShowReacceptConsent(true);
-            } else {
-              setDeclined(true);
-              setShowConsent(false);
-            }
-          } catch {
-            setShowConsent(true);
-          }
-        }
+        applyLocalRecord(parsed);
       }
     };
 
@@ -159,13 +121,10 @@ export default function PreSignInConsent() {
       timestamp: new Date().toISOString(),
       privacyVersion: CURRENT_PRIVACY_VERSION,
       termsVersion: CURRENT_TERMS_VERSION,
+      syncedClerkId: accepted && isSignedIn ? user?.id : undefined,
     };
 
-    try {
-      localStorage.setItem(LEGAL_CONSENT_KEY, JSON.stringify(consent));
-    } catch {
-      // ignore storage errors
-    }
+    writeLegalConsent(consent);
 
     if (accepted && isSignedIn) {
       try {

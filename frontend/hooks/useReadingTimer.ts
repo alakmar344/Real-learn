@@ -14,31 +14,39 @@ export function useReadingTimer(
       setStartAt(null);
       return;
     }
-    setStartAt(Date.now());
+    // Reset `now` alongside startAt — otherwise a stale `now` from a previous
+    // session makes elapsed negative and remainingMs exceed the duration.
+    const startedAt = Date.now();
+    setStartAt(startedAt);
+    setNow(startedAt);
   }, [isActive]);
 
+  const isComplete = Boolean(
+    isActive && startAt && now - startAt >= durationInMs
+  );
+
   useEffect(() => {
-    if (!isActive || !startAt) return;
+    // Stop ticking once complete — the old interval kept re-rendering the
+    // component 10×/second forever after the timer finished.
+    if (!isActive || !startAt || isComplete) return;
 
     const id = window.setInterval(() => {
       setNow(Date.now());
     }, 100);
 
     return () => window.clearInterval(id);
-  }, [isActive, startAt]);
+  }, [isActive, startAt, isComplete]);
 
   return useMemo(() => {
     if (!isActive || !startAt) {
       return { isComplete: false, remainingMs: durationInMs, progress: 0 };
     }
-    const elapsed = now - startAt;
-    const clamped = Math.min(Math.max(elapsed, 0), durationInMs);
+    const elapsed = Math.min(Math.max(now - startAt, 0), durationInMs);
     const remainingMs = Math.max(0, durationInMs - elapsed);
-    const isComplete = remainingMs <= 0;
     return {
-      isComplete,
+      isComplete: remainingMs <= 0,
       remainingMs,
-      progress: (clamped / durationInMs) * 100,
+      progress: (elapsed / durationInMs) * 100,
     };
   }, [durationInMs, isActive, now, startAt]);
 }

@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth, useUser } from "@clerk/nextjs";
-
-const COOKIE_CONSENT_KEY = "reallearn-cookie-consent";
+import { COOKIE_CONSENT_KEY, safeGetItem, safeSetItem } from "@/lib/legalConsent";
 
 interface CookieConsentState {
   accepted: boolean;
@@ -18,7 +17,9 @@ export default function CookieConsent() {
 
   useEffect(() => {
     if (!isSignedIn) return;
-    const stored = localStorage.getItem(COOKIE_CONSENT_KEY);
+    // safeGetItem: raw localStorage access throws (and unmounted the whole
+    // app) when storage is blocked — private mode, "Block all cookies".
+    const stored = safeGetItem(COOKIE_CONSENT_KEY);
     if (!stored) {
       setShowBanner(true);
     }
@@ -34,11 +35,7 @@ export default function CookieConsent() {
       accepted,
       timestamp: new Date().toISOString(),
     };
-    try {
-      localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(consent));
-    } catch {
-      // ignore storage errors (e.g. private mode)
-    }
+    safeSetItem(COOKIE_CONSENT_KEY, JSON.stringify(consent));
     setShowBanner(false);
 
     try {
@@ -46,17 +43,9 @@ export default function CookieConsent() {
         user?.primaryEmailAddress?.emailAddress ||
         user?.emailAddresses?.[0]?.emailAddress ||
         "";
-      const clerkId = user?.id || "";
 
-      let deviceIp = "unknown";
-      try {
-        const res = await fetch("https://api.ipify.org?format=json");
-        const data = await res.json();
-        deviceIp = data.ip;
-      } catch {
-        // fallback
-      }
-
+      // Note: no third-party IP lookup here — the backend records req.ip
+      // itself and always ignored a client-supplied value.
       const backendUrl =
         process.env.NEXT_PUBLIC_BACKEND_URL || "https://real-learn.onrender.com";
 
@@ -74,8 +63,6 @@ export default function CookieConsent() {
         body: JSON.stringify({
           accepted,
           email,
-          clerkId,
-          deviceIp,
           timestamp: consent.timestamp,
         }),
       });

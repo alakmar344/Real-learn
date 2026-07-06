@@ -61,6 +61,37 @@ function chunkForSpeech(text: string, maxLen = 200): string[] {
   return chunks;
 }
 
+// BANDWIDTH: in-memory LRU of synthesized audio blobs. Replaying the same
+// text (pause/restart, re-listening to a part) reuses the blob instead of
+// re-downloading ~1 MB of MP3 from the backend.
+const TTS_BLOB_CACHE_MAX_BYTES = 12 * 1024 * 1024;
+const ttsBlobCache = new Map<string, Blob>();
+let ttsBlobCacheBytes = 0;
+function ttsBlobCacheGet(key: string): Blob | undefined {
+  const blob = ttsBlobCache.get(key);
+  if (blob) {
+    // Refresh recency (insertion-ordered Map as LRU).
+    ttsBlobCache.delete(key);
+    ttsBlobCache.set(key, blob);
+  }
+  return blob;
+}
+function ttsBlobCacheSet(key: string, blob: Blob) {
+  if (blob.size > TTS_BLOB_CACHE_MAX_BYTES) return;
+  const existing = ttsBlobCache.get(key);
+  if (existing) {
+    ttsBlobCacheBytes -= existing.size;
+    ttsBlobCache.delete(key);
+  }
+  ttsBlobCache.set(key, blob);
+  ttsBlobCacheBytes += blob.size;
+  while (ttsBlobCacheBytes > TTS_BLOB_CACHE_MAX_BYTES && ttsBlobCache.size > 0) {
+    const oldestKey = ttsBlobCache.keys().next().value as string;
+    ttsBlobCacheBytes -= ttsBlobCache.get(oldestKey)!.size;
+    ttsBlobCache.delete(oldestKey);
+  }
+}
+
 export function useEdgeTts() {
   const [supported, setSupported] = useState(false);
   const [speaking, setSpeaking] = useState(false);
@@ -69,11 +100,14 @@ export function useEdgeTts() {
   const sessionRef = useRef(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const objectUrlRef = useRef<string | null>(null);
+  const controllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     setSupported(typeof window !== "undefined" && typeof Audio !== "undefined");
     return () => {
       sessionRef.current += 1;
+      controllerRef.current?.abort();
+      controllerRef.current = null;
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.src = "";
@@ -90,6 +124,10 @@ export function useEdgeTts() {
   const clearError = useCallback(() => setError(null), []);
 
   const stop = useCallback(() => {
+    // Abort any in-flight synthesis fetch so a superseded request can't keep
+    // streaming (wasted bandwidth) or clobber a newer session's state later.
+    controllerRef.current?.abort();
+    controllerRef.current = null;
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.src = "";
@@ -117,30 +155,38 @@ export function useEdgeTts() {
     setError(null);
 
     const controller = new AbortController();
+    controllerRef.current = controller;
     const timeoutMs = 45000;
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
-      const backendUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || "https://real-learn.onrender.com").replace(/\/$/, "");
-      const response = await fetch(`${backendUrl}/api/tts`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: cleaned, lang }),
-        signal: controller.signal,
-        cache: "no-store",
-      });
-      clearTimeout(timeoutId);
+      const cacheKey = `${lang}|${cleaned}`;
+      let blob = ttsBlobCacheGet(cacheKey);
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `TTS API error: ${response.status}`);
-      }
+      if (!blob) {
+        const backendUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || "https://real-learn.onrender.com").replace(/\/$/, "");
+        const response = await fetch(`${backendUrl}/api/tts`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: cleaned, lang }),
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
 
-      if (sessionRef.current !== session) return;
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `TTS API error: ${response.status}`);
+        }
 
-      const blob = await response.blob();
-      if (!blob.size) {
-        throw new Error("Empty audio response");
+        if (sessionRef.current !== session) return;
+
+        blob = await response.blob();
+        if (!blob.size) {
+          throw new Error("Empty audio response");
+        }
+        ttsBlobCacheSet(cacheKey, blob);
+      } else {
+        clearTimeout(timeoutId);
       }
 
       if (sessionRef.current !== session) return;
@@ -188,11 +234,18 @@ export function useEdgeTts() {
       }
     } catch (err) {
       clearTimeout(timeoutId);
+      // A newer speak()/stop() superseded this session — its abort is
+      // expected and must not clobber the newer session's state.
+      if (sessionRef.current !== session) return;
       const message = err instanceof Error ? err.message : "Speech failed";
       console.error("[edge-tts] speak failed", message, err);
       setError(message);
       setSpeaking(false);
       setLoading(false);
+    } finally {
+      if (controllerRef.current === controller) {
+        controllerRef.current = null;
+      }
     }
   }, [stop]);
 
