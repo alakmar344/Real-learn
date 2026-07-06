@@ -76,8 +76,11 @@ export default function LearnPage() {
     );
   }, [partScores]);
 
-  const prevLessonRef = useRef<LessonJourney | null>(null);
-  const prevCompletionRef = useRef(false);
+  // Initialize from the CURRENT (already-hydrated) store values — the lesson
+  // store persists, so starting these at null/false made every reload of a
+  // persisted lesson re-fire "Lesson ready!" / "Journey complete! 🎉" toasts.
+  const prevLessonRef = useRef<LessonJourney | null>(lesson);
+  const prevCompletionRef = useRef(showCompletion);
 
   useEffect(() => {
     if (lesson && prevLessonRef.current === null && !showCompletion) {
@@ -318,8 +321,11 @@ export default function LearnPage() {
                 console.log("[frontend][LearnPage] follow-up submit", {
                   nextQuestionLength: nextQuestion.length,
                 });
-                recordFollowUp();
-                await generateLesson(nextQuestion, false);
+                const ok = await generateLesson(nextQuestion, false);
+                // Only count follow-ups that actually produced a lesson —
+                // counting before generation let failed/rate-limited attempts
+                // farm the follow-up badge offline.
+                if (ok) recordFollowUp();
                 scrollToTop();
                 console.log("[frontend][LearnPage] follow-up completed + scrolled");
               }}
@@ -378,7 +384,14 @@ export default function LearnPage() {
                       : partScores[p.partNumber] ?? 0),
                   0
                 );
-                recordLessonCompleted({ totalScore: finalTotal, language });
+                // maxScore must reflect the ACTUAL quiz sizes — the store's
+                // default of 6 made perfection unreachable for fast-mode
+                // lessons (max 2) and salvaged short quizzes.
+                const maxScore = lesson.parts.reduce(
+                  (sum, p) => sum + (p.quiz?.length ?? 2),
+                  0
+                );
+                recordLessonCompleted({ totalScore: finalTotal, maxScore, language });
               }
 
               setQuizPart(null);

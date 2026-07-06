@@ -138,8 +138,10 @@ export default function EngagementLayer() {
     const ms = DURATION[current.kind] ?? 2500;
     const id = window.setTimeout(() => dequeue(), ms);
     return () => window.clearTimeout(id);
-    // Re-arm whenever the queue head changes.
-  }, [current, dequeue, celebrations.length]);
+    // Re-arm ONLY when the queue head changes — keying on queue length
+    // restarted the head's countdown every time a new celebration was
+    // enqueued behind it, so a steady stream kept the head up indefinitely.
+  }, [current, dequeue]);
 
   if (!mounted || !current) return null;
 

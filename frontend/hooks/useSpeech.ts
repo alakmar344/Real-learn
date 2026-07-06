@@ -109,6 +109,8 @@ export function useEdgeTts() {
       controllerRef.current?.abort();
       controllerRef.current = null;
       if (audioRef.current) {
+        audioRef.current.onended = null;
+        audioRef.current.onerror = null;
         audioRef.current.pause();
         audioRef.current.src = "";
         audioRef.current.load();
@@ -124,11 +126,20 @@ export function useEdgeTts() {
   const clearError = useCallback(() => setError(null), []);
 
   const stop = useCallback(() => {
+    // Supersede the active session FIRST: the abort below rejects the in-flight
+    // fetch, and clearing src fires an async `error` event on the media element.
+    // Without the bump, both land in handlers whose session check still passes,
+    // so a plain user "Stop" surfaced as "Audio playback failed".
+    sessionRef.current += 1;
     // Abort any in-flight synthesis fetch so a superseded request can't keep
     // streaming (wasted bandwidth) or clobber a newer session's state later.
     controllerRef.current?.abort();
     controllerRef.current = null;
     if (audioRef.current) {
+      // Detach handlers before tearing down — `src=""` + load() runs the media
+      // failure steps and would otherwise fire onerror.
+      audioRef.current.onended = null;
+      audioRef.current.onerror = null;
       audioRef.current.pause();
       audioRef.current.src = "";
       audioRef.current.load();
@@ -145,8 +156,11 @@ export function useEdgeTts() {
 
   const speak = useCallback(async (text: string, lang: string) => {
     if (typeof window === "undefined") return;
-    const session = ++sessionRef.current;
+    // stop() bumps sessionRef to supersede the previous session, so the new
+    // session id must be taken AFTER it — otherwise every speak() would see
+    // its own session as already stale.
     stop();
+    const session = ++sessionRef.current;
 
     const cleaned = text.trim();
     if (!cleaned) return;
@@ -171,16 +185,23 @@ export function useEdgeTts() {
           body: JSON.stringify({ text: cleaned, lang }),
           signal: controller.signal,
         });
-        clearTimeout(timeoutId);
 
         if (!response.ok) {
+          clearTimeout(timeoutId);
           const errorData = await response.json().catch(() => ({}));
           throw new Error(errorData.error || `TTS API error: ${response.status}`);
         }
 
-        if (sessionRef.current !== session) return;
+        if (sessionRef.current !== session) {
+          clearTimeout(timeoutId);
+          return;
+        }
 
+        // Keep the watchdog armed through the BODY download too — headers can
+        // arrive quickly while a stalled body would otherwise hang the button
+        // on "Generating…" forever.
         blob = await response.blob();
+        clearTimeout(timeoutId);
         if (!blob.size) {
           throw new Error("Empty audio response");
         }
@@ -255,6 +276,12 @@ export function useEdgeTts() {
       objectUrlRef.current = null;
     }
     if (audioRef.current && audioRef.current.src && audioRef.current.src.includes(objectUrl)) {
+      // Detach handlers first: clearing src + load() runs the media failure
+      // steps and fires an `error` event, which (with the session still
+      // current, e.g. right after onended) showed "Audio playback failed"
+      // after every successfully completed playback.
+      audioRef.current.onended = null;
+      audioRef.current.onerror = null;
       audioRef.current.pause();
       audioRef.current.src = '';
       audioRef.current.load();

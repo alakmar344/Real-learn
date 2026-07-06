@@ -18,7 +18,12 @@ export default function ThemeModal({ open, onClose }: Props) {
   useEffect(() => {
     if (!open) return;
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        // Consume the event so AppShell's window-level Escape handler doesn't
+        // also close the sidebar underneath this modal.
+        e.stopPropagation();
+        onClose();
+      }
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);

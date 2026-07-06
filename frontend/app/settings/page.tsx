@@ -7,6 +7,7 @@ import { LessonMode } from "@/types";
 import ConfirmModal from "@/components/shared/ConfirmModal";
 import { showToast } from "@/components/shared/ToastContainer";
 import { usePreferenceStore } from "@/store/preferenceStore";
+import { useMounted } from "@/hooks/useMounted";
 import LanguageSelector from "@/components/shared/LanguageSelector";
 import LevelSelector from "@/components/shared/LevelSelector";
 import { THEME_OPTIONS } from "@/lib/themes";
@@ -36,6 +37,10 @@ export default function SettingsPage() {
   const router = useRouter();
   const { isLoaded, isSignedIn, getToken } = useAuth();
   const { signOut } = useClerk();
+  // The preference store is persisted: rendering persisted theme/mode on the
+  // first client render mismatches the SSR HTML (which has the defaults) and
+  // triggers a React hydration error. Gate on mount, like the learn page.
+  const mounted = useMounted();
 
   const theme = usePreferenceStore((s) => s.theme);
   const language = usePreferenceStore((s) => s.language);
@@ -57,6 +62,15 @@ export default function SettingsPage() {
       // ignore
     }
   }, []);
+
+  // Navigation is a side effect — calling router.push during render is
+  // illegal (React "Cannot update Router while rendering" error) and can
+  // fire multiple times across re-renders.
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      router.push("/sign-in?redirect_url=/settings");
+    }
+  }, [isLoaded, isSignedIn, router]);
 
   const handleDeleteData = async () => {
     setDeleting(true);
@@ -141,7 +155,19 @@ export default function SettingsPage() {
           }
         })();
 
-        localData.theme = (() => {
+        // Current preferences live under "reallearn-preferences" (the old
+        // "reallearn-theme" key is legacy); the lesson store persists under
+        // "reallearn-journey". Exporting the wrong keys silently omitted
+        // both from this privacy/GDPR export.
+        localData.preferences = (() => {
+          try {
+            return JSON.parse(localStorage.getItem("reallearn-preferences") || "null");
+          } catch {
+            return null;
+          }
+        })();
+
+        localData.legacyTheme = (() => {
           try {
             return JSON.parse(localStorage.getItem("reallearn-theme") || "null");
           } catch {
@@ -151,7 +177,7 @@ export default function SettingsPage() {
 
         localData.lessonState = (() => {
           try {
-            return JSON.parse(localStorage.getItem("reallearn-lesson-store") || "null");
+            return JSON.parse(localStorage.getItem("reallearn-journey") || "null");
           } catch {
             return null;
           }
@@ -197,7 +223,7 @@ export default function SettingsPage() {
     }
   };
 
-  if (!isLoaded) {
+  if (!isLoaded || !mounted) {
     return (
       <main
         style={{
@@ -215,7 +241,7 @@ export default function SettingsPage() {
   }
 
   if (!isSignedIn) {
-    router.push("/sign-in?redirect_url=/settings");
+    // The redirect is handled by the effect above.
     return null;
   }
 

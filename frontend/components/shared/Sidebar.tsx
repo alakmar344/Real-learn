@@ -170,7 +170,7 @@ export default function Sidebar({ open, onClose }: Props) {
                       {journey.question}
                     </span>
                     <span style={{ display: "block", fontSize: 11, color: "var(--text-tertiary)", marginTop: 2 }}>
-                      {journey.language} · {journey.level} · {journey.totalScore}/{(journey.lesson?.parts?.length ?? 3) * 2} ★
+                      {journey.language} · {journey.level} · {journey.totalScore}/{(journey.lesson?.parts ?? []).reduce((sum, p) => sum + (p.quiz?.length ?? 2), 0) || (journey.lesson?.parts?.length ?? 3) * 2} ★
                       {(journey.completedParts ?? []).length < (journey.lesson?.parts?.length ?? 3) && (
                         <span> · Part {journey.unlockedPart ?? 1}</span>
                       )}

@@ -7,7 +7,7 @@ import DailyGoalRing from "@/components/shared/DailyGoalRing";
 import ActivityHeatmap from "@/components/shared/ActivityHeatmap";
 import AchievementsGrid from "@/components/shared/AchievementsGrid";
 import { useProgressStore } from "@/store/progressStore";
-import { levelInfo, levelTitle, dayKey, ProgressSnapshot } from "@/lib/achievements";
+import { levelInfo, levelTitle, dayKey, daysBetween, ProgressSnapshot } from "@/lib/achievements";
 import { useMounted } from "@/hooks/useMounted";
 
 function Card({ children, span }: { children: React.ReactNode; span?: boolean }) {
@@ -54,6 +54,18 @@ export default function ProgressPage() {
   const info = levelInfo(s.xp);
   const todayCount = mounted && s.dailyCountDay === dayKey() ? s.dailyCount : 0;
   const goalMetToday = mounted && s.dailyGoalMetDay === dayKey();
+
+  // The stored streak only updates when a part is passed, so a lapsed streak
+  // would display as alive forever. Show it as dead once the last activity is
+  // more than a day old (unless a single missed day is still freeze-savable).
+  const streakGap =
+    mounted && s.lastActiveDay ? daysBetween(dayKey(), s.lastActiveDay) : null;
+  const displayStreak =
+    streakGap === null
+      ? 0
+      : streakGap <= 1 || (streakGap === 2 && s.streakFreezes > 0)
+        ? s.streak
+        : 0;
 
   const snapshot: ProgressSnapshot = {
     xp: s.xp,
@@ -152,13 +164,13 @@ export default function ProgressPage() {
               <Card>
                 <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
                   <span
-                    className={s.streak > 0 ? "flame-flicker" : undefined}
-                    style={{ fontSize: 42, filter: s.streak > 0 ? "none" : "grayscale(1)", lineHeight: 1 }}
+                    className={displayStreak > 0 ? "flame-flicker" : undefined}
+                    style={{ fontSize: 42, filter: displayStreak > 0 ? "none" : "grayscale(1)", lineHeight: 1 }}
                   >
                     🔥
                   </span>
                   <div>
-                    <div style={{ fontSize: 30, fontWeight: 800, lineHeight: 1 }}>{s.streak}</div>
+                    <div style={{ fontSize: 30, fontWeight: 800, lineHeight: 1 }}>{displayStreak}</div>
                     <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>day streak</div>
                   </div>
                 </div>

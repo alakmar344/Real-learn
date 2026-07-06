@@ -211,20 +211,30 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
       ctx.stroke();
       ctx.lineCap = "butt";
 
-      ctx.textAlign = "center";
+      // Big score + "/ max" side by side, centered as one block — drawing
+      // both center-aligned at the same point painted them on top of each
+      // other, making the score illegible on every share card.
+      const scoreFont = "900 130px Inter, sans-serif";
+      const fracFont = "600 34px Inter, sans-serif";
+      ctx.textAlign = "left";
+      ctx.font = scoreFont;
+      const scoreWidth = ctx.measureText(`${totalScore}`).width;
+      ctx.font = fracFont;
+      const fracWidth = ctx.measureText(` / ${maxScore}`).width;
+      const scoreStartX = cx - (scoreWidth + fracWidth) / 2;
 
-      // Big score
-      ctx.font = "900 130px Inter, sans-serif";
+      ctx.font = scoreFont;
       ctx.fillStyle = "#ffffff";
       ctx.shadowColor = "rgba(0,0,0,0.25)";
       ctx.shadowBlur = 25;
-      ctx.fillText(`${totalScore}`, cx, cy + 32);
+      ctx.fillText(`${totalScore}`, scoreStartX, cy + 32);
       ctx.shadowBlur = 0;
 
-      ctx.font = "600 34px Inter, sans-serif";
+      ctx.font = fracFont;
       ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
-      ctx.fillText(`/ ${maxScore}`, cx, cy + 32);
+      ctx.fillText(` / ${maxScore}`, scoreStartX + scoreWidth, cy + 32);
 
+      ctx.textAlign = "center";
       ctx.font = "700 32px Inter, sans-serif";
       ctx.fillStyle = "#00e0c6";
       ctx.fillText(totalScore >= maxScore ? "PERFECT" : "COMPLETED", cx, cy + 80);

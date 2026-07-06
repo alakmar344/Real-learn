@@ -34,8 +34,11 @@ const DAILY_TOPICS = [
 ];
 
 function dayOfYear(d: Date): number {
-  const start = new Date(d.getFullYear(), 0, 0);
-  return Math.floor((d.getTime() - start.getTime()) / 86_400_000);
+  // Compute in UTC from calendar fields: a raw local-time delta is N×24h−1h
+  // on the day after spring-forward DST, which floors to the previous day.
+  const startUtc = Date.UTC(d.getFullYear(), 0, 0);
+  const dateUtc = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+  return Math.round((dateUtc - startUtc) / 86_400_000);
 }
 
 interface Props {

@@ -63,8 +63,12 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
     return () => clearTimeout(id);
   }, []);
 
-  // 2 quiz questions per part — fast mode (1 part) is out of 2, explain (3 parts) out of 6.
-  const maxScore = (lesson.parts?.length ?? 3) * 2;
+  // Max score = the ACTUAL number of quiz questions — salvaged quizzes can
+  // have 1 question, so hardcoding 2 per part made perfection unreachable.
+  const maxScore = (lesson.parts ?? []).reduce(
+    (sum, part) => sum + (part.quiz?.length ?? 2),
+    0
+  ) || (lesson.parts?.length ?? 3) * 2;
 
   /* Announce to screen readers */
   useEffect(() => {

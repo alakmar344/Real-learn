@@ -9,9 +9,13 @@ const VALID_THEMES: Theme[] = ["light", "dark", "twilight"];
 function readExistingPreferences(): { theme?: Theme; language?: Language; level?: Level } {
   const result: { theme?: Theme; language?: Language; level?: Level } = {};
   try {
+    // Legacy keys were written by zustand persist, so the value is an
+    // envelope: {"state":{...},"version":0} — NOT the bare value. Reading
+    // the bare shape here silently reset every returning user's preferences.
     const themeRaw = localStorage.getItem("reallearn-theme");
     if (themeRaw) {
-      const theme = JSON.parse(themeRaw) as Theme;
+      const parsed = JSON.parse(themeRaw);
+      const theme = (typeof parsed === "string" ? parsed : parsed?.state?.theme) as Theme;
       if (VALID_THEMES.includes(theme)) result.theme = theme;
     }
 
@@ -19,8 +23,9 @@ function readExistingPreferences(): { theme?: Theme; language?: Language; level?
     if (journeyRaw) {
       try {
         const data = JSON.parse(journeyRaw);
-        if (data.language) result.language = data.language;
-        if (data.level) result.level = data.level;
+        const state = data?.state ?? data;
+        if (typeof state?.language === "string") result.language = state.language;
+        if (typeof state?.level === "string") result.level = state.level;
       } catch {
         // ignore
       }

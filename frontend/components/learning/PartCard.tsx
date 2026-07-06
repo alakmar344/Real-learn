@@ -66,7 +66,7 @@ export default function PartCard({
         }}
       >
         <span>✓ {part.title} · Completed</span>
-        <strong>{score ?? 0}/2</strong>
+        <strong>{score ?? 0}/{part.quiz?.length ?? 2}</strong>
       </button>
     );
   }
