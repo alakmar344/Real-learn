@@ -236,6 +236,7 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
         <QuizQuestion
           question={currentQuestion}
           index={current}
+          totalQuestions={quizQuestions.length}
           selectedIndex={selected}
           answered={answered}
           onSelect={selectAnswer}

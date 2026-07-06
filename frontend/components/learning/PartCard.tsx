@@ -54,7 +54,7 @@ export default function PartCard({
           width: "100%",
           height: 52,
           borderRadius: "var(--radius-md)",
-          border: "1px solid rgba(26,107,58,0.25)",
+          border: "1px solid color-mix(in srgb, var(--correct) 30%, transparent)",
           background: "var(--correct-bg)",
           color: "var(--correct)",
           display: "flex",

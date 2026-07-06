@@ -6,6 +6,7 @@ import { QuizQuestion as Question } from "@/types";
 interface Props {
   question: Question;
   index: number;
+  totalQuestions: number;
   selectedIndex: number | null;
   answered: boolean;
   onSelect: (index: number) => void;
@@ -13,7 +14,7 @@ interface Props {
 
 const letters = ["A", "B", "C", "D"];
 
-export default function QuizQuestion({ question, index, selectedIndex, answered, onSelect }: Props) {
+export default function QuizQuestion({ question, index, totalQuestions, selectedIndex, answered, onSelect }: Props) {
   const optionRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const options = question.options ?? [];
@@ -43,9 +44,9 @@ export default function QuizQuestion({ question, index, selectedIndex, answered,
   );
 
   return (
-    <div role="group" aria-label={`Question ${index + 1} of 2`}>
+    <div role="group" aria-label={`Question ${index + 1} of ${totalQuestions}`}>
       <p style={{ margin: 0, marginBottom: 8, fontSize: 12, color: "var(--text-tertiary)", fontWeight: 500 }}>
-        Question {index + 1} of 2
+        Question {index + 1} of {totalQuestions}
       </p>
       <p style={{ margin: 0, marginBottom: 16, fontSize: 16, fontWeight: 600, color: "var(--text-primary)" }}>
         {question.question}
@@ -63,19 +64,23 @@ export default function QuizQuestion({ question, index, selectedIndex, answered,
 
           if (showCorrectAnswer) {
             background = "var(--correct-bg)";
-            border = "1.5px solid rgba(26,107,58,0.4)";
+            // Derive from the theme token — the old hardcoded light-palette
+            // green was nearly invisible against dark-theme backgrounds.
+            border = "1.5px solid color-mix(in srgb, var(--correct) 45%, transparent)";
             color = "var(--text-primary)";
           }
 
           if (isWrongSelected) {
             background = "var(--wrong-bg)";
-            border = "1.5px solid rgba(139,32,32,0.4)";
+            border = "1.5px solid color-mix(in srgb, var(--wrong) 45%, transparent)";
             color = "var(--text-primary)";
           }
 
           return (
             <button
-              key={option}
+              // Index-keyed: options are model-generated and can contain
+              // duplicate text, which broke reconciliation after reshuffles.
+              key={`${optionIndex}-${option}`}
               ref={(el) => { optionRefs.current[optionIndex] = el; }}
               type="button"
               role="radio"

@@ -83,7 +83,7 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
       style={{
         marginTop: 28,
         borderRadius: "var(--radius-xl)",
-        border: "1px solid rgba(26,107,58,0.25)",
+        border: "1px solid color-mix(in srgb, var(--correct) 30%, transparent)",
         background: "var(--correct-bg)",
         padding: "clamp(20px, 4vw, 32px)",
         position: "relative",

@@ -2,10 +2,21 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ["img.clerk.com"],
+    remotePatterns: [{ protocol: "https", hostname: "img.clerk.com" }],
   },
   async headers() {
     return [
+      {
+        // BANDWIDTH: public/ assets change rarely; let browsers keep them for
+        // a day and serve stale while revalidating instead of re-downloading.
+        source: "/:path*.svg",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=86400, stale-while-revalidate=604800",
+          },
+        ],
+      },
       {
         source: "/(.*)",
         headers: [
@@ -29,7 +40,7 @@ const nextConfig = {
           {
             key: "Content-Security-Policy",
             value:
-              "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://*.clerk.accounts.dev https://*.clerk.com https://clerk.reallearn.site; style-src 'self' 'unsafe-inline'; img-src 'self' https://img.clerk.com https://www.google-analytics.com data:; connect-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://clerk.reallearn.site https://real-learn.onrender.com https://www.google-analytics.com https://www.googletagmanager.com https://api.ipify.org; frame-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://clerk.reallearn.site; font-src 'self'; media-src 'self' blob:; base-uri 'self'; form-action 'self'",
+              "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://*.clerk.accounts.dev https://*.clerk.com https://clerk.reallearn.site; style-src 'self' 'unsafe-inline'; img-src 'self' https://img.clerk.com https://www.google-analytics.com data:; connect-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://clerk.reallearn.site https://real-learn.onrender.com https://www.google-analytics.com https://www.googletagmanager.com; frame-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://clerk.reallearn.site; font-src 'self'; media-src 'self' blob:; base-uri 'self'; form-action 'self'",
 
           },
         ],

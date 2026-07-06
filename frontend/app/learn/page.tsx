@@ -18,11 +18,25 @@ import { usePreferenceStore } from "@/store/preferenceStore";
 import { useProgressStore } from "@/store/progressStore";
 import { useSavedJourneysStore, journeySignature } from "@/store/savedJourneysStore";
 import { useLesson } from "@/hooks/useLesson";
+import { useMounted } from "@/hooks/useMounted";
 import { LessonJourney } from "@/types";
+
+function scrollToTop() {
+  // Respect prefers-reduced-motion: an explicit behavior option overrides the
+  // CSS `scroll-behavior: auto !important` reduced-motion rule.
+  const reduce =
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+}
 
 export default function LearnPage() {
   const [quizPart, setQuizPart] = useState<number | null>(null);
   const [showUnlockFx, setShowUnlockFx] = useState(false);
+  // The lesson store is persisted: rendering persisted state on the first
+  // client render mismatches the SSR HTML (which always has the defaults)
+  // and triggers a React hydration failure. Gate on mount instead.
+  const mounted = useMounted();
 
   const {
     question,
@@ -96,10 +110,13 @@ export default function LearnPage() {
       unlockedPart,
       completedParts,
     });
-    console.log("[frontend][LearnPage] journey saved to history", { id, completedParts, totalScore });
+    if (process.env.NODE_ENV !== "production") {
+      console.log("[frontend][LearnPage] journey saved to history", { id, completedParts, totalScore });
+    }
   }, [lesson, language, level, partScores, totalScore, unlockedPart, completedParts, saveJourney]);
 
   useEffect(() => {
+    if (process.env.NODE_ENV === "production") return;
     console.log("[frontend][LearnPage] state snapshot", {
       hasQuestion: Boolean(question),
       hasLesson: Boolean(lesson),
@@ -128,6 +145,16 @@ export default function LearnPage() {
     quizPart,
     showUnlockFx,
   ]);
+
+  /* ── Hydration gate: neutral shell until the client has mounted ── */
+  if (!mounted) {
+    return (
+      <>
+        <LiveRegion />
+        <main style={{ minHeight: "100vh", background: "var(--bg-primary)" }} />
+      </>
+    );
+  }
 
   /* ── Error state ── */
   if (error && !isLoading && !lesson) {
@@ -276,7 +303,7 @@ export default function LearnPage() {
               totalScore={totalScore}
               onRetake={() => {
                 resetProgress();
-                window.scrollTo({ top: 0, behavior: "smooth" });
+                scrollToTop();
               }}
               onRestart={() => {
                 resetAll();
@@ -293,7 +320,7 @@ export default function LearnPage() {
                 });
                 recordFollowUp();
                 await generateLesson(nextQuestion, false);
-                window.scrollTo({ top: 0, behavior: "smooth" });
+                scrollToTop();
                 console.log("[frontend][LearnPage] follow-up completed + scrolled");
               }}
             />

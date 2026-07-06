@@ -34,7 +34,23 @@ const GENERATE_RETRY_DELAY_MS =
     ? configuredGenerateRetryDelayMs
     : DEFAULT_GENERATE_RETRY_DELAY_MS;
 const MAX_GENERATE_RETRY_DELAY_MS = 8000;
-const RETRYABLE_STATUS_CODES = [408, 425, 429, 500, 502, 503, 504];
+// BANDWIDTH: 429 is deliberately NOT retryable — automatically re-sending a
+// request the server just told us to slow down on doubles traffic exactly when
+// the server is overloaded.
+const RETRYABLE_STATUS_CODES = [408, 425, 500, 502, 503, 504];
+
+// Module-scoped "latest request wins" state. Only one lesson generation is
+// meaningful at a time (there is a single global lesson store), so a newer
+// request — or an explicit cancel — must abort the old stream and prevent its
+// late result from overwriting newer state.
+let activeRequestSeq = 0;
+let activeController: AbortController | null = null;
+
+export function cancelActiveLessonRequest() {
+  activeRequestSeq += 1;
+  activeController?.abort();
+  activeController = null;
+}
 
 type StreamEvent = {
   event: string;
@@ -43,9 +59,12 @@ type StreamEvent = {
 
 type RetryableError = Error & {
   status?: number;
+  retryAfterMs?: number;
 };
 
+const LESSON_DEBUG = process.env.NODE_ENV !== "production";
 function logLessonDebug(stage: string, details?: unknown) {
+  if (!LESSON_DEBUG) return;
   if (details === undefined) {
     console.log(`[frontend][useLesson] ${stage}`);
     return;
@@ -157,6 +176,13 @@ export function useLesson() {
         backendUrl: trimmedBackendUrl,
       });
 
+      // Latest request wins: abort any stream that is still in flight so its
+      // late result can't overwrite this request's state.
+      const mySeq = ++activeRequestSeq;
+      activeController?.abort();
+      activeController = null;
+      const isStale = () => mySeq !== activeRequestSeq;
+
       setQuestion(normalized);
       startLoading();
 
@@ -168,6 +194,7 @@ export function useLesson() {
 
       for (let attempt = 1; attempt <= GENERATE_RETRY_ATTEMPTS; attempt += 1) {
         const controller = new AbortController();
+        activeController = controller;
         let idleTimedOut = false;
         let idleTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
@@ -216,6 +243,11 @@ export function useLesson() {
             logLessonDebug("non-OK response payload", { requestId, attempt, errorPayload });
             const error = new Error(errorPayload?.error || "Unable to generate lesson") as RetryableError;
             error.status = response.status;
+            // Honor the server's Retry-After hint instead of a blind backoff.
+            const retryAfterSeconds = Number(response.headers.get("Retry-After"));
+            if (Number.isFinite(retryAfterSeconds) && retryAfterSeconds > 0) {
+              error.retryAfterMs = retryAfterSeconds * 1000;
+            }
             throw error;
           }
 
@@ -325,6 +357,10 @@ export function useLesson() {
             throw new Error("Backend closed connection before returning a lesson");
           }
 
+          if (isStale()) {
+            logLessonDebug("discarding stale lesson result", { requestId, attempt });
+            return;
+          }
           logLessonDebug("setLesson with parsed payload", {
             requestId,
             attempt,
@@ -335,6 +371,12 @@ export function useLesson() {
           return;
         } catch (error) {
           lastError = error;
+          // A newer request (or an explicit cancel) superseded this one:
+          // swallow the abort silently — no retries, no error state.
+          if (isStale()) {
+            logLessonDebug("stale request aborted", { requestId, attempt });
+            return;
+          }
           const canRetry = attempt < GENERATE_RETRY_ATTEMPTS && isRetryableError(error, idleTimedOut);
           logLessonDebug("attempt failed", {
             requestId,
@@ -344,11 +386,14 @@ export function useLesson() {
           });
 
           if (canRetry) {
+            const retryAfterMs = (error as RetryableError)?.retryAfterMs;
             const waitMs = Math.min(
-              GENERATE_RETRY_DELAY_MS * Math.pow(2, attempt - 1),
+              retryAfterMs ??
+                GENERATE_RETRY_DELAY_MS * Math.pow(2, attempt - 1),
               MAX_GENERATE_RETRY_DELAY_MS
             );
             await sleep(waitMs);
+            if (isStale()) return;
             continue;
           }
 
@@ -374,9 +419,13 @@ export function useLesson() {
           if (idleTimeoutId) {
             clearTimeout(idleTimeoutId);
           }
+          if (activeController === controller) {
+            activeController = null;
+          }
         }
       }
 
+      if (isStale()) return;
       setError(lastError instanceof Error ? lastError.message : "Failed to generate lesson");
     },
     [getToken, language, level, mode, router, setError, setLesson, setQuestion, startLoading]
@@ -384,6 +433,7 @@ export function useLesson() {
 
   const restart = useCallback(() => {
     logLessonDebug("restart invoked");
+    cancelActiveLessonRequest();
     resetForNextQuestion("");
     router.push("/");
   }, [resetForNextQuestion, router]);

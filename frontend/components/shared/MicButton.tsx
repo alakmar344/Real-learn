@@ -88,14 +88,14 @@ export default function MicButton({ language, onTranscript, onInterim, size = 40
         minWidth: size,
         borderRadius: "50%",
         border: listening ? "1.5px solid #dc2626" : "1px solid var(--border-default)",
-        background: listening ? "rgba(220,38,38,0.12)" : "transparent",
+        background: listening ? "color-mix(in srgb, var(--wrong) 12%, transparent)" : "transparent",
         color: listening ? "#dc2626" : "var(--text-secondary)",
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
         cursor: "pointer",
         transition: "all 200ms var(--ease-color)",
-        boxShadow: listening ? "0 0 0 4px rgba(220,38,38,0.12)" : "none",
+        boxShadow: listening ? "0 0 0 4px color-mix(in srgb, var(--wrong) 12%, transparent)" : "none",
       }}
     >
       {micIcon}

@@ -6,6 +6,7 @@ import { SignInButton } from "@clerk/nextjs";
 import ExampleQuestions from "@/components/homepage/ExampleQuestions";
 import MicButton from "@/components/shared/MicButton";
 import { usePreferenceStore } from "@/store/preferenceStore";
+import { useMounted } from "@/hooks/useMounted";
 import { LessonMode } from "@/types";
 
 const MODES: { value: LessonMode; icon: string; label: string; hint: string }[] = [
@@ -35,8 +36,12 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
   const [interimSpeech, setInterimSpeech] = useState("");
   const { isSignedIn } = useAuth();
   const language = usePreferenceStore((s) => s.language);
-  const mode = usePreferenceStore((s) => s.mode);
+  const persistedMode = usePreferenceStore((s) => s.mode);
   const setMode = usePreferenceStore((s) => s.setMode);
+  // Hydration gate: `mode` is persisted, so the first client render must
+  // match the SSR default until we're mounted.
+  const mounted = useMounted();
+  const mode = mounted ? persistedMode : "fast";
   const activeMode = MODES.find((m) => m.value === mode) ?? MODES[0];
 
   useEffect(() => {

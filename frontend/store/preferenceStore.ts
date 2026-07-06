@@ -45,6 +45,7 @@ interface PreferenceStore {
 }
 
 function prefLog(action: string, details?: unknown) {
+  if (process.env.NODE_ENV === "production") return;
   if (details === undefined) console.log(`[frontend][preferenceStore] ${action}`);
   else console.log(`[frontend][preferenceStore] ${action}`, details);
 }

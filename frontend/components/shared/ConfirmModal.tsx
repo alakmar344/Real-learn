@@ -27,7 +27,17 @@ export default function ConfirmModal({
     if (!open) return;
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
-      if (e.key === "Enter") onConfirm();
+      // Enter only confirms when focus is NOT on a button/link — otherwise a
+      // user pressing Enter on "Cancel" would fire BOTH the cancel click and
+      // this confirm shortcut (destructive action despite choosing cancel).
+      if (e.key === "Enter") {
+        const target = e.target as HTMLElement | null;
+        if (target && ["BUTTON", "A", "INPUT", "TEXTAREA"].includes(target.tagName)) {
+          return;
+        }
+        e.preventDefault();
+        onConfirm();
+      }
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);

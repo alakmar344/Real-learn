@@ -325,3 +325,64 @@ backend and the versions sent by `PreSignInConsent`:
   auth required ✓, `X-Powered-By` gone ✓, security headers present ✓,
   `/api/auth-debug` returns 404 with `NODE_ENV=production` ✓.
 - Frontend `tsc --noEmit` passes with zero errors.
+
+---
+
+## Session 2026-07-06: Legal documents synchronized (v1.3) + dependency upgrades
+
+### Legal documents synchronized with the code (v1.3)
+
+The v1.2 policies described the "Listen" feature as browser-based Web Speech
+text-to-speech — but since commit `2ed5f60`, read-aloud audio is synthesized on
+the backend via `node-edge-tts` (Microsoft's Edge neural TTS service), and
+since `525d71b` that audio is cached. The policies were also still listing
+ipify, whose caller was deleted in `36f4dab`. Updated both documents to
+version 1.3, dated 2026-07-06:
+
+- **Privacy Policy**
+  - "Listen" is now correctly described as server-generated: lesson text is
+    sent to our server and synthesized by Microsoft's Edge TTS service; only
+    text + language/voice settings are sent, no account identity. Microsoft
+    added to the third-party services list (with privacy-statement link).
+  - New "Read-Aloud Audio" collection bullet: audio cached server-side up to
+    24h in a byte-capped LRU keyed by a one-way content hash (never identity),
+    plus private browser caching (ETag / max-age=86400) — matching the
+    `/api/tts` implementation.
+  - **ipify removed** from third-party services (client-side IP lookup was
+    deleted from CookieConsent; backend never used the value).
+  - "Browser Speech Services" entry narrowed to voice *input* only.
+- **Terms of Service**
+  - Description of Service and Voice Features sections updated for the
+    server-generated read-aloud architecture; disclosed TTS rate limits and
+    the 2000-char text cap.
+- **Version plumbing** — bumped `PRIVACY_POLICY_VERSION` /
+  `TERMS_OF_SERVICE_VERSION` defaults (backend), `CURRENT_PRIVACY_VERSION` /
+  `CURRENT_TERMS_VERSION` (frontend `lib/legalConsent.ts`), and rewrote the
+  PreSignInConsent re-accept modal's change lists for v1.2 → v1.3 (headings
+  now interpolate the version constants instead of hardcoding them).
+
+### Dependency upgrades (outdated packages)
+
+- **Security-driven:** `next` 15.5.15 → **15.5.20** (+ matching
+  `eslint-config-next`) — clears every Next.js advisory npm audit reported
+  against 15.5.15, including two high-severity middleware/proxy bypasses
+  (GHSA-492v-c6pp-mqqv, GHSA-267c-6grr-h53f), RSC cache poisoning, and the
+  image-optimizer DoS.
+- **Semver-safe updates:** backend `express` 4.22.1 → 4.22.2; frontend
+  `@clerk/nextjs` 7.5.9 → 7.5.12, `react`/`react-dom` 19.2.5 → 19.2.7,
+  `zustand` 5.0.13 → 5.0.14, `@types/node`, `@types/react`, `autoprefixer`,
+  `postcss` patch bumps.
+- **Deliberately held back (breaking majors, each a real migration):**
+  Express 5, Next 16 / eslint-config-next 16, Tailwind 4, ESLint 10,
+  TypeScript 6, react-markdown 10, @types/node 26.
+- **Known remaining audit item:** Next.js *bundles its own* `postcss` copy
+  older than 8.5.10 (GHSA-qx2v-qp2m-jg93, moderate). No fixed release exists
+  anywhere in Next's range (the advisory spans up to 16.3-canary), so it is
+  not actionable from this repo; our own top-level postcss is patched.
+
+### Verification performed
+
+- `node --check` passes on every backend source file; backend boots and
+  `/health` returns `{"ok":true}` on express 4.22.2.
+- Frontend `tsc --noEmit` passes and `next build` succeeds on 15.5.20 —
+  all `/legal/*` routes compile and prerender.
