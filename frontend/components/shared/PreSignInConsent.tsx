@@ -113,12 +113,15 @@ export default function PreSignInConsent() {
 
   const saveConsent = async (accepted: boolean) => {
     setLoading(true);
+    // Do NOT stamp syncedClerkId yet — it is only written after the backend
+    // POST succeeds. Stamping it optimistically meant a failed POST (network
+    // blip, cold start) left a record that claimed it was synced, so the
+    // server-side consent record was permanently missing with no retry.
     const consent: LegalConsentState = {
       accepted,
       timestamp: new Date().toISOString(),
       privacyVersion: CURRENT_PRIVACY_VERSION,
       termsVersion: CURRENT_TERMS_VERSION,
-      syncedClerkId: accepted && isSignedIn ? user?.id : undefined,
     };
 
     writeLegalConsent(consent);
@@ -135,7 +138,7 @@ export default function PreSignInConsent() {
           headers["Authorization"] = `Bearer ${token}`;
         }
 
-        await fetch(`${backendUrl}/api/legal-consent`, {
+        const response = await fetch(`${backendUrl}/api/legal-consent`, {
           method: "POST",
           headers,
           body: JSON.stringify({
@@ -149,8 +152,11 @@ export default function PreSignInConsent() {
             termsVersion: CURRENT_TERMS_VERSION,
           }),
         });
+        if (response.ok && user?.id) {
+          writeLegalConsent({ ...consent, syncedClerkId: user.id });
+        }
       } catch {
-        // best-effort
+        // best-effort — the home-page sync effect retries un-synced records
       }
     }
 

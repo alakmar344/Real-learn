@@ -38,8 +38,26 @@ export default function PreferenceModal({ open, onClose }: Props) {
   useEffect(() => {
     if (!open) return;
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-      if (e.key === "Enter") handleSave();
+      if (e.key === "Escape") {
+        // Consume the event so AppShell's window-level Escape handler doesn't
+        // also close the sidebar underneath this modal.
+        e.stopPropagation();
+        onClose();
+      }
+      // Enter only saves when focus is NOT on an interactive element —
+      // otherwise pressing Enter on "Skip" fired BOTH the skip click and this
+      // save shortcut, and committing a <select> choice closed the modal.
+      if (e.key === "Enter") {
+        const target = e.target as HTMLElement | null;
+        if (
+          target &&
+          ["BUTTON", "A", "INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)
+        ) {
+          return;
+        }
+        e.preventDefault();
+        handleSave();
+      }
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);

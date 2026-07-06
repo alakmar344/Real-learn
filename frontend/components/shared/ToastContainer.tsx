@@ -19,7 +19,16 @@ export function showToast(message: string, type: Toast["type"] = "info") {
 export default function ToastContainer() {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  setToastsGlobal = setToasts;
+  // Bind the global setter in an effect (not as a render-phase side effect,
+  // which breaks under StrictMode/concurrent re-renders) and unbind on
+  // unmount so showToast()'s null-guard sees a dead container instead of
+  // silently calling a stale setter.
+  useEffect(() => {
+    setToastsGlobal = setToasts;
+    return () => {
+      if (setToastsGlobal === setToasts) setToastsGlobal = null;
+    };
+  }, []);
 
   const headToastId = toasts[0]?.id;
   useEffect(() => {

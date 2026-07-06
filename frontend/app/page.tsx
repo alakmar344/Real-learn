@@ -6,16 +6,10 @@ import QuestionInput from "@/components/homepage/QuestionInput";
 import HomeStats from "@/components/homepage/HomeStats";
 import LoadingCinematic from "@/components/shared/LoadingCinematic";
 import LiveRegion from "@/components/shared/LiveRegion";
-import PreSignInConsent from "@/components/shared/PreSignInConsent";
 import Footer from "@/components/shared/Footer";
 import { useLesson } from "@/hooks/useLesson";
 import { useAuth, useUser } from "@clerk/nextjs";
-import {
-  CURRENT_PRIVACY_VERSION,
-  CURRENT_TERMS_VERSION,
-  readLegalConsent,
-  writeLegalConsent,
-} from "@/lib/legalConsent";
+import { readLegalConsent, writeLegalConsent } from "@/lib/legalConsent";
 
 const QUOTES = [
   "Education is the kindling of a flame, not the filling of a vessel.",
@@ -53,6 +47,11 @@ export default function HomePage() {
       const parsed = readLegalConsent();
       if (!parsed?.accepted) return;
       if (parsed.syncedClerkId === user.id) return;
+      // A legacy record without version fields predates the versioned-consent
+      // flow. Uploading it as the CURRENT versions would fabricate a v1.3
+      // acceptance the user never made and permanently suppress the re-accept
+      // modal — skip it and let PreSignInConsent collect fresh consent.
+      if (!parsed.privacyVersion || !parsed.termsVersion) return;
 
       try {
         const backendUrl =
@@ -75,13 +74,18 @@ export default function HomePage() {
               user?.primaryEmailAddress?.emailAddress ||
               user?.emailAddresses?.[0]?.emailAddress ||
               "",
-            privacyVersion: parsed.privacyVersion || CURRENT_PRIVACY_VERSION,
-            termsVersion: parsed.termsVersion || CURRENT_TERMS_VERSION,
+            privacyVersion: parsed.privacyVersion,
+            termsVersion: parsed.termsVersion,
           }),
         });
 
         if (res.ok) {
-          writeLegalConsent({ ...parsed, syncedClerkId: user.id });
+          // Re-read before writing: the POST can take many seconds (Render
+          // cold start), during which the user may have accepted a NEWER
+          // policy version — merging onto the stale `parsed` snapshot would
+          // clobber that fresh record.
+          const latest = readLegalConsent();
+          writeLegalConsent({ ...(latest ?? parsed), syncedClerkId: user.id });
         }
       } catch {
         // best-effort
@@ -108,7 +112,8 @@ export default function HomePage() {
   return (
     <>
       <LiveRegion />
-      <PreSignInConsent />
+      {/* PreSignInConsent is rendered once globally in app/layout.tsx — a
+          second instance here stacked two independent consent modals. */}
       <main
         style={{
           minHeight: "100vh",

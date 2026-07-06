@@ -158,12 +158,15 @@ export function useLesson() {
   const mode = usePreferenceStore((s) => s.mode);
 
   const generateLesson = useCallback(
-    async (question: string, navigate: boolean = true) => {
+    // Returns true when a lesson was successfully generated and applied,
+    // false on failure/cancellation — callers use this to gate side effects
+    // (e.g. follow-up gamification counters).
+    async (question: string, navigate: boolean = true): Promise<boolean> => {
       const normalized = question.trim();
       const requestId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       if (!normalized) {
         logLessonDebug("generateLesson skipped (empty question)", { requestId, question });
-        return;
+        return false;
       }
 
       logLessonDebug("generateLesson started", {
@@ -265,6 +268,10 @@ export function useLesson() {
           while (true) {
             const { value, done } = await reader.read();
             if (done) {
+              // Flush the decoder: a multi-byte UTF-8 character split across
+              // the final network chunk is otherwise silently dropped, which
+              // corrupts the buffered JSON of the terminal `lesson` event.
+              buffer += decoder.decode();
               logLessonDebug("stream reader done", { requestId, attempt, chunkCount, totalBytes });
               break;
             }
@@ -359,7 +366,7 @@ export function useLesson() {
 
           if (isStale()) {
             logLessonDebug("discarding stale lesson result", { requestId, attempt });
-            return;
+            return false;
           }
           logLessonDebug("setLesson with parsed payload", {
             requestId,
@@ -368,14 +375,14 @@ export function useLesson() {
             keyTakeaways: lesson.keyTakeaways?.length ?? 0,
           });
           setLesson(lesson);
-          return;
+          return true;
         } catch (error) {
           lastError = error;
           // A newer request (or an explicit cancel) superseded this one:
           // swallow the abort silently — no retries, no error state.
           if (isStale()) {
             logLessonDebug("stale request aborted", { requestId, attempt });
-            return;
+            return false;
           }
           const canRetry = attempt < GENERATE_RETRY_ATTEMPTS && isRetryableError(error, idleTimedOut);
           logLessonDebug("attempt failed", {
@@ -393,7 +400,7 @@ export function useLesson() {
               MAX_GENERATE_RETRY_DELAY_MS
             );
             await sleep(waitMs);
-            if (isStale()) return;
+            if (isStale()) return false;
             continue;
           }
 
@@ -406,7 +413,7 @@ export function useLesson() {
                 STREAM_IDLE_TIMEOUT_MS / 1000
               )}s without keep-alive. Please try again.`
             );
-            return;
+            return false;
           }
           console.error("[frontend][useLesson] generateLesson failed", {
             requestId,
@@ -414,7 +421,7 @@ export function useLesson() {
             error,
           });
           setError(error instanceof Error ? error.message : "Failed to generate lesson");
-          return;
+          return false;
         } finally {
           if (idleTimeoutId) {
             clearTimeout(idleTimeoutId);
@@ -425,8 +432,9 @@ export function useLesson() {
         }
       }
 
-      if (isStale()) return;
+      if (isStale()) return false;
       setError(lastError instanceof Error ? lastError.message : "Failed to generate lesson");
+      return false;
     },
     [getToken, language, level, mode, router, setError, setLesson, setQuestion, startLoading]
   );

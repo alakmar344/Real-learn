@@ -386,3 +386,58 @@ version 1.3, dated 2026-07-06:
   `/health` returns `{"ok":true}` on express 4.22.2.
 - Frontend `tsc --noEmit` passes and `next build` succeeds on 15.5.20 —
   all `/legal/*` routes compile and prerender.
+
+---
+
+## Session 2026-07-06 (later): full-codebase bug sweep — 24 defects found & fixed
+
+Four parallel review passes (backend, hooks/stores, components, app pages),
+every finding re-verified against the code before fixing. Verified clean
+afterwards: backend boots + `/health` OK, SSML-injection payload neutralized
+(live test), `tsc --noEmit` clean, production build passes.
+
+### Backend (`src/server.js`)
+
+| Severity | Bug | Fix |
+|---|---|---|
+| **High (DoS)** | `req.body?.question?.trim()` threw on non-string question (`{"question":123}`) — the handler has no try/catch, so the TypeError became an unhandled rejection that **killed the whole process** (Node ≥15). | Type-check before trim. |
+| **High (injection)** | `/api/tts` `lang` was passed verbatim to node-edge-tts, which interpolates it unescaped into `xml:lang="…"` — an SSML injection channel (voice switching, `<break>`, oversized synthesis) that bypassed the prosody sanitization. | `lang` locked to the `SPEECH_LANG_TO_VOICE` allowlist. |
+| Medium (privacy) | `/api/agreement` and `/api/legal-consent` preferred the **client-supplied** email over the verified token email — a user could stamp someone else's address onto their record, which `/api/export-data`'s `$or: [{clerkId}, {email}]` filter then leaked (with IP + UA) into that person's export. | Verified token email wins; body email is only a fallback. |
+
+Ruled out after tracing: the reported TTS-cache byte-accounting "drift" — all
+cache operations are synchronous with no interleaving await points, so the
+byte counter invariant holds.
+
+### Frontend — hooks & stores
+
+| Severity | Bug | Fix |
+|---|---|---|
+| **High** | `useSpeech`: clearing `src` + `load()` fires a media `error` event with `onerror` still attached and the session still current → **every completed playback (and every manual Stop) flipped the Listen button to "⚠ Audio playback failed"**. | Detach `onended`/`onerror` before teardown; `stop()` now bumps the session (and `speak()` takes its session id after `stop()`). |
+| Medium | `preferenceStore` legacy migrations parsed the zustand persist **envelope** with the bare-value shape (`JSON.parse(themeRaw)` vs `.state.theme`) — returning users' theme/language/level silently reset to defaults. Same bug in `layout.tsx`'s pre-hydration fallback. | Both now unwrap `{state:{…}}` (with bare-string fallback). |
+| Low | `useSpeech` watchdog was disarmed after response *headers* — a stalled body download hung "Generating…" forever. | `clearTimeout` moved after `response.blob()`. |
+| Low | `useLesson` never flushed its `TextDecoder` — a multi-byte UTF-8 char split across the final chunk corrupted the terminal `lesson` event (Hindi/Tamil lessons reported as failed). | `buffer += decoder.decode()` on stream end. |
+| — | `generateLesson` now returns `boolean` (success) so callers can gate side effects. | |
+
+### Frontend — components & pages
+
+| Severity | Bug | Fix |
+|---|---|---|
+| **High** | `PreSignInConsent` rendered **twice** (layout + home page) → two stacked consent modals, each requiring its own Accept + duplicate POST. | Home-page instance removed. |
+| **High** | `recordLessonCompleted` omitted `maxScore` (store default 6) → fast-mode (max 2) and salvaged-quiz lessons could **never** earn the perfect-lesson XP/badge; `CompletionScreen`, `Sidebar`, `PartCard` all hardcoded 2 questions/part (impossible "3/2", unreachable 100% ring). | Max scores derived from actual `quiz.length` everywhere. |
+| Medium | Home-page consent sync uploaded legacy version-less records as CURRENT v1.3 acceptances → re-accept modal permanently suppressed without the user ever seeing the changes; also a slow POST could clobber a newer acceptance written meanwhile. | Legacy records skipped; latest record re-read before the post-sync write. |
+| Medium | `PreSignInConsent` stamped `syncedClerkId` before the POST — a failed POST left the server-side consent record permanently missing with no retry. | Stamped only after a 2xx response. |
+| Medium | `PreferenceModal`'s document-level Enter handler fired `handleSave()` unconditionally — Enter on "Skip" both skipped AND saved; committing a `<select>` choice closed the modal. | Same interactive-element guard as ConfirmModal (+ SELECT). |
+| Medium | `ShareResult` drew the 130px score and "/ max" **center-aligned at the same canvas point** — every share card had an illegible overlapping score. | Measured side-by-side layout. |
+| Medium | Theme-color meta: the FOUC script **appended** a second `<meta name="theme-color">`, but the first-in-tree-order one (Next's `viewport.themeColor`) wins — the fix never worked. | Script updates the existing meta (matches ThemeApplier). |
+| Medium | Settings page: `router.push` during render (illegal side effect); no mount gate → hydration mismatch for non-default persisted prefs; data export read wrong localStorage keys (`reallearn-lesson-store` vs actual `reallearn-journey`; missing `reallearn-preferences`) so the GDPR export silently omitted lesson + preference data. | Redirect moved to an effect; `useMounted` gate; correct keys exported. |
+| Medium | Learn page re-fired "Lesson ready!"/"Journey complete! 🎉" toasts on every reload of a persisted lesson (prev-refs initialized to null/false instead of hydrated values). | Refs initialized from current store state. |
+| Medium (cond.) | CSP missing `worker-src 'self' blob:` (Clerk's session-refresh worker blocked) and `https://challenges.cloudflare.com` (Clerk Turnstile CAPTCHA iframe blocked → sign-ups fail if enabled); `connect-src` missing GA4 regional hosts. | All three added. |
+| Low | Progress page showed a lapsed streak as alive forever (streak only recomputes on activity). | Display streak derived from `lastActiveDay` gap (freeze-aware). |
+| Low | `recordFollowUp` counted before generation — failed/rate-limited attempts farmed the follow-up badge. | Counted only when `generateLesson` returns success. |
+| Low | `EngagementLayer` dismiss timer keyed on queue length — enqueues restarted the head celebration's countdown (same bug class ToastContainer had). | Keyed to the head item only. |
+| Low | `ToastContainer` bound its global setter as a render-phase side effect and never unbound it on unmount. | Bound/unbound in an effect. |
+| Low | Escape closed BOTH a modal and the sidebar beneath it (document- and window-level handlers both fired). | Modals `stopPropagation()` on Escape. |
+| Low | Closed mobile sidebar (translateX only) was still tabbable — invisible off-screen buttons could be activated. | `visibility: hidden` after slide-out. |
+| Low | `ConfirmModal` never moved focus into the dialog — Enter re-clicked the hidden trigger. | Cancel button focused on open. |
+| Low | `HomeStats.dayOfYear` floored a local-time delta — off-by-one the day after spring-forward DST. | UTC calendar-field math. |
+| Low | Footer year hydration-errors on prerendered HTML cached across a year boundary. | `suppressHydrationWarning`. |

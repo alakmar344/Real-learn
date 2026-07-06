@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 interface Props {
   open: boolean;
@@ -23,10 +23,24 @@ export default function ConfirmModal({
   onConfirm,
   onClose,
 }: Props) {
+  const cancelRef = useRef<HTMLButtonElement>(null);
+
+  // Move focus INTO the dialog on open — otherwise focus stays on the
+  // (now-hidden) trigger button behind the scrim, keyboard Enter re-clicks
+  // it, and Tab walks the background page instead of Cancel/Confirm.
+  useEffect(() => {
+    if (open) cancelRef.current?.focus();
+  }, [open]);
+
   useEffect(() => {
     if (!open) return;
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        // Consume the event so AppShell's window-level Escape handler doesn't
+        // also close the sidebar underneath this modal.
+        e.stopPropagation();
+        onClose();
+      }
       // Enter only confirms when focus is NOT on a button/link — otherwise a
       // user pressing Enter on "Cancel" would fire BOTH the cancel click and
       // this confirm shortcut (destructive action despite choosing cancel).
@@ -99,6 +113,7 @@ export default function ConfirmModal({
         <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
           <button
             type="button"
+            ref={cancelRef}
             onClick={onClose}
             style={{
               border: "1px solid var(--border-default)",

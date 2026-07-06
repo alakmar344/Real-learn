@@ -553,9 +553,18 @@ pre {
   .app-sidebar {
     transform: translateX(-100%);
     box-shadow: var(--shadow-lg);
+    /* Hide the closed drawer from keyboard focus and screen readers — a
+       purely translated-offscreen element is still tabbable, letting users
+       activate invisible buttons. visibility flips after the slide-out. */
+    visibility: hidden;
+    transition:
+      transform 240ms var(--ease-reveal),
+      visibility 0s linear 240ms;
   }
   .app-sidebar.open {
     transform: translateX(0);
+    visibility: visible;
+    transition: transform 240ms var(--ease-reveal);
   }
   .app-sidebar-backdrop.open {
     display: block;
