@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import compression from "compression";
 import cors from "cors";
 import express from "express";
 import fs from "node:fs";
@@ -54,22 +55,108 @@ if (!fs.existsSync(TTS_TEMP_DIR)) {
 
 const TTS_RATE_LIMIT_WINDOW_MS = 60000;
 const TTS_RATE_LIMIT_MAX = 30;
-const ttsRateLimitStore = new Map();
-function getTtsRateLimitKey(req) {
-  const ip = req.ip || req.connection?.remoteAddress || "unknown";
-  const token = extractBearerToken(req);
-  return token ? `user:${crypto.createHash("sha256").update(token).digest("hex").slice(0, 32)}` : `ip:${ip}`;
+
+// ── Shared rate limiter ──
+// SECURITY: bearer tokens are NOT verified at this layer, so a limiter keyed
+// on the token alone could be bypassed forever by rotating random tokens
+// (each fake token got a fresh bucket). Every limiter therefore ALWAYS
+// enforces an IP-level backstop in addition to the per-token bucket. The IP
+// cap is a few times higher than the per-token cap so legitimate users behind
+// shared NAT (schools, offices) aren't collapsed into one tiny bucket.
+function createRateLimiter({ windowMs, max, ipMultiplier = 5 }) {
+  const store = new Map();
+  const hit = (key, limit, now) => {
+    const record = store.get(key);
+    if (!record || now > record.resetAt) {
+      store.set(key, { count: 1, resetAt: now + windowMs });
+      return false;
+    }
+    record.count += 1;
+    return record.count > limit;
+  };
+  return {
+    isLimited(req) {
+      const now = Date.now();
+      const ip = req.ip || req.connection?.remoteAddress || "unknown";
+      const token = extractBearerToken(req);
+      // Hash the WHOLE token. A prefix of a JWT is just the base64 header,
+      // which is identical for every user.
+      const tokenLimited = token
+        ? hit(
+            `user:${crypto.createHash("sha256").update(token).digest("hex").slice(0, 32)}`,
+            max,
+            now
+          )
+        : false;
+      const ipLimited = hit(`ip:${ip}`, token ? max * ipMultiplier : max, now);
+      return tokenLimited || ipLimited;
+    },
+    cleanup() {
+      const now = Date.now();
+      for (const [key, record] of store) {
+        if (now > record.resetAt) store.delete(key);
+      }
+    },
+  };
 }
+
+const ttsRateLimiter = createRateLimiter({
+  windowMs: TTS_RATE_LIMIT_WINDOW_MS,
+  max: TTS_RATE_LIMIT_MAX,
+});
+setInterval(() => ttsRateLimiter.cleanup(), TTS_RATE_LIMIT_WINDOW_MS).unref?.();
 function isTtsRateLimited(req) {
-  const key = getTtsRateLimitKey(req);
-  const now = Date.now();
-  const record = ttsRateLimitStore.get(key);
-  if (!record || now > record.resetAt) {
-    ttsRateLimitStore.set(key, { count: 1, resetAt: now + TTS_RATE_LIMIT_WINDOW_MS });
-    return false;
+  return ttsRateLimiter.isLimited(req);
+}
+
+// ── TTS response cache ──
+// BANDWIDTH: synthesized audio is by far the largest payload this server
+// emits (~6 KB per second of speech). Cache generated MP3s by content hash so
+// replays of the same text are served from memory, and expose an ETag so the
+// browser can revalidate to a 9-byte 304 instead of re-downloading megabytes.
+const TTS_CACHE_MAX_BYTES = 24 * 1024 * 1024; // 24 MB in-memory LRU
+const TTS_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const ttsCache = new Map(); // key -> { buffer, expiresAt }
+let ttsCacheBytes = 0;
+function ttsCacheGet(key) {
+  const entry = ttsCache.get(key);
+  if (!entry) return null;
+  if (entry.expiresAt <= Date.now()) {
+    ttsCacheBytes -= entry.buffer.length;
+    ttsCache.delete(key);
+    return null;
   }
-  record.count += 1;
-  return record.count > TTS_RATE_LIMIT_MAX;
+  // Refresh recency (insertion-ordered Map as LRU).
+  ttsCache.delete(key);
+  ttsCache.set(key, entry);
+  return entry.buffer;
+}
+function ttsCacheSet(key, buffer) {
+  if (buffer.length > TTS_CACHE_MAX_BYTES) return;
+  const existing = ttsCache.get(key);
+  if (existing) {
+    ttsCacheBytes -= existing.buffer.length;
+    ttsCache.delete(key);
+  }
+  ttsCache.set(key, { buffer, expiresAt: Date.now() + TTS_CACHE_TTL_MS });
+  ttsCacheBytes += buffer.length;
+  while (ttsCacheBytes > TTS_CACHE_MAX_BYTES && ttsCache.size > 0) {
+    const oldestKey = ttsCache.keys().next().value;
+    ttsCacheBytes -= ttsCache.get(oldestKey).buffer.length;
+    ttsCache.delete(oldestKey);
+  }
+}
+
+// SECURITY: rate/pitch/volume are interpolated into the SSML sent to the TTS
+// service. Lock them to strict prosody formats so arbitrary markup can't be
+// smuggled through.
+const TTS_RATE_VOLUME_PATTERN = /^[+-]?\d{1,3}(\.\d{1,2})?%$/;
+const TTS_PITCH_PATTERN = /^[+-]?\d{1,3}(\.\d{1,2})?(Hz|st|%)$/;
+function sanitizeTtsProsody(value, pattern) {
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  if (!trimmed || trimmed === "default") return undefined;
+  return pattern.test(trimmed) ? trimmed : null;
 }
 
 const SPEECH_LANG_TO_VOICE = {
@@ -113,41 +200,14 @@ const RATE_LIMIT_MAX_REQUESTS =
   Number.isFinite(configuredRateLimitMax) && configuredRateLimitMax > 0
     ? configuredRateLimitMax
     : DEFAULT_RATE_LIMIT_MAX_REQUESTS;
-const rateLimitStore = new Map();
-function getRateLimitKey(req) {
-  const ip = req.ip || req.connection?.remoteAddress || "unknown";
-  const token = extractBearerToken(req);
-  // Hash the WHOLE token. A prefix of a JWT is just the base64 header, which
-  // is identical for every user — slicing it collapsed all signed-in users
-  // into a single shared rate-limit bucket.
-  const identifier = token
-    ? `user:${crypto.createHash("sha256").update(token).digest("hex").slice(0, 32)}`
-    : `ip:${ip}`;
-  return identifier;
-}
+const apiRateLimiter = createRateLimiter({
+  windowMs: RATE_LIMIT_WINDOW_MS,
+  max: RATE_LIMIT_MAX_REQUESTS,
+});
 function isRateLimited(req) {
-  const key = getRateLimitKey(req);
-  const now = Date.now();
-  const record = rateLimitStore.get(key);
-  if (!record || now > record.resetAt) {
-    rateLimitStore.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return false;
-  }
-  record.count += 1;
-  if (record.count > RATE_LIMIT_MAX_REQUESTS) {
-    return true;
-  }
-  return false;
+  return apiRateLimiter.isLimited(req);
 }
-function resetRateLimitStore() {
-  const now = Date.now();
-  for (const [key, record] of rateLimitStore) {
-    if (now > record.resetAt) {
-      rateLimitStore.delete(key);
-    }
-  }
-}
-setInterval(resetRateLimitStore, RATE_LIMIT_WINDOW_MS);
+setInterval(() => apiRateLimiter.cleanup(), RATE_LIMIT_WINDOW_MS).unref?.();
 
 const DEFAULT_LESSON_TIMEOUT_MS = 300000;
 const MIN_LESSON_TIMEOUT_MS = 30000;
@@ -279,6 +339,18 @@ app.use(
 // Every legitimate request body here is tiny (a question + a few enum
 // fields). 100kb still leaves huge headroom while blunting memory abuse.
 app.use(express.json({ limit: "100kb" }));
+// BANDWIDTH: gzip every compressible response (lesson JSON shrinks ~75%).
+// SSE streams are exempt — compression buffers them, which would delay
+// heartbeats and events; audio/mpeg is skipped automatically as already
+// compressed.
+app.use(
+  compression({
+    filter: (req, res) => {
+      if (req.path === "/api/generate-lesson") return false;
+      return compression.filter(req, res);
+    },
+  })
+);
 
 function securityHeaders(req, res, next) {
   res.setHeader("X-Frame-Options", "SAMEORIGIN");
@@ -291,7 +363,10 @@ function securityHeaders(req, res, next) {
     "Permissions-Policy",
     "camera=(), microphone=(), geolocation=(), interest-cohort=()"
   );
-  if (process.env.NODE_ENV === "production") {
+  // Security: apply hardening headers unless explicitly in local development.
+  // Gating on NODE_ENV === "production" silently dropped HSTS/CSP whenever the
+  // host forgot to set NODE_ENV — fail safe instead.
+  if (process.env.NODE_ENV !== "development") {
     res.setHeader(
       "Strict-Transport-Security",
       "max-age=63072000; includeSubDomains; preload"
@@ -310,7 +385,8 @@ function rateLimit(req, res, next) {
   if (isRateLimited(req)) {
     console.warn("[rate-limit] Request blocked", {
       endpoint: req.path,
-      key: getRateLimitKey(req),
+      ip: req.ip,
+      authenticated: Boolean(extractBearerToken(req)),
     });
     res.setHeader("Retry-After", Math.ceil(RATE_LIMIT_WINDOW_MS / 1000));
     return res.status(429).json({ error: "Too many requests. Please slow down." });
@@ -328,9 +404,13 @@ app.get("/health", (_req, res) => {
 // production unless AUTH_DEBUG_ENABLED=true (it is an unauthenticated
 // token-verification oracle), and always rate limited.
 app.get("/api/auth-debug", rateLimit, async (req, res) => {
+  // Security: this is an unauthenticated token-verification oracle. It must
+  // be OFF unless explicitly enabled or running in local development —
+  // "NODE_ENV !== production" left it wide open on any host that forgot to
+  // set NODE_ENV.
   const authDebugEnabled =
     process.env.AUTH_DEBUG_ENABLED === "true" ||
-    process.env.NODE_ENV !== "production";
+    process.env.NODE_ENV === "development";
   if (!authDebugEnabled) {
     return res.status(404).json({ error: "Not found" });
   }
@@ -394,7 +474,8 @@ app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
   };
 
   await collection.updateOne(filter, update, { upsert: true });
-    console.log("[api/agreement] Consent saved", { email, clerkId, accepted });
+    // Privacy: don't log email addresses.
+    console.log("[api/agreement] Consent saved", { clerkId, accepted });
 
     res.json({ ok: true });
   } catch (error) {
@@ -482,15 +563,23 @@ app.post("/api/legal-consent", rateLimit, requireAuth, async (req, res) => {
     if (typeof accepted !== "boolean") {
       return res.status(400).json({ error: "accepted (boolean) is required" });
     }
-    if (!timestamp) {
-      return res.status(400).json({ error: "timestamp is required" });
+    // Validate the timestamp is an actual parseable date — otherwise an
+    // Invalid Date is silently persisted.
+    const parsedTimestamp = timestamp ? new Date(timestamp) : null;
+    if (!parsedTimestamp || Number.isNaN(parsedTimestamp.getTime())) {
+      return res.status(400).json({ error: "A valid timestamp is required" });
     }
 
     const db = await getDb();
     const collection = db.collection("agreements");
     const clerkId = req.auth?.userId;
+    if (!clerkId) {
+      return res.status(400).json({ error: "Could not determine the authenticated user" });
+    }
+    // Security: only accept a sane string email from the body (it previously
+    // accepted any JSON value, letting arbitrary structures into the record).
     const email =
-      bodyEmail ||
+      (typeof bodyEmail === "string" && bodyEmail.length <= 320 ? bodyEmail : "") ||
       req.auth?.email ||
       req.auth?.email_address ||
       "";
@@ -503,7 +592,7 @@ app.post("/api/legal-consent", rateLimit, requireAuth, async (req, res) => {
         clerkId,
         deviceIp: req.ip || req.connection?.remoteAddress || "unknown",
         userAgent: req.headers["user-agent"] || "unknown",
-        timestamp: new Date(timestamp),
+        timestamp: parsedTimestamp,
         type: "legal-consent",
         privacyVersion: PRIVACY_POLICY_VERSION,
         termsVersion: TERMS_OF_SERVICE_VERSION,
@@ -612,37 +701,67 @@ app.post("/api/tts", rateLimit, async (req, res) => {
 
     const lang = typeof req.body?.lang === "string" ? req.body.lang.trim() : "en-IN";
     const voice = SPEECH_LANG_TO_VOICE[lang] || SPEECH_LANG_TO_VOICE["en-IN"] || "en-IN-NeerjaNeural";
-    const rate = typeof req.body?.rate === "string" && req.body.rate.trim() ? req.body.rate.trim() : "default";
-    const pitch = typeof req.body?.pitch === "string" && req.body.pitch.trim() ? req.body.pitch.trim() : "default";
-    const volume = typeof req.body?.volume === "string" && req.body.volume.trim() ? req.body.volume.trim() : "default";
+    // Security: prosody values are embedded in SSML — accept only strict
+    // "+10%" / "-2Hz"-style values, reject anything else outright.
+    const rate = sanitizeTtsProsody(req.body?.rate, TTS_RATE_VOLUME_PATTERN);
+    const pitch = sanitizeTtsProsody(req.body?.pitch, TTS_PITCH_PATTERN);
+    const volume = sanitizeTtsProsody(req.body?.volume, TTS_RATE_VOLUME_PATTERN);
+    if (rate === null || pitch === null || volume === null) {
+      return res.status(400).json({ error: "Invalid rate/pitch/volume format." });
+    }
     const outputFormat = "audio-24khz-48kbitrate-mono-mp3";
+
+    // BANDWIDTH: deterministic content hash — same text+voice+prosody always
+    // maps to the same audio, so it can be cached server-side AND revalidated
+    // by the browser via ETag (a 304 instead of re-downloading ~1 MB).
+    const cacheKey = crypto
+      .createHash("sha256")
+      .update(`${text}|${voice}|${lang}|${rate ?? ""}|${pitch ?? ""}|${volume ?? ""}|${outputFormat}`)
+      .digest("hex");
+    const etag = `"tts-${cacheKey.slice(0, 32)}"`;
+
+    if (req.headers["if-none-match"] === etag) {
+      res.setHeader("ETag", etag);
+      res.setHeader("Cache-Control", "private, max-age=86400");
+      return res.status(304).end();
+    }
+
+    const sendAudio = (buffer) => {
+      res.setHeader("Content-Type", "audio/mpeg");
+      res.setHeader("Content-Length", buffer.length);
+      res.setHeader("Content-Disposition", 'inline; filename="speech.mp3"');
+      res.setHeader("Cache-Control", "private, max-age=86400");
+      res.setHeader("ETag", etag);
+      res.send(buffer);
+    };
+
+    const cached = ttsCacheGet(cacheKey);
+    if (cached) {
+      return sendAudio(cached);
+    }
 
     const tts = new EdgeTTS({
       voice,
       lang,
       outputFormat,
-      rate: rate === "default" ? undefined : rate,
-      pitch: pitch === "default" ? undefined : pitch,
-      volume: volume === "default" ? undefined : volume,
+      rate,
+      pitch,
+      volume,
       timeout: 30000,
     });
 
-    const safeName = crypto.createHash("sha256").update(`${text}-${voice}-${lang}-${Date.now()}`).digest("hex").slice(0, 16);
-    const outFile = path.join(TTS_TEMP_DIR, `${safeName}.mp3`);
+    const outFile = path.join(TTS_TEMP_DIR, `${cacheKey.slice(0, 16)}.mp3`);
+    let fileBuffer;
+    try {
+      await tts.ttsPromise(text, outFile);
+      fileBuffer = await fs.promises.readFile(outFile);
+    } finally {
+      // Always remove the temp file, even when synthesis/read fails.
+      fs.unlink(outFile, () => {});
+    }
 
-    await tts.ttsPromise(text, outFile);
-
-    const stat = fs.statSync(outFile);
-    const fileBuffer = Buffer.from(await fs.promises.readFile(outFile));
-
-    res.setHeader("Content-Type", "audio/mpeg");
-    res.setHeader("Content-Length", fileBuffer.length);
-    res.setHeader("Content-Disposition", "inline; filename=\"speech.mp3\"");
-    res.setHeader("Cache-Control", "no-store");
-
-    res.send(fileBuffer);
-
-    fs.unlink(outFile, () => {});
+    ttsCacheSet(cacheKey, fileBuffer);
+    sendAudio(fileBuffer);
   } catch (error) {
     console.error("[api/tts] Failed to synthesize speech", error);
     if (!res.writableEnded) {
@@ -786,9 +905,7 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
   const sendPing = () => {
     if (finished) return;
     // failures in heartbeat are non-fatal to maintain stream connectivity
-    const pingPayload = Date.now();
-    const pingWritten = safeWrite(`event: ping\ndata: ${pingPayload}\n\n`);
-    console.log("[SSE] Ping emitted", { requestId, pingPayload, pingWritten });
+    safeWrite(`event: ping\ndata: ${Date.now()}\n\n`);
   };
   sendPing();
   const heartbeat = setInterval(sendPing, HEARTBEAT_INTERVAL_MS);
@@ -803,12 +920,9 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
   const sendEvent = (event, payload) => {
     const eventWritten = safeWrite(`event: ${event}\n`);
     const dataWritten = safeWrite(`data: ${JSON.stringify(payload)}\n\n`);
-    console.log("[SSE] Event emitted", {
-      requestId,
-      event,
-      eventWritten,
-      dataWritten,
-    });
+    if (!eventWritten || !dataWritten) {
+      console.warn("[SSE] Event write failed", { requestId, event });
+    }
     return eventWritten && dataWritten;
   };
 
@@ -1048,9 +1162,11 @@ Level: ${level}${
         ? error.message
         : error instanceof GemmaApiError && error.status >= 500 && error.status < 600
         ? "Gemma service is temporarily unavailable. Please try again in a moment."
-        : error instanceof Error
+        : error instanceof GemmaApiError
         ? error.message
-        : "Failed to generate lesson";
+        : // Security: don't echo arbitrary internal error messages (driver/
+          // infra errors can contain hostnames or config details) to clients.
+          "Failed to generate lesson. Please try again.";
 
     console.error("[generate-lesson] Request failed", { requestId, error });
     recordLessonResult(false);
