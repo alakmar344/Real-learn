@@ -28,7 +28,6 @@ interface LessonStore {
 }
 
 function storeLog(action: string, details?: unknown) {
-  if (process.env.NODE_ENV === "production") return;
   if (details === undefined) {
     console.log(`[frontend][lessonStore] ${action}`);
     return;

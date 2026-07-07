@@ -74,7 +74,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
     >
       <div style={{ padding: "20px 24px" }}>
         <label htmlFor="question-input" style={{ display: "none" }}>
-          What would you like to learn about today?
+          What do you want to understand today?
         </label>
         <textarea
           id="question-input"
@@ -84,7 +84,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           maxLength={1000}
-          placeholder="What would you like to learn about today?"
+          placeholder="Start with any question — even a basic one"
           aria-label="Your question"
           style={{
             width: "100%",

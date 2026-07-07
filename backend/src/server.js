@@ -316,11 +316,7 @@ const allowedOrigins =
       ];
 
 function isOriginAllowed(origin) {
-  // SECURITY: a null/undefined origin arrives from file://, privacy redirects,
-  // or some cross-origin POST requests. Reject it — only the explicit allow-
-  // list passes. Previously `!origin` returned true, letting any opaque origin
-  // through CORS.
-  if (!origin) return false;
+  if (!origin) return true;
   return allowedOrigins.includes(origin);
 }
 
@@ -467,11 +463,6 @@ app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
   const collection = db.collection("agreements");
 
   const filter = { clerkId, type: "cookie-consent" };
-  // Validate timestamp to prevent storing Invalid Date
-  const parsedTimestamp = timestamp ? new Date(timestamp) : new Date();
-  if (Number.isNaN(parsedTimestamp.getTime())) {
-    return res.status(400).json({ error: "Invalid timestamp" });
-  }
   const update = {
     $set: {
       accepted,

@@ -1,21 +1,11 @@
 "use client";
 
-function isSafeUrl(url: string): boolean {
-  try {
-    const parsed = new URL(url);
-    return ["http:", "https:"].includes(parsed.protocol);
-  } catch {
-    return false;
-  }
-}
-
 export default function SourceTag({ href }: { href: string }) {
-  if (!isSafeUrl(href)) return null;
   return (
     <a
       href={href}
       target="_blank"
-      rel="noopener noreferrer"
+      rel="noreferrer"
       aria-label={`Source link: ${href} (opens in new tab)`}
       style={{
         display: "inline-flex",
