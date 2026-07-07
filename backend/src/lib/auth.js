@@ -88,6 +88,22 @@ function isTrustedIssuer(issuer) {
   }
 }
 
+// SECURITY (defense in depth): optionally pin the token's authorized party
+// (azp = the frontend origin the token was minted for). Without this, any
+// valid token from the same Clerk instance — even one issued to a different
+// app sharing the issuer — is accepted. Opt-in via env so existing deploys
+// aren't broken: CLERK_AUTHORIZED_PARTIES=https://reallearn.site,https://www.reallearn.site
+const AUTHORIZED_PARTIES = (process.env.CLERK_AUTHORIZED_PARTIES || "")
+  .split(",")
+  .map((party) => party.trim().replace(/\/$/, ""))
+  .filter(Boolean);
+
+function isAuthorizedParty(azp) {
+  if (AUTHORIZED_PARTIES.length === 0) return true; // not configured → skip
+  if (!azp) return false;
+  return AUTHORIZED_PARTIES.includes(String(azp).replace(/\/$/, ""));
+}
+
 export async function verifyClerkToken(token) {
   try {
     // Always derive the issuer from the token, then check it against the trust
@@ -112,6 +128,9 @@ export async function verifyClerkToken(token) {
     const jwks = getJwksForIssuer(issuer, jwksUrl);
     try {
       const { payload } = await jwtVerify(token, jwks, verifyOptions);
+      if (!isAuthorizedParty(payload.azp)) {
+        return { valid: false, error: `Unauthorized token azp: ${payload.azp}` };
+      }
       return { valid: true, payload };
     } catch (remoteError) {
       // If the JWKS endpoint is unreachable, fall back to the configured public
@@ -127,6 +146,9 @@ export async function verifyClerkToken(token) {
         { reason: remoteError.message }
       );
       const { payload } = await jwtVerify(token, fallbackKey, verifyOptions);
+      if (!isAuthorizedParty(payload.azp)) {
+        return { valid: false, error: `Unauthorized token azp: ${payload.azp}` };
+      }
       return { valid: true, payload };
     }
   } catch (error) {
@@ -136,12 +158,25 @@ export async function verifyClerkToken(token) {
 
 // Distinguish "couldn't fetch the keys" (network/host issue) from "the token's
 // signature is wrong" (jose throws JWSSignatureVerificationFailed for the latter).
+//
+// SECURITY: ERR_JWKS_NO_MATCHING_KEY means the LIVE key set was fetched
+// successfully and simply does not contain the token's kid (rotated-out or
+// forged token). That is a verification failure, NOT a connectivity failure —
+// treating it as one would retry the token against the static baked-in
+// fallback key and silently expand the trusted-key surface.
 function isJwksFetchError(error) {
   const code = error?.code;
-  if (code === "ERR_JWKS_NO_MATCHING_KEY" || code === "ERR_JWKS_TIMEOUT") {
+  if (code === "ERR_JWKS_NO_MATCHING_KEY") {
+    return false;
+  }
+  if (code === "ERR_JWKS_TIMEOUT") {
     return true;
   }
   const message = (error?.message || "").toLowerCase();
+  // Same rule for jose versions that surface the condition by message only.
+  if (message.includes("no applicable key")) {
+    return false;
+  }
   return (
     message.includes("fetch") ||
     message.includes("network") ||

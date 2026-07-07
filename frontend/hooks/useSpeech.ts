@@ -6,6 +6,7 @@
 // Both degrade gracefully — `supported` is false where the APIs are missing.
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useAuth } from "@clerk/nextjs";
 import { Language } from "@/types";
 
 /** BCP-47 speech codes for every supported app language. */
@@ -93,6 +94,9 @@ function ttsBlobCacheSet(key: string, blob: Blob) {
 }
 
 export function useEdgeTts() {
+  // The backend TTS endpoint requires authentication (it drives a paid
+  // external synthesis service), so every request carries the Clerk token.
+  const { getToken } = useAuth();
   const [supported, setSupported] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -179,9 +183,17 @@ export function useEdgeTts() {
 
       if (!blob) {
         const backendUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || "https://real-learn.onrender.com").replace(/\/$/, "");
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        try {
+          const token = await getToken();
+          if (token) headers["Authorization"] = `Bearer ${token}`;
+        } catch {
+          // Token fetch failing shouldn't crash TTS — the backend will reply
+          // 401 and the normal error path below handles it.
+        }
         const response = await fetch(`${backendUrl}/api/tts`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: JSON.stringify({ text: cleaned, lang }),
           signal: controller.signal,
         });
@@ -268,7 +280,7 @@ export function useEdgeTts() {
         controllerRef.current = null;
       }
     }
-  }, [stop]);
+  }, [stop, getToken]);
 
   const cleanupAudio = useCallback((objectUrl: string) => {
     if (objectUrlRef.current === objectUrl) {
@@ -359,6 +371,12 @@ export function useSpeechRecognition({ lang, onResult }: UseSpeechRecognitionOpt
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recognition.onerror = (event: any) => {
       console.warn("[useSpeechRecognition] error", event?.error);
+      // Defensive reset: `onend` normally fires after `onerror`, but on
+      // engines where it doesn't, the mic button would stay stuck in the
+      // "listening" state forever.
+      recognitionRef.current = null;
+      setListening(false);
+      setInterimTranscript("");
     };
 
     recognitionRef.current = recognition;

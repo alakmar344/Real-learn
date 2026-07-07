@@ -36,6 +36,7 @@ import {
   lessonCacheKey,
   getCachedLesson,
   setCachedLesson,
+  deleteCachedLesson,
 } from "./lib/lessonCache.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -157,6 +158,17 @@ function sanitizeTtsProsody(value, pattern) {
   const trimmed = value.trim();
   if (!trimmed || trimmed === "default") return undefined;
   return pattern.test(trimmed) ? trimmed : null;
+}
+
+// Security: escape the five XML special characters so user text embedded in
+// the SSML document can never introduce markup of its own.
+function escapeXml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
 }
 
 const SPEECH_LANG_TO_VOICE = {
@@ -429,10 +441,19 @@ app.get("/api/auth-debug", rateLimit, async (req, res) => {
 
 app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
   try {
-    const { accepted, email: bodyEmail, timestamp } = req.body;
+    const { accepted, timestamp } = req.body;
 
     if (typeof accepted !== "boolean") {
       return res.status(400).json({ error: "accepted (boolean) is required" });
+    }
+
+    // Validate the client-supplied timestamp; fall back to the server clock.
+    // (A previous refactor referenced `parsedTimestamp` without defining it
+    // here, which made every call to this endpoint throw a ReferenceError and
+    // return 500 — cookie-consent records were silently never persisted.)
+    const parsedTimestamp = timestamp ? new Date(timestamp) : new Date();
+    if (Number.isNaN(parsedTimestamp.getTime())) {
+      return res.status(400).json({ error: "A valid timestamp is required" });
     }
 
     // Security (IDOR fix): the clerkId is ALWAYS taken from the verified
@@ -442,18 +463,12 @@ app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
     if (!clerkId) {
       return res.status(400).json({ error: "Could not determine the authenticated user" });
     }
-    // Security: prefer the VERIFIED token email over the client-supplied one.
-    // If the body email won, a user could stamp someone else's address onto
-    // their own consent record, which would then leak into that person's
-    // /api/export-data results (the export filter matches on email).
-    const email =
-      req.auth?.email ||
-      req.auth?.email_address ||
-      (typeof bodyEmail === "string" && bodyEmail.length <= 320 ? bodyEmail.trim() : "") ||
-      "";
-    if (!email) {
-      return res.status(400).json({ error: "email is required" });
-    }
+    // Security: the email is derived ONLY from the verified token. A
+    // client-supplied body email is never trusted — an attacker could stamp a
+    // victim's address onto their own consent record and pollute the victim's
+    // data-subject requests. When the token carries no email claim, we store
+    // an empty string and rely on clerkId as the sole identity key.
+    const email = req.auth?.email || req.auth?.email_address || "";
 
   const db = await getDb();
   const collection = db.collection("agreements");
@@ -562,7 +577,7 @@ app.delete("/api/account", rateLimit, requireAuth, async (req, res) => {
 // This is called after the user accepts the pre-sign-in consent and signs in.
 app.post("/api/legal-consent", rateLimit, requireAuth, async (req, res) => {
   try {
-    const { accepted, timestamp, email: bodyEmail } = req.body;
+    const { accepted, timestamp } = req.body;
 
     if (typeof accepted !== "boolean") {
       return res.status(400).json({ error: "accepted (boolean) is required" });
@@ -580,15 +595,10 @@ app.post("/api/legal-consent", rateLimit, requireAuth, async (req, res) => {
     if (!clerkId) {
       return res.status(400).json({ error: "Could not determine the authenticated user" });
     }
-    // Security: prefer the VERIFIED token email; only fall back to a sane
-    // string body email when the token carries none. A client-supplied email
-    // that won here could stamp someone else's address onto this record and
-    // leak it into that person's /api/export-data results.
-    const email =
-      req.auth?.email ||
-      req.auth?.email_address ||
-      (typeof bodyEmail === "string" && bodyEmail.length <= 320 ? bodyEmail : "") ||
-      "";
+    // Security: the email is derived ONLY from the verified token — a
+    // client-supplied body email is never trusted (it could stamp a victim's
+    // address onto this record and pollute their data-subject requests).
+    const email = req.auth?.email || req.auth?.email_address || "";
 
     const filter = { clerkId, type: "legal-consent" };
     const update = {
@@ -665,10 +675,17 @@ app.get("/api/export-data", rateLimit, requireAuth, async (req, res) => {
     }
 
     const db = await getDb();
-    const filter = email ? { $or: [{ clerkId: userId }, { email }] } : { clerkId: userId };
+    // Security: match strictly on the verified clerkId. Matching on email as
+    // well would let a record created by another account (with a spoofed or
+    // shared email) leak into this user's export.
+    const filter = { clerkId: userId };
 
-    const [agreements] = await Promise.all([
+    // Completeness (GDPR Art. 15 / DPDP access right): the export must cover
+    // EVERY collection that stores data keyed to this user — consent records
+    // AND moderation logs.
+    const [agreements, moderationLogs] = await Promise.all([
       db.collection("agreements").find(filter).toArray(),
+      db.collection("moderationLogs").find(filter).toArray(),
     ]);
 
     res.setHeader("Content-Type", "application/json");
@@ -680,6 +697,7 @@ app.get("/api/export-data", rateLimit, requireAuth, async (req, res) => {
         email,
       },
       agreements,
+      moderationLogs,
     });
   } catch (error) {
     console.error("[api/export-data] Failed to export data", error);
@@ -687,7 +705,10 @@ app.get("/api/export-data", rateLimit, requireAuth, async (req, res) => {
   }
 });
 
-app.post("/api/tts", rateLimit, async (req, res) => {
+// Security: TTS requires auth like every other data endpoint — it drives an
+// external synthesis service (network/CPU/disk cost) and fills an in-memory
+// cache, so it must not be an anonymous cost amplifier.
+app.post("/api/tts", rateLimit, requireAuth, async (req, res) => {
   try {
     if (!EdgeTTS) {
       return res.status(500).json({ error: "TTS service is not available." });
@@ -763,10 +784,19 @@ app.post("/api/tts", rateLimit, async (req, res) => {
       timeout: 30000,
     });
 
-    const outFile = path.join(TTS_TEMP_DIR, `${cacheKey.slice(0, 16)}.mp3`);
+    // Reliability: include a per-request random suffix so two concurrent
+    // requests for the same text never write/unlink the same temp path
+    // (the loser would read after the winner's unlink → intermittent 500s).
+    const outFile = path.join(
+      TTS_TEMP_DIR,
+      `${cacheKey.slice(0, 16)}-${crypto.randomUUID()}.mp3`
+    );
     let fileBuffer;
     try {
-      await tts.ttsPromise(text, outFile);
+      // Security: XML-escape the text before it is embedded in the SSML
+      // document node-edge-tts builds — otherwise markup in the text could
+      // break out of the validated voice/prosody context (SSML injection).
+      await tts.ttsPromise(escapeXml(text), outFile);
       fileBuffer = await fs.promises.readFile(outFile);
     } finally {
       // Always remove the temp file, even when synthesis/read fails.
@@ -948,14 +978,19 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
     // so the safety check adds no latency in the common (allowed) case.
     // SPEED TACTIC: fast mode skips the Serper fetch entirely — a quick answer
     // doesn't need a current-events Part 3, so we save that whole round trip.
-    // SPEED TACTIC: fast mode also skips LLM input moderation — the regex
-    // contentGuard already ran and catches genuinely harmful patterns. The LLM
-    // moderation adds 4-8 s of latency which defeats the purpose of "fast".
+    // SECURITY: fast mode used to skip LLM input moderation entirely, which
+    // made the whole content policy bypassable by simply choosing mode:"fast"
+    // (the regex guard alone is easily dodged by paraphrase). The moderation
+    // call is now ALWAYS started; fast mode just doesn't block on it here —
+    // it runs concurrently with the (much slower) generation call and the
+    // verdict is enforced below before the lesson is streamed. Net added
+    // latency in fast mode: ~0.
+    const inputModerationPromise = moderateText(question, "input");
     console.log("[Serper] Context fetch start", { requestId, mode });
     const [inputModeration, newsContextResult] = await Promise.all([
       mode === "fast"
-        ? Promise.resolve({ allowed: true })
-        : moderateText(question, "input"),
+        ? Promise.resolve(null)
+        : inputModerationPromise,
       mode === "fast"
         ? Promise.resolve(null)
         : fetchRealWorldContext(question, language).catch((error) => {
@@ -974,7 +1009,7 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
     });
 
     if (finished) return;
-    if (!inputModeration.allowed) {
+    if (inputModeration && !inputModeration.allowed) {
       const moderationEvent = {
         timestamp: new Date().toISOString(),
         requestId,
@@ -1111,16 +1146,42 @@ Level: ${level}${
     // regex guard above. It ran concurrently with parsing/validation, so by
     // now it is usually already resolved. Fails open, so a moderation hiccup
     // won't block a valid lesson — only a confident "block" verdict stops it.
-    // SPEED TACTIC: for fast mode, skip the await — the regex guard already
-    // ran and the LLM moderation would add 4-8 s of pure latency. We still
-    // kick off the call and log any post-hoc block for monitoring.
+    // SPEED TACTIC: for fast mode, skip the OUTPUT await — the regex guard
+    // already ran and blocking on the LLM verdict would add 4-8 s of pure
+    // latency. The post-hoc verdict is still logged AND evicts the lesson
+    // from the shared cache so no other user is ever served flagged content.
     if (mode === "fast") {
+      // SECURITY: enforce the INPUT moderation verdict before streaming. It
+      // has been running concurrently since before generation started, so it
+      // is almost always already resolved — near-zero added latency.
+      const fastInputModeration = await inputModerationPromise;
+      if (finished) return;
+      if (!fastInputModeration.allowed) {
+        const moderationEvent = {
+          timestamp: new Date().toISOString(),
+          requestId,
+          clerkId: req.auth?.userId || null,
+          reason: fastInputModeration.reason,
+          type: "user-input-moderated",
+        };
+        console.warn("[moderation] Fast-mode input blocked by LLM moderation", moderationEvent);
+        await logModerationEvent(moderationEvent);
+        sendEvent("error", {
+          error:
+            fastInputModeration.reason ||
+            "Your question was flagged by our safety review. Please try a different question.",
+        });
+        recordLessonResult(false);
+        return;
+      }
       outputModerationPromise.then((verdict) => {
         if (!verdict.allowed) {
           console.warn("[moderation] Fast-mode post-hoc block detected (response already sent)", {
             requestId,
             reason: verdict.reason,
           });
+          // Make sure the flagged lesson can't be replayed from the cache.
+          deleteCachedLesson(cacheKey);
           logModerationEvent({
             timestamp: new Date().toISOString(),
             requestId,
@@ -1179,11 +1240,14 @@ Level: ${level}${
         ? error.message
         : error instanceof GemmaApiError && error.status >= 500 && error.status < 600
         ? "Gemma service is temporarily unavailable. Please try again in a moment."
-        : error instanceof GemmaApiError
-        ? error.message
-        : // Security: don't echo arbitrary internal error messages (driver/
-          // infra errors can contain hostnames or config details) to clients.
-          "Failed to generate lesson. Please try again.";
+        : // Security: NEVER echo GemmaApiError.message to clients — it embeds
+          // up to 500 chars of the raw upstream (Cloudflare) response body,
+          // which can leak account/model/config internals. Same for any other
+          // internal error (driver/infra messages can contain hostnames).
+          // The full detail is still logged server-side below.
+          error instanceof GemmaApiError
+        ? "The AI service could not process this request. Please try again."
+        : "Failed to generate lesson. Please try again.";
 
     console.error("[generate-lesson] Request failed", { requestId, error });
     recordLessonResult(false);
