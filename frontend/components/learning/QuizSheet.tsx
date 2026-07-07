@@ -157,8 +157,8 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(0,0,0,0.7)",
-        backdropFilter: "blur(4px)",
+        background: "var(--scrim, rgba(0,0,0,0.7))",
+        backdropFilter: "blur(var(--blur-sm, 4px))",
         zIndex: 90,
       }}
     >

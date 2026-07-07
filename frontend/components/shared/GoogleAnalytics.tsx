@@ -1,12 +1,21 @@
 "use client";
 
 import { useEffect } from "react";
+import {
+  COOKIE_CONSENT_ACCEPTED_EVENT,
+  COOKIE_CONSENT_REVOKED_EVENT,
+  hasAnalyticsConsent,
+} from "@/lib/legalConsent";
 
 const GA_MEASUREMENT_ID = "G-ECZSC4ZVCL";
-const COOKIE_CONSENT_KEY = "reallearn-cookie-consent";
 
 function loadGtag() {
   if (typeof window === "undefined") return;
+
+  // Clear a previous opt-out flag if the user re-consents.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any)[`ga-disable-${GA_MEASUREMENT_ID}`] = false;
+
   if (document.getElementById(`ga-script-${GA_MEASUREMENT_ID}`)) return;
 
   const script = document.createElement("script");
@@ -26,32 +35,44 @@ function loadGtag() {
   document.head.appendChild(initScript);
 }
 
-function hasConsent(): boolean {
-  if (typeof window === "undefined") return false;
+/** Honour consent withdrawal immediately: set GA's documented opt-out flag
+ * and delete its cookies (best-effort — first-party _ga* cookies only). */
+function disableGtag() {
+  if (typeof window === "undefined") return;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any)[`ga-disable-${GA_MEASUREMENT_ID}`] = true;
   try {
-    const stored = localStorage.getItem(COOKIE_CONSENT_KEY);
-    if (!stored) return false;
-    const parsed = JSON.parse(stored) as { accepted: boolean };
-    return parsed.accepted === true;
+    const cookies = document.cookie.split(";");
+    for (const cookie of cookies) {
+      const name = cookie.split("=")[0]?.trim() ?? "";
+      if (name === "_ga" || name.startsWith("_ga_") || name === "_gid") {
+        const domains = ["", `; domain=${window.location.hostname}`, `; domain=.${window.location.hostname}`];
+        for (const domain of domains) {
+          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/${domain}`;
+        }
+      }
+    }
   } catch {
-    return false;
+    // cookie access blocked — nothing to clean up
   }
 }
 
 export default function GoogleAnalytics() {
   useEffect(() => {
-    if (hasConsent()) {
+    // hasAnalyticsConsent() is versioned: an acceptance made under an older
+    // cookie policy no longer counts, so GA stays off until re-consent.
+    if (hasAnalyticsConsent()) {
       loadGtag();
-      return;
     }
 
-    const handleConsent = () => {
-      loadGtag();
-    };
+    const handleConsent = () => loadGtag();
+    const handleRevoke = () => disableGtag();
 
-    window.addEventListener("cookie-consent-accepted", handleConsent);
+    window.addEventListener(COOKIE_CONSENT_ACCEPTED_EVENT, handleConsent);
+    window.addEventListener(COOKIE_CONSENT_REVOKED_EVENT, handleRevoke);
     return () => {
-      window.removeEventListener("cookie-consent-accepted", handleConsent);
+      window.removeEventListener(COOKIE_CONSENT_ACCEPTED_EVENT, handleConsent);
+      window.removeEventListener(COOKIE_CONSENT_REVOKED_EVENT, handleRevoke);
     };
   }, []);
 

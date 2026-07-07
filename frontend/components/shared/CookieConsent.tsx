@@ -1,29 +1,48 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuth, useUser } from "@clerk/nextjs";
-import { COOKIE_CONSENT_KEY, safeGetItem, safeSetItem } from "@/lib/legalConsent";
+import Link from "next/link";
+import { useAuth } from "@clerk/nextjs";
+import {
+  COOKIE_CONSENT_ACCEPTED_EVENT,
+  COOKIE_CONSENT_REVOKED_EVENT,
+  COOKIE_SETTINGS_OPEN_EVENT,
+  CURRENT_COOKIE_VERSION,
+  readCookieConsent,
+  writeCookieConsent,
+} from "@/lib/legalConsent";
 
-interface CookieConsentState {
-  accepted: boolean;
-  timestamp: string;
-}
-
+/**
+ * Cookie/analytics consent banner.
+ *
+ * Compliance notes (ePrivacy / GDPR):
+ * - Shown to EVERY visitor, signed in or not — analytics never load until the
+ *   person using this browser has opted in.
+ * - Versioned: bumping CURRENT_COOKIE_VERSION re-prompts everyone, and an
+ *   acceptance made under an older policy no longer counts as consent.
+ * - Revocable: the settings page (and any component) can re-open this banner
+ *   via the COOKIE_SETTINGS_OPEN_EVENT, and declining after a previous accept
+ *   dispatches COOKIE_CONSENT_REVOKED_EVENT so analytics shut off immediately.
+ */
 export default function CookieConsent() {
   const { isSignedIn, getToken } = useAuth();
-  const { user } = useUser();
   const [showBanner, setShowBanner] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!isSignedIn) return;
-    // safeGetItem: raw localStorage access throws (and unmounted the whole
-    // app) when storage is blocked — private mode, "Block all cookies".
-    const stored = safeGetItem(COOKIE_CONSENT_KEY);
-    if (!stored) {
+    // readCookieConsent uses safeGetItem: raw localStorage access throws (and
+    // unmounted the whole app) when storage is blocked — private mode,
+    // "Block all cookies".
+    const stored = readCookieConsent();
+    // No choice yet, or a choice made under an older cookie policy → prompt.
+    if (!stored || stored.cookieVersion !== CURRENT_COOKIE_VERSION) {
       setShowBanner(true);
     }
-  }, [isSignedIn]);
+
+    const openSettings = () => setShowBanner(true);
+    window.addEventListener(COOKIE_SETTINGS_OPEN_EVENT, openSettings);
+    return () => window.removeEventListener(COOKIE_SETTINGS_OPEN_EVENT, openSettings);
+  }, []);
 
   const saveConsent = async (accepted: boolean) => {
     setLoading(true);
@@ -31,21 +50,24 @@ export default function CookieConsent() {
     // Dismiss the banner immediately once the user makes a choice. Persisting
     // the consent to the backend is best-effort and must never keep the banner
     // on screen if it fails (e.g. network/CORS/auth error).
-    const consent: CookieConsentState = {
-      accepted,
-      timestamp: new Date().toISOString(),
-    };
-    safeSetItem(COOKIE_CONSENT_KEY, JSON.stringify(consent));
+    const previous = readCookieConsent();
+    const consent = writeCookieConsent(accepted);
     setShowBanner(false);
 
-    try {
-      const email =
-        user?.primaryEmailAddress?.emailAddress ||
-        user?.emailAddresses?.[0]?.emailAddress ||
-        "";
+    // Fire the coordination events BEFORE the network round-trip so analytics
+    // react instantly to the user's choice.
+    if (accepted) {
+      window.dispatchEvent(new Event(COOKIE_CONSENT_ACCEPTED_EVENT));
+    } else if (previous?.accepted) {
+      // Withdrawal must be as effective as granting: shut analytics off now.
+      window.dispatchEvent(new Event(COOKIE_CONSENT_REVOKED_EVENT));
+    }
 
-      // Note: no third-party IP lookup here — the backend records req.ip
-      // itself and always ignored a client-supplied value.
+    try {
+      // Server-side consent records are only possible for signed-in users;
+      // anonymous choices live in localStorage alone (no identifier to key on).
+      if (!isSignedIn) return;
+
       const backendUrl =
         process.env.NEXT_PUBLIC_BACKEND_URL || "https://real-learn.onrender.com";
 
@@ -57,12 +79,14 @@ export default function CookieConsent() {
         headers["Authorization"] = `Bearer ${token}`;
       }
 
+      // Note: the backend derives identity (clerkId + email) exclusively from
+      // the verified token and records req.ip itself — the client only ever
+      // sends the choice and its timestamp.
       const response = await fetch(`${backendUrl}/api/agreement`, {
         method: "POST",
         headers,
         body: JSON.stringify({
           accepted,
-          email,
           timestamp: consent.timestamp,
         }),
       });
@@ -79,23 +103,22 @@ export default function CookieConsent() {
     } finally {
       setLoading(false);
     }
-
-    if (accepted) {
-      window.dispatchEvent(new Event("cookie-consent-accepted"));
-    }
   };
 
-  if (!showBanner || !isSignedIn) return null;
+  if (!showBanner) return null;
 
   return (
     <div
+      role="dialog"
+      aria-label="Cookie preferences"
       style={{
         position: "fixed",
         bottom: 0,
         left: 0,
         right: 0,
         zIndex: 100,
-        background: "var(--bg-card)",
+        background: "var(--bg-glass, var(--bg-card))",
+        backdropFilter: "blur(var(--blur-md, 12px))",
         borderTop: "1px solid var(--border-default)",
         boxShadow: "var(--shadow-lg)",
         padding: "20px 24px",
@@ -122,7 +145,7 @@ export default function CookieConsent() {
               fontWeight: 500,
             }}
           >
-            We use cookies and Google Analytics to enhance your learning experience.
+            A quick choice about analytics 🍪
           </p>
           <p
             style={{
@@ -132,7 +155,12 @@ export default function CookieConsent() {
               fontFamily: "var(--font-lora)",
             }}
           >
-            Accept to enable all cookies and analytics, or decline to disable them.
+            We&apos;d like to use Google Analytics to understand what helps people
+            learn. Nothing loads until you say yes, and you can change your mind
+            anytime in Settings.{" "}
+            <Link href="/legal/cookies" style={{ color: "var(--accent)" }}>
+              Cookie Policy
+            </Link>
           </p>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
@@ -149,9 +177,10 @@ export default function CookieConsent() {
               background: "transparent",
               cursor: loading ? "not-allowed" : "pointer",
               opacity: loading ? 0.6 : 1,
+              minHeight: 44,
             }}
           >
-            Decline
+            No thanks
           </button>
           <button
             onClick={() => saveConsent(true)}
@@ -166,9 +195,10 @@ export default function CookieConsent() {
               background: "var(--accent)",
               cursor: loading ? "not-allowed" : "pointer",
               opacity: loading ? 0.6 : 1,
+              minHeight: 44,
             }}
           >
-            {loading ? "Saving..." : "Accept All"}
+            {loading ? "Saving..." : "Allow analytics"}
           </button>
         </div>
       </div>

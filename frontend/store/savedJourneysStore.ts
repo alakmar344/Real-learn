@@ -24,6 +24,12 @@ export function journeySignature(question: string, firstPartTitle?: string): str
   return `${safeQuestion}::${safeTitle}`;
 }
 
+// Reliability: every journey stores the FULL lesson (content + quizzes +
+// sources), so an unbounded list eventually blows the ~5 MB localStorage
+// quota — at which point persist writes start throwing and history silently
+// stops updating. Keep the newest N journeys.
+const MAX_SAVED_JOURNEYS = 40;
+
 export const useSavedJourneysStore = create<SavedJourneysStore>()(
   persist(
     (set) => ({
@@ -33,10 +39,11 @@ export const useSavedJourneysStore = create<SavedJourneysStore>()(
           // Upsert by stable id so re-completing the same lesson updates the
           // existing entry instead of creating duplicates on every reload.
           const existingIndex = state.journeys.findIndex((j) => j.id === journey.id);
-          const journeys =
+          const journeys = (
             existingIndex >= 0
               ? state.journeys.map((j, i) => (i === existingIndex ? journey : j))
-              : [journey, ...state.journeys];
+              : [journey, ...state.journeys]
+          ).slice(0, MAX_SAVED_JOURNEYS);
           journeyLog("saveJourney", {
             id: journey.id,
             upserted: existingIndex >= 0,

@@ -55,11 +55,19 @@ interface ProgressState {
   /** FIFO queue of celebration events the EngagementLayer renders. */
   celebrations: Celebration[];
 
+  /**
+   * Idempotency ledger: creditKey -> timestamp of when engagement was first
+   * awarded. Re-passing the same part / re-completing the same lesson (e.g.
+   * via "Retake Quiz") never re-awards XP, streaks, daily-goal progress or
+   * badges — without this, one lesson could be farmed into unlimited XP.
+   */
+  creditedKeys: Record<string, number>;
+
   reminderOptIn: boolean;
 
   // actions
-  recordPartPassed: (input: { score: number; maxPerPart?: number; language: string; subject?: string }) => void;
-  recordLessonCompleted: (input: { totalScore: number; maxScore?: number; language: string }) => void;
+  recordPartPassed: (input: { score: number; maxPerPart?: number; language: string; subject?: string; creditKey?: string }) => void;
+  recordLessonCompleted: (input: { totalScore: number; maxScore?: number; language: string; creditKey?: string }) => void;
   recordFollowUp: () => void;
   setDailyGoal: (goal: number) => void;
   setReminderOptIn: (value: boolean) => void;
@@ -147,16 +155,37 @@ const initialEngagement = {
   history: {} as Record<string, number>,
   badges: {} as Record<string, number>,
   celebrations: [] as Celebration[],
+  creditedKeys: {} as Record<string, number>,
   reminderOptIn: false,
 };
+
+/** Cap the credited-keys ledger so localStorage never grows unbounded. */
+const MAX_CREDITED_KEYS = 1000;
+
+function addCreditedKey(
+  keys: Record<string, number>,
+  creditKey: string
+): Record<string, number> {
+  const next = { ...keys, [creditKey]: Date.now() };
+  const entries = Object.entries(next);
+  if (entries.length <= MAX_CREDITED_KEYS) return next;
+  entries.sort((a, b) => a[1] - b[1]); // oldest first
+  return Object.fromEntries(entries.slice(entries.length - MAX_CREDITED_KEYS));
+}
 
 export const useProgressStore = create<ProgressState>()(
   persist(
     (set) => ({
       ...initialEngagement,
 
-      recordPartPassed: ({ score, maxPerPart = 2, language, subject }) =>
+      recordPartPassed: ({ score, maxPerPart = 2, language, subject, creditKey }) =>
         set((prev) => {
+          // Anti-farming: a part that already awarded engagement never
+          // awards it again (retakes are for practice, not XP).
+          if (creditKey && prev.creditedKeys[creditKey]) {
+            log("recordPartPassed skipped (already credited)", { creditKey });
+            return prev;
+          }
           const now = new Date();
           const today = dayKey(now);
           const hour = now.getHours();
@@ -181,6 +210,9 @@ export const useProgressStore = create<ProgressState>()(
             subjectsSeen: subject && !prev.subjectsSeen.includes(subject)
               ? [...prev.subjectsSeen, subject]
               : prev.subjectsSeen,
+            creditedKeys: creditKey
+              ? addCreditedKey(prev.creditedKeys, creditKey)
+              : prev.creditedKeys,
           };
 
           const extra: Celebration[] = [{ kind: "xp", amount: gained, reason: isPerfect ? "Perfect part!" : "Part passed" }];
@@ -209,13 +241,22 @@ export const useProgressStore = create<ProgressState>()(
           return draft;
         }),
 
-      recordLessonCompleted: ({ totalScore, maxScore = 6, language }) =>
+      recordLessonCompleted: ({ totalScore, maxScore = 6, language, creditKey }) =>
         set((prev) => {
+          // Anti-farming: a lesson that already awarded completion XP never
+          // awards it again (see recordPartPassed).
+          if (creditKey && prev.creditedKeys[creditKey]) {
+            log("recordLessonCompleted skipped (already credited)", { creditKey });
+            return prev;
+          }
           const gained = xpForLessonComplete(totalScore, maxScore) + xpForStreak(prev.streak);
           const isPerfect = totalScore >= maxScore;
 
           const draft: ProgressState = {
             ...prev,
+            creditedKeys: creditKey
+              ? addCreditedKey(prev.creditedKeys, creditKey)
+              : prev.creditedKeys,
             xp: prev.xp + gained,
             lessonsCompleted: prev.lessonsCompleted + 1,
             perfectLessons: prev.perfectLessons + (isPerfect ? 1 : 0),

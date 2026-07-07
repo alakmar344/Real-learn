@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
 import { useProgressStore } from "@/store/progressStore";
 import { useSavedJourneysStore } from "@/store/savedJourneysStore";
 import { useLessonStore } from "@/store/lessonStore";
@@ -51,6 +52,7 @@ interface Props {
 export default function HomeStats({ onStartTopic }: Props) {
   const mounted = useMounted();
   const router = useRouter();
+  const { isSignedIn } = useAuth();
 
   const xp = useProgressStore((s) => s.xp);
   const streak = useProgressStore((s) => s.streak);
@@ -70,10 +72,18 @@ export default function HomeStats({ onStartTopic }: Props) {
 
   return (
     <div style={{ marginTop: 24, display: "flex", flexDirection: "column", gap: 12, alignItems: "center" }}>
-      {/* Today's spark — changes every day */}
+      {/* Today's spark — changes every day. Signed-out visitors are routed to
+          sign-in instead of firing an unauthenticated lesson request that
+          would bounce off the protected /learn route with an error flash. */}
       <button
         type="button"
-        onClick={() => onStartTopic(topic)}
+        onClick={() => {
+          if (!isSignedIn) {
+            router.push(`/sign-in?redirect_url=${encodeURIComponent("/")}`);
+            return;
+          }
+          onStartTopic(topic);
+        }}
         style={{
           display: "inline-flex",
           alignItems: "center",
@@ -101,6 +111,10 @@ export default function HomeStats({ onStartTopic }: Props) {
         <button
           type="button"
           onClick={() => {
+            if (!isSignedIn) {
+              router.push(`/sign-in?redirect_url=${encodeURIComponent("/learn")}`);
+              return;
+            }
             loadJourney(inProgress);
             router.push("/learn");
           }}

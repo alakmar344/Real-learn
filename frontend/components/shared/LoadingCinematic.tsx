@@ -57,7 +57,7 @@ export default function LoadingCinematic({ question, onCancel }: Props) {
 
   return (
     <div
-      role="alert"
+      role="status"
       aria-live="polite"
       aria-label="Generating your lesson"
       style={{

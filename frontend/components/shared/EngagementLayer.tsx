@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useProgressStore, Celebration } from "@/store/progressStore";
 import { BADGE_BY_ID, TIER_COLOR, levelTitle } from "@/lib/achievements";
 import { useMounted } from "@/hooks/useMounted";
@@ -87,6 +87,24 @@ function CenterCard({
   onDismiss: () => void;
   children: React.ReactNode;
 }) {
+  const dismissRef = useRef<HTMLButtonElement | null>(null);
+
+  // A11y: the celebration is a full-screen overlay, so keyboard users must be
+  // able to dismiss it too — Escape closes it and focus moves to the real
+  // "Continue" button while it is shown, then returns where it was.
+  useEffect(() => {
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    dismissRef.current?.focus();
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onDismiss();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      previouslyFocused?.focus?.();
+    };
+  }, [onDismiss]);
+
   return (
     <div
       role="status"
@@ -97,8 +115,8 @@ function CenterCard({
         position: "fixed",
         inset: 0,
         zIndex: 96,
-        background: "rgba(20,17,12,0.5)",
-        backdropFilter: "blur(3px)",
+        background: "var(--scrim, rgba(20,17,12,0.5))",
+        backdropFilter: "blur(var(--blur-sm, 4px))",
         display: "grid",
         placeItems: "center",
         padding: 24,
@@ -121,7 +139,23 @@ function CenterCard({
         }}
       >
         {children}
-        <div style={{ marginTop: 14, fontSize: 12, color: "var(--text-tertiary)" }}>Tap to continue</div>
+        <button
+          ref={dismissRef}
+          type="button"
+          onClick={onDismiss}
+          style={{
+            marginTop: 14,
+            fontSize: 12,
+            color: "var(--text-tertiary)",
+            background: "transparent",
+            border: "none",
+            cursor: "pointer",
+            padding: "6px 10px",
+            minHeight: 32,
+          }}
+        >
+          Tap to continue
+        </button>
       </div>
     </div>
   );

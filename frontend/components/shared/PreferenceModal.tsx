@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Language, Level } from "@/types";
 import { usePreferenceStore } from "@/store/preferenceStore";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { THEME_OPTIONS } from "@/lib/themes";
 
 const THEMES = THEME_OPTIONS;
@@ -34,6 +35,7 @@ export default function PreferenceModal({ open, onClose }: Props) {
   const setLevel = usePreferenceStore((s) => s.setLevel);
 
   const [saving, setSaving] = useState(false);
+  const trapRef = useFocusTrap<HTMLDivElement>(open);
 
   useEffect(() => {
     if (!open) return;
@@ -85,7 +87,8 @@ export default function PreferenceModal({ open, onClose }: Props) {
         position: "fixed",
         inset: 0,
         zIndex: 200,
-        background: "rgba(0,0,0,0.6)",
+        background: "var(--scrim, rgba(0,0,0,0.6))",
+        backdropFilter: "blur(var(--blur-sm, 4px))",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -93,6 +96,8 @@ export default function PreferenceModal({ open, onClose }: Props) {
       }}
     >
       <div
+        ref={trapRef}
+        tabIndex={-1}
         className="animate-fade-up"
         onClick={(e) => e.stopPropagation()}
         style={{

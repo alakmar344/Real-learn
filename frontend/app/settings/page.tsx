@@ -8,6 +8,12 @@ import ConfirmModal from "@/components/shared/ConfirmModal";
 import { showToast } from "@/components/shared/ToastContainer";
 import { usePreferenceStore } from "@/store/preferenceStore";
 import { useMounted } from "@/hooks/useMounted";
+import {
+  COOKIE_CONSENT_ACCEPTED_EVENT,
+  COOKIE_CONSENT_REVOKED_EVENT,
+  COOKIE_SETTINGS_OPEN_EVENT,
+  readCookieConsent,
+} from "@/lib/legalConsent";
 import LanguageSelector from "@/components/shared/LanguageSelector";
 import LevelSelector from "@/components/shared/LevelSelector";
 import { THEME_OPTIONS } from "@/lib/themes";
@@ -54,6 +60,29 @@ export default function SettingsPage() {
   const [deleting, setDeleting] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [savingPrefs, setSavingPrefs] = useState(false);
+  const [cookieChoiceLabel, setCookieChoiceLabel] = useState("Not set");
+
+  // Reflect the current cookie/analytics choice, live — including when it is
+  // changed via the banner this page can re-open.
+  useEffect(() => {
+    const refresh = () => {
+      const consent = readCookieConsent();
+      setCookieChoiceLabel(
+        consent == null ? "Not set" : consent.accepted ? "Analytics allowed" : "Analytics off"
+      );
+    };
+    refresh();
+    window.addEventListener(COOKIE_CONSENT_ACCEPTED_EVENT, refresh);
+    window.addEventListener(COOKIE_CONSENT_REVOKED_EVENT, refresh);
+    // The banner also saves "decline" without a revoke event when there was no
+    // prior acceptance; poll cheaply on focus to stay accurate.
+    window.addEventListener("focus", refresh);
+    return () => {
+      window.removeEventListener(COOKIE_CONSENT_ACCEPTED_EVENT, refresh);
+      window.removeEventListener(COOKIE_CONSENT_REVOKED_EVENT, refresh);
+      window.removeEventListener("focus", refresh);
+    };
+  }, []);
 
   useEffect(() => {
     try {
@@ -488,6 +517,57 @@ export default function SettingsPage() {
               </p>
             </div>
           </div>
+        </section>
+
+        {/* Privacy Section */}
+        <section
+          style={{
+            border: "1px solid var(--border-default)",
+            borderRadius: "var(--radius-lg)",
+            padding: 24,
+            marginBottom: 24,
+            background: "var(--bg-card)",
+          }}
+        >
+          <h2
+            style={{
+              fontSize: 16,
+              fontWeight: 700,
+              marginBottom: 8,
+              color: "var(--text-primary)",
+            }}
+          >
+            Privacy
+          </h2>
+          <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 20 }}>
+            Change your cookie and analytics choice anytime — withdrawing consent
+            is as easy as giving it.
+          </p>
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new Event(COOKIE_SETTINGS_OPEN_EVENT))}
+            style={{
+              border: "1px solid var(--border-default)",
+              borderRadius: "var(--radius-md)",
+              background: "transparent",
+              color: "var(--text-secondary)",
+              padding: "12px 16px",
+              cursor: "pointer",
+              fontSize: 14,
+              fontWeight: 500,
+              minHeight: 44,
+              textAlign: "left",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              width: "100%",
+            }}
+          >
+            <span>Cookie &amp; analytics preferences</span>
+            <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
+              {cookieChoiceLabel}
+            </span>
+          </button>
         </section>
 
         {/* Data Section */}

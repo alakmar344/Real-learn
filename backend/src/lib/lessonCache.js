@@ -122,6 +122,24 @@ export async function getCachedLesson(key) {
 }
 
 /**
+ * Remove a lesson from BOTH tiers — used when a post-hoc moderation verdict
+ * flags an already-cached lesson so no other user can be served it.
+ * Fire-and-forget safe: all errors are swallowed after logging.
+ */
+export function deleteCachedLesson(key) {
+  memoryCache.delete(key);
+  (async () => {
+    try {
+      const db = await getDb();
+      await db.collection(CACHE_COLLECTION).deleteOne({ key });
+      console.log("[lessonCache] Lesson evicted", { key: key.slice(0, 12) });
+    } catch (error) {
+      console.warn("[lessonCache] Evict failed (non-fatal)", error?.message);
+    }
+  })();
+}
+
+/**
  * Store a fully validated lesson in both tiers. Fire-and-forget safe: all
  * errors are swallowed after logging.
  */

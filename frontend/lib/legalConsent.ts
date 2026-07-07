@@ -10,8 +10,48 @@
 
 export const LEGAL_CONSENT_KEY = "reallearn-legal-consent";
 export const COOKIE_CONSENT_KEY = "reallearn-cookie-consent";
-export const CURRENT_PRIVACY_VERSION = "1.5";
-export const CURRENT_TERMS_VERSION = "1.5";
+export const CURRENT_PRIVACY_VERSION = "2.0";
+export const CURRENT_TERMS_VERSION = "2.0";
+/** Bumping this re-prompts everyone for cookie/analytics consent. */
+export const CURRENT_COOKIE_VERSION = "2.0";
+
+/** Events used to coordinate the consent UI, GA loader and settings page. */
+export const COOKIE_CONSENT_ACCEPTED_EVENT = "cookie-consent-accepted";
+export const COOKIE_CONSENT_REVOKED_EVENT = "cookie-consent-revoked";
+export const COOKIE_SETTINGS_OPEN_EVENT = "cookie-settings-open";
+
+export interface CookieConsentState {
+  accepted: boolean;
+  timestamp: string;
+  /** Cookie-policy version the choice was made against. */
+  cookieVersion?: string;
+}
+
+export function readCookieConsent(): CookieConsentState | null {
+  const stored = safeGetItem(COOKIE_CONSENT_KEY);
+  if (!stored) return null;
+  try {
+    return JSON.parse(stored) as CookieConsentState;
+  } catch {
+    return null;
+  }
+}
+
+export function writeCookieConsent(accepted: boolean): CookieConsentState {
+  const state: CookieConsentState = {
+    accepted,
+    timestamp: new Date().toISOString(),
+    cookieVersion: CURRENT_COOKIE_VERSION,
+  };
+  safeSetItem(COOKIE_CONSENT_KEY, JSON.stringify(state));
+  return state;
+}
+
+/** True only when the user accepted under the CURRENT cookie-policy version. */
+export function hasAnalyticsConsent(): boolean {
+  const state = readCookieConsent();
+  return Boolean(state?.accepted && state.cookieVersion === CURRENT_COOKIE_VERSION);
+}
 
 export interface LegalConsentState {
   accepted: boolean;

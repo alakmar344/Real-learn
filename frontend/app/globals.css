@@ -93,11 +93,28 @@
   /* ── Easing ── */
   --ease-reveal: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-color: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ── Motion durations (tokenized so timing stays consistent everywhere) ── */
+  --dur-fast: 150ms;
+  --dur-base: 240ms;
+  --dur-slow: 400ms;
+
+  /* ── Backdrop blur radii ── */
+  --blur-sm: 4px;
+  --blur-md: 12px;
+
+  /* ── Modal scrim — a warm, soft veil rather than harsh pure black.
+     Overridden per dark theme below so overlays never feel like a black hole. */
+  --scrim: rgba(38, 30, 16, 0.42);
+
+  /* ── Soft focus ring (glow + offset) for the ambient aesthetic ── */
+  --focus-ring: 0 0 0 3px var(--accent-glow);
 }
 
 /* ── Dark theme (Night) — luminous teal ink on deep slate ── */
 html[data-theme="dark"] {
   color-scheme: dark;
+  --scrim: rgba(4, 8, 7, 0.6);
   --bg-primary: #0b100f;
   --bg-surface: #121917;
   --bg-card: #18211e;
@@ -146,6 +163,7 @@ html[data-theme="dark"] {
 /* ── Twilight theme — deep indigo night with a violet-to-rose glow ── */
 html[data-theme="twilight"] {
   color-scheme: dark;
+  --scrim: rgba(8, 6, 18, 0.62);
   --bg-primary: #12101f;
   --bg-surface: #181529;
   --bg-card: #1e1a33;
@@ -189,11 +207,6 @@ html[data-theme="twilight"] {
   --shadow-sm: 0 1px 4px rgba(6, 4, 16, 0.5);
   --shadow-md: 0 2px 12px rgba(6, 4, 16, 0.55);
   --shadow-lg: 0 6px 28px rgba(6, 4, 16, 0.65);
-}
-
-html[data-theme="dark"] .markdown-content code,
-html[data-theme="twilight"] .markdown-content code {
-  background: var(--bg-card-hover);
 }
 
 html {
@@ -257,6 +270,9 @@ pre {
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+  /* Soft accent halo so focus reads as ambient, not utilitarian. */
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-sm);
 }
 
 /* ── Scrollbar ── */
@@ -466,7 +482,7 @@ pre {
 .markdown-content code {
   font-family: var(--font-mono), monospace;
   font-size: var(--text-sm);
-  background: #e8e0d0;
+  background: var(--bg-card-hover);
   color: var(--accent);
   padding: 2px 6px;
   border-radius: var(--radius-sm);
