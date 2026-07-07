@@ -17,12 +17,12 @@ function loadGtag() {
 
   const initScript = document.createElement("script");
   initScript.id = `ga-init-${GA_MEASUREMENT_ID}`;
-  initScript.innerHTML = `
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', '${GA_MEASUREMENT_ID}');
-  `;
+  initScript.text = [
+    "window.dataLayer = window.dataLayer || [];",
+    "function gtag(){dataLayer.push(arguments);}",
+    "gtag('js', new Date());",
+    `gtag('config', '${GA_MEASUREMENT_ID}', { anonymize_ip: true });`,
+  ].join("\n");
   document.head.appendChild(initScript);
 }
 

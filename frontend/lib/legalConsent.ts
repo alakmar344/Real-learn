@@ -10,8 +10,8 @@
 
 export const LEGAL_CONSENT_KEY = "reallearn-legal-consent";
 export const COOKIE_CONSENT_KEY = "reallearn-cookie-consent";
-export const CURRENT_PRIVACY_VERSION = "1.3";
-export const CURRENT_TERMS_VERSION = "1.3";
+export const CURRENT_PRIVACY_VERSION = "1.4";
+export const CURRENT_TERMS_VERSION = "1.4";
 
 export interface LegalConsentState {
   accepted: boolean;
