@@ -334,6 +334,32 @@ export default function TermsOfService() {
           We may modify or discontinue voice features at any time without liability.
         </p>
       </section>
+
+      <section style={{ marginTop: 28 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
+          19. AI Safety and User Responsibility
+        </h3>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+          RealLearn includes automated safety filters, but no automated system is perfect. You agree
+          not to rely on the Service for emergency, medical, legal, financial, or other high-risk
+          decisions, and you are responsible for independently verifying critical information.
+          You also agree not to bypass, probe, or abuse safety controls, rate limits, or account
+          protections. Repeated attempts to evade safeguards may result in suspension or termination.
+        </p>
+      </section>
+
+      <section style={{ marginTop: 28 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
+          20. Privacy Rights and Compliance
+        </h3>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+          Your privacy rights are described in our Privacy Policy, including rights available under
+          applicable laws such as GDPR and U.S. state privacy laws. By using the Service, you
+          acknowledge that we may process data as described there to provide the product, prevent
+          abuse, and meet legal obligations. If law requires us to notify you of material compliance
+          or policy changes, we will do so through in-app notice, email, or an updated legal notice.
+        </p>
+      </section>
     </article>
   );
 }
