@@ -20,7 +20,7 @@ export default function TermsOfService() {
         Terms of Service
       </h2>
       <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
-        Last updated: July 7, 2026 (version 1.4)
+        Last updated: July 7, 2026 (version 1.5)
       </p>
 
       <section style={{ marginBottom: 28 }}>
