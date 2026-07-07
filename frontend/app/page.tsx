@@ -33,6 +33,8 @@ export default function HomePage() {
   const { generateLesson } = useLesson();
   const { isSignedIn, getToken } = useAuth();
   const { user } = useUser();
+  const primaryEmail = user?.primaryEmailAddress?.emailAddress || "";
+  const fallbackEmail = user?.emailAddresses?.[0]?.emailAddress || "";
 
   useEffect(() => {
     setQuote(QUOTES[Math.floor(Math.random() * QUOTES.length)]);
@@ -70,10 +72,7 @@ export default function HomePage() {
           body: JSON.stringify({
             accepted: true,
             timestamp: parsed.timestamp,
-            email:
-              user?.primaryEmailAddress?.emailAddress ||
-              user?.emailAddresses?.[0]?.emailAddress ||
-              "",
+            email: primaryEmail || fallbackEmail,
             privacyVersion: parsed.privacyVersion,
             termsVersion: parsed.termsVersion,
           }),
@@ -92,7 +91,7 @@ export default function HomePage() {
       }
     };
     syncLegalConsent();
-  }, [isSignedIn, getToken, user?.id]);
+  }, [isSignedIn, getToken, user?.id, primaryEmail, fallbackEmail]);
 
   const submit = async (override?: string) => {
     const normalized = (override ?? question).trim();
@@ -188,7 +187,7 @@ export default function HomePage() {
                 fontStyle: "italic",
               }}
             >
-              Ask anything. Get an instant answer in Fast mode, or master it in a 3-part Explain journey.
+             No pressure, no trick questions. Start with a quick answer, then switch to a guided 3-part journey when you want to go deeper.
             </p>
             <div style={{ display: "flex", justifyContent: "center" }}>
               <QuestionInput question={question} setQuestion={setQuestion} onSubmit={submit} />

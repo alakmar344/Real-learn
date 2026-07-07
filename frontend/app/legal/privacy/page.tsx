@@ -20,7 +20,7 @@ export default function PrivacyPolicy() {
         Privacy Policy
       </h2>
       <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
-        Last updated: July 6, 2026 (version 1.3)
+        Last updated: July 7, 2026 (version 1.4)
       </p>
 
       <section style={{ marginBottom: 28 }}>
@@ -363,6 +363,35 @@ export default function PrivacyPolicy() {
             microphone is not involved.
           </li>
         </ul>
+      </section>
+
+      <section style={{ marginTop: 28 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
+          17. Legal Bases and Regional Rights
+        </h3>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+          Where required by law, we process personal data under one or more lawful bases: your
+          consent (for optional analytics and policy acceptance records), our contract with you
+          (to provide account access and learning features), and our legitimate interests (to keep
+          the service secure, prevent abuse, and improve reliability). Depending on your region
+          (including the EEA/UK and California), you may have rights to access, delete, correct,
+          port, or restrict processing of your personal data, and to appeal where legally available.
+          You can exercise available rights using in-product tools (&quot;Export My Data&quot;,
+          &quot;Delete My Data&quot;) or by contacting us.
+        </p>
+      </section>
+
+      <section style={{ marginTop: 28 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
+          18. Security Events and Incident Response
+        </h3>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+          We maintain technical and organizational safeguards such as token verification, strict
+          input validation, rate limiting, and hardened security headers. If we confirm a personal
+          data breach affecting your information, we will investigate promptly, take containment and
+          remediation actions, and provide legally required notifications to users and regulators
+          within applicable timelines.
+        </p>
       </section>
     </article>
   );

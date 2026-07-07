@@ -14,13 +14,13 @@ const MODES: { value: LessonMode; icon: string; label: string; hint: string }[] 
     value: "fast",
     icon: "⚡",
     label: "Fast",
-    hint: "One instant, direct answer",
+    hint: "A quick, simple answer to get started",
   },
   {
     value: "explain",
     icon: "📚",
     label: "Explain",
-    hint: "Deep 3-part journey with real-world context",
+    hint: "A guided 3-part lesson with real-world context",
   },
 ];
 
@@ -84,7 +84,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           maxLength={1000}
-          placeholder="What do you want to understand today?"
+          placeholder="Start with any question — even a basic one"
           aria-label="Your question"
           style={{
             width: "100%",
@@ -201,7 +201,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
               boxShadow: "var(--shadow-sm)",
             }}
           >
-            {mode === "fast" ? "Answer Fast ⚡" : "Teach Me →"}
+            {mode === "fast" ? "Get Quick Help ⚡" : "Start Guided Lesson →"}
           </button>
         ) : (
           <SignInButton mode="modal">

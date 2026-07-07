@@ -171,8 +171,8 @@ const SPEECH_LANG_TO_VOICE = {
   "en-US": "en-US-AriaNeural",
 };
 
-const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "1.3";
-const TERMS_OF_SERVICE_VERSION = process.env.TERMS_OF_SERVICE_VERSION || "1.3";
+const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "1.4";
+const TERMS_OF_SERVICE_VERSION = process.env.TERMS_OF_SERVICE_VERSION || "1.4";
 
 // ── Input validation limits (security: bound prompt size and lock free-text
 // fields that are interpolated into the LLM prompt to known values) ──
@@ -434,6 +434,10 @@ app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
     if (typeof accepted !== "boolean") {
       return res.status(400).json({ error: "accepted (boolean) is required" });
     }
+    const parsedTimestamp = timestamp ? new Date(timestamp) : new Date();
+    if (Number.isNaN(parsedTimestamp.getTime())) {
+      return res.status(400).json({ error: "A valid timestamp is required" });
+    }
 
     // Security (IDOR fix): the clerkId is ALWAYS taken from the verified
     // token, never from the request body — otherwise any signed-in user
@@ -449,7 +453,7 @@ app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
     const email =
       req.auth?.email ||
       req.auth?.email_address ||
-      (typeof bodyEmail === "string" && bodyEmail.length <= 320 ? bodyEmail : "") ||
+      (typeof bodyEmail === "string" && bodyEmail.length <= 320 ? bodyEmail.trim() : "") ||
       "";
     if (!email) {
       return res.status(400).json({ error: "email is required" });
@@ -466,7 +470,7 @@ app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
       clerkId,
       deviceIp: req.ip || req.connection?.remoteAddress || "unknown",
       userAgent: req.headers["user-agent"] || "unknown",
-      timestamp: timestamp ? new Date(timestamp) : new Date(),
+      timestamp: parsedTimestamp,
       privacyVersion: PRIVACY_POLICY_VERSION,
       termsVersion: TERMS_OF_SERVICE_VERSION,
       updatedAt: new Date(),
