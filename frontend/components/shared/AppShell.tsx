@@ -51,7 +51,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   if (hideSidebar) {
     return (
       <>
-        {children}
+        {/* A11y: the skip link targets #main-content, which must exist on
+            EVERY page — including the auth pages — or it jumps nowhere. */}
+        <div id="main-content">{children}</div>
         <PreferenceModal open={showFirstPrefs} onClose={() => setShowFirstPrefs(false)} />
       </>
     );

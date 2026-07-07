@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { usePreferenceStore } from "@/store/preferenceStore";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { THEME_OPTIONS } from "@/lib/themes";
 
 interface Props {
@@ -14,6 +15,7 @@ const OPTIONS = THEME_OPTIONS;
 export default function ThemeModal({ open, onClose }: Props) {
   const theme = usePreferenceStore((s) => s.theme);
   const setTheme = usePreferenceStore((s) => s.setTheme);
+  const trapRef = useFocusTrap<HTMLDivElement>(open);
 
   useEffect(() => {
     if (!open) return;
@@ -41,7 +43,8 @@ export default function ThemeModal({ open, onClose }: Props) {
         position: "fixed",
         inset: 0,
         zIndex: 200,
-        background: "rgba(0,0,0,0.45)",
+        background: "var(--scrim, rgba(0,0,0,0.45))",
+        backdropFilter: "blur(var(--blur-sm, 4px))",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -49,6 +52,8 @@ export default function ThemeModal({ open, onClose }: Props) {
       }}
     >
       <div
+        ref={trapRef}
+        tabIndex={-1}
         className="animate-fade-up"
         onClick={(e) => e.stopPropagation()}
         style={{

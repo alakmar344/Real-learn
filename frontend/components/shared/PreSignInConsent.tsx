@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 import {
   CURRENT_PRIVACY_VERSION,
   CURRENT_TERMS_VERSION,
@@ -34,6 +35,11 @@ export default function PreSignInConsent() {
   const [showReacceptConsent, setShowReacceptConsent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [declined, setDeclined] = useState(false);
+  // A11y: this component renders blocking dialogs — keyboard focus must stay
+  // inside them (one trap per possible dialog; only one is open at a time).
+  const consentTrapRef = useFocusTrap<HTMLDivElement>(showConsent);
+  const reacceptTrapRef = useFocusTrap<HTMLDivElement>(showReacceptConsent);
+  const declinedTrapRef = useFocusTrap<HTMLDivElement>(declined && !showConsent && !showReacceptConsent);
 
   useEffect(() => {
     const applyLocalRecord = (parsed: LegalConsentState | null) => {
@@ -170,11 +176,15 @@ export default function PreSignInConsent() {
   if (showConsent) {
     return (
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Welcome to RealLearn"
         style={{
           position: "fixed",
           inset: 0,
           zIndex: 200,
-          background: "rgba(0,0,0,0.6)",
+          background: "var(--scrim, rgba(0,0,0,0.6))",
+          backdropFilter: "blur(var(--blur-sm, 4px))",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -182,9 +192,12 @@ export default function PreSignInConsent() {
         }}
       >
         <div
+          ref={consentTrapRef}
+          tabIndex={-1}
+          className="animate-fade-up"
           style={{
             background: "var(--bg-card)",
-            borderRadius: "var(--radius-lg)",
+            borderRadius: "var(--radius-xl)",
             padding: "32px 28px",
             maxWidth: 560,
             width: "100%",
@@ -202,31 +215,30 @@ export default function PreSignInConsent() {
               marginBottom: 12,
             }}
           >
-            Welcome to RealLearn
+            Welcome to RealLearn 👋
           </h2>
 
           <div style={{ fontSize: 14, color: "var(--text-secondary)", lineHeight: 1.7, marginBottom: 20 }}>
             <p style={{ marginBottom: 12 }}>
-              RealLearn is an AI-powered educational platform that turns any question into a
-              structured 3-part learning journey: <strong>Foundation</strong>, <strong>Mechanism</strong>, and{" "}
-              <strong>Real World</strong>. You learn by reading, then prove understanding through quizzes
-              before unlocking deeper content.
+              RealLearn turns any question into a friendly, structured learning
+              journey: <strong>Foundation</strong>, <strong>Mechanism</strong>, and{" "}
+              <strong>Real World</strong>. You read at your own pace, then a short
+              quiz unlocks the next part — no pressure, no trick questions.
             </p>
             <p style={{ marginBottom: 12 }}>
-              <strong>What we store:</strong> Your email address (via Clerk authentication), the
-              questions you ask, your quiz scores, language/level preferences, consent timestamps,
-              and your device IP address for security. Your saved lessons are stored locally in your
-              browser.
+              <strong>What we keep:</strong> your email (for sign-in), the questions
+              you ask, quiz scores, your language and level, and consent timestamps.
+              Your saved lessons stay in your browser. You can export or delete
+              everything anytime from Settings.
             </p>
             <p style={{ marginBottom: 12 }}>
-              <strong>Kid safety &amp; guardrails:</strong> RealLearn is intended for users 13 and older.
-              We employ automated content filters to block harmful, violent, sexually explicit,
-              or illegal content. We do not allow content that promotes self-harm, hate speech,
-              or dangerous activities.
+              <strong>A safe space to learn:</strong> RealLearn is designed for
+              learners aged 13 and up, and gentle automated safeguards help keep
+              lessons appropriate and on-topic.
             </p>
             <p>
-              By clicking <strong>Accept</strong>, you confirm that you are at least 13 years old and
-              agree to our{" "}
+              By clicking <strong>Accept</strong>, you confirm you&apos;re at least 13
+              years old and agree to our{" "}
               <a
                 href="/legal?tab=privacy"
                 style={{ color: "var(--accent)" }}
@@ -293,11 +305,15 @@ export default function PreSignInConsent() {
   if (showReacceptConsent) {
     return (
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Updated policies"
         style={{
           position: "fixed",
           inset: 0,
           zIndex: 200,
-          background: "rgba(0,0,0,0.6)",
+          background: "var(--scrim, rgba(0,0,0,0.6))",
+          backdropFilter: "blur(var(--blur-sm, 4px))",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -305,9 +321,12 @@ export default function PreSignInConsent() {
         }}
       >
         <div
+          ref={reacceptTrapRef}
+          tabIndex={-1}
+          className="animate-fade-up"
           style={{
             background: "var(--bg-card)",
-            borderRadius: "var(--radius-lg)",
+            borderRadius: "var(--radius-xl)",
             padding: "32px 28px",
             maxWidth: 560,
             width: "100%",
@@ -335,7 +354,7 @@ export default function PreSignInConsent() {
             </p>
 
             <h3 style={{ fontWeight: 600, fontSize: 15, marginBottom: 8, marginTop: 16 }}>
-              Privacy Policy Changes (v1.4 to v{CURRENT_PRIVACY_VERSION}):
+              Privacy Policy changes (updated to v{CURRENT_PRIVACY_VERSION}):
             </h3>
             <ul style={{ paddingLeft: 20, margin: 0, fontSize: 14, color: "var(--text-secondary)" }}>
               {POLICY_CHANGES.map((change, index) => (
@@ -346,7 +365,7 @@ export default function PreSignInConsent() {
             </ul>
 
             <h3 style={{ fontWeight: 600, fontSize: 15, marginBottom: 8, marginTop: 16 }}>
-              Terms of Service Changes (v1.4 to v{CURRENT_TERMS_VERSION}):
+              Terms of Service changes (updated to v{CURRENT_TERMS_VERSION}):
             </h3>
             <ul style={{ paddingLeft: 20, margin: 0, fontSize: 14, color: "var(--text-secondary)" }}>
               {TERMS_CHANGES.map((change, index) => (
@@ -430,11 +449,15 @@ export default function PreSignInConsent() {
 
     return (
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="One quick step"
         style={{
           position: "fixed",
           inset: 0,
           zIndex: 200,
-          background: "rgba(0,0,0,0.6)",
+          background: "var(--scrim, rgba(0,0,0,0.6))",
+          backdropFilter: "blur(var(--blur-sm, 4px))",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -442,9 +465,12 @@ export default function PreSignInConsent() {
         }}
       >
         <div
+          ref={declinedTrapRef}
+          tabIndex={-1}
+          className="animate-fade-up"
           style={{
             background: "var(--bg-card)",
-            borderRadius: "var(--radius-lg)",
+            borderRadius: "var(--radius-xl)",
             padding: "32px 28px",
             maxWidth: 480,
             width: "100%",
@@ -461,11 +487,12 @@ export default function PreSignInConsent() {
               marginBottom: 12,
             }}
           >
-            Consent Required
+            Just one quick step
           </h2>
           <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 20, lineHeight: 1.7 }}>
-            You must accept our Privacy Policy and Terms of Service to use RealLearn.
-            Please review our policies and accept to continue.
+            To start learning, we just need you to agree to our Privacy Policy and
+            Terms of Service. Take a look whenever you&apos;re ready — we&apos;ll be
+            right here.
           </p>
           <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
             <a

@@ -1,6 +1,14 @@
 /** @type {import('next').NextConfig} */
+
+// Security: 'unsafe-eval' is only needed by Next.js's development runtime
+// (react-refresh). Shipping it to production would let any injected script
+// use eval/Function, so it is added in dev builds only.
+const scriptSrcEval = process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : "";
+
 const nextConfig = {
   reactStrictMode: true,
+  // Security: don't advertise the framework via X-Powered-By.
+  poweredByHeader: false,
   images: {
     remotePatterns: [{ protocol: "https", hostname: "img.clerk.com" }],
   },
@@ -46,7 +54,10 @@ const nextConfig = {
               // bot protection (Turnstile) renders in a Cloudflare iframe.
               // *.google-analytics.com — GA4 sends EU-consent traffic to
               // regional hosts (region1.google-analytics.com etc.).
-              "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://*.clerk.accounts.dev https://*.clerk.com https://clerk.reallearn.site https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' https://img.clerk.com https://www.google-analytics.com data:; connect-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://clerk.reallearn.site https://real-learn.onrender.com https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com; frame-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://clerk.reallearn.site https://challenges.cloudflare.com; worker-src 'self' blob:; font-src 'self'; media-src 'self' blob:; base-uri 'self'; form-action 'self'",
+              // object-src 'none' + frame-ancestors 'self' close the plugin
+              // and clickjacking vectors CSP can cover; 'unsafe-eval' is
+              // dev-only (see scriptSrcEval above).
+              `default-src 'self'; script-src 'self' 'unsafe-inline'${scriptSrcEval} https://www.googletagmanager.com https://www.google-analytics.com https://*.clerk.accounts.dev https://*.clerk.com https://clerk.reallearn.site https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' https://img.clerk.com https://www.google-analytics.com data:; connect-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://clerk.reallearn.site https://real-learn.onrender.com https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com; frame-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://clerk.reallearn.site https://challenges.cloudflare.com; worker-src 'self' blob:; font-src 'self'; media-src 'self' blob:; object-src 'none'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'`,
 
           },
         ],

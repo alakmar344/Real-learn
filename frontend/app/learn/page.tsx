@@ -368,12 +368,16 @@ export default function LearnPage() {
               passPart(activePart.partNumber, score);
 
               // ── Engagement: award XP, streak, daily-goal, badges ──
+              // The creditKey makes awards idempotent per lesson+part, so
+              // "Retake Quiz" can never be used to farm XP/streaks/badges.
+              const lessonSignature = `${lesson.question ?? lesson.topic ?? ""}|${language}`;
               const maxPerPart = activePart.quiz?.length ?? 2;
               recordPartPassed({
                 score,
                 maxPerPart,
                 language,
                 subject: activePart.subject,
+                creditKey: `part|${lessonSignature}|${activePart.partNumber}`,
               });
               if (activePart.partNumber === totalParts) {
                 const finalTotal = lesson.parts.reduce(
@@ -391,7 +395,12 @@ export default function LearnPage() {
                   (sum, p) => sum + (p.quiz?.length ?? 2),
                   0
                 );
-                recordLessonCompleted({ totalScore: finalTotal, maxScore, language });
+                recordLessonCompleted({
+                  totalScore: finalTotal,
+                  maxScore,
+                  language,
+                  creditKey: `lesson|${lessonSignature}`,
+                });
               }
 
               setQuizPart(null);
