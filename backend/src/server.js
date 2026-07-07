@@ -438,10 +438,6 @@ app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
     if (typeof accepted !== "boolean") {
       return res.status(400).json({ error: "accepted (boolean) is required" });
     }
-    const parsedTimestamp = timestamp ? new Date(timestamp) : new Date();
-    if (Number.isNaN(parsedTimestamp.getTime())) {
-      return res.status(400).json({ error: "A valid timestamp is required" });
-    }
 
     // Security (IDOR fix): the clerkId is ALWAYS taken from the verified
     // token, never from the request body — otherwise any signed-in user
