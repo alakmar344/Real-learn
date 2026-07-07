@@ -89,7 +89,20 @@ export default function SettingsPage() {
       }
 
       try {
-        localStorage.clear();
+        // Remove only RealLearn keys to avoid wiping other same-origin data
+        const REALLEARN_KEYS = [
+          "reallearn-journey",
+          "reallearn-preferences",
+          "reallearn-progress",
+          "reallearn-saved-journeys",
+          "reallearn-legal-consent",
+          "reallearn-cookie-consent",
+          "reallearn-theme",
+          "reallearn-preferences-onboarding",
+        ];
+        REALLEARN_KEYS.forEach((key) => {
+          try { localStorage.removeItem(key); } catch { /* ignore */ }
+        });
       } catch {
         // ignore storage errors
       }

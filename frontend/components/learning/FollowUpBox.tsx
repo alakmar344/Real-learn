@@ -36,6 +36,7 @@ export default function FollowUpBox({ onSubmit }: Props) {
         id="followup-input"
         value={value}
         onChange={(e) => setValue(e.target.value)}
+        maxLength={1000}
         placeholder="Go deeper..."
         aria-label="Follow-up question"
         style={{

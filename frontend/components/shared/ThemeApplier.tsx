@@ -14,7 +14,7 @@ export default function ThemeApplier() {
     // with the active theme's background.
     const swatch =
       THEME_OPTIONS.find((option) => option.value === theme)?.swatch ??
-      "#f7f3ec";
+      "#f8f4ed";
     let meta = document.querySelector<HTMLMetaElement>(
       'meta[name="theme-color"]'
     );

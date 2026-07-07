@@ -15,15 +15,24 @@ import {
 const ALLOWED_PATHS_WHEN_DECLINED = ["/sign-in", "/sign-up", "/legal"];
 
 const POLICY_CHANGES = [
-  "Clarified lawful bases for processing (consent, contract, and legitimate interests) and expanded regional privacy-rights coverage.",
-  "Added an explicit security incident response commitment, including legally required breach notifications.",
-  "Expanded transparency around optional analytics, voice processing, and temporary server-side caches.",
+  "Added Legal Basis for Processing section (GDPR Article 6) with consent, legitimate interest, contractual necessity, and legal obligation bases.",
+  "Added Automated Decision-Making section disclosing AI content generation, content moderation, rate limiting, and quiz scoring.",
+  "Added Data Breach Notification section committing to 72-hour supervisory authority notification.",
+  "Added CCPA section (California Consumer Privacy Act) with rights to know, delete, correct, opt-out, and non-discrimination.",
+  "Added DPDP Act section (India Digital Personal Data Protection Act, 2023) with rights to access, correction, erasure, grievance redressal, and nomination.",
+  "Enhanced International Transfers section with Standard Contractual Clauses reference.",
+  "Updated data storage details to reference MongoDB Atlas.",
 ];
 
 const TERMS_CHANGES = [
-  "Added clearer AI safety and high-risk usage restrictions to reduce harmful misuse.",
-  "Added a dedicated compliance and privacy-rights section aligned with the Privacy Policy.",
-  "Updated legal versioning references and policy-notice commitments.",
+  "Added DPDP Act compliance section (Section 14) for Indian users with Data Fiduciary designation and grievance redressal.",
+  "Added Warranty Disclaimer (Section 10): Service provided AS IS without warranties of any kind.",
+  "Added Indemnification clause (Section 11): Users agree to indemnify RealLearn against claims arising from use.",
+  "Added Dispute Resolution clause (Section 15): 30-day informal resolution period before formal legal action.",
+  "Added Force Majeure clause (Section 16): Liability exclusions for events beyond reasonable control.",
+  "Added Severability clause (Section 17): Invalid provisions modified minimally; remaining provisions continue.",
+  "Added Entire Agreement clause (Section 18): These Terms plus Privacy and Cookie Policies constitute the full agreement.",
+  "Enhanced Limitation of Liability with comprehensive damage type exclusions.",
 ];
 
 export default function PreSignInConsent() {
@@ -174,7 +183,8 @@ export default function PreSignInConsent() {
           position: "fixed",
           inset: 0,
           zIndex: 200,
-          background: "rgba(0,0,0,0.6)",
+          background: "rgba(0,0,0,0.5)",
+          backdropFilter: "blur(4px)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -182,10 +192,11 @@ export default function PreSignInConsent() {
         }}
       >
         <div
+          className="animate-fade-up"
           style={{
             background: "var(--bg-card)",
-            borderRadius: "var(--radius-lg)",
-            padding: "32px 28px",
+            borderRadius: "var(--radius-xl)",
+            padding: "36px 32px",
             maxWidth: 560,
             width: "100%",
             maxHeight: "90vh",
@@ -198,8 +209,9 @@ export default function PreSignInConsent() {
             style={{
               fontFamily: "var(--font-playfair)",
               fontWeight: 800,
-              fontSize: 22,
+              fontSize: 24,
               marginBottom: 12,
+              color: "var(--text-primary)",
             }}
           >
             Welcome to RealLearn
@@ -297,7 +309,8 @@ export default function PreSignInConsent() {
           position: "fixed",
           inset: 0,
           zIndex: 200,
-          background: "rgba(0,0,0,0.6)",
+          background: "rgba(0,0,0,0.5)",
+          backdropFilter: "blur(4px)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -305,10 +318,11 @@ export default function PreSignInConsent() {
         }}
       >
         <div
+          className="animate-fade-up"
           style={{
             background: "var(--bg-card)",
-            borderRadius: "var(--radius-lg)",
-            padding: "32px 28px",
+            borderRadius: "var(--radius-xl)",
+            padding: "36px 32px",
             maxWidth: 560,
             width: "100%",
             maxHeight: "90vh",
@@ -321,8 +335,9 @@ export default function PreSignInConsent() {
             style={{
               fontFamily: "var(--font-playfair)",
               fontWeight: 800,
-              fontSize: 22,
+              fontSize: 24,
               marginBottom: 12,
+              color: "var(--text-primary)",
             }}
           >
             Updated Policies — Please Review
@@ -434,7 +449,8 @@ export default function PreSignInConsent() {
           position: "fixed",
           inset: 0,
           zIndex: 200,
-          background: "rgba(0,0,0,0.6)",
+          background: "rgba(0,0,0,0.5)",
+          backdropFilter: "blur(4px)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -442,10 +458,11 @@ export default function PreSignInConsent() {
         }}
       >
         <div
+          className="animate-fade-up"
           style={{
             background: "var(--bg-card)",
-            borderRadius: "var(--radius-lg)",
-            padding: "32px 28px",
+            borderRadius: "var(--radius-xl)",
+            padding: "36px 32px",
             maxWidth: 480,
             width: "100%",
             textAlign: "center",
@@ -457,8 +474,9 @@ export default function PreSignInConsent() {
             style={{
               fontFamily: "var(--font-playfair)",
               fontWeight: 800,
-              fontSize: 22,
+              fontSize: 24,
               marginBottom: 12,
+              color: "var(--text-primary)",
             }}
           >
             Consent Required

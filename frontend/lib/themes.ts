@@ -16,22 +16,22 @@ export const THEME_OPTIONS: ThemeOption[] = [
   {
     value: "light",
     label: "Paper",
-    hint: "Warm cream — calm and beginner-friendly",
-    swatch: "#f7f3ec",
+    hint: "Warm cream — the classic textbook look",
+    swatch: "#f8f4ed",
     accent: "#0d7a6a",
   },
   {
     value: "dark",
     label: "Night",
-    hint: "Soft contrast for relaxed late-night study",
-    swatch: "#0b100f",
+    hint: "Easy on the eyes for late-night study",
+    swatch: "#0c1210",
     accent: "#3fd0be",
   },
   {
     value: "twilight",
     label: "Twilight",
-    hint: "Ambient indigo glow with gentle focus",
-    swatch: "#12101f",
+    hint: "Deep indigo with a violet glow — bold and vivid",
+    swatch: "#131120",
     accent: "#a78bfa",
   },
 ];
