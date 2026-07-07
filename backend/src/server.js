@@ -171,8 +171,8 @@ const SPEECH_LANG_TO_VOICE = {
   "en-US": "en-US-AriaNeural",
 };
 
-const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "1.4";
-const TERMS_OF_SERVICE_VERSION = process.env.TERMS_OF_SERVICE_VERSION || "1.4";
+const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "1.5";
+const TERMS_OF_SERVICE_VERSION = process.env.TERMS_OF_SERVICE_VERSION || "1.5";
 
 // ── Input validation limits (security: bound prompt size and lock free-text
 // fields that are interpolated into the LLM prompt to known values) ──
@@ -433,10 +433,6 @@ app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
 
     if (typeof accepted !== "boolean") {
       return res.status(400).json({ error: "accepted (boolean) is required" });
-    }
-    const parsedTimestamp = timestamp ? new Date(timestamp) : new Date();
-    if (Number.isNaN(parsedTimestamp.getTime())) {
-      return res.status(400).json({ error: "A valid timestamp is required" });
     }
 
     // Security (IDOR fix): the clerkId is ALWAYS taken from the verified
