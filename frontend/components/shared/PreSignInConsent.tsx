@@ -19,18 +19,19 @@ const POLICY_CHANGES = [
   "Added Automated Decision-Making section disclosing AI content generation, content moderation, rate limiting, and quiz scoring.",
   "Added Data Breach Notification section committing to 72-hour supervisory authority notification.",
   "Added CCPA section (California Consumer Privacy Act) with rights to know, delete, correct, opt-out, and non-discrimination.",
+  "Added DPDP Act section (India Digital Personal Data Protection Act, 2023) with rights to access, correction, erasure, grievance redressal, and nomination.",
   "Enhanced International Transfers section with Standard Contractual Clauses reference.",
   "Updated data storage details to reference MongoDB Atlas.",
-  "Added safety and security as a data processing purpose.",
 ];
 
 const TERMS_CHANGES = [
+  "Added DPDP Act compliance section (Section 14) for Indian users with Data Fiduciary designation and grievance redressal.",
   "Added Warranty Disclaimer (Section 10): Service provided AS IS without warranties of any kind.",
   "Added Indemnification clause (Section 11): Users agree to indemnify RealLearn against claims arising from use.",
-  "Added Dispute Resolution clause (Section 14): 30-day informal resolution period before formal legal action.",
-  "Added Force Majeure clause (Section 15): Liability exclusions for events beyond reasonable control.",
-  "Added Severability clause (Section 16): Invalid provisions modified minimally; remaining provisions continue.",
-  "Added Entire Agreement clause (Section 17): These Terms plus Privacy and Cookie Policies constitute the full agreement.",
+  "Added Dispute Resolution clause (Section 15): 30-day informal resolution period before formal legal action.",
+  "Added Force Majeure clause (Section 16): Liability exclusions for events beyond reasonable control.",
+  "Added Severability clause (Section 17): Invalid provisions modified minimally; remaining provisions continue.",
+  "Added Entire Agreement clause (Section 18): These Terms plus Privacy and Cookie Policies constitute the full agreement.",
   "Enhanced Limitation of Liability with comprehensive damage type exclusions.",
 ];
 

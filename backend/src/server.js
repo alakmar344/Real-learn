@@ -463,6 +463,11 @@ app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
   const collection = db.collection("agreements");
 
   const filter = { clerkId, type: "cookie-consent" };
+  // Validate timestamp to prevent storing Invalid Date
+  const parsedTimestamp = timestamp ? new Date(timestamp) : new Date();
+  if (Number.isNaN(parsedTimestamp.getTime())) {
+    return res.status(400).json({ error: "Invalid timestamp" });
+  }
   const update = {
     $set: {
       accepted,
@@ -470,7 +475,7 @@ app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
       clerkId,
       deviceIp: req.ip || req.connection?.remoteAddress || "unknown",
       userAgent: req.headers["user-agent"] || "unknown",
-      timestamp: timestamp ? new Date(timestamp) : new Date(),
+      timestamp: parsedTimestamp,
       privacyVersion: PRIVACY_POLICY_VERSION,
       termsVersion: TERMS_OF_SERVICE_VERSION,
       updatedAt: new Date(),

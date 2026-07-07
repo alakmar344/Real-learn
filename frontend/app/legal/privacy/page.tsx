@@ -177,7 +177,7 @@ export default function PrivacyPolicy() {
           <strong>RealLearn does not use your data to train, fine-tune, or improve any AI model.</strong>{" "}
           Your questions are sent to Cloudflare Workers AI for one-time inference only. We recommend
           reviewing{" "}
-          <a href="https://www.cloudflare.com/privacypolicy/" style={{ color: "var(--accent)" }}>
+          <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent)" }}>
             Cloudflare&apos;s Privacy Policy
           </a>{" "}
           for details on their data practices.
@@ -269,7 +269,7 @@ export default function PrivacyPolicy() {
           <li>
             <strong>Microsoft Edge Text-to-Speech</strong> &mdash; The &quot;Listen&quot; read-aloud
             feature uses Microsoft&apos;s Edge neural text-to-speech service. See{" "}
-            <a href="https://privacy.microsoft.com/privacystatement" style={{ color: "var(--accent)" }}>
+            <a href="https://privacy.microsoft.com/privacystatement" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent)" }}>
               Microsoft&apos;s Privacy Statement
             </a>.
           </li>
@@ -380,7 +380,67 @@ export default function PrivacyPolicy() {
       </section>
 
       <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>18. Accessibility</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>18. DPDP Act (Indian Users)</h3>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 8 }}>
+          If you are located in India, the Digital Personal Data Protection Act, 2023 (DPDP Act)
+          provides you with the following rights and obligations:
+        </p>
+        <ul style={{ fontSize: 14, color: "var(--text-secondary)", paddingLeft: 20, margin: 0 }}>
+          <li style={{ marginBottom: 4 }}>
+            <strong>Right to Access:</strong> You have the right to access information about your
+            personal data that we process, including a summary of the data and the identities of
+            all data processors with whom your data has been shared.
+          </li>
+          <li style={{ marginBottom: 4 }}>
+            <strong>Right to Correction and Erasure:</strong> You have the right to request
+            correction of inaccurate personal data and erasure of personal data that is no longer
+            necessary for the purpose for which it was collected. You can exercise this right using
+            the &quot;Delete My Data&quot; feature or by contacting us.
+          </li>
+          <li style={{ marginBottom: 4 }}>
+            <strong>Right to Grievance Redressal:</strong> You have the right to have readily
+            available means of grievance redressal. We respond to grievances within 7 days of
+            receipt.
+          </li>
+          <li style={{ marginBottom: 4 }}>
+            <strong>Right to Nominate:</strong> You have the right to nominate another individual
+            to exercise your rights under the DPDP Act on your behalf, in the event of your death
+            or incapacity.
+          </li>
+          <li style={{ marginBottom: 4 }}>
+            <strong>Consent:</strong> We process your personal data based on your consent, which you
+            provide by accepting this Privacy Policy and our Terms of Service. You may withdraw
+            consent at any time by deleting your account. Processing that occurred before withdrawal
+            remains lawful.
+          </li>
+          <li style={{ marginBottom: 4 }}>
+            <strong>Children&apos;s Data:</strong> We do not knowingly collect personal data from
+            children under 18 without verifiable parental consent. Our Service requires users to be
+            at least 13 years old, and users under 18 must have parental or guardian permission.
+          </li>
+          <li style={{ marginBottom: 4 }}>
+            <strong>Cross-Border Transfer:</strong> Your personal data may be transferred outside
+            India to our service providers (Clerk, Cloudflare, MongoDB Atlas). We ensure that such
+            transfers comply with the DPDP Act and applicable rules notified by the Central
+            Government.
+          </li>
+          <li style={{ marginBottom: 4 }}>
+            <strong>Data Fiduciary:</strong> RealLearn (alakmar344) is the Data Fiduciary under the
+            DPDP Act. Our contact email is{" "}
+            <a href="mailto:esamzai365@gmail.com" style={{ color: "var(--accent)" }}>
+              esamzai365@gmail.com
+            </a>.
+          </li>
+          <li>
+            <strong>Complaints:</strong> If you believe your rights under the DPDP Act have been
+            violated, you may file a complaint with the Data Protection Board of India as
+            established under the Act.
+          </li>
+        </ul>
+      </section>
+
+      <section style={{ marginBottom: 28 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>19. Accessibility</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           We are committed to making our Service accessible to all users. We aim to conform to
           WCAG 2.1 Level AA standards. If you encounter any accessibility barriers, please
@@ -389,7 +449,7 @@ export default function PrivacyPolicy() {
       </section>
 
       <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>19. Sharing Your Results</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>20. Sharing Your Results</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           When you finish a learning journey, RealLearn lets you optionally share a result card.
           This card is generated entirely on your device and may include the question you asked,
@@ -401,7 +461,7 @@ export default function PrivacyPolicy() {
 
       <section style={{ marginTop: 28 }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
-          20. Voice Features (Microphone &amp; Read-Aloud)
+          21. Voice Features (Microphone &amp; Read-Aloud)
         </h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           RealLearn offers two optional voice features:

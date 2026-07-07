@@ -68,7 +68,7 @@ export default function CookiePolicy() {
           Clerk&apos;s privacy policy for details on how they use cookies. We use Google Analytics,
           a web analytics service provided by Google, which sets cookies to analyze how visitors
           use our service. You can review Google&apos;s Privacy Policy at{" "}
-          <a href="https://policies.google.com/privacy" style={{ color: "var(--accent)" }}>
+          <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent)" }}>
             policies.google.com/privacy
           </a>. We do not use advertising or tracking cookies for marketing purposes.
         </p>
