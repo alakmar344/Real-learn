@@ -20,7 +20,7 @@ export default function PrivacyPolicy() {
         Privacy Policy
       </h2>
       <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
-        Last updated: July 7, 2026 (version 1.4)
+        Last updated: July 7, 2026 (version 1.5)
       </p>
 
       <section style={{ marginBottom: 28 }}>
@@ -55,8 +55,7 @@ export default function PrivacyPolicy() {
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Consent Records:</strong> Timestamps of when you accepted our Privacy Policy
-            (version 1.3), Terms of Service (version 1.3),
-            and cookie consent.
+            (version 1.5), Terms of Service (version 1.5), and cookie consent.
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Cached Lessons (temporary, not linked to you):</strong> To make the Service
