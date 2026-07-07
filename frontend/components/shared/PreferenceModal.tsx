@@ -116,10 +116,11 @@ export default function PreferenceModal({ open, onClose }: Props) {
             color: "var(--text-primary)",
           }}
         >
-          Set your preferences
+          Welcome to RealLearn
         </h2>
         <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 24, lineHeight: 1.6 }}>
-          Personalize your learning experience. You can change these anytime in Settings.
+          Let&apos;s personalize your learning experience. These settings help us tailor
+          content just for you &mdash; you can change them anytime in Settings.
         </p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>

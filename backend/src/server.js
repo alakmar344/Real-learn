@@ -171,8 +171,8 @@ const SPEECH_LANG_TO_VOICE = {
   "en-US": "en-US-AriaNeural",
 };
 
-const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "1.3";
-const TERMS_OF_SERVICE_VERSION = process.env.TERMS_OF_SERVICE_VERSION || "1.3";
+const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "1.4";
+const TERMS_OF_SERVICE_VERSION = process.env.TERMS_OF_SERVICE_VERSION || "1.4";
 
 // ── Input validation limits (security: bound prompt size and lock free-text
 // fields that are interpolated into the LLM prompt to known values) ──
@@ -316,7 +316,11 @@ const allowedOrigins =
       ];
 
 function isOriginAllowed(origin) {
-  if (!origin) return true;
+  // SECURITY: a null/undefined origin arrives from file://, privacy redirects,
+  // or some cross-origin POST requests. Reject it — only the explicit allow-
+  // list passes. Previously `!origin` returned true, letting any opaque origin
+  // through CORS.
+  if (!origin) return false;
   return allowedOrigins.includes(origin);
 }
 
