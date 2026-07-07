@@ -198,15 +198,10 @@ export async function requireAuth(req, res, next) {
     return res.status(401).json({ error: "Invalid or expired token." });
   }
 
-  // SECURITY: spread the payload FIRST, then explicitly set userId and
-  // sessionId so they CANNOT be clobbered by a claim named "userId" or
-  // "sessionId" in the JWT payload. Previously the spread came last,
-  // meaning any payload property with those names would overwrite the
-  // safe values derived from `sub` and `sid`.
   req.auth = {
-    ...result.payload,
     userId: result.payload.sub,
     sessionId: result.payload.sid,
+    ...result.payload,
   };
 
   next();
