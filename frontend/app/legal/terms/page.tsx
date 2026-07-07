@@ -20,7 +20,7 @@ export default function TermsOfService() {
         Terms of Service
       </h2>
       <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
-        Last updated: July 7, 2026 (version 1.5)
+        Last updated: July 7, 2026 (version 2.0)
       </p>
 
       <section style={{ marginBottom: 28 }}>
@@ -54,10 +54,13 @@ export default function TermsOfService() {
       <section style={{ marginBottom: 28 }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>3. Eligibility</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
-          You must be at least <strong>13 years old</strong> to use this Service. By using RealLearn,
-          you represent and warrant that you meet this age requirement. If you are under 18, you
-          confirm that you have your parent or guardian&apos;s permission to use the Service. We do not
-          knowingly allow children under 13 to use this Service.
+          You must be at least <strong>13 years old</strong> to use this Service (or older where your
+          jurisdiction sets a higher minimum digital-consent age). By using RealLearn, you represent
+          and warrant that you meet this age requirement. If you are under 18, you confirm that you
+          have your parent or guardian&apos;s permission — and, where the law requires verifiable
+          parental consent for minors (for example, under India&apos;s DPDP Act or COPPA), that such
+          consent has been given. We do not knowingly allow children under 13 to create accounts or
+          use this Service. See Section 19 of our Privacy Policy for how we handle children&apos;s data.
         </p>
       </section>
 
@@ -127,7 +130,24 @@ export default function TermsOfService() {
       </section>
 
       <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>9. Limitation of Liability</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>9. Disclaimer of Warranties</h3>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+          The Service is provided on an <strong>&quot;AS IS&quot; and &quot;AS AVAILABLE&quot;</strong>{" "}
+          basis, without warranties of any kind, whether express, implied, or statutory. To the
+          maximum extent permitted by law, RealLearn disclaims all warranties, including implied
+          warranties of merchantability, fitness for a particular purpose, title, and
+          non-infringement, and any warranty that the Service will be uninterrupted, error-free,
+          secure, or that AI-generated content will be accurate, current, or complete. Some
+          jurisdictions do not allow the exclusion of certain warranties, so some of the above
+          exclusions may not apply to you; in that case, such warranties are limited to the minimum
+          scope and duration permitted by law. Nothing in these Terms excludes or limits liability
+          that cannot lawfully be excluded or limited, including your non-waivable statutory
+          consumer rights.
+        </p>
+      </section>
+
+      <section style={{ marginBottom: 28 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>10. Limitation of Liability</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           To the maximum extent permitted by law, RealLearn shall not be liable for any indirect,
           incidental, special, consequential, or punitive damages, or any loss of profits, data,
@@ -139,7 +159,7 @@ export default function TermsOfService() {
       </section>
 
       <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>10. Content Moderation and Guardrails</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>11. Content Moderation and Guardrails</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           We employ automated content filtering — both pattern-based filters and an AI safety
           classifier — on the questions you submit and on AI-generated responses, to ensure the
@@ -155,7 +175,7 @@ export default function TermsOfService() {
       </section>
 
       <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>11. Governing Law</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>12. Governing Law</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           These Terms shall be governed by and construed in accordance with the laws of India,
           without regard to its conflict of law provisions. Any disputes arising from these Terms
@@ -164,7 +184,7 @@ export default function TermsOfService() {
       </section>
 
       <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>12. Changes to Terms</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>13. Changes to Terms</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           We reserve the right to modify or replace these Terms at any time. If a revision is
           material, we will provide at least 30 days&apos; notice prior to any new terms taking effect.
@@ -175,7 +195,7 @@ export default function TermsOfService() {
       </section>
 
       <section>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>13. Contact Information</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>14. Contact Information</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           If you have any questions about these Terms of Service or our legal policies, please
           contact us at{" "}
@@ -193,7 +213,7 @@ export default function TermsOfService() {
       </section>
 
       <section style={{ marginTop: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>14. Copyright and Trademark</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>15. Copyright and Trademark</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           RealLearn, the RealLearn logo, and all related names, logos, and slogans are the
           intellectual property of alakmar344. All content generated by the Service is the property
@@ -203,7 +223,7 @@ export default function TermsOfService() {
       </section>
 
       <section style={{ marginTop: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>15. Data Retention and Deletion</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>16. Data Retention and Deletion</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           We retain your account and conversation data only as long as necessary to provide the
           service or comply with legal obligations. When you delete your account, we delete your
@@ -216,7 +236,7 @@ export default function TermsOfService() {
       </section>
 
       <section style={{ marginTop: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>16. Accessibility</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>17. Accessibility</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           We strive to make our Service accessible to all users and aim to conform to WCAG 2.1
           Level AA standards. If you experience any accessibility issues, please contact us and
@@ -225,7 +245,7 @@ export default function TermsOfService() {
       </section>
 
       <section style={{ marginTop: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>17. Gamification &amp; Virtual Rewards</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>18. Gamification &amp; Virtual Rewards</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           The Service offers engagement features including experience points (XP), levels, daily
           streaks, streak freezes, daily goals, and achievement badges (collectively,
@@ -243,7 +263,7 @@ export default function TermsOfService() {
       </section>
 
       <section style={{ marginTop: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>18. Voice Features</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>19. Voice Features</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           The Service offers optional voice input (speech-to-text) and &quot;Listen&quot; read-aloud
           (text-to-speech) features. <strong>Voice input</strong> relies on your browser&apos;s
@@ -265,7 +285,7 @@ export default function TermsOfService() {
 
       <section style={{ marginTop: 28 }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
-          19. AI Safety and User Responsibility
+          20. AI Safety and User Responsibility
         </h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           RealLearn includes automated safety filters, but no automated system is perfect. You agree
@@ -278,7 +298,7 @@ export default function TermsOfService() {
 
       <section style={{ marginTop: 28 }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
-          20. Privacy Rights and Compliance
+          21. Privacy Rights and Compliance
         </h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           Your privacy rights are described in our Privacy Policy, including rights available under

@@ -20,8 +20,25 @@ export default function PrivacyPolicy() {
         Privacy Policy
       </h2>
       <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
-        Last updated: July 7, 2026 (version 1.5)
+        Last updated: July 7, 2026 (version 2.0)
       </p>
+
+      <section style={{ marginBottom: 28 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>Who We Are (Data Controller)</h3>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+          RealLearn (&quot;RealLearn&quot;, &quot;we&quot;, &quot;us&quot;) is the data controller /
+          data fiduciary responsible for the personal data described in this policy. For all privacy,
+          data-protection, and grievance matters — including requests to exercise your rights under
+          the GDPR, the California Consumer Privacy Act (as amended by the CPRA), or India&apos;s
+          Digital Personal Data Protection Act, 2023 (DPDP Act) — you can reach our privacy contact
+          and designated grievance officer at{" "}
+          <a href="mailto:esamzai365@gmail.com" style={{ color: "var(--accent)" }}>
+            esamzai365@gmail.com
+          </a>
+          . We aim to acknowledge grievances promptly and respond within the timelines required by
+          applicable law.
+        </p>
+      </section>
 
       <section style={{ marginBottom: 28 }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>1. What RealLearn Is</h3>
@@ -55,7 +72,8 @@ export default function PrivacyPolicy() {
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Consent Records:</strong> Timestamps of when you accepted our Privacy Policy
-            (version 1.5), Terms of Service (version 1.5), and cookie consent.
+            (version 2.0), Terms of Service (version 2.0), and cookie/analytics consent, together
+            with the policy version and your device IP and User-Agent, kept as proof of consent.
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Cached Lessons (temporary, not linked to you):</strong> To make the Service
@@ -252,22 +270,47 @@ export default function PrivacyPolicy() {
 
       <section style={{ marginBottom: 28 }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>9. Data Retention</h3>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 8 }}>
+          We keep personal data only as long as needed for the purpose it was collected:
+        </p>
+        <ul style={{ fontSize: 14, color: "var(--text-secondary)", paddingLeft: 20, margin: "0 0 8px" }}>
+          <li style={{ marginBottom: 4 }}>
+            <strong>Account &amp; consent records</strong> (email, Clerk ID, consent timestamps, IP,
+            User-Agent) — for as long as your account is active, and deleted from our servers within
+            30 days of account deletion.
+          </li>
+          <li style={{ marginBottom: 4 }}>
+            <strong>Moderation logs</strong> (pseudonymous account identifier + reason for a blocked
+            input or flagged response) — retained for abuse prevention and deleted together with your
+            other server-side data when you delete your account; unlinked/aggregate safety metrics
+            may be retained longer.
+          </li>
+          <li style={{ marginBottom: 4 }}>
+            <strong>Cached lessons and read-aloud audio</strong> (not linked to your identity) —
+            expire automatically, typically within a few hours (lessons) or up to 24 hours (audio).
+          </li>
+          <li>
+            <strong>Locally-stored data</strong> (saved lessons, preferences, learning progress) —
+            remains on your device until you clear it or use &quot;Delete My Data&quot;.
+          </li>
+        </ul>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
-          We retain your account data (email, consent records) for as long as your account is active.
-          When you delete your account, we delete your data from our servers within 30 days, except
-          where retention is required by law or for legitimate business purposes (e.g., fraud
-          prevention, security). Anonymously cached lessons expire and are deleted automatically,
-          typically within a few hours of being generated. Saved lessons stored in your
-          browser&apos;s localStorage remain until
-          you clear them or use the &quot;Delete My Data&quot; feature.
+          We may retain limited data beyond these periods only where required by law or for the
+          establishment, exercise, or defense of legal claims.
         </p>
       </section>
 
       <section style={{ marginBottom: 28 }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>10. International Transfers</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
-          Your data may be processed in countries other than your own. We ensure appropriate
-          safeguards are in place for any international data transfers.
+          RealLearn relies on global service providers (including Clerk, Cloudflare, Microsoft,
+          Google, MongoDB Atlas, and Serper), so your data may be processed in countries other than
+          your own, including the United States. Where personal data is transferred out of the
+          EEA, UK, or other regions with transfer restrictions, we rely on lawful transfer
+          mechanisms — such as the European Commission&apos;s Standard Contractual Clauses (and the
+          UK Addendum), adequacy decisions where available, and the safeguards our processors
+          themselves maintain. You may contact us to ask about the safeguards applicable to a
+          specific transfer.
         </p>
       </section>
 
@@ -390,6 +433,105 @@ export default function PrivacyPolicy() {
           data breach affecting your information, we will investigate promptly, take containment and
           remediation actions, and provide legally required notifications to users and regulators
           within applicable timelines.
+        </p>
+      </section>
+
+      <section style={{ marginTop: 28 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
+          19. Children&apos;s Privacy
+        </h3>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 8 }}>
+          RealLearn is intended for learners aged 13 and older, and our content covers school-level
+          topics. We do not knowingly create accounts for, or collect personal data from, children
+          under 13 (or under the minimum digital-consent age in your jurisdiction — for example, 16
+          in parts of the EEA, or 18 for certain processing under India&apos;s DPDP Act without
+          verifiable parental consent).
+        </p>
+        <ul style={{ fontSize: 14, color: "var(--text-secondary)", paddingLeft: 20, margin: "0 0 8px" }}>
+          <li style={{ marginBottom: 4 }}>
+            If you are below the applicable minimum age, please use RealLearn only with the
+            involvement and consent of a parent or legal guardian.
+          </li>
+          <li style={{ marginBottom: 4 }}>
+            We do not knowingly serve targeted advertising to children and do not sell or
+            &quot;share&quot; children&apos;s personal information.
+          </li>
+          <li>
+            Parents or guardians who believe a child has provided us personal data without proper
+            consent may contact us to have it reviewed and deleted, and we will act promptly.
+          </li>
+        </ul>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+          This section supports our obligations under laws such as the U.S. Children&apos;s Online
+          Privacy Protection Act (COPPA), the GDPR provisions on children&apos;s data, and the
+          verifiable-parental-consent requirements of India&apos;s DPDP Act.
+        </p>
+      </section>
+
+      <section style={{ marginTop: 28 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
+          20. Your California Privacy Rights (CCPA/CPRA)
+        </h3>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 8 }}>
+          If you are a California resident, you have the right to know what personal information we
+          collect, to access and delete it, to correct inaccuracies, and to limit the use of
+          sensitive personal information — and the right not to be discriminated against for
+          exercising these rights. The categories of personal information we collect are described
+          in Section 2 (identifiers such as email and Clerk ID; internet/device information such as
+          IP and User-Agent; and usage/education information such as questions, scores, and
+          preferences), collected for the purposes in Section 3.
+        </p>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 8 }}>
+          <strong>We do not sell your personal information, and we do not &quot;share&quot; it for
+          cross-context behavioral advertising</strong>, as those terms are defined under the CPRA.
+          We use Google Analytics only with your consent and with IP anonymization enabled. Because
+          we do not sell or share personal information, there is nothing to opt out of in that
+          sense; you can nonetheless withdraw analytics consent at any time from Settings →
+          Privacy, and we honor browser-based opt-out signals such as the Global Privacy Control
+          (GPC) as a valid request to not sell or share.
+        </p>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+          You (or an authorized agent) may exercise these rights using the in-product
+          &quot;Export My Data&quot; and &quot;Delete My Data&quot; tools or by contacting us; we
+          will verify requests through your authenticated account.
+        </p>
+      </section>
+
+      <section style={{ marginTop: 28 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
+          21. India — Digital Personal Data Protection Act, 2023
+        </h3>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 8 }}>
+          If you are in India, we process your personal data as a Data Fiduciary on the basis of
+          your consent and for the legitimate uses permitted under the DPDP Act. You have the right
+          to access, correct, and erase your personal data, to withdraw consent, to nominate another
+          person to exercise your rights in the event of death or incapacity, and to a readily
+          available grievance-redressal mechanism.
+        </p>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+          <strong>Grievance Officer:</strong> you may raise any grievance regarding the processing
+          of your personal data by writing to our grievance officer at{" "}
+          <a href="mailto:esamzai365@gmail.com" style={{ color: "var(--accent)" }}>
+            esamzai365@gmail.com
+          </a>
+          . If your concern is not resolved, you may escalate it to the Data Protection Board of
+          India. Where you are below 18, processing requires verifiable consent from a parent or
+          lawful guardian, and we do not undertake tracking, behavioral monitoring, or targeted
+          advertising directed at children.
+        </p>
+      </section>
+
+      <section style={{ marginTop: 28 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
+          22. Automated Content Generation &amp; Moderation
+        </h3>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+          Lessons are produced by an automated AI system, and both your inputs and the generated
+          outputs pass through automated safety filters and AI-based moderation before or shortly
+          after they are shown. These processes are used solely to generate educational content and
+          to keep the Service safe — they do not make legal, financial, or similarly significant
+          decisions about you, and no automated profiling is used for advertising. You remain
+          responsible for verifying AI-generated information (see Section 5).
         </p>
       </section>
     </article>

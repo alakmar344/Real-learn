@@ -16,15 +16,16 @@ import {
 const ALLOWED_PATHS_WHEN_DECLINED = ["/sign-in", "/sign-up", "/legal"];
 
 const POLICY_CHANGES = [
-  "Clarified lawful bases for processing (consent, contract, and legitimate interests) and expanded regional privacy-rights coverage.",
-  "Added an explicit security incident response commitment, including legally required breach notifications.",
-  "Expanded transparency around optional analytics, voice processing, and temporary server-side caches.",
+  "Added a \"Who We Are\" section naming the data controller and a designated privacy / grievance contact.",
+  "Added dedicated sections on Children's Privacy (COPPA), California privacy rights (CCPA/CPRA, including Global Privacy Control support), and India's DPDP Act (grievance officer and Data Protection Board escalation).",
+  "Expanded data-retention details for each data category and clarified international transfers, including the processors involved and safeguards such as Standard Contractual Clauses.",
+  "Added a disclosure on automated AI content generation and moderation, confirming no legally significant automated decisions or advertising profiling.",
 ];
 
 const TERMS_CHANGES = [
-  "Added clearer AI safety and high-risk usage restrictions to reduce harmful misuse.",
-  "Added a dedicated compliance and privacy-rights section aligned with the Privacy Policy.",
-  "Updated legal versioning references and policy-notice commitments.",
+  "Added a dedicated \"Disclaimer of Warranties\" section (Service provided \"as is\" / \"as available\"), while preserving non-waivable statutory consumer rights.",
+  "Clarified eligibility for minors, including verifiable parental-consent requirements under laws such as COPPA and India's DPDP Act.",
+  "Renumbered later sections to accommodate the new warranty disclaimer.",
 ];
 
 export default function PreSignInConsent() {
