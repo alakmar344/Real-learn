@@ -1058,10 +1058,15 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
           }),
     ]);
     const newsContext = newsContextResult;
+    const trimmedNewsContext =
+      typeof newsContext === "string" && newsContext.length > 1500
+        ? newsContext.slice(0, 1500) + "\n\n[context truncated]"
+        : newsContext;
     console.log("[Serper] Context fetch end", {
       requestId,
       hasContext: Boolean(newsContext),
       contextLength: newsContext?.length ?? 0,
+      trimmedLength: trimmedNewsContext?.length ?? 0,
     });
 
     if (finished) return;
@@ -1087,8 +1092,8 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
     const userPrompt = `Question: ${question}
 Language: ${language}
 Level: ${level}${
-      newsContext
-        ? `\n\nREAL WORLD CONTEXT FOR PART 3 (use this — do not search):\n${newsContext}`
+      trimmedNewsContext
+        ? `\n\nREAL WORLD CONTEXT FOR PART 3 (use this — do not search):\n${trimmedNewsContext}`
         : ""
     }`;
 
