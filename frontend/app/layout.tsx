@@ -75,11 +75,11 @@ export default function RootLayout({
       </head>
       <body>
         <SkipToContent />
-        <GoogleAnalytics />
         <ClerkProvider afterSignOutUrl="/">
           <ThemeApplier />
           <AppShell>{children}</AppShell>
           <ToastContainer />
+          <GoogleAnalytics />
           <CookieConsent />
           <PreSignInConsent />
         </ClerkProvider>
