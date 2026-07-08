@@ -9,6 +9,7 @@ import {
   CURRENT_TERMS_VERSION,
   isConsentCurrent,
   readLegalConsent,
+  syncLegalConsentToBackend,
   writeLegalConsent,
   type LegalConsentState,
 } from "@/lib/legalConsent";
@@ -101,6 +102,23 @@ export default function PreSignInConsent() {
               privacyVersion: CURRENT_PRIVACY_VERSION,
               termsVersion: CURRENT_TERMS_VERSION,
             });
+            setShowConsent(false);
+          } else if (parsed && isConsentCurrent(parsed)) {
+            // The local record is ALREADY current (the user accepted v2.0 of
+            // the PP/ToS in the pre-sign-in modal while anonymous, then just
+            // signed in). The DB has no record yet because that anonymous save
+            // couldn't POST without auth. Tie that EXISTING explicit consent to
+            // the account instead of re-prompting for the same version.
+            const ok = await syncLegalConsentToBackend(getToken, parsed);
+            if (ok && user?.id) {
+              writeLegalConsent({
+                accepted: true,
+                timestamp: parsed.timestamp,
+                privacyVersion: parsed.privacyVersion,
+                termsVersion: parsed.termsVersion,
+                syncedClerkId: user.id,
+              });
+            }
             setShowConsent(false);
           } else if (parsed?.accepted) {
             setShowReacceptConsent(true);
