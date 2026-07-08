@@ -35,24 +35,32 @@ export default function CookieConsent() {
     let cancelled = false;
 
     const evaluate = async () => {
-      // Signed-in users: the DB record is the source of truth and is queried
-      // FIRST. This survives a localStorage wipe / re-login (where the local
-      // "cookie acceptance is gone") so the banner doesn't wrongly re-prompt
-      // someone who already accepted, and so analytics can be re-enabled from
-      // the server record.
+      // SIGNED-IN: the DB record is the single source of truth. The sync
+      // direction is explicit and GDPR-safe:
+      //   • DB → localStorage: we MIRROR the server record locally so the
+      //     analytics gate / settings page (which read local state) stay in
+      //     sync. This never changes consent — it only copies it down.
+      //   • localStorage → DB: ONLY happens on an explicit user click in
+      //     saveConsent() (POST /api/agreement). A pre-login localStorage
+      //     acceptance is NEVER auto-promoted into the DB — that would be an
+      //     illegal auto opt-in. So signing in with a local "accepted" but no
+      //     DB record correctly re-prompts for explicit, account-tied consent.
+      // Queried FIRST so a localStorage wipe / re-login ("cookie acceptance is
+      // gone") can't wrongly re-prompt someone whose server record is current,
+      // and so analytics can be re-enabled from the server record.
+      // DEFAULT IS DENY: any missing/stale/failed DB lookup → show the banner.
       if (isSignedIn) {
         const db = await fetchCookieConsentStatus(getToken);
         if (cancelled) return;
         if (db && db.accepted && db.cookieVersion === CURRENT_COOKIE_VERSION) {
-          // Mirror the server record into localStorage so the analytics gate
-          // and settings page (which still read local state) stay in sync.
+          // Mirror the server record into localStorage (copy down, not up).
           const local = readCookieConsent();
           if (!local || local.cookieVersion !== CURRENT_COOKIE_VERSION) {
             writeCookieConsent(true);
           }
           setShowBanner(false);
         } else {
-          // No current server acceptance → prompt.
+          // No current server acceptance → prompt (deny until explicit).
           setShowBanner(true);
         }
         return;
