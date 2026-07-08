@@ -72,16 +72,17 @@ export default function GoogleAnalytics() {
       return;
     }
 
-    // hasAnalyticsConsent() is versioned: an acceptance made under an older
-    // cookie policy no longer counts, so GA stays off until re-consent.
-    if (hasAnalyticsConsent()) {
-      loadGtag();
-    }
-
-    // Signed-in users may have accepted on a different device, or had their
-    // localStorage wiped on re-login (the "cookie acceptance is gone" case).
-    // Query the DB FIRST and honour a current server-side acceptance.
+    // Consent gating — opt-IN by default for non-essential analytics (GDPR /
+    // ePrivacy). The decision source depends on auth state:
+    //
+    //  • Anonymous: only localStorage (a pre-login cookie choice) applies.
+    //  • Signed-in: ONLY the server-side DB record is valid. A pre-login
+    //    localStorage acceptance is NOT tied to this account and must never
+    //    auto-enable analytics — we deliberately ignore hasAnalyticsConsent()
+    //    here and gate solely on the DB record.
     if (isSignedIn) {
+      // Query the DB FIRST. On any failure (network error, no record yet,
+      // stale version) we DENY by default — never load analytics.
       fetchCookieConsentStatus(getToken)
         .then((db) => {
           if (db?.accepted && db.cookieVersion === CURRENT_COOKIE_VERSION) {
@@ -89,8 +90,12 @@ export default function GoogleAnalytics() {
           }
         })
         .catch(() => {
-          /* best-effort — localStorage path already decided above */
+          /* deny by default — do not load analytics */
         });
+    } else if (hasAnalyticsConsent()) {
+      // Versioned: an acceptance made under an older cookie policy no longer
+      // counts, so GA stays off until re-consent.
+      loadGtag();
     }
 
     const handleConsent = () => loadGtag();
