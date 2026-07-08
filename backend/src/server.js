@@ -187,6 +187,12 @@ const SPEECH_LANG_TO_VOICE = {
 const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "2.0";
 const TERMS_OF_SERVICE_VERSION = process.env.TERMS_OF_SERVICE_VERSION || "2.0";
 const COOKIE_POLICY_VERSION = process.env.COOKIE_POLICY_VERSION || "2.0";
+const DEFAULT_MODERATION_LOG_TTL_MS = 90 * 24 * 60 * 60 * 1000; // 90 days
+const configuredModerationLogTtlMs = Number(process.env.MODERATION_LOG_TTL_MS);
+const MODERATION_LOG_TTL_MS =
+  Number.isFinite(configuredModerationLogTtlMs) && configuredModerationLogTtlMs > 0
+    ? configuredModerationLogTtlMs
+    : DEFAULT_MODERATION_LOG_TTL_MS;
 
 // ── Input validation limits (security: bound prompt size and lock free-text
 // fields that are interpolated into the LLM prompt to known values) ──
@@ -291,10 +297,28 @@ function recordLessonResult(success) {
   }
 }
 
+let moderationLogTtlIndexEnsured = false;
+async function ensureModerationLogTtlIndex(db) {
+  if (moderationLogTtlIndexEnsured) return;
+  moderationLogTtlIndexEnsured = true;
+  try {
+    await db
+      .collection("moderationLogs")
+      .createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+  } catch (error) {
+    moderationLogTtlIndexEnsured = false;
+    console.warn("[moderation] Failed to ensure TTL index", error?.message);
+  }
+}
+
 async function logModerationEvent(event) {
   try {
     const db = await getDb();
-    await db.collection("moderationLogs").insertOne(event);
+    await ensureModerationLogTtlIndex(db);
+    await db.collection("moderationLogs").insertOne({
+      ...event,
+      expiresAt: new Date(Date.now() + MODERATION_LOG_TTL_MS),
+    });
   } catch (error) {
     console.error("[moderation] Failed to log moderation event", error);
   }
@@ -925,14 +949,10 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
       clerkId: req.auth?.userId || null,
       reason: inputFilter.reason,
       type: "user-input-blocked",
+      question,
     };
     console.warn("[moderation] Banned input blocked", moderationEvent);
-    try {
-      const db = await getDb();
-      await db.collection("moderationLogs").insertOne(moderationEvent);
-    } catch (error) {
-      console.error("[moderation] Failed to log moderation event", error);
-    }
+    await logModerationEvent(moderationEvent);
     return res.status(400).json({ error: inputFilter.reason });
   }
 
@@ -1072,6 +1092,7 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
         clerkId: req.auth?.userId || null,
         reason: inputModeration.reason,
         type: "user-input-moderated",
+        question,
       };
       console.warn("[moderation] Input blocked by LLM moderation", moderationEvent);
       await logModerationEvent(moderationEvent);
@@ -1145,14 +1166,10 @@ Level: ${level}${
         clerkId: req.auth?.userId || null,
         reason: responseFilter.reason,
         type: "ai-response-blocked",
+        raw,
       };
       console.warn("[moderation] Banned AI response blocked", moderationEvent);
-      try {
-        const db = await getDb();
-        await db.collection("moderationLogs").insertOne(moderationEvent);
-      } catch (error) {
-        console.error("[moderation] Failed to log moderation event", error);
-      }
+      await logModerationEvent(moderationEvent);
       sendEvent("error", {
         error: responseFilter.reason || "The generated content was flagged. Please try a different question.",
       });
@@ -1219,6 +1236,7 @@ Level: ${level}${
           clerkId: req.auth?.userId || null,
           reason: fastInputModeration.reason,
           type: "user-input-moderated",
+          question,
         };
         console.warn("[moderation] Fast-mode input blocked by LLM moderation", moderationEvent);
         await logModerationEvent(moderationEvent);
@@ -1244,6 +1262,7 @@ Level: ${level}${
             clerkId: req.auth?.userId || null,
             reason: verdict.reason,
             type: "ai-response-moderated-posthoc",
+            raw,
           }).catch(() => {});
         }
       }).catch(() => {});
@@ -1257,6 +1276,7 @@ Level: ${level}${
           clerkId: req.auth?.userId || null,
           reason: outputModeration.reason,
           type: "ai-response-moderated",
+          raw,
         };
         console.warn("[moderation] AI response blocked by LLM moderation", moderationEvent);
         await logModerationEvent(moderationEvent);
