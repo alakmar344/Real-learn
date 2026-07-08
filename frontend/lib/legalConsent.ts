@@ -142,3 +142,46 @@ export function isConsentCurrent(state: LegalConsentState | null): boolean {
       state.termsVersion === CURRENT_TERMS_VERSION
   );
 }
+
+/**
+ * Sync a locally-stored legal-consent acceptance up to the backend so it is
+ * tied to the authenticated account (the DB is the server-side source of
+ * truth). Used after first sign-in: a user who accepted the pre-sign-in
+ * consent while anonymous has a current local record but no DB record yet
+ * (the anonymous save couldn't POST, there was no auth), so this persists
+ * that EXISTING explicit consent to their account instead of re-prompting.
+ *
+ * Best-effort: returns true on success. The backend derives privacyVersion /
+ * termsVersion from its own constants, so we only forward accepted + timestamp.
+ */
+export async function syncLegalConsentToBackend(
+  getToken: () => Promise<string | null>,
+  state: LegalConsentState | null
+): Promise<boolean> {
+  if (!state?.accepted) return false;
+  try {
+    const backendUrl =
+      process.env.NEXT_PUBLIC_BACKEND_URL || "https://real-learn.onrender.com";
+    const token = await getToken();
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    const res = await fetch(`${backendUrl}/api/legal-consent`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        accepted: true,
+        timestamp: state.timestamp,
+        privacyVersion: state.privacyVersion,
+        termsVersion: state.termsVersion,
+      }),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
