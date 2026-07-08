@@ -27,6 +27,49 @@ export interface CookieConsentState {
   cookieVersion?: string;
 }
 
+export interface CookieConsentStatus {
+  accepted: boolean;
+  cookieVersion?: string | null;
+}
+
+/**
+ * For signed-in users the server-side cookie-consent record is the source of
+ * truth (it survives device changes / localStorage wipes / re-login). This is
+ * the "new query to db" the cookie banner and analytics gate use INSTEAD of
+ * relying solely on localStorage. Returns null when the request fails or the
+ * user is anonymous (no server record possible), so callers fall back to
+ * localStorage.
+ */
+export async function fetchCookieConsentStatus(
+  getToken: () => Promise<string | null>
+): Promise<CookieConsentStatus | null> {
+  try {
+    const backendUrl =
+      process.env.NEXT_PUBLIC_BACKEND_URL || "https://real-learn.onrender.com";
+    const token = await getToken();
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${backendUrl}/api/agreement/status`, {
+      method: "GET",
+      headers,
+    });
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    return {
+      accepted: Boolean(data.accepted),
+      cookieVersion: data.cookieVersion ?? null,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export function readCookieConsent(): CookieConsentState | null {
   const stored = safeGetItem(COOKIE_CONSENT_KEY);
   if (!stored) return null;

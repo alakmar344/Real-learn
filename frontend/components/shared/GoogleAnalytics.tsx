@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect } from "react";
+import { useAuth } from "@clerk/nextjs";
 import {
   COOKIE_CONSENT_ACCEPTED_EVENT,
   COOKIE_CONSENT_REVOKED_EVENT,
+  CURRENT_COOKIE_VERSION,
+  fetchCookieConsentStatus,
   hasAnalyticsConsent,
 } from "@/lib/legalConsent";
 
@@ -58,6 +61,8 @@ function disableGtag() {
 }
 
 export default function GoogleAnalytics() {
+  const { isSignedIn, getToken } = useAuth();
+
   useEffect(() => {
     // Respect Global Privacy Control (GPC) signal — if the browser sends it,
     // never load analytics regardless of stored consent.
@@ -73,6 +78,21 @@ export default function GoogleAnalytics() {
       loadGtag();
     }
 
+    // Signed-in users may have accepted on a different device, or had their
+    // localStorage wiped on re-login (the "cookie acceptance is gone" case).
+    // Query the DB FIRST and honour a current server-side acceptance.
+    if (isSignedIn) {
+      fetchCookieConsentStatus(getToken)
+        .then((db) => {
+          if (db?.accepted && db.cookieVersion === CURRENT_COOKIE_VERSION) {
+            loadGtag();
+          }
+        })
+        .catch(() => {
+          /* best-effort — localStorage path already decided above */
+        });
+    }
+
     const handleConsent = () => loadGtag();
     const handleRevoke = () => disableGtag();
 
@@ -82,7 +102,7 @@ export default function GoogleAnalytics() {
       window.removeEventListener(COOKIE_CONSENT_ACCEPTED_EVENT, handleConsent);
       window.removeEventListener(COOKIE_CONSENT_REVOKED_EVENT, handleRevoke);
     };
-  }, []);
+  }, [isSignedIn, getToken]);
 
   return null;
 }

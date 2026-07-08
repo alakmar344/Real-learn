@@ -186,6 +186,7 @@ const SPEECH_LANG_TO_VOICE = {
 
 const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "2.0";
 const TERMS_OF_SERVICE_VERSION = process.env.TERMS_OF_SERVICE_VERSION || "2.0";
+const COOKIE_POLICY_VERSION = process.env.COOKIE_POLICY_VERSION || "2.0";
 
 // ── Input validation limits (security: bound prompt size and lock free-text
 // fields that are interpolated into the LLM prompt to known values) ──
@@ -502,6 +503,7 @@ app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
         timestamp: parsedTimestamp,
         privacyVersion: PRIVACY_POLICY_VERSION,
         termsVersion: TERMS_OF_SERVICE_VERSION,
+        cookieVersion: COOKIE_POLICY_VERSION,
         updatedAt: new Date(),
       },
       $setOnInsert: {
@@ -518,6 +520,38 @@ app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
   } catch (error) {
     console.error("[api/agreement] Failed to save consent", error);
     res.status(500).json({ error: "Failed to save consent" });
+  }
+});
+
+// Get the user's current cookie/analytics consent status.
+// For signed-in users the server-side record is the source of truth — it
+// survives a device change, a cookie/localStorage wipe, or a re-login, and is
+// what the frontend queries FIRST (anonymous visitors have no server record
+// and fall back to localStorage). Returning the stored cookieVersion lets the
+// client re-prompt when the cookie policy is bumped.
+app.get("/api/agreement/status", rateLimit, requireAuth, async (req, res) => {
+  try {
+    const clerkId = req.auth?.userId;
+    if (!clerkId) {
+      return res.status(400).json({ error: "Could not determine the authenticated user" });
+    }
+
+    const db = await getDb();
+    const agreement = await db
+      .collection("agreements")
+      .findOne({ clerkId, type: "cookie-consent" });
+
+    if (agreement) {
+      res.json({
+        accepted: agreement.accepted,
+        cookieVersion: agreement.cookieVersion || null,
+      });
+    } else {
+      res.json({ accepted: false });
+    }
+  } catch (error) {
+    console.error("[api/agreement/status] Failed to fetch status", error);
+    res.status(500).json({ error: "Failed to fetch consent status" });
   }
 });
 

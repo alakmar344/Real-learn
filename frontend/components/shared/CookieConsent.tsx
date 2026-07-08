@@ -8,6 +8,7 @@ import {
   COOKIE_CONSENT_REVOKED_EVENT,
   COOKIE_SETTINGS_OPEN_EVENT,
   CURRENT_COOKIE_VERSION,
+  fetchCookieConsentStatus,
   readCookieConsent,
   writeCookieConsent,
 } from "@/lib/legalConsent";
@@ -31,24 +32,53 @@ export default function CookieConsent() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // readCookieConsent uses safeGetItem: raw localStorage access throws (and
-    // unmounted the whole app) when storage is blocked — private mode,
-    // "Block all cookies".
-    const stored = readCookieConsent();
-    // No choice yet, or a choice made under an older cookie policy → prompt.
-    if (!stored || stored.cookieVersion !== CURRENT_COOKIE_VERSION) {
-      setShowBanner(true);
-    } else {
-      setShowBanner(false);
-    }
+    let cancelled = false;
+
+    const evaluate = async () => {
+      // Signed-in users: the DB record is the source of truth and is queried
+      // FIRST. This survives a localStorage wipe / re-login (where the local
+      // "cookie acceptance is gone") so the banner doesn't wrongly re-prompt
+      // someone who already accepted, and so analytics can be re-enabled from
+      // the server record.
+      if (isSignedIn) {
+        const db = await fetchCookieConsentStatus(getToken);
+        if (cancelled) return;
+        if (db && db.accepted && db.cookieVersion === CURRENT_COOKIE_VERSION) {
+          // Mirror the server record into localStorage so the analytics gate
+          // and settings page (which still read local state) stay in sync.
+          const local = readCookieConsent();
+          if (!local || local.cookieVersion !== CURRENT_COOKIE_VERSION) {
+            writeCookieConsent(true);
+          }
+          setShowBanner(false);
+        } else {
+          // No current server acceptance → prompt.
+          setShowBanner(true);
+        }
+        return;
+      }
+
+      // Anonymous visitors have no server record — fall back to localStorage.
+      // readCookieConsent uses safeGetItem: raw localStorage access throws
+      // (and unmounted the whole app) when storage is blocked — private mode,
+      // "Block all cookies".
+      const stored = readCookieConsent();
+      // No choice yet, or a choice made under an older cookie policy → prompt.
+      setShowBanner(!stored || stored.cookieVersion !== CURRENT_COOKIE_VERSION);
+    };
+
+    evaluate();
 
     const openSettings = () => setShowBanner(true);
     window.addEventListener(COOKIE_SETTINGS_OPEN_EVENT, openSettings);
-    return () => window.removeEventListener(COOKIE_SETTINGS_OPEN_EVENT, openSettings);
+    return () => {
+      cancelled = true;
+      window.removeEventListener(COOKIE_SETTINGS_OPEN_EVENT, openSettings);
+    };
     // Re-check when auth state changes: after account deletion + re-login,
     // localStorage is cleared but this component may already be mounted.
     // isSignedIn changing from false → true triggers a fresh check.
-  }, [isSignedIn]);
+  }, [isSignedIn, getToken]);
 
   const saveConsent = async (accepted: boolean) => {
     setLoading(true);
