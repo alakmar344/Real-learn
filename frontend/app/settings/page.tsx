@@ -118,7 +118,19 @@ export default function SettingsPage() {
       }
 
       try {
-        localStorage.clear();
+        const REALLEARN_KEYS = [
+          "reallearn-preferences",
+          "reallearn-journey",
+          "reallearn-progress",
+          "reallearn-saved-journeys",
+          "reallearn-legal-consent",
+          "reallearn-cookie-consent",
+          "reallearn-theme",
+          "reallearn-preferences-onboarding",
+        ];
+        REALLEARN_KEYS.forEach((k) => {
+          try { localStorage.removeItem(k); } catch { /* ignore */ }
+        });
       } catch {
         // ignore storage errors
       }

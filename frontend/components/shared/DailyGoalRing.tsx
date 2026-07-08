@@ -25,7 +25,11 @@ export default function DailyGoalRing({
   const offset = c - pct * c;
 
   return (
-    <div style={{ position: "relative", width: size, height: size, flexShrink: 0 }}>
+    <div
+      role="img"
+      aria-label={`${value} of ${goal} daily parts completed`}
+      style={{ position: "relative", width: size, height: size, flexShrink: 0 }}
+    >
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--border-subtle)" strokeWidth={stroke} />
         <circle

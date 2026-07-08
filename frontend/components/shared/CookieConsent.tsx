@@ -168,13 +168,13 @@ export default function CookieConsent() {
             onClick={() => saveConsent(false)}
             disabled={loading}
             style={{
-              border: "1px solid var(--border-default)",
+              border: "2px solid var(--border-default)",
               borderRadius: "var(--radius-md)",
               padding: "8px 16px",
               fontSize: 13,
-              fontWeight: 500,
-              color: "var(--text-secondary)",
-              background: "transparent",
+              fontWeight: 600,
+              color: "var(--text-primary)",
+              background: "var(--bg-surface)",
               cursor: loading ? "not-allowed" : "pointer",
               opacity: loading ? 0.6 : 1,
               minHeight: 44,
@@ -186,7 +186,7 @@ export default function CookieConsent() {
             onClick={() => saveConsent(true)}
             disabled={loading}
             style={{
-              border: "none",
+              border: "2px solid var(--accent)",
               borderRadius: "var(--radius-md)",
               padding: "8px 16px",
               fontSize: 13,

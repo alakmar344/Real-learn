@@ -7,7 +7,7 @@ import {
   hasAnalyticsConsent,
 } from "@/lib/legalConsent";
 
-const GA_MEASUREMENT_ID = "G-ECZSC4ZVCL";
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID || "G-ECZSC4ZVCL";
 
 function loadGtag() {
   if (typeof window === "undefined") return;
@@ -59,6 +59,14 @@ function disableGtag() {
 
 export default function GoogleAnalytics() {
   useEffect(() => {
+    // Respect Global Privacy Control (GPC) signal — if the browser sends it,
+    // never load analytics regardless of stored consent.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((navigator as any).globalPrivacyControl) {
+      disableGtag();
+      return;
+    }
+
     // hasAnalyticsConsent() is versioned: an acceptance made under an older
     // cookie policy no longer counts, so GA stays off until re-consent.
     if (hasAnalyticsConsent()) {

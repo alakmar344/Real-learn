@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 
 interface Props {
   open: boolean;
@@ -24,6 +25,7 @@ export default function ConfirmModal({
   onClose,
 }: Props) {
   const cancelRef = useRef<HTMLButtonElement>(null);
+  const trapRef = useFocusTrap<HTMLDivElement>(open);
 
   // Move focus INTO the dialog on open — otherwise focus stays on the
   // (now-hidden) trigger button behind the scrim, keyboard Enter re-clicks
@@ -61,6 +63,7 @@ export default function ConfirmModal({
 
   return (
     <div
+      ref={trapRef}
       role="dialog"
       aria-modal="true"
       aria-label={title}

@@ -23,7 +23,7 @@ export default function ExampleQuestions() {
   return (
     <p
       key={index}
-      aria-live="polite"
+      aria-live="off"
       style={{
         fontSize: 12,
         color: "var(--text-tertiary)",
