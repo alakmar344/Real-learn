@@ -152,11 +152,14 @@ export function isConsentCurrent(state: LegalConsentState | null): boolean {
  * that EXISTING explicit consent to their account instead of re-prompting.
  *
  * Best-effort: returns true on success. The backend derives privacyVersion /
- * termsVersion from its own constants, so we only forward accepted + timestamp.
+ * termsVersion from its own constants, but it relies on the request body for
+ * the email (Clerk JWTs carry no email claim), so we forward `email` here —
+ * otherwise the consent record is stored with an empty email.
  */
 export async function syncLegalConsentToBackend(
   getToken: () => Promise<string | null>,
-  state: LegalConsentState | null
+  state: LegalConsentState | null,
+  email = ""
 ): Promise<boolean> {
   if (!state?.accepted) return false;
   try {
@@ -176,6 +179,7 @@ export async function syncLegalConsentToBackend(
       body: JSON.stringify({
         accepted: true,
         timestamp: state.timestamp,
+        email,
         privacyVersion: state.privacyVersion,
         termsVersion: state.termsVersion,
       }),

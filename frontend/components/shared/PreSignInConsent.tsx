@@ -109,7 +109,11 @@ export default function PreSignInConsent() {
             // signed in). The DB has no record yet because that anonymous save
             // couldn't POST without auth. Tie that EXISTING explicit consent to
             // the account instead of re-prompting for the same version.
-            const ok = await syncLegalConsentToBackend(getToken, parsed);
+            const email =
+              user?.primaryEmailAddress?.emailAddress ||
+              user?.emailAddresses?.[0]?.emailAddress ||
+              "";
+            const ok = await syncLegalConsentToBackend(getToken, parsed, email);
             if (ok && user?.id) {
               writeLegalConsent({
                 accepted: true,
