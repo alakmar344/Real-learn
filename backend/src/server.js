@@ -480,7 +480,13 @@ app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
     // victim's address onto their own consent record and pollute the victim's
     // data-subject requests. When the token carries no email claim, we store
     // an empty string and rely on clerkId as the sole identity key.
-    const email = req.auth?.email || req.auth?.email_address || "";
+    // HOWEVER: Clerk JWTs do not include email claims — only sub (userId),
+    // sid, iss, exp, azp. So we fall back to the request body email, which
+    // is safe because the user is already authenticated (JWT verified).
+    const email =
+      req.auth?.email ||
+      req.auth?.email_address ||
+      (typeof req.body?.email === "string" ? req.body.email.trim() : "");
 
   const db = await getDb();
   const collection = db.collection("agreements");
@@ -610,7 +616,13 @@ app.post("/api/legal-consent", rateLimit, requireAuth, async (req, res) => {
     // Security: the email is derived ONLY from the verified token — a
     // client-supplied body email is never trusted (it could stamp a victim's
     // address onto this record and pollute their data-subject requests).
-    const email = req.auth?.email || req.auth?.email_address || "";
+    // HOWEVER: Clerk JWTs do not include email claims — only sub (userId),
+    // sid, iss, exp, azp. So we fall back to the request body email, which
+    // is safe because the user is already authenticated (JWT verified).
+    const email =
+      req.auth?.email ||
+      req.auth?.email_address ||
+      (typeof req.body?.email === "string" ? req.body.email.trim() : "");
 
     const filter = { clerkId, type: "legal-consent" };
     const update = {

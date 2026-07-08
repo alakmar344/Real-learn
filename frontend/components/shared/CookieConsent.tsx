@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
 import {
   COOKIE_CONSENT_ACCEPTED_EVENT,
   COOKIE_CONSENT_REVOKED_EVENT,
@@ -26,6 +26,7 @@ import {
  */
 export default function CookieConsent() {
   const { isSignedIn, getToken } = useAuth();
+  const { user } = useUser();
   const [showBanner, setShowBanner] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -37,12 +38,17 @@ export default function CookieConsent() {
     // No choice yet, or a choice made under an older cookie policy → prompt.
     if (!stored || stored.cookieVersion !== CURRENT_COOKIE_VERSION) {
       setShowBanner(true);
+    } else {
+      setShowBanner(false);
     }
 
     const openSettings = () => setShowBanner(true);
     window.addEventListener(COOKIE_SETTINGS_OPEN_EVENT, openSettings);
     return () => window.removeEventListener(COOKIE_SETTINGS_OPEN_EVENT, openSettings);
-  }, []);
+    // Re-check when auth state changes: after account deletion + re-login,
+    // localStorage is cleared but this component may already be mounted.
+    // isSignedIn changing from false → true triggers a fresh check.
+  }, [isSignedIn]);
 
   const saveConsent = async (accepted: boolean) => {
     setLoading(true);
@@ -79,15 +85,20 @@ export default function CookieConsent() {
         headers["Authorization"] = `Bearer ${token}`;
       }
 
-      // Note: the backend derives identity (clerkId + email) exclusively from
-      // the verified token and records req.ip itself — the client only ever
-      // sends the choice and its timestamp.
+      // Note: the backend derives identity (clerkId) exclusively from
+      // the verified token and records req.ip itself — the client sends
+      // the choice, timestamp, and email (for the consent record).
+      const email =
+        user?.primaryEmailAddress?.emailAddress ||
+        user?.emailAddresses?.[0]?.emailAddress ||
+        "";
       const response = await fetch(`${backendUrl}/api/agreement`, {
         method: "POST",
         headers,
         body: JSON.stringify({
           accepted,
           timestamp: consent.timestamp,
+          email,
         }),
       });
 
