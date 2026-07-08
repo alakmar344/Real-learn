@@ -246,7 +246,7 @@ const HEARTBEAT_INTERVAL_MS =
   Number.isFinite(configuredHeartbeatIntervalMs) && configuredHeartbeatIntervalMs > 0
     ? Math.min(configuredHeartbeatIntervalMs, MAX_HEARTBEAT_INTERVAL_MS)
     : DEFAULT_HEARTBEAT_INTERVAL_MS;
-const DEFAULT_MAX_CONCURRENT_LESSON_REQUESTS = 3;
+const DEFAULT_MAX_CONCURRENT_LESSON_REQUESTS = 6;
 const DEFAULT_FAILURE_ALERT_THRESHOLD = 5;
 const configuredMaxConcurrentRequests = Number(process.env.MAX_CONCURRENT_LESSON_REQUESTS);
 const MAX_CONCURRENT_LESSON_REQUESTS =
@@ -1058,10 +1058,15 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
           }),
     ]);
     const newsContext = newsContextResult;
+    const trimmedNewsContext =
+      typeof newsContext === "string" && newsContext.length > 1500
+        ? newsContext.slice(0, 1500) + "\n\n[context truncated]"
+        : newsContext;
     console.log("[Serper] Context fetch end", {
       requestId,
       hasContext: Boolean(newsContext),
       contextLength: newsContext?.length ?? 0,
+      trimmedLength: trimmedNewsContext?.length ?? 0,
     });
 
     if (finished) return;
@@ -1087,8 +1092,8 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
     const userPrompt = `Question: ${question}
 Language: ${language}
 Level: ${level}${
-      newsContext
-        ? `\n\nREAL WORLD CONTEXT FOR PART 3 (use this — do not search):\n${newsContext}`
+      trimmedNewsContext
+        ? `\n\nREAL WORLD CONTEXT FOR PART 3 (use this — do not search):\n${trimmedNewsContext}`
         : ""
     }`;
 
@@ -1248,26 +1253,22 @@ Level: ${level}${
         }
       }).catch(() => {});
     } else {
-      const outputModeration = await outputModerationPromise;
-      if (finished) return;
-      if (!outputModeration.allowed) {
-        const moderationEvent = {
-          timestamp: new Date().toISOString(),
-          requestId,
-          clerkId: req.auth?.userId || null,
-          reason: outputModeration.reason,
-          type: "ai-response-moderated",
-        };
-        console.warn("[moderation] AI response blocked by LLM moderation", moderationEvent);
-        await logModerationEvent(moderationEvent);
-        sendEvent("error", {
-          error:
-            outputModeration.reason ||
-            "The generated content was flagged by our safety review. Please try a different question.",
-        });
-        recordLessonResult(false);
-        return;
-      }
+      outputModerationPromise.then((verdict) => {
+        if (!verdict.allowed) {
+          console.warn("[moderation] Explain-mode post-hoc block detected (response already sent)", {
+            requestId,
+            reason: verdict.reason,
+          });
+          deleteCachedLesson(cacheKey);
+          logModerationEvent({
+            timestamp: new Date().toISOString(),
+            requestId,
+            clerkId: req.auth?.userId || null,
+            reason: verdict.reason,
+            type: "ai-response-moderated-posthoc",
+          }).catch(() => {});
+        }
+      }).catch(() => {});
     }
 
     // Store the fully moderated + validated lesson so repeat requests are
