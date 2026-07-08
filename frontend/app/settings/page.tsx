@@ -12,6 +12,7 @@ import {
   COOKIE_CONSENT_ACCEPTED_EVENT,
   COOKIE_CONSENT_REVOKED_EVENT,
   COOKIE_SETTINGS_OPEN_EVENT,
+  fetchCookieConsentStatus,
   readCookieConsent,
 } from "@/lib/legalConsent";
 import LanguageSelector from "@/components/shared/LanguageSelector";
@@ -63,9 +64,20 @@ export default function SettingsPage() {
   const [cookieChoiceLabel, setCookieChoiceLabel] = useState("Not set");
 
   // Reflect the current cookie/analytics choice, live — including when it is
-  // changed via the banner this page can re-open.
+  // changed via the banner this page can re-open. For signed-in users the
+  // server-side DB record is the source of truth (it survives a localStorage
+  // wipe / re-login), so we query it first and fall back to localStorage.
   useEffect(() => {
-    const refresh = () => {
+    const refresh = async () => {
+      if (isSignedIn) {
+        const db = await fetchCookieConsentStatus(getToken);
+        if (db) {
+          setCookieChoiceLabel(
+            db.accepted ? "Analytics allowed" : "Analytics off"
+          );
+          return;
+        }
+      }
       const consent = readCookieConsent();
       setCookieChoiceLabel(
         consent == null ? "Not set" : consent.accepted ? "Analytics allowed" : "Analytics off"
@@ -82,7 +94,7 @@ export default function SettingsPage() {
       window.removeEventListener(COOKIE_CONSENT_REVOKED_EVENT, refresh);
       window.removeEventListener("focus", refresh);
     };
-  }, []);
+  }, [isSignedIn, getToken]);
 
   useEffect(() => {
     try {

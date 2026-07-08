@@ -60,15 +60,16 @@ export default function PreSignInConsent() {
       if (!isSignedIn && user === undefined) return;
       const parsed = readLegalConsent();
 
-      // BANDWIDTH: when the local record is accepted at the current versions,
-      // trust it and skip the backend status round-trip entirely. The backend
-      // is only consulted when the local record is missing or stale (e.g. a
-      // returning user on a new device).
-      if (!isSignedIn || isConsentCurrent(parsed)) {
+      // Anonymous visitors have no server record — rely on localStorage only.
+      if (!isSignedIn) {
         applyLocalRecord(parsed);
         return;
       }
 
+      // POLICY ACCEPTANCE QUERIES THE DB FIRST: for signed-in users the
+      // server-side record is the source of truth (it survives a new device,
+      // a localStorage wipe, or a re-login). Only when the DB lookup fails do
+      // we fall back to the local record.
       try {
         const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "https://real-learn.onrender.com";
         const token = await getToken();
