@@ -7,6 +7,7 @@ import ConfirmModal from "@/components/shared/ConfirmModal";
 import ThemeModal from "@/components/shared/ThemeModal";
 import { useLessonStore } from "@/store/lessonStore";
 import { useSavedJourneysStore } from "@/store/savedJourneysStore";
+import { useMounted } from "@/hooks/useMounted";
 import { SavedJourney } from "@/types";
 
 interface Props {
@@ -17,6 +18,7 @@ interface Props {
 export default function Sidebar({ open, onClose }: Props) {
   const router = useRouter();
   const { isLoaded, isSignedIn } = useAuth();
+  const mounted = useMounted();
 
   const { journeys, removeJourney } = useSavedJourneysStore();
 
@@ -29,7 +31,6 @@ export default function Sidebar({ open, onClose }: Props) {
   };
 
   const handleOpenJourney = (journey: SavedJourney) => {
-    console.log("[frontend][Sidebar] open journey", { id: journey.id });
     const loadJourney = useLessonStore.getState().loadJourney;
     loadJourney(journey);
     onClose();
@@ -121,7 +122,7 @@ export default function Sidebar({ open, onClose }: Props) {
             Saved lessons
           </p>
 
-          {journeys.length === 0 ? (
+          {(!mounted || journeys.length === 0) ? (
             <p
               style={{
                 margin: "8px 4px",
@@ -152,9 +153,12 @@ export default function Sidebar({ open, onClose }: Props) {
                       padding: "10px 34px 10px 10px",
                       cursor: "pointer",
                       display: "block",
+                      transition: "background var(--dur-fast) var(--ease-color)",
                     }}
                     onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-card-hover)")}
                     onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                    onFocus={(e) => (e.currentTarget.style.background = "var(--bg-card-hover)")}
+                    onBlur={(e) => (e.currentTarget.style.background = "transparent")}
                   >
                     <span
                       style={{

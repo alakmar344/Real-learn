@@ -84,7 +84,9 @@ function isRetryableNetworkGemmaError(error) {
 
 function isRetryableGemmaError(error) {
   if (error instanceof GemmaApiError) {
-    return error.status === 429 || error.status === 403 || (error.status >= 500 && error.status < 600);
+    // 429 = rate limit (transient), 5xx = server error (transient).
+    // 403 is an authorization error — retrying won't help.
+    return error.status === 429 || (error.status >= 500 && error.status < 600);
   }
   return isRetryableNetworkGemmaError(error);
 }
@@ -93,7 +95,7 @@ function isGemmaServiceUnavailableError(error) {
   return (
     error instanceof GemmaTimeoutError ||
     error instanceof GemmaCircuitOpenError ||
-    (error instanceof GemmaApiError && (error.status === 429 || error.status === 403 || error.status >= 500)) ||
+    (error instanceof GemmaApiError && (error.status === 429 || error.status >= 500)) ||
     isRetryableNetworkGemmaError(error)
   );
 }

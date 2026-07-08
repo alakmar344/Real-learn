@@ -11,6 +11,7 @@ interface SavedJourneysStore {
 }
 
 function journeyLog(action: string, details?: unknown) {
+  if (process.env.NODE_ENV === "production") return;
   if (details === undefined) {
     console.log(`[frontend][savedJourneys] ${action}`);
     return;

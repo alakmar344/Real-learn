@@ -34,6 +34,8 @@ export default async function LegalPage({ searchParams }: { searchParams: Search
         </p>
 
         <div
+          role="tablist"
+          aria-label="Legal documents"
           style={{
             display: "flex",
             gap: 8,
@@ -45,6 +47,8 @@ export default async function LegalPage({ searchParams }: { searchParams: Search
         >
           <a
             href="/legal?tab=privacy"
+            role="tab"
+            aria-selected={tab === "privacy"}
             style={{
               padding: "12px 20px",
               textDecoration: "none",
@@ -59,6 +63,8 @@ export default async function LegalPage({ searchParams }: { searchParams: Search
           </a>
           <a
             href="/legal?tab=terms"
+            role="tab"
+            aria-selected={tab === "terms"}
             style={{
               padding: "12px 20px",
               textDecoration: "none",
@@ -73,6 +79,8 @@ export default async function LegalPage({ searchParams }: { searchParams: Search
           </a>
           <a
             href="/legal?tab=cookies"
+            role="tab"
+            aria-selected={tab === "cookies"}
             style={{
               padding: "12px 20px",
               textDecoration: "none",

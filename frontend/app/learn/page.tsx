@@ -33,6 +33,13 @@ function scrollToTop() {
 export default function LearnPage() {
   const [quizPart, setQuizPart] = useState<number | null>(null);
   const [showUnlockFx, setShowUnlockFx] = useState(false);
+  const unlockTimeoutRef = useRef<number | null>(null);
+  // Cleanup the unlock animation timeout on unmount.
+  useEffect(() => {
+    return () => {
+      if (unlockTimeoutRef.current) clearTimeout(unlockTimeoutRef.current);
+    };
+  }, []);
   // The lesson store is persisted: rendering persisted state on the first
   // client render mismatches the SSR HTML (which always has the defaults)
   // and triggers a React hydration failure. Gate on mount instead.
@@ -405,7 +412,8 @@ export default function LearnPage() {
 
               setQuizPart(null);
               setShowUnlockFx(true);
-              window.setTimeout(() => setShowUnlockFx(false), 850);
+              if (unlockTimeoutRef.current) clearTimeout(unlockTimeoutRef.current);
+              unlockTimeoutRef.current = window.setTimeout(() => setShowUnlockFx(false), 850);
               showToast(
                 score >= 1 ? "Correct! Well done." : "Part completed.",
                 score >= 1 ? "success" : "info"

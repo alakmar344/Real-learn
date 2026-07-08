@@ -77,6 +77,7 @@ interface ProgressState {
 }
 
 function log(action: string, details?: unknown) {
+  if (process.env.NODE_ENV === "production") return;
   if (details === undefined) console.log(`[frontend][progressStore] ${action}`);
   else console.log(`[frontend][progressStore] ${action}`, details);
 }

@@ -29,17 +29,38 @@ Feature suggestions are welcome. Please open an issue with:
 3. **Make** your changes
 4. **Run** linting and build checks:
    ```bash
+   # Frontend
    cd frontend
    npm run lint
    npm run build
+
+   # Backend
+   cd backend
+   node --check src/*.js
    ```
-5. **Commit** with a clear message
+5. **Commit** with a clear message (use conventional format: `feat:`, `fix:`, `chore:`, `docs:`)
 6. **Push** to your fork
 7. **Open** a Pull Request with a description of your changes
 
 ## Development Setup
 
-See the [Local Development](README.md#local-development) section in the README.
+### Frontend
+```bash
+cd frontend
+cp .env.local.example .env.local  # Fill in Clerk keys
+npm install
+npm run dev
+```
+
+### Backend
+```bash
+cd backend
+cp .env.example .env  # Fill in Cloudflare, Clerk, MongoDB, Serper keys
+npm install
+npm start
+```
+
+See the [Local Development](README.md#local-development) section in the README for full details.
 
 ## Code Style
 

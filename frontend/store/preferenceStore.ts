@@ -36,7 +36,7 @@ function readExistingPreferences(): { theme?: Theme; language?: Language; level?
   return result;
 }
 
-const existing = readExistingPreferences();
+const existing = typeof window !== "undefined" ? readExistingPreferences() : {};
 
 interface PreferenceStore {
   theme: Theme;

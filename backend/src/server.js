@@ -78,13 +78,14 @@ function createRateLimiter({ windowMs, max, ipMultiplier = 5 }) {
   return {
     isLimited(req) {
       const now = Date.now();
-      const ip = req.ip || req.connection?.remoteAddress || "unknown";
+      const ip = req.ip || req.socket?.remoteAddress || "unknown";
       const token = extractBearerToken(req);
-      // Hash the WHOLE token. A prefix of a JWT is just the base64 header,
-      // which is identical for every user.
+      // Hash the WHOLE token (capped at 4KB to prevent CPU amplification
+      // from megabyte-sized tokens). A prefix of a JWT is just the base64
+      // header, which is identical for every user.
       const tokenLimited = token
         ? hit(
-            `user:${crypto.createHash("sha256").update(token).digest("hex").slice(0, 32)}`,
+            `user:${crypto.createHash("sha256").update(token.slice(0, 4096)).digest("hex").slice(0, 32)}`,
             max,
             now
           )
@@ -406,8 +407,18 @@ function rateLimit(req, res, next) {
   next();
 }
 
-app.get("/health", (_req, res) => {
-  res.json({ ok: true });
+app.get("/health", async (_req, res) => {
+  const health = { ok: true, dependencies: {} };
+  try {
+    const db = await getDb();
+    await db.command({ ping: 1 });
+    health.dependencies.mongodb = "ok";
+  } catch {
+    health.ok = false;
+    health.dependencies.mongodb = "error";
+  }
+  const status = health.ok ? 200 : 503;
+  res.status(status).json(health);
 });
 
 // Diagnostic endpoint: send the Clerk token as a Bearer header and it reports
@@ -415,11 +426,12 @@ app.get("/health", (_req, res) => {
 // leaked — only non-sensitive claim metadata. Security: disabled in
 // production unless AUTH_DEBUG_ENABLED=true (it is an unauthenticated
 // token-verification oracle), and always rate limited.
-app.get("/api/auth-debug", rateLimit, async (req, res) => {
-  // Security: this is an unauthenticated token-verification oracle. It must
+app.get("/api/auth-debug", rateLimit, requireAuth, async (req, res) => {
+  // Security: this is a token-verification oracle. It must
   // be OFF unless explicitly enabled or running in local development —
   // "NODE_ENV !== production" left it wide open on any host that forgot to
-  // set NODE_ENV.
+  // set NODE_ENV. Even when enabled, it requires authentication to prevent
+  // anonymous token probing.
   const authDebugEnabled =
     process.env.AUTH_DEBUG_ENABLED === "true" ||
     process.env.NODE_ENV === "development";
@@ -479,18 +491,18 @@ app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
       accepted,
       email,
       clerkId,
-      deviceIp: req.ip || req.connection?.remoteAddress || "unknown",
-      userAgent: req.headers["user-agent"] || "unknown",
-      timestamp: parsedTimestamp,
-      privacyVersion: PRIVACY_POLICY_VERSION,
-      termsVersion: TERMS_OF_SERVICE_VERSION,
-      updatedAt: new Date(),
-    },
-    $setOnInsert: {
-      type: "cookie-consent",
-      createdAt: new Date(),
-    },
-  };
+        deviceIp: req.ip || req.socket?.remoteAddress || "unknown",
+        userAgent: req.headers["user-agent"] || "unknown",
+        timestamp: parsedTimestamp,
+        privacyVersion: PRIVACY_POLICY_VERSION,
+        termsVersion: TERMS_OF_SERVICE_VERSION,
+        updatedAt: new Date(),
+      },
+      $setOnInsert: {
+        type: "cookie-consent",
+        createdAt: new Date(),
+      },
+    };
 
   await collection.updateOne(filter, update, { upsert: true });
     // Privacy: don't log email addresses.
@@ -606,7 +618,7 @@ app.post("/api/legal-consent", rateLimit, requireAuth, async (req, res) => {
         accepted,
         email,
         clerkId,
-        deviceIp: req.ip || req.connection?.remoteAddress || "unknown",
+        deviceIp: req.ip || req.socket?.remoteAddress || "unknown",
         userAgent: req.headers["user-agent"] || "unknown",
         timestamp: parsedTimestamp,
         type: "legal-consent",
@@ -926,7 +938,7 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
   let finished = false;
   const safeWrite = (chunk) => {
     try {
-      if (res.writableEnded || res.finished) return false;
+      if (res.writableEnded) return false;
       return res.write(chunk);
     } catch (error) {
       console.error("[SSE] write failed", { requestId, error });
@@ -988,9 +1000,7 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
     const inputModerationPromise = moderateText(question, "input");
     console.log("[Serper] Context fetch start", { requestId, mode });
     const [inputModeration, newsContextResult] = await Promise.all([
-      mode === "fast"
-        ? Promise.resolve(null)
-        : inputModerationPromise,
+      inputModerationPromise,
       mode === "fast"
         ? Promise.resolve(null)
         : fetchRealWorldContext(question, language).catch((error) => {
@@ -1259,9 +1269,26 @@ Level: ${level}${
 
 try {
   validateStartupConfig();
-  app.listen(port, () => {
+  const server = app.listen(port, () => {
     console.log(`Backend listening on port ${port}`);
   });
+
+  // Graceful shutdown: stop accepting new connections, wait for in-flight
+  // requests to finish (up to 30s), then close MongoDB and exit.
+  const shutdown = (signal) => {
+    console.log(`[shutdown] ${signal} received, starting graceful shutdown`);
+    server.close(() => {
+      console.log("[shutdown] All connections closed");
+      process.exit(0);
+    });
+    // Force-kill after 30 seconds if connections won't drain.
+    setTimeout(() => {
+      console.error("[shutdown] Forced exit after 30s timeout");
+      process.exit(1);
+    }, 30000).unref();
+  };
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
 } catch (error) {
   console.error("[startup] Backend configuration error:", error);
   process.exit(1);
