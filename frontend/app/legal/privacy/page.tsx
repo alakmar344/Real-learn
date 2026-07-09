@@ -20,7 +20,7 @@ export default function PrivacyPolicy() {
         Privacy Policy
       </h2>
       <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
-        Last updated: July 7, 2026 (version 2.0)
+        Last updated: July 9, 2026 (version 2.1)
       </p>
 
       <section style={{ marginBottom: 28 }}>
@@ -72,7 +72,7 @@ export default function PrivacyPolicy() {
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Consent Records:</strong> Timestamps of when you accepted our Privacy Policy
-            (version 2.0), Terms of Service (version 2.0), and cookie/analytics consent, together
+            (version 2.1), Terms of Service (version 2.1), and cookie/analytics consent, together
             with the policy version and your device IP and User-Agent, kept as proof of consent.
           </li>
           <li style={{ marginBottom: 4 }}>
@@ -114,10 +114,14 @@ export default function PrivacyPolicy() {
             removes it.
           </li>
           <li>
-            <strong>Moderation Logs:</strong> Blocked inputs and flagged AI responses are logged
-            with a pseudonymous account identifier for safety and abuse prevention. No email or
-            other personal identifying information is stored with these logs, and they are deleted
-            along with your other server-side data when you delete your account.
+            <strong>Moderation Logs:</strong> When a question you submit or an AI response is
+            blocked by our safety filters, we record a moderation log entry containing the reason
+            the content was flagged, the question that triggered the flag (limited to the first 500
+            characters), and a pseudonymous account identifier. These logs never contain your email,
+            IP address, or other personal identifying information, and never contain internal error
+            details. They are <strong>automatically and permanently deleted after 90 days</strong>{" "}
+            by a database-level expiry rule, or immediately when you delete your account —
+            whichever comes first.
           </li>
         </ul>
       </section>
@@ -280,10 +284,12 @@ export default function PrivacyPolicy() {
             30 days of account deletion.
           </li>
           <li style={{ marginBottom: 4 }}>
-            <strong>Moderation logs</strong> (pseudonymous account identifier + reason for a blocked
-            input or flagged response) — retained for abuse prevention and deleted together with your
-            other server-side data when you delete your account; unlinked/aggregate safety metrics
-            may be retained longer.
+            <strong>Moderation logs</strong> (pseudonymous account identifier, the reason a
+            question or response was flagged, and the flagged question itself, capped at 500
+            characters) — retained for abuse prevention for a <strong>maximum of 90 days</strong>,
+            after which they are deleted automatically by a database-level expiry (TTL) rule.
+            They are deleted earlier if you delete your account. Unlinked/aggregate safety
+            metrics may be retained longer.
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Cached lessons and read-aloud audio</strong> (not linked to your identity) —

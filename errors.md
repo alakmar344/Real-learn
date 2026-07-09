@@ -441,3 +441,74 @@ byte counter invariant holds.
 | Low | `ConfirmModal` never moved focus into the dialog — Enter re-clicked the hidden trigger. | Cancel button focused on open. |
 | Low | `HomeStats.dayOfYear` floored a local-time delta — off-by-one the day after spring-forward DST. | UTC calendar-field math. |
 | Low | Footer year hydration-errors on prerendered HTML cached across a year boundary. | `suppressHydrationWarning`. |
+
+---
+
+## Session 2026-07-09: intermittent 408 / "error in input stream" fixed + moderation-log TTL & privacy update (legal v2.1)
+
+### The 408 / input-stream failures
+
+Cloudflare Workers AI intermittently fails with HTTP `408` or an
+"error in input stream" message — sometimes as an HTTP status, sometimes as an
+error payload *inside* an otherwise-200 SSE stream, and sometimes as a dropped
+connection while the response body is being read (undici throws
+`TypeError: terminated`). All three shapes previously escaped the retry logic:
+
+**`backend/src/lib/gemma.js`**
+- `408` added to the retryable status set (alongside 429/5xx); `GemmaApiError`
+  details containing "input stream"/"timed out" are also retried regardless of
+  status code.
+- Network-error detection broadened beyond `TypeError`: transient socket/DNS
+  codes (`ECONNRESET`, `UND_ERR_SOCKET`, `UND_ERR_BODY_TIMEOUT`, …, checked on
+  the error AND its `cause`) and mid-body-read messages ("terminated",
+  "other side closed", "premature close", "input stream") are retryable.
+- The SSE stream handler now detects error payloads inside the stream
+  (`{"errors":[...]}` / `{"error":...}`) and throws a retryable
+  `GemmaApiError(408)` instead of silently returning empty text that later
+  failed JSON validation; final decoder flush added.
+- An empty response body after thinking-tag stripping is now a retryable
+  `GemmaApiError(502)` instead of a downstream "no JSON found" hard failure.
+
+**`backend/src/server.js`** — user-facing message for 408/429 now says the
+service is temporarily unavailable (retryable), instead of the generic
+"could not process this request".
+
+Verified with a mocked `fetch`: 408→success, stream-error-chunk→success,
+body-read `terminated`→success, empty-body→success (2 calls each); 400 still
+fails immediately with no retry.
+
+### Moderation logs: TTL + what gets stored (privacy/data-minimization)
+
+- `moderationLogs` now has a MongoDB **TTL index** on a new `createdAt` Date
+  field (`MODERATION_LOG_TTL_DAYS`, default 90) — ensured lazily on first log
+  write, with IndexOptionsConflict handling so a changed TTL takes effect, and
+  a one-time backfill converting legacy string `timestamp` docs so old records
+  also age out.
+- Every moderation event now records **what was flagged** (`flaggedReason` —
+  the user-facing reason, never internal error text) and **the user query**
+  (`question`, capped at 500 chars), plus type/requestId/pseudonymous clerkId.
+  All six log sites (pattern input block, LLM input block ×2, pattern response
+  block, post-hoc response blocks ×2) go through one `buildModerationEvent` +
+  `logModerationEvent` helper.
+- The **`agreements` (consent) collection is deliberately untouched** — user
+  consent storage stays permanent until account deletion; lesson/TTS caches
+  were already short-lived.
+
+### Legal documents synchronized (v2.1, dated 2026-07-09)
+
+- Privacy Policy §2 + §9 and ToS §11 + §16 now disclose exactly what a
+  moderation log contains (flag reason + question capped at 500 chars +
+  pseudonymous ID; never email/IP/error internals) and the 90-day automatic
+  expiry (earlier on account deletion).
+- Version plumbing bumped 2.0 → 2.1: backend `PRIVACY_POLICY_VERSION` /
+  `TERMS_OF_SERVICE_VERSION` defaults, frontend `CURRENT_PRIVACY_VERSION` /
+  `CURRENT_TERMS_VERSION`, and the PreSignInConsent re-accept modal change
+  lists. Cookie policy unchanged (stays 2.0).
+- `backend/.env.example`: documented `MODERATION_LOG_TTL_DAYS=90`.
+
+### Verification performed
+
+- `node --check` passes on all edited backend files; backend boots and logs
+  "Backend listening" with graceful shutdown.
+- Mocked-fetch retry matrix (above) passes.
+- Frontend `tsc --noEmit` passes.
