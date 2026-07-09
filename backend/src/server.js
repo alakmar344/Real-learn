@@ -1407,12 +1407,27 @@ Level: ${level}${
 
 try {
   validateStartupConfig();
-  const server = app.listen(port, () => {
-    console.log(`Backend listening on port ${port}`);
-    // Warm up the Cloudflare Workers AI model so the first real user request
-    // doesn't hit a cold start (10-30s penalty). Fire-and-forget.
-    warmUpModel();
-  });
+    const server = app.listen(port, () => {
+      console.log(`Backend listening on port ${port}`);
+      // Warm up the Cloudflare Workers AI model so the first real user request
+      // doesn't hit a cold start (10-30s penalty). Fire-and-forget.
+      warmUpModel();
+
+      // Keep the model resident to avoid GPU cold starts (408 timeouts) while
+      // the server is idle. Gated by GEMMA_WARMUP_INTERVAL_MS so it never runs
+      // on the free 10k-neuron/day tier unless explicitly opted in — each ping
+      // costs neurons, so leave it unset there to avoid draining the budget.
+      const warmupIntervalMs = Number.parseInt(
+        process.env.GEMMA_WARMUP_INTERVAL_MS || "",
+        10
+      );
+      if (Number.isFinite(warmupIntervalMs) && warmupIntervalMs >= 60000) {
+        console.log(
+          `[Gemma] Keep-alive warm-up enabled every ${warmupIntervalMs}ms`
+        );
+        setInterval(() => warmUpModel(), warmupIntervalMs).unref();
+      }
+    });
 
   // Graceful shutdown: stop accepting new connections, wait for in-flight
   // requests to finish (up to 30s), then close MongoDB and exit.
