@@ -1,0 +1,21 @@
+name = "reallearn-ai-worker"
+main = "src/index.js"
+compatibility_date = "2025-06-01"
+workers_dev = true
+
+# Smart Placement runs this Worker in the Cloudflare location that minimizes
+# round-trip latency to the upstream (Workers AI GPUs). Once deployed on
+# Cloudflare's network the Worker also benefits from Shard & Conquer, which
+# routes traffic for this Worker to the same shard server via consistent
+# hashing so the isolate stays warm (99.99% warm-start rate).
+[placement]
+mode = "smart"
+
+# Workers AI binding — runs the model in-network (no public REST hop, no
+# per-request account auth). Inference stays inside Cloudflare's network.
+[ai]
+binding = "AI"
+
+# Optional shared secret. Set WORKER_TOKEN as a secret (wrangler secret put
+# WORKER_TOKEN) and set GEMMA_WORKER_TOKEN to the same value on the backend.
+[vars]

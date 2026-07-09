@@ -185,6 +185,11 @@ function isAbortError(error) {
 }
 
 async function callWorkersAI(accountId, model, body, signal) {
+  const workerUrl = process.env.GEMMA_WORKER_URL?.trim();
+  if (workerUrl) {
+    return callWorkersAIWorker(workerUrl, model, body, signal);
+  }
+
   const apiToken = process.env.CLOUDFLARE_API_TOKEN.trim();
   const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/v1/chat/completions`;
 
@@ -206,6 +211,32 @@ async function callWorkersAI(accountId, model, body, signal) {
     signal,
   });
 
+  return parseWorkersAIResponse(response);
+}
+
+async function callWorkersAIWorker(workerUrl, model, body, signal) {
+  const token = process.env.GEMMA_WORKER_TOKEN?.trim();
+  const payload = {
+    model,
+    messages: body.messages,
+    temperature: body.temperature,
+    max_tokens: body.max_tokens,
+  };
+
+  const headers = { "Content-Type": "application/json" };
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const response = await fetch(workerUrl, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+    signal,
+  });
+
+  return parseWorkersAIResponse(response);
+}
+
+async function parseWorkersAIResponse(response) {
   const contentType = response.headers.get("content-type") || "";
 
   if (!response.ok) {
@@ -321,9 +352,13 @@ export async function callGemma(
   signal = null,
   maxOutputTokens = 4000
 ) {
-  if (!process.env.CLOUDFLARE_API_TOKEN?.trim() || !process.env.CLOUDFLARE_ACCOUNT_ID?.trim()) {
+  if (
+    !process.env.GEMMA_WORKER_URL?.trim() &&
+    (!process.env.CLOUDFLARE_API_TOKEN?.trim() ||
+      !process.env.CLOUDFLARE_ACCOUNT_ID?.trim())
+  ) {
     throw new Error(
-      "CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID are not configured"
+      "CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID are not configured (or set GEMMA_WORKER_URL to route via the AI Worker)"
     );
   }
   if (enableSearch) {
@@ -585,10 +620,11 @@ export async function callGemma(
  * boot loads the model so the first real user request doesn't time out.
  */
 export async function warmUpModel() {
+  const workerUrl = process.env.GEMMA_WORKER_URL?.trim();
   const accountId = process.env.CLOUDFLARE_ACCOUNT_ID?.trim();
   const apiToken = process.env.CLOUDFLARE_API_TOKEN?.trim();
-  if (!accountId || !apiToken) {
-    console.log("[Gemma] Warm-up skipped: missing CLOUDFLARE config");
+  if (!workerUrl && (!accountId || !apiToken)) {
+    console.log("[Gemma] Warm-up skipped: missing CLOUDFLARE or WORKER config");
     return;
   }
 
@@ -597,25 +633,43 @@ export async function warmUpModel() {
   const startedAt = Date.now();
 
   try {
-    const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/v1/chat/completions`;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: GEMMA_MODEL,
-        messages: [{ role: "user", content: "Hi" }],
-        temperature: 0.7,
-        max_tokens: 5,
-        stream: false,
-      }),
-      signal: controller.signal,
-    });
+    let response;
+    if (workerUrl) {
+      const token = process.env.GEMMA_WORKER_TOKEN?.trim();
+      const headers = { "Content-Type": "application/json" };
+      if (token) headers.Authorization = `Bearer ${token}`;
+      response = await fetch(workerUrl, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          model: GEMMA_MODEL,
+          messages: [{ role: "user", content: "Hi" }],
+          temperature: 0.7,
+          max_tokens: 5,
+        }),
+        signal: controller.signal,
+      });
+    } else {
+      const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/v1/chat/completions`;
+      response = await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: GEMMA_MODEL,
+          messages: [{ role: "user", content: "Hi" }],
+          temperature: 0.7,
+          max_tokens: 5,
+          stream: false,
+        }),
+        signal: controller.signal,
+      });
+    }
 
     clearTimeout(timeoutId);
     const latencyMs = Date.now() - startedAt;
