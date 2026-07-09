@@ -184,8 +184,8 @@ const SPEECH_LANG_TO_VOICE = {
   "en-US": "en-US-AriaNeural",
 };
 
-const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "2.0";
-const TERMS_OF_SERVICE_VERSION = process.env.TERMS_OF_SERVICE_VERSION || "2.0";
+const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "2.1";
+const TERMS_OF_SERVICE_VERSION = process.env.TERMS_OF_SERVICE_VERSION || "2.1";
 const COOKIE_POLICY_VERSION = process.env.COOKIE_POLICY_VERSION || "2.0";
 
 // ── Input validation limits (security: bound prompt size and lock free-text
@@ -291,9 +291,96 @@ function recordLessonResult(success) {
   }
 }
 
+// ── Moderation log retention (privacy / data-minimization) ──
+// Moderation logs auto-expire via a MongoDB TTL index so flagged-content
+// records are never kept longer than needed for abuse prevention. This TTL
+// applies ONLY to moderationLogs: the "agreements" collection (consent
+// records) is deliberately permanent — it is the legal proof of consent and
+// is only removed by account deletion (DELETE /api/account).
+const DEFAULT_MODERATION_LOG_TTL_DAYS = 90;
+const configuredModerationLogTtlDays = Number(process.env.MODERATION_LOG_TTL_DAYS);
+const MODERATION_LOG_TTL_DAYS =
+  Number.isFinite(configuredModerationLogTtlDays) && configuredModerationLogTtlDays > 0
+    ? configuredModerationLogTtlDays
+    : DEFAULT_MODERATION_LOG_TTL_DAYS;
+const MODERATION_LOG_TTL_SECONDS = Math.round(MODERATION_LOG_TTL_DAYS * 24 * 60 * 60);
+// The logged copy of the user's question is capped — enough to understand
+// what was flagged, without storing arbitrarily large content.
+const MODERATION_LOG_QUESTION_MAX_CHARS = 500;
+const MODERATION_LOG_TTL_INDEX_NAME = "moderationLogTtl";
+
+let moderationLogIndexPromise = null;
+function ensureModerationLogTtlIndex(db) {
+  if (moderationLogIndexPromise) return moderationLogIndexPromise;
+  moderationLogIndexPromise = (async () => {
+    const collection = db.collection("moderationLogs");
+    try {
+      await collection.createIndex(
+        { createdAt: 1 },
+        { expireAfterSeconds: MODERATION_LOG_TTL_SECONDS, name: MODERATION_LOG_TTL_INDEX_NAME }
+      );
+    } catch (error) {
+      // Index exists with a different TTL (IndexOptionsConflict) — recreate
+      // it so a changed MODERATION_LOG_TTL_DAYS takes effect.
+      if (error?.code === 85 || error?.codeName === "IndexOptionsConflict") {
+        await collection.dropIndex(MODERATION_LOG_TTL_INDEX_NAME);
+        await collection.createIndex(
+          { createdAt: 1 },
+          { expireAfterSeconds: MODERATION_LOG_TTL_SECONDS, name: MODERATION_LOG_TTL_INDEX_NAME }
+        );
+      } else {
+        throw error;
+      }
+    }
+    // Backfill: legacy events only carried an ISO-string `timestamp`, which a
+    // TTL index cannot expire. Give them a real `createdAt` Date so old
+    // flagged-content records age out under the same retention window.
+    await collection.updateMany(
+      { createdAt: { $exists: false }, timestamp: { $type: "string" } },
+      [{ $set: { createdAt: { $toDate: "$timestamp" } } }]
+    );
+    console.log(
+      `[moderation] moderationLogs TTL index ensured (${MODERATION_LOG_TTL_DAYS} days)`
+    );
+  })().catch((error) => {
+    // Allow a later log call to retry index creation.
+    moderationLogIndexPromise = null;
+    console.error("[moderation] Failed to ensure moderationLogs TTL index", error);
+  });
+  return moderationLogIndexPromise;
+}
+
+// Builds the record that lands in moderationLogs. The log answers two
+// questions — WHAT was flagged (reason + type) and WHICH user query triggered
+// it — rather than storing internal error text. Kept intentionally minimal:
+// pseudonymous Clerk ID only (no email/IP/UA), question capped in length,
+// auto-deleted by the TTL index above.
+function buildModerationEvent({ requestId, clerkId, type, reason, question }) {
+  const now = new Date();
+  return {
+    timestamp: now.toISOString(),
+    createdAt: now, // BSON Date — required for the TTL index.
+    requestId,
+    clerkId: clerkId || null,
+    type,
+    // What the filter/classifier flagged (user-facing reason, never an
+    // internal error message or stack trace).
+    flaggedReason:
+      typeof reason === "string" && reason.trim()
+        ? reason.trim()
+        : "Content flagged by safety review",
+    // The user query that triggered the flag (capped for data minimization).
+    question:
+      typeof question === "string"
+        ? question.slice(0, MODERATION_LOG_QUESTION_MAX_CHARS)
+        : null,
+  };
+}
+
 async function logModerationEvent(event) {
   try {
     const db = await getDb();
+    await ensureModerationLogTtlIndex(db);
     await db.collection("moderationLogs").insertOne(event);
   } catch (error) {
     console.error("[moderation] Failed to log moderation event", error);
@@ -919,20 +1006,15 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
 
   const inputFilter = filterUserInput(question);
   if (!inputFilter.allowed) {
-    const moderationEvent = {
-      timestamp: new Date().toISOString(),
+    const moderationEvent = buildModerationEvent({
       requestId,
-      clerkId: req.auth?.userId || null,
-      reason: inputFilter.reason,
+      clerkId: req.auth?.userId,
       type: "user-input-blocked",
-    };
+      reason: inputFilter.reason,
+      question,
+    });
     console.warn("[moderation] Banned input blocked", moderationEvent);
-    try {
-      const db = await getDb();
-      await db.collection("moderationLogs").insertOne(moderationEvent);
-    } catch (error) {
-      console.error("[moderation] Failed to log moderation event", error);
-    }
+    await logModerationEvent(moderationEvent);
     return res.status(400).json({ error: inputFilter.reason });
   }
 
@@ -1071,13 +1153,13 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
 
     if (finished) return;
     if (inputModeration && !inputModeration.allowed) {
-      const moderationEvent = {
-        timestamp: new Date().toISOString(),
+      const moderationEvent = buildModerationEvent({
         requestId,
-        clerkId: req.auth?.userId || null,
-        reason: inputModeration.reason,
+        clerkId: req.auth?.userId,
         type: "user-input-moderated",
-      };
+        reason: inputModeration.reason,
+        question,
+      });
       console.warn("[moderation] Input blocked by LLM moderation", moderationEvent);
       await logModerationEvent(moderationEvent);
       sendEvent("error", {
@@ -1144,20 +1226,15 @@ Level: ${level}${
 
     const responseFilter = filterAIResponse(raw);
     if (!responseFilter.allowed) {
-      const moderationEvent = {
-        timestamp: new Date().toISOString(),
+      const moderationEvent = buildModerationEvent({
         requestId,
-        clerkId: req.auth?.userId || null,
-        reason: responseFilter.reason,
+        clerkId: req.auth?.userId,
         type: "ai-response-blocked",
-      };
+        reason: responseFilter.reason,
+        question,
+      });
       console.warn("[moderation] Banned AI response blocked", moderationEvent);
-      try {
-        const db = await getDb();
-        await db.collection("moderationLogs").insertOne(moderationEvent);
-      } catch (error) {
-        console.error("[moderation] Failed to log moderation event", error);
-      }
+      await logModerationEvent(moderationEvent);
       sendEvent("error", {
         error: responseFilter.reason || "The generated content was flagged. Please try a different question.",
       });
@@ -1218,13 +1295,13 @@ Level: ${level}${
       const fastInputModeration = await inputModerationPromise;
       if (finished) return;
       if (!fastInputModeration.allowed) {
-        const moderationEvent = {
-          timestamp: new Date().toISOString(),
+        const moderationEvent = buildModerationEvent({
           requestId,
-          clerkId: req.auth?.userId || null,
-          reason: fastInputModeration.reason,
+          clerkId: req.auth?.userId,
           type: "user-input-moderated",
-        };
+          reason: fastInputModeration.reason,
+          question,
+        });
         console.warn("[moderation] Fast-mode input blocked by LLM moderation", moderationEvent);
         await logModerationEvent(moderationEvent);
         sendEvent("error", {
@@ -1243,13 +1320,15 @@ Level: ${level}${
           });
           // Make sure the flagged lesson can't be replayed from the cache.
           deleteCachedLesson(cacheKey);
-          logModerationEvent({
-            timestamp: new Date().toISOString(),
-            requestId,
-            clerkId: req.auth?.userId || null,
-            reason: verdict.reason,
-            type: "ai-response-moderated-posthoc",
-          }).catch(() => {});
+          logModerationEvent(
+            buildModerationEvent({
+              requestId,
+              clerkId: req.auth?.userId,
+              type: "ai-response-moderated-posthoc",
+              reason: verdict.reason,
+              question,
+            })
+          ).catch(() => {});
         }
       }).catch(() => {});
     } else {
@@ -1260,13 +1339,15 @@ Level: ${level}${
             reason: verdict.reason,
           });
           deleteCachedLesson(cacheKey);
-          logModerationEvent({
-            timestamp: new Date().toISOString(),
-            requestId,
-            clerkId: req.auth?.userId || null,
-            reason: verdict.reason,
-            type: "ai-response-moderated-posthoc",
-          }).catch(() => {});
+          logModerationEvent(
+            buildModerationEvent({
+              requestId,
+              clerkId: req.auth?.userId,
+              type: "ai-response-moderated-posthoc",
+              reason: verdict.reason,
+              question,
+            })
+          ).catch(() => {});
         }
       }).catch(() => {});
     }
@@ -1295,7 +1376,10 @@ Level: ${level}${
         ? timeoutMessage
         : error instanceof GemmaCircuitOpenError
         ? error.message
-        : error instanceof GemmaApiError && error.status >= 500 && error.status < 600
+        : error instanceof GemmaApiError &&
+          (error.status === 408 ||
+            error.status === 429 ||
+            (error.status >= 500 && error.status < 600))
         ? "Gemma service is temporarily unavailable. Please try again in a moment."
         : // Security: NEVER echo GemmaApiError.message to clients — it embeds
           // up to 500 chars of the raw upstream (Cloudflare) response body,

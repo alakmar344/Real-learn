@@ -17,16 +17,14 @@ import {
 const ALLOWED_PATHS_WHEN_DECLINED = ["/sign-in", "/sign-up", "/legal"];
 
 const POLICY_CHANGES = [
-  "Added a \"Who We Are\" section naming the data controller and a designated privacy / grievance contact.",
-  "Added dedicated sections on Children's Privacy (COPPA), California privacy rights (CCPA/CPRA, including Global Privacy Control support), and India's DPDP Act (grievance officer and Data Protection Board escalation).",
-  "Expanded data-retention details for each data category and clarified international transfers, including the processors involved and safeguards such as Standard Contractual Clauses.",
-  "Added a disclosure on automated AI content generation and moderation, confirming no legally significant automated decisions or advertising profiling.",
+  "Moderation logs now auto-delete after at most 90 days via a database-level expiry (TTL) rule — previously they were kept until account deletion.",
+  "Clarified exactly what a moderation log contains: the reason content was flagged and the flagged question (capped at 500 characters), with a pseudonymous account identifier — never your email, IP address, or internal error details.",
+  "Updated the Data Retention section to reflect the new 90-day moderation-log limit; account and consent records remain stored only until you delete your account.",
 ];
 
 const TERMS_CHANGES = [
-  "Added a dedicated \"Disclaimer of Warranties\" section (Service provided \"as is\" / \"as available\"), while preserving non-waivable statutory consumer rights.",
-  "Clarified eligibility for minors, including verifiable parental-consent requirements under laws such as COPPA and India's DPDP Act.",
-  "Renumbered later sections to accommodate the new warranty disclaimer.",
+  "The Content Moderation section now discloses what is recorded when content is flagged (flag reason + submitted question, capped at 500 characters) and that these records auto-delete after at most 90 days.",
+  "The Data Retention section now states the 90-day automatic expiry of moderation log entries.",
 ];
 
 export default function PreSignInConsent() {

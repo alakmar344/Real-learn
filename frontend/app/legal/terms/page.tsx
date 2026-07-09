@@ -20,7 +20,7 @@ export default function TermsOfService() {
         Terms of Service
       </h2>
       <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
-        Last updated: July 7, 2026 (version 2.0)
+        Last updated: July 9, 2026 (version 2.1)
       </p>
 
       <section style={{ marginBottom: 28 }}>
@@ -163,9 +163,13 @@ export default function TermsOfService() {
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           We employ automated content filtering — both pattern-based filters and an AI safety
           classifier — on the questions you submit and on AI-generated responses, to ensure the
-          Service remains safe and appropriate for all users. Blocked inputs and flagged responses
-          are logged with a pseudonymous account identifier and may be reviewed by humans for
-          moderation purposes. We also apply rate limits and input-size limits to protect the
+          Service remains safe and appropriate for all users. When content is blocked or flagged,
+          a moderation log entry is created recording the reason the content was flagged and the
+          submitted question (capped at 500 characters), together with a pseudonymous account
+          identifier; these entries may be reviewed by humans for moderation purposes and are{" "}
+          <strong>automatically deleted after at most 90 days</strong> (or earlier if you delete
+          your account), as described in our Privacy Policy. We also apply rate limits and
+          input-size limits to protect the
           Service from abuse. We reserve the right to remove or restrict access to
           content that violates our community guidelines or these Terms. We also maintain guardrails
           to prevent the AI from generating harmful, illegal, or age-inappropriate content.
@@ -229,7 +233,8 @@ export default function TermsOfService() {
           service or comply with legal obligations. When you delete your account, we delete your
           data from our servers within 30 days. Anonymously cached lessons (used to answer repeat
           questions faster) are keyed by a hash of the question — not by your identity — and expire
-          automatically, typically within a few hours. Saved lessons in your browser remain until you
+          automatically, typically within a few hours. Moderation log entries expire automatically
+          after at most 90 days. Saved lessons in your browser remain until you
           clear them or use the &quot;Delete My Data&quot; feature. For more details, see our{" "}
           <a href="/legal?tab=privacy" style={{ color: "var(--accent)" }}>Privacy Policy</a>.
         </p>

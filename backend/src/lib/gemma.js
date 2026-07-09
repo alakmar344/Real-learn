@@ -67,26 +67,68 @@ function stripThinkingTags(text) {
     .trim();
 }
 
+// Transient socket/DNS-level failure codes (Node net + undici). Any of these
+// mid-request — including while READING the response body — is worth a retry.
+const RETRYABLE_NETWORK_ERROR_CODES = new Set([
+  "ECONNRESET",
+  "ECONNREFUSED",
+  "ETIMEDOUT",
+  "EPIPE",
+  "EAI_AGAIN",
+  "EHOSTUNREACH",
+  "ENETUNREACH",
+  "UND_ERR_SOCKET",
+  "UND_ERR_CONNECT_TIMEOUT",
+  "UND_ERR_HEADERS_TIMEOUT",
+  "UND_ERR_BODY_TIMEOUT",
+]);
+
 function isRetryableNetworkGemmaError(error) {
-  if (!(error instanceof TypeError)) {
+  if (!(error instanceof Error)) {
     return false;
   }
 
-  const message = error.message.toLowerCase();
+  // undici wraps the real cause (e.g. "TypeError: fetch failed" with an
+  // ECONNRESET cause), so check both the error and its cause.
+  const code = error.code ?? error.cause?.code;
+  if (typeof code === "string" && RETRYABLE_NETWORK_ERROR_CODES.has(code)) {
+    return true;
+  }
+
+  const message = `${error.message ?? ""} ${error.cause?.message ?? ""}`.toLowerCase();
   return (
     message.includes("fetch") ||
     message.includes("network") ||
     message.includes("load failed") ||
     message.includes("econnreset") ||
-    message.includes("socket")
+    message.includes("socket") ||
+    // undici throws "terminated" / "other side closed" / "premature close"
+    // when the connection drops while the response body is being read —
+    // this is the classic "error in input stream" failure mode.
+    message.includes("terminated") ||
+    message.includes("other side closed") ||
+    message.includes("premature close") ||
+    message.includes("input stream")
   );
 }
 
 function isRetryableGemmaError(error) {
   if (error instanceof GemmaApiError) {
-    // 429 = rate limit (transient), 5xx = server error (transient).
+    // 408 = upstream request timeout (transient — Cloudflare Workers AI
+    // intermittently returns 408 / "error in input stream"), 429 = rate
+    // limit (transient), 5xx = server error (transient).
     // 403 is an authorization error — retrying won't help.
-    return error.status === 429 || (error.status >= 500 && error.status < 600);
+    if (
+      error.status === 408 ||
+      error.status === 429 ||
+      (error.status >= 500 && error.status < 600)
+    ) {
+      return true;
+    }
+    // Cloudflare occasionally reports transient stream failures with a
+    // non-retryable-looking status code; match on the upstream message.
+    const details = String(error.details ?? "").toLowerCase();
+    return details.includes("input stream") || details.includes("timed out");
   }
   return isRetryableNetworkGemmaError(error);
 }
@@ -95,7 +137,8 @@ function isGemmaServiceUnavailableError(error) {
   return (
     error instanceof GemmaTimeoutError ||
     error instanceof GemmaCircuitOpenError ||
-    (error instanceof GemmaApiError && (error.status === 429 || error.status >= 500)) ||
+    (error instanceof GemmaApiError &&
+      (error.status === 408 || error.status === 429 || error.status >= 500)) ||
     isRetryableNetworkGemmaError(error)
   );
 }
@@ -199,11 +242,48 @@ async function callWorkersAI(accountId, model, body, signal) {
   return data;
 }
 
+// Cloudflare Workers AI can report a mid-stream failure (e.g. 408 "error in
+// input stream") as an error payload INSIDE the SSE stream rather than as an
+// HTTP error status. Detect it and throw a retryable GemmaApiError instead of
+// silently returning empty/truncated text that later fails JSON validation.
+function extractStreamChunkError(chunk) {
+  if (!chunk || typeof chunk !== "object") return null;
+  if (typeof chunk.error === "string" && chunk.error.trim()) return chunk.error;
+  if (chunk.error && typeof chunk.error === "object") {
+    return chunk.error.message || JSON.stringify(chunk.error);
+  }
+  if (Array.isArray(chunk.errors) && chunk.errors.length > 0) {
+    return chunk.errors[0]?.message || JSON.stringify(chunk.errors[0]);
+  }
+  return null;
+}
+
 async function handleStreamingResponse(response) {
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let fullText = "";
   let buffer = "";
+
+  const consumePayload = (payload) => {
+    if (payload === "[DONE]") return;
+    try {
+      const chunk = JSON.parse(payload);
+      const streamError = extractStreamChunkError(chunk);
+      if (streamError) {
+        // 408 keeps this on the retryable path (see isRetryableGemmaError).
+        throw new GemmaApiError(408, "StreamError", streamError);
+      }
+      const token =
+        chunk.choices?.[0]?.delta?.content ??
+        chunk.choices?.[0]?.message?.content ??
+        chunk.response ??
+        "";
+      fullText += token;
+    } catch (error) {
+      if (error instanceof GemmaApiError) throw error;
+      // Non-JSON keep-alive/comment lines are safe to ignore.
+    }
+  };
 
   while (true) {
     const { done, value } = await reader.read();
@@ -216,33 +296,13 @@ async function handleStreamingResponse(response) {
     for (const line of lines) {
       const trimmed = line.trim();
       if (!trimmed || !trimmed.startsWith("data: ")) continue;
-      const payload = trimmed.slice(6);
-      if (payload === "[DONE]") continue;
-      try {
-        const chunk = JSON.parse(payload);
-        const token =
-          chunk.choices?.[0]?.delta?.content ??
-          chunk.choices?.[0]?.message?.content ??
-          chunk.response ??
-          "";
-        fullText += token;
-      } catch {}
+      consumePayload(trimmed.slice(6));
     }
   }
 
+  buffer += decoder.decode();
   if (buffer.trim().startsWith("data: ")) {
-    const payload = buffer.trim().slice(6);
-    if (payload !== "[DONE]") {
-      try {
-        const chunk = JSON.parse(payload);
-        const token =
-          chunk.choices?.[0]?.delta?.content ??
-          chunk.choices?.[0]?.message?.content ??
-          chunk.response ??
-          "";
-        fullText += token;
-      } catch {}
-    }
+    consumePayload(buffer.trim().slice(6));
   }
 
   return { choices: [{ message: { content: fullText } }] };
@@ -396,6 +456,17 @@ export async function callGemma(
         }
       }
       text = stripThinkingTags(text);
+
+      if (!text.trim()) {
+        // An empty body usually means the upstream connection dropped
+        // mid-generation ("error in input stream") — retry instead of
+        // handing an unusable empty string to the JSON parser.
+        throw new GemmaApiError(
+          502,
+          "EmptyResponse",
+          "Cloudflare Workers AI returned an empty response body"
+        );
+      }
 
       console.log("[Gemma] parsed response text", {
         callId,
