@@ -2,6 +2,10 @@ const GEMMA_MODEL = process.env.GEMMA_MODEL || "@cf/google/gemma-4-26b-a4b-it";
 const DEFAULT_MAX_RETRIES = 2;
 const DEFAULT_RETRY_DELAY_MS = 700;
 const DEFAULT_MAX_RETRY_DELAY_MS = 5000;
+// 408 = upstream timeout, usually a cold start on Cloudflare Workers AI.
+// The model needs 10-30s to load — retrying after 700ms just wastes a retry.
+const COLD_START_RETRY_DELAY_MS = 3000;
+const COLD_START_MAX_RETRY_DELAY_MS = 10000;
 const DEFAULT_TIMEOUT_CIRCUIT_FAILURE_THRESHOLD = 5;
 const DEFAULT_TIMEOUT_CIRCUIT_COOLDOWN_MS = 60000;
 const PARSE_JSON_LOG_PREVIEW_CHARS = 300;
@@ -543,10 +547,12 @@ export async function callGemma(
 
       const isLastAttempt = attempt === maxRetries;
       if (!isLastAttempt && isRetryableGemmaError(normalizedError)) {
-        const waitMs = Math.min(
-          retryDelayMs * Math.pow(2, attempt),
-          maxRetryDelayMs
-        );
+        // 408 is typically a cold start — give the model more time to load.
+        const isColdStart =
+          normalizedError instanceof GemmaApiError && normalizedError.status === 408;
+        const baseDelay = isColdStart ? COLD_START_RETRY_DELAY_MS : retryDelayMs;
+        const cap = isColdStart ? COLD_START_MAX_RETRY_DELAY_MS : maxRetryDelayMs;
+        const waitMs = Math.min(baseDelay * Math.pow(2, attempt), cap);
         console.warn(
           `[Gemma] Retrying after attempt ${attempt + 1} failed`
         );
@@ -555,6 +561,7 @@ export async function callGemma(
           model,
           attempt: attempt + 1,
           waitMs,
+          isColdStart,
         });
         await sleep(waitMs);
         continue;
@@ -570,6 +577,68 @@ export async function callGemma(
     lastErrorMessage: lastError?.message,
   });
   throw lastError || new Error("Unable to generate lesson after exhausting retries");
+}
+
+/**
+ * Warm up the Cloudflare Workers AI model with a minimal request.
+ * Cold starts on CF Workers AI can take 10-30s — calling this once on server
+ * boot loads the model so the first real user request doesn't time out.
+ */
+export async function warmUpModel() {
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID?.trim();
+  const apiToken = process.env.CLOUDFLARE_API_TOKEN?.trim();
+  if (!accountId || !apiToken) {
+    console.log("[Gemma] Warm-up skipped: missing CLOUDFLARE config");
+    return;
+  }
+
+  const callId = `warmup-${Date.now()}`;
+  console.log("[Gemma] Warming up model...", { callId, model: GEMMA_MODEL });
+  const startedAt = Date.now();
+
+  try {
+    const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/v1/chat/completions`;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: GEMMA_MODEL,
+        messages: [{ role: "user", content: "Hi" }],
+        temperature: 0.7,
+        max_tokens: 5,
+        stream: false,
+      }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+    const latencyMs = Date.now() - startedAt;
+
+    if (response.ok) {
+      console.log("[Gemma] Model warmed up successfully", { callId, latencyMs });
+    } else {
+      const text = await response.text().catch(() => "");
+      console.warn("[Gemma] Warm-up received non-OK response (non-fatal)", {
+        callId,
+        status: response.status,
+        latencyMs,
+        preview: text.slice(0, 200),
+      });
+    }
+  } catch (error) {
+    const latencyMs = Date.now() - startedAt;
+    console.warn("[Gemma] Warm-up failed (non-fatal)", {
+      callId,
+      latencyMs,
+      error: error?.message,
+    });
+  }
 }
 
 function closeTruncatedJSON(text) {
