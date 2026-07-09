@@ -9,6 +9,8 @@ interface LessonStore {
   lesson: LessonJourney | null;
   isLoading: boolean;
   error: string | null;
+  progressStage: string;
+  progressPercent: number;
   unlockedPart: number;
   completedParts: number[];
   partScores: Record<number, number | null>;
@@ -17,6 +19,7 @@ interface LessonStore {
   showFollowUp: boolean;
   setQuestion: (question: string) => void;
   startLoading: () => void;
+  setProgress: (stage: string, percent: number) => void;
   setLesson: (lesson: LessonJourney) => void;
   setError: (error: string | null) => void;
   passPart: (part: number, score: number) => void;
@@ -41,6 +44,8 @@ const initialState = {
   lesson: null,
   isLoading: false,
   error: null,
+  progressStage: "",
+  progressPercent: 0,
   unlockedPart: 1,
   completedParts: [] as number[],
   partScores: { 1: null, 2: null, 3: null } as Record<number, number | null>,
@@ -63,6 +68,8 @@ export const useLessonStore = create<LessonStore>()(
           isLoading: true,
           error: null,
           lesson: null,
+          progressStage: "",
+          progressPercent: 0,
           unlockedPart: 1,
           completedParts: [],
           partScores: { 1: null, 2: null, 3: null },
@@ -70,6 +77,10 @@ export const useLessonStore = create<LessonStore>()(
           showCompletion: false,
           showFollowUp: false,
         });
+      },
+      setProgress: (stage, percent) => {
+        storeLog("setProgress", { stage, percent });
+        set({ progressStage: stage, progressPercent: percent });
       },
       setLesson: (lesson) => {
         storeLog("setLesson", {
@@ -82,6 +93,8 @@ export const useLessonStore = create<LessonStore>()(
           question: lesson.question ?? lesson.topic ?? "",
           isLoading: false,
           error: null,
+          progressStage: "",
+          progressPercent: 0,
           unlockedPart: 1,
           completedParts: [],
           partScores: { 1: null, 2: null, 3: null },
@@ -92,7 +105,7 @@ export const useLessonStore = create<LessonStore>()(
       },
       setError: (error) => {
         storeLog("setError", { error });
-        set({ error, isLoading: false });
+        set({ error, isLoading: false, progressStage: "", progressPercent: 0 });
       },
       passPart: (part, score) =>
         set((state) => {
@@ -132,6 +145,8 @@ export const useLessonStore = create<LessonStore>()(
           lesson: null,
           isLoading: false,
           error: null,
+          progressStage: "",
+          progressPercent: 0,
           unlockedPart: 1,
           completedParts: [],
           partScores: { 1: null, 2: null, 3: null },

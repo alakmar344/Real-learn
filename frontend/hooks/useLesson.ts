@@ -149,6 +149,7 @@ export function useLesson() {
   const {
     setQuestion,
     startLoading,
+    setProgress,
     setLesson,
     setError,
     resetForNextQuestion,
@@ -308,6 +309,12 @@ export function useLesson() {
                 lesson = JSON.parse(entry.data) as LessonJourney;
                 continue;
               }
+              if (entry.event === "progress") {
+                const payload = JSON.parse(entry.data) as { stage: string; percent: number };
+                logLessonDebug("progress event received", { requestId, attempt, payload });
+                setProgress(payload.stage, payload.percent);
+                continue;
+              }
               if (entry.event === "ping") {
                 logLessonDebug("ping event received", { requestId, attempt, ping: entry.data });
                 continue;
@@ -345,6 +352,10 @@ export function useLesson() {
                   dataLength: entry.data.length,
                 });
                 lesson = JSON.parse(entry.data) as LessonJourney;
+              } else if (entry.event === "progress") {
+                const payload = JSON.parse(entry.data) as { stage: string; percent: number };
+                logLessonDebug("progress event in residual buffer", { requestId, attempt, payload });
+                setProgress(payload.stage, payload.percent);
               } else if (entry.event === "error") {
                 const payload = JSON.parse(entry.data) as { error?: string };
                 logLessonDebug("error event in residual buffer", { requestId, attempt, payload });
@@ -436,7 +447,7 @@ export function useLesson() {
       setError(lastError instanceof Error ? lastError.message : "Failed to generate lesson");
       return false;
     },
-    [getToken, language, level, mode, router, setError, setLesson, setQuestion, startLoading]
+    [getToken, language, level, mode, router, setError, setLesson, setProgress, setQuestion, startLoading]
   );
 
   const restart = useCallback(() => {

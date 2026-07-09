@@ -1,15 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useLessonStore } from "@/store/lessonStore";
 
-// Each step "completes" once the simulated progress passes its threshold.
+// Each step "completes" once the real progress passes its threshold.
 const steps = [
-  { label: "Understanding your question", at: 8 },
-  { label: "Researching real-world context", at: 26 },
-  { label: "Writing the foundation", at: 45 },
-  { label: "Explaining how it works", at: 64 },
-  { label: "Connecting it to the real world", at: 80 },
-  { label: "Crafting quiz questions", at: 92 },
+  { label: "Understanding your question", at: 5, stage: "starting" },
+  { label: "Researching real-world context", at: 15, stage: "searching" },
+  { label: "Writing the foundation", at: 40, stage: "generating" },
+  { label: "Explaining how it works", at: 40, stage: "generating" },
+  { label: "Connecting it to the real world", at: 85, stage: "generated" },
+  { label: "Crafting quiz questions", at: 95, stage: "validating" },
 ];
 
 const facts = [
@@ -28,22 +29,28 @@ interface Props {
 }
 
 export default function LoadingCinematic({ question, onCancel }: Props) {
-  const [progress, setProgress] = useState(0);
+  const progressPercent = useLessonStore((s) => s.progressPercent);
+  const [displayProgress, setDisplayProgress] = useState(0);
   const [factIndex, setFactIndex] = useState(0);
-  const progressRef = useRef(0);
+  const displayRef = useRef(0);
 
-  // Smoothly ease progress toward an asymptote (~95%) so the bar always
-  // appears to move and naturally slows down near the end — it never reaches
-  // 100% until the real lesson arrives and this component unmounts.
+  // Smoothly animate toward the real progress value. When real progress
+  // jumps (e.g. 5 → 15 → 30 → 40 → 85 → 95), the display catches up
+  // with a smooth ease. Between events it creeps forward slowly so the
+  // bar never feels stuck.
   useEffect(() => {
     const id = window.setInterval(() => {
-      const target = 95;
-      const next = progressRef.current + (target - progressRef.current) * 0.04;
-      progressRef.current = next;
-      setProgress(next);
-    }, 120);
+      const target = progressPercent > 0 ? progressPercent : 95;
+      // If we have real progress, move toward it faster (0.12 per tick).
+      // If no real progress yet (waiting for first event), creep slowly
+      // toward 95 so the bar still moves during the initial network roundtrip.
+      const rate = progressPercent > 0 ? 0.12 : 0.03;
+      const next = displayRef.current + (target - displayRef.current) * rate;
+      displayRef.current = next;
+      setDisplayProgress(next);
+    }, 100);
     return () => window.clearInterval(id);
-  }, []);
+  }, [progressPercent]);
 
   // Rotate the encouraging facts so there's always something fresh to read.
   useEffect(() => {
@@ -53,7 +60,7 @@ export default function LoadingCinematic({ question, onCancel }: Props) {
     return () => window.clearInterval(id);
   }, []);
 
-  const pct = Math.min(99, Math.round(progress));
+  const pct = Math.min(99, Math.round(displayProgress));
 
   return (
     <div
@@ -152,10 +159,10 @@ export default function LoadingCinematic({ question, onCancel }: Props) {
           }}
         >
           {steps.map((step) => {
-            const done = progress >= step.at;
+            const done = displayProgress >= step.at;
             const active =
               !done &&
-              progress >= (steps[steps.indexOf(step) - 1]?.at ?? 0);
+              displayProgress >= (steps[steps.indexOf(step) - 1]?.at ?? 0);
             return (
               <li
                 key={step.label}
