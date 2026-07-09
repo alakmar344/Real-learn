@@ -1125,8 +1125,10 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
     // it runs concurrently with the (much slower) generation call and the
     // verdict is enforced below before the lesson is streamed. Net added
     // latency in fast mode: ~0.
+    sendEvent("progress", { stage: "starting", percent: 5 });
     const inputModerationPromise = moderateText(question, "input");
     console.log("[Serper] Context fetch start", { requestId, mode });
+    sendEvent("progress", { stage: "searching", percent: 15 });
     const [inputModeration, newsContextResult] = await Promise.all([
       inputModerationPromise,
       mode === "fast"
@@ -1150,6 +1152,7 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
       contextLength: newsContext?.length ?? 0,
       trimmedLength: trimmedNewsContext?.length ?? 0,
     });
+    sendEvent("progress", { stage: "searched", percent: 30 });
 
     if (finished) return;
     if (inputModeration && !inputModeration.allowed) {
@@ -1203,6 +1206,7 @@ Level: ${level}${
       maxOutputTokens,
       temperature,
     });
+    sendEvent("progress", { stage: "generating", percent: 40 });
     const raw = await callGemma(
       systemPrompt,
       userPrompt,
@@ -1217,6 +1221,7 @@ Level: ${level}${
       rawLength: raw.length,
       rawPreview: raw.slice(0, 500),
     });
+    sendEvent("progress", { stage: "generated", percent: 85 });
 
     // SPEED TACTIC: kick off the LLM output-moderation call immediately and
     // let it run concurrently with the regex guard, JSON parsing, and schema
@@ -1254,6 +1259,7 @@ Level: ${level}${
       return;
     }
     const normalized = normalizeJourney(parsed, mode);
+    sendEvent("progress", { stage: "validating", percent: 95 });
     if (!isValidJourney(normalized, mode)) {
       console.warn("[generate-lesson] normalizeJourney/isValidJourney failed", {
         requestId,
