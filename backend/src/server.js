@@ -8,6 +8,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   callGemma,
+  warmUpModel,
   formatGemmaTimeoutMessage,
   GemmaTimeoutError,
   GemmaApiError,
@@ -1408,6 +1409,9 @@ try {
   validateStartupConfig();
   const server = app.listen(port, () => {
     console.log(`Backend listening on port ${port}`);
+    // Warm up the Cloudflare Workers AI model so the first real user request
+    // doesn't hit a cold start (10-30s penalty). Fire-and-forget.
+    warmUpModel();
   });
 
   // Graceful shutdown: stop accepting new connections, wait for in-flight

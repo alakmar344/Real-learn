@@ -11,7 +11,7 @@ const trimmedBackendUrl = (
   process.env.NEXT_PUBLIC_BACKEND_URL ||
 "https://real-learn.onrender.com"
 ).replace(/\/$/, "");
-const DEFAULT_STREAM_IDLE_TIMEOUT_MS = 120000;
+const DEFAULT_STREAM_IDLE_TIMEOUT_MS = 180000;
 const configuredStreamIdleTimeoutMs = Number(process.env.NEXT_PUBLIC_STREAM_IDLE_TIMEOUT_MS);
 const STREAM_IDLE_TIMEOUT_MS =
   Number.isFinite(configuredStreamIdleTimeoutMs) && configuredStreamIdleTimeoutMs > 0
