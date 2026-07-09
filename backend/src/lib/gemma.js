@@ -1,4 +1,12 @@
 const GEMMA_MODEL = process.env.GEMMA_MODEL || "@cf/google/gemma-4-26b-a4b-it";
+// Default upstream for all Gemma calls. The Cloudflare Worker
+// (cloudflare/reallearn-ai-worker) runs Workers AI in-network with Smart
+// Placement + Shard & Conquer. Set GEMMA_WORKER_URL to override (e.g. a custom
+// domain). Replace SUBDOMAIN with your account's workers.dev subdomain after
+// `wrangler deploy`. Falls back to the public REST API only if this is unset.
+const GEMMA_WORKER_URL =
+  process.env.GEMMA_WORKER_URL?.trim() ||
+  "https://reallearn-ai-worker.SUBDOMAIN.workers.dev";
 const DEFAULT_MAX_RETRIES = 2;
 const DEFAULT_RETRY_DELAY_MS = 700;
 const DEFAULT_MAX_RETRY_DELAY_MS = 5000;
@@ -185,8 +193,8 @@ function isAbortError(error) {
 }
 
 async function callWorkersAI(accountId, model, body, signal) {
-  const workerUrl = process.env.GEMMA_WORKER_URL?.trim();
-  if (workerUrl) {
+  const workerUrl = GEMMA_WORKER_URL;
+  if (workerUrl && !workerUrl.includes("SUBDOMAIN")) {
     return callWorkersAIWorker(workerUrl, model, body, signal);
   }
 
@@ -352,13 +360,15 @@ export async function callGemma(
   signal = null,
   maxOutputTokens = 4000
 ) {
+  const usingWorker =
+    !GEMMA_WORKER_URL.includes("SUBDOMAIN") && !process.env.GEMMA_USE_REST;
   if (
-    !process.env.GEMMA_WORKER_URL?.trim() &&
+    !usingWorker &&
     (!process.env.CLOUDFLARE_API_TOKEN?.trim() ||
       !process.env.CLOUDFLARE_ACCOUNT_ID?.trim())
   ) {
     throw new Error(
-      "CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID are not configured (or set GEMMA_WORKER_URL to route via the AI Worker)"
+      "CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID are not configured (set them, or deploy the AI Worker and set its URL in GEMMA_WORKER_URL)"
     );
   }
   if (enableSearch) {
@@ -620,10 +630,11 @@ export async function callGemma(
  * boot loads the model so the first real user request doesn't time out.
  */
 export async function warmUpModel() {
-  const workerUrl = process.env.GEMMA_WORKER_URL?.trim();
+  const workerUrl = GEMMA_WORKER_URL;
   const accountId = process.env.CLOUDFLARE_ACCOUNT_ID?.trim();
   const apiToken = process.env.CLOUDFLARE_API_TOKEN?.trim();
-  if (!workerUrl && (!accountId || !apiToken)) {
+  const useWorker = workerUrl && !workerUrl.includes("SUBDOMAIN");
+  if (!useWorker && (!accountId || !apiToken)) {
     console.log("[Gemma] Warm-up skipped: missing CLOUDFLARE or WORKER config");
     return;
   }
@@ -637,7 +648,7 @@ export async function warmUpModel() {
     const timeoutId = setTimeout(() => controller.abort(), 30000);
 
     let response;
-    if (workerUrl) {
+    if (useWorker) {
       const token = process.env.GEMMA_WORKER_TOKEN?.trim();
       const headers = { "Content-Type": "application/json" };
       if (token) headers.Authorization = `Bearer ${token}`;
