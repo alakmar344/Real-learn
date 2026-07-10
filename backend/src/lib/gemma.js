@@ -28,12 +28,13 @@ export class GemmaTimeoutError extends Error {
 }
 
 export class GemmaApiError extends Error {
-  constructor(status, statusText, details) {
+  constructor(status, statusText, details, retryAfterMs) {
     super(`Gemma API error: ${status} ${statusText} - ${details}`);
     this.name = "GemmaApiError";
     this.status = status;
     this.statusText = statusText;
     this.details = details;
+    this.retryAfterMs = retryAfterMs;
   }
 }
 
@@ -201,6 +202,8 @@ async function callWorkersAI(accountId, model, body, signal) {
     headers: {
       Authorization: `Bearer ${apiToken}`,
       "Content-Type": "application/json",
+      Connection: "keep-alive",
+      "Accept-Encoding": "gzip, deflate, br",
     },
     body: JSON.stringify(payload),
     signal,
@@ -210,7 +213,15 @@ async function callWorkersAI(accountId, model, body, signal) {
 
   if (!response.ok) {
     let details = response.statusText;
+    let retryAfterMs;
     try {
+      const retryAfterHeader = response.headers.get("Retry-After");
+      if (typeof retryAfterHeader === "string") {
+        const parsed = Number(retryAfterHeader);
+        if (Number.isFinite(parsed) && parsed > 0) {
+          retryAfterMs = parsed * 1000;
+        }
+      }
       if (contentType.includes("application/json")) {
         const errBody = await response.json();
         details =
@@ -221,7 +232,7 @@ async function callWorkersAI(accountId, model, body, signal) {
         details = (await response.text()).slice(0, 500);
       }
     } catch {}
-    throw new GemmaApiError(response.status, response.statusText, details);
+    throw new GemmaApiError(response.status, response.statusText, details, retryAfterMs);
   }
 
   if (contentType.includes("text/event-stream")) {
@@ -237,10 +248,19 @@ async function callWorkersAI(accountId, model, body, signal) {
   const data = await response.json();
   console.log("[Gemma] API response keys:", Object.keys(data));
   if (data.error) {
+    const retryAfterMs = (() => {
+      const header = response.headers.get("Retry-After");
+      if (typeof header === "string") {
+        const parsed = Number(header);
+        if (Number.isFinite(parsed) && parsed > 0) return parsed * 1000;
+      }
+      return undefined;
+    })();
     throw new GemmaApiError(
       data.error.code || 500,
       "APIError",
-      data.error.message || JSON.stringify(data.error)
+      data.error.message || JSON.stringify(data.error),
+      retryAfterMs
     );
   }
   return data;
@@ -368,6 +388,8 @@ export async function callFallbackAI(model, body, signal) {
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
+      Connection: "keep-alive",
+      "Accept-Encoding": "gzip, deflate, br",
     },
     body: JSON.stringify(payload),
     signal,
@@ -377,7 +399,15 @@ export async function callFallbackAI(model, body, signal) {
 
   if (!response.ok) {
     let details = response.statusText;
+    let retryAfterMs;
     try {
+      const retryAfterHeader = response.headers.get("Retry-After");
+      if (typeof retryAfterHeader === "string") {
+        const parsed = Number(retryAfterHeader);
+        if (Number.isFinite(parsed) && parsed > 0) {
+          retryAfterMs = parsed * 1000;
+        }
+      }
       if (contentType.includes("application/json")) {
         const errBody = await response.json();
         details =
@@ -388,16 +418,25 @@ export async function callFallbackAI(model, body, signal) {
         details = (await response.text()).slice(0, 500);
       }
     } catch {}
-    throw new GemmaApiError(response.status, response.statusText, details);
+    throw new GemmaApiError(response.status, response.statusText, details, retryAfterMs);
   }
 
   if (contentType.includes("application/json")) {
     const data = await response.json();
     if (data.error) {
+      const retryAfterMs = (() => {
+        const header = response.headers.get("Retry-After");
+        if (typeof header === "string") {
+          const parsed = Number(header);
+          if (Number.isFinite(parsed) && parsed > 0) return parsed * 1000;
+        }
+        return undefined;
+      })();
       throw new GemmaApiError(
         data.error.code || 500,
         "APIError",
-        data.error.message || JSON.stringify(data.error)
+        data.error.message || JSON.stringify(data.error),
+        retryAfterMs
       );
     }
     return data;
@@ -612,12 +651,13 @@ export async function callGemma(
 
       const isLastAttempt = attempt === maxRetries;
       if (!isLastAttempt && isRetryableGemmaError(normalizedError)) {
-        // 408 is typically a cold start — give the model more time to load.
         const isColdStart =
           normalizedError instanceof GemmaApiError && normalizedError.status === 408;
         const baseDelay = isColdStart ? COLD_START_RETRY_DELAY_MS : retryDelayMs;
         const cap = isColdStart ? COLD_START_MAX_RETRY_DELAY_MS : maxRetryDelayMs;
-        const waitMs = Math.min(baseDelay * Math.pow(2, attempt), cap);
+        const waitMs = normalizedError.retryAfterMs
+          ? Math.min(normalizedError.retryAfterMs, cap)
+          : Math.min(baseDelay * Math.pow(2, attempt), cap);
         console.warn(
           `[Gemma] Retrying after attempt ${attempt + 1} failed`
         );
@@ -627,6 +667,7 @@ export async function callGemma(
           attempt: attempt + 1,
           waitMs,
           isColdStart,
+          fromRetryAfter: Boolean(normalizedError.retryAfterMs),
         });
         await sleep(waitMs);
         continue;
@@ -709,8 +750,9 @@ export async function callGemma(
 
 /**
  * Warm up the Cloudflare Workers AI model with a minimal request.
- * Cold starts on CF Workers AI can take 10-30s — calling this once on server
+ * Cold starts on CF Workers AI can take 10-30s — calling this on server
  * boot loads the model so the first real user request doesn't time out.
+ * Retry once on transient failure to improve robustness.
  */
 export async function warmUpModel() {
   const accountId = process.env.CLOUDFLARE_ACCOUNT_ID?.trim();
@@ -724,48 +766,63 @@ export async function warmUpModel() {
   console.log("[Gemma] Warming up model...", { callId, model: GEMMA_MODEL });
   const startedAt = Date.now();
 
-  try {
-    const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/v1/chat/completions`;
+  const maxAttempts = 2;
+  const warmupTimeoutMs = 60000;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000);
+    const timeoutId = setTimeout(() => controller.abort(), warmupTimeoutMs);
 
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: GEMMA_MODEL,
-        messages: [{ role: "user", content: "Hi" }],
-        temperature: 0.7,
-        max_tokens: 5,
-        stream: false,
-      }),
-      signal: controller.signal,
-    });
+    try {
+      const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/v1/chat/completions`;
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+          "Content-Type": "application/json",
+          Connection: "keep-alive",
+          "Accept-Encoding": "gzip, deflate, br",
+        },
+        body: JSON.stringify({
+          model: GEMMA_MODEL,
+          messages: [{ role: "user", content: "Hi" }],
+          temperature: 0.7,
+          max_tokens: 5,
+          stream: false,
+        }),
+        signal: controller.signal,
+      });
 
-    clearTimeout(timeoutId);
-    const latencyMs = Date.now() - startedAt;
+      clearTimeout(timeoutId);
+      const latencyMs = Date.now() - startedAt;
 
-    if (response.ok) {
-      console.log("[Gemma] Model warmed up successfully", { callId, latencyMs });
-    } else {
+      if (response.ok) {
+        console.log("[Gemma] Model warmed up successfully", {
+          callId,
+          latencyMs,
+          attempt: attempt + 1,
+        });
+        return;
+      }
+
       const text = await response.text().catch(() => "");
       console.warn("[Gemma] Warm-up received non-OK response (non-fatal)", {
         callId,
         status: response.status,
         latencyMs,
+        attempt: attempt + 1,
         preview: text.slice(0, 200),
       });
+    } catch (error) {
+      clearTimeout(timeoutId);
+      const latencyMs = Date.now() - startedAt;
+      console.warn("[Gemma] Warm-up attempt failed (non-fatal)", {
+        callId,
+        attempt: attempt + 1,
+        latencyMs,
+        error: error?.message,
+      });
     }
-  } catch (error) {
-    const latencyMs = Date.now() - startedAt;
-    console.warn("[Gemma] Warm-up failed (non-fatal)", {
-      callId,
-      latencyMs,
-      error: error?.message,
-    });
   }
 }
 

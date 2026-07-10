@@ -232,6 +232,7 @@ export function useLesson() {
               level,
               mode,
             }),
+            cache: "no-store",
           });
           refreshIdleTimeout();
           logLessonDebug("received initial response", {
