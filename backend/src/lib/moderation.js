@@ -102,7 +102,8 @@ export async function moderateText(text, kind = "input") {
       0,
       MODERATION_TIMEOUT_MS,
       controller.signal,
-      80
+      80,
+      false
     );
     const verdict = parseJSON(raw);
 
