@@ -226,10 +226,14 @@ setInterval(() => apiRateLimiter.cleanup(), RATE_LIMIT_WINDOW_MS).unref?.();
 
 const DEFAULT_LESSON_TIMEOUT_MS = 300000;
 const MIN_LESSON_TIMEOUT_MS = 30000;
+const MAX_LESSON_TIMEOUT_MS = 600000;
 const configuredLessonTimeoutMs = Number(process.env.LESSON_TIMEOUT_MS);
 const LESSON_TIMEOUT_MS =
   Number.isFinite(configuredLessonTimeoutMs) && configuredLessonTimeoutMs > 0
-    ? Math.max(configuredLessonTimeoutMs, MIN_LESSON_TIMEOUT_MS)
+    ? Math.min(
+        Math.max(configuredLessonTimeoutMs, MIN_LESSON_TIMEOUT_MS),
+        MAX_LESSON_TIMEOUT_MS
+      )
     : DEFAULT_LESSON_TIMEOUT_MS;
 if (
   Number.isFinite(configuredLessonTimeoutMs) &&
@@ -238,6 +242,14 @@ if (
 ) {
   console.warn(
     `[config] LESSON_TIMEOUT_MS clamped from ${configuredLessonTimeoutMs}ms to minimum ${MIN_LESSON_TIMEOUT_MS}ms`
+  );
+}
+if (
+  Number.isFinite(configuredLessonTimeoutMs) &&
+  configuredLessonTimeoutMs > MAX_LESSON_TIMEOUT_MS
+) {
+  console.warn(
+    `[config] LESSON_TIMEOUT_MS clamped from ${configuredLessonTimeoutMs}ms to maximum ${MAX_LESSON_TIMEOUT_MS}ms`
   );
 }
 const DEFAULT_HEARTBEAT_INTERVAL_MS = 15000;
