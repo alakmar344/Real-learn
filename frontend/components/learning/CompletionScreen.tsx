@@ -11,25 +11,27 @@ interface Props {
   onRetake?: () => void;
 }
 
-/* ── Confetti particles ── */
+/* ── Confetti particles — vibrant, modern colors ── */
 const CONFETTI_COLORS = [
-  "var(--accent)",
-  "var(--correct)",
-  "#3b82f6",
+  "#6366f1",
+  "#a855f7",
   "#ec4899",
-  "#8b5cf6",
   "#f59e0b",
+  "#10b981",
+  "#3b82f6",
+  "#ef4444",
 ];
 
 function Confetti() {
   const [particles] = useState(() =>
-    Array.from({ length: 40 }, (_, i) => ({
+    Array.from({ length: 50 }, (_, i) => ({
       id: i,
       left: Math.random() * 100,
-      delay: Math.random() * 1.2,
-      size: 6 + Math.random() * 6,
+      delay: Math.random() * 1.5,
+      size: 6 + Math.random() * 8,
       color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
-      duration: 2 + Math.random() * 1.5,
+      duration: 2 + Math.random() * 2,
+      rotation: Math.random() * 360,
     }))
   );
 
@@ -44,9 +46,10 @@ function Confetti() {
             left: `${p.left}%`,
             width: p.size,
             height: p.size,
-            borderRadius: "50%",
+            borderRadius: p.id % 3 === 0 ? "50%" : p.id % 3 === 1 ? "2px" : "0",
             background: p.color,
             animation: `confettiFall ${p.duration}s ${p.delay}s var(--ease-reveal) both`,
+            transform: `rotate(${p.rotation}deg)`,
           }}
         />
       ))}
@@ -85,11 +88,11 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
       className="animate-fade-up"
       aria-label="Journey complete"
       style={{
-        marginTop: 28,
-        borderRadius: "var(--radius-xl)",
+        marginTop: 32,
+        borderRadius: "var(--radius-2xl)",
         border: "1px solid color-mix(in srgb, var(--correct) 30%, transparent)",
         background: "var(--correct-bg)",
-        padding: "clamp(20px, 4vw, 32px)",
+        padding: "clamp(24px, 5vw, 40px)",
         position: "relative",
         overflow: "hidden",
       }}
@@ -98,20 +101,26 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
 
       {/* Score circle */}
       <div style={{ display: "flex", alignItems: "center", gap: varSpaceLg, flexWrap: "wrap" }}>
-        <div style={{ position: "relative", width: 96, height: 96, flexShrink: 0 }} aria-hidden="true">
-          <svg width="96" height="96" viewBox="0 0 96 96">
-            <circle cx="48" cy="48" r="42" fill="none" stroke="var(--border-default)" strokeWidth="6" />
+        <div style={{ position: "relative", width: 100, height: 100, flexShrink: 0 }} aria-hidden="true">
+          <svg width="100" height="100" viewBox="0 0 100 100">
+            <defs>
+              <linearGradient id="score-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#10b981" />
+                <stop offset="100%" stopColor="#06b6d4" />
+              </linearGradient>
+            </defs>
+            <circle cx="50" cy="50" r="42" fill="none" stroke="var(--border-subtle)" strokeWidth="6" />
             <circle
-              cx="48"
-              cy="48"
+              cx="50"
+              cy="50"
               r="42"
               fill="none"
-              stroke="var(--correct)"
+              stroke="url(#score-gradient)"
               strokeWidth="6"
               strokeDasharray={circumference}
               strokeDashoffset={offset}
               strokeLinecap="round"
-              transform="rotate(-90 48 48)"
+              transform="rotate(-90 50 50)"
               style={{ transition: "stroke-dashoffset 800ms var(--ease-reveal)" }}
             />
           </svg>
@@ -121,8 +130,8 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
               inset: 0,
               display: "grid",
               placeItems: "center",
-              fontSize: 22,
-              fontWeight: 700,
+              fontSize: 24,
+              fontWeight: 800,
               color: "var(--correct)",
             }}
           >
@@ -131,19 +140,31 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
         </div>
 
         <div>
-          <div style={{ fontSize: 36, marginBottom: 4 }}>🎉</div>
-          <h3 style={{ margin: 0, fontSize: 28, fontWeight: 600 }}>
+          <div style={{ fontSize: 40, marginBottom: 8, animation: "bounceIn 600ms var(--ease-reveal)" }}>🎉</div>
+          <h3
+            style={{
+              margin: 0,
+              fontSize: 30,
+              fontWeight: 800,
+              background: "var(--accent-gradient)",
+              backgroundClip: "text",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
             {(lesson.parts?.length ?? 3) === 1 ? "Quick Answer Mastered" : "Journey Complete"}
           </h3>
-          <p style={{ marginTop: 4, color: "var(--text-secondary)", fontSize: 14 }}>
-            You scored <strong style={{ color: "var(--correct)" }}>{totalScore}/{maxScore}</strong> — {pct >= 80 ? "Excellent work!" : pct >= 50 ? "Good effort!" : "Keep practising!"}
+          <p style={{ marginTop: 6, color: "var(--text-secondary)", fontSize: 15 }}>
+            You scored <strong style={{ color: "var(--correct)" }}>{totalScore}/{maxScore}</strong> — {pct >= 80 ? "Excellent work! 🔥" : pct >= 50 ? "Good effort! 💪" : "Keep going! 🌱"}
           </p>
         </div>
       </div>
 
       {/* Key takeaways */}
       <div style={{ marginTop: varSpaceLg }}>
-        <h4 style={{ margin: "0 0 var(--space-sm)", fontSize: 16, fontWeight: 600 }}>Key Takeaways</h4>
+        <h4 style={{ margin: "0 0 var(--space-md)", fontSize: 18, fontWeight: 700, color: "var(--text-primary)" }}>
+          Key Takeaways ✨
+        </h4>
         {(lesson.keyTakeaways ?? []).map((takeaway, index) => (
           <div
             key={`${index}-${takeaway}`}
@@ -153,20 +174,24 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
               fontSize: 14,
               display: "flex",
               gap: varSpaceSm,
+              padding: "10px 14px",
+              borderRadius: "var(--radius-md)",
+              background: "color-mix(in srgb, var(--accent) 5%, transparent)",
+              border: "1px solid color-mix(in srgb, var(--accent) 15%, transparent)",
             }}
           >
             <span
               style={{
-              color: "var(--accent)",
-              fontWeight: 700,
+                color: "var(--accent)",
+                fontWeight: 800,
                 flexShrink: 0,
-                width: 20,
+                width: 24,
                 textAlign: "center",
               }}
             >
               {index + 1}.
             </span>
-            <span>{takeaway}</span>
+            <span style={{ fontWeight: 500 }}>{takeaway}</span>
           </div>
         ))}
       </div>
@@ -181,15 +206,24 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
             type="button"
             onClick={onRetake}
             style={{
-              border: "1px solid var(--border-default)",
-              borderRadius: "var(--radius-md)",
+              border: "1.5px solid var(--border-default)",
+              borderRadius: "var(--radius-lg)",
               background: "transparent",
               color: "var(--text-secondary)",
-              padding: "10px 18px",
+              padding: "12px 20px",
               cursor: "pointer",
               fontSize: 14,
-              fontWeight: 600,
-              minHeight: 44,
+              fontWeight: 700,
+              minHeight: 48,
+              transition: "all 200ms var(--ease-color)",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "var(--accent)";
+              e.currentTarget.style.color = "var(--accent)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "var(--border-default)";
+              e.currentTarget.style.color = "var(--text-secondary)";
             }}
           >
             Retake Quiz
@@ -201,15 +235,24 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
             onClick={onRestart}
             style={{
               border: "none",
-              borderRadius: "var(--radius-md)",
-              background: "var(--accent)",
+              borderRadius: "var(--radius-lg)",
+              background: "var(--accent-gradient)",
               color: "var(--on-accent)",
-              padding: "10px 18px",
+              padding: "12px 24px",
               cursor: "pointer",
               fontSize: 14,
               fontWeight: 700,
-              minHeight: 44,
-              boxShadow: "var(--shadow-sm)",
+              minHeight: 48,
+              boxShadow: "var(--shadow-glow-accent)",
+              transition: "all 300ms var(--ease-color)",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "scale(1.03)";
+              e.currentTarget.style.boxShadow = "0 8px 30px var(--accent-glow)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "scale(1)";
+              e.currentTarget.style.boxShadow = "var(--shadow-glow-accent)";
             }}
           >
             Continue Learning →

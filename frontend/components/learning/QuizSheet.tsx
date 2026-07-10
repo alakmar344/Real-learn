@@ -158,7 +158,7 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
         position: "fixed",
         inset: 0,
         background: "var(--scrim, rgba(0,0,0,0.7))",
-        backdropFilter: "blur(var(--blur-sm, 4px))",
+        backdropFilter: "blur(var(--blur-sm, 6px))",
         zIndex: 90,
       }}
     >
@@ -174,13 +174,22 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
           maxHeight: "85vh",
           overflowY: "auto",
           background: "var(--bg-card)",
-          borderTop: "2px solid var(--accent)",
+          borderTop: "3px solid transparent",
+          borderImage: "var(--accent-gradient) 1",
           borderRadius: "var(--radius-2xl) var(--radius-2xl) 0 0",
           padding: "0 24px 40px",
         }}
       >
         {/* Drag handle */}
-        <div style={{ width: 40, height: 4, borderRadius: 2, background: "var(--border-default)", margin: "12px auto 20px" }} />
+        <div
+          style={{
+            width: 48,
+            height: 5,
+            borderRadius: 3,
+            background: "var(--accent-gradient)",
+            margin: "14px auto 20px",
+          }}
+        />
 
         {/* Close button */}
         <button
@@ -192,18 +201,38 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
             top: 16,
             right: 24,
             background: "transparent",
-            border: "1px solid var(--border-default)",
+            border: "1px solid var(--border-subtle)",
             borderRadius: "var(--radius-md)",
-            padding: "4px 10px",
+            padding: "6px 12px",
             color: "var(--text-secondary)",
             cursor: "pointer",
             fontSize: 14,
+            transition: "all 200ms var(--ease-color)",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = "var(--accent)";
+            e.currentTarget.style.color = "var(--accent)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = "var(--border-subtle)";
+            e.currentTarget.style.color = "var(--text-secondary)";
           }}
         >
           ✕
         </button>
 
-        <h3 style={{ margin: 0, fontFamily: "var(--font-playfair)", fontWeight: 700, fontSize: 18 }}>
+        <h3
+          style={{
+            margin: 0,
+            fontFamily: "var(--font-playfair)",
+            fontWeight: 800,
+            fontSize: 20,
+            background: "var(--accent-gradient)",
+            backgroundClip: "text",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+          }}
+        >
           Quick Check
         </h3>
         <p style={{ marginTop: 6, marginBottom: 16, fontSize: 13, color: "var(--text-secondary)" }}>
@@ -217,18 +246,19 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
             role="status"
             style={{
               marginBottom: 16,
-              padding: "10px 14px",
-              borderRadius: "var(--radius-md)",
-              border: "1px solid var(--border-default)",
-              background: "var(--bg-primary)",
-              color: "var(--text-secondary)",
+              padding: "12px 16px",
+              borderRadius: "var(--radius-lg)",
+              border: "1px solid color-mix(in srgb, var(--accent) 30%, transparent)",
+              background: "var(--accent-dim)",
+              color: "var(--accent)",
               fontSize: 13,
+              fontWeight: 500,
               display: "flex",
               alignItems: "center",
-              gap: 8,
+              gap: 10,
             }}
           >
-            <span aria-hidden="true">🔀</span>
+            <span aria-hidden="true" style={{ fontSize: 18 }}>🔀</span>
             Answers reshuffled — the correct one has moved. Find it again!
           </div>
         ) : null}
@@ -254,26 +284,49 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
                   : "Read again"
             }
             style={{
-              marginTop: 18,
+              marginTop: 20,
               width: "100%",
-              borderRadius: "var(--radius-md)",
-              padding: "12px",
+              borderRadius: "var(--radius-lg)",
+              padding: "14px",
               border:
                 score === perfectScore && current === lastQuestionIndex
                   ? "none"
                   : "1.5px solid var(--border-default)",
               background:
                 score === perfectScore && current === lastQuestionIndex
-                  ? "var(--correct)"
+                  ? "var(--accent-gradient)"
                   : "transparent",
               color:
                 score === perfectScore && current === lastQuestionIndex
                   ? "white"
                   : "var(--text-primary)",
               fontSize: 14,
-              fontWeight: 600,
+              fontWeight: 700,
               cursor: "pointer",
-              transition: "background 200ms var(--ease-color)",
+              transition: "all 300ms var(--ease-color)",
+              boxShadow:
+                score === perfectScore && current === lastQuestionIndex
+                  ? "var(--shadow-glow-accent)"
+                  : "none",
+              minHeight: 48,
+            }}
+            onMouseEnter={(e) => {
+              if (score === perfectScore && current === lastQuestionIndex) {
+                e.currentTarget.style.transform = "scale(1.02)";
+                e.currentTarget.style.boxShadow = "0 8px 30px var(--accent-glow)";
+              } else {
+                e.currentTarget.style.borderColor = "var(--accent)";
+                e.currentTarget.style.color = "var(--accent)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "scale(1)";
+              if (score === perfectScore && current === lastQuestionIndex) {
+                e.currentTarget.style.boxShadow = "var(--shadow-glow-accent)";
+              } else {
+                e.currentTarget.style.borderColor = "var(--border-default)";
+                e.currentTarget.style.color = "var(--text-primary)";
+              }
             }}
           >
             {current < lastQuestionIndex

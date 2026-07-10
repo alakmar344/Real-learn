@@ -8,22 +8,22 @@ import { useLessonStore } from "@/store/lessonStore";
 // value) so the checklist advances continuously alongside the bar instead of
 // two items lighting up at once and then stalling.
 const steps = [
-  { label: "Understanding your question", at: 5, stage: "starting" },
-  { label: "Researching real-world context", at: 15, stage: "searching" },
-  { label: "Writing the foundation", at: 40, stage: "generating" },
-  { label: "Explaining how it works", at: 62, stage: "generating" },
-  { label: "Connecting it to the real world", at: 85, stage: "generated" },
-  { label: "Crafting quiz questions", at: 95, stage: "validating" },
+  { label: "Understanding your question", at: 5, stage: "starting", emoji: "🧠" },
+  { label: "Researching real-world context", at: 15, stage: "searching", emoji: "🔍" },
+  { label: "Writing the foundation", at: 40, stage: "generating", emoji: "✍️" },
+  { label: "Explaining how it works", at: 62, stage: "generating", emoji: "💡" },
+  { label: "Connecting it to the real world", at: 85, stage: "generated", emoji: "🌍" },
+  { label: "Crafting quiz questions", at: 95, stage: "validating", emoji: "🎯" },
 ];
 
 const facts = [
-  "Did you know? Spacing your study sessions out beats cramming for long-term memory.",
-  "Tip: Teaching a concept to someone else is one of the fastest ways to master it.",
-  "Did you know? Your brain consolidates new learning while you sleep.",
-  "Tip: Active recall — quizzing yourself — sticks far better than re-reading.",
-  "Did you know? Connecting ideas to real-world examples makes them easier to remember.",
-  "Tip: Short breaks between focused study boosts how much you retain.",
-  "Did you know? Curiosity literally primes your brain to absorb information.",
+  "Spacing your study sessions out beats cramming for long-term memory 📚",
+  "Teaching a concept to someone else is one of the fastest ways to master it 🗣️",
+  "Your brain consolidates new learning while you sleep 😴",
+  "Active recall — quizzing yourself — sticks far better than re-reading 🧪",
+  "Connecting ideas to real-world examples makes them easier to remember 🌍",
+  "Short breaks between focused study boosts how much you retain ⏱️",
+  "Curiosity literally primes your brain to absorb information 🧲",
 ];
 
 interface Props {
@@ -90,8 +90,8 @@ export default function LoadingCinematic({ question, onCancel }: Props) {
           position: "absolute",
           inset: 0,
           background:
-            "radial-gradient(ellipse at 50% 50%, var(--accent-dim) 0%, transparent 70%)",
-          animation: "loadingGlow 3s ease-in-out infinite",
+            "radial-gradient(ellipse at 30% 40%, var(--accent-dim) 0%, transparent 50%), radial-gradient(ellipse at 70% 60%, color-mix(in srgb, var(--accent-companion) 10%, transparent) 0%, transparent 50%)",
+          animation: "loadingGlow 4s ease-in-out infinite",
         }}
       />
       <div
@@ -108,9 +108,10 @@ export default function LoadingCinematic({ question, onCancel }: Props) {
             color: "var(--accent)",
             fontFamily: "var(--font-playfair)",
             fontStyle: "italic",
-            fontSize: 22,
+            fontWeight: 700,
+            fontSize: 24,
             lineHeight: 1.4,
-            marginBottom: 28,
+            marginBottom: 32,
           }}
         >
           &ldquo;{question}&rdquo;
@@ -124,7 +125,7 @@ export default function LoadingCinematic({ question, onCancel }: Props) {
           aria-valuemax={100}
           style={{
             width: "100%",
-            height: 8,
+            height: 10,
             borderRadius: 999,
             background: "var(--accent-dim)",
             overflow: "hidden",
@@ -135,23 +136,20 @@ export default function LoadingCinematic({ question, onCancel }: Props) {
               width: `${pct}%`,
               height: "100%",
               borderRadius: 999,
-              background: "var(--accent)",
+              background: "var(--accent-gradient)",
               transition: "width 200ms linear",
-              backgroundImage:
-                "linear-gradient(90deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 70%, transparent) 50%, var(--accent) 100%)",
               backgroundSize: "200% 100%",
               animation: "shimmer 1.6s linear infinite",
-              // A soft accent glow that travels with the bar so the motion
-              // reads as alive and connected rather than a flat plateau.
-              boxShadow: "0 0 12px var(--accent-glow)",
+              boxShadow: "0 0 16px var(--accent-glow)",
             }}
           />
         </div>
         <p
           style={{
-            marginTop: 8,
-            color: "var(--text-secondary)",
-            fontSize: 13,
+            marginTop: 10,
+            color: "var(--accent)",
+            fontSize: 15,
+            fontWeight: 700,
             fontVariantNumeric: "tabular-nums",
           }}
         >
@@ -163,11 +161,11 @@ export default function LoadingCinematic({ question, onCancel }: Props) {
           style={{
             listStyle: "none",
             padding: 0,
-            margin: "20px auto 0",
+            margin: "24px auto 0",
             textAlign: "left",
-            maxWidth: 320,
+            maxWidth: 340,
             display: "grid",
-            gap: 10,
+            gap: 12,
           }}
         >
           {steps.map((step) => {
@@ -181,16 +179,17 @@ export default function LoadingCinematic({ question, onCancel }: Props) {
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: 10,
+                  gap: 12,
                   color: done
                     ? "var(--text-primary)"
                     : active
-                    ? "var(--text-primary)"
+                    ? "var(--accent)"
                     : "var(--text-secondary)",
-                  opacity: done || active ? 1 : 0.5,
+                  opacity: done || active ? 1 : 0.4,
                   fontSize: "var(--text-base)",
                   fontFamily: "var(--font-lora)",
-                  transition: "opacity 300ms ease, color 300ms ease",
+                  fontWeight: done ? 600 : 400,
+                  transition: "all 300ms ease",
                 }}
               >
                 <span
@@ -198,26 +197,27 @@ export default function LoadingCinematic({ question, onCancel }: Props) {
                   style={{
                     display: "grid",
                     placeItems: "center",
-                    width: 22,
-                    height: 22,
-                    borderRadius: "50%",
+                    width: 28,
+                    height: 28,
+                    borderRadius: "var(--radius-md)",
                     flexShrink: 0,
                     border: done
                       ? "none"
-                      : "2px solid color-mix(in srgb, var(--accent) 25%, transparent)",
-                    background: done ? "var(--accent)" : "transparent",
-                    color: "var(--on-accent)",
-                    fontSize: 12,
+                      : "2px solid color-mix(in srgb, var(--accent) 30%, transparent)",
+                    background: done ? "var(--accent-gradient)" : "transparent",
+                    color: done ? "var(--on-accent)" : "inherit",
+                    fontSize: 14,
+                    boxShadow: done ? "var(--shadow-glow-accent)" : "none",
                   }}
                 >
                   {done ? (
-                    "✓"
+                    step.emoji
                   ) : active ? (
                     <span
                       className="accent-pulse-dot"
                       style={{
-                        width: 8,
-                        height: 8,
+                        width: 10,
+                        height: 10,
                         borderRadius: "50%",
                         background: "var(--accent)",
                       }}
@@ -234,11 +234,11 @@ export default function LoadingCinematic({ question, onCancel }: Props) {
         <p
           key={factIndex}
           style={{
-            marginTop: 26,
+            marginTop: 28,
             color: "var(--text-secondary)",
             fontSize: 14,
-            lineHeight: 1.5,
-            minHeight: 42,
+            lineHeight: 1.6,
+            minHeight: 44,
             fontFamily: "var(--font-lora)",
             animation: "fadeUp 400ms var(--ease-reveal)",
           }}
@@ -252,14 +252,24 @@ export default function LoadingCinematic({ question, onCancel }: Props) {
             onClick={onCancel}
             style={{
               marginTop: "var(--space-xl)",
-              padding: "10px 20px",
-              borderRadius: "var(--radius-md)",
+              padding: "12px 24px",
+              borderRadius: "var(--radius-lg)",
               border: "1px solid var(--border-default)",
               background: "transparent",
               color: "var(--text-secondary)",
               cursor: "pointer",
               fontSize: 14,
-              minHeight: 44,
+              fontWeight: 600,
+              minHeight: 48,
+              transition: "all 200ms var(--ease-color)",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "var(--bg-card-hover)";
+              e.currentTarget.style.borderColor = "var(--accent)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.borderColor = "var(--border-default)";
             }}
           >
             Cancel

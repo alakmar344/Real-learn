@@ -1,35 +1,44 @@
 "use client";
 
 const linkStyle: React.CSSProperties = {
-  color: "inherit",
+  color: "var(--accent)",
   padding: "6px 4px",
   minHeight: 44,
   display: "inline-flex",
   alignItems: "center",
+  fontWeight: 500,
 };
 
 const Footer = () => (
   <footer
     style={{
       borderTop: "1px solid var(--border-subtle)",
-      padding: "12px 24px",
+      padding: "16px 24px",
       textAlign: "center",
-      fontSize: 11,
+      fontSize: 12,
       color: "var(--text-tertiary)",
-      lineHeight: 1.6,
+      lineHeight: 1.7,
     }}
   >
-    <p style={{ margin: 0, display: "flex", justifyContent: "center", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-      <img src="/logo.svg" alt="RealLearn" style={{ height: 16 }} />
+    <p style={{ margin: 0, display: "flex", justifyContent: "center", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+      <span
+        style={{
+          fontWeight: 800,
+          background: "var(--accent-gradient)",
+          backgroundClip: "text",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+        }}
+      >
+        RealLearn
+      </span>
       {/* suppressHydrationWarning: statically prerendered HTML cached across
           a year boundary would otherwise hydration-error on the year. */}
       <span suppressHydrationWarning>© {new Date().getFullYear()} alakmar344</span>
       <span aria-hidden="true">·</span>
-      <span>AI-generated — not reviewed by humans</span>
-      <span aria-hidden="true">·</span>
-      <span>Verify important info with professionals</span>
+      <span>AI-generated — verify with pros</span>
     </p>
-    <p style={{ margin: 0, display: "flex", justifyContent: "center", alignItems: "center", gap: 4, flexWrap: "wrap" }}>
+    <p style={{ margin: "4px 0 0", display: "flex", justifyContent: "center", alignItems: "center", gap: 4, flexWrap: "wrap" }}>
       <a href="/legal?tab=privacy" style={linkStyle}>Privacy</a>
       <span aria-hidden="true">·</span>
       <a href="/legal?tab=terms" style={linkStyle}>Terms</a>
