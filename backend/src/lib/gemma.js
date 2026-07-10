@@ -312,7 +312,7 @@ async function handleStreamingResponse(response) {
   return { choices: [{ message: { content: fullText } }] };
 }
 
-function extractTextFromResult(result) {
+export function extractTextFromResult(result) {
   if (result == null) {
     throw new Error("Empty result returned from AI provider");
   }
@@ -343,13 +343,13 @@ function extractTextFromResult(result) {
   return text;
 }
 
-function isFallbackConfigured() {
+export function isFallbackConfigured() {
   const url = process.env.FALLBACK_AI_URL?.trim();
   const key = process.env.FALLBACK_AI_API_KEY?.trim();
   return Boolean(url && key);
 }
 
-async function callFallbackAI(model, body, signal) {
+export async function callFallbackAI(model, body, signal) {
   const apiUrl = process.env.FALLBACK_AI_URL.trim();
   const apiKey = process.env.FALLBACK_AI_API_KEY.trim();
   const modelName = process.env.FALLBACK_AI_MODEL?.trim() || model;
