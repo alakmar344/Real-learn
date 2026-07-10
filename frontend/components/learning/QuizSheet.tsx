@@ -174,12 +174,25 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
           maxHeight: "85vh",
           overflowY: "auto",
           background: "var(--bg-card)",
-          borderTop: "3px solid transparent",
-          borderImage: "var(--accent-gradient) 1",
           borderRadius: "var(--radius-2xl) var(--radius-2xl) 0 0",
           padding: "0 24px 40px",
+          boxShadow: "0 -4px 20px var(--accent-glow)",
         }}
       >
+        {/* Gradient top border accent */}
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 4,
+            background: "var(--accent-gradient)",
+            borderRadius: "var(--radius-2xl) var(--radius-2xl) 0 0",
+          }}
+        />
+
         {/* Drag handle */}
         <div
           style={{
