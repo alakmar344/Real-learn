@@ -17,7 +17,7 @@ const STREAM_IDLE_TIMEOUT_MS =
   Number.isFinite(configuredStreamIdleTimeoutMs) && configuredStreamIdleTimeoutMs > 0
     ? configuredStreamIdleTimeoutMs
     : DEFAULT_STREAM_IDLE_TIMEOUT_MS;
-const DEFAULT_GENERATE_RETRY_ATTEMPTS = 2;
+const DEFAULT_GENERATE_RETRY_ATTEMPTS = 1;
 const configuredGenerateRetryAttempts = Number(
   process.env.NEXT_PUBLIC_GENERATE_RETRY_ATTEMPTS
 );
@@ -232,6 +232,7 @@ export function useLesson() {
               level,
               mode,
             }),
+            cache: "no-store",
           });
           refreshIdleTimeout();
           logLessonDebug("received initial response", {

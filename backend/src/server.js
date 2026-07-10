@@ -1114,6 +1114,8 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
   console.log("[SSE] Headers flushed", { requestId });
 
   let finished = false;
+  const generationAbortController = new AbortController();
+  const generateAbortSignal = generationAbortController.signal;
   const safeWrite = (chunk) => {
     try {
       if (res.writableEnded) return false;
@@ -1126,6 +1128,7 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
   const finishRequest = (reason = "completed") => {
     if (finished) return;
     finished = true;
+    generationAbortController.abort();
     clearInterval(heartbeat);
     decrementActiveLessonRequests();
     console.log("[generate-lesson] Finishing request", {
@@ -1321,7 +1324,7 @@ Level: ${level}${
               temperature,
               max_tokens: maxOutputTokens,
             },
-            null
+            generateAbortSignal
           );
         } else {
           result = await callGemma(
@@ -1330,7 +1333,7 @@ Level: ${level}${
             false,
             temperature,
             LESSON_TIMEOUT_MS,
-            null,
+            generateAbortSignal,
             maxOutputTokens
           );
         }
