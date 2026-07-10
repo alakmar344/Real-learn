@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
@@ -27,6 +27,41 @@ const TERMS_CHANGES = [
   "The Data Retention section now states the 90-day automatic expiry of moderation log entries.",
 ];
 
+// Build year/month options once
+const CURRENT_YEAR = new Date().getFullYear();
+const YEARS = Array.from({ length: 80 }, (_, i) => CURRENT_YEAR - i);
+const MONTHS = [
+  { value: 1, label: "Jan" },
+  { value: 2, label: "Feb" },
+  { value: 3, label: "Mar" },
+  { value: 4, label: "Apr" },
+  { value: 5, label: "May" },
+  { value: 6, label: "Jun" },
+  { value: 7, label: "Jul" },
+  { value: 8, label: "Aug" },
+  { value: 9, label: "Sep" },
+  { value: 10, label: "Oct" },
+  { value: 11, label: "Nov" },
+  { value: 12, label: "Dec" },
+];
+
+function daysInMonth(year: number, month: number) {
+  return new Date(year, month, 0).getDate();
+}
+
+type AgeStatus = "unknown" | "under13" | "minor" | "adult";
+
+function computeAgeStatus(year: number, month: number, day: number): AgeStatus {
+  if (!year || !month || !day) return "unknown";
+  const now = new Date();
+  let age = now.getFullYear() - year;
+  const m = now.getMonth() + 1;
+  if (m < month || (m === month && now.getDate() < day)) age--;
+  if (age < 13) return "under13";
+  if (age < 18) return "minor";
+  return "adult";
+}
+
 export default function PreSignInConsent() {
   const { isSignedIn, getToken } = useAuth();
   const { user } = useUser();
@@ -35,11 +70,22 @@ export default function PreSignInConsent() {
   const [showReacceptConsent, setShowReacceptConsent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [declined, setDeclined] = useState(false);
+  // Age verification state
+  const [dobYear, setDobYear] = useState<number>(0);
+  const [dobMonth, setDobMonth] = useState<number>(0);
+  const [dobDay, setDobDay] = useState<number>(0);
+  const [parentalAck, setParentalAck] = useState(false);
   // A11y: this component renders blocking dialogs — keyboard focus must stay
   // inside them (one trap per possible dialog; only one is open at a time).
   const consentTrapRef = useFocusTrap<HTMLDivElement>(showConsent);
   const reacceptTrapRef = useFocusTrap<HTMLDivElement>(showReacceptConsent);
   const declinedTrapRef = useFocusTrap<HTMLDivElement>(declined && !showConsent && !showReacceptConsent);
+
+  const ageStatus = useMemo(() => computeAgeStatus(dobYear, dobMonth, dobDay), [dobYear, dobMonth, dobDay]);
+  const dayOptions = useMemo(() => {
+    if (!dobYear || !dobMonth) return Array.from({ length: 31 }, (_, i) => i + 1);
+    return Array.from({ length: daysInMonth(dobYear, dobMonth) }, (_, i) => i + 1);
+  }, [dobYear, dobMonth]);
 
   useEffect(() => {
     const applyLocalRecord = (parsed: LegalConsentState | null) => {
@@ -149,6 +195,11 @@ export default function PreSignInConsent() {
       timestamp: new Date().toISOString(),
       privacyVersion: CURRENT_PRIVACY_VERSION,
       termsVersion: CURRENT_TERMS_VERSION,
+      // Privacy: store only the age bracket, not the exact DOB.
+      ageBracket:
+        ageStatus === "under13" ? "under13" :
+        ageStatus === "minor" ? "13-17" :
+        ageStatus === "adult" ? "18+" : undefined,
     };
 
     writeLegalConsent(consent);
@@ -196,6 +247,18 @@ export default function PreSignInConsent() {
   };
 
   if (showConsent) {
+    const canAccept = ageStatus === "adult" || (ageStatus === "minor" && parentalAck);
+    const selectStyle: React.CSSProperties = {
+      border: "1px solid var(--border-default)",
+      borderRadius: "var(--radius-sm)",
+      padding: "8px 10px",
+      fontSize: 14,
+      background: "var(--bg-surface)",
+      color: "var(--text-primary)",
+      minHeight: 40,
+      cursor: "pointer",
+    };
+
     return (
       <div
         role="dialog"
@@ -237,7 +300,7 @@ export default function PreSignInConsent() {
               marginBottom: 12,
             }}
           >
-            Welcome to RealLearn 👋
+            Welcome to RealLearn
           </h2>
 
           <div style={{ fontSize: 14, color: "var(--text-secondary)", lineHeight: 1.7, marginBottom: 20 }}>
@@ -254,30 +317,119 @@ export default function PreSignInConsent() {
               everything anytime from Settings.
             </p>
             <p style={{ marginBottom: 12 }}>
-              <strong>A safe space to learn:</strong> RealLearn is designed for
-              learners aged 13 and up, and gentle automated safeguards help keep
-              lessons appropriate and on-topic.
-            </p>
-            <p>
-              By clicking <strong>Accept</strong>, you confirm you&apos;re at least 13
-              years old and agree to our{" "}
-              <a
-                href="/legal?tab=privacy"
-                style={{ color: "var(--accent)" }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                Privacy Policy
-              </a>{" "}
-              and{" "}
-              <a
-                href="/legal?tab=terms"
-                style={{ color: "var(--accent)" }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                Terms of Service
-              </a>.
+              <strong>A safe space to learn:</strong> RealLearn includes gentle
+              automated safeguards to help keep lessons appropriate and on-topic.
             </p>
           </div>
+
+          {/* Age verification */}
+          <fieldset
+            style={{
+              border: "1px solid var(--border-default)",
+              borderRadius: "var(--radius-md)",
+              padding: "14px 16px",
+              marginBottom: 16,
+            }}
+          >
+            <legend style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", padding: "0 6px" }}>
+              Date of birth
+            </legend>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <select
+                aria-label="Year"
+                value={dobYear}
+                onChange={(e) => {
+                  setDobYear(Number(e.target.value));
+                  setDobDay(0);
+                }}
+                style={selectStyle}
+              >
+                <option value={0}>Year</option>
+                {YEARS.map((y) => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+              <select
+                aria-label="Month"
+                value={dobMonth}
+                onChange={(e) => {
+                  setDobMonth(Number(e.target.value));
+                  setDobDay(0);
+                }}
+                style={selectStyle}
+              >
+                <option value={0}>Month</option>
+                {MONTHS.map((m) => (
+                  <option key={m.value} value={m.value}>{m.label}</option>
+                ))}
+              </select>
+              <select
+                aria-label="Day"
+                value={dobDay}
+                onChange={(e) => setDobDay(Number(e.target.value))}
+                style={selectStyle}
+              >
+                <option value={0}>Day</option>
+                {dayOptions.map((d) => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
+              </select>
+            </div>
+            {ageStatus === "under13" && (
+              <p style={{ margin: "10px 0 0", fontSize: 13, color: "var(--wrong)", lineHeight: 1.5 }}>
+                RealLearn is designed for learners aged 13 and older. We cannot create
+                an account for you at this time. Thank you for your interest!
+              </p>
+            )}
+            {ageStatus === "minor" && (
+              <div style={{ marginTop: 10 }}>
+                <label
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: 8,
+                    fontSize: 13,
+                    color: "var(--text-secondary)",
+                    lineHeight: 1.5,
+                    cursor: "pointer",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={parentalAck}
+                    onChange={(e) => setParentalAck(e.target.checked)}
+                    style={{ marginTop: 3, flexShrink: 0 }}
+                  />
+                  <span>
+                    I confirm that my parent or guardian has reviewed and approved my
+                    use of RealLearn, in accordance with our{" "}
+                    <a href="/legal?tab=privacy" style={{ color: "var(--accent)" }} onClick={(e) => e.stopPropagation()}>
+                      Privacy Policy
+                    </a>.
+                  </span>
+                </label>
+              </div>
+            )}
+          </fieldset>
+
+          <p style={{ fontSize: 14, color: "var(--text-secondary)", lineHeight: 1.7, marginBottom: 20 }}>
+            By clicking <strong>Accept</strong>, you agree to our{" "}
+            <a
+              href="/legal?tab=privacy"
+              style={{ color: "var(--accent)" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              Privacy Policy
+            </a>{" "}
+            and{" "}
+            <a
+              href="/legal?tab=terms"
+              style={{ color: "var(--accent)" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              Terms of Service
+            </a>.
+          </p>
 
           <div style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>
             <button
@@ -302,7 +454,7 @@ export default function PreSignInConsent() {
             <button
               type="button"
               onClick={() => saveConsent(true)}
-              disabled={loading}
+              disabled={loading || !canAccept}
               style={{
                 border: "none",
                 borderRadius: "var(--radius-md)",
@@ -311,8 +463,8 @@ export default function PreSignInConsent() {
                 fontWeight: 600,
                 color: "var(--on-accent)",
                 background: "var(--accent)",
-                cursor: loading ? "not-allowed" : "pointer",
-                opacity: loading ? 0.6 : 1,
+                cursor: loading || !canAccept ? "not-allowed" : "pointer",
+                opacity: loading || !canAccept ? 0.5 : 1,
                 minHeight: 44,
               }}
             >

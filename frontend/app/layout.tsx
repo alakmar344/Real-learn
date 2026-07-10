@@ -44,11 +44,11 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "RealLearn — The World Is Your Textbook",
   description:
-    "Ask anything and unlock knowledge through progressive discovery."
+    "Ask anything, learn everything. Unlock knowledge through progressive discovery."
 };
 
 export const viewport: Viewport = {
-  themeColor: "#f7f3ec",
+  themeColor: "#fafafa",
 };
 
 // Applies the persisted theme BEFORE first paint so dark-theme users never
@@ -57,7 +57,7 @@ export const viewport: Viewport = {
 // ({"state":{"theme":...}}), not a bare string; and the theme-color meta must
 // UPDATE the existing tag (Next renders one from viewport.themeColor — the
 // first meta in tree order wins, so appending a second one did nothing).
-const themeInitScript = `(function(){try{var t=null;var p=localStorage.getItem("reallearn-preferences");if(p){var s=JSON.parse(p);t=s&&s.state&&s.state.theme}if(!t){var l=localStorage.getItem("reallearn-theme");if(l){var v=JSON.parse(l);t=typeof v==="string"?v:v&&v.state&&v.state.theme}}if(t==="dark"||t==="twilight"){document.documentElement.dataset.theme=t;var m=document.querySelector('meta[name="theme-color"]');if(!m){m=document.createElement("meta");m.name="theme-color";document.head.appendChild(m)}m.content=t==="dark"?"#0b100f":"#12101f"}}catch(e){}})();`;
+const themeInitScript = `(function(){try{var t=null;var p=localStorage.getItem("reallearn-preferences");if(p){var s=JSON.parse(p);t=s&&s.state&&s.state.theme}if(!t){var l=localStorage.getItem("reallearn-theme");if(l){var v=JSON.parse(l);t=typeof v==="string"?v:v&&v.state&&v.state.theme}}if(t==="dark"||t==="twilight"){document.documentElement.dataset.theme=t;var m=document.querySelector('meta[name="theme-color"]');if(!m){m=document.createElement("meta");m.name="theme-color";document.head.appendChild(m)}m.content=t==="dark"?"#09090b":"#0c0a1d"}}catch(e){}})();`;
 
 export default function RootLayout({
   children,

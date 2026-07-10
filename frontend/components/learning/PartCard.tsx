@@ -52,17 +52,27 @@ export default function PartCard({
         style={{
           marginTop: varSpaceLg,
           width: "100%",
-          height: 52,
-          borderRadius: "var(--radius-md)",
+          height: 56,
+          borderRadius: "var(--radius-lg)",
           border: "1px solid color-mix(in srgb, var(--correct) 30%, transparent)",
           background: "var(--correct-bg)",
           color: "var(--correct)",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          padding: "0 16px",
+          padding: "0 20px",
           cursor: "pointer",
-          minHeight: 44,
+          minHeight: 48,
+          fontWeight: 600,
+          transition: "all 200ms var(--ease-color)",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = "scale(1.01)";
+          e.currentTarget.style.boxShadow = "var(--shadow-glow-correct)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "scale(1)";
+          e.currentTarget.style.boxShadow = "none";
         }}
       >
         <span>✓ {part.title} · Completed</span>
@@ -77,22 +87,25 @@ export default function PartCard({
       aria-label={`Part ${part.partNumber}: ${part.title}`}
       style={{
         marginTop: varSpaceXl,
-        borderRadius: "var(--radius-xl)",
+        borderRadius: "var(--radius-2xl)",
         border: "1px solid var(--border-subtle)",
         background: "var(--bg-card)",
         boxShadow: "var(--shadow-md)",
-        padding: "clamp(16px, 4vw, 32px)",
+        padding: "clamp(20px, 5vw, 36px)",
         position: "relative",
         overflow: "hidden",
+        transition: "all 300ms var(--ease-color)",
       }}
     >
       <div
         aria-hidden="true"
         style={{
-          height: 3,
+          height: 4,
           background: "var(--accent-gradient)",
-          borderRadius: "var(--radius-lg) var(--radius-lg) 0 0",
-          margin: "calc(-1 * clamp(16px, 4vw, 32px)) calc(-1 * clamp(16px, 4vw, 32px)) 0",
+          borderRadius: "var(--radius-xl) var(--radius-xl) 0 0",
+          margin: "calc(-1 * clamp(20px, 5vw, 36px)) calc(-1 * clamp(20px, 5vw, 36px)) 0",
+          backgroundSize: "200% 100%",
+          animation: "shimmer 3s linear infinite",
         }}
       />
       <div
@@ -199,16 +212,25 @@ export default function PartCard({
                 style={{
                   marginTop: 4,
                   width: "100%",
-                  height: 52,
-                  borderRadius: "var(--radius-md)",
+                  height: 56,
+                  borderRadius: "var(--radius-lg)",
                   border: "none",
-                  background: "var(--accent)",
+                  background: "var(--accent-gradient)",
                   color: "var(--on-accent)",
                   fontSize: "var(--text-base)",
                   fontWeight: 700,
                   cursor: "pointer",
                   boxShadow: "var(--shadow-glow-accent)",
-                  minHeight: 44,
+                  minHeight: 48,
+                  transition: "all 300ms var(--ease-color)",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "scale(1.02)";
+                  e.currentTarget.style.boxShadow = "0 8px 30px var(--accent-glow)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "scale(1)";
+                  e.currentTarget.style.boxShadow = "var(--shadow-glow-accent)";
                 }}
               >
                 I&apos;ve Read This → Take Quiz
@@ -251,23 +273,23 @@ export default function PartCard({
             alignItems: "center",
             justifyContent: "center",
             background: "var(--bg-glass)",
-            backdropFilter: "blur(6px)",
+            backdropFilter: "blur(8px)",
             zIndex: 10,
           }}
         >
           <div
             style={{
               background: "var(--bg-card)",
-              padding: "16px 24px",
-              borderRadius: "var(--radius-lg)",
-              border: "1px solid var(--border-default)",
+              padding: "20px 28px",
+              borderRadius: "var(--radius-xl)",
+              border: "1px solid var(--border-subtle)",
               textAlign: "center",
-              backdropFilter: "blur(4px)",
+              backdropFilter: "blur(8px)",
               boxShadow: "var(--shadow-lg)",
             }}
           >
-            <span aria-hidden="true" style={{ fontSize: 32, marginBottom: 8, display: "block" }}>🔒</span>
-            <h3 style={{ fontSize: 18, fontWeight: 600, color: "var(--text-primary)", margin: "0 0 4px" }}>
+            <span aria-hidden="true" style={{ fontSize: 36, marginBottom: 12, display: "block" }}>🔒</span>
+            <h3 style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", margin: "0 0 6px" }}>
               Part {part.partNumber} Locked
             </h3>
             <p style={{ fontSize: 13, color: "var(--text-tertiary)", margin: 0 }}>

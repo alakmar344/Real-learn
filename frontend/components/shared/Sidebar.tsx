@@ -58,26 +58,42 @@ export default function Sidebar({ open, onClose }: Props) {
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 8,
-              marginBottom: 14,
+              gap: 10,
+              marginBottom: 16,
             }}
           >
-            <svg viewBox="0 0 120 40" fill="none" aria-hidden="true" style={{ width: 36, height: "auto" }}>
-              <rect width="120" height="40" rx="8" fill="var(--accent)" />
-              <text x="10" y="27" fontFamily="Inter, sans-serif" fontWeight="800" fontSize="18" fill="var(--on-accent)">
+            <svg viewBox="0 0 120 40" fill="none" aria-hidden="true" style={{ width: 38, height: "auto" }}>
+              <defs>
+                <linearGradient id="sidebar-logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#6366f1" />
+                  <stop offset="50%" stopColor="#a855f7" />
+                  <stop offset="100%" stopColor="#ec4899" />
+                </linearGradient>
+              </defs>
+              <rect width="120" height="40" rx="12" fill="url(#sidebar-logo-gradient)" />
+              <text x="10" y="27" fontFamily="Inter, sans-serif" fontWeight="900" fontSize="18" fill="white">
                 RL
               </text>
             </svg>
             <span
               style={{
                 fontFamily: "var(--font-playfair)",
-                fontWeight: 700,
-                fontSize: 20,
-                letterSpacing: -0.4,
+                fontWeight: 800,
+                fontSize: 22,
+                letterSpacing: -0.5,
               }}
             >
               <span style={{ color: "var(--text-primary)" }}>Real</span>
-              <span style={{ color: "var(--accent)" }}>Learn</span>
+              <span
+                style={{
+                  background: "var(--accent-gradient)",
+                  backgroundClip: "text",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
+              >
+                Learn
+              </span>
             </span>
             <button
               type="button"
@@ -94,14 +110,24 @@ export default function Sidebar({ open, onClose }: Props) {
             style={{
               width: "100%",
               border: "none",
-              borderRadius: "var(--radius-md)",
-              padding: "10px 14px",
-              background: "var(--accent)",
+              borderRadius: "var(--radius-lg)",
+              padding: "12px 16px",
+              background: "var(--accent-gradient)",
               color: "var(--on-accent)",
               fontWeight: 700,
               fontSize: 14,
               cursor: "pointer",
-              minHeight: 44,
+              minHeight: 48,
+              boxShadow: "var(--shadow-glow-accent)",
+              transition: "all 200ms var(--ease-color)",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "scale(1.02)";
+              e.currentTarget.style.boxShadow = "0 6px 24px var(--accent-glow)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "scale(1)";
+              e.currentTarget.style.boxShadow = "var(--shadow-glow-accent)";
             }}
           >
             ＋ New lesson
@@ -221,18 +247,28 @@ export default function Sidebar({ open, onClose }: Props) {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              border: "1px solid var(--border-default)",
-              borderRadius: "var(--radius-md)",
+              border: "1px solid var(--border-subtle)",
+              borderRadius: "var(--radius-lg)",
               background: "var(--bg-card)",
               color: "var(--text-primary)",
-              padding: "10px 12px",
+              padding: "12px 14px",
               cursor: "pointer",
               fontSize: 13,
-              minHeight: 44,
+              fontWeight: 500,
+              minHeight: 48,
+              transition: "all 200ms var(--ease-color)",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "var(--accent)";
+              e.currentTarget.style.boxShadow = "var(--shadow-glow-accent)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "var(--border-subtle)";
+              e.currentTarget.style.boxShadow = "none";
             }}
           >
             <span>Theme</span>
-            <span style={{ color: "var(--text-tertiary)", fontSize: 12 }}>Open</span>
+            <span style={{ color: "var(--accent)", fontSize: 12 }}>Open</span>
           </button>
 
           {/* Settings */}
@@ -244,18 +280,28 @@ export default function Sidebar({ open, onClose }: Props) {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                border: "1px solid var(--border-default)",
-                borderRadius: "var(--radius-md)",
+                border: "1px solid var(--border-subtle)",
+                borderRadius: "var(--radius-lg)",
                 background: "var(--bg-card)",
                 color: "var(--text-primary)",
-                padding: "10px 12px",
+                padding: "12px 14px",
                 cursor: "pointer",
                 fontSize: 13,
-                minHeight: 44,
+                fontWeight: 500,
+                minHeight: 48,
+                transition: "all 200ms var(--ease-color)",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "var(--accent)";
+                e.currentTarget.style.boxShadow = "var(--shadow-glow-accent)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "var(--border-subtle)";
+                e.currentTarget.style.boxShadow = "none";
               }}
             >
               <span>⚙️ Settings</span>
-              <span style={{ color: "var(--text-tertiary)", fontSize: 12 }}>Account & data</span>
+              <span style={{ color: "var(--accent)", fontSize: 12 }}>Account & data</span>
             </button>
           )}
         </div>

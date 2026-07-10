@@ -126,7 +126,7 @@ export default function HomePage() {
         <section
           style={{
             flex: 1,
-            padding: "24px 16px",
+            padding: "32px 16px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -137,49 +137,48 @@ export default function HomePage() {
             <p
               style={{
                 fontSize: 14,
-                letterSpacing: "0.1em",
-                color: "var(--text-tertiary)",
-                fontWeight: 500,
-                margin: "0 0 8px",
-                fontFamily: "var(--font-lora)",
-                fontStyle: "italic",
+                letterSpacing: "0.15em",
+                textTransform: "uppercase",
+                color: "var(--accent)",
+                fontWeight: 600,
+                margin: "0 0 12px",
+                fontFamily: "var(--font-inter)",
               }}
             >
-              {quote || " "}
+              {quote || "\u00A0"}
             </p>
             <h1
               style={{
-                margin: "20px 0 0",
+                margin: "16px 0 0",
                 fontFamily: "var(--font-playfair)",
                 fontWeight: 900,
                 lineHeight: 1.05,
                 color: "var(--text-primary)",
-                fontSize: "clamp(40px, 8vw, 64px)",
-                letterSpacing: "-0.02em",
+                fontSize: "clamp(44px, 9vw, 72px)",
+                letterSpacing: "-0.03em",
               }}
             >
               The World Is
               <br />
-              <span style={{ position: "relative", display: "inline-block" }}>
+              <span
+                style={{
+                  position: "relative",
+                  display: "inline-block",
+                  background: "var(--accent-gradient)",
+                  backgroundClip: "text",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundSize: "200% 200%",
+                  animation: "gradientShift 4s ease infinite",
+                }}
+              >
                 Your Textbook
-                <span
-                  aria-hidden="true"
-                  style={{
-                    position: "absolute",
-                    left: 0,
-                    right: 0,
-                    bottom: 4,
-                    height: 3,
-                    background: "var(--accent)",
-                    transform: "skew(-1deg)",
-                  }}
-                />
               </span>
             </h1>
             <p
               style={{
-                margin: "16px auto 0",
-                maxWidth: 480,
+                margin: "20px auto 0",
+                maxWidth: 500,
                 color: "var(--text-secondary)",
                 fontSize: "var(--text-lg)",
                 lineHeight: 1.6,

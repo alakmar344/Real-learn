@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 
 const EXAMPLES = [
-  "Why does the sky turn red at sunset?",
-  "How does inflation destroy economies?",
-  "What actually happens inside a black hole?",
-  "Why did the Roman Empire collapse?",
-  "How do vaccines teach the immune system?",
+  "Why does the sky turn red at sunset? 🌅",
+  "How does inflation destroy economies? 📉",
+  "What actually happens inside a black hole? 🕳️",
+  "Why did the Roman Empire collapse? 🏛️",
+  "How do vaccines teach the immune system? 💉",
 ];
 
 export default function ExampleQuestions() {
@@ -26,8 +26,9 @@ export default function ExampleQuestions() {
       aria-live="off"
       style={{
         fontSize: 12,
-        color: "var(--text-tertiary)",
+        color: "var(--accent)",
         margin: 0,
+        fontWeight: 500,
         animation: "fadeUp 200ms var(--ease-reveal)",
       }}
     >

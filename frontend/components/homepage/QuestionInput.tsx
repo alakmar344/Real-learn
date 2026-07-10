@@ -65,11 +65,11 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
         marginTop: 48,
         maxWidth: 640,
         width: "100%",
-        borderRadius: "var(--radius-lg)",
-        border: `1.5px solid ${focused ? "var(--accent)" : "var(--border-default)"}`,
+        borderRadius: "var(--radius-2xl)",
+        border: `2px solid ${focused ? "var(--accent)" : "var(--border-subtle)"}`,
         background: "var(--bg-card)",
-        boxShadow: "var(--shadow-lg)",
-        transition: "border-color 200ms var(--ease-color)",
+        boxShadow: focused ? "var(--shadow-glow-accent)" : "var(--shadow-lg)",
+        transition: "all 300ms var(--ease-color)",
       }}
     >
       <div style={{ padding: "20px 24px" }}>
@@ -103,7 +103,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
         {interimSpeech ? (
           <p
             aria-live="polite"
-            style={{ margin: "6px 0 0", fontSize: 13, color: "var(--text-tertiary)", fontStyle: "italic" }}
+            style={{ margin: "6px 0 0", fontSize: 13, color: "var(--accent)", fontStyle: "italic" }}
           >
             🎙 {interimSpeech}
           </p>
@@ -112,7 +112,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
       {/* ── Answer-mode toggle: Fast (1 direct part) vs Explain (3-part journey) ── */}
       <div
         style={{
-          padding: "0 16px 12px",
+          padding: "0 16px 14px",
           display: "flex",
           alignItems: "center",
           gap: 10,
@@ -124,8 +124,8 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           aria-label="Answer mode"
           style={{
             display: "inline-flex",
-            padding: 3,
-            gap: 2,
+            padding: 4,
+            gap: 3,
             borderRadius: 999,
             border: "1px solid var(--border-subtle)",
             background: "var(--bg-surface)",
@@ -144,15 +144,16 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
                 style={{
                   border: "none",
                   borderRadius: 999,
-                  padding: "6px 14px",
+                  padding: "8px 16px",
                   fontSize: 13,
-                  fontWeight: 600,
+                  fontWeight: 700,
                   cursor: "pointer",
-                  minHeight: 32,
+                  minHeight: 36,
                   color: active ? "var(--on-accent)" : "var(--text-secondary)",
                   background: active ? "var(--accent-gradient)" : "transparent",
                   boxShadow: active ? "var(--shadow-glow-accent)" : "none",
                   transition: "all 200ms var(--ease-color)",
+                  transform: active ? "scale(1.02)" : "scale(1)",
                 }}
               >
                 <span aria-hidden="true" style={{ marginRight: 6 }}>{opt.icon}</span>
@@ -166,7 +167,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
       <div
         style={{
           borderTop: "1px solid var(--border-subtle)",
-          padding: "12px 16px",
+          padding: "14px 18px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -189,16 +190,27 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
             aria-label="Start learning"
             style={{
               border: "none",
-              borderRadius: "var(--radius-md)",
-              padding: "10px 20px",
+              borderRadius: "var(--radius-lg)",
+              padding: "12px 24px",
               fontSize: 14,
-              fontWeight: 600,
+              fontWeight: 700,
               color: "var(--on-accent)",
-              background: question.trim() ? "var(--accent)" : "var(--border-default)",
+              background: question.trim() ? "var(--accent-gradient)" : "var(--border-default)",
               cursor: question.trim() ? "pointer" : "not-allowed",
-              transition: "all 200ms var(--ease-color)",
-              minHeight: 44,
-              boxShadow: "var(--shadow-sm)",
+              transition: "all 300ms var(--ease-color)",
+              minHeight: 48,
+              boxShadow: question.trim() ? "var(--shadow-glow-accent)" : "var(--shadow-sm)",
+              transform: question.trim() ? "scale(1)" : "scale(1)",
+            }}
+            onMouseEnter={(e) => {
+              if (question.trim()) {
+                e.currentTarget.style.transform = "scale(1.03)";
+                e.currentTarget.style.boxShadow = "0 6px 24px var(--accent-glow)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "scale(1)";
+              e.currentTarget.style.boxShadow = question.trim() ? "var(--shadow-glow-accent)" : "var(--shadow-sm)";
             }}
           >
             {mode === "fast" ? "Get Quick Help ⚡" : "Start Guided Lesson →"}
@@ -210,16 +222,24 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
               aria-label="Sign in to start learning"
               style={{
                 border: "none",
-                borderRadius: "var(--radius-md)",
-                padding: "10px 20px",
+                borderRadius: "var(--radius-lg)",
+                padding: "12px 24px",
                 fontSize: 14,
-                fontWeight: 600,
+                fontWeight: 700,
                 color: "var(--on-accent)",
-                background: "var(--accent)",
+                background: "var(--accent-gradient)",
                 cursor: "pointer",
-                transition: "all 200ms var(--ease-color)",
-                minHeight: 44,
-                boxShadow: "var(--shadow-sm)",
+                transition: "all 300ms var(--ease-color)",
+                minHeight: 48,
+                boxShadow: "var(--shadow-glow-accent)",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "scale(1.03)";
+                e.currentTarget.style.boxShadow = "0 6px 24px var(--accent-glow)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.boxShadow = "var(--shadow-glow-accent)";
               }}
             >
               Sign in to Learn →

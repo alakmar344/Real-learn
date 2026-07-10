@@ -185,7 +185,10 @@ export const useLessonStore = create<LessonStore>()(
           error: null,
           unlockedPart,
           completedParts,
-          partScores: journey.partScores,
+          // Default like the sibling fields above — a persisted journey missing
+          // partScores would otherwise make learn/page.tsx's
+          // Object.values(partScores).reduce(...) throw on load.
+          partScores: journey.partScores ?? { 1: null, 2: null, 3: null },
           collapsedParts: isComplete ? allPartNumbers : completedParts,
           showCompletion: isComplete,
           showFollowUp: isComplete,

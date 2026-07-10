@@ -42,6 +42,14 @@ import {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+// Privacy: salt for hashing User-Agent strings. A per-process random value
+// prevents rainbow-table reversal of the stored hashes.
+const UA_HASH_SALT = crypto.randomBytes(16).toString("hex");
+function hashUserAgent(ua) {
+  if (typeof ua !== "string" || !ua) return "unknown";
+  return crypto.createHash("sha256").update(`${UA_HASH_SALT}:${ua}`).digest("hex").slice(0, 32);
+}
+
 let EdgeTTS = null;
 try {
   const mod = await import("node-edge-tts");
@@ -390,6 +398,16 @@ function buildModerationEvent({ requestId, clerkId, type, reason, question }) {
   };
 }
 
+// Privacy: the moderation record persisted to Mongo carries the user's
+// question, but it is protected by the TTL index and erased on account
+// deletion. Process stdout logs are a SEPARATE sink those controls never
+// reach (and on most PaaS are retained independently), so the question must
+// never be written there. Strip it before any console logging.
+function redactModerationEvent(event) {
+  const { question, ...rest } = event;
+  return { ...rest, question: question ? "[redacted]" : null };
+}
+
 async function logModerationEvent(event) {
   try {
     const db = await getDb();
@@ -599,7 +617,11 @@ app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
       email,
       clerkId,
         deviceIp: req.ip || req.socket?.remoteAddress || "unknown",
-        userAgent: req.headers["user-agent"] || "unknown",
+        // Privacy (GDPR data minimization): hash the User-Agent so we can
+        // detect repeat-device fraud without storing raw fingerprintable
+        // strings. The hash is salted with a per-process secret so it can't
+        // be reversed by rainbow-table lookup.
+        userAgent: hashUserAgent(req.headers["user-agent"]),
         timestamp: parsedTimestamp,
         privacyVersion: PRIVACY_POLICY_VERSION,
         termsVersion: TERMS_OF_SERVICE_VERSION,
@@ -740,6 +762,13 @@ app.post("/api/legal-consent", rateLimit, requireAuth, async (req, res) => {
     if (!parsedTimestamp || Number.isNaN(parsedTimestamp.getTime())) {
       return res.status(400).json({ error: "A valid timestamp is required" });
     }
+    // Privacy: store only the age bracket, not any exact date of birth.
+    const ageBracket = req.body?.ageBracket;
+    const validAgeBrackets = new Set(["under13", "13-17", "18+"]);
+    const sanitizedAgeBracket =
+      typeof ageBracket === "string" && validAgeBrackets.has(ageBracket)
+        ? ageBracket
+        : null;
 
     const db = await getDb();
     const collection = db.collection("agreements");
@@ -764,8 +793,13 @@ app.post("/api/legal-consent", rateLimit, requireAuth, async (req, res) => {
         accepted,
         email,
         clerkId,
+        ageBracket: sanitizedAgeBracket,
         deviceIp: req.ip || req.socket?.remoteAddress || "unknown",
-        userAgent: req.headers["user-agent"] || "unknown",
+        // Privacy (GDPR data minimization): hash the User-Agent so we can
+        // detect repeat-device fraud without storing raw fingerprintable
+        // strings. The hash is salted with a per-process secret so it can't
+        // be reversed by rainbow-table lookup.
+        userAgent: hashUserAgent(req.headers["user-agent"]),
         timestamp: parsedTimestamp,
         type: "legal-consent",
         privacyVersion: PRIVACY_POLICY_VERSION,
@@ -1026,7 +1060,7 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
       reason: inputFilter.reason,
       question,
     });
-    console.warn("[moderation] Banned input blocked", moderationEvent);
+    console.warn("[moderation] Banned input blocked", redactModerationEvent(moderationEvent));
     await logModerationEvent(moderationEvent);
     return res.status(400).json({ error: inputFilter.reason });
   }
@@ -1176,7 +1210,7 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
         reason: inputModeration.reason,
         question,
       });
-      console.warn("[moderation] Input blocked by LLM moderation", moderationEvent);
+      console.warn("[moderation] Input blocked by LLM moderation", redactModerationEvent(moderationEvent));
       await logModerationEvent(moderationEvent);
       sendEvent("error", {
         error:
@@ -1220,15 +1254,39 @@ Level: ${level}${
       temperature,
     });
     sendEvent("progress", { stage: "generating", percent: 40 });
-    const raw = await callGemma(
-      systemPrompt,
-      userPrompt,
-      false,
-      temperature,
-      LESSON_TIMEOUT_MS,
-      null,
-      maxOutputTokens
-    );
+    // Generation (callGemma) is the single longest phase — it can run for many
+    // seconds with no natural sub-steps to report. Without a signal the bar
+    // freezes at 40% for the whole wait, which reads as a stalled/disconnected
+    // UI. Emit gentle, decelerating synthetic progress that ramps 40 → ~82
+    // while we wait, then hand back to the real 85% milestone the moment
+    // generation returns. The ticker is always cleared in `finally`.
+    let generationPercent = 40;
+    const generationTicker = setInterval(() => {
+      if (finished) return;
+      const remaining = 82 - generationPercent;
+      if (remaining <= 0.5) return;
+      // Ease toward the ceiling so it slows down the longer generation takes
+      // and never actually reaches the 85% "generated" milestone early.
+      generationPercent = Math.min(82, generationPercent + Math.max(0.6, remaining * 0.08));
+      sendEvent("progress", {
+        stage: "generating",
+        percent: Math.round(generationPercent),
+      });
+    }, 1500);
+    let raw;
+    try {
+      raw = await callGemma(
+        systemPrompt,
+        userPrompt,
+        false,
+        temperature,
+        LESSON_TIMEOUT_MS,
+        null,
+        maxOutputTokens
+      );
+    } finally {
+      clearInterval(generationTicker);
+    }
     console.log("[Gemma] callGemma success", {
       requestId,
       rawLength: raw.length,
@@ -1251,7 +1309,7 @@ Level: ${level}${
         reason: responseFilter.reason,
         question,
       });
-      console.warn("[moderation] Banned AI response blocked", moderationEvent);
+      console.warn("[moderation] Banned AI response blocked", redactModerationEvent(moderationEvent));
       await logModerationEvent(moderationEvent);
       sendEvent("error", {
         error: responseFilter.reason || "The generated content was flagged. Please try a different question.",
@@ -1321,7 +1379,7 @@ Level: ${level}${
           reason: fastInputModeration.reason,
           question,
         });
-        console.warn("[moderation] Fast-mode input blocked by LLM moderation", moderationEvent);
+        console.warn("[moderation] Fast-mode input blocked by LLM moderation", redactModerationEvent(moderationEvent));
         await logModerationEvent(moderationEvent);
         sendEvent("error", {
           error:
@@ -1351,24 +1409,33 @@ Level: ${level}${
         }
       }).catch(() => {});
     } else {
-      outputModerationPromise.then((verdict) => {
-        if (!verdict.allowed) {
-          console.warn("[moderation] Explain-mode post-hoc block detected (response already sent)", {
-            requestId,
-            reason: verdict.reason,
-          });
-          deleteCachedLesson(cacheKey);
-          logModerationEvent(
-            buildModerationEvent({
-              requestId,
-              clerkId: req.auth?.userId,
-              type: "ai-response-moderated-posthoc",
-              reason: verdict.reason,
-              question,
-            })
-          ).catch(() => {});
-        }
-      }).catch(() => {});
+      // Explain mode BLOCKS on the LLM output verdict before streaming — the
+      // requesting user must never receive content the safety classifier would
+      // reject, not just future cache readers. moderateText fails open (returns
+      // allowed on any error), so this only stops a confident "block" verdict
+      // and never rejects a valid lesson on a moderation hiccup. The verdict
+      // has been running concurrently with parsing/validation since generation
+      // returned, so it is usually already resolved — near-zero added latency.
+      const outputVerdict = await outputModerationPromise;
+      if (finished) return;
+      if (!outputVerdict.allowed) {
+        const moderationEvent = buildModerationEvent({
+          requestId,
+          clerkId: req.auth?.userId,
+          type: "ai-response-moderated",
+          reason: outputVerdict.reason,
+          question,
+        });
+        console.warn("[moderation] Explain-mode output blocked by LLM moderation", redactModerationEvent(moderationEvent));
+        await logModerationEvent(moderationEvent);
+        sendEvent("error", {
+          error:
+            outputVerdict.reason ||
+            "The generated content was flagged. Please try a different question.",
+        });
+        recordLessonResult(false);
+        return;
+      }
     }
 
     // Store the fully moderated + validated lesson so repeat requests are

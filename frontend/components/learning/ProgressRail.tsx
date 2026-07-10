@@ -11,9 +11,9 @@ function NodeIcon({ part, unlockedPart, completedParts }: { part: number; unlock
   const done = completedParts.includes(part);
   const active = !done && part <= unlockedPart;
 
-  if (done) return <span aria-hidden="true" style={{ color: "white", fontSize: 16 }}>✓</span>;
-  if (active) return <span style={{ color: "var(--bg-primary)", fontWeight: 700 }}>{part}</span>;
-  return <span aria-hidden="true" style={{ color: "var(--text-tertiary)", fontSize: 14 }}>🔒</span>;
+  if (done) return <span aria-hidden="true" style={{ color: "white", fontSize: 18, fontWeight: 700 }}>✓</span>;
+  if (active) return <span style={{ color: "var(--on-accent)", fontWeight: 800, fontSize: 16 }}>{part}</span>;
+  return <span aria-hidden="true" style={{ color: "var(--text-tertiary)", fontSize: 16 }}>🔒</span>;
 }
 
 export default function ProgressRail({ unlockedPart, completedParts, totalParts = 3 }: Props) {
@@ -22,7 +22,8 @@ export default function ProgressRail({ unlockedPart, completedParts, totalParts 
     const done = completedParts.includes(1);
     return (
       <div
-        aria-label="Quick answer mode"
+        role="status"
+        aria-label={done ? "Quick answer mastered" : "Fast mode – one quick answer"}
         style={{
           marginTop: varSpaceXl,
           display: "flex",
@@ -30,21 +31,23 @@ export default function ProgressRail({ unlockedPart, completedParts, totalParts 
         }}
       >
         <span
+          aria-hidden="true"
           style={{
             display: "inline-flex",
             alignItems: "center",
-            gap: 8,
-            padding: "6px 16px",
+            gap: 10,
+            padding: "10px 20px",
             borderRadius: 999,
-            fontSize: 12,
-            fontWeight: 600,
+            fontSize: 13,
+            fontWeight: 700,
             letterSpacing: "0.04em",
             color: done ? "var(--correct)" : "var(--accent)",
             background: done ? "var(--correct-bg)" : "var(--accent-dim)",
-            border: `1px solid ${done ? "var(--correct)" : "var(--accent)"}`,
+            border: `1.5px solid ${done ? "var(--correct)" : "var(--accent)"}`,
+            boxShadow: done ? "var(--shadow-glow-correct)" : "var(--shadow-glow-accent)",
           }}
         >
-          <span aria-hidden="true">{done ? "✓" : "⚡"}</span>
+          <span aria-hidden="true" style={{ fontSize: 16 }}>{done ? "✓" : "⚡"}</span>
           {done ? "Quick answer mastered" : "Fast mode — one quick answer"}
         </span>
       </div>
@@ -52,6 +55,7 @@ export default function ProgressRail({ unlockedPart, completedParts, totalParts 
   }
 
   const parts = Array.from({ length: totalParts }, (_, i) => i + 1);
+  const completedCount = parts.filter((p) => completedParts.includes(p)).length;
 
   return (
     <nav
@@ -64,66 +68,84 @@ export default function ProgressRail({ unlockedPart, completedParts, totalParts 
         alignItems: "flex-start",
       }}
     >
-      {parts.map((part, index) => {
-        const done = completedParts.includes(part);
-        const active = !done && part <= unlockedPart;
-        const locked = !done && !active;
+      <ol
+        role="list"
+        aria-label={`${completedCount} of ${totalParts} parts completed`}
+        style={{
+          listStyle: "none",
+          margin: 0,
+          padding: 0,
+          display: "flex",
+          alignItems: "flex-start",
+          width: "100%",
+        }}
+      >
+        {parts.map((part, index) => {
+          const done = completedParts.includes(part);
+          const active = !done && part <= unlockedPart;
+          const locked = !done && !active;
 
-        const statusLabel = done ? "completed" : active ? "current" : "locked";
+          const statusLabel = done ? "completed" : active ? "current part" : "locked";
 
-        return (
-          <div
-            key={part}
-            style={{ display: "flex", alignItems: "center", flex: 1 }}
-          >
-            <div style={{ display: "grid", placeItems: "center", minWidth: 40 }}>
-              <div
-                className={active ? "animate-unlock-pop" : undefined}
-                role="listitem"
-                aria-label={`Part ${part} – ${statusLabel}`}
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: "50%",
-                  display: "grid",
-                  placeItems: "center",
-                  background: done ? "var(--correct)" : active ? "var(--accent)" : "var(--bg-card)",
-                  border: locked ? "1.5px solid var(--border-default)" : "none",
-                  boxShadow: done
-                    ? "var(--shadow-glow-correct)"
-                    : active
-                      ? "var(--shadow-glow-accent)"
-                      : "none",
-                }}
-              >
-                <NodeIcon part={part} unlockedPart={unlockedPart} completedParts={completedParts} />
+          return (
+            <li
+              key={part}
+              role="listitem"
+              aria-label={`Part ${part}: ${statusLabel}`}
+              style={{ display: "flex", alignItems: "center", flex: 1 }}
+            >
+              <div style={{ display: "grid", placeItems: "center", minWidth: 44 }}>
+                <div
+                  className={active ? "animate-unlock-pop" : undefined}
+                  aria-hidden="true"
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: "50%",
+                    display: "grid",
+                    placeItems: "center",
+                    background: done ? "var(--correct)" : active ? "var(--accent-gradient)" : "var(--bg-card)",
+                    border: locked ? "2px solid var(--border-default)" : "none",
+                    boxShadow: done
+                      ? "var(--shadow-glow-correct)"
+                      : active
+                        ? "var(--shadow-glow-accent)"
+                        : "none",
+                    backgroundSize: "200% 200%",
+                    animation: active ? "gradientShift 3s ease infinite" : undefined,
+                  }}
+                >
+                  <NodeIcon part={part} unlockedPart={unlockedPart} completedParts={completedParts} />
+                </div>
+                <span
+                  aria-hidden="true"
+                  style={{
+                    marginTop: 10,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: done ? "var(--correct)" : active ? "var(--accent)" : "var(--text-tertiary)",
+                  }}
+                >
+                  Part {part}
+                </span>
               </div>
-              <span
-                style={{
-                  marginTop: 8,
-                  fontSize: 11,
-                  fontWeight: 500,
-                  color: done ? "var(--correct)" : active ? "var(--accent)" : "var(--text-tertiary)",
-                }}
-              >
-                Part {part}
-              </span>
-            </div>
-            {index < parts.length - 1 ? (
-              <div
-                aria-hidden="true"
-                style={{
-                  height: 2,
-                  flexGrow: 1,
-                  margin: "0 8px 16px",
-                  background: done ? "var(--correct)" : "var(--border-default)",
-                  transition: "background 350ms var(--ease-color)",
-                }}
-              />
-            ) : null}
-          </div>
-        );
-      })}
+              {index < parts.length - 1 ? (
+                <div
+                  aria-hidden="true"
+                  style={{
+                    height: 3,
+                    flexGrow: 1,
+                    margin: "0 10px 18px",
+                    borderRadius: 2,
+                    background: done ? "var(--correct)" : "var(--border-default)",
+                    transition: "background 350ms var(--ease-color)",
+                  }}
+                />
+              ) : null}
+            </li>
+          );
+        })}
+      </ol>
     </nav>
   );
 }
