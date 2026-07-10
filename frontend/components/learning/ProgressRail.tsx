@@ -22,7 +22,8 @@ export default function ProgressRail({ unlockedPart, completedParts, totalParts 
     const done = completedParts.includes(1);
     return (
       <div
-        aria-label="Quick answer mode"
+        role="status"
+        aria-label={done ? "Quick answer mastered" : "Fast mode – one quick answer"}
         style={{
           marginTop: varSpaceXl,
           display: "flex",
@@ -30,6 +31,7 @@ export default function ProgressRail({ unlockedPart, completedParts, totalParts 
         }}
       >
         <span
+          aria-hidden="true"
           style={{
             display: "inline-flex",
             alignItems: "center",
@@ -52,6 +54,7 @@ export default function ProgressRail({ unlockedPart, completedParts, totalParts 
   }
 
   const parts = Array.from({ length: totalParts }, (_, i) => i + 1);
+  const completedCount = parts.filter((p) => completedParts.includes(p)).length;
 
   return (
     <nav
@@ -64,66 +67,81 @@ export default function ProgressRail({ unlockedPart, completedParts, totalParts 
         alignItems: "flex-start",
       }}
     >
-      {parts.map((part, index) => {
-        const done = completedParts.includes(part);
-        const active = !done && part <= unlockedPart;
-        const locked = !done && !active;
+      <ol
+        role="list"
+        aria-label={`${completedCount} of ${totalParts} parts completed`}
+        style={{
+          listStyle: "none",
+          margin: 0,
+          padding: 0,
+          display: "flex",
+          alignItems: "flex-start",
+          width: "100%",
+        }}
+      >
+        {parts.map((part, index) => {
+          const done = completedParts.includes(part);
+          const active = !done && part <= unlockedPart;
+          const locked = !done && !active;
 
-        const statusLabel = done ? "completed" : active ? "current" : "locked";
+          const statusLabel = done ? "completed" : active ? "current part" : "locked";
 
-        return (
-          <div
-            key={part}
-            style={{ display: "flex", alignItems: "center", flex: 1 }}
-          >
-            <div style={{ display: "grid", placeItems: "center", minWidth: 40 }}>
-              <div
-                className={active ? "animate-unlock-pop" : undefined}
-                role="listitem"
-                aria-label={`Part ${part} – ${statusLabel}`}
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: "50%",
-                  display: "grid",
-                  placeItems: "center",
-                  background: done ? "var(--correct)" : active ? "var(--accent)" : "var(--bg-card)",
-                  border: locked ? "1.5px solid var(--border-default)" : "none",
-                  boxShadow: done
-                    ? "var(--shadow-glow-correct)"
-                    : active
-                      ? "var(--shadow-glow-accent)"
-                      : "none",
-                }}
-              >
-                <NodeIcon part={part} unlockedPart={unlockedPart} completedParts={completedParts} />
+          return (
+            <li
+              key={part}
+              role="listitem"
+              aria-label={`Part ${part}: ${statusLabel}`}
+              style={{ display: "flex", alignItems: "center", flex: 1 }}
+            >
+              <div style={{ display: "grid", placeItems: "center", minWidth: 40 }}>
+                <div
+                  className={active ? "animate-unlock-pop" : undefined}
+                  aria-hidden="true"
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: "50%",
+                    display: "grid",
+                    placeItems: "center",
+                    background: done ? "var(--correct)" : active ? "var(--accent)" : "var(--bg-card)",
+                    border: locked ? "1.5px solid var(--border-default)" : "none",
+                    boxShadow: done
+                      ? "var(--shadow-glow-correct)"
+                      : active
+                        ? "var(--shadow-glow-accent)"
+                        : "none",
+                  }}
+                >
+                  <NodeIcon part={part} unlockedPart={unlockedPart} completedParts={completedParts} />
+                </div>
+                <span
+                  aria-hidden="true"
+                  style={{
+                    marginTop: 8,
+                    fontSize: 12,
+                    fontWeight: 500,
+                    color: done ? "var(--correct)" : active ? "var(--accent)" : "var(--text-tertiary)",
+                  }}
+                >
+                  Part {part}
+                </span>
               </div>
-              <span
-                style={{
-                  marginTop: 8,
-                  fontSize: 11,
-                  fontWeight: 500,
-                  color: done ? "var(--correct)" : active ? "var(--accent)" : "var(--text-tertiary)",
-                }}
-              >
-                Part {part}
-              </span>
-            </div>
-            {index < parts.length - 1 ? (
-              <div
-                aria-hidden="true"
-                style={{
-                  height: 2,
-                  flexGrow: 1,
-                  margin: "0 8px 16px",
-                  background: done ? "var(--correct)" : "var(--border-default)",
-                  transition: "background 350ms var(--ease-color)",
-                }}
-              />
-            ) : null}
-          </div>
-        );
-      })}
+              {index < parts.length - 1 ? (
+                <div
+                  aria-hidden="true"
+                  style={{
+                    height: 2,
+                    flexGrow: 1,
+                    margin: "0 8px 16px",
+                    background: done ? "var(--correct)" : "var(--border-default)",
+                    transition: "background 350ms var(--ease-color)",
+                  }}
+                />
+              ) : null}
+            </li>
+          );
+        })}
+      </ol>
     </nav>
   );
 }

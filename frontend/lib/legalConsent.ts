@@ -103,6 +103,8 @@ export interface LegalConsentState {
   termsVersion?: string;
   /** Clerk user id this record has been synced to the backend for. */
   syncedClerkId?: string;
+  /** Age bracket derived from date-of-birth (data minimization: no exact DOB stored). */
+  ageBracket?: "under13" | "13-17" | "18+";
 }
 
 export function safeGetItem(key: string): string | null {

@@ -42,6 +42,14 @@ import {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+// Privacy: salt for hashing User-Agent strings. A per-process random value
+// prevents rainbow-table reversal of the stored hashes.
+const UA_HASH_SALT = crypto.randomBytes(16).toString("hex");
+function hashUserAgent(ua) {
+  if (typeof ua !== "string" || !ua) return "unknown";
+  return crypto.createHash("sha256").update(`${UA_HASH_SALT}:${ua}`).digest("hex").slice(0, 32);
+}
+
 let EdgeTTS = null;
 try {
   const mod = await import("node-edge-tts");
@@ -597,7 +605,11 @@ app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
       email,
       clerkId,
         deviceIp: req.ip || req.socket?.remoteAddress || "unknown",
-        userAgent: req.headers["user-agent"] || "unknown",
+        // Privacy (GDPR data minimization): hash the User-Agent so we can
+        // detect repeat-device fraud without storing raw fingerprintable
+        // strings. The hash is salted with a per-process secret so it can't
+        // be reversed by rainbow-table lookup.
+        userAgent: hashUserAgent(req.headers["user-agent"]),
         timestamp: parsedTimestamp,
         privacyVersion: PRIVACY_POLICY_VERSION,
         termsVersion: TERMS_OF_SERVICE_VERSION,
@@ -738,6 +750,13 @@ app.post("/api/legal-consent", rateLimit, requireAuth, async (req, res) => {
     if (!parsedTimestamp || Number.isNaN(parsedTimestamp.getTime())) {
       return res.status(400).json({ error: "A valid timestamp is required" });
     }
+    // Privacy: store only the age bracket, not any exact date of birth.
+    const ageBracket = req.body?.ageBracket;
+    const validAgeBrackets = new Set(["under13", "13-17", "18+"]);
+    const sanitizedAgeBracket =
+      typeof ageBracket === "string" && validAgeBrackets.has(ageBracket)
+        ? ageBracket
+        : null;
 
     const db = await getDb();
     const collection = db.collection("agreements");
@@ -762,8 +781,13 @@ app.post("/api/legal-consent", rateLimit, requireAuth, async (req, res) => {
         accepted,
         email,
         clerkId,
+        ageBracket: sanitizedAgeBracket,
         deviceIp: req.ip || req.socket?.remoteAddress || "unknown",
-        userAgent: req.headers["user-agent"] || "unknown",
+        // Privacy (GDPR data minimization): hash the User-Agent so we can
+        // detect repeat-device fraud without storing raw fingerprintable
+        // strings. The hash is salted with a per-process secret so it can't
+        // be reversed by rainbow-table lookup.
+        userAgent: hashUserAgent(req.headers["user-agent"]),
         timestamp: parsedTimestamp,
         type: "legal-consent",
         privacyVersion: PRIVACY_POLICY_VERSION,
