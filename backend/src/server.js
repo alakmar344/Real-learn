@@ -14,6 +14,8 @@ import {
   GemmaApiError,
   GemmaCircuitOpenError,
   parseJSON,
+  callFallbackAI,
+  isFallbackConfigured,
 } from "./lib/gemma.js";
 import {
   GENERATE_LESSON_PROMPT,
@@ -279,26 +281,9 @@ const LESSON_FAILURE_ALERT_THRESHOLD =
   Number.isFinite(configuredFailureAlertThreshold) && configuredFailureAlertThreshold > 0
     ? configuredFailureAlertThreshold
     : DEFAULT_FAILURE_ALERT_THRESHOLD;
-const DEFAULT_PART_RETRY_ATTEMPTS = 2;
-const configuredPartRetryAttempts = Number(process.env.LESSON_PART_RETRY_ATTEMPTS);
-const PART_RETRY_ATTEMPTS =
-  Number.isFinite(configuredPartRetryAttempts) && configuredPartRetryAttempts > 0
-    ? Math.floor(configuredPartRetryAttempts)
-    : DEFAULT_PART_RETRY_ATTEMPTS;
-const DEFAULT_PART_RETRY_DELAY_MS = 1000;
-const configuredPartRetryDelayMs = Number(process.env.LESSON_PART_RETRY_DELAY_MS);
-const PART_RETRY_DELAY_MS =
-  Number.isFinite(configuredPartRetryDelayMs) && configuredPartRetryDelayMs > 0
-    ? configuredPartRetryDelayMs
-    : DEFAULT_PART_RETRY_DELAY_MS;
-const MAX_PART_RETRY_DELAY_MS = 5000;
 let activeLessonRequests = 0;
 let consecutiveLessonFailures = 0;
 let lessonRequestCounter = 0;
-
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
 
 function validateStartupConfig() {
   const hasCloudflareConfig = Boolean(
@@ -1284,110 +1269,91 @@ Level: ${level}${
     }, 1500);
 
     let raw;
-    let generationAttempt = 0;
-    let generationError = null;
-    for (; generationAttempt < PART_RETRY_ATTEMPTS; generationAttempt++) {
-      try {
-        clearInterval(generationTicker);
-        generationPercent = 40;
-        const attemptTicker = setInterval(() => {
-          if (finished) return;
-          const remaining = 82 - generationPercent;
-          if (remaining <= 0.5) return;
-          generationPercent = Math.min(82, generationPercent + Math.max(0.6, remaining * 0.08));
-          sendEvent("progress", {
-            stage: "generating",
-            percent: Math.round(generationPercent),
-          });
-        }, 1500);
+    let provider = "primary";
 
-        console.log("[Gemma] callGemma start", {
-          requestId,
-          mode,
-          lessonTimeoutMs: LESSON_TIMEOUT_MS,
-          userPromptLength: userPrompt.length,
-          hasNewsContext: Boolean(newsContext),
-          maxOutputTokens,
-          temperature,
-          generationAttempt: generationAttempt + 1,
-          maxGenerationAttempts: PART_RETRY_ATTEMPTS,
+    async function tryGenerate(source, label) {
+      clearInterval(generationTicker);
+      generationPercent = 40;
+      const attemptTicker = setInterval(() => {
+        if (finished) return;
+        const remaining = 82 - generationPercent;
+        if (remaining <= 0.5) return;
+        generationPercent = Math.min(82, generationPercent + Math.max(0.6, remaining * 0.08));
+        sendEvent("progress", {
+          stage: "generating",
+          percent: Math.round(generationPercent),
         });
-        raw = await callGemma(
-          systemPrompt,
-          userPrompt,
-          false,
-          temperature,
-          LESSON_TIMEOUT_MS,
-          null,
-          maxOutputTokens
-        );
+      }, 1500);
+
+      console.log("[Gemma] generate start", {
+        requestId,
+        mode,
+        provider: source,
+        label,
+        lessonTimeoutMs: LESSON_TIMEOUT_MS,
+        userPromptLength: userPrompt.length,
+        hasNewsContext: Boolean(newsContext),
+        maxOutputTokens,
+        temperature,
+      });
+      const startedAt = Date.now();
+      let result;
+      try {
+        if (source === "fallback") {
+          result = await callFallbackAI(
+            GEMMA_MODEL,
+            {
+              messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userPrompt },
+              ],
+              temperature,
+              max_tokens: maxOutputTokens,
+            },
+            null
+          );
+        } else {
+          result = await callGemma(
+            systemPrompt,
+            userPrompt,
+            false,
+            temperature,
+            LESSON_TIMEOUT_MS,
+            null,
+            maxOutputTokens
+          );
+        }
         clearInterval(attemptTicker);
-        console.log("[Gemma] callGemma success", {
+        console.log("[Gemma] generate success", {
           requestId,
-          rawLength: raw.length,
-          rawPreview: raw.slice(0, 500),
+          provider: source,
+          label,
+          latencyMs: Date.now() - startedAt,
+          rawLength: result.length,
+          rawPreview: result.slice(0, 500),
         });
         sendEvent("progress", { stage: "generated", percent: 85 });
+        return result;
       } catch (error) {
-        clearInterval(generationTicker);
-        console.error("[Gemma] callGemma failed", {
+        clearInterval(attemptTicker);
+        console.error("[Gemma] generate failed", {
           requestId,
-          generationAttempt: generationAttempt + 1,
+          provider: source,
+          label,
+          latencyMs: Date.now() - startedAt,
           error,
         });
-        generationError = error;
-        if (generationAttempt + 1 >= PART_RETRY_ATTEMPTS) break;
-        const waitMs = Math.min(
-          PART_RETRY_DELAY_MS * Math.pow(2, generationAttempt),
-          MAX_PART_RETRY_DELAY_MS
-        );
-        await sleep(waitMs);
-        if (finished) return;
-        continue;
+        throw error;
       }
+    }
 
-      const outputModerationPromise = moderateText(raw, "output");
-
-      const responseFilter = filterAIResponse(raw);
-      if (!responseFilter.allowed) {
-        const moderationEvent = buildModerationEvent({
-          requestId,
-          clerkId: req.auth?.userId,
-          type: "ai-response-blocked",
-          reason: responseFilter.reason,
-          question,
-        });
-        console.warn("[moderation] Banned AI response blocked", redactModerationEvent(moderationEvent));
-        await logModerationEvent(moderationEvent);
-        sendEvent("error", {
-          error: responseFilter.reason || "The generated content was flagged. Please try a different question.",
-        });
-        recordLessonResult(false);
-        return;
-      }
-
-      if (finished) return;
-
-      const parsed = parseJSON(raw);
+    async function validateRaw(rawText) {
+      const parsed = parseJSON(rawText);
       if (parsed === null) {
-        console.warn("[generate-lesson] parseJSON returned null", { requestId, rawPreview: raw?.slice?.(0, 500) });
-        if (generationAttempt + 1 >= PART_RETRY_ATTEMPTS) {
-          sendEvent("error", {
-            error: "Failed to parse AI response. Please try again.",
-          });
-          recordLessonResult(false);
-          return;
-        }
-        const waitMs = Math.min(
-          PART_RETRY_DELAY_MS * Math.pow(2, generationAttempt),
-          MAX_PART_RETRY_DELAY_MS
-        );
-        await sleep(waitMs);
-        if (finished) return;
-        continue;
+        console.warn("[generate-lesson] parseJSON returned null", { requestId, rawPreview: rawText?.slice?.(0, 500) });
+        return { ok: false, error: "Failed to parse AI response. Please try again." };
       }
       const normalized = normalizeJourney(parsed, mode);
-      sendEvent("progress", { stage: "validating", percent: 95 });
       if (!isValidJourney(normalized, mode)) {
         console.warn("[generate-lesson] normalizeJourney/isValidJourney failed", {
           requestId,
@@ -1405,69 +1371,88 @@ Level: ${level}${
                 quizLength: parsed.parts[0].quiz?.length,
               }
             : null,
-          rawPreview: raw?.slice?.(0, 1000),
+          rawPreview: rawText?.slice?.(0, 1000),
         });
-        if (generationAttempt + 1 >= PART_RETRY_ATTEMPTS) {
-          sendEvent("error", {
-            error: "AI response format was invalid. Please try again.",
-          });
-          recordLessonResult(false);
-          return;
-        }
-        const waitMs = Math.min(
-          PART_RETRY_DELAY_MS * Math.pow(2, generationAttempt),
-          MAX_PART_RETRY_DELAY_MS
-        );
-        await sleep(waitMs);
-        if (finished) return;
-        continue;
+        return { ok: false, error: "AI response format was invalid. Please try again." };
       }
-
       if (!hasExpectedPartCount(normalized, mode)) {
         console.warn("[generate-lesson] Part count mismatch", {
           requestId,
           mode,
           expected: mode === "fast" ? 1 : 3,
           actual: normalized.parts?.length ?? 0,
-          generationAttempt: generationAttempt + 1,
         });
-        if (generationAttempt + 1 >= PART_RETRY_ATTEMPTS) {
-          sendEvent("error", {
-            error: mode === "fast"
+        return {
+          ok: false,
+          error:
+            mode === "fast"
               ? "The AI could not generate a complete answer. Please try a different question."
               : "The AI could not generate a complete lesson. Please try a different question.",
+        };
+      }
+      return { ok: true, raw: rawText, normalized };
+    }
+
+    try {
+      raw = await tryGenerate("primary", "primary");
+      const primaryValidation = await validateRaw(raw);
+      if (primaryValidation.ok) {
+        raw = primaryValidation.raw;
+      } else if (isFallbackConfigured()) {
+        provider = "fallback";
+        raw = await tryGenerate("fallback", "fallback");
+        const fallbackValidation = await validateRaw(raw);
+        if (!fallbackValidation.ok) {
+          sendEvent("error", { error: fallbackValidation.error });
+          recordLessonResult(false);
+          return;
+        }
+        raw = fallbackValidation.raw;
+      } else {
+        sendEvent("error", { error: primaryValidation.error });
+        recordLessonResult(false);
+        return;
+      }
+    } catch (error) {
+      if (finished) return;
+      if (isFallbackConfigured() && provider === "primary") {
+        console.warn("[Gemma] Primary provider failed; trying fallback", {
+          requestId,
+          error,
+        });
+        try {
+          provider = "fallback";
+          raw = await tryGenerate("fallback", "fallback-after-error");
+          const fallbackValidation = await validateRaw(raw);
+          if (!fallbackValidation.ok) {
+            sendEvent("error", { error: fallbackValidation.error });
+            recordLessonResult(false);
+            return;
+          }
+          raw = fallbackValidation.raw;
+        } catch (fallbackError) {
+          console.error("[Gemma] Fallback provider failed", { requestId, fallbackError });
+          sendEvent("error", {
+            error: "Failed to generate lesson. Please try again.",
           });
           recordLessonResult(false);
           return;
         }
-        const waitMs = Math.min(
-          PART_RETRY_DELAY_MS * Math.pow(2, generationAttempt),
-          MAX_PART_RETRY_DELAY_MS
-        );
-        await sleep(waitMs);
-        if (finished) return;
-        continue;
+      } else {
+        console.error("[Gemma] Primary provider failed with no fallback", { requestId, error });
+        sendEvent("error", {
+          error: "Failed to generate lesson. Please try again.",
+        });
+        recordLessonResult(false);
+        return;
       }
-
-      break;
-    }
-
-    if (generationAttempt >= PART_RETRY_ATTEMPTS && generationError) {
-      console.error("[generate-lesson] Generation failed after retries", {
-        requestId,
-        generationAttempts: PART_RETRY_ATTEMPTS,
-        error: generationError,
-      });
-      sendEvent("error", {
-        error: "Failed to generate lesson. Please try again.",
-      });
-      recordLessonResult(false);
-      return;
     }
 
     const parsed = parseJSON(raw);
     const normalized = normalizeJourney(parsed, mode);
     sendEvent("progress", { stage: "validating", percent: 95 });
+
+    const outputModerationPromise = moderateText(raw, "output");
 
     if (mode === "fast") {
       const fastInputModeration = await inputModerationPromise;
