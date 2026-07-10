@@ -1268,8 +1268,18 @@ Level: ${level}${
       });
     }, 1500);
 
-    let raw;
     let provider = "primary";
+    const providerLabel = provider === "fallback"
+      ? "Fallback AI provider"
+      : "Cloudflare Workers AI";
+    console.log("[Gemma] Provider selected", {
+      requestId,
+      mode,
+      provider: providerLabel,
+      fallbackConfigured: isFallbackConfigured(),
+    });
+
+    let raw;
 
     async function tryGenerate(source, label) {
       clearInterval(generationTicker);
@@ -1288,7 +1298,7 @@ Level: ${level}${
       console.log("[Gemma] generate start", {
         requestId,
         mode,
-        provider: source,
+        provider: source === "fallback" ? "Fallback AI provider" : "Cloudflare Workers AI",
         label,
         lessonTimeoutMs: LESSON_TIMEOUT_MS,
         userPromptLength: userPrompt.length,
@@ -1326,7 +1336,7 @@ Level: ${level}${
         clearInterval(attemptTicker);
         console.log("[Gemma] generate success", {
           requestId,
-          provider: source,
+          provider: source === "fallback" ? "Fallback AI provider" : "Cloudflare Workers AI",
           label,
           latencyMs: Date.now() - startedAt,
           rawLength: result.length,
@@ -1338,7 +1348,7 @@ Level: ${level}${
         clearInterval(attemptTicker);
         console.error("[Gemma] generate failed", {
           requestId,
-          provider: source,
+          provider: source === "fallback" ? "Fallback AI provider" : "Cloudflare Workers AI",
           label,
           latencyMs: Date.now() - startedAt,
           error,
@@ -1400,6 +1410,11 @@ Level: ${level}${
         raw = primaryValidation.raw;
       } else if (isFallbackConfigured()) {
         provider = "fallback";
+        console.warn("[Gemma] Switching to fallback provider", {
+          requestId,
+          mode,
+          reason: "primary returned invalid response",
+        });
         raw = await tryGenerate("fallback", "fallback");
         const fallbackValidation = await validateRaw(raw);
         if (!fallbackValidation.ok) {
@@ -1416,8 +1431,10 @@ Level: ${level}${
     } catch (error) {
       if (finished) return;
       if (isFallbackConfigured() && provider === "primary") {
-        console.warn("[Gemma] Primary provider failed; trying fallback", {
+        console.warn("[Gemma] Switching to fallback provider", {
           requestId,
+          mode,
+          reason: "primary threw an error",
           error,
         });
         try {
