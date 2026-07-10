@@ -3,12 +3,15 @@
 import { useEffect, useRef, useState } from "react";
 import { useLessonStore } from "@/store/lessonStore";
 
-// Each step "completes" once the real progress passes its threshold.
+// Each step "completes" once the real progress passes its threshold. The
+// thresholds are spread across the whole 0–100 range (no two steps share a
+// value) so the checklist advances continuously alongside the bar instead of
+// two items lighting up at once and then stalling.
 const steps = [
   { label: "Understanding your question", at: 5, stage: "starting" },
   { label: "Researching real-world context", at: 15, stage: "searching" },
   { label: "Writing the foundation", at: 40, stage: "generating" },
-  { label: "Explaining how it works", at: 40, stage: "generating" },
+  { label: "Explaining how it works", at: 62, stage: "generating" },
   { label: "Connecting it to the real world", at: 85, stage: "generated" },
   { label: "Crafting quiz questions", at: 95, stage: "validating" },
 ];
@@ -34,18 +37,24 @@ export default function LoadingCinematic({ question, onCancel }: Props) {
   const [factIndex, setFactIndex] = useState(0);
   const displayRef = useRef(0);
 
-  // Smoothly animate toward the real progress value. When real progress
-  // jumps (e.g. 5 → 15 → 30 → 40 → 85 → 95), the display catches up
-  // with a smooth ease. Between events it creeps forward slowly so the
-  // bar never feels stuck.
+  // Smoothly animate the bar so it ALWAYS drifts forward, even between server
+  // events. The previous version eased toward exactly `progressPercent`, so
+  // once a milestone arrived (e.g. 40% at the start of generation) the bar
+  // asymptotically parked on that number and looked frozen for the entire
+  // wait. Instead we ease toward a small *lead* beyond the last real value and
+  // clamp the motion to be strictly monotonic — the bar keeps inching ahead,
+  // catches up quickly when a new milestone lands, and never slides backward.
   useEffect(() => {
     const id = window.setInterval(() => {
-      const target = progressPercent > 0 ? progressPercent : 95;
-      // If we have real progress, move toward it faster (0.12 per tick).
-      // If no real progress yet (waiting for first event), creep slowly
-      // toward 95 so the bar still moves during the initial network roundtrip.
-      const rate = progressPercent > 0 ? 0.12 : 0.03;
-      const next = displayRef.current + (target - displayRef.current) * rate;
+      // Lead a little past the last real event so the bar never rests exactly
+      // on a milestone. Before the first event, drift gently toward 90%.
+      const target =
+        progressPercent > 0 ? Math.min(progressPercent + 6, 99) : 90;
+      const rate = progressPercent > 0 ? 0.08 : 0.02;
+      const eased = displayRef.current + (target - displayRef.current) * rate;
+      // Never regress: a new lower `target` (shouldn't happen, but be safe)
+      // or float jitter must not pull the bar backward.
+      const next = Math.max(displayRef.current, eased);
       displayRef.current = next;
       setDisplayProgress(next);
     }, 100);
@@ -132,6 +141,9 @@ export default function LoadingCinematic({ question, onCancel }: Props) {
                 "linear-gradient(90deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 70%, transparent) 50%, var(--accent) 100%)",
               backgroundSize: "200% 100%",
               animation: "shimmer 1.6s linear infinite",
+              // A soft accent glow that travels with the bar so the motion
+              // reads as alive and connected rather than a flat plateau.
+              boxShadow: "0 0 12px var(--accent-glow)",
             }}
           />
         </div>
