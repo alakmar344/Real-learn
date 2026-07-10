@@ -68,11 +68,9 @@ export default function PartCard({
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.transform = "scale(1.01)";
-          e.currentTarget.style.boxShadow = "var(--shadow-glow-correct)";
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.transform = "scale(1)";
-          e.currentTarget.style.boxShadow = "none";
         }}
       >
         <span>✓ {part.title} · Completed</span>
@@ -100,12 +98,10 @@ export default function PartCard({
       <div
         aria-hidden="true"
         style={{
-          height: 4,
-          background: "var(--accent-gradient)",
+          height: 3,
+          background: "var(--accent)",
           borderRadius: "var(--radius-xl) var(--radius-xl) 0 0",
           margin: "calc(-1 * clamp(20px, 5vw, 36px)) calc(-1 * clamp(20px, 5vw, 36px)) 0",
-          backgroundSize: "200% 100%",
-          animation: "shimmer 3s linear infinite",
         }}
       />
       <div
@@ -215,22 +211,22 @@ export default function PartCard({
                   height: 56,
                   borderRadius: "var(--radius-lg)",
                   border: "none",
-                  background: "var(--accent-gradient)",
+                  background: "var(--accent)",
                   color: "var(--on-accent)",
                   fontSize: "var(--text-base)",
                   fontWeight: 700,
                   cursor: "pointer",
-                  boxShadow: "var(--shadow-glow-accent)",
+                  boxShadow: "var(--shadow-sm)",
                   minHeight: 48,
                   transition: "all 300ms var(--ease-color)",
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = "scale(1.02)";
-                  e.currentTarget.style.boxShadow = "0 8px 30px var(--accent-glow)";
+                  e.currentTarget.style.boxShadow = "var(--shadow-md)";
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = "scale(1)";
-                  e.currentTarget.style.boxShadow = "var(--shadow-glow-accent)";
+                  e.currentTarget.style.boxShadow = "var(--shadow-sm)";
                 }}
               >
                 I&apos;ve Read This → Take Quiz

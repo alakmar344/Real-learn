@@ -24,15 +24,15 @@
   --border-accent: #6366f1;
   --border-glow: #6366f1;
 
-  /* ── Accent — vibrant indigo with electric violet ── */
-  --accent: #6366f1;
-  --accent-hover: #818cf8;
-  --accent-dim: rgba(99, 102, 241, 0.1);
-  --accent-glow: rgba(99, 102, 241, 0.25);
-  --accent-companion: #ec4899;
-  --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+  /* ── Accent — refined indigo ── */
+  --accent: #5b5bd6;
+  --accent-hover: #6e6ee0;
+  --accent-dim: rgba(91, 91, 214, 0.08);
+  --accent-glow: rgba(91, 91, 214, 0.15);
+  --accent-companion: #8b5cf6;
+  --accent-gradient: linear-gradient(135deg, #5b5bd6 0%, #7c6eef 100%);
   --on-accent: #ffffff;
-  --shadow-glow-accent: 0 4px 20px rgba(99, 102, 241, 0.35);
+  --shadow-glow-accent: 0 2px 12px rgba(91, 91, 214, 0.15);
 
   /* ── Text — bold, high contrast ── */
   --text-primary: #09090b;
@@ -107,8 +107,9 @@
      Overridden per dark theme below so overlays never feel like a black hole. */
   --scrim: rgba(38, 30, 16, 0.42);
 
-  /* ── Soft focus ring (glow + offset) for the ambient aesthetic ── */
+  /* ── Clean focus ring ── */
   --focus-ring: 0 0 0 3px var(--accent-glow);
+  --focus-ring-simple: 0 0 0 2px var(--accent);
 }
 
 /* ── Dark theme (Night) — deep, rich, with neon accents ── */
@@ -126,14 +127,14 @@ html[data-theme="dark"] {
   --border-accent: #818cf8;
   --border-glow: #818cf8;
 
-  --accent: #818cf8;
-  --accent-hover: #a5b4fc;
-  --accent-dim: rgba(129, 140, 248, 0.15);
-  --accent-glow: rgba(129, 140, 248, 0.3);
-  --accent-companion: #f472b6;
-  --accent-gradient: linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #f472b6 100%);
+  --accent: #7c82f0;
+  --accent-hover: #9ba0f5;
+  --accent-dim: rgba(124, 130, 240, 0.12);
+  --accent-glow: rgba(124, 130, 240, 0.18);
+  --accent-companion: #a78bfa;
+  --accent-gradient: linear-gradient(135deg, #7c82f0 0%, #9b8ef5 100%);
   --on-accent: #09090b;
-  --shadow-glow-accent: 0 4px 24px rgba(129, 140, 248, 0.4);
+  --shadow-glow-accent: 0 2px 12px rgba(124, 130, 240, 0.18);
 
   --text-primary: #fafafa;
   --text-secondary: #a1a1aa;
@@ -175,14 +176,14 @@ html[data-theme="twilight"] {
   --border-accent: #c084fc;
   --border-glow: #c084fc;
 
-  --accent: #c084fc;
-  --accent-hover: #d8b4fe;
-  --accent-dim: rgba(192, 132, 252, 0.15);
-  --accent-glow: rgba(192, 132, 252, 0.3);
-  --accent-companion: #f472b6;
-  --accent-gradient: linear-gradient(135deg, #c084fc 0%, #f472b6 100%);
+  --accent: #b084f0;
+  --accent-hover: #c9a0f5;
+  --accent-dim: rgba(176, 132, 240, 0.12);
+  --accent-glow: rgba(176, 132, 240, 0.18);
+  --accent-companion: #c084fc;
+  --accent-gradient: linear-gradient(135deg, #b084f0 0%, #c9a0f5 100%);
   --on-accent: #0c0a1d;
-  --shadow-glow-accent: 0 4px 24px rgba(192, 132, 252, 0.4);
+  --shadow-glow-accent: 0 2px 12px rgba(176, 132, 240, 0.18);
 
   --text-primary: #f0ebff;
   --text-secondary: #b8b0d4;
@@ -232,23 +233,7 @@ body {
   overflow-x: hidden;
 }
 
-/* Subtle ambient accent wash — gives every page a gentle sense of light
-   without disturbing the aesthetic. The companion tint deepens each theme's
-   personality (indigo on Paper, blue on Night, rose on Twilight).
-   Painted on a fixed pseudo-element instead of body + background-attachment:
-   fixed, which iOS Safari doesn't support and repaints jankily. */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(800px 400px at 80% -10%, var(--accent-glow), transparent 60%),
-    radial-gradient(600px 300px at -5% 100%, var(--accent-dim), transparent 55%),
-    radial-gradient(500px 250px at 50% 110%, color-mix(in srgb, var(--accent-companion) 12%, transparent), transparent 55%),
-    var(--bg-primary);
-}
+/* Clean background — no ambient wash, just the theme color */
 
 h1,
 h2,
@@ -271,8 +256,6 @@ pre {
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
-  /* Bold accent glow for focus */
-  box-shadow: var(--focus-ring), 0 0 12px var(--accent-glow);
   border-radius: var(--radius-sm);
 }
 
@@ -346,11 +329,6 @@ pre {
   to { background-position: 200% 0; }
 }
 
-@keyframes loadingGlow {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 1; }
-}
-
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
@@ -380,8 +358,8 @@ pre {
 }
 
 @keyframes glowPulse {
-  0%, 100% { box-shadow: 0 0 20px var(--accent-glow); }
-  50% { box-shadow: 0 0 40px var(--accent-glow), 0 0 60px var(--accent-dim); }
+  0%, 100% { box-shadow: 0 0 8px var(--accent-glow); }
+  50% { box-shadow: 0 0 16px var(--accent-glow); }
 }
 
 @keyframes slideIn {

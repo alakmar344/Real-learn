@@ -68,7 +68,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
         borderRadius: "var(--radius-2xl)",
         border: `2px solid ${focused ? "var(--accent)" : "var(--border-subtle)"}`,
         background: "var(--bg-card)",
-        boxShadow: focused ? "var(--shadow-glow-accent)" : "var(--shadow-lg)",
+        boxShadow: focused ? "var(--shadow-md)" : "var(--shadow-lg)",
         transition: "all 300ms var(--ease-color)",
       }}
     >
@@ -150,8 +150,8 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
                   cursor: "pointer",
                   minHeight: 36,
                   color: active ? "var(--on-accent)" : "var(--text-secondary)",
-                  background: active ? "var(--accent-gradient)" : "transparent",
-                  boxShadow: active ? "var(--shadow-glow-accent)" : "none",
+                  background: active ? "var(--accent)" : "transparent",
+                  boxShadow: active ? "var(--shadow-sm)" : "none",
                   transition: "all 200ms var(--ease-color)",
                   transform: active ? "scale(1.02)" : "scale(1)",
                 }}
@@ -195,22 +195,22 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
               fontSize: 14,
               fontWeight: 700,
               color: "var(--on-accent)",
-              background: question.trim() ? "var(--accent-gradient)" : "var(--border-default)",
+              background: question.trim() ? "var(--accent)" : "var(--border-default)",
               cursor: question.trim() ? "pointer" : "not-allowed",
               transition: "all 300ms var(--ease-color)",
               minHeight: 48,
-              boxShadow: question.trim() ? "var(--shadow-glow-accent)" : "var(--shadow-sm)",
+              boxShadow: question.trim() ? "var(--shadow-sm)" : "var(--shadow-sm)",
               transform: question.trim() ? "scale(1)" : "scale(1)",
             }}
             onMouseEnter={(e) => {
               if (question.trim()) {
-                e.currentTarget.style.transform = "scale(1.03)";
-                e.currentTarget.style.boxShadow = "0 6px 24px var(--accent-glow)";
+                e.currentTarget.style.transform = "scale(1.02)";
+                e.currentTarget.style.boxShadow = "var(--shadow-md)";
               }
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = "scale(1)";
-              e.currentTarget.style.boxShadow = question.trim() ? "var(--shadow-glow-accent)" : "var(--shadow-sm)";
+              e.currentTarget.style.boxShadow = question.trim() ? "var(--shadow-sm)" : "var(--shadow-sm)";
             }}
           >
             {mode === "fast" ? "Get Quick Help ⚡" : "Start Guided Lesson →"}
@@ -227,19 +227,19 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
                 fontSize: 14,
                 fontWeight: 700,
                 color: "var(--on-accent)",
-                background: "var(--accent-gradient)",
+                background: "var(--accent)",
                 cursor: "pointer",
                 transition: "all 300ms var(--ease-color)",
                 minHeight: 48,
-                boxShadow: "var(--shadow-glow-accent)",
+                boxShadow: "var(--shadow-sm)",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "scale(1.03)";
-                e.currentTarget.style.boxShadow = "0 6px 24px var(--accent-glow)";
+                e.currentTarget.style.transform = "scale(1.02)";
+                e.currentTarget.style.boxShadow = "var(--shadow-md)";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = "scale(1)";
-                e.currentTarget.style.boxShadow = "var(--shadow-glow-accent)";
+                e.currentTarget.style.boxShadow = "var(--shadow-sm)";
               }}
             >
               Sign in to Learn →

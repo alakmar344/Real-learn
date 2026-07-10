@@ -48,9 +48,8 @@ export default function Navbar({ compact = false }: Props) {
           >
             <defs>
               <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#6366f1" />
-                <stop offset="50%" stopColor="#a855f7" />
-                <stop offset="100%" stopColor="#ec4899" />
+                <stop offset="0%" stopColor="#5b5bd6" />
+                <stop offset="100%" stopColor="#7c6eef" />
               </linearGradient>
             </defs>
             <rect width="120" height="40" rx="12" fill="url(#logo-gradient)" />
@@ -67,16 +66,7 @@ export default function Navbar({ compact = false }: Props) {
             }}
           >
             <span style={{ color: "var(--text-primary)" }}>Real</span>
-            <span
-              style={{
-                background: "var(--accent-gradient)",
-                backgroundClip: "text",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              Learn
-            </span>
+            <span style={{ color: "var(--accent)" }}>Learn</span>
           </span>
         </Link>
 

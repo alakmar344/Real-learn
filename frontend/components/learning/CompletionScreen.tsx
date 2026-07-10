@@ -146,7 +146,7 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
               margin: 0,
               fontSize: 30,
               fontWeight: 800,
-              background: "var(--accent-gradient)",
+              background: "var(--accent)",
               backgroundClip: "text",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
@@ -236,23 +236,23 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
             style={{
               border: "none",
               borderRadius: "var(--radius-lg)",
-              background: "var(--accent-gradient)",
+              background: "var(--accent)",
               color: "var(--on-accent)",
               padding: "12px 24px",
               cursor: "pointer",
               fontSize: 14,
               fontWeight: 700,
               minHeight: 48,
-              boxShadow: "var(--shadow-glow-accent)",
+              boxShadow: "var(--shadow-sm)",
               transition: "all 300ms var(--ease-color)",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "scale(1.03)";
-              e.currentTarget.style.boxShadow = "0 8px 30px var(--accent-glow)";
+              e.currentTarget.style.transform = "scale(1.02)";
+              e.currentTarget.style.boxShadow = "var(--shadow-md)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = "scale(1)";
-              e.currentTarget.style.boxShadow = "var(--shadow-glow-accent)";
+              e.currentTarget.style.boxShadow = "var(--shadow-sm)";
             }}
           >
             Continue Learning →

@@ -83,13 +83,13 @@ module.exports = {
           to: { transform: "translateY(0)" },
         },
         accentFlash: {
-          "0%": { background: "transparent", boxShadow: "0 0 0 rgba(26,58,92,0)" },
-          "40%": { background: "rgba(26,58,92,0.12)", boxShadow: "0 0 40px rgba(26,58,92,0.25)" },
-          "100%": { background: "transparent", boxShadow: "0 0 0 rgba(26,58,92,0)" },
+          "0%": { background: "transparent", boxShadow: "0 0 0 transparent" },
+          "40%": { background: "var(--accent-dim)", boxShadow: "0 0 20px var(--accent-glow)" },
+          "100%": { background: "transparent", boxShadow: "0 0 0 transparent" },
         },
         unlockPop: {
           "0%": { transform: "scale(0.8)" },
-          "50%": { transform: "scale(1.05)", boxShadow: "0 0 20px rgba(26,58,92,0.2)" },
+          "50%": { transform: "scale(1.05)" },
           "100%": { transform: "scale(1)" },
         },
         shake: {

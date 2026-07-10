@@ -44,7 +44,7 @@ export default function ProgressRail({ unlockedPart, completedParts, totalParts 
             color: done ? "var(--correct)" : "var(--accent)",
             background: done ? "var(--correct-bg)" : "var(--accent-dim)",
             border: `1.5px solid ${done ? "var(--correct)" : "var(--accent)"}`,
-            boxShadow: done ? "var(--shadow-glow-correct)" : "var(--shadow-glow-accent)",
+            boxShadow: "none",
           }}
         >
           <span aria-hidden="true" style={{ fontSize: 16 }}>{done ? "✓" : "⚡"}</span>
@@ -104,15 +104,15 @@ export default function ProgressRail({ unlockedPart, completedParts, totalParts 
                     borderRadius: "50%",
                     display: "grid",
                     placeItems: "center",
-                    background: done ? "var(--correct)" : active ? "var(--accent-gradient)" : "var(--bg-card)",
+                    background: done ? "var(--correct)" : active ? "var(--accent)" : "var(--bg-card)",
                     border: locked ? "2px solid var(--border-default)" : "none",
                     boxShadow: done
-                      ? "var(--shadow-glow-correct)"
+                      ? "none"
                       : active
-                        ? "var(--shadow-glow-accent)"
+                        ? "var(--shadow-sm)"
                         : "none",
                     backgroundSize: "200% 200%",
-                    animation: active ? "gradientShift 3s ease infinite" : undefined,
+                    animation: undefined,
                   }}
                 >
                   <NodeIcon part={part} unlockedPart={unlockedPart} completedParts={completedParts} />

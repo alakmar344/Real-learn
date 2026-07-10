@@ -28,10 +28,7 @@ export default function NotFound() {
             fontWeight: 800,
             margin: 0,
             lineHeight: 1,
-            background: "var(--accent-gradient)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
+            color: "var(--accent)",
           }}
         >
           404

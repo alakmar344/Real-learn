@@ -126,7 +126,7 @@ export default function ProgressPage() {
                     fontWeight: 800,
                     fontSize: 30,
                     flexShrink: 0,
-                    boxShadow: "var(--shadow-glow-accent)",
+                    boxShadow: "var(--shadow-sm)",
                   }}
                 >
                   {info.level}

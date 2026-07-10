@@ -176,10 +176,10 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
           background: "var(--bg-card)",
           borderRadius: "var(--radius-2xl) var(--radius-2xl) 0 0",
           padding: "0 24px 40px",
-          boxShadow: "0 -4px 20px var(--accent-glow)",
+          boxShadow: "var(--shadow-lg)",
         }}
       >
-        {/* Gradient top border accent */}
+        {/* Top border accent */}
         <div
           aria-hidden="true"
           style={{
@@ -187,8 +187,8 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
             top: 0,
             left: 0,
             right: 0,
-            height: 4,
-            background: "var(--accent-gradient)",
+            height: 3,
+            background: "var(--accent)",
             borderRadius: "var(--radius-2xl) var(--radius-2xl) 0 0",
           }}
         />
@@ -199,7 +199,7 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
             width: 48,
             height: 5,
             borderRadius: 3,
-            background: "var(--accent-gradient)",
+            background: "var(--border-default)",
             margin: "14px auto 20px",
           }}
         />
@@ -240,7 +240,7 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
             fontFamily: "var(--font-playfair)",
             fontWeight: 800,
             fontSize: 20,
-            background: "var(--accent-gradient)",
+            background: "var(--accent)",
             backgroundClip: "text",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
@@ -307,7 +307,7 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
                   : "1.5px solid var(--border-default)",
               background:
                 score === perfectScore && current === lastQuestionIndex
-                  ? "var(--accent-gradient)"
+                  ? "var(--accent)"
                   : "transparent",
               color:
                 score === perfectScore && current === lastQuestionIndex
@@ -317,16 +317,13 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
               fontWeight: 700,
               cursor: "pointer",
               transition: "all 300ms var(--ease-color)",
-              boxShadow:
-                score === perfectScore && current === lastQuestionIndex
-                  ? "var(--shadow-glow-accent)"
-                  : "none",
+              boxShadow: "none",
               minHeight: 48,
             }}
             onMouseEnter={(e) => {
               if (score === perfectScore && current === lastQuestionIndex) {
                 e.currentTarget.style.transform = "scale(1.02)";
-                e.currentTarget.style.boxShadow = "0 8px 30px var(--accent-glow)";
+                e.currentTarget.style.boxShadow = "var(--shadow-md)";
               } else {
                 e.currentTarget.style.borderColor = "var(--accent)";
                 e.currentTarget.style.color = "var(--accent)";
@@ -335,7 +332,7 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = "scale(1)";
               if (score === perfectScore && current === lastQuestionIndex) {
-                e.currentTarget.style.boxShadow = "var(--shadow-glow-accent)";
+                e.currentTarget.style.boxShadow = "none";
               } else {
                 e.currentTarget.style.borderColor = "var(--border-default)";
                 e.currentTarget.style.color = "var(--text-primary)";

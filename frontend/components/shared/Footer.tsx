@@ -24,10 +24,7 @@ const Footer = () => (
       <span
         style={{
           fontWeight: 800,
-          background: "var(--accent-gradient)",
-          backgroundClip: "text",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
+          color: "var(--accent)",
         }}
       >
         RealLearn
