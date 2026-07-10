@@ -18,13 +18,13 @@ const BURST_COLORS = ["#f59e0b", "#ec4899", "#3b82f6", "#8b5cf6", "var(--correct
 
 function Burst() {
   const [pieces] = useState(() =>
-    Array.from({ length: 28 }, (_, i) => ({
+    Array.from({ length: 16 }, (_, i) => ({
       id: i,
-      left: 50 + (Math.random() * 40 - 20),
-      delay: Math.random() * 0.25,
-      size: 7 + Math.random() * 7,
+      left: 50 + (Math.random() * 30 - 15),
+      delay: Math.random() * 0.2,
+      size: 5 + Math.random() * 5,
       color: BURST_COLORS[i % BURST_COLORS.length],
-      duration: 1.4 + Math.random() * 1.2,
+      duration: 1.2 + Math.random() * 0.8,
     }))
   );
   return (
@@ -70,7 +70,7 @@ function XpChip({ item }: { item: Extract<Celebration, { kind: "xp" }> }) {
           padding: "7px 16px",
           fontWeight: 800,
           fontSize: 14,
-          boxShadow: "var(--shadow-glow-accent)",
+          boxShadow: "var(--shadow-sm)",
           whiteSpace: "nowrap",
         }}
       >
@@ -214,7 +214,7 @@ export default function EngagementLayer() {
             fontSize: 46,
             background: "var(--bg-card)",
             border: `3px solid ${TIER_COLOR[badge.tier]}`,
-            boxShadow: `0 0 24px ${TIER_COLOR[badge.tier]}55`,
+            boxShadow: "var(--shadow-md)",
           }}
         >
           {badge.emoji}

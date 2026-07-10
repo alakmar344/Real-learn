@@ -65,9 +65,8 @@ export default function Sidebar({ open, onClose }: Props) {
             <svg viewBox="0 0 120 40" fill="none" aria-hidden="true" style={{ width: 38, height: "auto" }}>
               <defs>
                 <linearGradient id="sidebar-logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#6366f1" />
-                  <stop offset="50%" stopColor="#a855f7" />
-                  <stop offset="100%" stopColor="#ec4899" />
+                  <stop offset="0%" stopColor="#5b5bd6" />
+                  <stop offset="100%" stopColor="#7c6eef" />
                 </linearGradient>
               </defs>
               <rect width="120" height="40" rx="12" fill="url(#sidebar-logo-gradient)" />
@@ -84,16 +83,7 @@ export default function Sidebar({ open, onClose }: Props) {
               }}
             >
               <span style={{ color: "var(--text-primary)" }}>Real</span>
-              <span
-                style={{
-                  background: "var(--accent-gradient)",
-                  backgroundClip: "text",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                Learn
-              </span>
+              <span style={{ color: "var(--accent)" }}>Learn</span>
             </span>
             <button
               type="button"
@@ -112,22 +102,22 @@ export default function Sidebar({ open, onClose }: Props) {
               border: "none",
               borderRadius: "var(--radius-lg)",
               padding: "12px 16px",
-              background: "var(--accent-gradient)",
+              background: "var(--accent)",
               color: "var(--on-accent)",
               fontWeight: 700,
               fontSize: 14,
               cursor: "pointer",
               minHeight: 48,
-              boxShadow: "var(--shadow-glow-accent)",
+              boxShadow: "var(--shadow-sm)",
               transition: "all 200ms var(--ease-color)",
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = "scale(1.02)";
-              e.currentTarget.style.boxShadow = "0 6px 24px var(--accent-glow)";
+              e.currentTarget.style.boxShadow = "var(--shadow-md)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = "scale(1)";
-              e.currentTarget.style.boxShadow = "var(--shadow-glow-accent)";
+              e.currentTarget.style.boxShadow = "var(--shadow-sm)";
             }}
           >
             ＋ New lesson
@@ -260,11 +250,9 @@ export default function Sidebar({ open, onClose }: Props) {
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.borderColor = "var(--accent)";
-              e.currentTarget.style.boxShadow = "var(--shadow-glow-accent)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.borderColor = "var(--border-subtle)";
-              e.currentTarget.style.boxShadow = "none";
             }}
           >
             <span>Theme</span>
@@ -293,11 +281,9 @@ export default function Sidebar({ open, onClose }: Props) {
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = "var(--accent)";
-                e.currentTarget.style.boxShadow = "var(--shadow-glow-accent)";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.borderColor = "var(--border-subtle)";
-                e.currentTarget.style.boxShadow = "none";
               }}
             >
               <span>⚙️ Settings</span>

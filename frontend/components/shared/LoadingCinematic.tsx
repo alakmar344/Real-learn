@@ -89,9 +89,7 @@ export default function LoadingCinematic({ question, onCancel }: Props) {
         style={{
           position: "absolute",
           inset: 0,
-          background:
-            "radial-gradient(ellipse at 30% 40%, var(--accent-dim) 0%, transparent 50%), radial-gradient(ellipse at 70% 60%, color-mix(in srgb, var(--accent-companion) 10%, transparent) 0%, transparent 50%)",
-          animation: "loadingGlow 4s ease-in-out infinite",
+          background: "var(--bg-primary)",
         }}
       />
       <div
@@ -136,11 +134,8 @@ export default function LoadingCinematic({ question, onCancel }: Props) {
               width: `${pct}%`,
               height: "100%",
               borderRadius: 999,
-              background: "var(--accent-gradient)",
+              background: "var(--accent)",
               transition: "width 200ms linear",
-              backgroundSize: "200% 100%",
-              animation: "shimmer 1.6s linear infinite",
-              boxShadow: "0 0 16px var(--accent-glow)",
             }}
           />
         </div>
@@ -204,10 +199,9 @@ export default function LoadingCinematic({ question, onCancel }: Props) {
                     border: done
                       ? "none"
                       : "2px solid color-mix(in srgb, var(--accent) 30%, transparent)",
-                    background: done ? "var(--accent-gradient)" : "transparent",
+                    background: done ? "var(--accent)" : "transparent",
                     color: done ? "var(--on-accent)" : "inherit",
                     fontSize: 14,
-                    boxShadow: done ? "var(--shadow-glow-accent)" : "none",
                   }}
                 >
                   {done ? (

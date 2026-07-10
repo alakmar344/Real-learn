@@ -164,12 +164,7 @@ export default function HomePage() {
                 style={{
                   position: "relative",
                   display: "inline-block",
-                  background: "var(--accent-gradient)",
-                  backgroundClip: "text",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundSize: "200% 200%",
-                  animation: "gradientShift 4s ease infinite",
+                  color: "var(--accent)",
                 }}
               >
                 Your Textbook
