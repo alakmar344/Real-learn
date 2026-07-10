@@ -14,13 +14,15 @@ import {
   GemmaApiError,
   GemmaCircuitOpenError,
   parseJSON,
+  callFallbackAI,
+  isFallbackConfigured,
 } from "./lib/gemma.js";
 import {
   GENERATE_LESSON_PROMPT,
   GENERATE_FAST_ANSWER_PROMPT,
 } from "./lib/prompts.js";
 import { fetchRealWorldContext } from "./lib/serper.js";
-import { isValidJourney, normalizeJourney } from "./validation.js";
+import { isValidJourney, normalizeJourney, hasExpectedPartCount } from "./validation.js";
 import { getDb } from "./lib/mongodb.js";
 import {
   requireAuth,
@@ -1254,121 +1256,205 @@ Level: ${level}${
       temperature,
     });
     sendEvent("progress", { stage: "generating", percent: 40 });
-    // Generation (callGemma) is the single longest phase — it can run for many
-    // seconds with no natural sub-steps to report. Without a signal the bar
-    // freezes at 40% for the whole wait, which reads as a stalled/disconnected
-    // UI. Emit gentle, decelerating synthetic progress that ramps 40 → ~82
-    // while we wait, then hand back to the real 85% milestone the moment
-    // generation returns. The ticker is always cleared in `finally`.
     let generationPercent = 40;
     const generationTicker = setInterval(() => {
       if (finished) return;
       const remaining = 82 - generationPercent;
       if (remaining <= 0.5) return;
-      // Ease toward the ceiling so it slows down the longer generation takes
-      // and never actually reaches the 85% "generated" milestone early.
       generationPercent = Math.min(82, generationPercent + Math.max(0.6, remaining * 0.08));
       sendEvent("progress", {
         stage: "generating",
         percent: Math.round(generationPercent),
       });
     }, 1500);
+
     let raw;
-    try {
-      raw = await callGemma(
-        systemPrompt,
-        userPrompt,
-        false,
-        temperature,
-        LESSON_TIMEOUT_MS,
-        null,
-        maxOutputTokens
-      );
-    } finally {
+    let provider = "primary";
+
+    async function tryGenerate(source, label) {
       clearInterval(generationTicker);
-    }
-    console.log("[Gemma] callGemma success", {
-      requestId,
-      rawLength: raw.length,
-      rawPreview: raw.slice(0, 500),
-    });
-    sendEvent("progress", { stage: "generated", percent: 85 });
+      generationPercent = 40;
+      const attemptTicker = setInterval(() => {
+        if (finished) return;
+        const remaining = 82 - generationPercent;
+        if (remaining <= 0.5) return;
+        generationPercent = Math.min(82, generationPercent + Math.max(0.6, remaining * 0.08));
+        sendEvent("progress", {
+          stage: "generating",
+          percent: Math.round(generationPercent),
+        });
+      }, 1500);
 
-    // SPEED TACTIC: kick off the LLM output-moderation call immediately and
-    // let it run concurrently with the regex guard, JSON parsing, and schema
-    // validation below instead of blocking each step in sequence. moderateText
-    // never rejects (it fails open), so the floating promise is safe.
-    const outputModerationPromise = moderateText(raw, "output");
-
-    const responseFilter = filterAIResponse(raw);
-    if (!responseFilter.allowed) {
-      const moderationEvent = buildModerationEvent({
+      console.log("[Gemma] generate start", {
         requestId,
-        clerkId: req.auth?.userId,
-        type: "ai-response-blocked",
-        reason: responseFilter.reason,
-        question,
+        mode,
+        provider: source,
+        label,
+        lessonTimeoutMs: LESSON_TIMEOUT_MS,
+        userPromptLength: userPrompt.length,
+        hasNewsContext: Boolean(newsContext),
+        maxOutputTokens,
+        temperature,
       });
-      console.warn("[moderation] Banned AI response blocked", redactModerationEvent(moderationEvent));
-      await logModerationEvent(moderationEvent);
-      sendEvent("error", {
-        error: responseFilter.reason || "The generated content was flagged. Please try a different question.",
-      });
-      recordLessonResult(false);
-      return;
+      const startedAt = Date.now();
+      let result;
+      try {
+        if (source === "fallback") {
+          result = await callFallbackAI(
+            GEMMA_MODEL,
+            {
+              messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userPrompt },
+              ],
+              temperature,
+              max_tokens: maxOutputTokens,
+            },
+            null
+          );
+        } else {
+          result = await callGemma(
+            systemPrompt,
+            userPrompt,
+            false,
+            temperature,
+            LESSON_TIMEOUT_MS,
+            null,
+            maxOutputTokens
+          );
+        }
+        clearInterval(attemptTicker);
+        console.log("[Gemma] generate success", {
+          requestId,
+          provider: source,
+          label,
+          latencyMs: Date.now() - startedAt,
+          rawLength: result.length,
+          rawPreview: result.slice(0, 500),
+        });
+        sendEvent("progress", { stage: "generated", percent: 85 });
+        return result;
+      } catch (error) {
+        clearInterval(attemptTicker);
+        console.error("[Gemma] generate failed", {
+          requestId,
+          provider: source,
+          label,
+          latencyMs: Date.now() - startedAt,
+          error,
+        });
+        throw error;
+      }
     }
 
-    if (finished) return;
+    async function validateRaw(rawText) {
+      const parsed = parseJSON(rawText);
+      if (parsed === null) {
+        console.warn("[generate-lesson] parseJSON returned null", { requestId, rawPreview: rawText?.slice?.(0, 500) });
+        return { ok: false, error: "Failed to parse AI response. Please try again." };
+      }
+      const normalized = normalizeJourney(parsed, mode);
+      if (!isValidJourney(normalized, mode)) {
+        console.warn("[generate-lesson] normalizeJourney/isValidJourney failed", {
+          requestId,
+          parsedKeys: Object.keys(parsed),
+          hasParts: Array.isArray(parsed.parts),
+          partsCount: parsed.parts?.length,
+          hasKeyTakeaways: Array.isArray(parsed.keyTakeaways),
+          keyTakeawaysCount: parsed.keyTakeaways?.length,
+          samplePart: parsed.parts?.[0]
+            ? {
+                keys: Object.keys(parsed.parts[0]),
+                hasTitle: typeof parsed.parts[0].title === "string",
+                hasContent: typeof parsed.parts[0].content === "string",
+                hasQuiz: Array.isArray(parsed.parts[0].quiz),
+                quizLength: parsed.parts[0].quiz?.length,
+              }
+            : null,
+          rawPreview: rawText?.slice?.(0, 1000),
+        });
+        return { ok: false, error: "AI response format was invalid. Please try again." };
+      }
+      if (!hasExpectedPartCount(normalized, mode)) {
+        console.warn("[generate-lesson] Part count mismatch", {
+          requestId,
+          mode,
+          expected: mode === "fast" ? 1 : 3,
+          actual: normalized.parts?.length ?? 0,
+        });
+        return {
+          ok: false,
+          error:
+            mode === "fast"
+              ? "The AI could not generate a complete answer. Please try a different question."
+              : "The AI could not generate a complete lesson. Please try a different question.",
+        };
+      }
+      return { ok: true, raw: rawText, normalized };
+    }
+
+    try {
+      raw = await tryGenerate("primary", "primary");
+      const primaryValidation = await validateRaw(raw);
+      if (primaryValidation.ok) {
+        raw = primaryValidation.raw;
+      } else if (isFallbackConfigured()) {
+        provider = "fallback";
+        raw = await tryGenerate("fallback", "fallback");
+        const fallbackValidation = await validateRaw(raw);
+        if (!fallbackValidation.ok) {
+          sendEvent("error", { error: fallbackValidation.error });
+          recordLessonResult(false);
+          return;
+        }
+        raw = fallbackValidation.raw;
+      } else {
+        sendEvent("error", { error: primaryValidation.error });
+        recordLessonResult(false);
+        return;
+      }
+    } catch (error) {
+      if (finished) return;
+      if (isFallbackConfigured() && provider === "primary") {
+        console.warn("[Gemma] Primary provider failed; trying fallback", {
+          requestId,
+          error,
+        });
+        try {
+          provider = "fallback";
+          raw = await tryGenerate("fallback", "fallback-after-error");
+          const fallbackValidation = await validateRaw(raw);
+          if (!fallbackValidation.ok) {
+            sendEvent("error", { error: fallbackValidation.error });
+            recordLessonResult(false);
+            return;
+          }
+          raw = fallbackValidation.raw;
+        } catch (fallbackError) {
+          console.error("[Gemma] Fallback provider failed", { requestId, fallbackError });
+          sendEvent("error", {
+            error: "Failed to generate lesson. Please try again.",
+          });
+          recordLessonResult(false);
+          return;
+        }
+      } else {
+        console.error("[Gemma] Primary provider failed with no fallback", { requestId, error });
+        sendEvent("error", {
+          error: "Failed to generate lesson. Please try again.",
+        });
+        recordLessonResult(false);
+        return;
+      }
+    }
 
     const parsed = parseJSON(raw);
-    if (parsed === null) {
-      console.warn("[generate-lesson] parseJSON returned null", { requestId, rawPreview: raw?.slice?.(0, 500) });
-      sendEvent("error", {
-        error: "Failed to parse AI response. Please try again.",
-      });
-      recordLessonResult(false);
-      return;
-    }
     const normalized = normalizeJourney(parsed, mode);
     sendEvent("progress", { stage: "validating", percent: 95 });
-    if (!isValidJourney(normalized, mode)) {
-      console.warn("[generate-lesson] normalizeJourney/isValidJourney failed", {
-        requestId,
-        parsedKeys: Object.keys(parsed),
-        hasParts: Array.isArray(parsed.parts),
-        partsCount: parsed.parts?.length,
-        hasKeyTakeaways: Array.isArray(parsed.keyTakeaways),
-        keyTakeawaysCount: parsed.keyTakeaways?.length,
-        samplePart: parsed.parts?.[0]
-          ? {
-              keys: Object.keys(parsed.parts[0]),
-              hasTitle: typeof parsed.parts[0].title === "string",
-              hasContent: typeof parsed.parts[0].content === "string",
-              hasQuiz: Array.isArray(parsed.parts[0].quiz),
-              quizLength: parsed.parts[0].quiz?.length,
-            }
-          : null,
-        rawPreview: raw?.slice?.(0, 1000),
-      });
-      sendEvent("error", {
-        error: "AI response format was invalid. Please try again.",
-      });
-      recordLessonResult(false);
-      return;
-    }
 
-    // Second safety layer on the AI reply: LLM moderation in addition to the
-    // regex guard above. It ran concurrently with parsing/validation, so by
-    // now it is usually already resolved. Fails open, so a moderation hiccup
-    // won't block a valid lesson — only a confident "block" verdict stops it.
-    // SPEED TACTIC: for fast mode, skip the OUTPUT await — the regex guard
-    // already ran and blocking on the LLM verdict would add 4-8 s of pure
-    // latency. The post-hoc verdict is still logged AND evicts the lesson
-    // from the shared cache so no other user is ever served flagged content.
+    const outputModerationPromise = moderateText(raw, "output");
+
     if (mode === "fast") {
-      // SECURITY: enforce the INPUT moderation verdict before streaming. It
-      // has been running concurrently since before generation started, so it
-      // is almost always already resolved — near-zero added latency.
       const fastInputModeration = await inputModerationPromise;
       if (finished) return;
       if (!fastInputModeration.allowed) {
@@ -1395,7 +1481,6 @@ Level: ${level}${
             requestId,
             reason: verdict.reason,
           });
-          // Make sure the flagged lesson can't be replayed from the cache.
           deleteCachedLesson(cacheKey);
           logModerationEvent(
             buildModerationEvent({
@@ -1409,13 +1494,6 @@ Level: ${level}${
         }
       }).catch(() => {});
     } else {
-      // Explain mode BLOCKS on the LLM output verdict before streaming — the
-      // requesting user must never receive content the safety classifier would
-      // reject, not just future cache readers. moderateText fails open (returns
-      // allowed on any error), so this only stops a confident "block" verdict
-      // and never rejects a valid lesson on a moderation hiccup. The verdict
-      // has been running concurrently with parsing/validation since generation
-      // returned, so it is usually already resolved — near-zero added latency.
       const outputVerdict = await outputModerationPromise;
       if (finished) return;
       if (!outputVerdict.allowed) {
@@ -1438,8 +1516,6 @@ Level: ${level}${
       }
     }
 
-    // Store the fully moderated + validated lesson so repeat requests are
-    // instant (fire-and-forget; failures are non-fatal).
     setCachedLesson(cacheKey, normalized);
 
     console.log("[generate-lesson] Streaming final lesson", {

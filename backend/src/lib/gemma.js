@@ -1,4 +1,4 @@
-const GEMMA_MODEL = process.env.GEMMA_MODEL || "@cf/google/gemma-4-26b-a4b-it";
+export const GEMMA_MODEL = process.env.GEMMA_MODEL || "@cf/google/gemma-4-26b-a4b-it";
 const DEFAULT_MAX_RETRIES = 2;
 const DEFAULT_RETRY_DELAY_MS = 700;
 const DEFAULT_MAX_RETRY_DELAY_MS = 5000;
@@ -312,6 +312,98 @@ async function handleStreamingResponse(response) {
   return { choices: [{ message: { content: fullText } }] };
 }
 
+export function extractTextFromResult(result) {
+  if (result == null) {
+    throw new Error("Empty result returned from AI provider");
+  }
+  let text;
+  if (typeof result === "string") {
+    text = result;
+  } else {
+    text =
+      result?.choices?.[0]?.message?.content ??
+      result?.choices?.[0]?.text ??
+      result?.result?.response ??
+      result?.response ??
+      result?.message?.content ??
+      result?.content ??
+      "";
+    if (typeof text !== "string") {
+      text = JSON.stringify(text);
+    }
+  }
+  text = stripThinkingTags(text);
+  if (!text.trim()) {
+    throw new GemmaApiError(
+      502,
+      "EmptyResponse",
+      "AI provider returned an empty response body"
+    );
+  }
+  return text;
+}
+
+export function isFallbackConfigured() {
+  const url = process.env.FALLBACK_AI_URL?.trim();
+  const key = process.env.FALLBACK_AI_API_KEY?.trim();
+  return Boolean(url && key);
+}
+
+export async function callFallbackAI(model, body, signal) {
+  const apiUrl = process.env.FALLBACK_AI_URL.trim();
+  const apiKey = process.env.FALLBACK_AI_API_KEY.trim();
+  const modelName = process.env.FALLBACK_AI_MODEL?.trim() || model;
+
+  const payload = {
+    model: modelName,
+    messages: body.messages,
+    temperature: body.temperature,
+    max_tokens: body.max_tokens,
+  };
+
+  const response = await fetch(apiUrl, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+    signal,
+  });
+
+  const contentType = response.headers.get("content-type") || "";
+
+  if (!response.ok) {
+    let details = response.statusText;
+    try {
+      if (contentType.includes("application/json")) {
+        const errBody = await response.json();
+        details =
+          errBody.errors?.[0]?.message ||
+          errBody.error ||
+          JSON.stringify(errBody);
+      } else {
+        details = (await response.text()).slice(0, 500);
+      }
+    } catch {}
+    throw new GemmaApiError(response.status, response.statusText, details);
+  }
+
+  if (contentType.includes("application/json")) {
+    const data = await response.json();
+    if (data.error) {
+      throw new GemmaApiError(
+        data.error.code || 500,
+        "APIError",
+        data.error.message || JSON.stringify(data.error)
+      );
+    }
+    return data;
+  }
+
+  return await response.text();
+}
+
 export async function callGemma(
   systemPrompt,
   userMessage,
@@ -319,7 +411,8 @@ export async function callGemma(
   temperature = 0.7,
   timeoutMs = 30000,
   signal = null,
-  maxOutputTokens = 4000
+  maxOutputTokens = 4000,
+  allowFallback = true
 ) {
   if (!process.env.CLOUDFLARE_API_TOKEN?.trim() || !process.env.CLOUDFLARE_ACCOUNT_ID?.trim()) {
     throw new Error(
@@ -433,9 +526,6 @@ export async function callGemma(
         latencyMs: Date.now() - startedAt,
       });
 
-      if (result == null) {
-        throw new Error("Empty result returned from Cloudflare Workers AI");
-      }
       console.log("[Gemma] raw result structure", {
         callId,
         type: typeof result,
@@ -443,34 +533,7 @@ export async function callGemma(
         preview: JSON.stringify(result).slice(0, 500),
       });
 
-      let text;
-      if (typeof result === "string") {
-        text = result;
-      } else {
-        text =
-          result?.choices?.[0]?.message?.content ??
-          result?.choices?.[0]?.text ??
-          result?.result?.response ??
-          result?.response ??
-          result?.message?.content ??
-          result?.content ??
-          "";
-        if (typeof text !== "string") {
-          text = JSON.stringify(text);
-        }
-      }
-      text = stripThinkingTags(text);
-
-      if (!text.trim()) {
-        // An empty body usually means the upstream connection dropped
-        // mid-generation ("error in input stream") — retry instead of
-        // handing an unusable empty string to the JSON parser.
-        throw new GemmaApiError(
-          502,
-          "EmptyResponse",
-          "Cloudflare Workers AI returned an empty response body"
-        );
-      }
+      const text = extractTextFromResult(result);
 
       console.log("[Gemma] parsed response text", {
         callId,
@@ -568,6 +631,69 @@ export async function callGemma(
       }
 
       throw normalizedError;
+    }
+  }
+
+  if (allowFallback && isGemmaServiceUnavailableError(lastError) && isFallbackConfigured()) {
+    console.warn("[Gemma] Primary provider exhausted; attempting fallback provider", {
+      callId,
+      model,
+      lastErrorName: lastError?.name,
+    });
+    const fallbackController = new AbortController();
+    let removeParentAbortListener = null;
+    if (signal) {
+      const abortFromParent = () => {
+        fallbackController.abort();
+      };
+      signal.addEventListener("abort", abortFromParent, { once: true });
+      removeParentAbortListener = () => {
+        signal.removeEventListener("abort", abortFromParent);
+      };
+    }
+
+    const fallbackTimeoutId = setTimeout(() => {
+      fallbackController.abort();
+    }, timeoutMs);
+
+    try {
+      const startedAt = Date.now();
+      console.log("[Gemma] Fallback API request", { callId, model });
+
+      const messages = [
+        { role: "system", content: sanitizedSystemPrompt },
+        { role: "user", content: userMessage },
+      ];
+
+      const result = await callFallbackAI(
+        model,
+        {
+          messages,
+          temperature,
+          max_tokens: maxOutputTokens,
+        },
+        fallbackController.signal
+      );
+
+      clearTimeout(fallbackTimeoutId);
+      removeParentAbortListener?.();
+
+      const text = extractTextFromResult(result);
+
+      console.log("[Gemma] Fallback success", {
+        callId,
+        model,
+        latencyMs: Date.now() - startedAt,
+      });
+      return text;
+    } catch (fallbackError) {
+      clearTimeout(fallbackTimeoutId);
+      removeParentAbortListener?.();
+      console.error("[Gemma] Fallback attempt failed", {
+        callId,
+        errorName: fallbackError?.name,
+        errorMessage: fallbackError?.message,
+      });
     }
   }
 

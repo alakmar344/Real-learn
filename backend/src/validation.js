@@ -121,3 +121,9 @@ export function isValidJourney(data, mode = "explain") {
       part.quiz.every(isValidQuizQuestion)
   );
 }
+
+export function hasExpectedPartCount(data, mode = "explain") {
+  if (!data || typeof data !== "object" || !Array.isArray(data.parts)) return false;
+  const rules = getModeRules(mode);
+  return data.parts.length === rules.partsCount;
+}
