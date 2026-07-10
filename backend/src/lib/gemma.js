@@ -320,12 +320,14 @@ export function extractTextFromResult(result) {
   if (typeof result === "string") {
     text = result;
   } else {
+    const message = result?.choices?.[0]?.message ?? result?.message ?? {};
     text =
-      result?.choices?.[0]?.message?.content ??
+      message?.content ??
+      message?.reasoning ??
+      message?.reasoning_content ??
       result?.choices?.[0]?.text ??
       result?.result?.response ??
       result?.response ??
-      result?.message?.content ??
       result?.content ??
       "";
     if (typeof text !== "string") {
