@@ -75,8 +75,16 @@ function isTrustedIssuer(issuer) {
     if (hostname === "reallearn.site" || hostname.endsWith(".reallearn.site")) {
       return true;
     }
-    // Shared multi-tenant Clerk dev domains: development convenience only.
-    if (process.env.NODE_ENV !== "production") {
+    // Shared multi-tenant Clerk dev domains (*.clerk.accounts.dev): anyone can
+    // spin up a free instance there and mint valid tokens, so trusting them is
+    // an authentication bypass. This must FAIL SAFE — gating on
+    // `NODE_ENV !== "production"` trusted them whenever NODE_ENV was simply
+    // unset (a common PaaS default), leaving the door open in production. Only
+    // trust them when a developer has EXPLICITLY opted in.
+    const allowDevIssuers =
+      process.env.CLERK_ALLOW_DEV_ISSUERS === "true" ||
+      process.env.NODE_ENV === "development";
+    if (allowDevIssuers) {
       return (
         hostname.endsWith(".clerk.accounts.dev") ||
         hostname.endsWith(".accounts.dev")

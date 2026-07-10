@@ -87,10 +87,18 @@ export default function GoogleAnalytics() {
         .then((db) => {
           if (db?.accepted && db.cookieVersion === CURRENT_COOKIE_VERSION) {
             loadGtag();
+          } else {
+            // Deny = actively turn GA OFF, don't just skip loading. GA may
+            // already be running from a pre-login localStorage acceptance (or
+            // was revoked on another device); for a signed-in user only the DB
+            // record is authoritative, so a non-accepting record must stop it.
+            disableGtag();
           }
         })
         .catch(() => {
-          /* deny by default — do not load analytics */
+          // Deny by default on any failure — and stop GA if it was already
+          // loaded, rather than leaving it running unconsented.
+          disableGtag();
         });
     } else if (hasAnalyticsConsent()) {
       // Versioned: an acceptance made under an older cookie policy no longer
