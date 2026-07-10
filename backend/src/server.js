@@ -16,6 +16,7 @@ import {
   parseJSON,
   callFallbackAI,
   isFallbackConfigured,
+  GEMMA_MODEL,
 } from "./lib/gemma.js";
 import {
   GENERATE_LESSON_PROMPT,
@@ -1242,7 +1243,7 @@ Level: ${level}${
     // validation ("AI response format was invalid") every time. Explain mode
     // survived the same truncation because a dropped *trailing* part still
     // leaves a valid 1-2 part journey. Both modes now get the same headroom.
-    const maxOutputTokens = 4000;
+    const maxOutputTokens = mode === "fast" ? 4000 : 6000;
     // Fast mode uses a lower temperature for more focused, deterministic
     // output — less sampling overhead means faster generation.
     const temperature = mode === "fast" ? 0.2 : 0.6;
