@@ -36,6 +36,7 @@ import {
   filterUserInput,
 } from "./lib/contentGuard.js";
 import { moderateText } from "./lib/moderation.js";
+import { evaluateAndFix } from "./lib/qualityGate.js";
 import {
   lessonCacheKey,
   getCachedLesson,
@@ -1409,7 +1410,27 @@ Level: ${level}${
               : "The AI could not generate a complete lesson. Please try a different question.",
         };
       }
-      return { ok: true, raw: rawText, normalized };
+
+      // Algorithmic quality gate — evaluates readability, vocabulary, quiz
+      // difficulty, and auto-simplifies content that's too advanced for the
+      // student's level. No AI calls.
+      const { journey: qualityFixedJourney, report: qualityReport } = evaluateAndFix(
+        normalized,
+        level,
+        mode,
+        language
+      );
+      if (qualityReport.fixed.length > 0) {
+        console.log("[generate-lesson] Quality gate auto-fixed content", {
+          requestId,
+          level,
+          issueCount: qualityReport.issues.length,
+          fixCount: qualityReport.fixed.length,
+          fixes: qualityReport.fixed.slice(0, 10),
+        });
+      }
+
+      return { ok: true, raw: rawText, normalized: qualityFixedJourney };
     }
 
     // ── Reliability ladder ──
