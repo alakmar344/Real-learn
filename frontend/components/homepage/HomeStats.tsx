@@ -99,7 +99,6 @@ export default function HomeStats({ onStartTopic }: Props) {
         }}
         title="Start today's suggested topic"
       >
-        <span style={{ fontSize: 15 }}>✨</span>
         <span style={{ color: "var(--text-tertiary)" }}>Today&apos;s spark:</span>
         <span style={{ fontWeight: 600, color: "var(--accent)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
           {topic}

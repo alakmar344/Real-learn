@@ -57,7 +57,7 @@ export default function FollowUpBox({ onSubmit }: Props) {
           aria-live="polite"
           style={{ margin: "6px 0 0", fontSize: 13, color: "var(--text-tertiary)", fontStyle: "italic" }}
         >
-          🎙 {interimSpeech}
+          Listening — {interimSpeech}
         </p>
       ) : null}
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10 }}>

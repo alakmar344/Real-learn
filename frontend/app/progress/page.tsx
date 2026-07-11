@@ -179,12 +179,12 @@ export default function ProgressPage() {
                     Longest · <strong>{s.longestStreak}</strong>
                   </span>
                   <span style={{ background: "var(--bg-surface)", border: "1px solid var(--border-subtle)", borderRadius: 999, padding: "4px 10px" }}>
-                    🛡️ {s.streakFreezes} freeze{s.streakFreezes === 1 ? "" : "s"}
+                    Freezes · <strong>{s.streakFreezes}</strong>
                   </span>
                 </div>
                 <p style={{ margin: "12px 0 0", fontSize: 12, color: "var(--text-tertiary)", lineHeight: 1.5 }}>
                   {goalMetToday
-                    ? "Today's goal is done — your streak is safe. See you tomorrow!"
+                    ? "Today's goal is done — your streak is safe. See you tomorrow."
                     : "Complete today's daily goal to extend your streak."}
                 </p>
               </Card>

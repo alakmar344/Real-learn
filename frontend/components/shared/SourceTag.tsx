@@ -14,6 +14,25 @@ function safeHttpUrl(href: string): string | null {
   return null;
 }
 
+function LinkIcon() {
+  return (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+      <path
+        d="M10 14a5 5 0 0 0 7.07 0l3.18-3.18a5 5 0 0 0-7.07-7.07L11.4 5.5"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <path
+        d="M14 10a5 5 0 0 0-7.07 0l-3.18 3.18a5 5 0 0 0 7.07 7.07l1.77-1.75"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 export default function SourceTag({ href }: { href: string }) {
   const safeHref = safeHttpUrl(href);
   if (!safeHref) {
@@ -37,7 +56,7 @@ export default function SourceTag({ href }: { href: string }) {
           whiteSpace: "nowrap",
         }}
       >
-        🔗 {href}
+        <LinkIcon /> {href}
       </span>
     );
   }
@@ -62,7 +81,7 @@ export default function SourceTag({ href }: { href: string }) {
         transition: "border-color 150ms var(--ease-color)",
       }}
     >
-      🔗{" "}
+      <LinkIcon />{" "}
       <span
         style={{
           whiteSpace: "nowrap",

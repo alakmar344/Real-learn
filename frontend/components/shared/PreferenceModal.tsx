@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Language, Level } from "@/types";
 import { usePreferenceStore } from "@/store/preferenceStore";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
@@ -37,6 +37,16 @@ export default function PreferenceModal({ open, onClose }: Props) {
   const [saving, setSaving] = useState(false);
   const trapRef = useFocusTrap<HTMLDivElement>(open);
 
+  const handleSave = useCallback(() => {
+    setSaving(true);
+    try {
+      localStorage.setItem("reallearn-preferences-onboarding", "true");
+    } catch {
+      // ignore
+    }
+    onClose();
+  }, [onClose]);
+
   useEffect(() => {
     if (!open) return;
     const handler = (e: KeyboardEvent) => {
@@ -63,17 +73,7 @@ export default function PreferenceModal({ open, onClose }: Props) {
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
-  }, [open, onClose, theme, language, level]);
-
-  const handleSave = () => {
-    setSaving(true);
-    try {
-      localStorage.setItem("reallearn-preferences-onboarding", "true");
-    } catch {
-      // ignore
-    }
-    onClose();
-  };
+  }, [open, onClose, handleSave]);
 
   if (!open) return null;
 

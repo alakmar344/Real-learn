@@ -21,17 +21,15 @@ import { THEME_OPTIONS } from "@/lib/themes";
 
 const THEMES = THEME_OPTIONS;
 
-const MODES: { value: LessonMode; label: string; hint: string; icon: string }[] = [
+const MODES: { value: LessonMode; label: string; hint: string }[] = [
   {
     value: "fast",
     label: "Fast",
-    icon: "⚡",
     hint: "One instant, direct answer — quick like a chat reply",
   },
   {
     value: "explain",
     label: "Explain",
-    icon: "📚",
     hint: "Deep 3-part journey with quizzes and real-world context",
   },
 ];
@@ -60,7 +58,6 @@ export default function SettingsPage() {
 
   const [deleting, setDeleting] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [savingPrefs, setSavingPrefs] = useState(false);
   const [cookieChoiceLabel, setCookieChoiceLabel] = useState("Not set");
 
   // Reflect the current cookie/analytics choice, live — including when it is
@@ -460,7 +457,6 @@ export default function SettingsPage() {
                         minHeight: 44,
                       }}
                     >
-                      <span aria-hidden="true" style={{ fontSize: 20, flexShrink: 0 }}>{opt.icon}</span>
                       <span style={{ flex: 1 }}>
                         <span style={{ display: "block", fontWeight: 600, fontSize: 14, color: "var(--text-primary)" }}>
                           {opt.label}

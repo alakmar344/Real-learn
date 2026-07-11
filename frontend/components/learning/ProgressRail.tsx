@@ -13,7 +13,14 @@ function NodeIcon({ part, unlockedPart, completedParts }: { part: number; unlock
 
   if (done) return <span aria-hidden="true" style={{ color: "white", fontSize: 18, fontWeight: 700 }}>✓</span>;
   if (active) return <span style={{ color: "var(--on-accent)", fontWeight: 800, fontSize: 16 }}>{part}</span>;
-  return <span aria-hidden="true" style={{ color: "var(--text-tertiary)", fontSize: 16 }}>🔒</span>;
+  return (
+    <span aria-hidden="true" style={{ color: "var(--text-tertiary)", display: "grid", placeItems: "center" }}>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+        <rect x="5" y="10.5" width="14" height="9.5" rx="2.5" stroke="currentColor" strokeWidth="2" />
+        <path d="M8 10V7.8C8 5.6 9.8 4 12 4s4 1.6 4 3.8V10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+    </span>
+  );
 }
 
 export default function ProgressRail({ unlockedPart, completedParts, totalParts = 3 }: Props) {
@@ -47,7 +54,7 @@ export default function ProgressRail({ unlockedPart, completedParts, totalParts 
             boxShadow: "none",
           }}
         >
-          <span aria-hidden="true" style={{ fontSize: 16 }}>{done ? "✓" : "⚡"}</span>
+          <span aria-hidden="true" style={{ fontSize: 16 }}>{done ? "✓" : "•"}</span>
           {done ? "Quick answer mastered" : "Fast mode — one quick answer"}
         </span>
       </div>

@@ -194,7 +194,7 @@ export default function CookieConsent() {
               fontWeight: 500,
             }}
           >
-            A quick choice about analytics 🍪
+            A quick choice about analytics
           </p>
           <p
             style={{

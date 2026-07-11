@@ -22,24 +22,48 @@ export default function ErrorState({ message, onRetry, onHome }: Props) {
       <div
         className="animate-fade-up"
         style={{
-          maxWidth: 480,
+          maxWidth: 460,
           textAlign: "center",
           padding: varSpaceXl,
           borderRadius: "var(--radius-xl)",
-          border: "1px solid color-mix(in srgb, var(--wrong) 25%, transparent)",
+          border: "1px solid var(--border-default)",
           background: "var(--bg-surface)",
           boxShadow: "var(--shadow-md)",
         }}
       >
-        <span aria-hidden="true" style={{ fontSize: 48, display: "block", marginBottom: varSpaceMd }}>🌱</span>
-        <h2 style={{ margin: "0 0 var(--space-sm)", fontSize: 22, fontWeight: 600 }}>
+        <span
+          aria-hidden="true"
+          style={{
+            display: "block",
+            width: 40,
+            height: 2,
+            margin: "0 auto var(--space-lg)",
+            borderRadius: 2,
+            background: "var(--accent)",
+          }}
+        />
+        <h2
+          style={{
+            margin: "0 0 var(--space-sm)",
+            fontSize: 26,
+            fontWeight: 700,
+            fontStyle: "italic",
+            fontFamily: "var(--font-playfair)",
+            lineHeight: 1.3,
+          }}
+        >
           Let&apos;s try that once more
         </h2>
-        <p style={{ margin: 0, color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.6 }}>
+        <p
+          style={{
+            margin: 0,
+            color: "var(--text-secondary)",
+            fontSize: 15,
+            lineHeight: 1.7,
+            fontFamily: "var(--font-lora)",
+          }}
+        >
           {message}
-        </p>
-        <p style={{ margin: "var(--space-sm) 0 0", color: "var(--text-secondary)", fontSize: 13, lineHeight: 1.6, opacity: 0.8 }}>
-          Your question is worth answering — hit &ldquo;Try Again&rdquo; and we&apos;ll take another run at it.
         </p>
         <div style={{ marginTop: varSpaceLg, display: "flex", gap: varSpaceSm, justifyContent: "center", flexWrap: "wrap" }}>
           {onRetry && (
@@ -87,6 +111,5 @@ export default function ErrorState({ message, onRetry, onHome }: Props) {
 }
 
 const varSpaceSm = "var(--space-sm)";
-const varSpaceMd = "var(--space-md)";
 const varSpaceLg = "var(--space-lg)";
 const varSpaceXl = "var(--space-xl)";

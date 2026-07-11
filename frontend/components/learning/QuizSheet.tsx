@@ -271,8 +271,7 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
               gap: 10,
             }}
           >
-            <span aria-hidden="true" style={{ fontSize: 18 }}>🔀</span>
-            Answers reshuffled — the correct one has moved. Find it again!
+            Answers reshuffled — the correct one has moved. Find it again.
           </div>
         ) : null}
 

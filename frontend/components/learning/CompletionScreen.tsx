@@ -76,7 +76,7 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
   /* Announce to screen readers */
   useEffect(() => {
     const el = document.getElementById("sr-live-region");
-    if (el) el.textContent = "Journey complete! Your score is " + totalScore + " out of " + maxScore + ".";
+    if (el) el.textContent = "Journey complete. Your score is " + totalScore + " out of " + maxScore + ".";
   }, [totalScore, maxScore]);
   const pct = Math.round((totalScore / maxScore) * 100);
   const circumference = 2 * Math.PI * 42;
@@ -140,7 +140,6 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
         </div>
 
         <div>
-          <div style={{ fontSize: 40, marginBottom: 8, animation: "bounceIn 600ms var(--ease-reveal)" }}>🎉</div>
           <h3
             style={{
               margin: 0,
@@ -155,7 +154,7 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
             {(lesson.parts?.length ?? 3) === 1 ? "Quick Answer Mastered" : "Journey Complete"}
           </h3>
           <p style={{ marginTop: 6, color: "var(--text-secondary)", fontSize: 15 }}>
-            You scored <strong style={{ color: "var(--correct)" }}>{totalScore}/{maxScore}</strong> — {pct >= 80 ? "Excellent work! 🔥" : pct >= 50 ? "Good effort! 💪" : "Keep going! 🌱"}
+            You scored <strong style={{ color: "var(--correct)" }}>{totalScore}/{maxScore}</strong> — {pct >= 80 ? "excellent work." : pct >= 50 ? "a solid effort." : "a tough one, worth another pass."}
           </p>
         </div>
       </div>
@@ -163,7 +162,7 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
       {/* Key takeaways */}
       <div style={{ marginTop: varSpaceLg }}>
         <h4 style={{ margin: "0 0 var(--space-md)", fontSize: 18, fontWeight: 700, color: "var(--text-primary)" }}>
-          Key Takeaways ✨
+          Key takeaways
         </h4>
         {(lesson.keyTakeaways ?? []).map((takeaway, index) => (
           <div

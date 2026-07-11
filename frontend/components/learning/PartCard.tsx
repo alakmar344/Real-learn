@@ -284,7 +284,13 @@ export default function PartCard({
               boxShadow: "var(--shadow-lg)",
             }}
           >
-            <span aria-hidden="true" style={{ fontSize: 36, marginBottom: 12, display: "block" }}>🔒</span>
+            <span aria-hidden="true" style={{ display: "block", marginBottom: 12, color: "var(--text-tertiary)" }}>
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" style={{ display: "block", margin: "0 auto" }}>
+                <rect x="5" y="10.5" width="14" height="9.5" rx="2.5" stroke="currentColor" strokeWidth="1.8" />
+                <path d="M8 10V7.8C8 5.6 9.8 4 12 4s4 1.6 4 3.8V10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                <circle cx="12" cy="15.2" r="1.4" fill="currentColor" />
+              </svg>
+            </span>
             <h3 style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", margin: "0 0 6px" }}>
               Part {part.partNumber} Locked
             </h3>

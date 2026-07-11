@@ -285,7 +285,7 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
         a.download = "reallearn-result.png";
         a.click();
         URL.revokeObjectURL(url);
-        showToast("Result card downloaded 📸", "success");
+        showToast("Result card downloaded", "success");
       }
     } catch (err) {
       console.log("[frontend][ShareResult] share failed", err);
@@ -297,7 +297,7 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
   async function handleCopy() {
     try {
       await navigator.clipboard.writeText(summaryText);
-      showToast("Copied to clipboard 📋", "success");
+      showToast("Copied to clipboard", "success");
     } catch {
       showToast("Could not copy.", "error");
     }
@@ -321,7 +321,7 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
   return (
     <div style={{ marginTop: "var(--space-md)", display: "flex", gap: "var(--space-sm)", flexWrap: "wrap" }}>
       <button type="button" onClick={handleShare} disabled={busy} style={btn(true)}>
-        {busy ? "Preparing…" : "📸 Share result"}
+        {busy ? "Preparing…" : "Share result"}
       </button>
       <button type="button" onClick={handleCopy} style={btn(false)}>
         Copy text
