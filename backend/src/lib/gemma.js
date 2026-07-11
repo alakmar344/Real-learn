@@ -613,6 +613,23 @@ export async function callGemma(
           if (circuitOpened) {
             throw new GemmaCircuitOpenError(timeoutCircuitCooldownMs);
           }
+          // On timeout the model is almost certainly cold (CF Workers AI
+          // needed longer than our budget to load). Retrying immediately
+          // just hammers a still-loading model and wastes the attempt.
+          // Wait for the cold-start window before the next try.
+          if (attempt < maxRetries) {
+            const waitMs = Math.min(
+              COLD_START_RETRY_DELAY_MS * Math.pow(2, attempt),
+              COLD_START_MAX_RETRY_DELAY_MS
+            );
+            console.warn("[Gemma] Timeout — waiting for cold start before retry", {
+              callId,
+              model,
+              attempt: attempt + 1,
+              waitMs,
+            });
+            await sleep(waitMs);
+          }
           continue;
         }
         if (parentAbortTriggered || signal?.aborted) {
@@ -828,10 +845,11 @@ export async function warmUpModel() {
 }
 
 // Periodic warm-up: ping the model at a regular interval to prevent cold
-// starts. Cloudflare Workers AI unloads idle models after a few minutes;
-// a lightweight keep-alive request keeps the model in memory so real user
-// requests don't hit the 10-30s cold-start penalty.
-const DEFAULT_WARM_UP_INTERVAL_MS = 4 * 60 * 1000; // 4 minutes
+// starts. Cloudflare Workers AI unloads idle models quickly — production
+// logs show the model going cold within 30-40 seconds. A lightweight
+// keep-alive request keeps the model in memory so real user requests
+// don't hit the 10-30s cold-start penalty.
+const DEFAULT_WARM_UP_INTERVAL_MS = 90 * 1000; // 90 seconds
 
 export function startPeriodicWarmUp(intervalMs) {
   const resolvedMs =

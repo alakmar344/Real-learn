@@ -243,8 +243,9 @@ const MAX_LESSON_TIMEOUT_MS = 600000;
 // Per-call timeout for individual Gemma API requests. The lesson-level
 // timeout (above) covers the full generation including retries and
 // validation; this shorter timeout ensures a single stuck request doesn't
-// eat the entire budget.
-const DEFAULT_GEMMA_CALL_TIMEOUT_MS = 60000;
+// eat the entire budget. 45s is enough for a warm model (~30-50s typical);
+// cold starts that exceed this will be retried with a delay.
+const DEFAULT_GEMMA_CALL_TIMEOUT_MS = 45000;
 const configuredLessonTimeoutMs = Number(process.env.LESSON_TIMEOUT_MS);
 const LESSON_TIMEOUT_MS =
   Number.isFinite(configuredLessonTimeoutMs) && configuredLessonTimeoutMs > 0
@@ -1265,7 +1266,7 @@ Level: ${level}${
     console.log("[Gemma] callGemma start", {
       requestId,
       mode,
-      lessonTimeoutMs: LESSON_TIMEOUT_MS,
+      callTimeoutMs: GEMMA_CALL_TIMEOUT_MS,
       userPromptLength: userPrompt.length,
       hasNewsContext: Boolean(newsContext),
       maxOutputTokens,
@@ -1483,6 +1484,11 @@ Level: ${level}${
           break;
         }
         lastValidationError = validation.error;
+        sendEvent("progress", {
+          stage: "retrying",
+          percent: Math.round(generationPercent),
+          message: "Improving response quality...",
+        });
         console.warn("[generate-lesson] Attempt produced invalid output; trying next rung", {
           requestId,
           label: plan.label,
@@ -1492,6 +1498,11 @@ Level: ${level}${
         if (finished || generateAbortSignal.aborted) return;
         if (error?.name === "AbortError") throw error;
         lastThrownError = error;
+        sendEvent("progress", {
+          stage: "retrying",
+          percent: Math.round(generationPercent),
+          message: "Retrying generation...",
+        });
         console.warn("[generate-lesson] Attempt threw; trying next rung", {
           requestId,
           label: plan.label,
