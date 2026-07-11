@@ -773,6 +773,7 @@ export async function callGemma(
       "Either CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID, or FALLBACK_AI_URL and FALLBACK_AI_API_KEY must be configured"
     );
   }
+  let lastError = null;
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     console.log("[Gemma] attempt start", {
       callId,
