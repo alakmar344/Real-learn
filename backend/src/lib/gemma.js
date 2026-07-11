@@ -11,6 +11,8 @@ const DEFAULT_TIMEOUT_CIRCUIT_FAILURE_THRESHOLD = 5;
 const DEFAULT_TIMEOUT_CIRCUIT_COOLDOWN_MS = 60000;
 const PARSE_JSON_LOG_PREVIEW_CHARS = 300;
 
+export const PREFER_FALLBACK_FIRST = process.env.PREFER_FALLBACK_FIRST === "true";
+
 const timeoutCircuitState = {
   consecutiveTimeouts: 0,
   openUntil: 0,
@@ -456,8 +458,20 @@ export async function callGemma(
   maxOutputTokens = 4000,
   allowFallback = true
 ) {
-  const useFallbackOnly = isFallbackConfigured();
-  if (!useFallbackOnly && (!process.env.CLOUDFLARE_API_TOKEN?.trim() || !process.env.CLOUDFLARE_ACCOUNT_ID?.trim())) {
+  const hasFallbackConfig = isFallbackConfigured();
+  const hasCloudflareConfig = Boolean(
+    process.env.CLOUDFLARE_API_TOKEN?.trim() &&
+      process.env.CLOUDFLARE_ACCOUNT_ID?.trim()
+  );
+
+  const preferFallbackFirst = PREFER_FALLBACK_FIRST && hasFallbackConfig && hasCloudflareConfig;
+  const providerOrder = preferFallbackFirst
+    ? ["fallback", "cloudflare"]
+    : ["cloudflare", "fallback"];
+  const primaryProvider = providerOrder[0];
+  const secondaryProvider = providerOrder[1];
+
+  if (!hasCloudflareConfig && !hasFallbackConfig) {
     throw new Error(
       "Either CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID, or FALLBACK_AI_URL and FALLBACK_AI_API_KEY must be configured"
     );
@@ -493,6 +507,10 @@ export async function callGemma(
   console.log("[Gemma] callGemma invoked", {
     callId,
     model,
+    providerOrder,
+    primaryProvider,
+    secondaryProvider,
+    preferFallbackFirst,
     maxRetries,
     retryDelayMs,
     maxRetryDelayMs,
@@ -506,8 +524,255 @@ export async function callGemma(
   });
   assertTimeoutCircuitClosed();
 
-  let lastError = null;
+  if (preferFallbackFirst) {
+    async function callProvider(provider, messages, providerSignal) {
+      if (provider === "fallback") {
+        return callFallbackAI(
+          model,
+          { messages, temperature, max_tokens: maxOutputTokens },
+          providerSignal
+        );
+      }
+      return callWorkersAI(
+        process.env.CLOUDFLARE_ACCOUNT_ID.trim(),
+        model,
+        { messages, temperature, max_tokens: maxOutputTokens },
+        providerSignal
+      );
+    }
 
+    function providerLabel(provider) {
+      return provider === "fallback"
+        ? "Fallback AI provider"
+        : "Cloudflare Workers AI";
+    }
+
+    let lastError = null;
+
+    for (const provider of providerOrder) {
+      const providerLabelValue = providerLabel(provider);
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        console.log("[Gemma] attempt start", {
+          callId,
+          model,
+          provider: providerLabelValue,
+          providerKey: provider,
+          attempt: attempt + 1,
+          maxAttempts: maxRetries + 1,
+        });
+        const controller = new AbortController();
+        const internalSignal = controller.signal;
+        let removeParentAbortListener = null;
+        let parentAbortTriggered = false;
+        let timeoutTriggered = false;
+        if (signal) {
+          const abortFromParent = () => {
+            parentAbortTriggered = true;
+            controller.abort();
+          };
+          signal.addEventListener("abort", abortFromParent, { once: true });
+          removeParentAbortListener = () => {
+            signal.removeEventListener("abort", abortFromParent);
+          };
+        }
+
+        const timeoutId = setTimeout(() => {
+          timeoutTriggered = true;
+          controller.abort();
+        }, timeoutMs);
+
+        try {
+          const startedAt = Date.now();
+          console.log("[Gemma] API request", {
+            callId,
+            model,
+            provider: providerLabelValue,
+            providerKey: provider,
+            attempt: attempt + 1,
+          });
+
+          const messages = [
+            { role: "system", content: sanitizedSystemPrompt },
+            { role: "user", content: userMessage },
+          ];
+
+          const result = await callProvider(
+            provider,
+            messages,
+            internalSignal
+          );
+
+          clearTimeout(timeoutId);
+          removeParentAbortListener?.();
+          console.log("[Gemma] response received", {
+            callId,
+            model,
+            provider: providerLabelValue,
+            providerKey: provider,
+            attempt: attempt + 1,
+            latencyMs: Date.now() - startedAt,
+          });
+
+          console.log("[Gemma] raw result structure", {
+            callId,
+            type: typeof result,
+            keys: typeof result === "object" ? Object.keys(result) : null,
+            preview: JSON.stringify(result).slice(0, 500),
+          });
+
+          const text = extractTextFromResult(result);
+
+          console.log("[Gemma] parsed response text", {
+            callId,
+            model,
+            provider: providerLabelValue,
+            providerKey: provider,
+            attempt: attempt + 1,
+            textLength: text.length,
+            textPreview: text.slice(0, 300),
+          });
+
+          resetTimeoutCircuit();
+          console.log("[Gemma] callGemma success", {
+            callId,
+            model,
+            provider: providerLabelValue,
+            providerKey: provider,
+            attempt: attempt + 1,
+          });
+          return text;
+        } catch (error) {
+          clearTimeout(timeoutId);
+          removeParentAbortListener?.();
+
+          if (isAbortError(error)) {
+            if (timeoutTriggered) {
+              console.warn("[Gemma] request timed out", {
+                callId,
+                model,
+                provider: providerLabelValue,
+                providerKey: provider,
+                attempt: attempt + 1,
+                timeoutMs,
+              });
+              const timeoutError = new GemmaTimeoutError(timeoutMs);
+              lastError = timeoutError;
+              const circuitOpened = recordTimeoutFailure(
+                timeoutCircuitFailureThreshold,
+                timeoutCircuitCooldownMs
+              );
+              if (circuitOpened) {
+                throw new GemmaCircuitOpenError(timeoutCircuitCooldownMs);
+              }
+              if (attempt < maxRetries) {
+                const waitMs = Math.min(
+                  COLD_START_RETRY_DELAY_MS * Math.pow(2, attempt),
+                  COLD_START_MAX_RETRY_DELAY_MS
+                );
+                console.warn("[Gemma] Timeout — waiting for cold start before retry", {
+                  callId,
+                  model,
+                  provider: providerLabelValue,
+                  providerKey: provider,
+                  attempt: attempt + 1,
+                  waitMs,
+                });
+                await sleep(waitMs);
+              }
+              continue;
+            }
+            if (parentAbortTriggered || signal?.aborted) {
+              console.warn("[Gemma] request aborted by caller", {
+                callId,
+                model,
+                provider: providerLabelValue,
+                providerKey: provider,
+                attempt: attempt + 1,
+              });
+              throw error;
+            }
+            console.warn("[Gemma] request aborted", {
+              callId,
+              model,
+              provider: providerLabelValue,
+              providerKey: provider,
+              attempt: attempt + 1,
+            });
+            throw error;
+          }
+
+          const normalizedError = error;
+          console.warn("[Gemma] attempt failed", {
+            callId,
+            model,
+            provider: providerLabelValue,
+            providerKey: provider,
+            attempt: attempt + 1,
+            errorName: normalizedError?.name,
+            errorMessage: normalizedError?.message,
+          });
+          lastError = normalizedError;
+          if (normalizedError instanceof GemmaTimeoutError) {
+            const circuitOpened = recordTimeoutFailure(
+              timeoutCircuitFailureThreshold,
+              timeoutCircuitCooldownMs
+            );
+            if (circuitOpened) {
+              throw new GemmaCircuitOpenError(timeoutCircuitCooldownMs);
+            }
+          }
+
+          const isLastAttempt = attempt === maxRetries;
+          if (!isLastAttempt && isRetryableGemmaError(normalizedError)) {
+            const isColdStart =
+              normalizedError instanceof GemmaApiError && normalizedError.status === 408;
+            const baseDelay = isColdStart ? COLD_START_RETRY_DELAY_MS : retryDelayMs;
+            const cap = isColdStart ? COLD_START_MAX_RETRY_DELAY_MS : maxRetryDelayMs;
+            const waitMs = normalizedError.retryAfterMs
+              ? Math.min(normalizedError.retryAfterMs, cap)
+              : Math.min(baseDelay * Math.pow(2, attempt), cap);
+            console.warn(
+              `[Gemma] Retrying after attempt ${attempt + 1} failed`
+            );
+            console.warn("[Gemma] retry scheduled", {
+              callId,
+              model,
+              provider: providerLabelValue,
+              providerKey: provider,
+              attempt: attempt + 1,
+              waitMs,
+              isColdStart,
+              fromRetryAfter: Boolean(normalizedError.retryAfterMs),
+            });
+            await sleep(waitMs);
+            continue;
+          }
+
+          if (provider === secondaryProvider) {
+            throw normalizedError;
+          }
+          break;
+        }
+      }
+    }
+
+    console.error("[Gemma] callGemma exhausted all options", {
+      callId,
+      primaryProvider,
+      secondaryProvider,
+      providerOrder,
+      lastErrorName: lastError?.name,
+      lastErrorMessage: lastError?.message,
+    });
+    throw lastError || new Error("Unable to generate lesson after exhausting retries");
+  }
+
+  const useFallbackOnly = isFallbackConfigured();
+  if (!useFallbackOnly && (!process.env.CLOUDFLARE_API_TOKEN?.trim() || !process.env.CLOUDFLARE_ACCOUNT_ID?.trim())) {
+    throw new Error(
+      "Either CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID, or FALLBACK_AI_URL and FALLBACK_AI_API_KEY must be configured"
+    );
+  }
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     console.log("[Gemma] attempt start", {
       callId,
