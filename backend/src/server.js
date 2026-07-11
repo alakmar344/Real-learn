@@ -18,7 +18,6 @@ import {
   callFallbackAI,
   isFallbackConfigured,
   GEMMA_MODEL,
-  PREFER_FALLBACK_FIRST,
 } from "./lib/gemma.js";
 import {
   GENERATE_LESSON_PROMPT,
@@ -1293,10 +1292,9 @@ Level: ${level}${
     console.log("[Gemma] Provider plan", {
       requestId,
       mode,
-      providerOrder: PREFER_FALLBACK_FIRST && isFallbackConfigured()
-        ? ["fallback", "cloudflare"]
-        : ["cloudflare", "fallback"],
-      preferFallbackFirst: Boolean(PREFER_FALLBACK_FIRST),
+      providerOrder: isFallbackConfigured()
+        ? ["cloudflare", "fallback"]
+        : ["cloudflare"],
       fallbackConfigured: isFallbackConfigured(),
     });
 
@@ -1462,7 +1460,7 @@ Level: ${level}${
     // — this is the server doing the "second try" the user used to have to do
     // by hand. Latency can grow a little on a bad first sample; that is a
     // deliberate trade for never surfacing a fixable error.
-    const fallbackRungsActive = isFallbackConfigured() && !PREFER_FALLBACK_FIRST;
+    const fallbackRungsActive = false;
     const attemptPlan = [
       { source: "primary", label: "primary", repair: false },
       { source: "primary", label: "primary-repair", repair: true },
