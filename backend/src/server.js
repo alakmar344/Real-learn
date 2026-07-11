@@ -9,6 +9,7 @@ import { fileURLToPath } from "node:url";
 import {
   callGemma,
   warmUpModel,
+  startPeriodicWarmUp,
   formatGemmaTimeoutMessage,
   GemmaTimeoutError,
   GemmaApiError,
@@ -239,6 +240,11 @@ setInterval(() => apiRateLimiter.cleanup(), RATE_LIMIT_WINDOW_MS).unref?.();
 const DEFAULT_LESSON_TIMEOUT_MS = 300000;
 const MIN_LESSON_TIMEOUT_MS = 30000;
 const MAX_LESSON_TIMEOUT_MS = 600000;
+// Per-call timeout for individual Gemma API requests. The lesson-level
+// timeout (above) covers the full generation including retries and
+// validation; this shorter timeout ensures a single stuck request doesn't
+// eat the entire budget.
+const DEFAULT_GEMMA_CALL_TIMEOUT_MS = 60000;
 const configuredLessonTimeoutMs = Number(process.env.LESSON_TIMEOUT_MS);
 const LESSON_TIMEOUT_MS =
   Number.isFinite(configuredLessonTimeoutMs) && configuredLessonTimeoutMs > 0
@@ -264,6 +270,11 @@ if (
     `[config] LESSON_TIMEOUT_MS clamped from ${configuredLessonTimeoutMs}ms to maximum ${MAX_LESSON_TIMEOUT_MS}ms`
   );
 }
+const configuredGemmaCallTimeoutMs = Number(process.env.GEMMA_CALL_TIMEOUT_MS);
+const GEMMA_CALL_TIMEOUT_MS =
+  Number.isFinite(configuredGemmaCallTimeoutMs) && configuredGemmaCallTimeoutMs > 0
+    ? configuredGemmaCallTimeoutMs
+    : DEFAULT_GEMMA_CALL_TIMEOUT_MS;
 const DEFAULT_HEARTBEAT_INTERVAL_MS = 15000;
 const MAX_HEARTBEAT_INTERVAL_MS = 55000;
 const configuredHeartbeatIntervalMs = Number(process.env.SSE_HEARTBEAT_INTERVAL_MS);
@@ -1310,7 +1321,7 @@ Level: ${level}${
         provider: source === "fallback" ? "Fallback AI provider" : "Cloudflare Workers AI",
         label,
         isRepairAttempt: Boolean(repairReason),
-        lessonTimeoutMs: LESSON_TIMEOUT_MS,
+        callTimeoutMs: GEMMA_CALL_TIMEOUT_MS,
         userPromptLength: attemptUserPrompt.length,
         hasNewsContext: Boolean(newsContext),
         maxOutputTokens,
@@ -1338,7 +1349,7 @@ Level: ${level}${
             attemptUserPrompt,
             false,
             attemptTemperature,
-            LESSON_TIMEOUT_MS,
+            GEMMA_CALL_TIMEOUT_MS,
             generateAbortSignal,
             maxOutputTokens
           );
@@ -1625,9 +1636,10 @@ try {
   validateStartupConfig();
   const server = app.listen(port, () => {
     console.log(`Backend listening on port ${port}`);
-    // Warm up the Cloudflare Workers AI model so the first real user request
-    // doesn't hit a cold start (10-30s penalty). Fire-and-forget.
-    warmUpModel();
+    // Start periodic warm-up pings to keep the Cloudflare Workers AI model
+    // in memory. Without this, idle models unload and the next user request
+    // hits a 10-30s cold start.
+    startPeriodicWarmUp();
   });
 
   // Graceful shutdown: stop accepting new connections, wait for in-flight

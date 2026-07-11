@@ -3,9 +3,10 @@ const DEFAULT_MAX_RETRIES = 1;
 const DEFAULT_RETRY_DELAY_MS = 700;
 const DEFAULT_MAX_RETRY_DELAY_MS = 5000;
 // 408 = upstream timeout, usually a cold start on Cloudflare Workers AI.
-// The model needs 10-30s to load — retrying after 700ms just wastes a retry.
-const COLD_START_RETRY_DELAY_MS = 3000;
-const COLD_START_MAX_RETRY_DELAY_MS = 10000;
+// The model needs 10-30s to load — retrying too early just wastes a retry.
+// Wait long enough for the model to actually be ready before retrying.
+const COLD_START_RETRY_DELAY_MS = 15000;
+const COLD_START_MAX_RETRY_DELAY_MS = 45000;
 const DEFAULT_TIMEOUT_CIRCUIT_FAILURE_THRESHOLD = 5;
 const DEFAULT_TIMEOUT_CIRCUIT_COOLDOWN_MS = 60000;
 const PARSE_JSON_LOG_PREVIEW_CHARS = 300;
@@ -824,6 +825,28 @@ export async function warmUpModel() {
       });
     }
   }
+}
+
+// Periodic warm-up: ping the model at a regular interval to prevent cold
+// starts. Cloudflare Workers AI unloads idle models after a few minutes;
+// a lightweight keep-alive request keeps the model in memory so real user
+// requests don't hit the 10-30s cold-start penalty.
+const DEFAULT_WARM_UP_INTERVAL_MS = 4 * 60 * 1000; // 4 minutes
+
+export function startPeriodicWarmUp(intervalMs) {
+  const resolvedMs =
+    Number.isFinite(intervalMs) && intervalMs > 0
+      ? intervalMs
+      : DEFAULT_WARM_UP_INTERVAL_MS;
+
+  // Run the first warm-up immediately, then on the interval.
+  warmUpModel();
+  const handle = setInterval(() => warmUpModel(), resolvedMs);
+  handle.unref?.();
+  console.log("[Gemma] Periodic warm-up started", {
+    intervalMs: resolvedMs,
+  });
+  return handle;
 }
 
 function closeTruncatedJSON(text) {
