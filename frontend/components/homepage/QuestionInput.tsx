@@ -9,16 +9,14 @@ import { usePreferenceStore } from "@/store/preferenceStore";
 import { useMounted } from "@/hooks/useMounted";
 import { LessonMode } from "@/types";
 
-const MODES: { value: LessonMode; icon: string; label: string; hint: string }[] = [
+const MODES: { value: LessonMode; label: string; hint: string }[] = [
   {
     value: "fast",
-    icon: "⚡",
     label: "Fast",
     hint: "A quick, simple answer to get started",
   },
   {
     value: "explain",
-    icon: "📚",
     label: "Explain",
     hint: "A guided 3-part lesson with real-world context",
   },
@@ -105,7 +103,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
             aria-live="polite"
             style={{ margin: "6px 0 0", fontSize: 13, color: "var(--accent)", fontStyle: "italic" }}
           >
-            🎙 {interimSpeech}
+            Listening — {interimSpeech}
           </p>
         ) : null}
       </div>
@@ -156,7 +154,6 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
                   transform: active ? "scale(1.02)" : "scale(1)",
                 }}
               >
-                <span aria-hidden="true" style={{ marginRight: 6 }}>{opt.icon}</span>
                 {opt.label}
               </button>
             );
@@ -213,7 +210,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
               e.currentTarget.style.boxShadow = question.trim() ? "var(--shadow-sm)" : "var(--shadow-sm)";
             }}
           >
-            {mode === "fast" ? "Get Quick Help ⚡" : "Start Guided Lesson →"}
+            {mode === "fast" ? "Get a Quick Answer →" : "Start Guided Lesson →"}
           </button>
         ) : (
           <SignInButton mode="modal">

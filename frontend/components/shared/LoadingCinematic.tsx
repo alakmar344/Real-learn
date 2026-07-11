@@ -8,23 +8,38 @@ import { useLessonStore } from "@/store/lessonStore";
 // value) so the checklist advances continuously alongside the bar instead of
 // two items lighting up at once and then stalling.
 const steps = [
-  { label: "Understanding your question", at: 5, stage: "starting", emoji: "🧠" },
-  { label: "Researching real-world context", at: 15, stage: "searching", emoji: "🔍" },
-  { label: "Writing the foundation", at: 40, stage: "generating", emoji: "✍️" },
-  { label: "Explaining how it works", at: 62, stage: "generating", emoji: "💡" },
-  { label: "Connecting it to the real world", at: 85, stage: "generated", emoji: "🌍" },
-  { label: "Crafting quiz questions", at: 95, stage: "validating", emoji: "🎯" },
+  { label: "Understanding your question", at: 5, stage: "starting" },
+  { label: "Researching real-world context", at: 15, stage: "searching" },
+  { label: "Writing the foundation", at: 40, stage: "generating" },
+  { label: "Explaining how it works", at: 62, stage: "generating" },
+  { label: "Connecting it to the real world", at: 85, stage: "generated" },
+  { label: "Crafting quiz questions", at: 95, stage: "validating" },
 ];
 
 const facts = [
-  "Spacing your study sessions out beats cramming for long-term memory 📚",
-  "Teaching a concept to someone else is one of the fastest ways to master it 🗣️",
-  "Your brain consolidates new learning while you sleep 😴",
-  "Active recall — quizzing yourself — sticks far better than re-reading 🧪",
-  "Connecting ideas to real-world examples makes them easier to remember 🌍",
-  "Short breaks between focused study boosts how much you retain ⏱️",
-  "Curiosity literally primes your brain to absorb information 🧲",
+  "Spacing study sessions out beats cramming for long-term memory.",
+  "Teaching a concept to someone else is one of the fastest ways to master it.",
+  "Your brain consolidates new learning while you sleep.",
+  "Active recall — quizzing yourself — sticks far better than re-reading.",
+  "Connecting ideas to real-world examples makes them easier to remember.",
+  "Short breaks between focused study sessions boost how much you retain.",
+  "Curiosity primes your brain to absorb information.",
 ];
+
+// Clean vector check — a small, deliberate mark instead of an emoji.
+function CheckIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path
+        d="M3 8.5 6.5 12 13 4.5"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
 
 interface Props {
   question: string;
@@ -215,7 +230,7 @@ export default function LoadingCinematic({ question, onCancel }: Props) {
                   }}
                 >
                   {done ? (
-                    step.emoji
+                    <CheckIcon />
                   ) : active ? (
                     <span
                       className="accent-pulse-dot"
@@ -260,10 +275,12 @@ export default function LoadingCinematic({ question, onCancel }: Props) {
               fontSize: 13,
               lineHeight: 1.6,
               fontWeight: 600,
+              fontStyle: "italic",
+              fontFamily: "var(--font-lora)",
             }}
           >
             Taking a little longer than usual — we&apos;re double-checking your
-            lesson so it&apos;s worth the wait. Hang tight! 💛
+            lesson so it&apos;s worth the wait.
           </p>
         )}
 

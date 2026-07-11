@@ -5,6 +5,16 @@
 
 import { markdownToPlainText, speechLangFor, useEdgeTts } from "@/hooks/useSpeech";
 
+function SpeakerIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ display: "block" }}>
+      <path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4Z" fill="currentColor" />
+      <path d="M15.5 9a4.5 4.5 0 0 1 0 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M18 6.5a8 8 0 0 1 0 11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 interface Props {
   /** The (markdown) text to read aloud. */
   text: string;
@@ -46,7 +56,7 @@ export default function ListenButton({ text, language, label = "Listen to this s
           cursor: "not-allowed",
         }}
       >
-        <span aria-hidden="true" style={{ fontSize: 13, lineHeight: 1 }}>🔊</span>
+        <span aria-hidden="true" style={{ lineHeight: 1 }}><SpeakerIcon /></span>
         Listen
       </span>
     );
@@ -79,7 +89,7 @@ export default function ListenButton({ text, language, label = "Listen to this s
         }}
       >
         <span aria-hidden="true" style={{ fontSize: 13, lineHeight: 1 }}>
-          {loading ? "⏳" : speaking ? "◼" : showError ? "⚠" : "🔊"}
+          {speaking ? "◼" : showError ? "!" : <SpeakerIcon />}
         </span>
         {loading ? "Generating..." : speaking ? "Stop" : showError ? "Retry" : "Listen"}
       </button>

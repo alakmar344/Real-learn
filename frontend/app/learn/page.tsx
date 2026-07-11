@@ -91,14 +91,14 @@ export default function LearnPage() {
 
   useEffect(() => {
     if (lesson && prevLessonRef.current === null && !showCompletion) {
-      showToast("Lesson ready! Let's learn.", "success");
+      showToast("Your lesson is ready", "success");
     }
     prevLessonRef.current = lesson;
   }, [lesson, showCompletion]);
 
   useEffect(() => {
     if (showCompletion && !prevCompletionRef.current) {
-      showToast("Journey complete! 🎉", "success");
+      showToast("Journey complete", "success");
     }
     prevCompletionRef.current = showCompletion;
   }, [showCompletion]);
@@ -206,8 +206,17 @@ export default function LearnPage() {
         <main style={{ minHeight: "100vh", background: "var(--bg-primary)", color: "var(--text-primary)", padding: 24 }}>
           <Navbar />
           <div style={{ maxWidth: 640, margin: "80px auto", textAlign: "center" }}>
-            <p style={{ fontSize: 48, marginBottom: 16 }}>📚</p>
-            <h2 style={{ fontWeight: 600, marginBottom: 8 }}>No lesson loaded yet</h2>
+            <h2
+              style={{
+                fontWeight: 700,
+                marginBottom: 8,
+                fontFamily: "var(--font-playfair)",
+                fontStyle: "italic",
+                fontSize: 26,
+              }}
+            >
+              No lesson loaded yet
+            </h2>
             <p style={{ color: "var(--text-secondary)", fontSize: 14, marginBottom: 24 }}>
               Head back home and ask a question to start learning.
             </p>
@@ -267,7 +276,7 @@ export default function LearnPage() {
                 verticalAlign: "middle",
               }}
             >
-              {isFastMode ? "⚡ FAST" : "📚 EXPLAIN"}
+              {isFastMode ? "FAST" : "GUIDED"}
             </span>
             <span style={{ fontSize: 12, color: "var(--text-tertiary)", marginRight: 8 }}>Understanding:</span>
             <span
@@ -415,7 +424,7 @@ export default function LearnPage() {
               if (unlockTimeoutRef.current) clearTimeout(unlockTimeoutRef.current);
               unlockTimeoutRef.current = window.setTimeout(() => setShowUnlockFx(false), 850);
               showToast(
-                score >= 1 ? "Correct! Well done." : "Part completed.",
+                score >= 1 ? "Correct — well done." : "Part completed.",
                 score >= 1 ? "success" : "info"
               );
             }}
