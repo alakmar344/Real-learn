@@ -17,7 +17,12 @@ const STREAM_IDLE_TIMEOUT_MS =
   Number.isFinite(configuredStreamIdleTimeoutMs) && configuredStreamIdleTimeoutMs > 0
     ? configuredStreamIdleTimeoutMs
     : DEFAULT_STREAM_IDLE_TIMEOUT_MS;
-const DEFAULT_GENERATE_RETRY_ATTEMPTS = 1;
+// RELIABILITY: 3 total attempts. The previous default of 1 meant the retry
+// loop below NEVER actually retried — every transient hiccup (server busy,
+// dropped stream, timeout) went straight to the error screen and the user had
+// to press "Try Again" themselves. Retries happen silently behind the loading
+// screen; only a genuinely unrecoverable failure surfaces.
+const DEFAULT_GENERATE_RETRY_ATTEMPTS = 3;
 const configuredGenerateRetryAttempts = Number(
   process.env.NEXT_PUBLIC_GENERATE_RETRY_ATTEMPTS
 );
@@ -131,6 +136,40 @@ function isRetryableMessage(message: string) {
     normalized.includes("server is busy") ||
     normalized.includes("connection closed")
   );
+}
+
+// UX: raw technical errors (HTTP codes, keep-alive jargon, provider names)
+// must never reach the user. Server messages written for humans — moderation
+// reasons, "try a different question" guidance — pass through untouched;
+// anything that smells technical is replaced with warm, plain-language copy.
+const TECHNICAL_ERROR_FRAGMENTS = [
+  "timed out",
+  "timeout",
+  "keep-alive",
+  "fetch",
+  "network",
+  "stream",
+  "connection",
+  "gemma",
+  "api error",
+  "backend",
+  "unable to generate lesson",
+  "failed to parse",
+  "response format",
+  "aborted",
+  "http",
+  "5xx",
+  "502",
+  "503",
+];
+
+export function humanizeErrorMessage(error: unknown): string {
+  const raw = error instanceof Error ? error.message : typeof error === "string" ? error : "";
+  const normalized = raw.toLowerCase();
+  if (!raw || TECHNICAL_ERROR_FRAGMENTS.some((fragment) => normalized.includes(fragment))) {
+    return "We couldn't finish crafting your lesson this time — nothing's wrong on your end. Give it another try and we'll pick right back up where you left off.";
+  }
+  return raw;
 }
 
 function isRetryableError(error: unknown, idleTimedOut: boolean) {
@@ -421,9 +460,7 @@ export function useLesson() {
             (error instanceof DOMException && error.name === "AbortError")
           ) {
             setError(
-              `Connection closed after ${Math.round(
-                STREAM_IDLE_TIMEOUT_MS / 1000
-              )}s without keep-alive. Please try again.`
+              "This one took longer than expected and the connection dropped. Nothing's wrong on your end — try again and we'll get your lesson ready."
             );
             return false;
           }
@@ -432,7 +469,7 @@ export function useLesson() {
             attempt,
             error,
           });
-          setError(error instanceof Error ? error.message : "Failed to generate lesson");
+          setError(humanizeErrorMessage(error));
           return false;
         } finally {
           if (idleTimeoutId) {
@@ -445,7 +482,7 @@ export function useLesson() {
       }
 
       if (isStale()) return false;
-      setError(lastError instanceof Error ? lastError.message : "Failed to generate lesson");
+      setError(humanizeErrorMessage(lastError));
       return false;
     },
     [getToken, language, level, mode, router, setError, setLesson, setProgress, setQuestion, startLoading]

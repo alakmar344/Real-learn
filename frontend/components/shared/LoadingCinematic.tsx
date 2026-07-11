@@ -31,11 +31,21 @@ interface Props {
   onCancel?: () => void;
 }
 
+// After this long, show a gentle reassurance line — a slow generation should
+// feel deliberate ("we're taking care with your lesson"), never broken.
+const PATIENCE_MESSAGE_AFTER_MS = 30000;
+
 export default function LoadingCinematic({ question, onCancel }: Props) {
   const progressPercent = useLessonStore((s) => s.progressPercent);
   const [displayProgress, setDisplayProgress] = useState(0);
   const [factIndex, setFactIndex] = useState(0);
+  const [takingLonger, setTakingLonger] = useState(false);
   const displayRef = useRef(0);
+
+  useEffect(() => {
+    const id = window.setTimeout(() => setTakingLonger(true), PATIENCE_MESSAGE_AFTER_MS);
+    return () => window.clearTimeout(id);
+  }, []);
 
   // Smoothly animate the bar so it ALWAYS drifts forward, even between server
   // events. The previous version eased toward exactly `progressPercent`, so
@@ -239,6 +249,23 @@ export default function LoadingCinematic({ question, onCancel }: Props) {
         >
           {facts[factIndex]}
         </p>
+
+        {takingLonger && (
+          <p
+            className="animate-fade-up"
+            role="status"
+            style={{
+              marginTop: 16,
+              color: "var(--accent)",
+              fontSize: 13,
+              lineHeight: 1.6,
+              fontWeight: 600,
+            }}
+          >
+            Taking a little longer than usual — we&apos;re double-checking your
+            lesson so it&apos;s worth the wait. Hang tight! 💛
+          </p>
+        )}
 
         {onCancel && (
           <button

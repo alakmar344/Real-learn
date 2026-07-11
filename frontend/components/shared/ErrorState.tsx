@@ -31,12 +31,15 @@ export default function ErrorState({ message, onRetry, onHome }: Props) {
           boxShadow: "var(--shadow-md)",
         }}
       >
-        <span aria-hidden="true" style={{ fontSize: 48, display: "block", marginBottom: varSpaceMd }}>⚠️</span>
+        <span aria-hidden="true" style={{ fontSize: 48, display: "block", marginBottom: varSpaceMd }}>🌱</span>
         <h2 style={{ margin: "0 0 var(--space-sm)", fontSize: 22, fontWeight: 600 }}>
-          Something went wrong
+          Let&apos;s try that once more
         </h2>
         <p style={{ margin: 0, color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.6 }}>
           {message}
+        </p>
+        <p style={{ margin: "var(--space-sm) 0 0", color: "var(--text-secondary)", fontSize: 13, lineHeight: 1.6, opacity: 0.8 }}>
+          Your question is worth answering — hit &ldquo;Try Again&rdquo; and we&apos;ll take another run at it.
         </p>
         <div style={{ marginTop: varSpaceLg, display: "flex", gap: varSpaceSm, justifyContent: "center", flexWrap: "wrap" }}>
           {onRetry && (

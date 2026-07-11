@@ -1272,20 +1272,24 @@ Level: ${level}${
       });
     }, 1500);
 
-    let provider = "primary";
-    const providerLabel = provider === "fallback"
-      ? "Fallback AI provider"
-      : "Cloudflare Workers AI";
-    console.log("[Gemma] Provider selected", {
+    console.log("[Gemma] Provider plan", {
       requestId,
       mode,
-      provider: providerLabel,
       fallbackConfigured: isFallbackConfigured(),
     });
 
-    let raw;
-
-    async function tryGenerate(source, label) {
+    async function tryGenerate(source, label, { repairReason = null } = {}) {
+      // Self-correcting retry: when a previous attempt produced output that
+      // failed JSON/schema validation, re-ask the SAME question with an
+      // explicit correction hint and a lower temperature. Malformed output is
+      // almost always a sampling accident — the immediate second try with
+      // tighter sampling succeeds, so the user never has to press retry.
+      const attemptUserPrompt = repairReason
+        ? `${userPrompt}\n\nIMPORTANT — RETRY: Your previous reply could not be used (${repairReason}). Respond with ONLY the exact JSON object described in the instructions. Start with "{" immediately, include every required field with the exact structure and counts specified, and output nothing before or after the JSON.`
+        : userPrompt;
+      const attemptTemperature = repairReason
+        ? Math.max(0.2, temperature - 0.3)
+        : temperature;
       clearInterval(generationTicker);
       generationPercent = 40;
       const attemptTicker = setInterval(() => {
@@ -1304,11 +1308,12 @@ Level: ${level}${
         mode,
         provider: source === "fallback" ? "Fallback AI provider" : "Cloudflare Workers AI",
         label,
+        isRepairAttempt: Boolean(repairReason),
         lessonTimeoutMs: LESSON_TIMEOUT_MS,
-        userPromptLength: userPrompt.length,
+        userPromptLength: attemptUserPrompt.length,
         hasNewsContext: Boolean(newsContext),
         maxOutputTokens,
-        temperature,
+        temperature: attemptTemperature,
       });
       const startedAt = Date.now();
       let result;
@@ -1319,9 +1324,9 @@ Level: ${level}${
             {
               messages: [
                 { role: "system", content: systemPrompt },
-                { role: "user", content: userPrompt },
+                { role: "user", content: attemptUserPrompt },
               ],
-              temperature,
+              temperature: attemptTemperature,
               max_tokens: maxOutputTokens,
             },
             generateAbortSignal
@@ -1329,9 +1334,9 @@ Level: ${level}${
         } else {
           result = await callGemma(
             systemPrompt,
-            userPrompt,
+            attemptUserPrompt,
             false,
-            temperature,
+            attemptTemperature,
             LESSON_TIMEOUT_MS,
             generateAbortSignal,
             maxOutputTokens
@@ -1407,70 +1412,84 @@ Level: ${level}${
       return { ok: true, raw: rawText, normalized };
     }
 
-    try {
-      raw = await tryGenerate("primary", "primary");
-      const primaryValidation = await validateRaw(raw);
-      if (primaryValidation.ok) {
-        raw = primaryValidation.raw;
-      } else if (isFallbackConfigured()) {
-        provider = "fallback";
-        console.warn("[Gemma] Switching to fallback provider", {
-          requestId,
-          mode,
-          reason: "primary returned invalid response",
+    // ── Reliability ladder ──
+    // A user-visible error is the LAST resort. Every rung may fail either by
+    // throwing (network/timeout/API error) or by returning output that fails
+    // validation; the next rung then runs automatically. "repair" rungs re-ask
+    // the same provider with an explicit correction hint and lower temperature
+    // — this is the server doing the "second try" the user used to have to do
+    // by hand. Latency can grow a little on a bad first sample; that is a
+    // deliberate trade for never surfacing a fixable error.
+    const attemptPlan = [
+      { source: "primary", label: "primary", repair: false },
+      { source: "primary", label: "primary-repair", repair: true },
+    ];
+    if (isFallbackConfigured()) {
+      attemptPlan.push({ source: "fallback", label: "fallback", repair: false });
+      attemptPlan.push({ source: "fallback", label: "fallback-repair", repair: true });
+    }
+
+    let validated = null;
+    let lastValidationError = null;
+    let lastThrownError = null;
+
+    for (const plan of attemptPlan) {
+      if (finished || generateAbortSignal.aborted) return;
+      try {
+        const rawAttempt = await tryGenerate(plan.source, plan.label, {
+          repairReason: plan.repair
+            ? lastValidationError || "the response was not valid JSON"
+            : null,
         });
-        raw = await tryGenerate("fallback", "fallback");
-        const fallbackValidation = await validateRaw(raw);
-        if (!fallbackValidation.ok) {
-          sendEvent("error", { error: fallbackValidation.error });
-          recordLessonResult(false);
-          return;
-        }
-        raw = fallbackValidation.raw;
-      } else {
-        sendEvent("error", { error: primaryValidation.error });
-        recordLessonResult(false);
-        return;
-      }
-    } catch (error) {
-      if (finished) return;
-      if (isFallbackConfigured() && provider === "primary") {
-        console.warn("[Gemma] Switching to fallback provider", {
-          requestId,
-          mode,
-          reason: "primary threw an error",
-          error,
-        });
-        try {
-          provider = "fallback";
-          raw = await tryGenerate("fallback", "fallback-after-error");
-          const fallbackValidation = await validateRaw(raw);
-          if (!fallbackValidation.ok) {
-            sendEvent("error", { error: fallbackValidation.error });
-            recordLessonResult(false);
-            return;
-          }
-          raw = fallbackValidation.raw;
-        } catch (fallbackError) {
-          console.error("[Gemma] Fallback provider failed", { requestId, fallbackError });
-          sendEvent("error", {
-            error: "Failed to generate lesson. Please try again.",
+        const validation = await validateRaw(rawAttempt);
+        if (validation.ok) {
+          validated = validation;
+          console.log("[generate-lesson] Attempt succeeded", {
+            requestId,
+            label: plan.label,
           });
-          recordLessonResult(false);
-          return;
+          break;
         }
-      } else {
-        console.error("[Gemma] Primary provider failed with no fallback", { requestId, error });
-        sendEvent("error", {
-          error: "Failed to generate lesson. Please try again.",
+        lastValidationError = validation.error;
+        console.warn("[generate-lesson] Attempt produced invalid output; trying next rung", {
+          requestId,
+          label: plan.label,
+          validationError: validation.error,
         });
-        recordLessonResult(false);
-        return;
+      } catch (error) {
+        if (finished || generateAbortSignal.aborted) return;
+        if (error?.name === "AbortError") throw error;
+        lastThrownError = error;
+        console.warn("[generate-lesson] Attempt threw; trying next rung", {
+          requestId,
+          label: plan.label,
+          errorName: error?.name,
+          errorMessage: error?.message,
+        });
       }
     }
 
-    const parsed = parseJSON(raw);
-    const normalized = normalizeJourney(parsed, mode);
+    if (!validated) {
+      // Prefer the outer catch's friendly per-error-type mapping when the
+      // final failure was a thrown provider error; validation messages are
+      // already written for humans.
+      if (lastThrownError && !lastValidationError) throw lastThrownError;
+      console.error("[generate-lesson] All generation attempts exhausted", {
+        requestId,
+        lastValidationError,
+        lastThrownErrorName: lastThrownError?.name,
+      });
+      sendEvent("error", {
+        error:
+          lastValidationError ||
+          "Failed to generate lesson. Please try again.",
+      });
+      recordLessonResult(false);
+      return;
+    }
+
+    const raw = validated.raw;
+    const normalized = validated.normalized;
     sendEvent("progress", { stage: "validating", percent: 95 });
 
     const outputModerationPromise = moderateText(raw, "output");
