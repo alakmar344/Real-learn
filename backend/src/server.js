@@ -304,9 +304,13 @@ function validateStartupConfig() {
     process.env.CLOUDFLARE_API_TOKEN?.trim() &&
       process.env.CLOUDFLARE_ACCOUNT_ID?.trim()
   );
-  if (!hasCloudflareConfig) {
+  const hasFallbackConfig = Boolean(
+    process.env.FALLBACK_AI_URL?.trim() &&
+      process.env.FALLBACK_AI_API_KEY?.trim()
+  );
+  if (!hasCloudflareConfig && !hasFallbackConfig) {
     throw new Error(
-      "Missing required environment variables: set CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID"
+      "Missing required environment variables: set CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID, or FALLBACK_AI_URL and FALLBACK_AI_API_KEY"
     );
   }
 }
@@ -1647,10 +1651,9 @@ try {
   validateStartupConfig();
   const server = app.listen(port, () => {
     console.log(`Backend listening on port ${port}`);
-    // Start periodic warm-up pings to keep the Cloudflare Workers AI model
-    // in memory. Without this, idle models unload and the next user request
-    // hits a 10-30s cold start.
-    startPeriodicWarmUp();
+    if (process.env.CLOUDFLARE_API_TOKEN?.trim() && process.env.CLOUDFLARE_ACCOUNT_ID?.trim()) {
+      startPeriodicWarmUp();
+    }
   });
 
   // Graceful shutdown: stop accepting new connections, wait for in-flight
