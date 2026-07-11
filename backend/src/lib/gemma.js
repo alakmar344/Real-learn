@@ -11,8 +11,6 @@ const DEFAULT_TIMEOUT_CIRCUIT_FAILURE_THRESHOLD = 5;
 const DEFAULT_TIMEOUT_CIRCUIT_COOLDOWN_MS = 60000;
 const PARSE_JSON_LOG_PREVIEW_CHARS = 300;
 
-export const PREFER_FALLBACK_FIRST = process.env.PREFER_FALLBACK_FIRST === "true";
-
 const timeoutCircuitState = {
   consecutiveTimeouts: 0,
   openUntil: 0,
@@ -464,12 +462,13 @@ export async function callGemma(
       process.env.CLOUDFLARE_ACCOUNT_ID?.trim()
   );
 
-  const preferFallbackFirst = PREFER_FALLBACK_FIRST && hasFallbackConfig && hasCloudflareConfig;
-  const providerOrder = preferFallbackFirst
-    ? ["fallback", "cloudflare"]
-    : ["cloudflare", "fallback"];
+  const providerOrder = hasCloudflareConfig && hasFallbackConfig
+    ? ["cloudflare", "fallback"]
+    : hasCloudflareConfig
+      ? ["cloudflare"]
+      : ["fallback"];
   const primaryProvider = providerOrder[0];
-  const secondaryProvider = providerOrder[1];
+  const secondaryProvider = providerOrder[1] ?? null;
 
   if (!hasCloudflareConfig && !hasFallbackConfig) {
     throw new Error(
@@ -510,7 +509,6 @@ export async function callGemma(
     providerOrder,
     primaryProvider,
     secondaryProvider,
-    preferFallbackFirst,
     maxRetries,
     retryDelayMs,
     maxRetryDelayMs,
@@ -524,7 +522,7 @@ export async function callGemma(
   });
   assertTimeoutCircuitClosed();
 
-  if (preferFallbackFirst) {
+  if (hasCloudflareConfig && hasFallbackConfig) {
     async function callProvider(provider, messages, providerSignal) {
       if (provider === "fallback") {
         return callFallbackAI(
