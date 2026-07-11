@@ -456,9 +456,10 @@ export async function callGemma(
   maxOutputTokens = 4000,
   allowFallback = true
 ) {
-  if (!process.env.CLOUDFLARE_API_TOKEN?.trim() || !process.env.CLOUDFLARE_ACCOUNT_ID?.trim()) {
+  const useFallbackOnly = isFallbackConfigured();
+  if (!useFallbackOnly && (!process.env.CLOUDFLARE_API_TOKEN?.trim() || !process.env.CLOUDFLARE_ACCOUNT_ID?.trim())) {
     throw new Error(
-      "CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID are not configured"
+      "Either CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID, or FALLBACK_AI_URL and FALLBACK_AI_API_KEY must be configured"
     );
   }
   if (enableSearch) {
@@ -548,16 +549,26 @@ export async function callGemma(
         { role: "user", content: userMessage },
       ];
 
-      const result = await callWorkersAI(
-        process.env.CLOUDFLARE_ACCOUNT_ID.trim(),
-        model,
-        {
-          messages,
-          temperature,
-          max_tokens: maxOutputTokens,
-        },
-        internalSignal
-      );
+      const result = await (useFallbackOnly
+        ? callFallbackAI(
+            model,
+            {
+              messages,
+              temperature,
+              max_tokens: maxOutputTokens,
+            },
+            internalSignal
+          )
+        : callWorkersAI(
+            process.env.CLOUDFLARE_ACCOUNT_ID.trim(),
+            model,
+            {
+              messages,
+              temperature,
+              max_tokens: maxOutputTokens,
+            },
+            internalSignal
+          ));
 
       clearTimeout(timeoutId);
       removeParentAbortListener?.();
@@ -695,7 +706,7 @@ export async function callGemma(
     }
   }
 
-  if (allowFallback && isGemmaServiceUnavailableError(lastError) && isFallbackConfigured()) {
+  if (!useFallbackOnly && allowFallback && isGemmaServiceUnavailableError(lastError) && isFallbackConfigured()) {
     console.warn("[Gemma] Primary provider exhausted; attempting fallback provider", {
       callId,
       model,
