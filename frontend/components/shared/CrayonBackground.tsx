@@ -10,7 +10,7 @@ export default function CrayonBackground() {
         zIndex: -1,
         overflow: "hidden",
         pointerEvents: "none",
-        opacity: 0.35,
+        opacity: 0.6,
       }}
     >
       <svg
