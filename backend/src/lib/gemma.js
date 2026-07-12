@@ -7,7 +7,13 @@ const DEFAULT_MAX_RETRY_DELAY_MS = 5000;
 // Wait long enough for the model to actually be ready before retrying.
 const COLD_START_RETRY_DELAY_MS = 15000;
 const COLD_START_MAX_RETRY_DELAY_MS = 45000;
-const DEFAULT_TIMEOUT_CIRCUIT_FAILURE_THRESHOLD = 5;
+// Trip the circuit after just 2 consecutive primary timeouts. A degraded
+// Cloudflare endpoint times out on EVERY call (~45s each), so a high threshold
+// means many requests waste their whole latency budget on a dead primary before
+// the circuit finally opens. Tripping early routes requests straight to the
+// healthy fallback provider, which is the key to keeping reliability near 100%
+// during a Cloudflare outage. Override via GEMMA_TIMEOUT_CIRCUIT_FAILURE_THRESHOLD.
+const DEFAULT_TIMEOUT_CIRCUIT_FAILURE_THRESHOLD = 2;
 const DEFAULT_TIMEOUT_CIRCUIT_COOLDOWN_MS = 60000;
 const PARSE_JSON_LOG_PREVIEW_CHARS = 300;
 
