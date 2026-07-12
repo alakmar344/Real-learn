@@ -11,6 +11,7 @@ import GoogleAnalytics from "@/components/shared/GoogleAnalytics";
 import PreSignInConsent from "@/components/shared/PreSignInConsent";
 import AppShell from "@/components/shared/AppShell";
 import ThemeApplier from "@/components/shared/ThemeApplier";
+import CrayonBackground from "@/components/shared/CrayonBackground";
 import ToastContainer from "@/components/shared/ToastContainer";
 import SkipToContent from "@/components/shared/SkipToContent";
 import "./globals.css";
@@ -74,6 +75,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
+        <CrayonBackground />
         <SkipToContent />
         <ClerkProvider afterSignOutUrl="/">
           <ThemeApplier />
