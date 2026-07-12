@@ -16,22 +16,22 @@ export const THEME_OPTIONS: ThemeOption[] = [
   {
     value: "light",
     label: "Crayon",
-    hint: "Soft pastel crayon paper — playful and beginner-friendly",
-    swatch: "#fbf7f0",
+    hint: "Warm daylight crayon painting with pastel strokes",
+    swatch: "#87ceeb",
     accent: "#6d5fe0",
   },
   {
     value: "dark",
     label: "Night",
-    hint: "Soft contrast for relaxed late-night study",
-    swatch: "#0b100f",
+    hint: "Moonlit crayon scene with deep blue tones",
+    swatch: "#0a1628",
     accent: "#3fd0be",
   },
   {
     value: "twilight",
     label: "Twilight",
-    hint: "Ambient indigo glow with gentle focus",
-    swatch: "#12101f",
+    hint: "Purple dusk crayon painting with warm sunset",
+    swatch: "#1a1040",
     accent: "#a78bfa",
   },
 ];

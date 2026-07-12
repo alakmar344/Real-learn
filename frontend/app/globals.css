@@ -110,6 +110,53 @@
   /* ── Clean focus ring ── */
   --focus-ring: 0 0 0 3px var(--accent-glow);
   --focus-ring-simple: 0 0 0 2px var(--accent);
+
+  /* ── Crayon painting colors ── */
+  --crayon-sky-top: #87ceeb;
+  --crayon-sky-bottom: #b8e4f0;
+  --crayon-sun: #f5c542;
+  --crayon-sun-glow: #f5a623;
+  --crayon-cloud: #ffffff;
+  --crayon-hill-far: #7db87d;
+  --crayon-hill-mid: #5ea55e;
+  --crayon-hill-near: #4d9a4d;
+  --crayon-grass: #3d8b3d;
+  --crayon-ground: #5a9e3a;
+  --crayon-grass-stroke: #2d6b2d;
+  --crayon-trunk: #8b6914;
+  --crayon-tree-dark: #2e7d32;
+  --crayon-tree-light: #66bb6a;
+  --crayon-bush: #43a047;
+  --crayon-river: #4a90d9;
+  --crayon-river-light: #7ab8f5;
+  --crayon-river-edge: #3a7bc8;
+  --crayon-river-sparkle: #ffffff;
+  --crayon-house-wall: #e8c49a;
+  --crayon-house-roof: #c0392b;
+  --crayon-house-chimney: #a0522d;
+  --crayon-house-door: #8b4513;
+  --crayon-house-doorknob: #daa520;
+  --crayon-house-window: #87ceeb;
+  --crayon-house-outline: #5d4037;
+  --crayon-window-glow: #ffd54f;
+  --crayon-smoke: #9e9e9e;
+  --crayon-library-wall: #d4b896;
+  --crayon-library-roof: #8d6e63;
+  --crayon-library-column: #c4a882;
+  --crayon-library-door: #6d4c41;
+  --crayon-library-window: #87ceeb;
+  --crayon-library-outline: #4e342e;
+  --crayon-library-sign: #5d4037;
+  --crayon-library-sign-text: #fff8e1;
+  --crayon-book-1: #e53935;
+  --crayon-book-2: #1e88e5;
+  --crayon-book-3: #fdd835;
+  --crayon-path: #a1887f;
+  --crayon-fence: #8d6e63;
+  --crayon-flower-1: #e91e63;
+  --crayon-flower-2: #ff9800;
+  --crayon-flower-3: #9c27b0;
+  --crayon-bird: #455a64;
 }
 
 /* ── Dark theme (Night) — deep, rich, with neon accents ── */
@@ -159,6 +206,53 @@ html[data-theme="dark"] {
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.5);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.6);
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.7);
+
+  /* ── Crayon painting — night scene ── */
+  --crayon-sky-top: #0a1628;
+  --crayon-sky-bottom: #132240;
+  --crayon-sun: #e0e8ff;
+  --crayon-sun-glow: #8aa4e8;
+  --crayon-cloud: #2a3a5c;
+  --crayon-hill-far: #1a3a2a;
+  --crayon-hill-mid: #153020;
+  --crayon-hill-near: #122818;
+  --crayon-grass: #0f2010;
+  --crayon-ground: #162412;
+  --crayon-grass-stroke: #1a3a1a;
+  --crayon-trunk: #4a3510;
+  --crayon-tree-dark: #1a3a1a;
+  --crayon-tree-light: #2a5a2a;
+  --crayon-bush: #1e4a1e;
+  --crayon-river: #1a3a6a;
+  --crayon-river-light: #2a5090;
+  --crayon-river-edge: #15305a;
+  --crayon-river-sparkle: #6a9fd8;
+  --crayon-house-wall: #3a3020;
+  --crayon-house-roof: #5a2020;
+  --crayon-house-chimney: #3a2510;
+  --crayon-house-door: #2a1a0a;
+  --crayon-house-doorknob: #8a7a30;
+  --crayon-house-window: #1a3050;
+  --crayon-house-outline: #2a2018;
+  --crayon-window-glow: #f5c542;
+  --crayon-smoke: #3a3a4a;
+  --crayon-library-wall: #2a2520;
+  --crayon-library-roof: #3a2a20;
+  --crayon-library-column: #3a3028;
+  --crayon-library-door: #1a1510;
+  --crayon-library-window: #1a3050;
+  --crayon-library-outline: #1a1510;
+  --crayon-library-sign: #2a2018;
+  --crayon-library-sign-text: #8a7a60;
+  --crayon-book-1: #6a2020;
+  --crayon-book-2: #1a3a6a;
+  --crayon-book-3: #6a5a10;
+  --crayon-path: #3a3020;
+  --crayon-fence: #3a2a1a;
+  --crayon-flower-1: #6a2040;
+  --crayon-flower-2: #6a4a10;
+  --crayon-flower-3: #4a1a5a;
+  --crayon-bird: #2a3a50;
 }
 
 /* ── Twilight theme — deep purple vibes with neon pink glow ── */
@@ -208,6 +302,53 @@ html[data-theme="twilight"] {
   --shadow-sm: 0 2px 8px rgba(6, 4, 16, 0.6);
   --shadow-md: 0 4px 16px rgba(6, 4, 16, 0.7);
   --shadow-lg: 0 8px 32px rgba(6, 4, 16, 0.8);
+
+  /* ── Crayon painting — twilight purple scene ── */
+  --crayon-sky-top: #1a1040;
+  --crayon-sky-bottom: #2d1b69;
+  --crayon-sun: #f0a050;
+  --crayon-sun-glow: #e07030;
+  --crayon-cloud: #3a2870;
+  --crayon-hill-far: #2a2050;
+  --crayon-hill-mid: #221845;
+  --crayon-hill-near: #1c1238;
+  --crayon-grass: #16102e;
+  --crayon-ground: #1e1540;
+  --crayon-grass-stroke: #2a1a4a;
+  --crayon-trunk: #4a3020;
+  --crayon-tree-dark: #2a1a3a;
+  --crayon-tree-light: #3a2858;
+  --crayon-bush: #2e1a4a;
+  --crayon-river: #3a2a80;
+  --crayon-river-light: #5040a0;
+  --crayon-river-edge: #2a1a6a;
+  --crayon-river-sparkle: #a080e0;
+  --crayon-house-wall: #3a2a50;
+  --crayon-house-roof: #6a2050;
+  --crayon-house-chimney: #3a2030;
+  --crayon-house-door: #2a1830;
+  --crayon-house-doorknob: #b080d0;
+  --crayon-house-window: #2a2060;
+  --crayon-house-outline: #2a1a38;
+  --crayon-window-glow: #c080f0;
+  --crayon-smoke: #4a3868;
+  --crayon-library-wall: #302048;
+  --crayon-library-roof: #4a2050;
+  --crayon-library-column: #382850;
+  --crayon-library-door: #201030;
+  --crayon-library-window: #2a2060;
+  --crayon-library-outline: #201030;
+  --crayon-library-sign: #2a1a38;
+  --crayon-library-sign-text: #b090d0;
+  --crayon-book-1: #8a2050;
+  --crayon-book-2: #3a30a0;
+  --crayon-book-3: #a08030;
+  --crayon-path: #3a2848;
+  --crayon-fence: #3a2840;
+  --crayon-flower-1: #a03080;
+  --crayon-flower-2: #b06020;
+  --crayon-flower-3: #6030a0;
+  --crayon-bird: #3a2860;
 }
 
 html {
@@ -231,6 +372,18 @@ body {
 
 body {
   overflow-x: hidden;
+}
+
+/* Crayon paper texture overlay */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+  opacity: 0.4;
+  mix-blend-mode: multiply;
 }
 
 /* Clean background — no ambient wash, just the theme color */
