@@ -20,7 +20,7 @@ export default function PrivacyPolicy() {
         Privacy Policy
       </h2>
       <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
-        Last updated: July 9, 2026 (version 2.1)
+        Last updated: July 12, 2026 (version 2.1)
       </p>
 
       <section style={{ marginBottom: 28 }}>
@@ -177,7 +177,12 @@ export default function PrivacyPolicy() {
         <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
           <strong>RealLearn does not use your data to train, fine-tune, or improve any AI model.</strong>{" "}
           Your questions are sent to Cloudflare Workers AI (which hosts the Gemma model) for
-          one-time inference only. We do not
+          one-time inference only. If Cloudflare is temporarily slow or unavailable, the same
+          request may instead be sent to a backup AI provider for one-time inference so the lesson
+          can still be generated; the same &quot;no training on your data&quot; commitment applies to
+          that provider. Safety moderation of your question and the generated lesson is performed
+          locally on our own servers using rule-based pattern matching — your question is
+          <strong> not</strong> sent to any third party just for moderation. We do not
           store your questions or generated lessons in a form linked to your account. To improve
           speed, a generated lesson may be kept in a short-lived server-side cache keyed by a
           one-way hash of the question text (not by your identity) and is deleted automatically
@@ -239,9 +244,15 @@ export default function PrivacyPolicy() {
             <strong>Cloudflare Workers AI</strong> (cloudflare.com) — AI content generation using
             Google&apos;s Gemma 4 open model hosted on Cloudflare&apos;s network. Your question,
             chosen language, and difficulty level are sent to Cloudflare&apos;s API for one-time
-            inference (for both lesson generation and automated content moderation). No user
-            identity is included in the API call. Cloudflare&apos;s own data practices apply to API
-            requests.
+            inference (lesson generation only — safety moderation runs locally on our servers and is
+            not sent to Cloudflare). No user identity is included in the API call. Cloudflare&apos;s
+            own data practices apply to API requests.
+          </li>
+          <li style={{ marginBottom: 4 }}>
+            <strong>Backup AI provider</strong> — Used only as an automatic failover when Cloudflare
+            Workers AI is temporarily slow or unavailable, so lessons can still be generated. When
+            invoked, the same question, language, and difficulty level are sent for one-time
+            inference with no user identity attached, and no user data is used for training.
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Google Analytics</strong> — Website analytics to understand usage patterns
@@ -533,10 +544,12 @@ export default function PrivacyPolicy() {
         </h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           Lessons are produced by an automated AI system, and both your inputs and the generated
-          outputs pass through automated safety filters and AI-based moderation before or shortly
-          after they are shown. These processes are used solely to generate educational content and
-          to keep the Service safe — they do not make legal, financial, or similarly significant
-          decisions about you, and no automated profiling is used for advertising. You remain
+          outputs pass through automated, rule-based (pattern-matching) safety filters that run on
+          our own servers — not a third-party AI classifier — before or shortly after content is
+          shown. These processes are used solely to generate educational content and to keep the
+          Service safe — they do not make legal, financial, or similarly significant decisions about
+          you, and no automated profiling is used for advertising. Because the filters are automated
+          and rule-based, they are imperfect and may occasionally over- or under-block; you remain
           responsible for verifying AI-generated information (see Section 5).
         </p>
       </section>

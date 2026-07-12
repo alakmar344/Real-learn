@@ -15,10 +15,10 @@ export interface ThemeOption {
 export const THEME_OPTIONS: ThemeOption[] = [
   {
     value: "light",
-    label: "Paper",
-    hint: "Warm cream — calm and beginner-friendly",
-    swatch: "#f7f3ec",
-    accent: "#0d7a6a",
+    label: "Crayon",
+    hint: "Soft pastel crayon paper — playful and beginner-friendly",
+    swatch: "#fbf7f0",
+    accent: "#6d5fe0",
   },
   {
     value: "dark",

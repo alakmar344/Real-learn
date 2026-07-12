@@ -1460,7 +1460,16 @@ Level: ${level}${
     // — this is the server doing the "second try" the user used to have to do
     // by hand. Latency can grow a little on a bad first sample; that is a
     // deliberate trade for never surfacing a fixable error.
-    const fallbackRungsActive = false;
+    // Reliability: the direct-fallback rungs call the fallback provider
+    // WITHOUT going through callGemma's timeout circuit breaker. This is the
+    // difference between 0% and ~100% reliability when Cloudflare is degraded:
+    // once the primary's timeout circuit trips open, every callGemma() rejects
+    // immediately with GemmaCircuitOpenError, so without a circuit-independent
+    // path the whole request fails even though the fallback provider is healthy
+    // and fast. Enabling these rungs guarantees a working provider is always
+    // reachable. They only exist when a fallback provider is actually
+    // configured, so single-provider deployments are unaffected.
+    const fallbackRungsActive = isFallbackConfigured();
     const attemptPlan = [
       { source: "primary", label: "primary", repair: false },
       { source: "primary", label: "primary-repair", repair: true },
