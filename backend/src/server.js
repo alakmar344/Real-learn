@@ -198,9 +198,9 @@ const SPEECH_LANG_TO_VOICE = {
   "en-US": "en-US-AriaNeural",
 };
 
-const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "2.1";
-const TERMS_OF_SERVICE_VERSION = process.env.TERMS_OF_SERVICE_VERSION || "2.1";
-const COOKIE_POLICY_VERSION = process.env.COOKIE_POLICY_VERSION || "2.0";
+const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "2.2";
+const TERMS_OF_SERVICE_VERSION = process.env.TERMS_OF_SERVICE_VERSION || "2.2";
+const COOKIE_POLICY_VERSION = process.env.COOKIE_POLICY_VERSION || "2.1";
 
 // ── Input validation limits (security: bound prompt size and lock free-text
 // fields that are interpolated into the LLM prompt to known values) ──
