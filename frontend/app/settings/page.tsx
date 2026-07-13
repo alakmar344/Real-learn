@@ -663,6 +663,29 @@ export default function SettingsPage() {
         </section>
       </div>
 
+      <div
+        style={{
+          maxWidth: 600,
+          margin: "0 auto",
+          paddingTop: 48,
+          textAlign: "center",
+        }}
+      >
+        <a
+          href="https://launchbuff.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Featured on LaunchBuff"
+        >
+          <img
+            src="https://launchbuff.com/badge-featured-dark.svg"
+            alt="Featured on LaunchBuff"
+            width="256"
+            height="80"
+          />
+        </a>
+      </div>
+
       <ConfirmModal
         open={deleteConfirmOpen}
         title="Delete everything?"
