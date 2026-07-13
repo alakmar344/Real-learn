@@ -1,13 +1,13 @@
 import { test, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
 
+process.env.CEREBRAS_API_KEY = "test-cerebras-key";
 process.env.CLOUDFLARE_API_TOKEN = "test-token";
 process.env.CLOUDFLARE_ACCOUNT_ID = "test-account";
-process.env.FALLBACK_AI_URL = "https://openrouter.ai/api/v1/chat/completions";
-process.env.FALLBACK_AI_API_KEY = "test-key";
-process.env.FALLBACK_AI_MODEL = "m1:free";
-process.env.FALLBACK_AI_MODELS = "m1:free,m2:free";
-process.env.AI_HEDGE_DELAY_MS = "80";
+process.env.GEMMA_FALLBACK_MODELS = "gemma-4-27b";
+process.env.CLOUDFLARE_AI_MODEL = "@cf/google/gemma-4-26b-a4b-it";
+process.env.CLOUDFLARE_AI_MODELS = "@cf/google/gemma-4-9b-it-qa";
+process.env.AI_HEDGE_DELAY_MS = "300";
 process.env.GEMMA_MAX_RETRIES = "1";
 process.env.GEMMA_RETRY_DELAY_MS = "20";
 process.env.GEMMA_MAX_RETRY_DELAY_MS = "50";
@@ -19,6 +19,7 @@ const {
   getProviderHealthSnapshot,
   resetProviderHealth,
   GemmaApiError,
+  GEMMA_MODEL,
 } = await import("../src/lib/gemma.js");
 
 const originalFetch = globalThis.fetch;
@@ -71,35 +72,57 @@ function sseResponse(signal, steps, { close = true } = {}) {
   });
 }
 const sseChunk = (text) =>
-  `data: ${JSON.stringify({ choices: [{ delta: { content: text } }] })}\n\n`;
+  `data: ${JSON.stringify({ choices: [{ delta: { content: text } }] })}
+
+`;
+
+function isCerebrasUrl(url) {
+  return String(url).includes("api.cerebras.ai");
+}
+
+function isCloudflareUrl(url) {
+  return String(url).includes("cloudflare.com");
+}
 
 beforeEach(() => {
   resetProviderHealth();
-  globalThis.fetch = async (url, opts) =>
-    scenario(String(url).includes("cloudflare.com"), opts);
+  globalThis.fetch = async (url, opts) => {
+    const urlStr = String(url);
+    if (urlStr.includes("/tcp_warming")) {
+      return new Response(null, { status: 204 });
+    }
+    return scenario(isCerebrasUrl(urlStr), isCloudflareUrl(urlStr), opts);
+  };
 });
 
 afterEach(() => {
   globalThis.fetch = originalFetch;
 });
 
+test("GEMMA_MODEL defaults to gemma-4-31b", () => {
+  assert.equal(GEMMA_MODEL, "gemma-4-31b");
+});
+
 test("healthy primary wins without touching the fallback", async () => {
-  let fallbackCalls = 0;
-  scenario = async (isCloudflare) => {
-    if (isCloudflare) return okResponse("primary-answer");
-    fallbackCalls += 1;
+  let cloudflareCalls = 0;
+  scenario = async (isCerebras) => {
+    if (isCerebras) return sseResponse(null, [{ at: 0, data: sseChunk("primary-answer") }]);
+    cloudflareCalls += 1;
     return okResponse("fallback-answer");
   };
   const text = await callGemma("sys", "user", false, 0.5, 5000);
   assert.equal(text, "primary-answer");
-  assert.equal(fallbackCalls, 0);
+  assert.equal(cloudflareCalls, 0);
 });
 
-test("slow primary is hedged: fallback launches in parallel and wins", async () => {
-  scenario = (isCloudflare, opts) =>
+test("slow primary is hedged: cloudflare launches in parallel and wins", async () => {
+  scenario = (isCerebras, isCloudflare, opts) =>
     new Promise((resolve, reject) => {
-      if (isCloudflare) {
-        const timer = setTimeout(() => resolve(okResponse("slow")), 3000);
+      if (isCerebras) {
+        const timer = setTimeout(
+          () => resolve(sseResponse(opts.signal, [{ at: 0, data: sseChunk("slow") }])),
+          3000
+        );
         opts.signal?.addEventListener("abort", () => {
           clearTimeout(timer);
           const abortError = new Error("aborted");
@@ -107,49 +130,52 @@ test("slow primary is hedged: fallback launches in parallel and wins", async () 
           reject(abortError);
         });
       } else {
-        setTimeout(() => resolve(okResponse("fast-fallback")), 20);
+        setTimeout(() => resolve(okResponse("fast-cloudflare")), 20);
       }
     });
   const startedAt = Date.now();
   const text = await callGemma("sys", "user", false, 0.5, 5000);
-  assert.equal(text, "fast-fallback");
-  // hedge delay (80ms) + fallback latency (20ms) + slack — never the 3s primary
+  assert.equal(text, "fast-cloudflare");
+  // hedge delay (300ms) + cloudflare latency (20ms) + slack — never the 3s primary
   assert.ok(Date.now() - startedAt < 1000);
 });
 
-test("failing primary triggers immediate fail-fast fallback (no hedge wait)", async () => {
-  scenario = async (isCloudflare) => {
-    if (isCloudflare) return jsonResponse({ errors: [{ message: "boom" }] }, 500);
-    return okResponse("fallback-answer");
+test("failing primary triggers immediate fail-fast cloudflare (no hedge wait)", async () => {
+  scenario = async (isCerebras, isCloudflare) => {
+    if (isCerebras) return jsonResponse({ errors: [{ message: "boom" }] }, 500);
+    return okResponse("cloudflare-answer");
   };
   const text = await callGemma("sys", "user", false, 0.5, 5000);
-  assert.equal(text, "fallback-answer");
+  assert.equal(text, "cloudflare-answer");
 });
 
-test("fallback rotates to the next free model on 429", async () => {
+test("cloudflare rotates to the next model on 429", async () => {
   const seenModels = [];
-  scenario = async (isCloudflare, opts) => {
-    if (isCloudflare) return jsonResponse({ errors: [{ message: "down" }] }, 500);
+  scenario = async (isCerebras, isCloudflare, opts) => {
+    if (isCerebras) return jsonResponse({ errors: [{ message: "down" }] }, 500);
     const body = JSON.parse(opts.body);
     seenModels.push(body.model);
-    if (body.model === "m1:free") {
+    if (body.model === "@cf/google/gemma-4-26b-a4b-it") {
       return jsonResponse({ error: { message: "rate limited" } }, 429);
     }
     return okResponse("rotated-answer");
   };
   const text = await callGemma("sys", "user", false, 0.5, 5000);
   assert.equal(text, "rotated-answer");
-  assert.deepEqual(seenModels, ["m1:free", "m2:free"]);
+  assert.deepEqual(seenModels, [
+    "@cf/google/gemma-4-26b-a4b-it",
+    "@cf/google/gemma-4-9b-it-qa",
+  ]);
   // The working model is remembered for the next request.
-  assert.equal(getProviderHealthSnapshot().fallback.preferredModelIndex, 1);
+  assert.equal(getProviderHealthSnapshot().cloudflare.preferredModelIndex, 1);
 });
 
 test("total outage opens both circuits and surfaces a retryable error", async () => {
   scenario = async () => jsonResponse({ errors: [{ message: "dead" }] }, 500);
   await assert.rejects(() => callGemma("sys", "user", false, 0.5, 5000));
   const snapshot = getProviderHealthSnapshot();
+  assert.equal(snapshot.cerebras.circuitOpen, true);
   assert.equal(snapshot.cloudflare.circuitOpen, true);
-  assert.equal(snapshot.fallback.circuitOpen, true);
 });
 
 test("open circuits still half-open-probe instead of refusing outright", async () => {
@@ -160,37 +186,37 @@ test("open circuits still half-open-probe instead of refusing outright", async (
   let probed = 0;
   scenario = async () => {
     probed += 1;
-    return okResponse("recovered");
+    return sseResponse(null, [{ at: 0, data: sseChunk("recovered") }]);
   };
   const text = await callGemma("sys", "user", false, 0.5, 5000);
   assert.equal(text, "recovered");
   assert.equal(probed, 1);
 });
 
-test("hedge is SKIPPED while the leader is streaming (no fallback spend)", async () => {
-  let fallbackCalls = 0;
-  scenario = (isCloudflare, opts) => {
-    if (isCloudflare) {
-      // First chunk at 20ms (before the 80ms hedge), finishes at 250ms
+test("hedge is SKIPPED while the leader is streaming (no cloudflare spend)", async () => {
+  let cloudflareCalls = 0;
+  scenario = (isCerebras, isCloudflare, opts) => {
+    if (isCerebras) {
+      // First chunk at 20ms (before the 300ms hedge), finishes at 250ms
       // (after the hedge would have fired).
       return sseResponse(opts.signal, [
         { at: 20, data: sseChunk("slow ") },
         { at: 250, data: sseChunk("but alive") },
       ]);
     }
-    fallbackCalls += 1;
+    cloudflareCalls += 1;
     return okResponse("should-never-run");
   };
   const text = await callGemma("sys", "user", false, 0.5, 5000);
   assert.equal(text, "slow but alive");
-  assert.equal(fallbackCalls, 0);
+  assert.equal(cloudflareCalls, 0);
 });
 
 test("silence watchdog kills a stalled stream fast (retryable 408)", async () => {
   process.env.AI_FIRST_BYTE_TIMEOUT_MS = "150";
   process.env.AI_STALL_TIMEOUT_MS = "100";
   try {
-    scenario = (isCloudflare, opts) =>
+    scenario = (isCerebras, isCloudflare, opts) =>
       // One chunk, then silence forever — never closes.
       sseResponse(opts.signal, [{ at: 5, data: sseChunk("hi") }], { close: false });
     const startedAt = Date.now();
@@ -204,46 +230,33 @@ test("silence watchdog kills a stalled stream fast (retryable 408)", async () =>
   }
 });
 
-test("ultra-fast knobs: no-thinking + OpenRouter provider routing in payload", async () => {
-  process.env.AI_DISABLE_THINKING = "both";
-  process.env.FALLBACK_AI_PROVIDER_ORDER = "makora,cloudflare";
-  process.env.FALLBACK_AI_SORT = "throughput";
+test("no-thinking knob is passed to cloudflare", async () => {
+  process.env.AI_DISABLE_THINKING = "cloudflare";
   try {
-    const payloads = { cloudflare: null, fallback: null };
-    scenario = async (isCloudflare, opts) => {
+    const payloads = { cerebras: null, cloudflare: null };
+    scenario = async (isCerebras, isCloudflare, opts) => {
       const body = JSON.parse(opts.body);
-      if (isCloudflare) {
-        payloads.cloudflare = body;
-        // Fail CF so the fallback also runs and we can inspect its payload.
+      if (isCerebras) {
+        payloads.cerebras = body;
+        // Fail Cerebras so the cloudflare fallback also runs and we can inspect its payload.
         return jsonResponse({ errors: [{ message: "down" }] }, 500);
       }
-      payloads.fallback = body;
+      payloads.cloudflare = body;
       return okResponse("fast-answer");
     };
     const text = await callGemma("sys", "user", false, 0.5, 5000);
     assert.equal(text, "fast-answer");
+    assert.equal(payloads.cerebras.chat_template_kwargs, undefined);
     assert.deepEqual(payloads.cloudflare.chat_template_kwargs, {
       enable_thinking: false,
     });
-    assert.deepEqual(payloads.fallback.chat_template_kwargs, {
-      enable_thinking: false,
-    });
-    assert.deepEqual(payloads.fallback.provider, {
-      allow_fallbacks: true,
-      order: ["makora", "cloudflare"],
-      sort: "throughput",
-    });
-    // Cloudflare must never receive OpenRouter-only routing fields.
-    assert.equal(payloads.cloudflare.provider, undefined);
   } finally {
     delete process.env.AI_DISABLE_THINKING;
-    delete process.env.FALLBACK_AI_PROVIDER_ORDER;
-    delete process.env.FALLBACK_AI_SORT;
   }
 });
 
 test("caller abort propagates as AbortError", async () => {
-  scenario = (isCloudflare, opts) =>
+  scenario = (isCerebras, isCloudflare, opts) =>
     new Promise((resolve, reject) => {
       const timer = setTimeout(() => resolve(okResponse("late")), 2000);
       opts.signal?.addEventListener("abort", () => {

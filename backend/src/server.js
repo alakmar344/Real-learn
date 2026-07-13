@@ -15,7 +15,7 @@ import {
   GemmaApiError,
   GemmaCircuitOpenError,
   parseJSON,
-  callFallbackAI,
+  callCloudflareAI,
   isFallbackConfigured,
   extractTextFromResult,
   getProviderHealthSnapshot,
@@ -298,17 +298,14 @@ let consecutiveLessonFailures = 0;
 let lessonRequestCounter = 0;
 
 function validateStartupConfig() {
+  const hasCerebrasConfig = Boolean(process.env.CEREBRAS_API_KEY?.trim());
   const hasCloudflareConfig = Boolean(
     process.env.CLOUDFLARE_API_TOKEN?.trim() &&
       process.env.CLOUDFLARE_ACCOUNT_ID?.trim()
   );
-  const hasFallbackConfig = Boolean(
-    process.env.FALLBACK_AI_URL?.trim() &&
-      process.env.FALLBACK_AI_API_KEY?.trim()
-  );
-  if (!hasCloudflareConfig && !hasFallbackConfig) {
+  if (!hasCerebrasConfig && !hasCloudflareConfig) {
     throw new Error(
-      "Missing required environment variables: set CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID, or FALLBACK_AI_URL and FALLBACK_AI_API_KEY"
+      "Missing required environment variables: set CEREBRAS_API_KEY, or CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID for fallback-only mode"
     );
   }
 }
@@ -1301,8 +1298,8 @@ Level: ${level}${
       requestId,
       mode,
       providerOrder: isFallbackConfigured()
-        ? ["cloudflare", "fallback"]
-        : ["cloudflare"],
+        ? ["cerebras", "cloudflare"]
+        : ["cerebras"],
       fallbackConfigured: isFallbackConfigured(),
     });
 
@@ -1334,7 +1331,7 @@ Level: ${level}${
       console.log("[Gemma] generate start", {
         requestId,
         mode,
-        provider: source === "fallback" ? "Fallback AI provider" : "Cloudflare Workers AI",
+        provider: source === "cloudflare" ? "Cloudflare Workers AI" : "Cerebras Cloud (Gemma 4 31B)",
         label,
         isRepairAttempt: Boolean(repairReason),
         callTimeoutMs: GEMMA_CALL_TIMEOUT_MS,
@@ -1346,14 +1343,11 @@ Level: ${level}${
       const startedAt = Date.now();
       let result;
       try {
-        if (source === "fallback") {
-          // BUG FIX: callFallbackAI returns the raw completion payload (an
-          // object), not text — it must go through extractTextFromResult.
-          // Previously the object was passed straight to the validators,
-          // which threw on `result.slice`, so this rung silently never
-          // produced a lesson.
+        if (source === "cloudflare") {
+          // Direct Cloudflare call bypasses callGemma's circuit breaker so
+          // the fallback is still reachable when the primary's circuit is open.
           result = extractTextFromResult(
-            await callFallbackAI(
+            await callCloudflareAI(
               GEMMA_MODEL,
               {
                 messages: [
@@ -1380,7 +1374,7 @@ Level: ${level}${
         clearInterval(attemptTicker);
         console.log("[Gemma] generate success", {
           requestId,
-          provider: source === "fallback" ? "Fallback AI provider" : "Cloudflare Workers AI",
+          provider: source === "cloudflare" ? "Cloudflare Workers AI" : "Cerebras Cloud (Gemma 4 31B)",
           label,
           latencyMs: Date.now() - startedAt,
           rawLength: result.length,
@@ -1392,7 +1386,7 @@ Level: ${level}${
         clearInterval(attemptTicker);
         console.error("[Gemma] generate failed", {
           requestId,
-          provider: source === "fallback" ? "Fallback AI provider" : "Cloudflare Workers AI",
+          provider: source === "cloudflare" ? "Cloudflare Workers AI" : "Cerebras Cloud (Gemma 4 31B)",
           label,
           latencyMs: Date.now() - startedAt,
           error,
@@ -1475,23 +1469,23 @@ Level: ${level}${
     // — this is the server doing the "second try" the user used to have to do
     // by hand. Latency can grow a little on a bad first sample; that is a
     // deliberate trade for never surfacing a fixable error.
-    // Reliability: the direct-fallback rungs call the fallback provider
+    // Reliability: the direct-Cloudflare rungs call the fallback provider
     // WITHOUT going through callGemma's timeout circuit breaker. This is the
-    // difference between 0% and ~100% reliability when Cloudflare is degraded:
+    // difference between 0% and ~100% reliability when Cerebras is degraded:
     // once the primary's timeout circuit trips open, every callGemma() rejects
     // immediately with GemmaCircuitOpenError, so without a circuit-independent
-    // path the whole request fails even though the fallback provider is healthy
-    // and fast. Enabling these rungs guarantees a working provider is always
-    // reachable. They only exist when a fallback provider is actually
-    // configured, so single-provider deployments are unaffected.
+    // path the whole request fails even though Cloudflare is healthy and fast.
+    // Enabling these rungs guarantees a working provider is always reachable.
+    // They only exist when Cloudflare is configured, so single-provider
+    // deployments are unaffected.
     const fallbackRungsActive = isFallbackConfigured();
     const attemptPlan = [
       { source: "primary", label: "primary", repair: false },
       { source: "primary", label: "primary-repair", repair: true },
     ];
     if (fallbackRungsActive) {
-      attemptPlan.push({ source: "fallback", label: "fallback", repair: false });
-      attemptPlan.push({ source: "fallback", label: "fallback-repair", repair: true });
+      attemptPlan.push({ source: "cloudflare", label: "cloudflare", repair: false });
+      attemptPlan.push({ source: "cloudflare", label: "cloudflare-repair", repair: true });
     }
 
     let validated = null;
