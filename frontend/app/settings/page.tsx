@@ -663,16 +663,6 @@ export default function SettingsPage() {
         </section>
       </div>
 
-      <div
-        style={{
-          maxWidth: 600,
-          margin: "0 auto",
-          paddingTop: 48,
-          textAlign: "center",
-        }}
-      >
-        
-
       <ConfirmModal
         open={deleteConfirmOpen}
         title="Delete everything?"
