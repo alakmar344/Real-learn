@@ -671,20 +671,7 @@ export default function SettingsPage() {
           textAlign: "center",
         }}
       >
-        <a
-          href="https://launchbuff.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          title="Featured on LaunchBuff"
-        >
-          <img
-            src="https://launchbuff.com/badge-featured-dark.svg"
-            alt="Featured on LaunchBuff"
-            width="256"
-            height="80"
-          />
-        </a>
-      </div>
+        
 
       <ConfirmModal
         open={deleteConfirmOpen}
