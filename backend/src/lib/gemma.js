@@ -1,11 +1,11 @@
+import Cerebras from "@cerebras/cerebras_cloud_sdk";
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Multi-provider AI inference engine.
 //
 // Providers:
-//   • "cloudflare" — Cloudflare Workers AI (Gemma), the primary.
-//   • "fallback"   — any OpenAI-compatible endpoint. In production this is
-//                    OpenRouter's free tier, with a rotation list of free
-//                    models (FALLBACK_AI_MODELS).
+//   • "cerebras"  — Cerebras Cloud SDK (Gemma 4 31B), the primary.
+//   • "cloudflare" — Cloudflare Workers AI (Gemma), the fallback.
 //
 // Both providers are individually unreliable, so the engine is built around
 // three ideas that together give the fastest answer that actually succeeds:
@@ -23,18 +23,16 @@
 //      provider closest to recovery rather than failing the user outright.
 //
 //   3. MODEL ROTATION — each provider carries an ordered model list
-//      (GEMMA_MODEL + GEMMA_FALLBACK_MODELS / FALLBACK_AI_MODEL +
-//      FALLBACK_AI_MODELS). Free-tier models get rate-limited or removed
-//      without notice; on a model-shaped failure (404/400/429) the engine
-//      advances to the next model and REMEMBERS the working one for
-//      subsequent requests.
+//      (GEMMA_MODEL + GEMMA_FALLBACK_MODELS). Free-tier or hosted models get
+//      rate-limited or removed without notice; on a model-shaped failure
+//      (404/400/429) the engine advances to the next model and REMEMBERS the
+//      working one for subsequent requests.
 //
 // Health (EWMA latency + consecutive failures) is tracked per provider and
 // used to decide who starts first on the next request.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const GEMMA_MODEL =
-  process.env.GEMMA_MODEL || "@cf/google/gemma-4-26b-a4b-it";
+export const GEMMA_MODEL = process.env.GEMMA_MODEL || "gemma-4-31b";
 
 const DEFAULT_MAX_RETRIES = 1;
 const DEFAULT_RETRY_DELAY_MS = 700;
@@ -314,8 +312,8 @@ function newProviderHealth() {
 }
 
 const providerHealth = {
+  cerebras: newProviderHealth(),
   cloudflare: newProviderHealth(),
-  fallback: newProviderHealth(),
 };
 
 function recordProviderSuccess(providerKey, latencyMs, modelIndex) {
@@ -371,11 +369,15 @@ export function getProviderHealthSnapshot() {
 
 /** Test-only helper: reset all circuit/health state. */
 export function resetProviderHealth() {
+  providerHealth.cerebras = newProviderHealth();
   providerHealth.cloudflare = newProviderHealth();
-  providerHealth.fallback = newProviderHealth();
 }
 
 // ── Provider registry ────────────────────────────────────────────────────────
+
+function isCerebrasConfigured() {
+  return Boolean(process.env.CEREBRAS_API_KEY?.trim());
+}
 
 function isCloudflareConfigured() {
   return Boolean(
@@ -384,44 +386,43 @@ function isCloudflareConfigured() {
   );
 }
 
+/** @deprecated Use isCloudflareConfigured() directly. Kept for server.js compatibility. */
 export function isFallbackConfigured() {
-  const url = process.env.FALLBACK_AI_URL?.trim();
-  const key = process.env.FALLBACK_AI_API_KEY?.trim();
-  return Boolean(url && key);
+  return isCloudflareConfigured();
 }
 
-function getCloudflareModels() {
+function getCerebrasModels() {
   const models = [GEMMA_MODEL, ...parseModelList(process.env.GEMMA_FALLBACK_MODELS)];
   return [...new Set(models)];
 }
 
-function getFallbackModels(defaultModel) {
+function getCloudflareModels() {
   const models = [
-    ...parseModelList(process.env.FALLBACK_AI_MODEL),
-    ...parseModelList(process.env.FALLBACK_AI_MODELS),
+    ...parseModelList(process.env.CLOUDFLARE_AI_MODEL),
+    ...parseModelList(process.env.CLOUDFLARE_AI_MODELS),
   ];
-  if (models.length === 0 && defaultModel) models.push(defaultModel);
+  if (models.length === 0) models.push("@cf/google/gemma-4-26b-a4b-it");
   return [...new Set(models)];
 }
 
 function getProviders(allowFallback) {
   const providers = [];
-  if (isCloudflareConfigured()) {
+  if (isCerebrasConfigured()) {
+    providers.push({
+      key: "cerebras",
+      label: "Cerebras Cloud (Gemma 4 31B)",
+      models: getCerebrasModels(),
+      call: (model, body, signal, opts) =>
+        callCerebras(model, body, signal, opts),
+    });
+  }
+  if (allowFallback && isCloudflareConfigured()) {
     providers.push({
       key: "cloudflare",
       label: "Cloudflare Workers AI",
       models: getCloudflareModels(),
       call: (model, body, signal, opts) =>
         callWorkersAI(process.env.CLOUDFLARE_ACCOUNT_ID.trim(), model, body, signal, opts),
-    });
-  }
-  if (allowFallback && isFallbackConfigured()) {
-    providers.push({
-      key: "fallback",
-      label: "Fallback AI provider (OpenRouter)",
-      models: getFallbackModels(GEMMA_MODEL),
-      call: (model, body, signal, opts) =>
-        callFallbackWithModel(model, body, signal, opts),
     });
   }
   return providers;
@@ -580,7 +581,7 @@ async function fetchChatCompletion(url, headers, payload, signal, opts = {}) {
 // false }` to turn that off, roughly halving wall-clock generation for
 // structured-output workloads like ours. Because not every host tolerates
 // the extra field, it is opt-in per provider:
-//   AI_DISABLE_THINKING = off (default) | fallback | cloudflare | both
+//   AI_DISABLE_THINKING = off (default) | cerebras | cloudflare | both
 function thinkingDisabledFor(providerKey) {
   const mode = (process.env.AI_DISABLE_THINKING || "off").trim().toLowerCase();
   return mode === "both" || mode === providerKey;
@@ -614,75 +615,153 @@ async function callWorkersAI(accountId, model, body, signal, opts) {
   );
 }
 
-// Engine-internal: call the fallback provider with an EXACT model name
-// (the engine's rotation logic owns model selection).
-async function callFallbackWithModel(modelName, body, signal, opts) {
-  const apiUrl = process.env.FALLBACK_AI_URL?.trim();
-  const apiKey = process.env.FALLBACK_AI_API_KEY?.trim();
-  if (!apiUrl || !apiKey) {
-    throw new Error("FALLBACK_AI_URL and FALLBACK_AI_API_KEY are not configured");
+function wrapCerebrasError(error) {
+  // The SDK surfaces caller aborts as APIUserAbortError. Convert to a real
+  // AbortError so the rest of the engine treats it as a cancellation.
+  // Must be checked BEFORE isAbortError() because the transpiled SDK error
+  // has name 'Error' and message 'Request was aborted.', which the broad
+  // isAbortError() regex would otherwise treat as an abort.
+  if (
+    error?.name === "APIUserAbortError" ||
+    error?.constructor?.name === "APIUserAbortError"
+  ) {
+    const abortError = new Error(error.message || "The operation was aborted");
+    abortError.name = "AbortError";
+    return abortError;
+  }
+  if (isAbortError(error)) {
+    return error;
+  }
+  const status = Number(error?.status);
+  if (Number.isFinite(status)) {
+    return new GemmaApiError(
+      status,
+      error.name || "CerebrasError",
+      error.message || String(error),
+      undefined
+    );
+  }
+  if (error?.name?.includes("Timeout") || error?.name === "APIConnectionTimeoutError") {
+    return new GemmaTimeoutError(0);
+  }
+  if (error?.name === "APIConnectionError") {
+    return new GemmaApiError(502, "ConnectionError", error.message || String(error));
+  }
+  return error;
+}
+
+async function callCerebras(model, body, signal, opts) {
+  const apiKey = process.env.CEREBRAS_API_KEY?.trim();
+  if (!apiKey) {
+    throw new Error("CEREBRAS_API_KEY is not configured");
   }
 
-  // OpenRouter attribution headers (harmless on other OpenAI-compatible hosts).
-  const referer =
-    process.env.FALLBACK_AI_REFERER?.trim() || "https://reallearn.site";
+  const { firstByteTimeoutMs = 0, stallTimeoutMs = 0, onActivity } = opts;
 
-  const payload = {
-    model: modelName,
-    messages: body.messages,
-    temperature: body.temperature,
-    max_tokens: body.max_tokens,
-    stream: true,
+  const controller = new AbortController();
+  const forwardAbort = () => controller.abort();
+  signal?.addEventListener("abort", forwardAbort, { once: true });
+
+  let watchdogFired = false;
+  let watchdogAtMs = 0;
+  let watchdogTimer = null;
+  let receivedData = false;
+
+  const disarmWatchdog = () => {
+    if (watchdogTimer) clearTimeout(watchdogTimer);
+    watchdogTimer = null;
   };
-  if (thinkingDisabledFor("fallback")) {
-    payload.chat_template_kwargs = { enable_thinking: false };
-  }
+  const armWatchdog = (ms) => {
+    disarmWatchdog();
+    if (!(ms > 0)) return;
+    watchdogAtMs = ms;
+    watchdogTimer = setTimeout(() => {
+      watchdogFired = true;
+      controller.abort();
+    }, ms);
+  };
+  const activity = () => {
+    receivedData = true;
+    onActivity?.();
+    armWatchdog(stallTimeoutMs);
+  };
 
-  // ULTRA-FAST ROUTING (OpenRouter only — set these envs only when
-  // FALLBACK_AI_URL points at OpenRouter):
-  //   FALLBACK_AI_PROVIDER_ORDER — comma list of hosts to prefer, fastest
-  //     first (e.g. "makora,cloudflare"). Artificial Analysis benchmarks
-  //     Gemma 4 26B A4B hosts from ~277 t/s down to ~23 t/s, so pinning the
-  //     fast host cuts generation time ~3x.
-  //   FALLBACK_AI_SORT — "throughput" | "latency" | "price": how OpenRouter
-  //     ranks the remaining hosts.
-  const providerOrder = parseModelList(process.env.FALLBACK_AI_PROVIDER_ORDER);
-  const providerSort = process.env.FALLBACK_AI_SORT?.trim();
-  if (providerOrder.length > 0 || providerSort) {
-    payload.provider = { allow_fallbacks: true };
-    if (providerOrder.length > 0) payload.provider.order = providerOrder;
-    if (providerSort) payload.provider.sort = providerSort;
-  }
+  armWatchdog(firstByteTimeoutMs);
 
-  return fetchChatCompletion(
-    apiUrl,
-    {
-      Authorization: `Bearer ${apiKey}`,
-      "HTTP-Referer": referer,
-      "X-Title": "RealLearn",
-    },
-    payload,
-    signal,
-    opts
-  );
+  const cerebras = new Cerebras({
+    apiKey,
+    maxRetries: 0,
+    timeout: 600000, // 10 minutes — the engine's own watchdogs + abort handle timeouts.
+    // Use the global fetch so tests can intercept requests with a mock.
+    fetch: globalThis.fetch,
+  });
+
+  try {
+    const stream = await cerebras.chat.completions.create(
+      {
+        model,
+        messages: body.messages,
+        temperature: body.temperature,
+        max_completion_tokens: body.max_tokens,
+        stream: true,
+        top_p: 0.95,
+      },
+      { signal: controller.signal }
+    );
+
+    let fullText = "";
+    for await (const chunk of stream) {
+      activity();
+      const streamError = extractStreamChunkError(chunk);
+      if (streamError) {
+        throw new GemmaApiError(408, "StreamError", streamError);
+      }
+      const token = chunk.choices?.[0]?.delta?.content ?? "";
+      fullText += token;
+    }
+
+    if (!fullText.trim()) {
+      throw new GemmaApiError(
+        502,
+        "EmptyResponse",
+        "Cerebras returned an empty response body"
+      );
+    }
+
+    return { choices: [{ message: { content: fullText } }] };
+  } catch (error) {
+    if (watchdogFired && isAbortError(error)) {
+      const stallError = new GemmaApiError(
+        408,
+        "StallTimeout",
+        `provider sent no data for ${watchdogAtMs}ms (silence watchdog)`
+      );
+      stallError.receivedData = receivedData;
+      throw stallError;
+    }
+    throw wrapCerebrasError(error);
+  } finally {
+    disarmWatchdog();
+    signal?.removeEventListener("abort", forwardAbort);
+  }
 }
 
 /**
- * Direct call to the OpenAI-compatible fallback provider (OpenRouter).
+ * Direct call to the Cloudflare fallback provider.
  * Public because server.js uses it for circuit-independent "last rung"
- * attempts. The `model` argument is only used when no fallback model is
- * configured (callers often pass the Cloudflare model ID, which OpenRouter
- * doesn't know) — otherwise the provider's current preferred model is used.
- * Returns the raw completion payload — pass it through
+ * attempts. Returns the raw completion payload — pass it through
  * extractTextFromResult() to get text.
  */
+export async function callCloudflareAI(model, body, signal) {
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID?.trim();
+  const models = getCloudflareModels();
+  const preferred = models[providerHealth.cloudflare.modelIndex % models.length];
+  return callWorkersAI(accountId, preferred || model, body, signal, {});
+}
+
+/** @deprecated Renamed to callCloudflareAI. Kept for compatibility. */
 export async function callFallbackAI(model, body, signal) {
-  const models = getFallbackModels(null);
-  const preferred =
-    models.length > 0
-      ? models[providerHealth.fallback.modelIndex % models.length]
-      : null;
-  return callFallbackWithModel(preferred || model, body, signal);
+  return callCloudflareAI(model, body, signal);
 }
 
 // Cloudflare Workers AI can report a mid-stream failure (e.g. 408 "error in
@@ -1060,7 +1139,7 @@ export async function callGemma(
 
   if (providers.length === 0) {
     throw new Error(
-      "Either CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID, or FALLBACK_AI_URL and FALLBACK_AI_API_KEY must be configured"
+      "CEREBRAS_API_KEY must be configured, or CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID for fallback-only mode"
     );
   }
   if (enableSearch) {
@@ -1173,15 +1252,15 @@ export async function callGemma(
 // ── Warm-up ──────────────────────────────────────────────────────────────────
 
 /**
- * Warm up the Cloudflare Workers AI model with a minimal request.
- * Cold starts on CF Workers AI can take 10-30s — calling this on server
- * boot loads the model so the first real user request doesn't time out.
+ * Warm up the primary model with a minimal request.
+ * Cloudflare Workers AI cold starts can take 10-30s — when Cloudflare is the
+ * fallback, this also helps keep that model ready. The primary (Cerebras) is
+ * warmed via a tiny non-streaming call.
  */
 export async function warmUpModel() {
-  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID?.trim();
-  const apiToken = process.env.CLOUDFLARE_API_TOKEN?.trim();
-  if (!accountId || !apiToken) {
-    console.log("[AI] Warm-up skipped: missing CLOUDFLARE config");
+  const apiKey = process.env.CEREBRAS_API_KEY?.trim();
+  if (!apiKey) {
+    console.log("[AI] Warm-up skipped: missing CEREBRAS_API_KEY");
     return;
   }
 
@@ -1190,33 +1269,32 @@ export async function warmUpModel() {
   const maxAttempts = 2;
   const warmupTimeoutMs = 60000;
 
+  const cerebras = new Cerebras({
+    apiKey,
+    maxRetries: 0,
+    timeout: warmupTimeoutMs,
+  });
+
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), warmupTimeoutMs);
 
     try {
-      const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/v1/chat/completions`;
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiToken}`,
-          "Content-Type": "application/json",
-          Connection: "keep-alive",
-        },
-        body: JSON.stringify({
+      const result = await cerebras.chat.completions.create(
+        {
           model: GEMMA_MODEL,
           messages: [{ role: "user", content: "Hi" }],
           temperature: 0.7,
-          max_tokens: 5,
+          max_completion_tokens: 5,
           stream: false,
-        }),
-        signal: controller.signal,
-      });
+        },
+        { signal: controller.signal }
+      );
 
       clearTimeout(timeoutId);
       const latencyMs = Date.now() - startedAt;
 
-      if (response.ok) {
+      if (result?.choices?.[0]?.message?.content != null) {
         console.log("[AI] Model warmed up successfully", {
           callId,
           latencyMs,
@@ -1225,13 +1303,10 @@ export async function warmUpModel() {
         return;
       }
 
-      const text = await response.text().catch(() => "");
-      console.warn("[AI] Warm-up received non-OK response (non-fatal)", {
+      console.warn("[AI] Warm-up received empty response (non-fatal)", {
         callId,
-        status: response.status,
         latencyMs,
         attempt: attempt + 1,
-        preview: text.slice(0, 200),
       });
     } catch (error) {
       clearTimeout(timeoutId);
