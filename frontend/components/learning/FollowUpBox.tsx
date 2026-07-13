@@ -47,7 +47,6 @@ export default function FollowUpBox({ onSubmit }: Props) {
           background: "var(--bg-card)",
           color: "var(--text-primary)",
           padding: varSpaceMd,
-          outline: "none",
           fontFamily: "var(--font-inter)",
           fontSize: 14,
         }}

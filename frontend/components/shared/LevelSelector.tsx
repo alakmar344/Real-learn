@@ -35,6 +35,7 @@ export default function LevelSelector({ value, onChange, compact = false }: Prop
         ))}
       </select>
       <span
+        aria-hidden="true"
         style={{
           position: "absolute",
           right: 10,

@@ -24,26 +24,30 @@
   --border-accent: #8a7ff0;
   --border-glow: #b3a8f7;
 
-  /* ── Accent — crayon periwinkle-violet (AA-contrast with white text) ── */
-  --accent: #6d5fe0;
-  --accent-hover: #7e70ec;
-  --accent-dim: rgba(109, 95, 224, 0.09);
-  --accent-glow: rgba(109, 95, 224, 0.16);
+  /* ── Accent — crayon periwinkle-violet.
+     WCAG AA verified: white text on accent 5.39:1; accent as text ≥4.5:1 on
+     bg-primary/surface/card; hover keeps white text at 4.94:1. ── */
+  --accent: #6055e2;
+  --accent-hover: #675ce6;
+  --accent-dim: rgba(96, 85, 226, 0.09);
+  --accent-glow: rgba(96, 85, 226, 0.16);
   --accent-companion: #ef9fc4;   /* cotton-candy pink crayon */
   --accent-gradient: linear-gradient(135deg, #7c6ff0 0%, #f4a6c8 100%); /* periwinkle → pink crayon blend */
   --on-accent: #ffffff;
-  --shadow-glow-accent: 0 2px 14px rgba(109, 95, 224, 0.18);
+  --shadow-glow-accent: 0 2px 14px rgba(96, 85, 226, 0.18);
 
   /* ── Text — warm charcoal (softer than ink, still high contrast) ── */
   --text-primary: #3a3340;
   --text-secondary: #5f5768;
-  --text-tertiary: #8b8394;
-  --text-gold: #e0952f;
+  /* WCAG AA: tertiary 4.62:1 on surface (was 3.1:1); gold 4.5:1. */
+  --text-tertiary: #6e6778;
+  --text-gold: #96600d;
 
   /* ── Semantic — chalky crayon green / red ── */
-  --correct: #4fa87d;
+  /* WCAG AA: correct 4.79:1 / wrong 4.95:1 as text on surface (were <3:1). */
+  --correct: #2f7452;
   --correct-bg: rgba(91, 185, 140, 0.16);
-  --wrong: #e0736e;
+  --wrong: #b03f39;
   --wrong-bg: rgba(232, 131, 127, 0.16);
   --locked: #ddcfba;
 
@@ -157,6 +161,19 @@
   --crayon-flower-2: #ff9800;
   --crayon-flower-3: #9c27b0;
   --crayon-bird: #455a64;
+  /* School, bridge & RealLearn signpost (crayon scene) */
+  --crayon-school-wall: #f5cf6e;
+  --crayon-school-roof: #e2574c;
+  --crayon-school-door: #8b4513;
+  --crayon-school-outline: #5d4037;
+  --crayon-school-flag: #e53935;
+  --crayon-school-sign: #2f6db3;
+  --crayon-school-sign-text: #ffffff;
+  --crayon-school-bell: #f5a623;
+  --crayon-bridge: #b5651d;
+  --crayon-bridge-dark: #8d4e14;
+  --crayon-brand-board: #7c6ff0;
+  --crayon-brand-text: #ffffff;
 }
 
 /* ── Dark theme (Night) — deep, rich, with neon accents ── */
@@ -185,7 +202,8 @@ html[data-theme="dark"] {
 
   --text-primary: #fafafa;
   --text-secondary: #a1a1aa;
-  --text-tertiary: #71717a;
+  /* WCAG AA: 5.53:1 on card (was 3.4:1). */
+  --text-tertiary: #94949e;
   --text-gold: #fbbf24;
 
   --correct: #34d399;
@@ -253,6 +271,19 @@ html[data-theme="dark"] {
   --crayon-flower-2: #6a4a10;
   --crayon-flower-3: #4a1a5a;
   --crayon-bird: #2a3a50;
+  /* School, bridge & RealLearn signpost (crayon scene) */
+  --crayon-school-wall: #3a3222;
+  --crayon-school-roof: #52201c;
+  --crayon-school-door: #2a1a0a;
+  --crayon-school-outline: #2a2018;
+  --crayon-school-flag: #a03030;
+  --crayon-school-sign: #1d3a5c;
+  --crayon-school-sign-text: #cfe0f5;
+  --crayon-school-bell: #8a7a30;
+  --crayon-bridge: #3f2c18;
+  --crayon-bridge-dark: #2e2010;
+  --crayon-brand-board: #4a4090;
+  --crayon-brand-text: #e0e0f5;
 }
 
 /* ── Twilight theme — deep purple vibes with neon pink glow ── */
@@ -349,6 +380,19 @@ html[data-theme="twilight"] {
   --crayon-flower-2: #b06020;
   --crayon-flower-3: #6030a0;
   --crayon-bird: #3a2860;
+  /* School, bridge & RealLearn signpost (crayon scene) */
+  --crayon-school-wall: #43305c;
+  --crayon-school-roof: #70284e;
+  --crayon-school-door: #2a1830;
+  --crayon-school-outline: #2a1a38;
+  --crayon-school-flag: #c05070;
+  --crayon-school-sign: #2e2260;
+  --crayon-school-sign-text: #d8c8f0;
+  --crayon-school-bell: #b08030;
+  --crayon-bridge: #4a3060;
+  --crayon-bridge-dark: #382048;
+  --crayon-brand-board: #6a50b0;
+  --crayon-brand-text: #f0e8ff;
 }
 
 html {

@@ -1,26 +1,64 @@
-export const GEMMA_MODEL = process.env.GEMMA_MODEL || "@cf/google/gemma-4-26b-a4b-it";
+// ─────────────────────────────────────────────────────────────────────────────
+// Multi-provider AI inference engine.
+//
+// Providers:
+//   • "cloudflare" — Cloudflare Workers AI (Gemma), the primary.
+//   • "fallback"   — any OpenAI-compatible endpoint. In production this is
+//                    OpenRouter's free tier, with a rotation list of free
+//                    models (FALLBACK_AI_MODELS).
+//
+// Both providers are individually unreliable, so the engine is built around
+// three ideas that together give the fastest answer that actually succeeds:
+//
+//   1. HEDGED RACING — the healthiest provider starts first; if it hasn't
+//      answered within AI_HEDGE_DELAY_MS (or fails outright), the other
+//      provider is launched IN PARALLEL. First success wins and the loser is
+//      aborted. A slow/dying primary therefore costs at most the hedge delay,
+//      not a full timeout + retry ladder.
+//
+//   2. PER-PROVIDER CIRCUIT BREAKERS — repeated availability failures open
+//      that provider's circuit for a cooldown, so requests route straight to
+//      the healthy provider instead of burning their latency budget on a dead
+//      one. When EVERY circuit is open, the engine still half-open-probes the
+//      provider closest to recovery rather than failing the user outright.
+//
+//   3. MODEL ROTATION — each provider carries an ordered model list
+//      (GEMMA_MODEL + GEMMA_FALLBACK_MODELS / FALLBACK_AI_MODEL +
+//      FALLBACK_AI_MODELS). Free-tier models get rate-limited or removed
+//      without notice; on a model-shaped failure (404/400/429) the engine
+//      advances to the next model and REMEMBERS the working one for
+//      subsequent requests.
+//
+// Health (EWMA latency + consecutive failures) is tracked per provider and
+// used to decide who starts first on the next request.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const GEMMA_MODEL =
+  process.env.GEMMA_MODEL || "@cf/google/gemma-4-26b-a4b-it";
+
 const DEFAULT_MAX_RETRIES = 1;
 const DEFAULT_RETRY_DELAY_MS = 700;
 const DEFAULT_MAX_RETRY_DELAY_MS = 5000;
 // 408 = upstream timeout, usually a cold start on Cloudflare Workers AI.
 // The model needs 10-30s to load — retrying too early just wastes a retry.
-// Wait long enough for the model to actually be ready before retrying.
 const COLD_START_RETRY_DELAY_MS = 15000;
 const COLD_START_MAX_RETRY_DELAY_MS = 45000;
-// Trip the circuit after just 2 consecutive primary timeouts. A degraded
-// Cloudflare endpoint times out on EVERY call (~45s each), so a high threshold
-// means many requests waste their whole latency budget on a dead primary before
-// the circuit finally opens. Tripping early routes requests straight to the
-// healthy fallback provider, which is the key to keeping reliability near 100%
-// during a Cloudflare outage. Override via GEMMA_TIMEOUT_CIRCUIT_FAILURE_THRESHOLD.
-const DEFAULT_TIMEOUT_CIRCUIT_FAILURE_THRESHOLD = 2;
-const DEFAULT_TIMEOUT_CIRCUIT_COOLDOWN_MS = 60000;
+// When another provider is racing in parallel there is no reason to sit out
+// a full cold-start window before retrying — the fallback already covers the
+// user's latency. Cap in-race backoffs low so the loser keeps trying cheaply.
+const RACING_MAX_RETRY_DELAY_MS = 2500;
+// Trip the circuit after 2 consecutive availability failures. A degraded
+// provider times out on EVERY call, so a high threshold means many requests
+// waste their latency budget on a dead provider before the circuit opens.
+const DEFAULT_CIRCUIT_FAILURE_THRESHOLD = 2;
+const DEFAULT_CIRCUIT_COOLDOWN_MS = 60000;
+// How long the leading provider gets to itself before the second provider is
+// hedged in parallel. Low = faster worst-case answers, slightly more traffic
+// to the fallback (relevant for free-tier rate limits).
+const DEFAULT_HEDGE_DELAY_MS = 1500;
 const PARSE_JSON_LOG_PREVIEW_CHARS = 300;
 
-const timeoutCircuitState = {
-  consecutiveTimeouts: 0,
-  openUntil: 0,
-};
+// ── Errors (public API — server.js maps these to friendly client messages) ──
 
 export function formatGemmaTimeoutMessage(timeoutMs) {
   const timeoutSeconds = timeoutMs / 1000;
@@ -57,6 +95,8 @@ export class GemmaCircuitOpenError extends Error {
   }
 }
 
+// ── Env helpers ──────────────────────────────────────────────────────────────
+
 function parseNonNegativeInt(value, fallbackValue) {
   const parsed = Number(value);
   return Number.isFinite(parsed) && Number.isInteger(parsed) && parsed >= 0
@@ -71,6 +111,45 @@ function parsePositiveInt(value, fallbackValue) {
     : fallbackValue;
 }
 
+function parseModelList(value) {
+  if (typeof value !== "string") return [];
+  return value
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+}
+
+function getEngineConfig() {
+  return {
+    maxRetries: parseNonNegativeInt(
+      process.env.GEMMA_MAX_RETRIES,
+      DEFAULT_MAX_RETRIES
+    ),
+    retryDelayMs: parseNonNegativeInt(
+      process.env.GEMMA_RETRY_DELAY_MS,
+      DEFAULT_RETRY_DELAY_MS
+    ),
+    maxRetryDelayMs: parseNonNegativeInt(
+      process.env.GEMMA_MAX_RETRY_DELAY_MS,
+      DEFAULT_MAX_RETRY_DELAY_MS
+    ),
+    circuitFailureThreshold: parsePositiveInt(
+      process.env.GEMMA_TIMEOUT_CIRCUIT_FAILURE_THRESHOLD,
+      DEFAULT_CIRCUIT_FAILURE_THRESHOLD
+    ),
+    circuitCooldownMs: parsePositiveInt(
+      process.env.GEMMA_TIMEOUT_CIRCUIT_COOLDOWN_MS,
+      DEFAULT_CIRCUIT_COOLDOWN_MS
+    ),
+    hedgeDelayMs: parseNonNegativeInt(
+      process.env.AI_HEDGE_DELAY_MS,
+      DEFAULT_HEDGE_DELAY_MS
+    ),
+  };
+}
+
+// ── Text utilities ───────────────────────────────────────────────────────────
+
 function stripThinkingTags(text) {
   const source = typeof text === "string" ? text : String(text ?? "");
   return source
@@ -78,6 +157,8 @@ function stripThinkingTags(text) {
     .replace(/<thinking>[\s\S]*?<\/thinking>/gi, "")
     .trim();
 }
+
+// ── Error classification ─────────────────────────────────────────────────────
 
 // Transient socket/DNS-level failure codes (Node net + undici). Any of these
 // mid-request — including while READING the response body — is worth a retry.
@@ -125,11 +206,11 @@ function isRetryableNetworkGemmaError(error) {
 }
 
 function isRetryableGemmaError(error) {
+  if (error instanceof GemmaTimeoutError) return true;
   if (error instanceof GemmaApiError) {
-    // 408 = upstream request timeout (transient — Cloudflare Workers AI
-    // intermittently returns 408 / "error in input stream"), 429 = rate
-    // limit (transient), 5xx = server error (transient).
-    // 403 is an authorization error — retrying won't help.
+    // 408 = upstream request timeout (transient), 429 = rate limit
+    // (transient), 5xx = server error (transient). 401/403 are auth errors —
+    // retrying won't help. 404/400 are handled via model rotation.
     if (
       error.status === 408 ||
       error.status === 429 ||
@@ -145,43 +226,30 @@ function isRetryableGemmaError(error) {
   return isRetryableNetworkGemmaError(error);
 }
 
-function isGemmaServiceUnavailableError(error) {
+// Failures that indicate the PROVIDER is unavailable (feeds the circuit
+// breaker). Auth/validation errors do not count — the provider answered.
+function isAvailabilityFailure(error) {
   return (
     error instanceof GemmaTimeoutError ||
-    error instanceof GemmaCircuitOpenError ||
     (error instanceof GemmaApiError &&
       (error.status === 408 || error.status === 429 || error.status >= 500)) ||
     isRetryableNetworkGemmaError(error)
   );
 }
 
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+// A model-shaped failure: this specific model is missing/invalid/throttled.
+// Worth rotating to the next model in the provider's list.
+function isModelRotationFailure(error) {
+  return (
+    error instanceof GemmaApiError &&
+    (error.status === 400 || error.status === 404 || error.status === 429)
+  );
 }
 
-function assertTimeoutCircuitClosed() {
-  const now = Date.now();
-  if (timeoutCircuitState.openUntil > now) {
-    throw new GemmaCircuitOpenError(timeoutCircuitState.openUntil - now);
-  }
-}
-
-function recordTimeoutFailure(failureThreshold, cooldownMs) {
-  timeoutCircuitState.consecutiveTimeouts += 1;
-  if (timeoutCircuitState.consecutiveTimeouts >= failureThreshold) {
-    timeoutCircuitState.openUntil = Date.now() + cooldownMs;
-    timeoutCircuitState.consecutiveTimeouts = 0;
-    console.warn(
-      `[Gemma] Timeout circuit opened for ${cooldownMs}ms after repeated timeouts`
-    );
-    return true;
-  }
-  return false;
-}
-
-function resetTimeoutCircuit() {
-  timeoutCircuitState.consecutiveTimeouts = 0;
-  timeoutCircuitState.openUntil = 0;
+function isGemmaServiceUnavailableError(error) {
+  return (
+    error instanceof GemmaCircuitOpenError || isAvailabilityFailure(error)
+  );
 }
 
 function isAbortError(error) {
@@ -192,25 +260,203 @@ function isAbortError(error) {
   );
 }
 
-async function callWorkersAI(accountId, model, body, signal) {
-  const apiToken = process.env.CLOUDFLARE_API_TOKEN.trim();
-  const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/v1/chat/completions`;
+// ── Small async utilities ────────────────────────────────────────────────────
 
-  const payload = {
-    model,
-    messages: body.messages,
-    temperature: body.temperature,
-    max_tokens: body.max_tokens,
-    stream: false,
+function sleep(ms, signal) {
+  return new Promise((resolve) => {
+    if (signal?.aborted) return resolve();
+    const timer = setTimeout(() => {
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    }, ms);
+    const onAbort = () => {
+      clearTimeout(timer);
+      resolve();
+    };
+    signal?.addEventListener("abort", onAbort, { once: true });
+  });
+}
+
+// Full jitter keeps concurrent retries from stampeding a recovering provider.
+function jitter(ms) {
+  return Math.max(50, Math.round(ms / 2 + Math.random() * (ms / 2)));
+}
+
+// ── Provider health / circuit breakers ───────────────────────────────────────
+
+function newProviderHealth() {
+  return {
+    consecutiveFailures: 0,
+    openUntil: 0,
+    ewmaLatencyMs: null,
+    modelIndex: 0,
+    lastErrorName: null,
+    lastSuccessAt: 0,
   };
+}
 
+const providerHealth = {
+  cloudflare: newProviderHealth(),
+  fallback: newProviderHealth(),
+};
+
+function recordProviderSuccess(providerKey, latencyMs, modelIndex) {
+  const health = providerHealth[providerKey];
+  health.consecutiveFailures = 0;
+  health.openUntil = 0;
+  health.lastErrorName = null;
+  health.lastSuccessAt = Date.now();
+  health.modelIndex = modelIndex;
+  health.ewmaLatencyMs =
+    health.ewmaLatencyMs == null
+      ? latencyMs
+      : Math.round(health.ewmaLatencyMs * 0.7 + latencyMs * 0.3);
+}
+
+function recordProviderFailure(providerKey, error, config) {
+  const health = providerHealth[providerKey];
+  health.lastErrorName = error?.name ?? "Error";
+  if (!isAvailabilityFailure(error)) return false;
+  health.consecutiveFailures += 1;
+  if (health.consecutiveFailures >= config.circuitFailureThreshold) {
+    health.openUntil = Date.now() + config.circuitCooldownMs;
+    health.consecutiveFailures = 0;
+    console.warn(
+      `[AI] Circuit opened for provider "${providerKey}" (${config.circuitCooldownMs}ms cooldown)`
+    );
+    return true;
+  }
+  return false;
+}
+
+function isCircuitOpen(providerKey) {
+  return providerHealth[providerKey].openUntil > Date.now();
+}
+
+/** Introspection for /health-style endpoints and tests. */
+export function getProviderHealthSnapshot() {
+  const now = Date.now();
+  const snapshot = {};
+  for (const [key, health] of Object.entries(providerHealth)) {
+    snapshot[key] = {
+      circuitOpen: health.openUntil > now,
+      circuitOpenForMs: Math.max(0, health.openUntil - now),
+      consecutiveFailures: health.consecutiveFailures,
+      ewmaLatencyMs: health.ewmaLatencyMs,
+      lastErrorName: health.lastErrorName,
+      lastSuccessAt: health.lastSuccessAt || null,
+      preferredModelIndex: health.modelIndex,
+    };
+  }
+  return snapshot;
+}
+
+/** Test-only helper: reset all circuit/health state. */
+export function resetProviderHealth() {
+  providerHealth.cloudflare = newProviderHealth();
+  providerHealth.fallback = newProviderHealth();
+}
+
+// ── Provider registry ────────────────────────────────────────────────────────
+
+function isCloudflareConfigured() {
+  return Boolean(
+    process.env.CLOUDFLARE_API_TOKEN?.trim() &&
+      process.env.CLOUDFLARE_ACCOUNT_ID?.trim()
+  );
+}
+
+export function isFallbackConfigured() {
+  const url = process.env.FALLBACK_AI_URL?.trim();
+  const key = process.env.FALLBACK_AI_API_KEY?.trim();
+  return Boolean(url && key);
+}
+
+function getCloudflareModels() {
+  const models = [GEMMA_MODEL, ...parseModelList(process.env.GEMMA_FALLBACK_MODELS)];
+  return [...new Set(models)];
+}
+
+function getFallbackModels(defaultModel) {
+  const models = [
+    ...parseModelList(process.env.FALLBACK_AI_MODEL),
+    ...parseModelList(process.env.FALLBACK_AI_MODELS),
+  ];
+  if (models.length === 0 && defaultModel) models.push(defaultModel);
+  return [...new Set(models)];
+}
+
+function getProviders(allowFallback) {
+  const providers = [];
+  if (isCloudflareConfigured()) {
+    providers.push({
+      key: "cloudflare",
+      label: "Cloudflare Workers AI",
+      models: getCloudflareModels(),
+      call: (model, body, signal) =>
+        callWorkersAI(process.env.CLOUDFLARE_ACCOUNT_ID.trim(), model, body, signal),
+    });
+  }
+  if (allowFallback && isFallbackConfigured()) {
+    providers.push({
+      key: "fallback",
+      label: "Fallback AI provider (OpenRouter)",
+      models: getFallbackModels(GEMMA_MODEL),
+      call: (model, body, signal) => callFallbackWithModel(model, body, signal),
+    });
+  }
+  return providers;
+}
+
+// Healthiest first: closed circuits before open ones, then lowest observed
+// latency, then registry order (Cloudflare first) as a stable tiebreak.
+function orderProviders(providers) {
+  return [...providers].sort((a, b) => {
+    const openA = isCircuitOpen(a.key) ? 1 : 0;
+    const openB = isCircuitOpen(b.key) ? 1 : 0;
+    if (openA !== openB) return openA - openB;
+    const latencyA = providerHealth[a.key].ewmaLatencyMs ?? Infinity;
+    const latencyB = providerHealth[b.key].ewmaLatencyMs ?? Infinity;
+    if (latencyA !== latencyB) return latencyA - latencyB;
+    return 0;
+  });
+}
+
+// ── HTTP layer ───────────────────────────────────────────────────────────────
+
+function parseRetryAfterMs(response) {
+  const header = response.headers.get("Retry-After");
+  if (typeof header !== "string") return undefined;
+  const parsed = Number(header);
+  if (Number.isFinite(parsed) && parsed > 0) return parsed * 1000;
+  return undefined;
+}
+
+async function readErrorDetails(response, contentType) {
+  try {
+    if (contentType.includes("application/json")) {
+      const errBody = await response.json();
+      return (
+        errBody.errors?.[0]?.message ||
+        errBody.error?.message ||
+        (typeof errBody.error === "string" ? errBody.error : null) ||
+        JSON.stringify(errBody)
+      );
+    }
+    return (await response.text()).slice(0, 500);
+  } catch {
+    return response.statusText;
+  }
+}
+
+async function fetchChatCompletion(url, headers, payload, signal) {
   const response = await fetch(url, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${apiToken}`,
       "Content-Type": "application/json",
       Connection: "keep-alive",
       "Accept-Encoding": "gzip, deflate, br",
+      ...headers,
     },
     body: JSON.stringify(payload),
     signal,
@@ -219,27 +465,14 @@ async function callWorkersAI(accountId, model, body, signal) {
   const contentType = response.headers.get("content-type") || "";
 
   if (!response.ok) {
-    let details = response.statusText;
-    let retryAfterMs;
-    try {
-      const retryAfterHeader = response.headers.get("Retry-After");
-      if (typeof retryAfterHeader === "string") {
-        const parsed = Number(retryAfterHeader);
-        if (Number.isFinite(parsed) && parsed > 0) {
-          retryAfterMs = parsed * 1000;
-        }
-      }
-      if (contentType.includes("application/json")) {
-        const errBody = await response.json();
-        details =
-          errBody.errors?.[0]?.message ||
-          errBody.error ||
-          JSON.stringify(errBody);
-      } else {
-        details = (await response.text()).slice(0, 500);
-      }
-    } catch {}
-    throw new GemmaApiError(response.status, response.statusText, details, retryAfterMs);
+    const retryAfterMs = parseRetryAfterMs(response);
+    const details = await readErrorDetails(response, contentType);
+    throw new GemmaApiError(
+      response.status,
+      response.statusText,
+      details,
+      retryAfterMs
+    );
   }
 
   if (contentType.includes("text/event-stream")) {
@@ -248,29 +481,87 @@ async function callWorkersAI(accountId, model, body, signal) {
 
   if (!contentType.includes("application/json")) {
     const text = await response.text();
-    console.log("[Gemma] non-JSON response:", text.slice(0, 300));
     return text;
   }
 
   const data = await response.json();
-  console.log("[Gemma] API response keys:", Object.keys(data));
   if (data.error) {
-    const retryAfterMs = (() => {
-      const header = response.headers.get("Retry-After");
-      if (typeof header === "string") {
-        const parsed = Number(header);
-        if (Number.isFinite(parsed) && parsed > 0) return parsed * 1000;
-      }
-      return undefined;
-    })();
     throw new GemmaApiError(
       data.error.code || 500,
       "APIError",
       data.error.message || JSON.stringify(data.error),
-      retryAfterMs
+      parseRetryAfterMs(response)
     );
   }
   return data;
+}
+
+async function callWorkersAI(accountId, model, body, signal) {
+  const apiToken = process.env.CLOUDFLARE_API_TOKEN?.trim();
+  if (!apiToken) {
+    throw new Error("CLOUDFLARE_API_TOKEN is not configured");
+  }
+  const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/v1/chat/completions`;
+  return fetchChatCompletion(
+    url,
+    { Authorization: `Bearer ${apiToken}` },
+    {
+      model,
+      messages: body.messages,
+      temperature: body.temperature,
+      max_tokens: body.max_tokens,
+      stream: false,
+    },
+    signal
+  );
+}
+
+// Engine-internal: call the fallback provider with an EXACT model name
+// (the engine's rotation logic owns model selection).
+async function callFallbackWithModel(modelName, body, signal) {
+  const apiUrl = process.env.FALLBACK_AI_URL?.trim();
+  const apiKey = process.env.FALLBACK_AI_API_KEY?.trim();
+  if (!apiUrl || !apiKey) {
+    throw new Error("FALLBACK_AI_URL and FALLBACK_AI_API_KEY are not configured");
+  }
+
+  // OpenRouter attribution headers (harmless on other OpenAI-compatible hosts).
+  const referer =
+    process.env.FALLBACK_AI_REFERER?.trim() || "https://reallearn.site";
+
+  return fetchChatCompletion(
+    apiUrl,
+    {
+      Authorization: `Bearer ${apiKey}`,
+      "HTTP-Referer": referer,
+      "X-Title": "RealLearn",
+    },
+    {
+      model: modelName,
+      messages: body.messages,
+      temperature: body.temperature,
+      max_tokens: body.max_tokens,
+    },
+    signal
+  );
+}
+
+/**
+ * Direct call to the OpenAI-compatible fallback provider (OpenRouter).
+ * Public because server.js uses it for circuit-independent "last rung"
+ * attempts. The `model` argument is only used when no fallback model is
+ * configured (callers often pass the Cloudflare model ID, which OpenRouter
+ * doesn't know) — otherwise the provider's current preferred model is used.
+ * Returns the raw completion payload — pass it through
+ * extractTextFromResult() to get text.
+ */
+export async function callFallbackAI(model, body, signal) {
+  const models = getFallbackModels(null);
+  const preferred =
+    models.length > 0
+      ? models[providerHealth.fallback.modelIndex % models.length]
+      : null;
+  return callFallbackWithModel(preferred || model, body, signal);
 }
 
 // Cloudflare Workers AI can report a mid-stream failure (e.g. 408 "error in
@@ -372,85 +663,232 @@ export function extractTextFromResult(result) {
   return text;
 }
 
-export function isFallbackConfigured() {
-  const url = process.env.FALLBACK_AI_URL?.trim();
-  const key = process.env.FALLBACK_AI_API_KEY?.trim();
-  return Boolean(url && key);
+// ── Provider runner: retries + model rotation for ONE provider ──────────────
+
+class ProviderExhaustedError extends Error {
+  constructor(providerKey, cause) {
+    super(`Provider "${providerKey}" exhausted all attempts: ${cause?.message}`);
+    this.name = "ProviderExhaustedError";
+    this.providerKey = providerKey;
+    this.cause = cause;
+  }
 }
 
-export async function callFallbackAI(model, body, signal) {
-  const apiUrl = process.env.FALLBACK_AI_URL.trim();
-  const apiKey = process.env.FALLBACK_AI_API_KEY.trim();
-  const modelName = process.env.FALLBACK_AI_MODEL?.trim() || model;
+async function runProviderAttempts(provider, request, config, raceState) {
+  const { messages, temperature, maxOutputTokens, timeoutMs, callId, parentSignal, raceSignal } = request;
+  const health = providerHealth[provider.key];
+  const models = provider.models.length > 0 ? provider.models : [GEMMA_MODEL];
+  let lastError = null;
 
-  const payload = {
-    model: modelName,
-    messages: body.messages,
-    temperature: body.temperature,
-    max_tokens: body.max_tokens,
-  };
-
-  const response = await fetch(apiUrl, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-      Connection: "keep-alive",
-      "Accept-Encoding": "gzip, deflate, br",
-    },
-    body: JSON.stringify(payload),
-    signal,
-  });
-
-  const contentType = response.headers.get("content-type") || "";
-
-  if (!response.ok) {
-    let details = response.statusText;
-    let retryAfterMs;
-    try {
-      const retryAfterHeader = response.headers.get("Retry-After");
-      if (typeof retryAfterHeader === "string") {
-        const parsed = Number(retryAfterHeader);
-        if (Number.isFinite(parsed) && parsed > 0) {
-          retryAfterMs = parsed * 1000;
-        }
-      }
-      if (contentType.includes("application/json")) {
-        const errBody = await response.json();
-        details =
-          errBody.errors?.[0]?.message ||
-          errBody.error ||
-          JSON.stringify(errBody);
-      } else {
-        details = (await response.text()).slice(0, 500);
-      }
-    } catch {}
-    throw new GemmaApiError(response.status, response.statusText, details, retryAfterMs);
-  }
-
-  if (contentType.includes("application/json")) {
-    const data = await response.json();
-    if (data.error) {
-      const retryAfterMs = (() => {
-        const header = response.headers.get("Retry-After");
-        if (typeof header === "string") {
-          const parsed = Number(header);
-          if (Number.isFinite(parsed) && parsed > 0) return parsed * 1000;
-        }
-        return undefined;
-      })();
-      throw new GemmaApiError(
-        data.error.code || 500,
-        "APIError",
-        data.error.message || JSON.stringify(data.error),
-        retryAfterMs
-      );
+  for (let attempt = 0; attempt <= config.maxRetries; attempt++) {
+    if (parentSignal?.aborted || raceSignal?.aborted) {
+      const abortError = new Error("The operation was aborted");
+      abortError.name = "AbortError";
+      throw abortError;
     }
-    return data;
+
+    // Always use the provider's CURRENT preferred model — rotation on a
+    // model-shaped failure advances it, and success pins it for next time.
+    const modelIndex = health.modelIndex % models.length;
+    const model = models[modelIndex];
+
+    const controller = new AbortController();
+    let timeoutTriggered = false;
+    const abortForwarder = () => controller.abort();
+    parentSignal?.addEventListener("abort", abortForwarder, { once: true });
+    raceSignal?.addEventListener("abort", abortForwarder, { once: true });
+    const timeoutId = setTimeout(() => {
+      timeoutTriggered = true;
+      controller.abort();
+    }, timeoutMs);
+
+    const startedAt = Date.now();
+    try {
+      console.log("[AI] attempt start", {
+        callId,
+        provider: provider.key,
+        model,
+        attempt: attempt + 1,
+        maxAttempts: config.maxRetries + 1,
+      });
+
+      const result = await provider.call(
+        model,
+        { messages, temperature, max_tokens: maxOutputTokens },
+        controller.signal
+      );
+      const text = extractTextFromResult(result);
+
+      const latencyMs = Date.now() - startedAt;
+      recordProviderSuccess(provider.key, latencyMs, modelIndex);
+      console.log("[AI] attempt success", {
+        callId,
+        provider: provider.key,
+        model,
+        attempt: attempt + 1,
+        latencyMs,
+        textLength: text.length,
+      });
+      return text;
+    } catch (rawError) {
+      let error = rawError;
+
+      if (isAbortError(rawError)) {
+        if (timeoutTriggered) {
+          error = new GemmaTimeoutError(timeoutMs);
+        } else {
+          // Aborted by the caller or because the other provider already won —
+          // propagate untouched; the orchestrator ignores race-cancellations.
+          throw rawError;
+        }
+      }
+
+      lastError = error;
+      recordProviderFailure(provider.key, error, config);
+      console.warn("[AI] attempt failed", {
+        callId,
+        provider: provider.key,
+        model,
+        attempt: attempt + 1,
+        latencyMs: Date.now() - startedAt,
+        errorName: error?.name,
+        errorMessage: error?.message,
+      });
+
+      // Rotate away from a model this provider says is bad/throttled, so the
+      // NEXT attempt (and the next request) starts from a healthier model.
+      if (isModelRotationFailure(error) && models.length > 1) {
+        health.modelIndex = (modelIndex + 1) % models.length;
+        console.warn("[AI] rotating model", {
+          callId,
+          provider: provider.key,
+          from: model,
+          to: models[health.modelIndex],
+        });
+      }
+
+      const isLastAttempt = attempt === config.maxRetries;
+      if (isLastAttempt || !isRetryableGemmaError(error)) {
+        throw new ProviderExhaustedError(provider.key, error);
+      }
+
+      // Backoff before the next attempt. Timeouts on Cloudflare usually mean
+      // a cold model — wait long enough for it to load, unless another
+      // provider is racing (then keep the loser's retries cheap and quick).
+      const isColdStart =
+        error instanceof GemmaTimeoutError ||
+        (error instanceof GemmaApiError && error.status === 408);
+      const racing = raceState?.othersRunning?.() ?? false;
+      const baseDelay = isColdStart ? COLD_START_RETRY_DELAY_MS : config.retryDelayMs;
+      const cap = racing
+        ? RACING_MAX_RETRY_DELAY_MS
+        : isColdStart
+          ? COLD_START_MAX_RETRY_DELAY_MS
+          : config.maxRetryDelayMs;
+      const waitMs = error.retryAfterMs
+        ? Math.min(error.retryAfterMs, cap)
+        : Math.min(jitter(baseDelay * Math.pow(2, attempt)), cap);
+      console.warn("[AI] retry scheduled", {
+        callId,
+        provider: provider.key,
+        attempt: attempt + 1,
+        waitMs,
+        isColdStart,
+        racing,
+      });
+      await sleep(waitMs, raceSignal ?? parentSignal);
+    } finally {
+      clearTimeout(timeoutId);
+      parentSignal?.removeEventListener("abort", abortForwarder);
+      raceSignal?.removeEventListener("abort", abortForwarder);
+    }
   }
 
-  return await response.text();
+  throw new ProviderExhaustedError(provider.key, lastError);
 }
+
+// ── Hedged race orchestrator ─────────────────────────────────────────────────
+
+function pickBestError(errors) {
+  const meaningful = errors.filter(Boolean);
+  if (meaningful.length === 0) {
+    return new Error("Unable to generate lesson after exhausting retries");
+  }
+  // Unwrap provider-exhausted wrappers so server.js sees the real cause.
+  const unwrapped = meaningful.map((e) =>
+    e instanceof ProviderExhaustedError && e.cause ? e.cause : e
+  );
+  // Prefer a concrete provider error over "circuit was open".
+  const concrete = unwrapped.find((e) => !(e instanceof GemmaCircuitOpenError));
+  return concrete ?? unwrapped[0];
+}
+
+/**
+ * Race providers with hedging:
+ *  - launch the first (healthiest) provider immediately;
+ *  - if it fails, launch the next one instantly (fail-fast);
+ *  - if it is merely SLOW, launch the next one after hedgeDelayMs anyway;
+ *  - first success wins, all other in-flight attempts are aborted.
+ */
+function hedgedRace(starters, hedgeDelayMs, onWinner) {
+  return new Promise((resolve, reject) => {
+    const errors = new Array(starters.length);
+    let nextIndex = 0;
+    let running = 0;
+    let finished = false;
+    let hedgeTimer = null;
+
+    const othersRunning = () => running > 1;
+
+    const settleReject = () => {
+      if (!finished && running === 0 && nextIndex >= starters.length) {
+        finished = true;
+        if (hedgeTimer) clearTimeout(hedgeTimer);
+        reject(pickBestError(errors));
+      }
+    };
+
+    const scheduleHedge = () => {
+      if (finished || nextIndex >= starters.length) return;
+      hedgeTimer = setTimeout(launchNext, hedgeDelayMs);
+    };
+
+    const launchNext = () => {
+      if (finished || nextIndex >= starters.length) return;
+      if (hedgeTimer) {
+        clearTimeout(hedgeTimer);
+        hedgeTimer = null;
+      }
+      const index = nextIndex++;
+      running += 1;
+      starters[index]({ othersRunning }).then(
+        (value) => {
+          running -= 1;
+          if (finished) return;
+          finished = true;
+          if (hedgeTimer) clearTimeout(hedgeTimer);
+          onWinner?.(index);
+          resolve(value);
+        },
+        (error) => {
+          running -= 1;
+          errors[index] = error;
+          if (finished) return;
+          // Fail-fast: a dead provider shouldn't make the user wait for the
+          // hedge timer — bring in the next provider immediately.
+          // (launchNext re-arms the hedge timer for any remaining starters.)
+          launchNext();
+          settleReject();
+        }
+      );
+      scheduleHedge();
+    };
+
+    launchNext();
+  });
+}
+
+// ── Public entrypoint ────────────────────────────────────────────────────────
 
 export async function callGemma(
   systemPrompt,
@@ -462,609 +900,128 @@ export async function callGemma(
   maxOutputTokens = 4000,
   allowFallback = true
 ) {
-  const hasFallbackConfig = isFallbackConfigured();
-  const hasCloudflareConfig = Boolean(
-    process.env.CLOUDFLARE_API_TOKEN?.trim() &&
-      process.env.CLOUDFLARE_ACCOUNT_ID?.trim()
-  );
+  const config = getEngineConfig();
+  const providers = getProviders(allowFallback);
 
-  const providerOrder = hasCloudflareConfig && hasFallbackConfig
-    ? ["cloudflare", "fallback"]
-    : hasCloudflareConfig
-      ? ["cloudflare"]
-      : ["fallback"];
-  const primaryProvider = providerOrder[0];
-  const secondaryProvider = providerOrder[1] ?? null;
-
-  if (!hasCloudflareConfig && !hasFallbackConfig) {
+  if (providers.length === 0) {
     throw new Error(
       "Either CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID, or FALLBACK_AI_URL and FALLBACK_AI_API_KEY must be configured"
     );
   }
   if (enableSearch) {
     console.warn(
-      "[Gemma] enableSearch requested but web-search grounding is not supported; continuing without it"
+      "[AI] enableSearch requested but web-search grounding is not supported; continuing without it"
     );
   }
-  const callId = `gemma-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-  const model = GEMMA_MODEL;
+
+  const callId = `ai-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const sanitizedSystemPrompt = stripThinkingTags(systemPrompt);
-  const maxRetries = parseNonNegativeInt(
-    process.env.GEMMA_MAX_RETRIES,
-    DEFAULT_MAX_RETRIES
-  );
-  const retryDelayMs = parseNonNegativeInt(
-    process.env.GEMMA_RETRY_DELAY_MS,
-    DEFAULT_RETRY_DELAY_MS
-  );
-  const maxRetryDelayMs = parseNonNegativeInt(
-    process.env.GEMMA_MAX_RETRY_DELAY_MS,
-    DEFAULT_MAX_RETRY_DELAY_MS
-  );
-  const timeoutCircuitFailureThreshold = parsePositiveInt(
-    process.env.GEMMA_TIMEOUT_CIRCUIT_FAILURE_THRESHOLD,
-    DEFAULT_TIMEOUT_CIRCUIT_FAILURE_THRESHOLD
-  );
-  const timeoutCircuitCooldownMs = parsePositiveInt(
-    process.env.GEMMA_TIMEOUT_CIRCUIT_COOLDOWN_MS,
-    DEFAULT_TIMEOUT_CIRCUIT_COOLDOWN_MS
-  );
-  console.log("[Gemma] callGemma invoked", {
+  const messages = [
+    { role: "system", content: sanitizedSystemPrompt },
+    { role: "user", content: userMessage },
+  ];
+
+  // Circuit gate. Providers with open circuits are skipped — UNLESS that
+  // would leave nothing to try, in which case we half-open-probe the provider
+  // closest to recovery instead of failing the user with a "come back later".
+  let candidates = providers.filter((p) => !isCircuitOpen(p.key));
+  let halfOpenProbe = false;
+  if (candidates.length === 0) {
+    const soonest = [...providers].sort(
+      (a, b) => providerHealth[a.key].openUntil - providerHealth[b.key].openUntil
+    )[0];
+    candidates = [soonest];
+    halfOpenProbe = true;
+  }
+  const ordered = orderProviders(candidates);
+
+  console.log("[AI] callGemma invoked", {
     callId,
-    model,
-    providerOrder,
-    primaryProvider,
-    secondaryProvider,
-    maxRetries,
-    retryDelayMs,
-    maxRetryDelayMs,
+    providerOrder: ordered.map((p) => p.key),
+    halfOpenProbe,
+    hedgeDelayMs: config.hedgeDelayMs,
+    maxRetries: config.maxRetries,
     timeoutMs,
-    timeoutCircuitFailureThreshold,
-    timeoutCircuitCooldownMs,
-    enableSearch,
     temperature,
+    maxOutputTokens,
     systemPromptLength: sanitizedSystemPrompt?.length ?? 0,
     userMessageLength: userMessage?.length ?? 0,
+    health: getProviderHealthSnapshot(),
   });
-  assertTimeoutCircuitClosed();
 
-  if (hasCloudflareConfig && hasFallbackConfig) {
-    async function callProvider(provider, messages, providerSignal) {
-      if (provider === "fallback") {
-        return callFallbackAI(
-          model,
-          { messages, temperature, max_tokens: maxOutputTokens },
-          providerSignal
-        );
-      }
-      return callWorkersAI(
-        process.env.CLOUDFLARE_ACCOUNT_ID.trim(),
-        model,
-        { messages, temperature, max_tokens: maxOutputTokens },
-        providerSignal
-      );
-    }
+  // Losers get aborted through this controller the moment a winner lands.
+  const raceController = new AbortController();
+  const abortRaceFromParent = () => raceController.abort();
+  signal?.addEventListener("abort", abortRaceFromParent, { once: true });
 
-    function providerLabel(provider) {
-      return provider === "fallback"
-        ? "Fallback AI provider"
-        : "Cloudflare Workers AI";
-    }
-
-    let lastError = null;
-
-    for (const provider of providerOrder) {
-      const providerLabelValue = providerLabel(provider);
-      for (let attempt = 0; attempt <= maxRetries; attempt++) {
-        console.log("[Gemma] attempt start", {
-          callId,
-          model,
-          provider: providerLabelValue,
-          providerKey: provider,
-          attempt: attempt + 1,
-          maxAttempts: maxRetries + 1,
-        });
-        const controller = new AbortController();
-        const internalSignal = controller.signal;
-        let removeParentAbortListener = null;
-        let parentAbortTriggered = false;
-        let timeoutTriggered = false;
-        if (signal) {
-          const abortFromParent = () => {
-            parentAbortTriggered = true;
-            controller.abort();
-          };
-          signal.addEventListener("abort", abortFromParent, { once: true });
-          removeParentAbortListener = () => {
-            signal.removeEventListener("abort", abortFromParent);
-          };
-        }
-
-        const timeoutId = setTimeout(() => {
-          timeoutTriggered = true;
-          controller.abort();
-        }, timeoutMs);
-
-        try {
-          const startedAt = Date.now();
-          console.log("[Gemma] API request", {
-            callId,
-            model,
-            provider: providerLabelValue,
-            providerKey: provider,
-            attempt: attempt + 1,
-          });
-
-          const messages = [
-            { role: "system", content: sanitizedSystemPrompt },
-            { role: "user", content: userMessage },
-          ];
-
-          const result = await callProvider(
-            provider,
-            messages,
-            internalSignal
-          );
-
-          clearTimeout(timeoutId);
-          removeParentAbortListener?.();
-          console.log("[Gemma] response received", {
-            callId,
-            model,
-            provider: providerLabelValue,
-            providerKey: provider,
-            attempt: attempt + 1,
-            latencyMs: Date.now() - startedAt,
-          });
-
-          console.log("[Gemma] raw result structure", {
-            callId,
-            type: typeof result,
-            keys: typeof result === "object" ? Object.keys(result) : null,
-            preview: JSON.stringify(result).slice(0, 500),
-          });
-
-          const text = extractTextFromResult(result);
-
-          console.log("[Gemma] parsed response text", {
-            callId,
-            model,
-            provider: providerLabelValue,
-            providerKey: provider,
-            attempt: attempt + 1,
-            textLength: text.length,
-            textPreview: text.slice(0, 300),
-          });
-
-          resetTimeoutCircuit();
-          console.log("[Gemma] callGemma success", {
-            callId,
-            model,
-            provider: providerLabelValue,
-            providerKey: provider,
-            attempt: attempt + 1,
-          });
-          return text;
-        } catch (error) {
-          clearTimeout(timeoutId);
-          removeParentAbortListener?.();
-
-          if (isAbortError(error)) {
-            if (timeoutTriggered) {
-              console.warn("[Gemma] request timed out", {
-                callId,
-                model,
-                provider: providerLabelValue,
-                providerKey: provider,
-                attempt: attempt + 1,
-                timeoutMs,
-              });
-              const timeoutError = new GemmaTimeoutError(timeoutMs);
-              lastError = timeoutError;
-              const circuitOpened = recordTimeoutFailure(
-                timeoutCircuitFailureThreshold,
-                timeoutCircuitCooldownMs
-              );
-              if (circuitOpened) {
-                throw new GemmaCircuitOpenError(timeoutCircuitCooldownMs);
-              }
-              if (attempt < maxRetries) {
-                const waitMs = Math.min(
-                  COLD_START_RETRY_DELAY_MS * Math.pow(2, attempt),
-                  COLD_START_MAX_RETRY_DELAY_MS
-                );
-                console.warn("[Gemma] Timeout — waiting for cold start before retry", {
-                  callId,
-                  model,
-                  provider: providerLabelValue,
-                  providerKey: provider,
-                  attempt: attempt + 1,
-                  waitMs,
-                });
-                await sleep(waitMs);
-              }
-              continue;
-            }
-            if (parentAbortTriggered || signal?.aborted) {
-              console.warn("[Gemma] request aborted by caller", {
-                callId,
-                model,
-                provider: providerLabelValue,
-                providerKey: provider,
-                attempt: attempt + 1,
-              });
-              throw error;
-            }
-            console.warn("[Gemma] request aborted", {
-              callId,
-              model,
-              provider: providerLabelValue,
-              providerKey: provider,
-              attempt: attempt + 1,
-            });
-            throw error;
-          }
-
-          const normalizedError = error;
-          console.warn("[Gemma] attempt failed", {
-            callId,
-            model,
-            provider: providerLabelValue,
-            providerKey: provider,
-            attempt: attempt + 1,
-            errorName: normalizedError?.name,
-            errorMessage: normalizedError?.message,
-          });
-          lastError = normalizedError;
-          if (normalizedError instanceof GemmaTimeoutError) {
-            const circuitOpened = recordTimeoutFailure(
-              timeoutCircuitFailureThreshold,
-              timeoutCircuitCooldownMs
-            );
-            if (circuitOpened) {
-              throw new GemmaCircuitOpenError(timeoutCircuitCooldownMs);
-            }
-          }
-
-          const isLastAttempt = attempt === maxRetries;
-          if (!isLastAttempt && isRetryableGemmaError(normalizedError)) {
-            const isColdStart =
-              normalizedError instanceof GemmaApiError && normalizedError.status === 408;
-            const baseDelay = isColdStart ? COLD_START_RETRY_DELAY_MS : retryDelayMs;
-            const cap = isColdStart ? COLD_START_MAX_RETRY_DELAY_MS : maxRetryDelayMs;
-            const waitMs = normalizedError.retryAfterMs
-              ? Math.min(normalizedError.retryAfterMs, cap)
-              : Math.min(baseDelay * Math.pow(2, attempt), cap);
-            console.warn(
-              `[Gemma] Retrying after attempt ${attempt + 1} failed`
-            );
-            console.warn("[Gemma] retry scheduled", {
-              callId,
-              model,
-              provider: providerLabelValue,
-              providerKey: provider,
-              attempt: attempt + 1,
-              waitMs,
-              isColdStart,
-              fromRetryAfter: Boolean(normalizedError.retryAfterMs),
-            });
-            await sleep(waitMs);
-            continue;
-          }
-
-          if (provider === secondaryProvider) {
-            throw normalizedError;
-          }
-          break;
-        }
-      }
-    }
-
-    console.error("[Gemma] callGemma exhausted all options", {
-      callId,
-      primaryProvider,
-      secondaryProvider,
-      providerOrder,
-      lastErrorName: lastError?.name,
-      lastErrorMessage: lastError?.message,
-    });
-    throw lastError || new Error("Unable to generate lesson after exhausting retries");
-  }
-
-  const useFallbackOnly = isFallbackConfigured();
-  if (!useFallbackOnly && (!process.env.CLOUDFLARE_API_TOKEN?.trim() || !process.env.CLOUDFLARE_ACCOUNT_ID?.trim())) {
-    throw new Error(
-      "Either CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID, or FALLBACK_AI_URL and FALLBACK_AI_API_KEY must be configured"
-    );
-  }
-  let lastError = null;
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    console.log("[Gemma] attempt start", {
-      callId,
-      model,
-      attempt: attempt + 1,
-      maxAttempts: maxRetries + 1,
-    });
-    const controller = new AbortController();
-    const internalSignal = controller.signal;
-    let removeParentAbortListener = null;
-    let parentAbortTriggered = false;
-    let timeoutTriggered = false;
-    if (signal) {
-      const abortFromParent = () => {
-        parentAbortTriggered = true;
-        controller.abort();
-      };
-      signal.addEventListener("abort", abortFromParent, { once: true });
-      removeParentAbortListener = () => {
-        signal.removeEventListener("abort", abortFromParent);
-      };
-    }
-
-    const timeoutId = setTimeout(() => {
-      timeoutTriggered = true;
-      controller.abort();
-    }, timeoutMs);
-
-    try {
-      const startedAt = Date.now();
-      console.log("[Gemma] API request", {
-        callId,
-        model,
-        attempt: attempt + 1,
-      });
-
-      const messages = [
-        { role: "system", content: sanitizedSystemPrompt },
-        { role: "user", content: userMessage },
-      ];
-
-      const result = await (useFallbackOnly
-        ? callFallbackAI(
-            model,
-            {
-              messages,
-              temperature,
-              max_tokens: maxOutputTokens,
-            },
-            internalSignal
-          )
-        : callWorkersAI(
-            process.env.CLOUDFLARE_ACCOUNT_ID.trim(),
-            model,
-            {
-              messages,
-              temperature,
-              max_tokens: maxOutputTokens,
-            },
-            internalSignal
-          ));
-
-      clearTimeout(timeoutId);
-      removeParentAbortListener?.();
-      console.log("[Gemma] response received", {
-        callId,
-        model,
-        attempt: attempt + 1,
-        latencyMs: Date.now() - startedAt,
-      });
-
-      console.log("[Gemma] raw result structure", {
-        callId,
-        type: typeof result,
-        keys: typeof result === "object" ? Object.keys(result) : null,
-        preview: JSON.stringify(result).slice(0, 500),
-      });
-
-      const text = extractTextFromResult(result);
-
-      console.log("[Gemma] parsed response text", {
-        callId,
-        model,
-        attempt: attempt + 1,
-        textLength: text.length,
-        textPreview: text.slice(0, 300),
-      });
-
-      resetTimeoutCircuit();
-      console.log("[Gemma] callGemma success", {
-        callId,
-        model,
-        attempt: attempt + 1,
-      });
-      return text;
-    } catch (error) {
-      clearTimeout(timeoutId);
-      removeParentAbortListener?.();
-
-      if (isAbortError(error)) {
-        if (timeoutTriggered) {
-          console.warn("[Gemma] request timed out", {
-            callId,
-            model,
-            attempt: attempt + 1,
-            timeoutMs,
-          });
-          const timeoutError = new GemmaTimeoutError(timeoutMs);
-          lastError = timeoutError;
-          const circuitOpened = recordTimeoutFailure(
-            timeoutCircuitFailureThreshold,
-            timeoutCircuitCooldownMs
-          );
-          if (circuitOpened) {
-            throw new GemmaCircuitOpenError(timeoutCircuitCooldownMs);
-          }
-          // On timeout the model is almost certainly cold (CF Workers AI
-          // needed longer than our budget to load). Retrying immediately
-          // just hammers a still-loading model and wastes the attempt.
-          // Wait for the cold-start window before the next try.
-          if (attempt < maxRetries) {
-            const waitMs = Math.min(
-              COLD_START_RETRY_DELAY_MS * Math.pow(2, attempt),
-              COLD_START_MAX_RETRY_DELAY_MS
-            );
-            console.warn("[Gemma] Timeout — waiting for cold start before retry", {
-              callId,
-              model,
-              attempt: attempt + 1,
-              waitMs,
-            });
-            await sleep(waitMs);
-          }
-          continue;
-        }
-        if (parentAbortTriggered || signal?.aborted) {
-          console.warn("[Gemma] request aborted by caller", {
-            callId,
-            model,
-            attempt: attempt + 1,
-          });
-          throw error;
-        }
-        console.warn("[Gemma] request aborted", {
-          callId,
-          model,
-          attempt: attempt + 1,
-        });
-        throw error;
-      }
-
-      const normalizedError = error;
-      console.warn("[Gemma] attempt failed", {
-        callId,
-        model,
-        attempt: attempt + 1,
-        errorName: normalizedError?.name,
-        errorMessage: normalizedError?.message,
-      });
-      lastError = normalizedError;
-      if (normalizedError instanceof GemmaTimeoutError) {
-        const circuitOpened = recordTimeoutFailure(
-          timeoutCircuitFailureThreshold,
-          timeoutCircuitCooldownMs
-        );
-        if (circuitOpened) {
-          throw new GemmaCircuitOpenError(timeoutCircuitCooldownMs);
-        }
-      }
-
-      const isLastAttempt = attempt === maxRetries;
-      if (!isLastAttempt && isRetryableGemmaError(normalizedError)) {
-        const isColdStart =
-          normalizedError instanceof GemmaApiError && normalizedError.status === 408;
-        const baseDelay = isColdStart ? COLD_START_RETRY_DELAY_MS : retryDelayMs;
-        const cap = isColdStart ? COLD_START_MAX_RETRY_DELAY_MS : maxRetryDelayMs;
-        const waitMs = normalizedError.retryAfterMs
-          ? Math.min(normalizedError.retryAfterMs, cap)
-          : Math.min(baseDelay * Math.pow(2, attempt), cap);
-        console.warn(
-          `[Gemma] Retrying after attempt ${attempt + 1} failed`
-        );
-        console.warn("[Gemma] retry scheduled", {
-          callId,
-          model,
-          attempt: attempt + 1,
-          waitMs,
-          isColdStart,
-          fromRetryAfter: Boolean(normalizedError.retryAfterMs),
-        });
-        await sleep(waitMs);
-        continue;
-      }
-
-      throw normalizedError;
-    }
-  }
-
-  if (!useFallbackOnly && allowFallback && isGemmaServiceUnavailableError(lastError) && isFallbackConfigured()) {
-    console.warn("[Gemma] Primary provider exhausted; attempting fallback provider", {
-      callId,
-      model,
-      lastErrorName: lastError?.name,
-    });
-    const fallbackController = new AbortController();
-    let removeParentAbortListener = null;
-    if (signal) {
-      const abortFromParent = () => {
-        fallbackController.abort();
-      };
-      signal.addEventListener("abort", abortFromParent, { once: true });
-      removeParentAbortListener = () => {
-        signal.removeEventListener("abort", abortFromParent);
-      };
-    }
-
-    const fallbackTimeoutId = setTimeout(() => {
-      fallbackController.abort();
-    }, timeoutMs);
-
-    try {
-      const startedAt = Date.now();
-      console.log("[Gemma] Fallback API request", { callId, model });
-
-      const messages = [
-        { role: "system", content: sanitizedSystemPrompt },
-        { role: "user", content: userMessage },
-      ];
-
-      const result = await callFallbackAI(
-        model,
-        {
-          messages,
-          temperature,
-          max_tokens: maxOutputTokens,
-        },
-        fallbackController.signal
-      );
-
-      clearTimeout(fallbackTimeoutId);
-      removeParentAbortListener?.();
-
-      const text = extractTextFromResult(result);
-
-      console.log("[Gemma] Fallback success", {
-        callId,
-        model,
-        latencyMs: Date.now() - startedAt,
-      });
-      return text;
-    } catch (fallbackError) {
-      clearTimeout(fallbackTimeoutId);
-      removeParentAbortListener?.();
-      console.error("[Gemma] Fallback attempt failed", {
-        callId,
-        errorName: fallbackError?.name,
-        errorMessage: fallbackError?.message,
-      });
-    }
-  }
-
-  console.error("[Gemma] callGemma exhausted all options", {
+  const request = {
+    messages,
+    temperature,
+    maxOutputTokens,
+    timeoutMs,
     callId,
-    lastErrorName: lastError?.name,
-    lastErrorMessage: lastError?.message,
-  });
-  throw lastError || new Error("Unable to generate lesson after exhausting retries");
+    parentSignal: signal,
+    raceSignal: raceController.signal,
+  };
+
+  const starters = ordered.map(
+    (provider) => (raceState) =>
+      runProviderAttempts(provider, request, config, raceState)
+  );
+
+  try {
+    const text = await hedgedRace(starters, config.hedgeDelayMs, (index) => {
+      console.log("[AI] callGemma success", {
+        callId,
+        winner: ordered[index].key,
+      });
+    });
+    return text;
+  } catch (error) {
+    // Caller cancelled — surface the abort as-is.
+    if (signal?.aborted && isAbortError(error)) throw error;
+
+    console.error("[AI] callGemma exhausted all options", {
+      callId,
+      errorName: error?.name,
+      errorMessage: error?.message,
+      health: getProviderHealthSnapshot(),
+    });
+
+    // When every provider is unavailable AND circuits are open, tell the
+    // caller when it's worth retrying.
+    if (isGemmaServiceUnavailableError(error)) {
+      const openTimes = providers
+        .map((p) => providerHealth[p.key].openUntil)
+        .filter((t) => t > Date.now());
+      if (openTimes.length === providers.length && openTimes.length > 0) {
+        throw new GemmaCircuitOpenError(Math.min(...openTimes) - Date.now());
+      }
+    }
+    throw error;
+  } finally {
+    signal?.removeEventListener("abort", abortRaceFromParent);
+    raceController.abort();
+  }
 }
+
+// ── Warm-up ──────────────────────────────────────────────────────────────────
 
 /**
  * Warm up the Cloudflare Workers AI model with a minimal request.
  * Cold starts on CF Workers AI can take 10-30s — calling this on server
  * boot loads the model so the first real user request doesn't time out.
- * Retry once on transient failure to improve robustness.
  */
 export async function warmUpModel() {
   const accountId = process.env.CLOUDFLARE_ACCOUNT_ID?.trim();
   const apiToken = process.env.CLOUDFLARE_API_TOKEN?.trim();
   if (!accountId || !apiToken) {
-    console.log("[Gemma] Warm-up skipped: missing CLOUDFLARE config");
+    console.log("[AI] Warm-up skipped: missing CLOUDFLARE config");
     return;
   }
 
   const callId = `warmup-${Date.now()}`;
-  console.log("[Gemma] Warming up model...", { callId, model: GEMMA_MODEL });
   const startedAt = Date.now();
-
   const maxAttempts = 2;
   const warmupTimeoutMs = 60000;
 
@@ -1080,7 +1037,6 @@ export async function warmUpModel() {
           Authorization: `Bearer ${apiToken}`,
           "Content-Type": "application/json",
           Connection: "keep-alive",
-          "Accept-Encoding": "gzip, deflate, br",
         },
         body: JSON.stringify({
           model: GEMMA_MODEL,
@@ -1096,7 +1052,7 @@ export async function warmUpModel() {
       const latencyMs = Date.now() - startedAt;
 
       if (response.ok) {
-        console.log("[Gemma] Model warmed up successfully", {
+        console.log("[AI] Model warmed up successfully", {
           callId,
           latencyMs,
           attempt: attempt + 1,
@@ -1105,7 +1061,7 @@ export async function warmUpModel() {
       }
 
       const text = await response.text().catch(() => "");
-      console.warn("[Gemma] Warm-up received non-OK response (non-fatal)", {
+      console.warn("[AI] Warm-up received non-OK response (non-fatal)", {
         callId,
         status: response.status,
         latencyMs,
@@ -1114,11 +1070,10 @@ export async function warmUpModel() {
       });
     } catch (error) {
       clearTimeout(timeoutId);
-      const latencyMs = Date.now() - startedAt;
-      console.warn("[Gemma] Warm-up attempt failed (non-fatal)", {
+      console.warn("[AI] Warm-up attempt failed (non-fatal)", {
         callId,
         attempt: attempt + 1,
-        latencyMs,
+        latencyMs: Date.now() - startedAt,
         error: error?.message,
       });
     }
@@ -1127,10 +1082,8 @@ export async function warmUpModel() {
 
 // Periodic warm-up: ping the model at a regular interval to prevent cold
 // starts. Cloudflare Workers AI unloads idle models quickly — production
-// logs show the model going cold within 30-40 seconds. A lightweight
-// keep-alive request keeps the model in memory so real user requests
-// don't hit the 10-30s cold-start penalty.
-const DEFAULT_WARM_UP_INTERVAL_MS = 90 * 1000; // 90 seconds
+// logs show the model going cold within 30-40 seconds.
+const DEFAULT_WARM_UP_INTERVAL_MS = 90 * 1000;
 
 export function startPeriodicWarmUp(intervalMs) {
   const resolvedMs =
@@ -1142,11 +1095,11 @@ export function startPeriodicWarmUp(intervalMs) {
   warmUpModel();
   const handle = setInterval(() => warmUpModel(), resolvedMs);
   handle.unref?.();
-  console.log("[Gemma] Periodic warm-up started", {
-    intervalMs: resolvedMs,
-  });
+  console.log("[AI] Periodic warm-up started", { intervalMs: resolvedMs });
   return handle;
 }
+
+// ── Tolerant JSON extraction from model output ──────────────────────────────
 
 function closeTruncatedJSON(text) {
   const stack = [];

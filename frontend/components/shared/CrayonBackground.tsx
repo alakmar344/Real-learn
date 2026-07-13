@@ -297,23 +297,46 @@ export default function CrayonBackground() {
           ))}
         </g>
 
-        {/* === HOUSE === */}
+        {/* === SCHOOL === */}
         <g filter="url(#crayon)">
+          {/* Flag on the roof peak */}
+          <line
+            x1="145"
+            y1="418"
+            x2="145"
+            y2="382"
+            stroke="var(--crayon-school-outline)"
+            strokeWidth="3"
+            strokeLinecap="round"
+          />
+          <path
+            d="M145 384 L177 392 L145 401Z"
+            fill="var(--crayon-school-flag)"
+          />
+          <path
+            d="M145 384 L177 392 L145 401Z"
+            fill="none"
+            stroke="var(--crayon-school-outline)"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          {/* Building */}
           <rect
-            x="80"
-            y="480"
-            width="120"
-            height="90"
-            fill="var(--crayon-house-wall)"
+            x="65"
+            y="470"
+            width="160"
+            height="100"
+            fill="var(--crayon-school-wall)"
             rx="3"
           />
           <rect
-            x="80"
-            y="480"
-            width="120"
-            height="90"
+            x="65"
+            y="470"
+            width="160"
+            height="100"
             fill="none"
-            stroke="var(--crayon-house-outline)"
+            stroke="var(--crayon-school-outline)"
             strokeWidth="3.5"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -321,121 +344,132 @@ export default function CrayonBackground() {
           />
           {/* Roof */}
           <path
-            d="M65 485 L140 430 L215 485Z"
-            fill="var(--crayon-house-roof)"
+            d="M50 475 L145 415 L240 475Z"
+            fill="var(--crayon-school-roof)"
           />
           <path
-            d="M65 485 L140 430 L215 485Z"
+            d="M50 475 L145 415 L240 475Z"
             fill="none"
-            stroke="var(--crayon-house-outline)"
+            stroke="var(--crayon-school-outline)"
             strokeWidth="3.5"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
-          {/* Chimney */}
-          <rect
-            x="170"
-            y="440"
-            width="20"
-            height="45"
-            fill="var(--crayon-house-chimney)"
-            rx="2"
+          {/* School bell in the gable */}
+          <circle
+            cx="145"
+            cy="449"
+            r="9"
+            fill="var(--crayon-school-bell)"
+            stroke="var(--crayon-school-outline)"
+            strokeWidth="2.5"
           />
-          <rect
-            x="170"
-            y="440"
-            width="20"
-            height="45"
-            fill="none"
-            stroke="var(--crayon-house-outline)"
-            strokeWidth="3"
+          <line
+            x1="145"
+            y1="452"
+            x2="145"
+            y2="460"
+            stroke="var(--crayon-school-outline)"
+            strokeWidth="2.5"
             strokeLinecap="round"
-            rx="2"
-          />
-          {/* Smoke */}
-          <path
-            d="M180 438 Q185 425 178 412 Q183 398 176 385"
-            fill="none"
-            stroke="var(--crayon-smoke)"
-            strokeWidth="3"
-            strokeLinecap="round"
-            opacity="0.4"
           />
           {/* Door */}
           <rect
-            x="120"
+            x="130"
             y="520"
             width="30"
             height="50"
-            fill="var(--crayon-house-door)"
+            fill="var(--crayon-school-door)"
             rx="3"
           />
           <rect
-            x="120"
+            x="130"
             y="520"
             width="30"
             height="50"
             fill="none"
-            stroke="var(--crayon-house-outline)"
+            stroke="var(--crayon-school-outline)"
             strokeWidth="2.5"
             strokeLinecap="round"
             rx="3"
           />
-          <circle cx="143" cy="548" r="3" fill="var(--crayon-house-doorknob)" />
+          <circle cx="153" cy="548" r="3" fill="var(--crayon-house-doorknob)" />
+          {/* SCHOOL sign above the door */}
+          <rect
+            x="115"
+            y="497"
+            width="60"
+            height="17"
+            fill="var(--crayon-school-sign)"
+            rx="3"
+          />
+          <text
+            x="145"
+            y="510"
+            fontFamily="var(--font-playfair), Georgia, serif"
+            fontSize="11"
+            fontWeight="700"
+            fill="var(--crayon-school-sign-text)"
+            textAnchor="middle"
+          >
+            SCHOOL
+          </text>
           {/* Windows */}
           {[
-            { x: 92, y: 500 },
-            { x: 155, y: 500 },
+            { x: 80, y: 492 },
+            { x: 184, y: 492 },
+            { x: 80, y: 532 },
+            { x: 184, y: 532 },
           ].map((w, i) => (
-            <g key={`house-win-${i}`}>
+            <g key={`school-win-${i}`}>
               <rect
                 x={w.x}
                 y={w.y}
-                width="22"
-                height="22"
+                width="24"
+                height="24"
                 fill="var(--crayon-house-window)"
                 rx="2"
               />
               <rect
                 x={w.x}
                 y={w.y}
-                width="22"
-                height="22"
+                width="24"
+                height="24"
                 fill="none"
-                stroke="var(--crayon-house-outline)"
+                stroke="var(--crayon-school-outline)"
                 strokeWidth="2.5"
                 rx="2"
               />
               <line
-                x1={w.x + 11}
+                x1={w.x + 12}
                 y1={w.y}
-                x2={w.x + 11}
-                y2={w.y + 22}
-                stroke="var(--crayon-house-outline)"
+                x2={w.x + 12}
+                y2={w.y + 24}
+                stroke="var(--crayon-school-outline)"
                 strokeWidth="2"
               />
               <line
                 x1={w.x}
-                y1={w.y + 11}
-                x2={w.x + 22}
-                y2={w.y + 11}
-                stroke="var(--crayon-house-outline)"
+                y1={w.y + 12}
+                x2={w.x + 24}
+                y2={w.y + 12}
+                stroke="var(--crayon-school-outline)"
                 strokeWidth="2"
               />
               <rect
                 x={w.x + 1}
                 y={w.y + 1}
-                width="20"
-                height="20"
+                width="22"
+                height="22"
                 fill="var(--crayon-window-glow)"
                 opacity="0.3"
                 rx="1"
               />
             </g>
           ))}
-          {/* Path */}
+          {/* Path from the school door */}
           <path
-            d="M135 570 Q130 590 140 610 Q135 630 140 650"
+            d="M145 570 Q140 592 148 615 Q144 635 150 655"
             fill="none"
             stroke="var(--crayon-path)"
             strokeWidth="8"
@@ -608,7 +642,7 @@ export default function CrayonBackground() {
           />
         </g>
 
-        {/* Fence near house */}
+        {/* Fence near school */}
         <g filter="url(#crayon)" opacity="0.5">
           <line x1="30" y1="565" x2="30" y2="540" stroke="var(--crayon-fence)" strokeWidth="3" strokeLinecap="round" />
           <line x1="50" y1="563" x2="50" y2="538" stroke="var(--crayon-fence)" strokeWidth="3" strokeLinecap="round" />
@@ -642,32 +676,112 @@ export default function CrayonBackground() {
           ))}
         </g>
 
-        {/* Bridge / path connecting house and library */}
+        {/* === WOODEN BRIDGE over the river === */}
+        <g filter="url(#crayon)">
+          {/* Arched deck */}
+          <path
+            d="M535 556 Q610 508 685 556"
+            fill="none"
+            stroke="var(--crayon-bridge)"
+            strokeWidth="11"
+            strokeLinecap="round"
+          />
+          {/* Handrail */}
+          <path
+            d="M540 538 Q610 492 680 538"
+            fill="none"
+            stroke="var(--crayon-bridge-dark)"
+            strokeWidth="4"
+            strokeLinecap="round"
+          />
+          {/* Rail posts */}
+          {[
+            [552, 546, 555, 530],
+            [580, 534, 582, 517],
+            [610, 529, 610, 512],
+            [640, 534, 638, 517],
+            [668, 546, 665, 530],
+          ].map(([x1, y1, x2, y2], i) => (
+            <line
+              key={`bridge-post-${i}`}
+              x1={x1}
+              y1={y1}
+              x2={x2}
+              y2={y2}
+              stroke="var(--crayon-bridge-dark)"
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
+          ))}
+        </g>
+
+        {/* === PATH connecting school → bridge → library === */}
         <g filter="url(#crayon)">
           <path
-            d="M200 600 Q350 585 500 590 Q650 595 800 585 Q870 580 880 570"
+            d="M150 650 Q300 632 450 606 Q510 592 537 558"
             fill="none"
             stroke="var(--crayon-path)"
             strokeWidth="10"
             strokeLinecap="round"
-            opacity="0.3"
+            opacity="0.35"
           />
           <path
-            d="M450 585 Q500 578 550 585"
+            d="M683 558 Q740 600 830 618 Q900 632 972 642"
             fill="none"
-            stroke="var(--crayon-fence)"
-            strokeWidth="2.5"
+            stroke="var(--crayon-path)"
+            strokeWidth="10"
             strokeLinecap="round"
-            opacity="0.5"
+            opacity="0.35"
           />
-          <path
-            d="M550 585 Q600 578 650 588"
+        </g>
+
+        {/* === "RealLearn" signpost joining the scene together === */}
+        <g filter="url(#crayon)">
+          {/* Post */}
+          <rect
+            x="748"
+            y="600"
+            width="9"
+            height="62"
+            fill="var(--crayon-fence)"
+            rx="2"
+          />
+          <rect
+            x="748"
+            y="600"
+            width="9"
+            height="62"
             fill="none"
-            stroke="var(--crayon-fence)"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            opacity="0.5"
+            stroke="var(--crayon-school-outline)"
+            strokeWidth="2"
+            rx="2"
           />
+          {/* Double-arrow board: points back to the school and on to the library */}
+          <g>
+            <path
+              d="M687 592 L704 576 L800 576 L817 592 L800 608 L704 608Z"
+              fill="var(--crayon-brand-board)"
+            />
+            <path
+              d="M687 592 L704 576 L800 576 L817 592 L800 608 L704 608Z"
+              fill="none"
+              stroke="var(--crayon-school-outline)"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <text
+              x="752"
+              y="598"
+              fontFamily="var(--font-playfair), Georgia, serif"
+              fontSize="17"
+              fontWeight="700"
+              fill="var(--crayon-brand-text)"
+              textAnchor="middle"
+            >
+              RealLearn
+            </text>
+          </g>
         </g>
       </svg>
     </div>

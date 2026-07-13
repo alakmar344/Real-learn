@@ -191,6 +191,7 @@ export default function PreferenceModal({ open, onClose }: Props) {
 
           <div>
             <label
+              htmlFor="pref-language"
               style={{
                 display: "block",
                 fontSize: 13,
@@ -202,6 +203,7 @@ export default function PreferenceModal({ open, onClose }: Props) {
               Language
             </label>
             <select
+              id="pref-language"
               value={language}
               onChange={(e) => setLanguage(e.target.value as Language)}
               style={{
@@ -227,6 +229,7 @@ export default function PreferenceModal({ open, onClose }: Props) {
 
           <div>
             <label
+              htmlFor="pref-level"
               style={{
                 display: "block",
                 fontSize: 13,
@@ -238,6 +241,7 @@ export default function PreferenceModal({ open, onClose }: Props) {
               Learning level
             </label>
             <select
+              id="pref-level"
               value={level}
               onChange={(e) => setLevel(e.target.value as Level)}
               style={{

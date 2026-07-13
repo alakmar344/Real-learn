@@ -132,7 +132,10 @@ export async function verifyClerkToken(token) {
       CONFIGURED_JWKS_URL && issuer === CONFIGURED_FRONTEND_API
         ? CONFIGURED_JWKS_URL
         : "";
-    const verifyOptions = { issuer };
+    // Security: pin the accepted algorithm. Clerk signs with RS256; without
+    // pinning, a key/algorithm-confusion bug elsewhere in the stack could be
+    // leveraged (defense in depth — jose already rejects "none").
+    const verifyOptions = { issuer, algorithms: ["RS256"] };
     const jwks = getJwksForIssuer(issuer, jwksUrl);
     try {
       const { payload } = await jwtVerify(token, jwks, verifyOptions);
