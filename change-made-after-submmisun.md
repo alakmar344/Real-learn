@@ -36,6 +36,10 @@ the themed sections below and the chronological table at the end.
 - **`d6e8318` — Replace heavy inline SVG background** with GPU-composited static SVG.
 - **`748e220` — Legal v2.2:** Privacy/Terms document the Cerebras primary + Cloudflare
   fallback and add a reconsent note; re-prompt all users.
+- **`160e97d` — Backend warm-up change:** disabled periodic warm-up pings to the
+  **Cerebras** primary (no meaningful cold start, avoids wasted tokens); kept
+  warm-up active for the **Cloudflare Workers AI** fallback, which cold-starts
+  in 10-30s. `warmUpModel()` now pings Cloudflare with a tiny non-streaming call.
 
 ### Tomorrow (planned / upcoming)
 - Continue tuning the primary↔fallback hedge timing and cost knobs.
