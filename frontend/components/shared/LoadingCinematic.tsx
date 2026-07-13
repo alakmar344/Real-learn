@@ -44,42 +44,53 @@ function CheckIcon() {
 interface Props {
   question: string;
   onCancel?: () => void;
+  isRevealing?: boolean;
 }
 
 // After this long, show a gentle reassurance line — a slow generation should
 // feel deliberate ("we're taking care with your lesson"), never broken.
 const PATIENCE_MESSAGE_AFTER_MS = 30000;
 
-export default function LoadingCinematic({ question, onCancel }: Props) {
+// Auto-complete the counter to 100% in ~3.5s with an ease-out curve so it
+// always reaches full progress even when the backend only sends a handful of
+// progress events (e.g. fast-mode Cerebras can finish in 2-3s).
+const AUTO_COMPLETE_DURATION_MS = 3500;
+
+export default function LoadingCinematic({ question, onCancel, isRevealing = false }: Props) {
   const progressPercent = useLessonStore((s) => s.progressPercent);
   const [displayProgress, setDisplayProgress] = useState(0);
   const [factIndex, setFactIndex] = useState(0);
   const [takingLonger, setTakingLonger] = useState(false);
   const displayRef = useRef(0);
+  const startTimeRef = useRef(Date.now());
 
   useEffect(() => {
     const id = window.setTimeout(() => setTakingLonger(true), PATIENCE_MESSAGE_AFTER_MS);
     return () => window.clearTimeout(id);
   }, []);
 
-  // Smoothly animate the bar so it ALWAYS drifts forward, even between server
-  // events. The previous version eased toward exactly `progressPercent`, so
-  // once a milestone arrived (e.g. 40% at the start of generation) the bar
-  // asymptotically parked on that number and looked frozen for the entire
-  // wait. Instead we ease toward a small *lead* beyond the last real value and
-  // clamp the motion to be strictly monotonic — the bar keeps inching ahead,
-  // catches up quickly when a new milestone lands, and never slides backward.
+  // Reset the start time whenever a fresh question loads so the auto-complete
+  // curve always begins from zero.
+  useEffect(() => {
+    startTimeRef.current = Date.now();
+    displayRef.current = 0;
+    setDisplayProgress(0);
+  }, [question]);
+
+  // Smoothly animate the bar so it ALWAYS drifts forward. An ease-out curve
+  // auto-completes to 100% in ~3.5s, and any real server progress event leads
+  // the counter by a small margin so it never stalls. When the lesson arrives,
+  // the parent passes `isRevealing` and we fade out gracefully.
   useEffect(() => {
     const id = window.setInterval(() => {
-      // Lead a little past the last real event so the bar never rests exactly
-      // on a milestone. Before the first event, drift gently toward 90%.
-      const target =
-        progressPercent > 0 ? Math.min(progressPercent + 6, 99) : 90;
-      const rate = progressPercent > 0 ? 0.08 : 0.02;
+      const elapsed = Date.now() - startTimeRef.current;
+      const t = Math.min(elapsed / AUTO_COMPLETE_DURATION_MS, 1);
+      const autoProgress = 100 * (1 - Math.pow(1 - t, 3));
+      const realLead = progressPercent > 0 ? Math.min(progressPercent + 8, 100) : 0;
+      const target = Math.max(autoProgress, realLead);
+      const rate = 0.12;
       const eased = displayRef.current + (target - displayRef.current) * rate;
-      // Never regress: a new lower `target` (shouldn't happen, but be safe)
-      // or float jitter must not pull the bar backward.
-      const next = Math.max(displayRef.current, eased);
+      const next = Math.min(100, Math.max(displayRef.current, eased));
       displayRef.current = next;
       setDisplayProgress(next);
     }, 100);
@@ -94,7 +105,7 @@ export default function LoadingCinematic({ question, onCancel }: Props) {
     return () => window.clearInterval(id);
   }, []);
 
-  const pct = Math.min(99, Math.round(displayProgress));
+  const pct = Math.min(100, Math.round(displayProgress));
 
   return (
     <div
@@ -108,6 +119,10 @@ export default function LoadingCinematic({ question, onCancel }: Props) {
         background: "var(--bg-primary)",
         display: "grid",
         placeItems: "center",
+        opacity: isRevealing ? 0 : 1,
+        transform: isRevealing ? "scale(0.97)" : "scale(1)",
+        transition: "opacity 400ms var(--ease-reveal), transform 400ms var(--ease-reveal)",
+        pointerEvents: isRevealing ? "none" : "auto",
       }}
     >
       <div

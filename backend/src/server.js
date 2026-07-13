@@ -45,6 +45,26 @@ import {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+// Rough token estimator for logging (1 token ≈ 3.5 chars for English/most
+// languages). Providers don't always expose exact usage in streaming mode, so
+// this gives us directional visibility into per-request spend.
+function estimateTokenCount(text) {
+  if (!text) return 0;
+  return Math.ceil(text.length / 3.5);
+}
+
+function logTokenUsage(requestId, mode, provider, promptTokens, completionTokens) {
+  const total = promptTokens + completionTokens;
+  console.log("[tokens] usage", {
+    requestId,
+    mode,
+    provider,
+    promptTokens,
+    completionTokens,
+    totalTokens: total,
+  });
+}
+
 // Privacy: salt for hashing User-Agent strings. A per-process random value
 // prevents rainbow-table reversal of the stored hashes.
 const UA_HASH_SALT = crypto.randomBytes(16).toString("hex");
@@ -1260,15 +1280,11 @@ Level: ${level}${
     const systemPrompt =
       mode === "fast" ? GENERATE_FAST_ANSWER_PROMPT : GENERATE_LESSON_PROMPT;
     // IMPORTANT: max_tokens is a CEILING, not a target — a short fast answer
-    // still finishes early, so a generous cap costs no latency. Gemma's
-    // internal "thinking" output counts against this cap even though we strip
-    // it from the text, and that overhead is roughly constant. With only 2000
-    // tokens, thinking + JSON regularly truncated fast mode's single part
-    // mid-quiz, and a one-part lesson has no slack: the whole response failed
-    // validation ("AI response format was invalid") every time. Explain mode
-    // survived the same truncation because a dropped *trailing* part still
-    // leaves a valid 1-2 part journey. Both modes now get the same headroom.
-    const maxOutputTokens = mode === "fast" ? 4000 : 6000;
+    // still finishes early, so a tighter cap costs no latency. With thinking
+    // tokens disabled for the primary provider, the overhead is minimal, and
+    // these ceilings prevent runaway generation while leaving ample room for
+    // the structured JSON output.
+    const maxOutputTokens = mode === "fast" ? 2500 : 4000;
     // Fast mode uses a lower temperature for more focused, deterministic
     // output — less sampling overhead means faster generation.
     const temperature = mode === "fast" ? 0.2 : 0.6;
@@ -1346,7 +1362,7 @@ Level: ${level}${
         if (source === "cloudflare") {
           // Direct Cloudflare call bypasses callGemma's circuit breaker so
           // the fallback is still reachable when the primary's circuit is open.
-          result = extractTextFromResult(
+          const result = extractTextFromResult(
             await callCloudflareAI(
               GEMMA_MODEL,
               {
@@ -1372,6 +1388,9 @@ Level: ${level}${
           );
         }
         clearInterval(attemptTicker);
+        const promptTokens = estimateTokenCount(systemPrompt) + estimateTokenCount(attemptUserPrompt);
+        const completionTokens = estimateTokenCount(result);
+        logTokenUsage(requestId, mode, source, promptTokens, completionTokens);
         console.log("[Gemma] generate success", {
           requestId,
           provider: source === "cloudflare" ? "Cloudflare Workers AI" : "Cerebras Cloud (Gemma 4 31B)",

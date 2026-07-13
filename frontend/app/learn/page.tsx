@@ -33,17 +33,27 @@ function scrollToTop() {
 export default function LearnPage() {
   const [quizPart, setQuizPart] = useState<number | null>(null);
   const [showUnlockFx, setShowUnlockFx] = useState(false);
+  const [isRevealing, setIsRevealing] = useState(false);
   const unlockTimeoutRef = useRef<number | null>(null);
-  // Cleanup the unlock animation timeout on unmount.
-  useEffect(() => {
-    return () => {
-      if (unlockTimeoutRef.current) clearTimeout(unlockTimeoutRef.current);
-    };
-  }, []);
   // The lesson store is persisted: rendering persisted state on the first
   // client render mismatches the SSR HTML (which always has the defaults)
   // and triggers a React hydration failure. Gate on mount instead.
   const mounted = useMounted();
+
+  useEffect(() => {
+    if (!mounted) return;
+    return () => {
+      if (unlockTimeoutRef.current) clearTimeout(unlockTimeoutRef.current);
+    };
+  }, [mounted]);
+
+  useEffect(() => {
+    if (!isLoading && lesson && !isRevealing) {
+      setIsRevealing(true);
+      const timer = setTimeout(() => setIsRevealing(false), 420);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, lesson, isRevealing]);
 
   const {
     question,
@@ -183,12 +193,13 @@ export default function LearnPage() {
   }
 
   /* ── Loading cinematic ── */
-  if (isLoading && question) {
+  if ((isLoading || isRevealing) && question) {
     return (
       <>
         <LiveRegion />
         <LoadingCinematic
           question={question}
+          isRevealing={isRevealing}
           onCancel={() => {
             resetAll();
             restart();
