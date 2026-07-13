@@ -17,6 +17,8 @@ import {
   parseJSON,
   callFallbackAI,
   isFallbackConfigured,
+  extractTextFromResult,
+  getProviderHealthSnapshot,
   GEMMA_MODEL,
 } from "./lib/gemma.js";
 import {
@@ -32,17 +34,13 @@ import {
   inspectToken,
   verifyClerkToken,
 } from "./lib/auth.js";
-import {
-  filterAIResponse,
-  filterUserInput,
-} from "./lib/contentGuard.js";
+import { filterUserInput } from "./lib/contentGuard.js";
 import { moderateText } from "./lib/moderation.js";
 import { evaluateAndFix } from "./lib/qualityGate.js";
 import {
   lessonCacheKey,
   getCachedLesson,
   setCachedLesson,
-  deleteCachedLesson,
 } from "./lib/lessonCache.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -485,7 +483,9 @@ app.use(
       return callback(new Error("CORS origin denied"));
     },
     methods: ["POST", "OPTIONS", "GET", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    // If-None-Match lets cross-origin TTS fetches revalidate via ETag (the
+    // handler serves 304s on it — without this the preflight rejects it).
+    allowedHeaders: ["Content-Type", "Authorization", "If-None-Match"],
   })
 );
 // Every legitimate request body here is tiny (a question + a few enum
@@ -556,6 +556,8 @@ app.get("/health", async (_req, res) => {
     health.ok = false;
     health.dependencies.mongodb = "error";
   }
+  // AI provider health (circuit state, observed latency) — no secrets.
+  health.dependencies.ai = getProviderHealthSnapshot();
   const status = health.ok ? 200 : 503;
   res.status(status).json(health);
 });
@@ -622,10 +624,10 @@ app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
     // HOWEVER: Clerk JWTs do not include email claims — only sub (userId),
     // sid, iss, exp, azp. So we fall back to the request body email, which
     // is safe because the user is already authenticated (JWT verified).
+    const emailFromToken = req.auth?.email || req.auth?.email_address || "";
     const email =
-      req.auth?.email ||
-      req.auth?.email_address ||
-      (typeof req.body?.email === "string" ? req.body.email.trim() : "");
+      emailFromToken ||
+      (typeof req.body?.email === "string" ? req.body.email.trim().slice(0, 320) : "");
 
   const db = await getDb();
   const collection = db.collection("agreements");
@@ -635,6 +637,10 @@ app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
     $set: {
       accepted,
       email,
+      // Security: a body-supplied email is self-asserted. Record provenance
+      // so downstream consumers (data-subject requests, notifications) never
+      // treat it as a verified address — clerkId is the identity key.
+      emailVerified: Boolean(emailFromToken),
       clerkId,
         deviceIp: req.ip || req.socket?.remoteAddress || "unknown",
         // Privacy (GDPR data minimization): hash the User-Agent so we can
@@ -802,16 +808,18 @@ app.post("/api/legal-consent", rateLimit, requireAuth, async (req, res) => {
     // HOWEVER: Clerk JWTs do not include email claims — only sub (userId),
     // sid, iss, exp, azp. So we fall back to the request body email, which
     // is safe because the user is already authenticated (JWT verified).
+    const emailFromToken = req.auth?.email || req.auth?.email_address || "";
     const email =
-      req.auth?.email ||
-      req.auth?.email_address ||
-      (typeof req.body?.email === "string" ? req.body.email.trim() : "");
+      emailFromToken ||
+      (typeof req.body?.email === "string" ? req.body.email.trim().slice(0, 320) : "");
 
     const filter = { clerkId, type: "legal-consent" };
     const update = {
       $set: {
         accepted,
         email,
+        // Security: a body-supplied email is self-asserted (see above).
+        emailVerified: Boolean(emailFromToken),
         clerkId,
         ageBracket: sanitizedAgeBracket,
         deviceIp: req.ip || req.socket?.remoteAddress || "unknown",
@@ -1339,17 +1347,24 @@ Level: ${level}${
       let result;
       try {
         if (source === "fallback") {
-          result = await callFallbackAI(
-            GEMMA_MODEL,
-            {
-              messages: [
-                { role: "system", content: systemPrompt },
-                { role: "user", content: attemptUserPrompt },
-              ],
-              temperature: attemptTemperature,
-              max_tokens: maxOutputTokens,
-            },
-            generateAbortSignal
+          // BUG FIX: callFallbackAI returns the raw completion payload (an
+          // object), not text — it must go through extractTextFromResult.
+          // Previously the object was passed straight to the validators,
+          // which threw on `result.slice`, so this rung silently never
+          // produced a lesson.
+          result = extractTextFromResult(
+            await callFallbackAI(
+              GEMMA_MODEL,
+              {
+                messages: [
+                  { role: "system", content: systemPrompt },
+                  { role: "user", content: attemptUserPrompt },
+                ],
+                temperature: attemptTemperature,
+                max_tokens: maxOutputTokens,
+              },
+              generateAbortSignal
+            )
           );
         } else {
           result = await callGemma(
@@ -1575,24 +1590,30 @@ Level: ${level}${
         recordLessonResult(false);
         return;
       }
-      outputModerationPromise.then((verdict) => {
-        if (!verdict.allowed) {
-          console.warn("[moderation] Fast-mode post-hoc block detected (response already sent)", {
-            requestId,
-            reason: verdict.reason,
-          });
-          deleteCachedLesson(cacheKey);
-          logModerationEvent(
-            buildModerationEvent({
-              requestId,
-              clerkId: req.auth?.userId,
-              type: "ai-response-moderated-posthoc",
-              reason: verdict.reason,
-              question,
-            })
-          ).catch(() => {});
-        }
-      }).catch(() => {});
+      // Security: enforce the output verdict BEFORE streaming the lesson.
+      // The old post-hoc check only deleted the cache entry — the requesting
+      // user had already received unmoderated content. The check is
+      // rule-based (no network call), so awaiting it costs no latency.
+      const fastOutputVerdict = await outputModerationPromise;
+      if (finished) return;
+      if (!fastOutputVerdict.allowed) {
+        const moderationEvent = buildModerationEvent({
+          requestId,
+          clerkId: req.auth?.userId,
+          type: "ai-response-moderated",
+          reason: fastOutputVerdict.reason,
+          question,
+        });
+        console.warn("[moderation] Fast-mode output blocked by moderation", redactModerationEvent(moderationEvent));
+        await logModerationEvent(moderationEvent);
+        sendEvent("error", {
+          error:
+            fastOutputVerdict.reason ||
+            "The generated content was flagged. Please try a different question.",
+        });
+        recordLessonResult(false);
+        return;
+      }
     } else {
       const outputVerdict = await outputModerationPromise;
       if (finished) return;
@@ -1658,6 +1679,37 @@ Level: ${level}${
   } finally {
     finishRequest("finally cleanup");
   }
+});
+
+// Terminal error handler — MUST be registered after every route. Without it,
+// Express's default finalhandler echoes err.stack to the client whenever
+// NODE_ENV isn't "production" (easy to forget on a PaaS), leaking internal
+// paths. Malformed JSON bodies and over-limit payloads land here too.
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  if (res.headersSent) {
+    // Response already streaming (e.g. SSE) — nothing safe to send.
+    return res.end();
+  }
+  const isBodyParseError =
+    err?.type === "entity.parse.failed" || err instanceof SyntaxError;
+  const isBodyTooLarge = err?.type === "entity.too.large";
+  const isCorsDenied = err?.message === "CORS origin denied";
+  const status = isBodyParseError ? 400 : isBodyTooLarge ? 413 : isCorsDenied ? 403 : 500;
+  const message = isBodyParseError
+    ? "Invalid JSON in request body"
+    : isBodyTooLarge
+      ? "Request body too large"
+      : isCorsDenied
+        ? "Origin not allowed"
+        : "Internal server error";
+  console.error("[error-handler]", {
+    path: req.path,
+    status,
+    errorName: err?.name,
+    errorMessage: err?.message,
+  });
+  res.status(status).json({ error: message });
 });
 
 try {

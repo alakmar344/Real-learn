@@ -7,6 +7,11 @@ const MODERATION_TIMEOUT_MS =
     ? configuredTimeoutMs
     : DEFAULT_MODERATION_TIMEOUT_MS;
 const MAX_MODERATION_INPUT_CHARS = 12000;
+// Security: generated lessons (max_tokens 6000) can exceed 12k characters,
+// and content in the tail must still be scanned — a lower cap left everything
+// past 12k unmoderated. 200k is far above any real lesson while still
+// bounding regex work against pathological inputs.
+const MAX_MODERATION_OUTPUT_CHARS = 200000;
 
 const DEFAULT_MODERATION_CACHE_TTL_MS = 15 * 60 * 1000;
 const configuredCacheTtlMs = Number(process.env.MODERATION_CACHE_TTL_MS);
@@ -203,10 +208,9 @@ export async function moderateText(text, kind = "input") {
   if (!isModerationEnabled()) return { allowed: true };
   if (!text || typeof text !== "string" || !text.trim()) return { allowed: true };
 
-  const snippet =
-    text.length > MAX_MODERATION_INPUT_CHARS
-      ? text.slice(0, MAX_MODERATION_INPUT_CHARS)
-      : text;
+  const maxChars =
+    kind === "output" ? MAX_MODERATION_OUTPUT_CHARS : MAX_MODERATION_INPUT_CHARS;
+  const snippet = text.length > maxChars ? text.slice(0, maxChars) : text;
   const label = kind === "output" ? "AI-generated lesson" : "student question";
 
   const cacheKey = verdictCacheKey(kind, snippet);
