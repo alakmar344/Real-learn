@@ -20,7 +20,7 @@ export default function PrivacyPolicy() {
         Privacy Policy
       </h2>
       <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
-        Last updated: July 12, 2026 (version 2.1)
+        Last updated: July 13, 2026 (version 2.2)
       </p>
 
       <section style={{ marginBottom: 28 }}>
@@ -46,9 +46,11 @@ export default function PrivacyPolicy() {
           RealLearn is an AI-powered educational platform. Depending on the answer mode you choose,
           it generates either a quick single-part direct answer (&quot;Fast&quot; mode) or a 3-part
           learning journey (Foundation, Mechanism, Real World — &quot;Explain&quot; mode) for any
-          topic you ask about. It is powered by Google&apos;s Gemma 4 open model, served through
-          Cloudflare Workers AI, and designed to help students learn through interactive quizzes
-          and structured content.
+          topic you ask about. It is powered by Google&apos;s Gemma 4 open model: our primary
+          inference provider is <strong>Cerebras Cloud</strong> (running Gemma 4 31B), with{" "}
+          <strong>Cloudflare Workers AI</strong> (Gemma) configured as an automatic fallback so
+          lessons can still be generated if the primary is slow or unavailable. This is designed to
+          help students learn through interactive quizzes and structured content.
         </p>
       </section>
 
@@ -72,7 +74,7 @@ export default function PrivacyPolicy() {
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Consent Records:</strong> Timestamps of when you accepted our Privacy Policy
-            (version 2.1), Terms of Service (version 2.1), and cookie/analytics consent, together
+            (version 2.2), Terms of Service (version 2.2), and cookie/analytics consent, together
             with the policy version and your device IP and User-Agent, kept as proof of consent.
           </li>
           <li style={{ marginBottom: 4 }}>
@@ -161,8 +163,11 @@ export default function PrivacyPolicy() {
       <section style={{ marginBottom: 28 }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>5. AI-Generated Content</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
-          RealLearn generates content using Google&apos;s Gemma 4 open AI model, hosted on Cloudflare
-          Workers AI. All lesson content (in both Fast and Explain modes), quizzes,
+          RealLearn generates content using Google&apos;s Gemma 4 open AI model. Our primary
+          inference provider is <strong>Cerebras Cloud</strong> (running Gemma 4 31B); if Cerebras is
+          temporarily slow or unavailable, the request automatically falls back to{" "}
+          <strong>Cloudflare Workers AI</strong> (Gemma) so your lesson can still be generated. All
+          lesson content (in both Fast and Explain modes), quizzes,
           and explanations are AI-generated and are <strong>not reviewed by humans before being shown</strong>.
           AI-generated responses may be inaccurate, incomplete, or outdated. You should verify
           important information with qualified professionals or authoritative sources. The Service
@@ -176,21 +181,25 @@ export default function PrivacyPolicy() {
         </p>
         <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
           <strong>RealLearn does not use your data to train, fine-tune, or improve any AI model.</strong>{" "}
-          Your questions are sent to Cloudflare Workers AI (which hosts the Gemma model) for
-          one-time inference only. If Cloudflare is temporarily slow or unavailable, the same
-          request may instead be sent to a backup AI provider for one-time inference so the lesson
-          can still be generated; the same &quot;no training on your data&quot; commitment applies to
-          that provider. Safety moderation of your question and the generated lesson is performed
-          locally on our own servers using rule-based pattern matching — your question is
-          <strong> not</strong> sent to any third party just for moderation. We do not
-          store your questions or generated lessons in a form linked to your account. To improve
-          speed, a generated lesson may be kept in a short-lived server-side cache keyed by a
-          one-way hash of the question text (not by your identity) and is deleted automatically
-          when it expires. However, please note that your
-          questions are transmitted to Cloudflare&apos;s API, and Cloudflare&apos;s own terms may
-          govern how they handle that data. We recommend reviewing{" "}
+          Your questions are sent to our primary inference provider, <strong>Cerebras Cloud</strong>{" "}
+          (which runs the Gemma model), for one-time inference only. If Cerebras is temporarily slow
+          or unavailable, the same request falls back to <strong>Cloudflare Workers AI</strong> (also
+          running Gemma) for one-time inference so the lesson can still be generated; the same
+          &quot;no training on your data&quot; commitment applies to both providers. Safety moderation
+          of your question and the generated lesson is performed locally on our own servers using
+          rule-based pattern matching — your question is <strong> not</strong> sent to any third
+          party just for moderation. We do not store your questions or generated lessons in a form
+          linked to your account. To improve speed, a generated lesson may be kept in a short-lived
+          server-side cache keyed by a one-way hash of the question text (not by your identity) and
+          is deleted automatically when it expires. However, please note that your questions are
+          transmitted to these providers&apos; APIs, and their own terms may govern how they handle
+          that data. We recommend reviewing{" "}
           <a href="https://www.cloudflare.com/privacypolicy/" style={{ color: "var(--accent)" }}>
             Cloudflare&apos;s Privacy Policy
+          </a>{" "}
+          and{" "}
+          <a href="https://www.cerebras.ai/privacy" style={{ color: "var(--accent)" }}>
+            Cerebras&apos;s Privacy Policy
           </a>{" "}
           for details on their data practices.
         </p>
@@ -241,18 +250,20 @@ export default function PrivacyPolicy() {
             <strong>Clerk</strong> (clerk.com) — Authentication and user management.
           </li>
           <li style={{ marginBottom: 4 }}>
-            <strong>Cloudflare Workers AI</strong> (cloudflare.com) — AI content generation using
-            Google&apos;s Gemma 4 open model hosted on Cloudflare&apos;s network. Your question,
-            chosen language, and difficulty level are sent to Cloudflare&apos;s API for one-time
+            <strong>Cerebras Cloud</strong> (cerebras.ai) — Our <strong>primary</strong> AI content
+            generation provider. Your question, chosen language, and difficulty level are sent to
+            Cerebras&apos; API (which runs Google&apos;s Gemma 4 31B open model) for one-time
             inference (lesson generation only — safety moderation runs locally on our servers and is
-            not sent to Cloudflare). No user identity is included in the API call. Cloudflare&apos;s
-            own data practices apply to API requests.
+            not sent to Cerebras). No user identity is included in the API call. Cerebras&apos; own
+            data practices apply to API requests.
           </li>
           <li style={{ marginBottom: 4 }}>
-            <strong>Backup AI provider</strong> — Used only as an automatic failover when Cloudflare
-            Workers AI is temporarily slow or unavailable, so lessons can still be generated. When
-            invoked, the same question, language, and difficulty level are sent for one-time
-            inference with no user identity attached, and no user data is used for training.
+            <strong>Cloudflare Workers AI</strong> (cloudflare.com) — Our <strong>automatic
+            fallback</strong> AI provider. Used only when the primary (Cerebras) is temporarily slow
+            or unavailable, so lessons can still be generated. It runs Google&apos;s Gemma open model
+            hosted on Cloudflare&apos;s network. When invoked, the same question, language, and
+            difficulty level are sent for one-time inference with no user identity attached, and no
+            user data is used for training.
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Google Analytics</strong> — Website analytics to understand usage patterns
@@ -332,13 +343,24 @@ export default function PrivacyPolicy() {
       </section>
 
       <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>11. Changes to This Policy</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
-          We may update this Privacy Policy from time to time. We will notify you of any changes
-          by posting the new policy on this page and updating the &quot;Last updated&quot; date.
-          Continued use of the service after changes constitutes acceptance of the updated policy.
-        </p>
-      </section>
+         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>11. Changes to This Policy</h3>
+         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+           We may update this Privacy Policy from time to time. We will notify you of any changes
+           by posting the new policy on this page and updating the &quot;Last updated&quot; date.
+           Continued use of the service after changes constitutes acceptance of the updated policy.
+         </p>
+         <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+           <strong>Version 2.2 (effective July 13, 2026).</strong> This update clarifies our AI
+           inference providers: our <strong>primary</strong> model provider is now{" "}
+           <strong>Cerebras Cloud</strong> (running Google&apos;s Gemma 4 31B), with{" "}
+           <strong>Cloudflare Workers AI</strong> (Gemma) as an automatic fallback, and updates the
+           Third-Party Services disclosures accordingly. Because this is a material change to our
+           data-processing disclosures, we are re-prompting all users to review and re-accept this
+           Privacy Policy (and our Terms of Service) before continuing. If you do not re-accept, you
+           can still browse, but lesson generation and account features that require current consent
+           will be paused until you do.
+         </p>
+       </section>
 
       <section style={{ marginBottom: 28 }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>12. Contact Us</h3>

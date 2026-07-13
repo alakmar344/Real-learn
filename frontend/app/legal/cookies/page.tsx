@@ -20,7 +20,7 @@ export default function CookiePolicy() {
         Cookie Policy
       </h2>
       <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
-        Last updated: July 1, 2026
+        Last updated: July 13, 2026
       </p>
 
       <section style={{ marginBottom: 28 }}>
