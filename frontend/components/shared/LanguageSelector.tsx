@@ -50,6 +50,7 @@ export default function LanguageSelector({ value, onChange, compact = false }: P
         ))}
       </select>
       <span
+        aria-hidden="true"
         style={{
           position: "absolute",
           right: 10,

@@ -24,26 +24,30 @@
   --border-accent: #8a7ff0;
   --border-glow: #b3a8f7;
 
-  /* ── Accent — crayon periwinkle-violet (AA-contrast with white text) ── */
-  --accent: #6d5fe0;
-  --accent-hover: #7e70ec;
-  --accent-dim: rgba(109, 95, 224, 0.09);
-  --accent-glow: rgba(109, 95, 224, 0.16);
+  /* ── Accent — crayon periwinkle-violet.
+     WCAG AA verified: white text on accent 5.39:1; accent as text ≥4.5:1 on
+     bg-primary/surface/card; hover keeps white text at 4.94:1. ── */
+  --accent: #6055e2;
+  --accent-hover: #675ce6;
+  --accent-dim: rgba(96, 85, 226, 0.09);
+  --accent-glow: rgba(96, 85, 226, 0.16);
   --accent-companion: #ef9fc4;   /* cotton-candy pink crayon */
   --accent-gradient: linear-gradient(135deg, #7c6ff0 0%, #f4a6c8 100%); /* periwinkle → pink crayon blend */
   --on-accent: #ffffff;
-  --shadow-glow-accent: 0 2px 14px rgba(109, 95, 224, 0.18);
+  --shadow-glow-accent: 0 2px 14px rgba(96, 85, 226, 0.18);
 
   /* ── Text — warm charcoal (softer than ink, still high contrast) ── */
   --text-primary: #3a3340;
   --text-secondary: #5f5768;
-  --text-tertiary: #8b8394;
-  --text-gold: #e0952f;
+  /* WCAG AA: tertiary 4.62:1 on surface (was 3.1:1); gold 4.5:1. */
+  --text-tertiary: #6e6778;
+  --text-gold: #96600d;
 
   /* ── Semantic — chalky crayon green / red ── */
-  --correct: #4fa87d;
+  /* WCAG AA: correct 4.79:1 / wrong 4.95:1 as text on surface (were <3:1). */
+  --correct: #2f7452;
   --correct-bg: rgba(91, 185, 140, 0.16);
-  --wrong: #e0736e;
+  --wrong: #b03f39;
   --wrong-bg: rgba(232, 131, 127, 0.16);
   --locked: #ddcfba;
 
@@ -198,7 +202,8 @@ html[data-theme="dark"] {
 
   --text-primary: #fafafa;
   --text-secondary: #a1a1aa;
-  --text-tertiary: #71717a;
+  /* WCAG AA: 5.53:1 on card (was 3.4:1). */
+  --text-tertiary: #94949e;
   --text-gold: #fbbf24;
 
   --correct: #34d399;

@@ -279,7 +279,9 @@ export default function LearnPage() {
               {isFastMode ? "FAST" : "GUIDED"}
             </span>
             <span style={{ fontSize: 12, color: "var(--text-tertiary)", marginRight: 8 }}>Understanding:</span>
-            <span
+            {/* The lesson question is the page's h1 (WCAG 1.3.1/2.4.6) —
+                visually styled as the compact header line it always was. */}
+            <h1
               style={{
                 fontFamily: "var(--font-playfair)",
                 fontStyle: "italic",
@@ -292,11 +294,12 @@ export default function LearnPage() {
                 display: "inline-block",
                 maxWidth: "100%",
                 verticalAlign: "bottom",
+                margin: 0,
               }}
               title={lesson.question ?? lesson.topic ?? ""}
             >
               {lesson.question ?? lesson.topic ?? ""}
-            </span>
+            </h1>
           </div>
         </div>
 
