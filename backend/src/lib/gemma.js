@@ -53,9 +53,19 @@ const RACING_MAX_RETRY_DELAY_MS = 2500;
 const DEFAULT_CIRCUIT_FAILURE_THRESHOLD = 2;
 const DEFAULT_CIRCUIT_COOLDOWN_MS = 60000;
 // How long the leading provider gets to itself before the second provider is
-// hedged in parallel. Low = faster worst-case answers, slightly more traffic
-// to the fallback (relevant for free-tier rate limits).
-const DEFAULT_HEDGE_DELAY_MS = 1500;
+// considered for hedging. COST CONTROL: the hedge only fires if the leader
+// has shown NO sign of life (no bytes received) by then — a healthy provider
+// that is merely generating never triggers the hedge, so the fallback's
+// free-tier limits and duplicate tokens are spent ONLY on rescues.
+const DEFAULT_HEDGE_DELAY_MS = 12000;
+// Streaming watchdogs. Responses are streamed so a hung request is detected
+// by silence, not by burning the whole per-attempt timeout (production logs
+// showed 45s wasted per hang):
+//  - first byte: cold starts legitimately take 10-30s, so allow 20s
+//  - between chunks: a generating model emits tokens continuously; 15s of
+//    mid-stream silence means the request is dead
+const DEFAULT_FIRST_BYTE_TIMEOUT_MS = 20000;
+const DEFAULT_STALL_TIMEOUT_MS = 15000;
 const PARSE_JSON_LOG_PREVIEW_CHARS = 300;
 
 // ── Errors (public API — server.js maps these to friendly client messages) ──
@@ -144,6 +154,14 @@ function getEngineConfig() {
     hedgeDelayMs: parseNonNegativeInt(
       process.env.AI_HEDGE_DELAY_MS,
       DEFAULT_HEDGE_DELAY_MS
+    ),
+    firstByteTimeoutMs: parseNonNegativeInt(
+      process.env.AI_FIRST_BYTE_TIMEOUT_MS,
+      DEFAULT_FIRST_BYTE_TIMEOUT_MS
+    ),
+    stallTimeoutMs: parseNonNegativeInt(
+      process.env.AI_STALL_TIMEOUT_MS,
+      DEFAULT_STALL_TIMEOUT_MS
     ),
   };
 }
@@ -393,8 +411,8 @@ function getProviders(allowFallback) {
       key: "cloudflare",
       label: "Cloudflare Workers AI",
       models: getCloudflareModels(),
-      call: (model, body, signal) =>
-        callWorkersAI(process.env.CLOUDFLARE_ACCOUNT_ID.trim(), model, body, signal),
+      call: (model, body, signal, opts) =>
+        callWorkersAI(process.env.CLOUDFLARE_ACCOUNT_ID.trim(), model, body, signal, opts),
     });
   }
   if (allowFallback && isFallbackConfigured()) {
@@ -402,7 +420,8 @@ function getProviders(allowFallback) {
       key: "fallback",
       label: "Fallback AI provider (OpenRouter)",
       models: getFallbackModels(GEMMA_MODEL),
-      call: (model, body, signal) => callFallbackWithModel(model, body, signal),
+      call: (model, body, signal, opts) =>
+        callFallbackWithModel(model, body, signal, opts),
     });
   }
   return providers;
@@ -449,54 +468,113 @@ async function readErrorDetails(response, contentType) {
   }
 }
 
-async function fetchChatCompletion(url, headers, payload, signal) {
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Connection: "keep-alive",
-      "Accept-Encoding": "gzip, deflate, br",
-      ...headers,
-    },
-    body: JSON.stringify(payload),
-    signal,
-  });
+// Fetch a chat completion with a SILENCE WATCHDOG. `opts.onActivity` fires on
+// every sign of life (headers, each stream chunk) — the race orchestrator
+// uses it to skip hedging a provider that is alive and generating. If the
+// provider goes silent past the watchdog windows, the request is aborted and
+// surfaced as a retryable 408 so retries/fallback kick in within seconds
+// instead of burning the full per-attempt timeout.
+async function fetchChatCompletion(url, headers, payload, signal, opts = {}) {
+  const { firstByteTimeoutMs = 0, stallTimeoutMs = 0, onActivity } = opts;
 
-  const contentType = response.headers.get("content-type") || "";
+  const controller = new AbortController();
+  const forwardAbort = () => controller.abort();
+  signal?.addEventListener("abort", forwardAbort, { once: true });
 
-  if (!response.ok) {
-    const retryAfterMs = parseRetryAfterMs(response);
-    const details = await readErrorDetails(response, contentType);
-    throw new GemmaApiError(
-      response.status,
-      response.statusText,
-      details,
-      retryAfterMs
-    );
+  let watchdogFired = false;
+  let watchdogAtMs = 0;
+  let watchdogTimer = null;
+  let receivedData = false;
+  const disarmWatchdog = () => {
+    if (watchdogTimer) clearTimeout(watchdogTimer);
+    watchdogTimer = null;
+  };
+  const armWatchdog = (ms) => {
+    disarmWatchdog();
+    if (!(ms > 0)) return;
+    watchdogAtMs = ms;
+    watchdogTimer = setTimeout(() => {
+      watchdogFired = true;
+      controller.abort();
+    }, ms);
+  };
+  const activity = () => {
+    receivedData = true;
+    onActivity?.();
+    armWatchdog(stallTimeoutMs);
+  };
+
+  armWatchdog(firstByteTimeoutMs);
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Connection: "keep-alive",
+        "Accept-Encoding": "gzip, deflate, br",
+        ...headers,
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+
+    // Headers only reset the watchdog; "alive" (hedge-skipping) is reserved
+    // for HEALTHY responses — an error reply is not a generation in progress.
+    armWatchdog(stallTimeoutMs);
+    const contentType = response.headers.get("content-type") || "";
+
+    if (!response.ok) {
+      const retryAfterMs = parseRetryAfterMs(response);
+      const details = await readErrorDetails(response, contentType);
+      throw new GemmaApiError(
+        response.status,
+        response.statusText,
+        details,
+        retryAfterMs
+      );
+    }
+    activity();
+
+    if (contentType.includes("text/event-stream")) {
+      return await handleStreamingResponse(response, activity);
+    }
+
+    if (!contentType.includes("application/json")) {
+      return await response.text();
+    }
+
+    const data = await response.json();
+    if (data.error) {
+      throw new GemmaApiError(
+        data.error.code || 500,
+        "APIError",
+        data.error.message || JSON.stringify(data.error),
+        parseRetryAfterMs(response)
+      );
+    }
+    return data;
+  } catch (error) {
+    if (watchdogFired && isAbortError(error)) {
+      // 408 keeps this on the retryable/rotate/circuit path.
+      const stallError = new GemmaApiError(
+        408,
+        "StallTimeout",
+        `provider sent no data for ${watchdogAtMs}ms (silence watchdog)`
+      );
+      // A stall AFTER data flowed is a dead connection, not a cold start —
+      // the retry scheduler must not sit out the 15s cold-start window.
+      stallError.receivedData = receivedData;
+      throw stallError;
+    }
+    throw error;
+  } finally {
+    disarmWatchdog();
+    signal?.removeEventListener("abort", forwardAbort);
   }
-
-  if (contentType.includes("text/event-stream")) {
-    return await handleStreamingResponse(response);
-  }
-
-  if (!contentType.includes("application/json")) {
-    const text = await response.text();
-    return text;
-  }
-
-  const data = await response.json();
-  if (data.error) {
-    throw new GemmaApiError(
-      data.error.code || 500,
-      "APIError",
-      data.error.message || JSON.stringify(data.error),
-      parseRetryAfterMs(response)
-    );
-  }
-  return data;
 }
 
-async function callWorkersAI(accountId, model, body, signal) {
+async function callWorkersAI(accountId, model, body, signal, opts) {
   const apiToken = process.env.CLOUDFLARE_API_TOKEN?.trim();
   if (!apiToken) {
     throw new Error("CLOUDFLARE_API_TOKEN is not configured");
@@ -510,15 +588,19 @@ async function callWorkersAI(accountId, model, body, signal) {
       messages: body.messages,
       temperature: body.temperature,
       max_tokens: body.max_tokens,
-      stream: false,
+      // Streaming is what makes the silence watchdog possible: a healthy
+      // generation emits tokens continuously, a hung one goes quiet and is
+      // killed in seconds instead of after the full timeout.
+      stream: true,
     },
-    signal
+    signal,
+    opts
   );
 }
 
 // Engine-internal: call the fallback provider with an EXACT model name
 // (the engine's rotation logic owns model selection).
-async function callFallbackWithModel(modelName, body, signal) {
+async function callFallbackWithModel(modelName, body, signal, opts) {
   const apiUrl = process.env.FALLBACK_AI_URL?.trim();
   const apiKey = process.env.FALLBACK_AI_API_KEY?.trim();
   if (!apiUrl || !apiKey) {
@@ -541,8 +623,10 @@ async function callFallbackWithModel(modelName, body, signal) {
       messages: body.messages,
       temperature: body.temperature,
       max_tokens: body.max_tokens,
+      stream: true,
     },
-    signal
+    signal,
+    opts
   );
 }
 
@@ -580,7 +664,7 @@ function extractStreamChunkError(chunk) {
   return null;
 }
 
-async function handleStreamingResponse(response) {
+async function handleStreamingResponse(response, onChunk) {
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let fullText = "";
@@ -610,6 +694,7 @@ async function handleStreamingResponse(response) {
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
+    onChunk?.();
     buffer += decoder.decode(value, { stream: true });
 
     const lines = buffer.split("\n");
@@ -715,7 +800,14 @@ async function runProviderAttempts(provider, request, config, raceState) {
       const result = await provider.call(
         model,
         { messages, temperature, max_tokens: maxOutputTokens },
-        controller.signal
+        controller.signal,
+        {
+          firstByteTimeoutMs: config.firstByteTimeoutMs,
+          stallTimeoutMs: config.stallTimeoutMs,
+          // Liveness signal for the race orchestrator: a provider that is
+          // receiving data must not be hedged against (cost control).
+          onActivity: () => raceState?.markAlive?.(),
+        }
       );
       const text = extractTextFromResult(result);
 
@@ -755,9 +847,14 @@ async function runProviderAttempts(provider, request, config, raceState) {
         errorMessage: error?.message,
       });
 
-      // Rotate away from a model this provider says is bad/throttled, so the
-      // NEXT attempt (and the next request) starts from a healthier model.
-      if (isModelRotationFailure(error) && models.length > 1) {
+      // Rotate away from a model this provider says is bad/throttled — and
+      // also from one that timed out or 5xx'd (free-tier models get
+      // overloaded/queued without notice) — so the NEXT attempt (and the
+      // next request) starts from a healthier model.
+      if (
+        (isModelRotationFailure(error) || isAvailabilityFailure(error)) &&
+        models.length > 1
+      ) {
         health.modelIndex = (modelIndex + 1) % models.length;
         console.warn("[AI] rotating model", {
           callId,
@@ -776,8 +873,9 @@ async function runProviderAttempts(provider, request, config, raceState) {
       // a cold model — wait long enough for it to load, unless another
       // provider is racing (then keep the loser's retries cheap and quick).
       const isColdStart =
-        error instanceof GemmaTimeoutError ||
-        (error instanceof GemmaApiError && error.status === 408);
+        (error instanceof GemmaTimeoutError ||
+          (error instanceof GemmaApiError && error.status === 408)) &&
+        !error.receivedData;
       const racing = raceState?.othersRunning?.() ?? false;
       const baseDelay = isColdStart ? COLD_START_RETRY_DELAY_MS : config.retryDelayMs;
       const cap = racing
@@ -824,21 +922,30 @@ function pickBestError(errors) {
 }
 
 /**
- * Race providers with hedging:
+ * Race providers with COST-AWARE hedging:
  *  - launch the first (healthiest) provider immediately;
  *  - if it fails, launch the next one instantly (fail-fast);
- *  - if it is merely SLOW, launch the next one after hedgeDelayMs anyway;
+ *  - if the hedge timer fires and NO running provider has shown any sign of
+ *    life (no bytes received), launch the next one in parallel — but if the
+ *    leader is alive and generating, DON'T: hedging a healthy provider only
+ *    doubles token spend and burns the fallback's free-tier limits. A leader
+ *    that goes quiet later is killed by the stream silence watchdog, which
+ *    lands in the fail-fast path anyway;
  *  - first success wins, all other in-flight attempts are aborted.
  */
-function hedgedRace(starters, hedgeDelayMs, onWinner) {
+function hedgedRace(starters, hedgeDelayMs, onWinner, onHedgeSkipped) {
   return new Promise((resolve, reject) => {
     const errors = new Array(starters.length);
     let nextIndex = 0;
     let running = 0;
     let finished = false;
     let hedgeTimer = null;
+    let anyAlive = false;
 
     const othersRunning = () => running > 1;
+    const markAlive = () => {
+      anyAlive = true;
+    };
 
     const settleReject = () => {
       if (!finished && running === 0 && nextIndex >= starters.length) {
@@ -850,7 +957,15 @@ function hedgedRace(starters, hedgeDelayMs, onWinner) {
 
     const scheduleHedge = () => {
       if (finished || nextIndex >= starters.length) return;
-      hedgeTimer = setTimeout(launchNext, hedgeDelayMs);
+      hedgeTimer = setTimeout(() => {
+        if (finished) return;
+        if (anyAlive) {
+          // Leader is receiving data — rescue not needed, save the money.
+          onHedgeSkipped?.();
+          return;
+        }
+        launchNext();
+      }, hedgeDelayMs);
     };
 
     const launchNext = () => {
@@ -861,7 +976,10 @@ function hedgedRace(starters, hedgeDelayMs, onWinner) {
       }
       const index = nextIndex++;
       running += 1;
-      starters[index]({ othersRunning }).then(
+      // A newly launched provider starts silent: reset the liveness flag so
+      // its own hedge window judges IT, not the corpse of its predecessor.
+      anyAlive = false;
+      starters[index]({ othersRunning, markAlive }).then(
         (value) => {
           running -= 1;
           if (finished) return;
@@ -915,6 +1033,7 @@ export async function callGemma(
   }
 
   const callId = `ai-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  lastUserRequestAt = Date.now();
   const sanitizedSystemPrompt = stripThinkingTags(systemPrompt);
   const messages = [
     { role: "system", content: sanitizedSystemPrompt },
@@ -970,12 +1089,21 @@ export async function callGemma(
   );
 
   try {
-    const text = await hedgedRace(starters, config.hedgeDelayMs, (index) => {
-      console.log("[AI] callGemma success", {
-        callId,
-        winner: ordered[index].key,
-      });
-    });
+    const text = await hedgedRace(
+      starters,
+      config.hedgeDelayMs,
+      (index) => {
+        console.log("[AI] callGemma success", {
+          callId,
+          winner: ordered[index].key,
+        });
+      },
+      () => {
+        console.log("[AI] hedge skipped — leader is alive and generating", {
+          callId,
+        });
+      }
+    );
     return text;
   } catch (error) {
     // Caller cancelled — surface the abort as-is.
@@ -1083,19 +1211,55 @@ export async function warmUpModel() {
 // Periodic warm-up: ping the model at a regular interval to prevent cold
 // starts. Cloudflare Workers AI unloads idle models quickly — production
 // logs show the model going cold within 30-40 seconds.
+//
+// COST CONTROL: pinging 24/7 is ~960 inference calls/day even when nobody is
+// using the site. Warm-up now only runs while there has been user activity
+// within WARM_UP_IDLE_WINDOW_MS (default 15 min, boot counts as activity so
+// the first visitors are covered). After an idle stretch the first request
+// pays a cold start once — the silence watchdog + fallback rescue keep even
+// that case bounded — and warm-up resumes automatically with the traffic.
 const DEFAULT_WARM_UP_INTERVAL_MS = 90 * 1000;
+const DEFAULT_WARM_UP_IDLE_WINDOW_MS = 15 * 60 * 1000;
+
+// Updated on every callGemma invocation; initialized to "now" at boot.
+let lastUserRequestAt = Date.now();
 
 export function startPeriodicWarmUp(intervalMs) {
   const resolvedMs =
     Number.isFinite(intervalMs) && intervalMs > 0
       ? intervalMs
-      : DEFAULT_WARM_UP_INTERVAL_MS;
+      : parsePositiveInt(
+          process.env.GEMMA_WARM_UP_INTERVAL_MS,
+          DEFAULT_WARM_UP_INTERVAL_MS
+        );
+  const idleWindowMs = parsePositiveInt(
+    process.env.WARM_UP_IDLE_WINDOW_MS,
+    DEFAULT_WARM_UP_IDLE_WINDOW_MS
+  );
 
-  // Run the first warm-up immediately, then on the interval.
+  let idleLogged = false;
+  // Run the first warm-up immediately, then on the interval while active.
   warmUpModel();
-  const handle = setInterval(() => warmUpModel(), resolvedMs);
+  const handle = setInterval(() => {
+    const idleForMs = Date.now() - lastUserRequestAt;
+    if (idleForMs > idleWindowMs) {
+      if (!idleLogged) {
+        console.log("[AI] Warm-up paused — no user requests recently", {
+          idleForMs,
+          idleWindowMs,
+        });
+        idleLogged = true;
+      }
+      return;
+    }
+    idleLogged = false;
+    warmUpModel();
+  }, resolvedMs);
   handle.unref?.();
-  console.log("[AI] Periodic warm-up started", { intervalMs: resolvedMs });
+  console.log("[AI] Periodic warm-up started", {
+    intervalMs: resolvedMs,
+    idleWindowMs,
+  });
   return handle;
 }
 

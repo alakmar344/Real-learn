@@ -12,7 +12,6 @@ export default function ErrorState({ message, onRetry, onHome }: Props) {
       role="alert"
       style={{
         minHeight: "100vh",
-        background: "var(--bg-primary)",
         color: "var(--text-primary)",
         display: "grid",
         placeItems: "center",

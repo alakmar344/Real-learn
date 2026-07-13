@@ -10,7 +10,6 @@ export default function SignInPage() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "var(--bg-primary)",
         padding: 24,
       }}
     >

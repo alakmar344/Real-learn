@@ -33,6 +33,46 @@ function jsonResponse(body, status = 200, headers = {}) {
 const okResponse = (text) =>
   jsonResponse({ choices: [{ message: { content: text } }] });
 
+// Build a mock SSE response that emits chunks on a schedule. Wires the abort
+// signal like a real fetch: aborting errors the stream so pending reads
+// reject (this is how the silence watchdog interrupts a stalled body).
+function sseResponse(signal, steps, { close = true } = {}) {
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    start(controller) {
+      let latest = 0;
+      for (const step of steps) {
+        latest = Math.max(latest, step.at);
+        setTimeout(() => {
+          try {
+            controller.enqueue(encoder.encode(step.data));
+          } catch {}
+        }, step.at);
+      }
+      if (close) {
+        setTimeout(() => {
+          try {
+            controller.close();
+          } catch {}
+        }, latest + 20);
+      }
+      signal?.addEventListener("abort", () => {
+        try {
+          const abortError = new Error("aborted");
+          abortError.name = "AbortError";
+          controller.error(abortError);
+        } catch {}
+      });
+    },
+  });
+  return new Response(stream, {
+    status: 200,
+    headers: { "content-type": "text/event-stream" },
+  });
+}
+const sseChunk = (text) =>
+  `data: ${JSON.stringify({ choices: [{ delta: { content: text } }] })}\n\n`;
+
 beforeEach(() => {
   resetProviderHealth();
   globalThis.fetch = async (url, opts) =>
@@ -125,6 +165,43 @@ test("open circuits still half-open-probe instead of refusing outright", async (
   const text = await callGemma("sys", "user", false, 0.5, 5000);
   assert.equal(text, "recovered");
   assert.equal(probed, 1);
+});
+
+test("hedge is SKIPPED while the leader is streaming (no fallback spend)", async () => {
+  let fallbackCalls = 0;
+  scenario = (isCloudflare, opts) => {
+    if (isCloudflare) {
+      // First chunk at 20ms (before the 80ms hedge), finishes at 250ms
+      // (after the hedge would have fired).
+      return sseResponse(opts.signal, [
+        { at: 20, data: sseChunk("slow ") },
+        { at: 250, data: sseChunk("but alive") },
+      ]);
+    }
+    fallbackCalls += 1;
+    return okResponse("should-never-run");
+  };
+  const text = await callGemma("sys", "user", false, 0.5, 5000);
+  assert.equal(text, "slow but alive");
+  assert.equal(fallbackCalls, 0);
+});
+
+test("silence watchdog kills a stalled stream fast (retryable 408)", async () => {
+  process.env.AI_FIRST_BYTE_TIMEOUT_MS = "150";
+  process.env.AI_STALL_TIMEOUT_MS = "100";
+  try {
+    scenario = (isCloudflare, opts) =>
+      // One chunk, then silence forever — never closes.
+      sseResponse(opts.signal, [{ at: 5, data: sseChunk("hi") }], { close: false });
+    const startedAt = Date.now();
+    await assert.rejects(() => callGemma("sys", "user", false, 0.5, 60000));
+    // Both providers × 2 attempts, each killed by the ~100ms watchdog plus
+    // small backoffs — nowhere near the 60s per-attempt timeout.
+    assert.ok(Date.now() - startedAt < 5000, "watchdog should fire in ms, not seconds");
+  } finally {
+    delete process.env.AI_FIRST_BYTE_TIMEOUT_MS;
+    delete process.env.AI_STALL_TIMEOUT_MS;
+  }
 });
 
 test("caller abort propagates as AbortError", async () => {

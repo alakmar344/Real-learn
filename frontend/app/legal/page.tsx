@@ -13,7 +13,6 @@ export default async function LegalPage({ searchParams }: { searchParams: Search
     <main
       style={{
         minHeight: "100vh",
-        background: "var(--bg-primary)",
         color: "var(--text-primary)",
         padding: "40px 24px",
       }}

@@ -161,7 +161,7 @@ export default function LearnPage() {
     return (
       <>
         <LiveRegion />
-        <main style={{ minHeight: "100vh", background: "var(--bg-primary)" }} />
+        <main style={{ minHeight: "100vh" }} />
       </>
     );
   }
@@ -203,7 +203,7 @@ export default function LearnPage() {
     return (
       <>
         <LiveRegion />
-        <main style={{ minHeight: "100vh", background: "var(--bg-primary)", color: "var(--text-primary)", padding: 24 }}>
+        <main style={{ minHeight: "100vh", color: "var(--text-primary)", padding: 24 }}>
           <Navbar />
           <div style={{ maxWidth: 640, margin: "80px auto", textAlign: "center" }}>
             <h2
@@ -248,7 +248,7 @@ export default function LearnPage() {
   return (
     <>
       <LiveRegion />
-      <main style={{ minHeight: "100vh", background: "var(--bg-primary)", color: "var(--text-primary)" }}>
+      <main style={{ minHeight: "100vh", color: "var(--text-primary)" }}>
         <div
           style={{
             position: "sticky",
