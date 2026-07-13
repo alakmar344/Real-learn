@@ -574,25 +574,41 @@ async function fetchChatCompletion(url, headers, payload, signal, opts = {}) {
   }
 }
 
+// LATENCY: Gemma 4 is a reasoning model — it spends output tokens "thinking"
+// before the answer (we strip those tags but still pay for the time). Most
+// hosts accept the vLLM-style `chat_template_kwargs: { enable_thinking:
+// false }` to turn that off, roughly halving wall-clock generation for
+// structured-output workloads like ours. Because not every host tolerates
+// the extra field, it is opt-in per provider:
+//   AI_DISABLE_THINKING = off (default) | fallback | cloudflare | both
+function thinkingDisabledFor(providerKey) {
+  const mode = (process.env.AI_DISABLE_THINKING || "off").trim().toLowerCase();
+  return mode === "both" || mode === providerKey;
+}
+
 async function callWorkersAI(accountId, model, body, signal, opts) {
   const apiToken = process.env.CLOUDFLARE_API_TOKEN?.trim();
   if (!apiToken) {
     throw new Error("CLOUDFLARE_API_TOKEN is not configured");
   }
   const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/v1/chat/completions`;
+  const payload = {
+    model,
+    messages: body.messages,
+    temperature: body.temperature,
+    max_tokens: body.max_tokens,
+    // Streaming is what makes the silence watchdog possible: a healthy
+    // generation emits tokens continuously, a hung one goes quiet and is
+    // killed in seconds instead of after the full timeout.
+    stream: true,
+  };
+  if (thinkingDisabledFor("cloudflare")) {
+    payload.chat_template_kwargs = { enable_thinking: false };
+  }
   return fetchChatCompletion(
     url,
     { Authorization: `Bearer ${apiToken}` },
-    {
-      model,
-      messages: body.messages,
-      temperature: body.temperature,
-      max_tokens: body.max_tokens,
-      // Streaming is what makes the silence watchdog possible: a healthy
-      // generation emits tokens continuously, a hung one goes quiet and is
-      // killed in seconds instead of after the full timeout.
-      stream: true,
-    },
+    payload,
     signal,
     opts
   );
@@ -611,6 +627,33 @@ async function callFallbackWithModel(modelName, body, signal, opts) {
   const referer =
     process.env.FALLBACK_AI_REFERER?.trim() || "https://reallearn.site";
 
+  const payload = {
+    model: modelName,
+    messages: body.messages,
+    temperature: body.temperature,
+    max_tokens: body.max_tokens,
+    stream: true,
+  };
+  if (thinkingDisabledFor("fallback")) {
+    payload.chat_template_kwargs = { enable_thinking: false };
+  }
+
+  // ULTRA-FAST ROUTING (OpenRouter only — set these envs only when
+  // FALLBACK_AI_URL points at OpenRouter):
+  //   FALLBACK_AI_PROVIDER_ORDER — comma list of hosts to prefer, fastest
+  //     first (e.g. "makora,cloudflare"). Artificial Analysis benchmarks
+  //     Gemma 4 26B A4B hosts from ~277 t/s down to ~23 t/s, so pinning the
+  //     fast host cuts generation time ~3x.
+  //   FALLBACK_AI_SORT — "throughput" | "latency" | "price": how OpenRouter
+  //     ranks the remaining hosts.
+  const providerOrder = parseModelList(process.env.FALLBACK_AI_PROVIDER_ORDER);
+  const providerSort = process.env.FALLBACK_AI_SORT?.trim();
+  if (providerOrder.length > 0 || providerSort) {
+    payload.provider = { allow_fallbacks: true };
+    if (providerOrder.length > 0) payload.provider.order = providerOrder;
+    if (providerSort) payload.provider.sort = providerSort;
+  }
+
   return fetchChatCompletion(
     apiUrl,
     {
@@ -618,13 +661,7 @@ async function callFallbackWithModel(modelName, body, signal, opts) {
       "HTTP-Referer": referer,
       "X-Title": "RealLearn",
     },
-    {
-      model: modelName,
-      messages: body.messages,
-      temperature: body.temperature,
-      max_tokens: body.max_tokens,
-      stream: true,
-    },
+    payload,
     signal,
     opts
   );
