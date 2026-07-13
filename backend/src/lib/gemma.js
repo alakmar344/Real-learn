@@ -697,15 +697,19 @@ async function callCerebras(model, body, signal, opts) {
   });
 
   try {
+    const payload = {
+      model,
+      messages: body.messages,
+      temperature: body.temperature,
+      max_completion_tokens: body.max_tokens,
+      stream: true,
+      top_p: 0.95,
+    };
+    if (thinkingDisabledFor("cerebras")) {
+      payload.chat_template_kwargs = { enable_thinking: false };
+    }
     const stream = await cerebras.chat.completions.create(
-      {
-        model,
-        messages: body.messages,
-        temperature: body.temperature,
-        max_completion_tokens: body.max_tokens,
-        stream: true,
-        top_p: 0.95,
-      },
+      payload,
       { signal: controller.signal }
     );
 

@@ -29,6 +29,8 @@ A running log of what's new in RealLearn. The full, exhaustive history from the
 gold redesign onward lives in [`change-made-after-submmisun.md`](./change-made-after-submmisun.md).
 
 **Today — July 13, 2026**
+- **Loading cinematic overhaul.** Counter now auto-completes to 100% on an ease-out curve and fades out gracefully into the lesson, fixing the "stuck at 35%" disconnect on fast Cerebras responses. ([`...`])
+- **Token-spend reduction (~50-60%).** Compressed system prompts, tightened output ceilings (fast 4000→2500, explain 6000→4000), enabled no-thinking mode on the primary Cerebras provider, and added per-request token logging to monitor daily burn. ([`...`])
 - **AI provider switch → Cerebras primary, Cloudflare fallback.** The hedged multi-provider engine now uses **Cerebras Cloud** (Gemma 4 31B) as the primary inference provider, with **Cloudflare Workers AI** (Gemma) as an automatic fallback for reliability. ([`722f53e`](https://github.com/alakmar344/reallearn/commit/722f53e))
 - **Ultra-fast inference knobs.** Added a "no-thinking" mode and OpenRouter host pinning to cut latency. ([`223de88`](https://github.com/alakmar344/reallearn/commit/223de88))
 - **Cost-aware inference.** Trimmed wasted tokens, tightened output limits, and reduced latency. ([`92f34eb`](https://github.com/alakmar344/reallearn/commit/92f34eb))
@@ -153,7 +155,7 @@ RealLearn runs on **Gemma 4** — and we didn't just call the model and hope for
 
 - **Real-World Grounding via Serper.** *Before* calling Gemma, the backend fetches recent, India-relevant news using the **Serper API** and injects it straight into the prompt. This means **Part 3** connects theory to actual current events — with real names, dates, and figures — instead of vague abstractions.
 
-- **Dual Prompt Architecture.** Two distinct system prompts power two distinct experiences: `GENERATE_LESSON_PROMPT` for the full 3-part Explain journey, and `GENERATE_FAST_ANSWER_PROMPT` for the lightning-fast single-part mode. The fast prompt explicitly suppresses "thinking" tokens and instructs the model to begin JSON output immediately, shaving seconds off every request.
+- **Dual Prompt Architecture.** Two distinct, tightly compressed system prompts power two distinct experiences: `GENERATE_LESSON_PROMPT` for the full 3-part Explain journey, and `GENERATE_FAST_ANSWER_PROMPT` for the lightning-fast single-part mode. Prompts describe the JSON schema concisely instead of embedding a massive template, cutting ~300-400 tokens per request without sacrificing answer depth.
 
 - **Robustness Engineering.** Model output is never trusted blindly:
   - A multi-stage **JSON repair pipeline** strips "thinking" tokens, removes Markdown code fences, closes truncated output, drops trailing commas, re-attempts parsing through several escalating recovery strategies, and even salvages partial lessons when the model runs out of output budget.
@@ -215,7 +217,7 @@ The Serper integration includes its own in-memory cache (10-minute TTL, 200 entr
 
 RealLearn is designed to feel like a quiet, beautiful study space — not a noisy app:
 
-- A **cinematic loading screen** with a glowing radial backdrop, a smooth asymptotic progress bar, a six-step checklist (Understanding your question -> Researching real-world context -> Writing the foundation -> Explaining how it works -> Connecting it to the real world -> Crafting quiz questions), and rotating learning-fact cards keeps you company while your lesson builds.
+- A **cinematic loading screen** with a glowing radial backdrop, a progress bar that auto-completes to 100% on an ease-out curve and fades gracefully into the lesson, a six-step checklist (Understanding your question -> Researching real-world context -> Writing the foundation -> Explaining how it works -> Connecting it to the real world -> Crafting quiz questions), and rotating learning-fact cards keeps you company while your lesson builds.
 - A **progress rail** shows your three-part journey as connected nodes that fill from locked -> active -> complete.
 - A full-screen **unlock animation** rewards every part you clear.
 - A **completion screen** celebrates the finish with an animated score ring, falling confetti, key takeaways, and a shareable result card.
@@ -288,9 +290,9 @@ When you complete a journey, a Canvas-generated result card lets you share your 
 
 RealLearn offers two distinct ways to learn:
 
-- **Fast Mode:** One instant, direct answer — like asking a brilliant teacher who gets straight to the point. The fast prompt suppresses thinking tokens, uses a lower temperature (0.2) for focused output, skips the Serper news fetch, and skips LLM input moderation to shave latency. A short answer, two quick quiz questions, two key takeaways. Done.
+- **Fast Mode:** One instant, direct answer — like asking a brilliant teacher who gets straight to the point. The fast prompt suppresses thinking tokens, uses a lower temperature (0.2) for focused output, and is capped at 2,500 output tokens to keep responses lean. Skips the Serper news fetch and LLM input moderation to shave latency. A short answer, two quick quiz questions, two key takeaways. Done.
 
-- **Explain Mode:** The classic deep 3-part journey with Foundation, Mechanism, and Real World. Full news grounding, full moderation, full educational depth. The experience RealLearn was built for.
+- **Explain Mode:** The classic deep 3-part journey with Foundation, Mechanism, and Real World. Full news grounding, full moderation, full educational depth, capped at 4,000 output tokens. The experience RealLearn was built for.
 
 Toggle between modes with a single tap on the homepage. Your preference persists across sessions.
 
@@ -649,6 +651,7 @@ This section documents every file in the repository and what it does — so you 
 - `MODERATION_TIMEOUT_MS=8000` *(optional; moderation call timeout)*
 - `MODERATION_CACHE_TTL_MS=900000` *(optional; moderation verdict cache TTL, default 15 min)*
 - `PORT=10000` *(optional on Render)*
+- `AI_DISABLE_THINKING=cerebras` *(optional; disable "thinking" tokens on the primary Cerebras provider to cut token spend by ~30-50%. Set to `off`, `cerebras`, `cloudflare`, or `both`.)*
 
 ---
 
