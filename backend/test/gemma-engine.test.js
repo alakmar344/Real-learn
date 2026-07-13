@@ -204,6 +204,44 @@ test("silence watchdog kills a stalled stream fast (retryable 408)", async () =>
   }
 });
 
+test("ultra-fast knobs: no-thinking + OpenRouter provider routing in payload", async () => {
+  process.env.AI_DISABLE_THINKING = "both";
+  process.env.FALLBACK_AI_PROVIDER_ORDER = "makora,cloudflare";
+  process.env.FALLBACK_AI_SORT = "throughput";
+  try {
+    const payloads = { cloudflare: null, fallback: null };
+    scenario = async (isCloudflare, opts) => {
+      const body = JSON.parse(opts.body);
+      if (isCloudflare) {
+        payloads.cloudflare = body;
+        // Fail CF so the fallback also runs and we can inspect its payload.
+        return jsonResponse({ errors: [{ message: "down" }] }, 500);
+      }
+      payloads.fallback = body;
+      return okResponse("fast-answer");
+    };
+    const text = await callGemma("sys", "user", false, 0.5, 5000);
+    assert.equal(text, "fast-answer");
+    assert.deepEqual(payloads.cloudflare.chat_template_kwargs, {
+      enable_thinking: false,
+    });
+    assert.deepEqual(payloads.fallback.chat_template_kwargs, {
+      enable_thinking: false,
+    });
+    assert.deepEqual(payloads.fallback.provider, {
+      allow_fallbacks: true,
+      order: ["makora", "cloudflare"],
+      sort: "throughput",
+    });
+    // Cloudflare must never receive OpenRouter-only routing fields.
+    assert.equal(payloads.cloudflare.provider, undefined);
+  } finally {
+    delete process.env.AI_DISABLE_THINKING;
+    delete process.env.FALLBACK_AI_PROVIDER_ORDER;
+    delete process.env.FALLBACK_AI_SORT;
+  }
+});
+
 test("caller abort propagates as AbortError", async () => {
   scenario = (isCloudflare, opts) =>
     new Promise((resolve, reject) => {
