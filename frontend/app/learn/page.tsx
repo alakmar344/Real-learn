@@ -35,6 +35,10 @@ export default function LearnPage() {
   const [showUnlockFx, setShowUnlockFx] = useState(false);
   const [isRevealing, setIsRevealing] = useState(false);
   const unlockTimeoutRef = useRef<number | null>(null);
+  // Guards the reveal so it fires exactly once per lesson. Keying it on the
+  // lesson object (not a boolean) also prevents the reveal effect from
+  // re-arming on unrelated re-renders.
+  const revealedLessonRef = useRef<LessonJourney | null>(null);
 
   const {
     question,
@@ -86,13 +90,21 @@ export default function LearnPage() {
     };
   }, [mounted]);
 
+  // When a lesson lands, fade the loading overlay out and reveal the lesson.
+  // `isRevealing` is deliberately NOT in the dependency array: including it
+  // made the effect's own setState re-run it synchronously, which cleared the
+  // 420ms timer before it fired and left `isRevealing` stuck `true` forever —
+  // the invisible overlay then blocked the (never-rendered) lesson, i.e. a
+  // blank page after the loader hit 100%. The `revealedLessonRef` guard keeps
+  // this from re-arming for the same lesson.
   useEffect(() => {
-    if (!isLoading && lesson && !isRevealing) {
+    if (!isLoading && lesson && revealedLessonRef.current !== lesson) {
+      revealedLessonRef.current = lesson;
       setIsRevealing(true);
       const timer = setTimeout(() => setIsRevealing(false), 420);
       return () => clearTimeout(timer);
     }
-  }, [isLoading, lesson, isRevealing]);
+  }, [isLoading, lesson]);
 
   // Initialize from the CURRENT (already-hydrated) store values — the lesson
   // store persists, so starting these at null/false made every reload of a
