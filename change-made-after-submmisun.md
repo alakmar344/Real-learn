@@ -13,6 +13,41 @@
 
 ---
 
+## What's Changed (latest)
+
+A short, human-readable digest of the most recent work. Full detail remains in
+the themed sections below and the chronological table at the end.
+
+### Today — July 13, 2026
+- **`722f53e` — AI provider stack: Cerebras primary (gemma-4-31b), Cloudflare fallback.**
+  Finalized the hedged multi-provider engine: Cerebras Cloud (Gemma 4 31B) is now
+  the primary inference provider, with Cloudflare Workers AI as the automatic
+  fallback.
+- **`223de88` — Ultra-fast inference knobs:** no-thinking mode + OpenRouter host
+  pinning to cut latency.
+- **`92f34eb` — Cost-aware inference:** stop wasting tokens, tighter limits, lower
+  latency.
+- **`f048a34` — Hedged multi-provider AI engine + security fixes.**
+- **`7b11224` — WCAG 2.1 AA compliance fixes** (frontend).
+- **`11218d5` — Crayon scene:** school, river bridge, RealLearn signpost.
+- **`090d66e` — Make the crayon painting actually visible.**
+- **`c285e2d` — Responsive crayon background:** portrait mobile SVG + scroll-stable
+  positioning.
+- **`d6e8318` — Replace heavy inline SVG background** with GPU-composited static SVG.
+- **`748e220` — Legal v2.2:** Privacy/Terms document the Cerebras primary + Cloudflare
+  fallback and add a reconsent note; re-prompt all users.
+- **`160e97d` — Backend warm-up change:** disabled periodic warm-up pings to the
+  **Cerebras** primary (no meaningful cold start, avoids wasted tokens); kept
+  warm-up active for the **Cloudflare Workers AI** fallback, which cold-starts
+  in 10-30s. `warmUpModel()` now pings Cloudflare with a tiny non-streaming call.
+
+### Tomorrow (planned / upcoming)
+- Continue tuning the primary↔fallback hedge timing and cost knobs.
+- Further accessibility and crayon-scene polish from user feedback.
+- *(This section is updated continuously as new commits land.)*
+
+---
+
 ## 0. The pivot out of "gold" (the starting point)
 
 - **`e55b098` — Redesign: dark gold-noir → classic printed-textbook aesthetic**

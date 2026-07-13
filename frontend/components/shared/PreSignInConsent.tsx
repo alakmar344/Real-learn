@@ -18,13 +18,13 @@ const ALLOWED_PATHS_WHEN_DECLINED = ["/sign-in", "/sign-up", "/legal"];
 
 const POLICY_CHANGES = [
   "Bumped application version to 1.1.0 with updated consent infrastructure.",
-  "Cookie policy version updated to 2.1 — all users will be re-prompted for analytics consent.",
-  "Clarified data processing disclosures and refreshed consent version tracking across frontend and backend.",
+  "Privacy Policy and Terms of Service updated to version 2.2 — all users will be re-prompted to re-accept.",
+  "Clarified our AI inference providers: Cerebras Cloud (Gemma 4 31B) is now primary, with Cloudflare Workers AI as an automatic fallback.",
 ];
 
 const TERMS_CHANGES = [
   "Application version bumped to 1.1.0 with revised consent versioning.",
-  "Updated terms of service version to 2.2 to reflect platform improvements and continued compliance updates.",
+  "Updated terms of service version to 2.2 to reflect our new primary AI provider (Cerebras Cloud) and continued compliance updates.",
 ];
 
 // Build year/month options once
