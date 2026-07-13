@@ -23,7 +23,32 @@ Ask anything. In seconds, RealLearn engineers a complete educational experience 
 
 ---
 
+## What's Changed
+
+A running log of what's new in RealLearn. The full, exhaustive history from the
+gold redesign onward lives in [`change-made-after-submmisun.md`](./change-made-after-submmisun.md).
+
+**Today — July 13, 2026**
+- **AI provider switch → Cerebras primary, Cloudflare fallback.** The hedged multi-provider engine now uses **Cerebras Cloud** (Gemma 4 31B) as the primary inference provider, with **Cloudflare Workers AI** (Gemma) as an automatic fallback for reliability. ([`722f53e`](https://github.com/alakmar344/reallearn/commit/722f53e))
+- **Ultra-fast inference knobs.** Added a "no-thinking" mode and OpenRouter host pinning to cut latency. ([`223de88`](https://github.com/alakmar344/reallearn/commit/223de88))
+- **Cost-aware inference.** Trimmed wasted tokens, tightened output limits, and reduced latency. ([`92f34eb`](https://github.com/alakmar344/reallearn/commit/92f34eb))
+- **Hedged multi-provider AI engine + security fixes.** ([`f048a34`](https://github.com/alakmar344/reallearn/commit/f048a34))
+- **WCAG 2.1 AA compliance fixes** across the frontend. ([`7b11224`](https://github.com/alakmar344/reallearn/commit/7b11224))
+- **Crayon scene expanded** (school, river bridge, RealLearn signpost), made visible, and made responsive (portrait mobile SVG + scroll-stable positioning). ([`11218d5`](https://github.com/alakmar344/reallearn/commit/11218d5), [`090d66e`](https://github.com/alakmar344/reallearn/commit/090d66e), [`c285e2d`](https://github.com/alakmar344/reallearn/commit/c285e2d))
+- **GPU-composited static SVG** background replacing the heavy inline SVG. ([`d6e8318`](https://github.com/alakmar344/reallearn/commit/d6e8318))
+- **Legal v2.2** — Privacy Policy & Terms of Service updated to document the new providers and to re-prompt all users for re-consent. ([`748e220`](https://github.com/alakmar344/reallearn/commit/748e220))
+
+**Tomorrow (planned / upcoming)**
+- Continue tuning the primary/fallback hedge timing and cost knobs.
+- Further accessibility and crayon-scene polish based on user feedback.
+- (This section is updated continuously as new commits land — see
+  [`change-made-after-submmisun.md`](./change-made-after-submmisun.md).)
+
+---
+
 ## Table of Contents
+
+- [What's Changed](#whats-changed)
 
 - [The Problem We're Solving](#the-problem-were-solving)
 - [The RealLearn Promise](#the-reallearn-promise)
@@ -87,7 +112,7 @@ At its heart, RealLearn fuses four things that almost never appear together:
 
 | | |
 |---|---|
-| **AI lesson generation** | Powered by Google's **Gemma 4**, every lesson is generated fresh for your exact question. |
+| **AI lesson generation** | Powered by Google's **Gemma 4**, served via **Cerebras Cloud** (primary) with **Cloudflare Workers AI** fallback — every lesson is generated fresh for your exact question. |
 | **Learning design** | A deliberate three-stage progression — Foundation -> Mechanism -> Real World. |
 | **Active recall** | Quiz gates after every part. You can't skip ahead until you've understood. |
 | **Real-world grounding** | Live news context is woven into Part 3, so theory meets today. |
@@ -114,7 +139,9 @@ Everything you do is **persisted automatically**, so you can close the tab and p
 
 ## Powered by Gemma 4
 
-RealLearn runs on **Gemma 4 (`gemma-4-26b-a4b-it`)** via Cloudflare Workers AI — and we didn't just call the model and hope for the best. We engineered a sophisticated prompting and reliability layer around it to guarantee educational quality and structural consistency on every single request.
+RealLearn runs on **Gemma 4** — and we didn't just call the model and hope for the best. We engineered a sophisticated prompting and reliability layer around it to guarantee educational quality and structural consistency on every single request.
+
+**Inference providers.** Generation is served by a hedged, multi-provider engine. Our **primary** provider is **Cerebras Cloud** (running **Gemma 4 31B**, `gemma-4-31b`), chosen for its very low time-to-first-token. If Cerebras is briefly slow or unavailable, the request automatically **falls back** to **Cloudflare Workers AI** (Gemma, `@cf/google/gemma-4-26b-a4b-it`), so lessons are generated reliably even during provider hiccups. The same "no training on your data" guarantee applies to both.
 
 ### Key Technical Highlights
 
@@ -379,7 +406,7 @@ RealLearn was designed to fix concrete, everyday learning frustrations:
 | Runtime | **Node.js** (ES Modules) | Modern JavaScript runtime |
 | Framework | **Express** | HTTP server, middleware, routing |
 | Transport | **JSON** + **Server-Sent Events** (SSE) streaming | Keep-alive lesson delivery |
-| AI | **Gemma 4** via **Cloudflare Workers AI** | Lesson generation, content moderation |
+| AI | **Gemma 4** — **Cerebras Cloud** (primary, `gemma-4-31b`) with **Cloudflare Workers AI** fallback | Lesson generation, content moderation |
 | News | **Serper API** | Real-world news context for Part 3 |
 | Auth | **Clerk JWT** verification via `jose` | Remote JWKS + offline PEM fallback |
 | Persistence | **MongoDB** | Consent records, moderation logs, lesson cache |
