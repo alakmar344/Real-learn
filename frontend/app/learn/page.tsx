@@ -35,25 +35,6 @@ export default function LearnPage() {
   const [showUnlockFx, setShowUnlockFx] = useState(false);
   const [isRevealing, setIsRevealing] = useState(false);
   const unlockTimeoutRef = useRef<number | null>(null);
-  // The lesson store is persisted: rendering persisted state on the first
-  // client render mismatches the SSR HTML (which always has the defaults)
-  // and triggers a React hydration failure. Gate on mount instead.
-  const mounted = useMounted();
-
-  useEffect(() => {
-    if (!mounted) return;
-    return () => {
-      if (unlockTimeoutRef.current) clearTimeout(unlockTimeoutRef.current);
-    };
-  }, [mounted]);
-
-  useEffect(() => {
-    if (!isLoading && lesson && !isRevealing) {
-      setIsRevealing(true);
-      const timer = setTimeout(() => setIsRevealing(false), 420);
-      return () => clearTimeout(timer);
-    }
-  }, [isLoading, lesson, isRevealing]);
 
   const {
     question,
@@ -92,6 +73,26 @@ export default function LearnPage() {
       0
     );
   }, [partScores]);
+
+  // The lesson store is persisted: rendering persisted state on the first
+  // client render mismatches the SSR HTML (which always has the defaults)
+  // and triggers a React hydration failure. Gate on mount instead.
+  const mounted = useMounted();
+
+  useEffect(() => {
+    if (!mounted) return;
+    return () => {
+      if (unlockTimeoutRef.current) clearTimeout(unlockTimeoutRef.current);
+    };
+  }, [mounted]);
+
+  useEffect(() => {
+    if (!isLoading && lesson && !isRevealing) {
+      setIsRevealing(true);
+      const timer = setTimeout(() => setIsRevealing(false), 420);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, lesson, isRevealing]);
 
   // Initialize from the CURRENT (already-hydrated) store values — the lesson
   // store persists, so starting these at null/false made every reload of a
