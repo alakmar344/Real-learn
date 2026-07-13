@@ -1252,50 +1252,57 @@ export async function callGemma(
 // ── Warm-up ──────────────────────────────────────────────────────────────────
 
 /**
- * Warm up the primary model with a minimal request.
- * Cloudflare Workers AI cold starts can take 10-30s — when Cloudflare is the
- * fallback, this also helps keep that model ready. The primary (Cerebras) is
- * warmed via a tiny non-streaming call.
+ * Warm up the FALLBACK model (Cloudflare Workers AI) with a minimal request.
+ * Cloudflare Workers AI unloads idle models quickly and can cold-start in
+ * 10-30s, so we keep it warm with a tiny non-streaming ping.
+ *
+ * The PRIMARY (Cerebras) is intentionally NOT warmed: Cerebras has no
+ * meaningful cold start, and pinging it 24/7 would only waste tokens for no
+ * latency benefit.
  */
 export async function warmUpModel() {
-  const apiKey = process.env.CEREBRAS_API_KEY?.trim();
-  if (!apiKey) {
-    console.log("[AI] Warm-up skipped: missing CEREBRAS_API_KEY");
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID?.trim();
+  const apiToken = process.env.CLOUDFLARE_API_TOKEN?.trim();
+  if (!accountId || !apiToken) {
+    console.log("[AI] Warm-up skipped: Cloudflare (CLOUDFLARE_ACCOUNT_ID / CLOUDFLARE_API_TOKEN) not configured");
     return;
   }
+
+  const models = getCloudflareModels();
+  const model = models[0];
+  const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/v1/chat/completions`;
 
   const callId = `warmup-${Date.now()}`;
   const startedAt = Date.now();
   const maxAttempts = 2;
   const warmupTimeoutMs = 60000;
 
-  const cerebras = new Cerebras({
-    apiKey,
-    maxRetries: 0,
-    timeout: warmupTimeoutMs,
-  });
-
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), warmupTimeoutMs);
 
     try {
-      const result = await cerebras.chat.completions.create(
-        {
-          model: GEMMA_MODEL,
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model,
           messages: [{ role: "user", content: "Hi" }],
           temperature: 0.7,
-          max_completion_tokens: 5,
+          max_tokens: 5,
           stream: false,
-        },
-        { signal: controller.signal }
-      );
+        }),
+        signal: controller.signal,
+      });
 
       clearTimeout(timeoutId);
       const latencyMs = Date.now() - startedAt;
 
-      if (result?.choices?.[0]?.message?.content != null) {
-        console.log("[AI] Model warmed up successfully", {
+      if (res.ok) {
+        console.log("[AI] Fallback model (Cloudflare) warmed up successfully", {
           callId,
           latencyMs,
           attempt: attempt + 1,
@@ -1303,10 +1310,11 @@ export async function warmUpModel() {
         return;
       }
 
-      console.warn("[AI] Warm-up received empty response (non-fatal)", {
+      console.warn("[AI] Warm-up received non-OK status (non-fatal)", {
         callId,
         latencyMs,
         attempt: attempt + 1,
+        status: res.status,
       });
     } catch (error) {
       clearTimeout(timeoutId);
