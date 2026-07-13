@@ -116,7 +116,6 @@ export default function HomePage() {
       <main
         style={{
           minHeight: "100vh",
-          background: "var(--bg-primary)",
           display: "flex",
           flexDirection: "column",
         }}

@@ -409,9 +409,19 @@ html,
 body {
   margin: 0;
   min-height: 100%;
-  background: var(--bg-primary);
   color: var(--text-primary);
   font-family: var(--font-inter), system-ui, sans-serif;
+}
+
+/* The theme color lives on the ROOT element only. If body also had an opaque
+   background it would paint ABOVE the fixed z-index:-1 crayon painting
+   (negative-z descendants render right after the canvas, before in-flow
+   block backgrounds) — hiding the painting behind a solid color. */
+html {
+  background: var(--bg-primary);
+}
+body {
+  background: transparent;
 }
 
 body {

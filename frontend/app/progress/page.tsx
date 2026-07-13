@@ -84,7 +84,7 @@ export default function ProgressPage() {
   };
 
   return (
-    <main style={{ minHeight: "100vh", background: "var(--bg-primary)", color: "var(--text-primary)" }}>
+    <main style={{ minHeight: "100vh", color: "var(--text-primary)" }}>
       <Navbar />
 
       <div style={{ maxWidth: 880, margin: "0 auto", padding: "24px 20px 56px" }}>

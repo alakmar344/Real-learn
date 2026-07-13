@@ -278,7 +278,6 @@ export default function SettingsPage() {
       <main
         style={{
           minHeight: "100vh",
-          background: "var(--bg-primary)",
           color: "var(--text-primary)",
           display: "flex",
           alignItems: "center",
@@ -299,7 +298,6 @@ export default function SettingsPage() {
     <main
       style={{
         minHeight: "100vh",
-        background: "var(--bg-primary)",
         color: "var(--text-primary)",
         padding: "40px 24px",
       }}

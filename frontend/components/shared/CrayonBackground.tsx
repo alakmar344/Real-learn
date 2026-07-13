@@ -10,7 +10,9 @@ export default function CrayonBackground() {
         zIndex: -1,
         overflow: "hidden",
         pointerEvents: "none",
-        opacity: 0.35,
+        // Soft but clearly visible — page containers are transparent so the
+        // painting shows through; content sits on opaque cards above it.
+        opacity: 0.5,
       }}
     >
       <svg

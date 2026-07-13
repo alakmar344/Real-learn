@@ -10,7 +10,6 @@ export default function SignUpPage() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "var(--bg-primary)",
         padding: 24,
       }}
     >

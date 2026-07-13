@@ -5,7 +5,6 @@ export default function NotFound() {
     <main
       style={{
         minHeight: "100dvh",
-        background: "var(--bg-primary)",
         color: "var(--text-primary)",
         display: "grid",
         placeItems: "center",
