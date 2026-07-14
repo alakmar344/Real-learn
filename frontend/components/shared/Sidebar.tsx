@@ -41,9 +41,9 @@ export default function Sidebar({ open, onClose }: Props) {
       router.push("/learn");
       return;
     }
-    // Tiered retention: older journeys keep only a lightweight summary in
-    // the store, but their full lesson body lives in the local IndexedDB
-    // archive — load it from there for FREE (no LLM call, no cost).
+    // Every chat's full lesson body lives in the local IndexedDB archive
+    // (the store keeps only a lightweight index) — load it from there for
+    // FREE (no LLM call, no cost).
     const archivedLesson = await getArchivedLesson(journey.id);
     if (archivedLesson) {
       loadJourney({ ...journey, lesson: archivedLesson });
@@ -215,9 +215,6 @@ export default function Sidebar({ open, onClose }: Props) {
                       } ★
                       {(journey.completedParts ?? []).length < (journey.lesson?.parts?.length ?? journey.partCount ?? 3) && (
                         <span> · Part {journey.unlockedPart ?? 1}</span>
-                      )}
-                      {journey.archived && (
-                        <span style={{ color: "var(--accent)" }}> · Archived</span>
                       )}
                     </span>
                   </button>

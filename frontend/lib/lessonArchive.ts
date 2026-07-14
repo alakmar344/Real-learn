@@ -5,12 +5,13 @@ import type { LessonJourney } from "@/types";
 /**
  * IndexedDB archive for full lesson bodies.
  *
- * Cost middle-ground: tiered retention keeps localStorage small (only the
- * newest journeys carry their full lesson inline), but throwing older lesson
- * bodies away meant re-opening them REGENERATED the lesson — an LLM call that
- * costs real money, every time, for content the user already paid for once.
+ * Since policy v2.4 EVERY saved chat's lesson body lives here, and the
+ * journeys store keeps only a lightweight index in localStorage. This keeps
+ * localStorage serialization cheap (the lag fix) without ever REGENERATING a
+ * lesson on re-open — an LLM call that costs real money, every time, for
+ * content the user already paid for once.
  *
- * So archived lessons move HERE instead of being deleted. IndexedDB has a
+ * IndexedDB has a
  * far larger quota than localStorage (hundreds of MB vs ~5 MB), is fully
  * async (never blocks a render pass — reads/writes happen off the click
  * path), and persists like localStorage does. Re-opening an archived journey

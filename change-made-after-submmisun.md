@@ -18,7 +18,22 @@
 A short, human-readable digest of the most recent work. Full detail remains in
 the themed sections below and the chronological table at the end.
 
-### Today — July 14, 2026 (app v1.2.0, Privacy Policy v2.3)
+### Today — July 14, 2026 (app v1.2.0, Privacy Policy v2.4, ToS v2.3)
+- **Storage split — EVERY chat's lesson body now lives in IndexedDB only
+  (Privacy Policy v2.3 → v2.4, Terms of Service v2.2 → v2.3, reconsent).**
+  Extends the IndexedDB archive from "older entries only" to ALL saved chats:
+  the journeys store keeps just a lightweight per-chat index (question,
+  scores, dates, part/quiz counts) in localStorage, and the full lesson body
+  of every chat is stored in IndexedDB (persist v1 → v2 migration moves
+  existing inline lessons over on first load). Opening any chat — including
+  the home-page "Resume" card, which now loads from the archive — is a free
+  local read; regeneration stays the last resort. Legal updates: Privacy
+  Policy (Saved Lessons, Data Storage, Cookies/Local Storage, Retention
+  sections + v2.4 history entry), Terms of Service (local-storage clause in
+  the service description + v2.3 history entry), Cookie Policy text
+  (IndexedDB mention; version unchanged), reconsent dialog change summaries,
+  and version constants in `legalConsent.ts`, backend `server.js`, and
+  `.env.example` — all users are re-prompted to re-accept both documents.
 - **Cost fix — archived lessons no longer regenerate (no repeat LLM spend).**
   Tiered retention originally *dropped* the lesson body of older journeys, so
   re-opening one triggered a paid LLM regeneration every time. Now the full

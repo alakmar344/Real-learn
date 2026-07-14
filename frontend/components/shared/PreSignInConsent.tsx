@@ -17,14 +17,14 @@ import {
 const ALLOWED_PATHS_WHEN_DECLINED = ["/sign-in", "/sign-up", "/legal"];
 
 const POLICY_CHANGES = [
-  "Privacy Policy updated to version 2.3 (application version 1.2.0) — all users are re-prompted to re-accept.",
-  "IP addresses are now anonymized before storage: consent records keep only a truncated network prefix (e.g. 203.0.113.0), never your full IP address. Previously stored full IPs have been retroactively anonymized.",
-  "Local lesson history now uses tiered retention: your most recent journeys are kept in full on your device, while older ones are automatically condensed to lightweight summaries (question, score, date) instead of being deleted.",
+  "Privacy Policy updated to version 2.4 (application version 1.2.0) — all users are re-prompted to re-accept.",
+  "Saved lessons moved to IndexedDB: the full content of every saved lesson (chat) is now stored in your browser's IndexedDB on your own device, with only a lightweight history index (question, scores, dates) in localStorage. Nothing is sent to our servers, and re-opening a saved lesson loads it locally. \"Delete My Data\" clears both storage areas.",
+  "IP addresses are anonymized before storage (since v2.3): consent records keep only a truncated network prefix (e.g. 203.0.113.0), never your full IP address. Previously stored full IPs have been retroactively anonymized.",
   "Clarified our AI inference providers: Cerebras Cloud (Gemma 4 31B) is primary, with Cloudflare Workers AI as an automatic fallback.",
 ];
 
 const TERMS_CHANGES = [
-  "No changes in this update — the Terms of Service remain at version 2.2 (primary AI provider Cerebras Cloud, with Cloudflare Workers AI fallback).",
+  "Terms of Service updated to version 2.3: your saved lesson history lives only on your device (full lesson content in browser IndexedDB, lightweight index in localStorage). Clearing your browser's site data removes your saved lessons and we cannot restore them — re-opening such an entry generates the lesson again.",
 ];
 
 // Build year/month options once

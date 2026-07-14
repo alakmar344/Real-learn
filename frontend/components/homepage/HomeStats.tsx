@@ -6,6 +6,7 @@ import { useAuth } from "@clerk/nextjs";
 import { useProgressStore } from "@/store/progressStore";
 import { useSavedJourneysStore } from "@/store/savedJourneysStore";
 import { useLessonStore } from "@/store/lessonStore";
+import { getArchivedLesson } from "@/lib/lessonArchive";
 import { levelInfo } from "@/lib/achievements";
 import { useMounted } from "@/hooks/useMounted";
 
@@ -64,11 +65,11 @@ export default function HomeStats({ onStartTopic }: Props) {
 
   const info = levelInfo(xp);
   const topic = DAILY_TOPICS[dayOfYear(new Date()) % DAILY_TOPICS.length];
-  // Only full (non-archived) journeys can be resumed instantly — archived
-  // entries are lightweight summaries without lesson content.
+  // Lesson bodies live in the IndexedDB archive (the store keeps only a
+  // lightweight index), so resumability is judged from the index counts and
+  // the full lesson is loaded async on click.
   const inProgress = journeys.find((j) => {
-    if (!j.lesson) return false;
-    const totalParts = j.lesson.parts?.length ?? 3;
+    const totalParts = j.lesson?.parts?.length ?? j.partCount ?? 3;
     return (j.completedParts ?? []).length < totalParts;
   });
   const hasActivity = xp > 0 || journeys.length > 0;
@@ -112,14 +113,21 @@ export default function HomeStats({ onStartTopic }: Props) {
       {inProgress && (
         <button
           type="button"
-          onClick={() => {
+          onClick={async () => {
             if (!isSignedIn) {
               router.push(`/sign-in?redirect_url=${encodeURIComponent("/learn")}`);
               return;
             }
-            if (!inProgress.lesson) return;
-            loadJourney({ ...inProgress, lesson: inProgress.lesson });
-            router.push("/learn");
+            // Free local read from the IndexedDB archive — no LLM call.
+            const lesson = inProgress.lesson ?? (await getArchivedLesson(inProgress.id));
+            if (lesson) {
+              loadJourney({ ...inProgress, lesson });
+              router.push("/learn");
+              return;
+            }
+            // Last resort (archive copy gone): regenerate via the normal
+            // question flow — usually a server-cache hit.
+            onStartTopic(inProgress.question);
           }}
           style={{
             display: "flex",
