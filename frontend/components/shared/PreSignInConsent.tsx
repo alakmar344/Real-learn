@@ -17,14 +17,14 @@ import {
 const ALLOWED_PATHS_WHEN_DECLINED = ["/sign-in", "/sign-up", "/legal"];
 
 const POLICY_CHANGES = [
-  "Bumped application version to 1.1.0 with updated consent infrastructure.",
-  "Privacy Policy and Terms of Service updated to version 2.2 — all users will be re-prompted to re-accept.",
-  "Clarified our AI inference providers: Cerebras Cloud (Gemma 4 31B) is now primary, with Cloudflare Workers AI as an automatic fallback.",
+  "Privacy Policy updated to version 2.3 (application version 1.2.0) — all users are re-prompted to re-accept.",
+  "IP addresses are now anonymized before storage: consent records keep only a truncated network prefix (e.g. 203.0.113.0), never your full IP address. Previously stored full IPs have been retroactively anonymized.",
+  "Local lesson history now uses tiered retention: your most recent journeys are kept in full on your device, while older ones are automatically condensed to lightweight summaries (question, score, date) instead of being deleted.",
+  "Clarified our AI inference providers: Cerebras Cloud (Gemma 4 31B) is primary, with Cloudflare Workers AI as an automatic fallback.",
 ];
 
 const TERMS_CHANGES = [
-  "Application version bumped to 1.1.0 with revised consent versioning.",
-  "Updated terms of service version to 2.2 to reflect our new primary AI provider (Cerebras Cloud) and continued compliance updates.",
+  "No changes in this update — the Terms of Service remain at version 2.2 (primary AI provider Cerebras Cloud, with Cloudflare Workers AI fallback).",
 ];
 
 // Build year/month options once

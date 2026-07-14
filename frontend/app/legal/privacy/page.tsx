@@ -20,7 +20,7 @@ export default function PrivacyPolicy() {
         Privacy Policy
       </h2>
       <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
-        Last updated: July 13, 2026 (version 2.2)
+        Last updated: July 14, 2026 (version 2.3)
       </p>
 
       <section style={{ marginBottom: 28 }}>
@@ -70,12 +70,16 @@ export default function PrivacyPolicy() {
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Device Information:</strong> Your IP address and browser User-Agent (for security,
-            consent tracking, and rate limiting).
+            consent tracking, and rate limiting). Before an IP address is written to a stored
+            consent record we <strong>anonymize it by truncation</strong> (the last part of the
+            address is removed, e.g. 203.0.113.0), so stored records never contain your full IP
+            address; the User-Agent is stored only as a salted one-way hash.
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Consent Records:</strong> Timestamps of when you accepted our Privacy Policy
-            (version 2.2), Terms of Service (version 2.2), and cookie/analytics consent, together
-            with the policy version and your device IP and User-Agent, kept as proof of consent.
+            (version 2.3), Terms of Service (version 2.2), and cookie/analytics consent, together
+            with the policy version, an <strong>anonymized (truncated) device IP</strong>, and a
+            hashed User-Agent, kept as proof of consent.
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Cached Lessons (temporary, not linked to you):</strong> To make the Service
@@ -101,7 +105,11 @@ export default function PrivacyPolicy() {
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Saved Lessons:</strong> Your completed learning journeys are stored locally on
-            your device (browser localStorage) for your convenience.
+            your device (browser localStorage) for your convenience, using tiered retention: your
+            most recent journeys are kept in full (lesson content and quizzes), while older
+            journeys are automatically condensed into lightweight summaries (question, scores, and
+            dates) rather than deleted — your history stays available without slowing your device
+            down.
           </li>
           <li>
             <strong>Learning Progress &amp; Achievements (stored locally):</strong> To power our
@@ -301,9 +309,11 @@ export default function PrivacyPolicy() {
         </p>
         <ul style={{ fontSize: 14, color: "var(--text-secondary)", paddingLeft: 20, margin: "0 0 8px" }}>
           <li style={{ marginBottom: 4 }}>
-            <strong>Account &amp; consent records</strong> (email, Clerk ID, consent timestamps, IP,
-            User-Agent) — for as long as your account is active, and deleted from our servers within
-            30 days of account deletion.
+            <strong>Account &amp; consent records</strong> (email, Clerk ID, consent timestamps,
+            anonymized/truncated IP, hashed User-Agent) — for as long as your account is active,
+            and deleted from our servers within 30 days of account deletion. Full IP addresses are
+            never retained: they are truncated before storage, and records created before policy
+            version 2.3 have been retroactively anonymized the same way.
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Moderation logs</strong> (pseudonymous account identifier, the reason a
@@ -348,6 +358,16 @@ export default function PrivacyPolicy() {
            We may update this Privacy Policy from time to time. We will notify you of any changes
            by posting the new policy on this page and updating the &quot;Last updated&quot; date.
            Continued use of the service after changes constitutes acceptance of the updated policy.
+         </p>
+         <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+           <strong>Version 2.3 (effective July 14, 2026).</strong> This update strengthens data
+           minimization: (1) <strong>IP anonymization</strong> — consent records now store only a
+           truncated network prefix (e.g. 203.0.113.0) instead of your full IP address, and all
+           previously stored full IPs have been retroactively anonymized in the same way; and
+           (2) <strong>tiered local lesson-history retention</strong> — your most recent journeys
+           are kept in full on your device while older ones are condensed to lightweight summaries
+           instead of being deleted. Because this changes our data-processing disclosures, we are
+           re-prompting all users to review and re-accept this Privacy Policy before continuing.
          </p>
          <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
            <strong>Version 2.2 (effective July 13, 2026).</strong> This update clarifies our AI
@@ -517,8 +537,8 @@ export default function PrivacyPolicy() {
           sensitive personal information — and the right not to be discriminated against for
           exercising these rights. The categories of personal information we collect are described
           in Section 2 (identifiers such as email and Clerk ID; internet/device information such as
-          IP and User-Agent; and usage/education information such as questions, scores, and
-          preferences), collected for the purposes in Section 3.
+          an anonymized/truncated IP and hashed User-Agent; and usage/education information such as
+          questions, scores, and preferences), collected for the purposes in Section 3.
         </p>
         <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 8 }}>
           <strong>We do not sell your personal information, and we do not &quot;share&quot; it for
