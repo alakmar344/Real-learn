@@ -66,10 +66,20 @@ export interface SavedJourney {
   question: string;
   language: Language;
   level: Level;
-  lesson: LessonJourney;
+  /**
+   * Full lesson content. Present on the newest journeys only — older entries
+   * are condensed to lightweight summaries (tiered retention) and re-opening
+   * them regenerates the lesson instead.
+   */
+  lesson?: LessonJourney;
   partScores: Record<number, number | null>;
   totalScore: number;
   savedAt: number;
   unlockedPart: number;
   completedParts: number[];
+  /** True when the heavy lesson content has been archived away. */
+  archived?: boolean;
+  /** Snapshot of lesson shape, kept so archived entries still render stats. */
+  partCount?: number;
+  quizCount?: number;
 }

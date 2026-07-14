@@ -7,6 +7,10 @@ import { LessonMode } from "@/types";
 import ConfirmModal from "@/components/shared/ConfirmModal";
 import { showToast } from "@/components/shared/ToastContainer";
 import { usePreferenceStore } from "@/store/preferenceStore";
+import { useLessonStore } from "@/store/lessonStore";
+import { useProgressStore } from "@/store/progressStore";
+import { useSavedJourneysStore } from "@/store/savedJourneysStore";
+import { cancelPendingDebouncedWrites } from "@/lib/debouncedStorage";
 import { useMounted } from "@/hooks/useMounted";
 import {
   COOKIE_CONSENT_ACCEPTED_EVENT,
@@ -18,6 +22,7 @@ import {
 import LanguageSelector from "@/components/shared/LanguageSelector";
 import LevelSelector from "@/components/shared/LevelSelector";
 import { THEME_OPTIONS } from "@/lib/themes";
+import { PERF_MODE_OPTIONS } from "@/lib/performance";
 
 const THEMES = THEME_OPTIONS;
 
@@ -51,10 +56,12 @@ export default function SettingsPage() {
   const language = usePreferenceStore((s) => s.language);
   const level = usePreferenceStore((s) => s.level);
   const mode = usePreferenceStore((s) => s.mode);
+  const perfMode = usePreferenceStore((s) => s.perfMode);
   const setTheme = usePreferenceStore((s) => s.setTheme);
   const setLanguage = usePreferenceStore((s) => s.setLanguage);
   const setLevel = usePreferenceStore((s) => s.setLevel);
   const setMode = usePreferenceStore((s) => s.setMode);
+  const setPerfMode = usePreferenceStore((s) => s.setPerfMode);
 
   const [deleting, setDeleting] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -127,6 +134,16 @@ export default function SettingsPage() {
       }
 
       try {
+        // Clear the in-memory stores FIRST (this navigation is client-side —
+        // no reload — so stale in-memory state could otherwise re-persist),
+        // then drop any debounced write that was scheduled before deletion,
+        // then remove the persisted keys.
+        try {
+          useLessonStore.getState().resetAll();
+          useProgressStore.getState().resetEngagement();
+          useSavedJourneysStore.setState({ journeys: [] });
+        } catch { /* ignore */ }
+        cancelPendingDebouncedWrites();
         const REALLEARN_KEYS = [
           "reallearn-preferences",
           "reallearn-journey",
@@ -500,6 +517,56 @@ export default function SettingsPage() {
                 Learning level
               </label>
               <LevelSelector value={level} onChange={setLevel} />
+            </div>
+
+            <div>
+              <label
+                style={{
+                  display: "block",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "var(--text-secondary)",
+                  marginBottom: 8,
+                }}
+              >
+                Visual performance
+              </label>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {PERF_MODE_OPTIONS.map((opt) => {
+                  const active = perfMode === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setPerfMode(opt.value)}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12,
+                        textAlign: "left",
+                        padding: "10px 12px",
+                        borderRadius: "var(--radius-md)",
+                        border: active ? "2px solid var(--accent)" : "1px solid var(--border-default)",
+                        background: active ? "var(--accent-dim)" : "var(--bg-surface)",
+                        cursor: "pointer",
+                        minHeight: 44,
+                      }}
+                    >
+                      <span style={{ flex: 1 }}>
+                        <span style={{ display: "block", fontWeight: 600, fontSize: 14, color: "var(--text-primary)" }}>
+                          {opt.label}
+                        </span>
+                        <span style={{ display: "block", fontSize: 12, color: "var(--text-tertiary)" }}>{opt.description}</span>
+                      </span>
+                      {active && (
+                        <span aria-hidden="true" style={{ color: "var(--accent)", fontSize: 16 }}>
+                          ✓
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </section>

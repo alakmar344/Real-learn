@@ -440,7 +440,9 @@ body {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-attachment: fixed;
+  /* NOTE: no background-attachment: fixed — the element is already
+     position: fixed, so attachment: fixed was a visual no-op that forced
+     slow viewport-relative painting (a classic scroll-jank source). */
   will-change: transform;
   transform: translateZ(0);
   backface-visibility: hidden;
@@ -881,4 +883,109 @@ pre {
   .markdown-content h3 {
     font-size: 15px;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Adaptive visual-performance tiers  (html[data-perf="low|mid|high"])
+   Set pre-paint by app/layout.tsx, kept in sync by ThemeApplier; resolved
+   from device hints (memory, cores, reduced-motion, data-saver) or the
+   user's Settings → Performance choice. See lib/performance.ts.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Locked lesson-part content: the blur is decorative obfuscation. On low-end
+   devices a 12px blur over a full card is one of the most expensive paints
+   on the page — fade the content out instead. */
+.part-locked-content {
+  filter: blur(12px);
+  opacity: 0.4;
+  pointer-events: none;
+  user-select: none;
+  transition: filter 400ms ease, opacity 400ms ease;
+}
+.part-locked-content.is-unlocked {
+  filter: none;
+  opacity: 1;
+  pointer-events: auto;
+  user-select: auto;
+}
+
+/* ── LOW tier: maximum smoothness & compatibility ── */
+/* Backdrop blurs (sticky navbar, modals, quiz sheet, overlays) are
+   re-composited on every scroll frame — the single biggest lag source on
+   weak GPUs. !important is required to beat inline styles. */
+html[data-perf="low"] *,
+html[data-perf="low"] *::before,
+html[data-perf="low"] *::after {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+/* Background art + paper grain: skip entirely; the flat theme color remains. */
+html[data-perf="low"] .crayon-bg {
+  display: none;
+}
+html[data-perf="low"] body::after {
+  content: none;
+}
+/* Ambient always-running animations (flame, pulsing dots, floats). */
+html[data-perf="low"] .flame-flicker,
+html[data-perf="low"] .accent-pulse-dot,
+html[data-perf="low"] .animate-float,
+html[data-perf="low"] .animate-glow-pulse {
+  animation: none !important;
+}
+/* Locked-part obfuscation without the blur. */
+html[data-perf="low"] .part-locked-content {
+  filter: none;
+  opacity: 0.12;
+}
+
+/* ── HIGH tier: richer experience for powerful devices ── */
+html[data-perf="high"] .crayon-bg {
+  opacity: 0.55;
+}
+html[data-theme="dark"][data-perf="high"] .crayon-bg,
+html[data-theme="twilight"][data-perf="high"] .crayon-bg {
+  opacity: 0.35;
+}
+
+/* Users who ask the OS for reduced motion always win, on every tier. */
+@media (prefers-reduced-motion: reduce) {
+  .flame-flicker,
+  .accent-pulse-dot,
+  .animate-float,
+  .animate-glow-pulse {
+    animation: none !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Design polish
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Brand-tinted text selection instead of the browser default. */
+::selection {
+  background: var(--accent-glow);
+  color: var(--text-primary);
+}
+
+/* Slim, theme-aware scrollbars for internal scroll areas (sidebar history,
+   modals) — keeps long lesson histories feeling tidy. */
+.app-sidebar *::-webkit-scrollbar {
+  width: 6px;
+}
+.app-sidebar *::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: 999px;
+}
+.app-sidebar *::-webkit-scrollbar-thumb:hover {
+  background: var(--border-accent);
+}
+.app-sidebar *::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* High tier: give cards a touch more depth (cheap — shadows composite once). */
+html[data-perf="high"] {
+  --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.12), 0 2px 5px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 14px 38px rgba(0, 0, 0, 0.14), 0 5px 10px rgba(0, 0, 0, 0.07);
 }

@@ -3,9 +3,17 @@
 import { useEffect } from "react";
 import { usePreferenceStore } from "@/store/preferenceStore";
 import { THEME_OPTIONS } from "@/lib/themes";
+import { resolvePerfTier } from "@/lib/performance";
 
 export default function ThemeApplier() {
   const theme = usePreferenceStore((s) => s.theme);
+  const perfMode = usePreferenceStore((s) => s.perfMode);
+
+  // Keep the visual-performance tier in sync with the user's preference
+  // (the pre-paint script in layout.tsx sets the initial value).
+  useEffect(() => {
+    document.documentElement.dataset.perf = resolvePerfTier(perfMode);
+  }, [perfMode]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;

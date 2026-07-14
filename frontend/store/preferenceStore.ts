@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { Theme, Language, Level, LessonMode } from "@/types";
+import type { PerfMode } from "@/lib/performance";
 
 const VALID_THEMES: Theme[] = ["light", "dark", "twilight"];
 
@@ -43,10 +44,18 @@ interface PreferenceStore {
   language: Language;
   level: Level;
   mode: LessonMode;
+  /**
+   * Visual-performance preference: "auto" detects the device tier (memory,
+   * cores, reduced-motion, data-saver), "low" forces the lightweight mode
+   * (no backdrop blurs / grain / ambient animations) and "high" forces the
+   * full high-end visual experience.
+   */
+  perfMode: PerfMode;
   setTheme: (theme: Theme) => void;
   setLanguage: (language: Language) => void;
   setLevel: (level: Level) => void;
   setMode: (mode: LessonMode) => void;
+  setPerfMode: (perfMode: PerfMode) => void;
 }
 
 function prefLog(action: string, details?: unknown) {
@@ -62,9 +71,14 @@ export const usePreferenceStore = create<PreferenceStore>()(
       language: existing.language ?? "English",
       level: existing.level ?? "Class 9-10",
       mode: "fast",
+      perfMode: "auto",
       setTheme: (theme) => {
         prefLog("setTheme", { theme });
         set({ theme });
+      },
+      setPerfMode: (perfMode) => {
+        prefLog("setPerfMode", { perfMode });
+        set({ perfMode });
       },
       setMode: (mode) => {
         prefLog("setMode", { mode });

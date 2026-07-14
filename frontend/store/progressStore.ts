@@ -1,7 +1,8 @@
 "use client";
 
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
+import { persist } from "zustand/middleware";
+import { createDebouncedStorage } from "@/lib/debouncedStorage";
 import {
   BADGES,
   ProgressSnapshot,
@@ -310,7 +311,8 @@ export const useProgressStore = create<ProgressState>()(
     {
       name: "reallearn-progress",
       version: 1,
-      storage: createJSONStorage(() => localStorage),
+      // Perf: defer serialization + write off the click path (see lib/debouncedStorage).
+      storage: createDebouncedStorage<Omit<ProgressState, "celebrations">>(),
       // Never persist the transient celebration queue.
       partialize: (state) => {
         const { celebrations: _celebrations, ...rest } = state;

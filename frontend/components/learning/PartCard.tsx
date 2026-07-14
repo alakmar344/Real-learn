@@ -104,15 +104,12 @@ export default function PartCard({
           margin: "calc(-1 * clamp(20px, 5vw, 36px)) calc(-1 * clamp(20px, 5vw, 36px)) 0",
         }}
       />
+      {/* Locked-state obfuscation lives in globals.css (.part-locked-content)
+          so low-end devices can swap the expensive 12px blur for a cheap fade
+          via the data-perf tier. */}
       <div
         id={contentId}
-        style={{
-          filter: isUnlocked ? "none" : "blur(12px)",
-          pointerEvents: isUnlocked ? "auto" : "none",
-          userSelect: isUnlocked ? "auto" : "none",
-          opacity: isUnlocked ? 1 : 0.4,
-          transition: "all 400ms ease",
-        }}
+        className={`part-locked-content${isUnlocked ? " is-unlocked" : ""}`}
       >
         {/* Part badge + subject */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>

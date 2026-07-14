@@ -64,8 +64,11 @@ export default function HomeStats({ onStartTopic }: Props) {
 
   const info = levelInfo(xp);
   const topic = DAILY_TOPICS[dayOfYear(new Date()) % DAILY_TOPICS.length];
+  // Only full (non-archived) journeys can be resumed instantly — archived
+  // entries are lightweight summaries without lesson content.
   const inProgress = journeys.find((j) => {
-    const totalParts = j.lesson?.parts?.length ?? 3;
+    if (!j.lesson) return false;
+    const totalParts = j.lesson.parts?.length ?? 3;
     return (j.completedParts ?? []).length < totalParts;
   });
   const hasActivity = xp > 0 || journeys.length > 0;
@@ -114,7 +117,8 @@ export default function HomeStats({ onStartTopic }: Props) {
               router.push(`/sign-in?redirect_url=${encodeURIComponent("/learn")}`);
               return;
             }
-            loadJourney(inProgress);
+            if (!inProgress.lesson) return;
+            loadJourney({ ...inProgress, lesson: inProgress.lesson });
             router.push("/learn");
           }}
           style={{
