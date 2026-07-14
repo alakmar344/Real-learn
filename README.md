@@ -26,7 +26,7 @@ Ask anything. In seconds, RealLearn engineers a complete educational experience 
 ## What's Changed
 
 A running log of what's new in RealLearn. The full, exhaustive history from the
-gold redesign onward lives in [`change-made-after-submmisun.md`](./change-made-after-submmisun.md).
+gold redesign onward lives in [`change-made-after-submission.md`](./change-made-after-submission.md).
 
 **Today — July 13, 2026**
 - **Loading cinematic overhaul.** Counter now auto-completes to 100% on an ease-out curve and fades out gracefully into the lesson, fixing the "stuck at 35%" disconnect on fast Cerebras responses. ([`...`])
@@ -44,7 +44,7 @@ gold redesign onward lives in [`change-made-after-submmisun.md`](./change-made-a
 - Continue tuning the primary/fallback hedge timing and cost knobs.
 - Further accessibility and crayon-scene polish based on user feedback.
 - (This section is updated continuously as new commits land — see
-  [`change-made-after-submmisun.md`](./change-made-after-submmisun.md).)
+  [`change-made-after-submission.md`](./change-made-after-submission.md).)
 
 ---
 
