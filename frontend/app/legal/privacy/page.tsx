@@ -20,7 +20,7 @@ export default function PrivacyPolicy() {
         Privacy Policy
       </h2>
       <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
-        Last updated: July 14, 2026 (version 2.3)
+        Last updated: July 14, 2026 (version 2.4)
       </p>
 
       <section style={{ marginBottom: 28 }}>
@@ -77,7 +77,7 @@ export default function PrivacyPolicy() {
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Consent Records:</strong> Timestamps of when you accepted our Privacy Policy
-            (version 2.3), Terms of Service (version 2.2), and cookie/analytics consent, together
+            (version 2.4), Terms of Service (version 2.3), and cookie/analytics consent, together
             with the policy version, an <strong>anonymized (truncated) device IP</strong>, and a
             hashed User-Agent, kept as proof of consent.
           </li>
@@ -104,12 +104,13 @@ export default function PrivacyPolicy() {
             re-synthesized. See Section 16 for details.
           </li>
           <li style={{ marginBottom: 4 }}>
-            <strong>Saved Lessons:</strong> Your completed learning journeys are stored locally on
-            your device (browser localStorage) for your convenience, using tiered retention: your
-            most recent journeys are kept in full (lesson content and quizzes), while older
-            journeys are automatically condensed into lightweight summaries (question, scores, and
-            dates) rather than deleted — your history stays available without slowing your device
-            down.
+            <strong>Saved Lessons:</strong> Your learning journeys (chats) are stored locally on
+            your device, split across two browser storage areas for performance: the full lesson
+            content (lesson text and quizzes) of <strong>every</strong> journey is stored in your
+            browser&apos;s <strong>IndexedDB</strong>, while a lightweight index (question, scores,
+            dates, and part/quiz counts) is kept in localStorage. Both live only on your device
+            and are <strong>never transmitted to or stored on our servers</strong>; re-opening a
+            saved lesson loads it directly from your device.
           </li>
           <li>
             <strong>Learning Progress &amp; Achievements (stored locally):</strong> To power our
@@ -158,8 +159,9 @@ export default function PrivacyPolicy() {
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           Your account data (email, consent records) is stored securely in MongoDB. Your saved
           lessons, preferences, and all learning-progress and achievement data (XP, level, streaks,
-          daily goals, activity history, and badges) are stored in your browser&apos;s localStorage
-          on your own device and never leave it. We use industry-standard
+          daily goals, activity history, and badges) are stored in your browser&apos;s local storage
+          areas on your own device — full lesson content in IndexedDB, and the history index,
+          preferences, and progress data in localStorage — and never leave it. We use industry-standard
           security measures including Clerk for authentication with cryptographically verified
           session tokens, encrypted connections (HTTPS with HSTS), strict browser security headers,
           request rate limiting, size limits and validation on all input, and automated content
@@ -216,14 +218,16 @@ export default function PrivacyPolicy() {
       <section style={{ marginBottom: 28 }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>6. Cookies and Local Storage</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
-          We use browser localStorage to store your consent preferences, theme settings, saved
-          lessons, and your learning-progress and achievement data (XP, level, streaks, daily goals,
-          activity history, and badges). We use Google Analytics cookies (loaded only after consent) for service improvement.
+          We use browser localStorage to store your consent preferences, theme settings, your
+          saved-lesson history index, and your learning-progress and achievement data (XP, level,
+          streaks, daily goals, activity history, and badges), and browser <strong>IndexedDB</strong>{" "}
+          to store the full content of your saved lessons (chats). We use Google Analytics cookies
+          (loaded only after consent) for service improvement.
           We do not use tracking cookies for advertising. Clerk, our authentication provider,
           uses essential cookies for session management. For more details, please see our{" "}
           <a href="/legal?tab=cookies" style={{ color: "var(--accent)" }}>Cookie Policy</a>.
-          You can clear your localStorage at any time through your browser settings or by using the
-          &quot;Delete My Data&quot; feature in the app.
+          You can clear your localStorage and IndexedDB at any time through your browser settings
+          or by using the &quot;Delete My Data&quot; feature in the app, which clears both.
         </p>
       </section>
 
@@ -328,8 +332,9 @@ export default function PrivacyPolicy() {
             expire automatically, typically within a few hours (lessons) or up to 24 hours (audio).
           </li>
           <li>
-            <strong>Locally-stored data</strong> (saved lessons, preferences, learning progress) —
-            remains on your device until you clear it or use &quot;Delete My Data&quot;.
+            <strong>Locally-stored data</strong> (saved lessons in IndexedDB; history index,
+            preferences, and learning progress in localStorage) — remains on your device until you
+            clear it or use &quot;Delete My Data&quot;, which removes both storage areas.
           </li>
         </ul>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
@@ -358,6 +363,17 @@ export default function PrivacyPolicy() {
            We may update this Privacy Policy from time to time. We will notify you of any changes
            by posting the new policy on this page and updating the &quot;Last updated&quot; date.
            Continued use of the service after changes constitutes acceptance of the updated policy.
+         </p>
+         <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+           <strong>Version 2.4 (effective July 14, 2026).</strong> This update changes where your
+           saved lessons live on your device: the full content of <strong>every</strong> saved
+           lesson (chat) is now stored in your browser&apos;s <strong>IndexedDB</strong> instead of
+           localStorage, with only a lightweight history index (question, scores, dates) remaining
+           in localStorage. All data still stays on your device only and is never sent to our
+           servers; re-opening a saved lesson loads it locally instead of regenerating it. The
+           &quot;Delete My Data&quot; feature clears both storage areas. Because this changes our
+           local-storage disclosures, we are re-prompting all users to review and re-accept this
+           Privacy Policy (and the updated Terms of Service) before continuing.
          </p>
          <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
            <strong>Version 2.3 (effective July 14, 2026).</strong> This update strengthens data

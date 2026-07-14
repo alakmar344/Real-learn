@@ -8,6 +8,7 @@ import ThemeModal from "@/components/shared/ThemeModal";
 import { useLessonStore } from "@/store/lessonStore";
 import { useSavedJourneysStore } from "@/store/savedJourneysStore";
 import { useLesson } from "@/hooks/useLesson";
+import { getArchivedLesson } from "@/lib/lessonArchive";
 import { useMounted } from "@/hooks/useMounted";
 import { SavedJourney } from "@/types";
 
@@ -32,17 +33,25 @@ export default function Sidebar({ open, onClose }: Props) {
     router.push("/");
   };
 
-  const handleOpenJourney = (journey: SavedJourney) => {
+  const handleOpenJourney = async (journey: SavedJourney) => {
     onClose();
+    const loadJourney = useLessonStore.getState().loadJourney;
     if (journey.lesson) {
-      const loadJourney = useLessonStore.getState().loadJourney;
       loadJourney({ ...journey, lesson: journey.lesson });
       router.push("/learn");
       return;
     }
-    // Tiered retention: older journeys keep only a lightweight summary, so
-    // re-opening one regenerates the lesson (usually a fast server-cache hit)
-    // instead of loading it from local storage.
+    // Every chat's full lesson body lives in the local IndexedDB archive
+    // (the store keeps only a lightweight index) — load it from there for
+    // FREE (no LLM call, no cost).
+    const archivedLesson = await getArchivedLesson(journey.id);
+    if (archivedLesson) {
+      loadJourney({ ...journey, lesson: archivedLesson });
+      router.push("/learn");
+      return;
+    }
+    // Last resort only (archive copy is gone — cleared site data or a new
+    // device): regenerate the lesson, which is usually a server-cache hit.
     void generateLesson(journey.question, true);
   };
 
@@ -166,7 +175,7 @@ export default function Sidebar({ open, onClose }: Props) {
                 <li key={journey.id} style={{ position: "relative" }}>
                   <button
                     type="button"
-                    onClick={() => handleOpenJourney(journey)}
+                    onClick={() => void handleOpenJourney(journey)}
                     title={journey.question}
                     style={{
                       width: "100%",
@@ -206,9 +215,6 @@ export default function Sidebar({ open, onClose }: Props) {
                       } ★
                       {(journey.completedParts ?? []).length < (journey.lesson?.parts?.length ?? journey.partCount ?? 3) && (
                         <span> · Part {journey.unlockedPart ?? 1}</span>
-                      )}
-                      {journey.archived && (
-                        <span style={{ color: "var(--accent)" }}> · Summary — tap to regenerate</span>
                       )}
                     </span>
                   </button>

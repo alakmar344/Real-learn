@@ -28,7 +28,8 @@ export default function CookiePolicy() {
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           Cookies are small text files stored on your device by your browser. They help websites
           remember your preferences and improve your experience. RealLearn uses minimal cookies
-          and primarily relies on browser localStorage for data persistence.
+          and primarily relies on browser storage (localStorage and IndexedDB) for data
+          persistence.
         </p>
       </section>
 
@@ -50,9 +51,11 @@ export default function CookiePolicy() {
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Local Storage:</strong> We use browser localStorage (not cookies) to store
-            your consent preferences, theme settings, saved lessons, and your learning-progress and
-            achievement data (experience points, level, daily streaks, daily goals, activity
-            history, and badges). This data stays on your device and is not sent to our servers.
+            your consent preferences, theme settings, saved-lesson history index, and your
+            learning-progress and achievement data (experience points, level, daily streaks, daily
+            goals, activity history, and badges), and browser IndexedDB (not cookies) to store the
+            full content of your saved lessons. This data stays on your device and is not sent to
+            our servers.
           </li>
           <li>
             <strong>Essential Cookies:</strong> We may use strictly necessary cookies for security
@@ -79,7 +82,8 @@ export default function CookiePolicy() {
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           You can control and delete cookies through your browser settings. Disabling cookies may
           affect your ability to use certain features of the Service, including staying signed in.
-          You can clear your localStorage at any time using the &quot;Delete My Data&quot; feature in the app.
+          You can clear your localStorage and IndexedDB at any time using the &quot;Delete My
+          Data&quot; feature in the app, which clears both.
         </p>
       </section>
 

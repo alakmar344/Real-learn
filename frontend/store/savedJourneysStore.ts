@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { createDebouncedStorage } from "@/lib/debouncedStorage";
+import { saveArchivedLesson, deleteArchivedLesson } from "@/lib/lessonArchive";
 import { SavedJourney } from "@/types";
 
 interface SavedJourneysStore {
@@ -26,24 +27,31 @@ export function journeySignature(question: string, firstPartTitle?: string): str
   return `${safeQuestion}::${safeTitle}`;
 }
 
-// ── Tiered retention (the "middle way") ─────────────────────────────────────
+// ── Split storage: index in localStorage, lesson bodies in IndexedDB ────────
 // Every journey used to store the FULL lesson (content + quizzes + sources)
-// forever, so after many lessons the history became megabytes of JSON that was
-// re-serialized to localStorage on every quiz interaction — the app got slower
-// and laggier the more you learned. Deleting old lessons would lose the user's
-// history; keeping everything kept the lag. The middle way:
-//   • the newest MAX_FULL_JOURNEYS keep their full lesson (instant re-open),
-//   • older entries are CONDENSED to lightweight summaries (question, scores,
-//     dates, part/quiz counts) instead of being deleted — re-opening one
-//     simply regenerates the lesson (usually served from the server cache),
-//   • the total list is still capped well below the ~5 MB localStorage quota.
-export const MAX_FULL_JOURNEYS = 12;
+// in localStorage, so after many lessons the history became megabytes of JSON
+// that was re-serialized on every quiz interaction — the app got slower and
+// laggier the more you learned. Since policy v2.4, EVERY chat's heavy lesson
+// body lives ONLY in IndexedDB (lib/lessonArchive.ts — large quota, fully
+// async, never blocks a render), while this store keeps just a lightweight
+// per-chat index entry (question, scores, dates, part/quiz counts). Opening
+// any chat is a free async local read — never a paid LLM regeneration, which
+// remains the last resort for a genuinely missing copy (cleared site data /
+// new device).
 export const MAX_SAVED_JOURNEYS = 100;
 
-/** Condense a journey to its lightweight summary (drops the heavy lesson). */
-function toArchivedJourney(journey: SavedJourney): SavedJourney {
+/**
+ * Condense a journey to its lightweight index entry, stashing the heavy
+ * lesson body in the IndexedDB archive so it can be reloaded for free.
+ */
+function toIndexEntry(journey: SavedJourney): SavedJourney {
   if (journey.archived && !journey.lesson) return journey;
   const parts = journey.lesson?.parts ?? [];
+  if (journey.lesson) {
+    // Fire-and-forget: if the write fails (private mode, quota) the entry
+    // still degrades gracefully to regenerate-on-open.
+    void saveArchivedLesson(journey.id, journey.lesson);
+  }
   const { lesson: _lesson, ...rest } = journey;
   return {
     ...rest,
@@ -55,14 +63,12 @@ function toArchivedJourney(journey: SavedJourney): SavedJourney {
   };
 }
 
-/** Keep the newest N full lessons, archive the rest, cap the total list. */
-function applyTieredRetention(journeys: SavedJourney[]): SavedJourney[] {
-  let fullKept = 0;
-  return journeys.slice(0, MAX_SAVED_JOURNEYS).map((journey) => {
-    if (journey.archived || !journey.lesson) return toArchivedJourney(journey);
-    fullKept += 1;
-    return fullKept <= MAX_FULL_JOURNEYS ? journey : toArchivedJourney(journey);
-  });
+/** Move every lesson body to IndexedDB and cap the total list. */
+function applyRetention(journeys: SavedJourney[]): SavedJourney[] {
+  // Entries pushed past the hard cap leave history entirely — clean up their
+  // archived lesson bodies too so IndexedDB doesn't accumulate orphans.
+  journeys.slice(MAX_SAVED_JOURNEYS).forEach((j) => void deleteArchivedLesson(j.id));
+  return journeys.slice(0, MAX_SAVED_JOURNEYS).map(toIndexEntry);
 }
 
 export const useSavedJourneysStore = create<SavedJourneysStore>()(
@@ -72,13 +78,13 @@ export const useSavedJourneysStore = create<SavedJourneysStore>()(
       saveJourney: (journey) =>
         set((state) => {
           // Upsert by stable id, moving the entry to the front so the list
-          // stays ordered by recency (which is what tiered retention keys on).
+          // stays ordered by recency.
           const existingIndex = state.journeys.findIndex((j) => j.id === journey.id);
           const rest =
             existingIndex >= 0
               ? state.journeys.filter((j) => j.id !== journey.id)
               : state.journeys;
-          const journeys = applyTieredRetention([journey, ...rest]);
+          const journeys = applyRetention([journey, ...rest]);
           journeyLog("saveJourney", {
             id: journey.id,
             upserted: existingIndex >= 0,
@@ -89,6 +95,8 @@ export const useSavedJourneysStore = create<SavedJourneysStore>()(
       removeJourney: (id) =>
         set((state) => {
           journeyLog("removeJourney", { id });
+          // Also drop the archived lesson body so deletion really deletes.
+          void deleteArchivedLesson(id);
           return { journeys: state.journeys.filter((j) => j.id !== id) };
         }),
     }),
@@ -96,14 +104,15 @@ export const useSavedJourneysStore = create<SavedJourneysStore>()(
       name: "reallearn-saved-journeys",
       storage: createDebouncedStorage<Pick<SavedJourneysStore, "journeys">>(),
       partialize: (state) => ({ journeys: state.journeys }),
-      version: 1,
-      // v0 → v1: condense pre-existing oversized histories on first load so
-      // long-time users get the speedup immediately (their older entries
-      // become summaries; nothing is deleted).
+      version: 2,
+      // v0/v1 → v2: move every inline lesson body out of localStorage into
+      // the IndexedDB archive on first load. Nothing is deleted — history
+      // entries become a lightweight index and their lessons stay reloadable
+      // locally for free.
       migrate: (persisted) => {
         const state = persisted as { journeys?: SavedJourney[] } | undefined;
         return {
-          journeys: applyTieredRetention(state?.journeys ?? []),
+          journeys: applyRetention(state?.journeys ?? []),
         };
       },
     }

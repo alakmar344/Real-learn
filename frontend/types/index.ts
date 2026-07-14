@@ -67,9 +67,11 @@ export interface SavedJourney {
   language: Language;
   level: Level;
   /**
-   * Full lesson content. Present on the newest journeys only — older entries
-   * are condensed to lightweight summaries (tiered retention) and re-opening
-   * them regenerates the lesson instead.
+   * Full lesson content. Only present transiently (on the object passed INTO
+   * saveJourney) — the store immediately moves every lesson body to the
+   * IndexedDB archive (lib/lessonArchive.ts) and keeps just a lightweight
+   * index entry. Opening a chat reloads the lesson from the archive for
+   * free; regeneration is the last resort only.
    */
   lesson?: LessonJourney;
   partScores: Record<number, number | null>;
