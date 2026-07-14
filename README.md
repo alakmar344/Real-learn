@@ -126,7 +126,7 @@ The outcome is an experience that feels less like *querying a database* and more
 ## How It Works — Your Journey, Step by Step
 
 1. **Ask.** Type any question on the homepage — *"How do black holes work?"*, *"Why did inflation rise in 2024?"*, *"What is photosynthesis?"* — or tap the microphone and ask with your voice.
-2. **Personalize.** Choose your **language** (8 options), your **level** (Class 6-8, Class 9-10, or College / Advanced), and your **mode** (Fast for instant answers, Explain for deep journeys).
+2. **Personalize.** Choose your **language** (12 options), your **level** (Class 6-8, Class 9-10, or College / Advanced), and your **mode** (Fast for instant answers, Explain for deep journeys).
 3. **Watch it build.** A cinematic loading experience plays while RealLearn works. Behind the scenes, the backend fetches **fresh real-world news context**, then prompts **Gemma 4** to compose your lesson — streamed back live over a keep-alive connection so it never silently times out.
 4. **Learn Part 1 — Foundation.** A beginner-friendly framing of the core idea, in clean Markdown, with real source links, a subject badge, and a built-in reading timer.
 5. **Prove it.** A two-question quiz slides up. Get a **perfect score** to unlock the next part. Every answer comes with an *exhaustive, mini-lesson explanation*. Options are reshuffled on retake so you can't memorize positions.
@@ -149,7 +149,7 @@ RealLearn runs on **Gemma 4** — and we didn't just call the model and hope for
 
 - **Structured Output Enforcement.** A carefully engineered system prompt forces Gemma 4 to return a strict JSON schema with *exactly* three progressive parts, each carrying rich educational content and *precisely two* multiple-choice questions (four options each). Quiz explanations are deliberately required to be **exhaustive teaching** — a complete mini-lesson hidden inside every answer.
 
-- **Native Multilingual Generation.** Lessons are generated *directly* in the learner's chosen language — English, Hindi, Gujarati, Tamil, Bengali, Marathi, Telugu, or Kannada — never machine-translated afterward. This preserves cultural nuance, natural tone, and authenticity. (JSON keys stay in English so the app stays robust.)
+- **Native Multilingual Generation.** Lessons are generated *directly* in the learner's chosen language — English, Hindi, Gujarati, Tamil, Bengali, Marathi, Telugu, Kannada, Malayalam, Punjabi, Urdu, or Odia — never machine-translated afterward. This preserves cultural nuance, natural tone, and authenticity. (JSON keys stay in English so the app stays robust.)
 
 - **Adaptive Difficulty Calibration.** The prompt dynamically adjusts depth, vocabulary, and complexity based on the selected level — simple language and basic examples for Class 6-8, moderate technical depth for Class 9-10, and high-rigor terminology for College / Advanced.
 
@@ -195,7 +195,7 @@ The quiz isn't a test that judges you — it's a **comprehension gate that prote
 
 RealLearn meets learners where they are, generating full lessons natively in:
 
-> **English · Hindi · Gujarati · Tamil · Bengali · Marathi · Telugu · Kannada**
+> **English · Hindi · Gujarati · Tamil · Bengali · Marathi · Telugu · Kannada · Malayalam · Punjabi · Urdu · Odia**
 
 This dramatically lowers the access barrier for millions of students for whom English-only content is a wall, not a window. The Serper news fetch also adapts — it searches for news in the learner's chosen language using proper BCP-47 language codes.
 
@@ -258,7 +258,7 @@ Your choice persists across sessions and applies instantly via CSS variables, wi
 
 RealLearn speaks your language — literally:
 
-- **Voice Input (Mic Button):** Ask questions by speaking. The Web Speech API (`SpeechRecognition`) captures your voice, transcribes it in real-time with interim results, and feeds it directly into the question input. Supports all 8 app languages with proper BCP-47 speech codes (`en-IN`, `hi-IN`, `gu-IN`, `ta-IN`, `bn-IN`, `mr-IN`, `te-IN`, `kn-IN`). Gracefully degrades — the button is disabled with a helpful tooltip in unsupported browsers.
+- **Voice Input (Mic Button):** Ask questions by speaking. The Web Speech API (`SpeechRecognition`) captures your voice, transcribes it in real-time with interim results, and feeds it directly into the question input. Supports all 12 app languages with proper BCP-47 speech codes (`en-IN`, `hi-IN`, `gu-IN`, `ta-IN`, `bn-IN`, `mr-IN`, `te-IN`, `kn-IN`, `ml-IN`, `pa-IN`, `ur-IN`, `or-IN`). Gracefully degrades — the button is disabled with a helpful tooltip in unsupported browsers.
 
 - **Read Aloud (Listen Button):** Every lesson part has a "Listen" button that reads the content aloud using the Web Speech API (`speechSynthesis`). The system intelligently selects the best available voice — scoring by language match, provider quality (Google neural, Microsoft natural, Apple enhanced), and voice type (premium, wavenet, journey). Text is chunked into sentence-aligned segments with Devanagari danda support, played at a slightly slower rate with a subtle pitch lift for a more human, natural sound. Markdown syntax is stripped to clean prose before speaking.
 
@@ -376,7 +376,7 @@ RealLearn was designed to fix concrete, everyday learning frustrations:
 | *"I read it, but I don't really get it."* | **Quiz-gated progression** verifies comprehension before you move on. |
 | *"This feels abstract and disconnected."* | **Part 3** ties the concept to real, current events. |
 | *"It's either too basic or way over my head."* | **Level selection** tunes depth to exactly where you are. |
-| *"English-only content shuts me out."* | **Native multilingual generation** in 8 languages opens the door. |
+| *"English-only content shuts me out."* | **Native multilingual generation** in 12 languages opens the door. |
 | *"I forget everything I learn."* | **Active recall + key takeaways + a saved library** make it stick. |
 | *"I don't have time for a long lesson."* | **Fast mode** gives you a direct answer in seconds. |
 | *"I want to track my progress."* | **XP, levels, streaks, badges, and a heatmap** keep you motivated. |
@@ -470,7 +470,7 @@ This section documents every file in the repository and what it does — so you 
 | `src/validation.js` | Journey normalization and schema validation. `normalizeJourney()` salvages partial output — filters malformed quiz questions, drops unusable parts, backfills missing key takeaways. `isValidJourney()` accepts 1-N parts (up to mode max) with 1-2 quiz questions each. Mode-aware: "explain" expects 3 parts, "fast" expects 1. |
 | `src/lib/gemma.js` | **Gemma 4 client.** Direct `fetch` to Cloudflare Workers AI (OpenAI-compatible endpoint). Handles retries on 429/403/5xx/network errors with exponential backoff, timeout circuit breaker (opens after N consecutive timeouts, auto-recovers after cooldown), thinking-tag stripping, and a **7-stage JSON repair pipeline** (strip thinking blocks -> remove markdown fences -> extract JSON structure -> strip trailing commas -> close truncated brackets -> chop to last complete bracket -> retry with comma fix). |
 | `src/lib/prompts.js` | Two system prompts: `GENERATE_LESSON_PROMPT` (3-part Explain mode with voice/tone guidance, safety rules, structured JSON schema) and `GENERATE_FAST_ANSWER_PROMPT` (1-part Fast mode with "do not think out loud" instruction, shorter output budget). Both enforce strict JSON output schemas. |
-| `src/lib/serper.js` | Real-world news fetcher. Calls Serper's news endpoint with language-aware search (BCP-47 codes for all 8 app languages), 6-second timeout, 10-minute in-memory cache (200 entries). Returns formatted context with titles, dates, snippets, and source URLs. Gracefully degrades on failure. |
+| `src/lib/serper.js` | Real-world news fetcher. Calls Serper's news endpoint with language-aware search (BCP-47 codes for all 12 app languages), 6-second timeout, 10-minute in-memory cache (200 entries). Returns formatted context with titles, dates, snippets, and source URLs. Gracefully degrades on failure. |
 | `src/lib/auth.js` | Clerk JWT verification. Remote JWKS (rotating keys) as primary, offline PEM public key as fallback. Issuer trust: configured Frontend API, explicit allowlist, `*.reallearn.site` — wildcard dev domains only in non-production. `extractBearerToken()`, `inspectToken()` (diagnostic), `requireAuth()` middleware. |
 | `src/lib/contentGuard.js` | Regex-based content safety filter. Targets genuinely harmful *intent* (CSAM, weapons manufacturing, violence instructions, self-harm methods, hate speech generation, cybercrime tutorials) while preserving educational content about sensitive topics. Separate patterns for user input and AI output. |
 | `src/lib/moderation.js` | LLM-powered content classifier. Runs Gemma as a safety judge with a dedicated prompt, 8-second timeout, temperature 0 for deterministic output, 15-minute verdict cache (500 entries). **Fails open** — a moderation timeout allows content through rather than blocking the user. |
@@ -541,7 +541,7 @@ This section documents every file in the repository and what it does — so you 
 | `SkipToContent.tsx` | Accessibility skip link. Hidden until focused, then appears as a prominent button. |
 | `LiveRegion.tsx` | Screen reader live region. Hidden `aria-live="polite"` div for dynamic announcements. |
 | `GoogleAnalytics.tsx` | Consent-gated Google Analytics loader. Only loads GA script after cookie consent. Listens for `cookie-consent-accepted` event. |
-| `LanguageSelector.tsx` | Language dropdown. 8 languages with custom chevron styling. |
+| `LanguageSelector.tsx` | Language dropdown. 12 languages with custom chevron styling. |
 | `LevelSelector.tsx` | Level dropdown. 3 levels with custom chevron styling. |
 | `ListenButton.tsx` | Text-to-speech button. Reads lesson content aloud via Web Speech API. Shows stop/speaking state. Disabled with tooltip in unsupported browsers. |
 | `MicButton.tsx` | Voice input button. SVG microphone icon, red recording state with pulse ring, disabled state for unsupported browsers. |

@@ -19,6 +19,10 @@ export const SPEECH_LANG_CODES: Record<Language, string> = {
   Marathi: "mr-IN",
   Telugu: "te-IN",
   Kannada: "kn-IN",
+  Malayalam: "ml-IN",
+  Punjabi: "pa-IN",
+  Urdu: "ur-IN",
+  Odia: "or-IN",
 };
 
 export function speechLangFor(language?: string): string {

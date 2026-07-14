@@ -282,6 +282,10 @@ const SPEECH_LANG_TO_VOICE = {
   "mr-IN": "mr-IN-AarohiNeural",
   "te-IN": "te-IN-MohanNeural",
   "kn-IN": "kn-IN-SapnaNeural",
+  "ml-IN": "ml-IN-SobhanaNeural",
+  "pa-IN": "pa-IN-GurpreetNeural",
+  "ur-IN": "ur-IN-SalmanNeural",
+  "or-IN": "or-IN-LisaNeural",
   "en-US": "en-US-AriaNeural",
 };
 
@@ -301,6 +305,10 @@ const ALLOWED_LANGUAGES = new Set([
   "Marathi",
   "Telugu",
   "Kannada",
+  "Malayalam",
+  "Punjabi",
+  "Urdu",
+  "Odia",
 ]);
 const ALLOWED_LEVELS = new Set(["Class 6-8", "Class 9-10", "College / Advanced"]);
 const DEFAULT_RATE_LIMIT_WINDOW_MS = 60000;

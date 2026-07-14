@@ -47,6 +47,7 @@ const SERPER_LANGUAGE_MAP = {
   kannada: "kn",
   malayalam: "ml",
   marathi: "mr",
+  odia: "or",
   punjabi: "pa",
   tamil: "ta",
   telugu: "te",
