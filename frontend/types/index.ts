@@ -7,7 +7,11 @@ export type Language =
   | "Bengali"
   | "Marathi"
   | "Telugu"
-  | "Kannada";
+  | "Kannada"
+  | "Malayalam"
+  | "Punjabi"
+  | "Urdu"
+  | "Odia";
 
 export type Level = "Class 6-8" | "Class 9-10" | "College / Advanced";
 

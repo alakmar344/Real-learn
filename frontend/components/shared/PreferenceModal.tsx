@@ -17,6 +17,10 @@ const LANGUAGES: Language[] = [
   "Marathi",
   "Telugu",
   "Kannada",
+  "Malayalam",
+  "Punjabi",
+  "Urdu",
+  "Odia",
 ];
 
 const LEVELS: Level[] = ["Class 6-8", "Class 9-10", "College / Advanced"];

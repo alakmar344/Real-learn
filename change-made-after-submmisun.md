@@ -19,6 +19,17 @@ A short, human-readable digest of the most recent work. Full detail remains in
 the themed sections below and the chronological table at the end.
 
 ### Today — July 14, 2026 (app v1.2.0, Privacy Policy v2.4, ToS v2.3)
+- **Expanded language support from 8 to 12 Indian languages.** Added
+  Malayalam, Punjabi, Urdu, and Odia across the full stack: `Language` type
+  union, `LanguageSelector` and `PreferenceModal` UI components,
+  `SPEECH_LANG_CODES` BCP-47 map in `useSpeech.ts`, backend
+  `ALLOWED_LANGUAGES` validation set, `SPEECH_LANG_TO_VOICE` Edge TTS voice
+  mapping (ml-IN-SobhanaNeural, pa-IN-GurpreetNeural, ur-IN-SalmanNeural,
+  or-IN-LisaNeural), and all README.md language references (count 8→12,
+  language lists, BCP-47 code tables). The Serper news map already had entries
+  for Malayalam (`ml`) and Punjabi (`pa`); no backend news changes needed. No
+  reconsent required — all legal pages reference "language" generically without
+  enumerating specific languages, so this is a purely additive, non-legal change.
 - **Storage split — EVERY chat's lesson body now lives in IndexedDB only
   (Privacy Policy v2.3 → v2.4, Terms of Service v2.2 → v2.3, reconsent).**
   Extends the IndexedDB archive from "older entries only" to ALL saved chats:

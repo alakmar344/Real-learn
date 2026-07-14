@@ -11,6 +11,10 @@ const LANGUAGES: Language[] = [
   "Marathi",
   "Telugu",
   "Kannada",
+  "Malayalam",
+  "Punjabi",
+  "Urdu",
+  "Odia",
 ];
 
 interface Props {
