@@ -19,6 +19,17 @@ A short, human-readable digest of the most recent work. Full detail remains in
 the themed sections below and the chronological table at the end.
 
 ### Today — July 14, 2026 (app v1.2.0, Privacy Policy v2.3)
+- **Cost fix — archived lessons no longer regenerate (no repeat LLM spend).**
+  Tiered retention originally *dropped* the lesson body of older journeys, so
+  re-opening one triggered a paid LLM regeneration every time. Now the full
+  lesson body is MOVED to a local IndexedDB archive (`lib/lessonArchive.ts`,
+  hundreds-of-MB quota, fully async so it never blocks a render) when an
+  entry is condensed. Re-opening an archived journey is a free local read;
+  regeneration only happens as the last resort when the archive copy is
+  genuinely gone (cleared site data / new device). Deleting a journey and
+  "Delete My Data" also purge the corresponding IndexedDB entries, and
+  entries pushed past the 100-journey cap clean up their archived bodies.
+  Sidebar hint changed from "Summary — tap to regenerate" to "Archived".
 - **Bug fix — Cloudflare fallback rung actually works now.** In
   `backend/src/server.js` the direct-Cloudflare generation branch declared a
   shadowing `const result`, so the outer `result` stayed `undefined` and the

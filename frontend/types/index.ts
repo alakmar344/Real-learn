@@ -68,8 +68,9 @@ export interface SavedJourney {
   level: Level;
   /**
    * Full lesson content. Present on the newest journeys only — older entries
-   * are condensed to lightweight summaries (tiered retention) and re-opening
-   * them regenerates the lesson instead.
+   * are condensed to lightweight summaries (tiered retention) whose full
+   * lesson body lives in the IndexedDB archive (lib/lessonArchive.ts) and is
+   * reloaded from there for free. Regeneration is the last resort only.
    */
   lesson?: LessonJourney;
   partScores: Record<number, number | null>;

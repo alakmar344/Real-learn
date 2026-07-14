@@ -11,6 +11,7 @@ import { useLessonStore } from "@/store/lessonStore";
 import { useProgressStore } from "@/store/progressStore";
 import { useSavedJourneysStore } from "@/store/savedJourneysStore";
 import { cancelPendingDebouncedWrites } from "@/lib/debouncedStorage";
+import { clearArchivedLessons } from "@/lib/lessonArchive";
 import { useMounted } from "@/hooks/useMounted";
 import {
   COOKIE_CONSENT_ACCEPTED_EVENT,
@@ -157,6 +158,9 @@ export default function SettingsPage() {
         REALLEARN_KEYS.forEach((k) => {
           try { localStorage.removeItem(k); } catch { /* ignore */ }
         });
+        // Also wipe the IndexedDB lesson archive (full bodies of older
+        // journeys live there, not in localStorage).
+        await clearArchivedLessons().catch(() => { /* best-effort */ });
       } catch {
         // ignore storage errors
       }

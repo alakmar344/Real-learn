@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { createDebouncedStorage } from "@/lib/debouncedStorage";
+import { saveArchivedLesson, deleteArchivedLesson } from "@/lib/lessonArchive";
 import { SavedJourney } from "@/types";
 
 interface SavedJourneysStore {
@@ -32,18 +33,29 @@ export function journeySignature(question: string, firstPartTitle?: string): str
 // re-serialized to localStorage on every quiz interaction — the app got slower
 // and laggier the more you learned. Deleting old lessons would lose the user's
 // history; keeping everything kept the lag. The middle way:
-//   • the newest MAX_FULL_JOURNEYS keep their full lesson (instant re-open),
-//   • older entries are CONDENSED to lightweight summaries (question, scores,
-//     dates, part/quiz counts) instead of being deleted — re-opening one
-//     simply regenerates the lesson (usually served from the server cache),
+//   • the newest MAX_FULL_JOURNEYS keep their full lesson inline (in the
+//     store itself, so localStorage serialization stays cheap),
+//   • older entries are condensed to lightweight summaries in the store and
+//     their full lesson body is MOVED to IndexedDB (lib/lessonArchive.ts) —
+//     re-opening one is a free async local read, NOT a paid LLM regeneration,
+//   • regeneration only happens as the last resort when the archived copy is
+//     gone (cleared site data / new device),
 //   • the total list is still capped well below the ~5 MB localStorage quota.
 export const MAX_FULL_JOURNEYS = 12;
 export const MAX_SAVED_JOURNEYS = 100;
 
-/** Condense a journey to its lightweight summary (drops the heavy lesson). */
+/**
+ * Condense a journey to its lightweight summary, stashing the heavy lesson
+ * body in the IndexedDB archive first so it can be reloaded for free.
+ */
 function toArchivedJourney(journey: SavedJourney): SavedJourney {
   if (journey.archived && !journey.lesson) return journey;
   const parts = journey.lesson?.parts ?? [];
+  if (journey.lesson) {
+    // Fire-and-forget: if the write fails (private mode, quota) the entry
+    // still degrades gracefully to regenerate-on-open.
+    void saveArchivedLesson(journey.id, journey.lesson);
+  }
   const { lesson: _lesson, ...rest } = journey;
   return {
     ...rest,
@@ -57,6 +69,9 @@ function toArchivedJourney(journey: SavedJourney): SavedJourney {
 
 /** Keep the newest N full lessons, archive the rest, cap the total list. */
 function applyTieredRetention(journeys: SavedJourney[]): SavedJourney[] {
+  // Entries pushed past the hard cap leave history entirely — clean up their
+  // archived lesson bodies too so IndexedDB doesn't accumulate orphans.
+  journeys.slice(MAX_SAVED_JOURNEYS).forEach((j) => void deleteArchivedLesson(j.id));
   let fullKept = 0;
   return journeys.slice(0, MAX_SAVED_JOURNEYS).map((journey) => {
     if (journey.archived || !journey.lesson) return toArchivedJourney(journey);
@@ -89,6 +104,8 @@ export const useSavedJourneysStore = create<SavedJourneysStore>()(
       removeJourney: (id) =>
         set((state) => {
           journeyLog("removeJourney", { id });
+          // Also drop the archived lesson body so deletion really deletes.
+          void deleteArchivedLesson(id);
           return { journeys: state.journeys.filter((j) => j.id !== id) };
         }),
     }),
