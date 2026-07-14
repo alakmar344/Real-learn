@@ -65,12 +65,81 @@ function logTokenUsage(requestId, mode, provider, promptTokens, completionTokens
   });
 }
 
-// Privacy: salt for hashing User-Agent strings. A per-process random value
-// prevents rainbow-table reversal of the stored hashes.
-const UA_HASH_SALT = crypto.randomBytes(16).toString("hex");
+// Privacy: salt for hashing User-Agent strings. The salt must be STABLE
+// across restarts/instances or the stored hashes are useless for their
+// stated purpose (detecting repeat-device consent fraud) — a per-process
+// random salt would produce a different hash for the same device after
+// every deploy. Configure UA_HASH_SALT in the environment; the derived
+// fallback keeps hashes stable per-deployment without committing a secret.
+const UA_HASH_SALT =
+  process.env.UA_HASH_SALT ||
+  crypto
+    .createHash("sha256")
+    .update(`reallearn-ua-salt:${process.env.MONGODB_URI || ""}:${process.env.CLERK_ISSUER || ""}`)
+    .digest("hex");
 function hashUserAgent(ua) {
   if (typeof ua !== "string" || !ua) return "unknown";
   return crypto.createHash("sha256").update(`${UA_HASH_SALT}:${ua}`).digest("hex").slice(0, 32);
+}
+
+// Privacy (GDPR/DPDP data minimization, policy v2.3): consent records used to
+// store the RAW client IP indefinitely. A full IP address is personal data,
+// and keeping it forever in permanent consent records is disproportionate to
+// the purpose (coarse fraud/abuse signals on consent events). Truncate the
+// last IPv4 octet / the IPv6 interface bits before storage — the same
+// anonymization approach Google Analytics uses — so the record keeps a
+// network-level signal without identifying a specific device.
+function anonymizeIp(ip) {
+  if (typeof ip !== "string" || !ip) return "unknown";
+  // Strip an IPv6 zone index (fe80::1%eth0) and normalize IPv4-mapped IPv6
+  // (::ffff:1.2.3.4) to plain IPv4 first.
+  const stripped = ip.split("%")[0].trim();
+  const v4Mapped = stripped.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/i);
+  const candidate = v4Mapped ? v4Mapped[1] : stripped;
+  const v4 = candidate.match(/^(\d+)\.(\d+)\.(\d+)\.\d+$/);
+  if (v4) return `${v4[1]}.${v4[2]}.${v4[3]}.0`;
+  if (candidate.includes(":")) {
+    // IPv6: expand the "::" compression so we reliably keep only the first
+    // 3 hextets (the /48 network) — a naive split on a compressed address
+    // like "fe80::1" would otherwise leak the interface-identifier bits.
+    const [headRaw, tailRaw = ""] = candidate.split("::");
+    const headParts = headRaw ? headRaw.split(":") : [];
+    const tailParts = tailRaw ? tailRaw.split(":") : [];
+    const missing = Math.max(0, 8 - headParts.length - tailParts.length);
+    const groups = [...headParts, ...Array(missing).fill("0"), ...tailParts];
+    return `${groups.slice(0, 3).join(":")}::`;
+  }
+  return "unknown";
+}
+
+// One-time cleanup (policy v2.3): earlier releases stored the RAW client IP
+// in consent records. Retroactively anonymize every stored deviceIp so no
+// full IP address remains anywhere in the agreements collection. Runs in the
+// background at startup; safe to run repeatedly (already-anonymized values
+// re-anonymize to themselves and are skipped).
+async function scrubStoredConsentIps() {
+  try {
+    const db = await getDb();
+    const collection = db.collection("agreements");
+    const cursor = collection.find(
+      { deviceIp: { $type: "string", $nin: ["", "unknown"] } },
+      { projection: { deviceIp: 1 } }
+    );
+    let scrubbed = 0;
+    for await (const doc of cursor) {
+      const anonymized = anonymizeIp(doc.deviceIp);
+      if (anonymized === doc.deviceIp) continue;
+      await collection.updateOne({ _id: doc._id }, { $set: { deviceIp: anonymized } });
+      scrubbed += 1;
+    }
+    if (scrubbed > 0) {
+      console.log(`[privacy] Anonymized stored IPs on ${scrubbed} legacy consent record(s)`);
+    }
+  } catch (error) {
+    // Non-fatal: the scrub retries on next boot; new writes are already
+    // anonymized at the source.
+    console.error("[privacy] Failed to scrub legacy consent IPs", error?.message);
+  }
 }
 
 let EdgeTTS = null;
@@ -216,7 +285,7 @@ const SPEECH_LANG_TO_VOICE = {
   "en-US": "en-US-AriaNeural",
 };
 
-const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "2.2";
+const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "2.3";
 const TERMS_OF_SERVICE_VERSION = process.env.TERMS_OF_SERVICE_VERSION || "2.2";
 const COOKIE_POLICY_VERSION = process.env.COOKIE_POLICY_VERSION || "2.1";
 
@@ -659,7 +728,9 @@ app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
       // treat it as a verified address — clerkId is the identity key.
       emailVerified: Boolean(emailFromToken),
       clerkId,
-        deviceIp: req.ip || req.socket?.remoteAddress || "unknown",
+        // Privacy (policy v2.3): store only the anonymized network prefix,
+        // never the full client IP (see anonymizeIp above).
+        deviceIp: anonymizeIp(req.ip || req.socket?.remoteAddress || ""),
         // Privacy (GDPR data minimization): hash the User-Agent so we can
         // detect repeat-device fraud without storing raw fingerprintable
         // strings. The hash is salted with a per-process secret so it can't
@@ -839,7 +910,9 @@ app.post("/api/legal-consent", rateLimit, requireAuth, async (req, res) => {
         emailVerified: Boolean(emailFromToken),
         clerkId,
         ageBracket: sanitizedAgeBracket,
-        deviceIp: req.ip || req.socket?.remoteAddress || "unknown",
+        // Privacy (policy v2.3): store only the anonymized network prefix,
+        // never the full client IP (see anonymizeIp above).
+        deviceIp: anonymizeIp(req.ip || req.socket?.remoteAddress || ""),
         // Privacy (GDPR data minimization): hash the User-Agent so we can
         // detect repeat-device fraud without storing raw fingerprintable
         // strings. The hash is salted with a per-process secret so it can't
@@ -1112,7 +1185,7 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
 
   // SPEED TACTIC: two-tier lesson cache. Identical (question, language, level)
   // requests are served instantly from memory/Mongo — no Serper, no Gemma, no
-  // LLM moderation (the cached lesson already passed every check when it was
+  // rule-based moderation (the cached lesson already passed every check when it was
   // first generated). Cache hits also bypass the concurrency gate because they
   // cost almost nothing.
   const cacheKey = lessonCacheKey(question, language, level, mode);
@@ -1258,7 +1331,7 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
         reason: inputModeration.reason,
         question,
       });
-      console.warn("[moderation] Input blocked by LLM moderation", redactModerationEvent(moderationEvent));
+      console.warn("[moderation] Input blocked by rule-based moderation", redactModerationEvent(moderationEvent));
       await logModerationEvent(moderationEvent);
       sendEvent("error", {
         error:
@@ -1362,7 +1435,7 @@ Level: ${level}${
         if (source === "cloudflare") {
           // Direct Cloudflare call bypasses callGemma's circuit breaker so
           // the fallback is still reachable when the primary's circuit is open.
-          const result = extractTextFromResult(
+          result = extractTextFromResult(
             await callCloudflareAI(
               GEMMA_MODEL,
               {
@@ -1593,7 +1666,7 @@ Level: ${level}${
           reason: fastInputModeration.reason,
           question,
         });
-        console.warn("[moderation] Fast-mode input blocked by LLM moderation", redactModerationEvent(moderationEvent));
+        console.warn("[moderation] Fast-mode input blocked by rule-based moderation", redactModerationEvent(moderationEvent));
         await logModerationEvent(moderationEvent);
         sendEvent("error", {
           error:
@@ -1638,7 +1711,7 @@ Level: ${level}${
           reason: outputVerdict.reason,
           question,
         });
-        console.warn("[moderation] Explain-mode output blocked by LLM moderation", redactModerationEvent(moderationEvent));
+        console.warn("[moderation] Explain-mode output blocked by rule-based moderation", redactModerationEvent(moderationEvent));
         await logModerationEvent(moderationEvent);
         sendEvent("error", {
           error:
@@ -1732,6 +1805,9 @@ try {
     if (process.env.CLOUDFLARE_API_TOKEN?.trim() && process.env.CLOUDFLARE_ACCOUNT_ID?.trim()) {
       startPeriodicWarmUp();
     }
+    // Privacy (policy v2.3): retroactively anonymize raw IPs stored by
+    // earlier releases. Fire-and-forget; errors are logged, not fatal.
+    void scrubStoredConsentIps();
   });
 
   // Graceful shutdown: stop accepting new connections, wait for in-flight

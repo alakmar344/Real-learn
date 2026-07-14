@@ -254,7 +254,22 @@ export async function moderateText(text, kind = "input") {
     verdictCacheSet(cacheKey, allowedResult);
     return allowedResult;
   } catch (error) {
-    console.warn("[moderation] Rule-based check error; failing open", {
+    // Security: fail CLOSED for AI OUTPUT. If the safety check itself breaks,
+    // unreviewed model output must not reach a minors-facing product — the
+    // user can simply retry. INPUT checks still fail open: blocking every
+    // student question because of an internal error would take the whole
+    // service down, and the output-side check remains as the backstop.
+    if (kind === "output") {
+      console.error("[moderation] Rule-based output check error; failing closed", {
+        kind,
+        error: error?.message,
+      });
+      return {
+        allowed: false,
+        reason: "Safety review could not be completed. Please try again.",
+      };
+    }
+    console.warn("[moderation] Rule-based input check error; failing open", {
       kind,
       error: error?.message,
     });
