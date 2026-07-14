@@ -18,7 +18,59 @@
 A short, human-readable digest of the most recent work. Full detail remains in
 the themed sections below and the chronological table at the end.
 
-### Today — July 13, 2026
+### Today — July 14, 2026 (app v1.2.0, Privacy Policy v2.3)
+- **Bug fix — Cloudflare fallback rung actually works now.** In
+  `backend/src/server.js` the direct-Cloudflare generation branch declared a
+  shadowing `const result`, so the outer `result` stayed `undefined` and the
+  "circuit-independent last rung" always threw a `TypeError` instead of
+  returning the generated text — exactly in the degraded scenario (Cerebras
+  circuit open) it existed for. One-word fix: assign the outer variable.
+- **Bug fix — stable User-Agent hash salt.** The UA hash salt was regenerated
+  per process, so the same device hashed differently after every restart,
+  defeating the "detect repeat-device consent fraud" purpose. Now configurable
+  via `UA_HASH_SALT` env with a stable derived fallback.
+- **Legal / privacy (v2.3, reconsent):** consent records no longer store raw
+  client IPs. IPs are anonymized by truncation (IPv4 /24, IPv6 /48) before
+  storage, and a one-time startup migration retroactively anonymizes all
+  previously stored full IPs. Privacy Policy bumped 2.2 → 2.3 (frontend
+  constants + backend `PRIVACY_POLICY_VERSION` + policy page text), and all
+  users are re-prompted to re-accept via the existing versioned-reconsent
+  dialog. App version bumped 1.1.0 → 1.2.0.
+- **Security — output moderation fails closed.** `moderateText` used to return
+  `{allowed: true}` when the safety check itself threw. Output moderation now
+  fails closed (blocks with a retry message); input moderation still fails
+  open so an internal error can't take the whole service down. Also corrected
+  misleading "LLM moderation" log lines/comments — the filter is rule-based.
+- **Performance — fixed "app gets slow and laggy after many lessons".** Two
+  root causes, two fixes:
+  1. *Tiered lesson-history retention (the middle way between "store
+     everything" and "delete everything"):* the newest 12 journeys keep their
+     full lesson; older entries are condensed to lightweight summaries
+     (question, scores, dates, part/quiz counts) instead of deleted. Opening a
+     summary regenerates the lesson (usually a server-cache hit). A persist
+     `migrate` (v0→v1) condenses existing oversized histories on first load.
+  2. *Debounced store persistence:* zustand persist ran `JSON.stringify` +
+     a synchronous `localStorage.setItem` of the whole store on EVERY quiz
+     click. New `lib/debouncedStorage.ts` defers serialization+write until
+     ~800 ms of idle and flushes on tab hide/close; applied to the journey
+     history, lesson, and progress stores.
+  Also removed `background-attachment: fixed` from `.crayon-bg` (the element
+  is already `position: fixed`, so it was a pure scroll-jank cost with zero
+  visual effect).
+- **Adaptive visual-performance tiers.** A pre-paint script resolves
+  `<html data-perf="low|mid|high">` from device hints (deviceMemory, cores,
+  prefers-reduced-motion, Save-Data), overridable in Settings → Preferences →
+  "Visual performance" (Auto / Lite / Rich). Low tier strips every backdrop
+  blur, the background art, the paper-grain blend layer, ambient flame/pulse
+  animations, and swaps the locked-part 12px blur for a cheap fade — much
+  better low-end device support. High tier gets a richer background presence
+  and deeper card shadows.
+- **Design polish:** brand-tinted text selection, slim theme-aware sidebar
+  scrollbars, glow shadow on the sidebar CTA, archived history entries show an
+  accent "Summary — tap to regenerate" hint, locked-part styling moved from
+  inline styles to a tokenized CSS class.
+
+### July 13, 2026
 - **`722f53e` — AI provider stack: Cerebras primary (gemma-4-31b), Cloudflare fallback.**
   Finalized the hedged multi-provider engine: Cerebras Cloud (Gemma 4 31B) is now
   the primary inference provider, with Cloudflare Workers AI as the automatic
