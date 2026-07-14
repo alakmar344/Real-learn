@@ -7,6 +7,7 @@ import ConfirmModal from "@/components/shared/ConfirmModal";
 import ThemeModal from "@/components/shared/ThemeModal";
 import { useLessonStore } from "@/store/lessonStore";
 import { useSavedJourneysStore } from "@/store/savedJourneysStore";
+import { useLesson } from "@/hooks/useLesson";
 import { useMounted } from "@/hooks/useMounted";
 import { SavedJourney } from "@/types";
 
@@ -21,6 +22,7 @@ export default function Sidebar({ open, onClose }: Props) {
   const mounted = useMounted();
 
   const { journeys, removeJourney } = useSavedJourneysStore();
+  const { generateLesson } = useLesson();
 
   const [themeOpen, setThemeOpen] = useState(false);
   const [journeyToRemove, setJourneyToRemove] = useState<string | null>(null);
@@ -31,10 +33,17 @@ export default function Sidebar({ open, onClose }: Props) {
   };
 
   const handleOpenJourney = (journey: SavedJourney) => {
-    const loadJourney = useLessonStore.getState().loadJourney;
-    loadJourney(journey);
     onClose();
-    router.push("/learn");
+    if (journey.lesson) {
+      const loadJourney = useLessonStore.getState().loadJourney;
+      loadJourney({ ...journey, lesson: journey.lesson });
+      router.push("/learn");
+      return;
+    }
+    // Tiered retention: older journeys keep only a lightweight summary, so
+    // re-opening one regenerates the lesson (usually a fast server-cache hit)
+    // instead of loading it from local storage.
+    void generateLesson(journey.question, true);
   };
 
   return (
@@ -108,7 +117,7 @@ export default function Sidebar({ open, onClose }: Props) {
               fontSize: 14,
               cursor: "pointer",
               minHeight: 48,
-              boxShadow: "var(--shadow-sm)",
+              boxShadow: "var(--shadow-glow-accent)",
               transition: "all 200ms var(--ease-color)",
             }}
             onMouseEnter={(e) => {
@@ -190,9 +199,16 @@ export default function Sidebar({ open, onClose }: Props) {
                       {journey.question}
                     </span>
                     <span style={{ display: "block", fontSize: 11, color: "var(--text-tertiary)", marginTop: 2 }}>
-                      {journey.language} · {journey.level} · {journey.totalScore}/{(journey.lesson?.parts ?? []).reduce((sum, p) => sum + (p.quiz?.length ?? 2), 0) || (journey.lesson?.parts?.length ?? 3) * 2} ★
-                      {(journey.completedParts ?? []).length < (journey.lesson?.parts?.length ?? 3) && (
+                      {journey.language} · {journey.level} · {journey.totalScore}/{
+                        (journey.lesson?.parts ?? []).reduce((sum, p) => sum + (p.quiz?.length ?? 2), 0) ||
+                        journey.quizCount ||
+                        (journey.lesson?.parts?.length ?? journey.partCount ?? 3) * 2
+                      } ★
+                      {(journey.completedParts ?? []).length < (journey.lesson?.parts?.length ?? journey.partCount ?? 3) && (
                         <span> · Part {journey.unlockedPart ?? 1}</span>
+                      )}
+                      {journey.archived && (
+                        <span style={{ color: "var(--accent)" }}> · Summary — tap to regenerate</span>
                       )}
                     </span>
                   </button>

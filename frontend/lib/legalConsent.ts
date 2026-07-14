@@ -10,7 +10,7 @@
 
 export const LEGAL_CONSENT_KEY = "reallearn-legal-consent";
 export const COOKIE_CONSENT_KEY = "reallearn-cookie-consent";
-export const CURRENT_PRIVACY_VERSION = "2.2";
+export const CURRENT_PRIVACY_VERSION = "2.3";
 export const CURRENT_TERMS_VERSION = "2.2";
 /** Bumping this re-prompts everyone for cookie/analytics consent. */
 export const CURRENT_COOKIE_VERSION = "2.1";

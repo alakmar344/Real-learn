@@ -1,7 +1,8 @@
 "use client";
 
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
+import { persist } from "zustand/middleware";
+import { createDebouncedStorage } from "@/lib/debouncedStorage";
 import { LessonJourney } from "@/types";
 
 interface LessonStore {
@@ -29,6 +30,18 @@ interface LessonStore {
   resetProgress: () => void;
   loadJourney: (journey: { question: string; lesson: LessonJourney; unlockedPart: number; completedParts: number[]; partScores: Record<number, number | null> }) => void;
 }
+
+type PersistedLessonState = Pick<
+  LessonStore,
+  | "question"
+  | "lesson"
+  | "unlockedPart"
+  | "completedParts"
+  | "partScores"
+  | "collapsedParts"
+  | "showCompletion"
+  | "showFollowUp"
+>;
 
 function storeLog(action: string, details?: unknown) {
   if (process.env.NODE_ENV === "production") return;
@@ -197,7 +210,8 @@ export const useLessonStore = create<LessonStore>()(
     }),
     {
       name: "reallearn-journey",
-      storage: createJSONStorage(() => localStorage),
+      // Perf: defer serialization + write off the click path (see lib/debouncedStorage).
+      storage: createDebouncedStorage<PersistedLessonState>(),
       partialize: (state) => ({
         question: state.question,
         lesson: state.lesson,

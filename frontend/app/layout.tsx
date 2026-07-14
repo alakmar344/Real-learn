@@ -60,6 +60,13 @@ export const viewport: Viewport = {
 // first meta in tree order wins, so appending a second one did nothing).
 const themeInitScript = `(function(){try{var t=null;var p=localStorage.getItem("reallearn-preferences");if(p){var s=JSON.parse(p);t=s&&s.state&&s.state.theme}if(!t){var l=localStorage.getItem("reallearn-theme");if(l){var v=JSON.parse(l);t=typeof v==="string"?v:v&&v.state&&v.state.theme}}if(t==="dark"||t==="twilight"){document.documentElement.dataset.theme=t;var m=document.querySelector('meta[name="theme-color"]');if(!m){m=document.createElement("meta");m.name="theme-color";document.head.appendChild(m)}m.content=t==="dark"?"#09090b":"#0c0a1d"}}catch(e){}})();`;
 
+// Resolves the visual-performance tier BEFORE first paint so low-end devices
+// never pay for a single expensive frame (backdrop blurs, grain, ambient
+// animations) and high-end devices get the rich experience immediately.
+// Mirrors lib/performance.ts detectPerfTier(); ThemeApplier keeps it in sync
+// afterwards when the user changes the setting.
+const perfInitScript = `(function(){try{var mode=null;try{var p=localStorage.getItem("reallearn-preferences");if(p){var s=JSON.parse(p);mode=s&&s.state&&s.state.perfMode}}catch(e){}var tier;if(mode==="low"||mode==="high"){tier=mode}else{var mem=navigator.deviceMemory||8;var cores=navigator.hardwareConcurrency||8;var rm=false;try{rm=window.matchMedia("(prefers-reduced-motion: reduce)").matches}catch(e){}var sd=Boolean(navigator.connection&&navigator.connection.saveData);tier=(mem<=4||cores<=4||rm||sd)?"low":((mem>=8&&cores>=8)?"high":"mid")}document.documentElement.dataset.perf=tier}catch(e){}})();`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -73,6 +80,7 @@ export default function RootLayout({
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script dangerouslySetInnerHTML={{ __html: perfInitScript }} />
       </head>
       <body>
         <CrayonBackground />
