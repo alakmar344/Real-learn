@@ -24,20 +24,39 @@ const QUOTES = [
   "Curiosity is the wick in the candle of learning.",
 ];
 
+/** Warm, time-aware greeting — the app says hello like a friend would. */
+function greetingForHour(h: number): string {
+  if (h < 4) return "Still awake? The stars are studying with you 🌙";
+  if (h < 7) return "Up with the sun — beautiful start ☀️";
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  if (h < 21) return "Good evening";
+  return "A quiet night is perfect for wondering ✨";
+}
+
 export default function HomePage() {
   const [question, setQuestion] = useState("");
   const [loadingQuestion, setLoadingQuestion] = useState<string | null>(null);
-  // Pick the quote after mount: choosing randomly during render made the SSR
-  // HTML and the client's first render disagree → hydration error + flicker.
+  // Pick the quote after mount: choosing during render made the SSR HTML and
+  // the client's first render disagree → hydration error + flicker. It is now
+  // DETERMINISTIC per calendar day — a small daily ritual ("today's quote")
+  // rather than a slot machine on every reload.
   const [quote, setQuote] = useState("");
+  const [greeting, setGreeting] = useState("");
   const { generateLesson } = useLesson();
   const { isSignedIn, getToken } = useAuth();
   const { user } = useUser();
   const primaryEmail = user?.primaryEmailAddress?.emailAddress || "";
   const fallbackEmail = user?.emailAddresses?.[0]?.emailAddress || "";
+  const firstName = user?.firstName || "";
 
   useEffect(() => {
-    setQuote(QUOTES[Math.floor(Math.random() * QUOTES.length)]);
+    const now = new Date();
+    const dayOfYear = Math.floor(
+      (now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 86_400_000
+    );
+    setQuote(QUOTES[dayOfYear % QUOTES.length]);
+    setGreeting(greetingForHour(now.getHours()));
   }, []);
 
   // Sync a consent accepted BEFORE sign-in to the backend, once per user.
@@ -133,6 +152,30 @@ export default function HomePage() {
           }}
         >
           <div style={{ width: "100%", maxWidth: 800 }}>
+            {/* Personal, time-aware hello \u2014 rendered after mount so SSR and
+                the client never disagree. Reserves its line to avoid shift. */}
+            <p
+              style={{
+                fontSize: 15,
+                color: "var(--text-secondary)",
+                fontWeight: 500,
+                margin: "0 0 8px",
+                fontFamily: "var(--font-lora)",
+                fontStyle: "italic",
+                minHeight: 22,
+              }}
+              suppressHydrationWarning
+            >
+              {greeting ? (
+                <>
+                  <span className="animate-gentle-wave" aria-hidden="true">{"\uD83D\uDC4B"}</span>{" "}
+                  {greeting}
+                  {firstName ? `, ${firstName}` : ""}
+                </>
+              ) : (
+                "\u00A0"
+              )}
+            </p>
             <p
               style={{
                 fontSize: 14,

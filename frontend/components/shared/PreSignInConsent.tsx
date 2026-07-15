@@ -17,10 +17,10 @@ import {
 const ALLOWED_PATHS_WHEN_DECLINED = ["/sign-in", "/sign-up", "/legal"];
 
 const POLICY_CHANGES = [
-  "Privacy Policy updated to version 2.4 (application version 1.2.0) — all users are re-prompted to re-accept.",
-  "Saved lessons moved to IndexedDB: the full content of every saved lesson (chat) is now stored in your browser's IndexedDB on your own device, with only a lightweight history index (question, scores, dates) in localStorage. Nothing is sent to our servers, and re-opening a saved lesson loads it locally. \"Delete My Data\" clears both storage areas.",
-  "IP addresses are anonymized before storage (since v2.3): consent records keep only a truncated network prefix (e.g. 203.0.113.0), never your full IP address. Previously stored full IPs have been retroactively anonymized.",
-  "Clarified our AI inference providers: Cerebras Cloud (Gemma 4 31B) is primary, with Cloudflare Workers AI as an automatic fallback.",
+  "Privacy Policy updated to version 2.5 — all users are re-prompted to re-accept.",
+  "New locally-stored personalization data: the date you first used RealLearn on this device (shown as a \"learning together for N days\" counter), once-per-day markers so seasonal or time-of-day greetings never appear twice in a day, and an on-screen greeting that may display your first name. All of this stays in your browser only — nothing is sent to our servers — and \"Delete My Data\" or clearing your browser data removes it.",
+  "Saved lessons live in IndexedDB (since v2.4): the full content of every saved lesson (chat) is stored in your browser's IndexedDB on your own device, with only a lightweight history index (question, scores, dates) in localStorage. Nothing is sent to our servers, and re-opening a saved lesson loads it locally.",
+  "IP addresses are anonymized before storage (since v2.3): consent records keep only a truncated network prefix (e.g. 203.0.113.0), never your full IP address.",
 ];
 
 const TERMS_CHANGES = [

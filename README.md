@@ -28,7 +28,13 @@ Ask anything. In seconds, RealLearn engineers a complete educational experience 
 A running log of what's new in RealLearn. The full, exhaustive history from the
 gold redesign onward lives in [`change-made-after-submission.md`](./change-made-after-submission.md).
 
-**Today — July 13, 2026**
+**Today — July 15, 2026**
+- **Soothing ambient background.** New theme-aware "aurora" layer — three enormous, ultra-soft color washes drifting on 70–110s transform-only loops (GPU-cheap, no blur filters) — plus a softened crayon scene (lower opacity, gentler saturation, a vertical mask fade under the reading line) and halved paper grain. Easier on the eyes in all three themes; fully skipped on the low performance tier and frozen under reduced-motion.
+- **Easter eggs.** Konami code → confetti storm; typing "magic" or "love" outside inputs → floating hearts; clicking the footer RealLearn wordmark 5× → a heart burst; and quiet once-per-day moments (night-owl / early-bird greetings, New Year, Teachers' Day, Children's Day).
+- **Attachment features.** Time-aware personal greeting on the homepage (uses your first name if signed in), the hero quote is now a stable "quote of the day" ritual, and the footer counts "learning together for N days" with milestone celebrations at 7/30/100/365 days.
+- **Legal v2.5 (Privacy) & v2.2 (Cookie) — reconsent.** The new locally-stored personalization data (first-visit date, once-per-day greeting markers, on-device first-name greeting) is now disclosed in the Privacy and Cookie Policies. Because the local-storage disclosures changed, all users are re-prompted to re-accept the Privacy Policy and the cookie banner asks again. Terms of Service unchanged (v2.3). No new server-side collection and no new third parties.
+
+**July 13, 2026**
 - **Loading cinematic overhaul.** Counter now auto-completes to 100% on an ease-out curve and fades out gracefully into the lesson, fixing the "stuck at 35%" disconnect on fast Cerebras responses. ([`...`])
 - **Token-spend reduction (~50-60%).** Compressed system prompts, tightened output ceilings (fast 4000→2500, explain 6000→4000), enabled no-thinking mode on the primary Cerebras provider, and added per-request token logging to monitor daily burn. ([`...`])
 - **AI provider switch → Cerebras primary, Cloudflare fallback.** The hedged multi-provider engine now uses **Cerebras Cloud** (Gemma 4 31B) as the primary inference provider, with **Cloudflare Workers AI** (Gemma) as an automatic fallback for reliability. ([`722f53e`](https://github.com/alakmar344/reallearn/commit/722f53e))

@@ -20,7 +20,7 @@ export default function PrivacyPolicy() {
         Privacy Policy
       </h2>
       <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
-        Last updated: July 14, 2026 (version 2.4)
+        Last updated: July 15, 2026 (version 2.5)
       </p>
 
       <section style={{ marginBottom: 28 }}>
@@ -77,7 +77,7 @@ export default function PrivacyPolicy() {
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Consent Records:</strong> Timestamps of when you accepted our Privacy Policy
-            (version 2.4), Terms of Service (version 2.3), and cookie/analytics consent, together
+            (version 2.5), Terms of Service (version 2.3), and cookie/analytics consent, together
             with the policy version, an <strong>anonymized (truncated) device IP</strong>, and a
             hashed User-Agent, kept as proof of consent.
           </li>
@@ -124,6 +124,18 @@ export default function PrivacyPolicy() {
             our servers</strong>, and clearing your browser data or using &quot;Delete My Data&quot;
             removes it.
           </li>
+          <li style={{ marginBottom: 4 }}>
+            <strong>Personalization &amp; Delight Data (stored locally):</strong> To make the app
+            feel personal, we keep two small pieces of information in your browser&apos;s
+            localStorage only: (1) the date you first used RealLearn on this device, used to show a
+            friendly &quot;learning together for N days&quot; counter, and (2) simple once-per-day
+            markers that record whether a seasonal or time-of-day greeting (a small
+            &quot;surprise&quot; message) has already been shown today, so we never show it twice.
+            If you are signed in, your first name (provided by Clerk) may be displayed in an
+            on-screen greeting — this happens entirely in your browser. None of this information is{" "}
+            <strong>transmitted to or stored on our servers</strong>, and clearing your browser data
+            or using &quot;Delete My Data&quot; removes it.
+          </li>
           <li>
             <strong>Moderation Logs:</strong> When a question you submit or an AI response is
             blocked by our safety filters, we record a moderation log entry containing the reason
@@ -146,6 +158,12 @@ export default function PrivacyPolicy() {
             To power gamification and engagement features — experience points, levels, daily
             streaks, daily goals, and achievement badges — which are calculated and stored locally
             on your device to help you build a learning habit.
+          </li>
+          <li style={{ marginBottom: 4 }}>
+            To show friendly, personalized touches — a time-of-day greeting (optionally using your
+            first name, rendered only in your browser), a local counter of how many days you have
+            used RealLearn, and small once-per-day seasonal surprises — all computed and stored
+            locally on your device.
           </li>
           <li style={{ marginBottom: 4 }}>To analyze usage patterns through Google Analytics and improve our service.</li>
           <li style={{ marginBottom: 4 }}>To comply with legal obligations and age-appropriate content rules.</li>
@@ -219,8 +237,10 @@ export default function PrivacyPolicy() {
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>6. Cookies and Local Storage</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           We use browser localStorage to store your consent preferences, theme settings, your
-          saved-lesson history index, and your learning-progress and achievement data (XP, level,
-          streaks, daily goals, activity history, and badges), and browser <strong>IndexedDB</strong>{" "}
+          saved-lesson history index, your learning-progress and achievement data (XP, level,
+          streaks, daily goals, activity history, and badges), and your personalization data (the
+          date you first used RealLearn on this device and once-per-day markers for seasonal
+          greetings), and browser <strong>IndexedDB</strong>{" "}
           to store the full content of your saved lessons (chats). We use Google Analytics cookies
           (loaded only after consent) for service improvement.
           We do not use tracking cookies for advertising. Clerk, our authentication provider,
@@ -363,6 +383,19 @@ export default function PrivacyPolicy() {
            We may update this Privacy Policy from time to time. We will notify you of any changes
            by posting the new policy on this page and updating the &quot;Last updated&quot; date.
            Continued use of the service after changes constitutes acceptance of the updated policy.
+         </p>
+         <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+           <strong>Version 2.5 (effective July 15, 2026).</strong> This update discloses new{" "}
+           <strong>locally-stored personalization data</strong> introduced with our friendlier
+           experience: the date you first used RealLearn on this device (shown as a
+           &quot;learning together for N days&quot; counter), once-per-day markers that prevent a
+           seasonal or time-of-day greeting from being shown twice in one day, and the on-device
+           display of your first name (from your Clerk account) in a greeting. All of this lives
+           only in your browser&apos;s localStorage, is <strong>never transmitted to or stored on
+           our servers</strong>, and is removed by clearing your browser data or using
+           &quot;Delete My Data&quot;. No new server-side collection, no new third parties, and no
+           change to analytics. Because this changes our local-storage disclosures, we are
+           re-prompting all users to review and re-accept this Privacy Policy before continuing.
          </p>
          <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
            <strong>Version 2.4 (effective July 14, 2026).</strong> This update changes where your

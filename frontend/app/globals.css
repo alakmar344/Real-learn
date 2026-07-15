@@ -115,6 +115,14 @@
   --focus-ring: 0 0 0 3px var(--accent-glow);
   --focus-ring-simple: 0 0 0 2px var(--accent);
 
+  /* ── Ambient aurora — huge, ultra-soft color washes that drift very slowly
+     behind the crayon painting. Radial gradients that fade to transparent,
+     so NO blur filter is needed (compositor-cheap). Tuned to be felt, not
+     seen: they make the page glow gently instead of sitting flat. ── */
+  --aurora-1: rgba(124, 111, 240, 0.1);   /* periwinkle breath */
+  --aurora-2: rgba(244, 166, 200, 0.12);  /* cotton-candy warmth */
+  --aurora-3: rgba(111, 199, 207, 0.09);  /* aqua calm */
+
   /* ── Crayon painting colors ── */
   --crayon-sky-top: #87ceeb;
   --crayon-sky-bottom: #b8e4f0;
@@ -225,6 +233,11 @@ html[data-theme="dark"] {
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.6);
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.7);
 
+  /* Ambient aurora — cool moonlight tones for the night theme. */
+  --aurora-1: rgba(124, 130, 240, 0.09);
+  --aurora-2: rgba(52, 211, 153, 0.05);
+  --aurora-3: rgba(34, 211, 238, 0.06);
+
   /* ── Crayon painting — night scene ── */
   --crayon-sky-top: #0a1628;
   --crayon-sky-bottom: #132240;
@@ -334,6 +347,11 @@ html[data-theme="twilight"] {
   --shadow-md: 0 4px 16px rgba(6, 4, 16, 0.7);
   --shadow-lg: 0 8px 32px rgba(6, 4, 16, 0.8);
 
+  /* Ambient aurora — dreamy violet-pink dusk tones. */
+  --aurora-1: rgba(176, 132, 240, 0.1);
+  --aurora-2: rgba(236, 72, 153, 0.06);
+  --aurora-3: rgba(96, 165, 250, 0.06);
+
   /* ── Crayon painting — twilight purple scene ── */
   --crayon-sky-top: #1a1040;
   --crayon-sky-bottom: #2d1b69;
@@ -428,14 +446,69 @@ body {
   overflow-x: hidden;
 }
 
-/* Crayon background — static SVG, GPU-composited, theme-tinted via CSS filter */
+/* ── Ambient aurora — the "breathing" layer under the crayon painting.
+   Two enormous radial-gradient blobs drift on 70–90s loops using ONLY
+   transform (compositor-cheap, no blur filters, no repaints). The effect is
+   subliminal: the page feels alive and warm without ever pulling focus. */
+.aurora-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.aurora-blob {
+  position: absolute;
+  width: 72vmax;
+  height: 72vmax;
+  border-radius: 50%;
+  will-change: transform;
+}
+
+.aurora-blob.aurora-a {
+  top: -28vmax;
+  left: -18vmax;
+  background: radial-gradient(circle at center, var(--aurora-1) 0%, transparent 68%);
+  animation: auroraDriftA 90s ease-in-out infinite;
+}
+
+.aurora-blob.aurora-b {
+  bottom: -30vmax;
+  right: -20vmax;
+  background: radial-gradient(circle at center, var(--aurora-2) 0%, transparent 68%);
+  animation: auroraDriftB 72s ease-in-out infinite;
+}
+
+.aurora-blob.aurora-c {
+  top: 20%;
+  left: 30%;
+  width: 54vmax;
+  height: 54vmax;
+  background: radial-gradient(circle at center, var(--aurora-3) 0%, transparent 68%);
+  animation: auroraDriftA 110s ease-in-out -35s infinite reverse;
+}
+
+@keyframes auroraDriftA {
+  0%, 100% { transform: translate3d(-4%, -3%, 0) scale(1); }
+  50% { transform: translate3d(5%, 4%, 0) scale(1.12); }
+}
+
+@keyframes auroraDriftB {
+  0%, 100% { transform: translate3d(3%, 4%, 0) scale(1.08); }
+  50% { transform: translate3d(-5%, -3%, 0) scale(0.96); }
+}
+
+/* Crayon background — static SVG, GPU-composited, theme-tinted via CSS filter.
+   Softened: lower opacity + a gentle vertical mask fade so the scene rests
+   quietly at the bottom of the viewport and never competes with reading. */
 .crayon-bg {
   position: fixed;
   inset: 0;
   height: 100dvh;
   z-index: -1;
   pointer-events: none;
-  opacity: 0.45;
+  opacity: 0.34;
   background-image: url("/crayon-bg-mobile.svg");
   background-size: cover;
   background-position: center;
@@ -446,7 +519,11 @@ body {
   will-change: transform;
   transform: translateZ(0);
   backface-visibility: hidden;
-  filter: saturate(0.85) brightness(0.95);
+  filter: saturate(0.75) brightness(1.02);
+  /* Fade the top ~30% where headings and body text live — text floats on
+     calm cream instead of fighting the sky. Applied once, GPU-composited. */
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0.8) 32%, #000 60%);
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0.8) 32%, #000 60%);
 }
 
 /* Desktop: landscape SVG */
@@ -457,23 +534,24 @@ body {
 }
 
 html[data-theme="dark"] .crayon-bg {
-  opacity: 0.3;
+  opacity: 0.22;
   filter: saturate(0.5) brightness(0.2) hue-rotate(200deg) contrast(1.1);
 }
 
 html[data-theme="twilight"] .crayon-bg {
-  opacity: 0.3;
+  opacity: 0.22;
   filter: saturate(0.6) brightness(0.25) hue-rotate(260deg) contrast(1.1);
 }
 
-/* Paper grain — lightweight CSS-only noise, no SVG filters */
+/* Paper grain — lightweight CSS-only noise, no SVG filters.
+   Halved from 0.06: at 0.03 it still reads as "paper", not "dust". */
 body::after {
   content: "";
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  opacity: 0.06;
+  opacity: 0.03;
   mix-blend-mode: multiply;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='4' height='4' fill='%23000' opacity='0.15'/%3E%3Crect x='1' y='1' width='1' height='1' fill='%23000' opacity='0.1'/%3E%3C/svg%3E");
 }
@@ -610,6 +688,24 @@ pre {
 @keyframes slideIn {
   from { opacity: 0; transform: translateX(-20px); }
   to { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Easter-egg keyframes ── */
+@keyframes heartFloat {
+  0% { opacity: 0; transform: translateY(0) scale(0.5) rotate(0deg); }
+  12% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-55vh) scale(1.25) rotate(14deg); }
+}
+
+@keyframes gentleWave {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(12deg); }
+  75% { transform: rotate(-8deg); }
+}
+.animate-gentle-wave {
+  display: inline-block;
+  animation: gentleWave 1.6s ease-in-out;
+  transform-origin: 70% 70%;
 }
 
 /* ── Animation utilities ── */
@@ -919,8 +1015,12 @@ html[data-perf="low"] *::after {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
-/* Background art + paper grain: skip entirely; the flat theme color remains. */
+/* Background art + paper grain + aurora: skip entirely; the flat theme color
+   remains. */
 html[data-perf="low"] .crayon-bg {
+  display: none;
+}
+html[data-perf="low"] .aurora-bg {
   display: none;
 }
 html[data-perf="low"] body::after {
@@ -941,11 +1041,11 @@ html[data-perf="low"] .part-locked-content {
 
 /* ── HIGH tier: richer experience for powerful devices ── */
 html[data-perf="high"] .crayon-bg {
-  opacity: 0.55;
+  opacity: 0.42;
 }
 html[data-theme="dark"][data-perf="high"] .crayon-bg,
 html[data-theme="twilight"][data-perf="high"] .crayon-bg {
-  opacity: 0.35;
+  opacity: 0.27;
 }
 
 /* Users who ask the OS for reduced motion always win, on every tier. */

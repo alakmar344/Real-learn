@@ -217,7 +217,7 @@ This changelog covers **290+ commits** over approximately 3 weeks, representing 
 - COPPA/CCPA/DPDP compliance
 - IP anonymization
 - Reconsent flows for policy updates
-- Current version: Privacy Policy v2.4, ToS v2.3
+- Current version: Privacy Policy v2.5, ToS v2.3, Cookie Policy v2.2
 
 #### Security Hardening (30+ commits)
 - WCAG 2.1 AA compliance fixes
@@ -263,6 +263,7 @@ The most dramatic section. The AI provider was migrated through multiple vendors
 - Crayon painting background (river, house, library, school, bridge, signpost)
 - GPU-composited static SVG background
 - Responsive crayon background
+- Ambient aurora layer (drifting theme-aware color washes) + softened crayon scene and paper grain
 - WCAG 2.1 AA compliance
 
 #### Voice, TTS & STT (4 commits)
@@ -275,9 +276,16 @@ The most dramatic section. The AI provider was migrated through multiple vendors
 - Quiz option reshuffling
 - Themed UI modals
 - Engagement system with shareable results
+- Easter eggs (Konami code, secret words, footer wordmark, once-per-day seasonal moments)
+- Attachment features (time-aware personal greeting, quote-of-the-day ritual, "learning together for N days" counter)
 - Legal policy updates for gamification
 
-#### Today's Changes (July 14, 2026)
+#### Latest Changes (July 15, 2026)
+- **Soothing ambient background** — Aurora layer, softened crayon scene, halved paper grain; skipped on low-perf devices
+- **Easter eggs & attachment features** — Konami code, secret words, personal greetings, day counter, daily quote ritual
+- **Legal v2.5 / Cookie v2.2 with reconsent** — New locally-stored personalization data disclosed; all users re-prompted
+
+#### July 14, 2026 Changes
 - **Expanded language support from 8 to 12** — Added Malayalam, Punjabi, Urdu, Odia
 - **Storage split to IndexedDB** — All lesson bodies moved to IndexedDB for privacy and performance
 - **Cost fix** — Archived lessons no longer regenerate (no repeat LLM spend)
@@ -626,11 +634,11 @@ The most striking theme across all documents is the **massive iteration** that h
 
 1. **AI provider migration** — Forced by Google's IP blocking, migrated through 5 providers before settling on Cerebras + Cloudflare
 2. **Security hardening** — From basic auth to comprehensive security with IDOR elimination, rate limiting, input validation, and multi-layer moderation
-3. **Legal compliance** — From no legal framework to versioned Privacy Policy (v2.4), Terms of Service (v2.3), and Cookie Policy with COPPA/CCPA/DPDP compliance
+3. **Legal compliance** — From no legal framework to versioned Privacy Policy (v2.5), Terms of Service (v2.3), and Cookie Policy (v2.2) with COPPA/CCPA/DPDP compliance
 4. **Accessibility** — From basic UI to WCAG 2.1 AA targeting with ARIA labels, keyboard navigation, focus management, and reduced-motion support
 5. **Performance** — From 109-second cold starts to 50-second generation with caching, retries, and circuit breakers
-6. **Design** — From gold-noir aesthetic to three beautiful themes with crayon backgrounds and adaptive performance tiers
-7. **Gamification** — From no engagement system to XP, levels, streaks, 17 achievements, and shareable result cards
+6. **Design** — From gold-noir aesthetic to three beautiful themes with crayon backgrounds, a drifting ambient aurora layer, and adaptive performance tiers
+7. **Gamification** — From no engagement system to XP, levels, streaks, 17 achievements, shareable result cards, hidden easter eggs, and attachment features (personal greetings, quote-of-the-day, a "learning together for N days" counter)
 8. **Voice** — From no voice features to full TTS/STT in 12 languages
 9. **Storage** — From localStorage-only to IndexedDB archiving with tiered retention
 

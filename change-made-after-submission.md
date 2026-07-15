@@ -29,7 +29,7 @@
 >   and multi-layer content moderation (regex + LLM).
 >
 > - **Legal Compliance:** Built a complete legal framework from scratch —
->   Privacy Policy (now v2.4), Terms of Service (v2.3), Cookie Policy — with
+>   Privacy Policy (now v2.5), Terms of Service (v2.3), Cookie Policy (v2.2) — with
 >   COPPA/CCPA/DPDP compliance, versioned consent, IP anonymization, and
 >   automatic reconsent flows.
 >
@@ -90,7 +90,42 @@
 A short, human-readable digest of the most recent work. Full detail remains in
 the themed sections below and the chronological table at the end.
 
-### Today — July 14, 2026 (app v1.2.0, Privacy Policy v2.4, ToS v2.3)
+### Today — July 15, 2026 (Privacy Policy v2.5, Cookie Policy v2.2, ToS v2.3)
+- **Soothing ambient background (comfort + performance).** Added a theme-aware
+  "aurora" layer — three enormous, ultra-soft radial-gradient color washes
+  drifting on 70–110s loops using ONLY transform animation (compositor-cheap,
+  no blur filters, no repaints). Softened the crayon painting (opacity
+  0.45→0.34 light / 0.30→0.22 dark & twilight, gentler saturation, and a
+  vertical mask fade so the scene rests below the reading line) and halved the
+  paper grain (0.06→0.03). The aurora is hidden entirely on the low
+  performance tier and freezes under prefers-reduced-motion.
+- **Easter eggs (new `EasterEggs` component).** Konami code (↑↑↓↓←→←→BA) →
+  confetti storm + secret toast; typing "magic" or "love" outside form fields
+  → floating heart burst; clicking the footer RealLearn wordmark 5× within 3s
+  → heart burst (Footer dispatches a `reallearn:egg` CustomEvent); and quiet
+  once-per-day moments — night-owl (12–4 AM) / early-bird (4–7 AM) greetings
+  plus New Year, Teachers' Day (Sep 5), and Children's Day (Nov 14) surprises —
+  guarded by localStorage so they never nag twice in a day.
+- **Attachment features.** Time-aware personal greeting on the homepage (waves
+  hello and uses the signed-in user's first name, rendered after mount so SSR
+  never mismatches); the hero quote is now deterministic per calendar day — a
+  "quote of the day" ritual instead of random per reload; and the footer shows
+  a "Learning together for N days" companion counter (first-visit date stored
+  locally) with milestone celebrations at 7/30/100/365 days.
+- **Legal v2.5 (Privacy) & v2.2 (Cookie) — reconsent.** The new locally-stored
+  personalization data (first-visit date, once-per-day greeting markers, and
+  the on-device first-name greeting) is now disclosed: Privacy Policy gained a
+  "Personalization & Delight Data" bullet, a usage bullet, an updated
+  Cookies/Local Storage section, and a v2.5 history entry; the Cookie Policy's
+  Local Storage bullet was extended with a v2.2 history note. Version
+  constants bumped in `legalConsent.ts` (privacy 2.4→2.5, cookie 2.1→2.2),
+  backend `server.js` defaults, and `.env.example`; the PreSignInConsent
+  change-summary list was refreshed. All users are re-prompted to re-accept
+  the Privacy Policy, and the cookie banner asks again. Terms of Service is
+  unchanged at v2.3 (no change to the terms of the service itself). No new
+  server-side collection, no new third parties, and no change to analytics.
+
+### July 14, 2026 (app v1.2.0, Privacy Policy v2.4, ToS v2.3)
 - **Expanded language support from 8 to 12 Indian languages.** Added
   Malayalam, Punjabi, Urdu, and Odia across the full stack: `Language` type
   union, `LanguageSelector` and `PreferenceModal` UI components,
@@ -611,6 +646,9 @@ vendors). All of these live between `2b239b5` (start) and now:
 | 2026-07-13 | `c285e2d` | Responsive crayon background (portrait mobile) |
 | 2026-07-13 | `223de88` | Ultra-fast inference (no-thinking, host pinning) |
 | 2026-07-13 | `722f53e` | **Current: Cerebras primary (gemma-4-31b), Cloudflare fallback** |
+| 2026-07-14 | lang + storage | 12 languages, all-chats IndexedDB split, legal v2.4/ToS v2.3 |
+| 2026-07-15 | `f944320` | Aurora background, softened crayon scene, easter eggs, attachment features |
+| 2026-07-15 | legal docs | **Current: Privacy Policy v2.5, Cookie Policy v2.2 (reconsent), ToS v2.3** |
 
 ---
 

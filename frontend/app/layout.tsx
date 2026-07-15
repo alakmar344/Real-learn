@@ -12,6 +12,7 @@ import PreSignInConsent from "@/components/shared/PreSignInConsent";
 import AppShell from "@/components/shared/AppShell";
 import ThemeApplier from "@/components/shared/ThemeApplier";
 import CrayonBackground from "@/components/shared/CrayonBackground";
+import EasterEggs from "@/components/shared/EasterEggs";
 import ToastContainer from "@/components/shared/ToastContainer";
 import SkipToContent from "@/components/shared/SkipToContent";
 import "./globals.css";
@@ -89,6 +90,7 @@ export default function RootLayout({
           <ThemeApplier />
           <AppShell>{children}</AppShell>
           <ToastContainer />
+          <EasterEggs />
           <GoogleAnalytics />
           <CookieConsent />
           <PreSignInConsent />
