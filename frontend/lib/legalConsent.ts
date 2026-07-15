@@ -46,7 +46,19 @@ export async function fetchCookieConsentStatus(
   try {
     const backendUrl =
       process.env.NEXT_PUBLIC_BACKEND_URL || "https://real-learn.onrender.com";
-    const token = await getToken();
+    // Retry the token once: in Firefox, Enhanced Tracking Protection can delay
+    // the Clerk session-refresh worker so getToken() rejects on the first call
+    // even for a signed-in user. A single retry avoids a spurious null (which
+    // would re-prompt the cookie banner) on loads where auth is still warming up.
+    let token: string | null = null;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        token = await getToken();
+        if (token) break;
+      } catch {
+        await new Promise((r) => setTimeout(r, 300));
+      }
+    }
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
     };
