@@ -117,7 +117,22 @@ export default function PreSignInConsent() {
       // we fall back to the local record.
       try {
         const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "https://real-learn.onrender.com";
-        const token = await getToken();
+        // The status call needs a Clerk session token. In Firefox, Enhanced
+        // Tracking Protection can delay or briefly block the session refresh
+        // worker, so getToken() may reject on the first try even though the
+        // user is signed in. Retry once before treating it as a real failure —
+        // otherwise Firefox users whose DB consent is already current (e.g.
+        // they accepted in Chrome) get wrongly re-prompted on every load.
+        let token: string | null = null;
+        for (let attempt = 0; attempt < 2; attempt++) {
+          try {
+            token = await getToken();
+            if (token) break;
+          } catch {
+            // wait a tick for Clerk to finish initialising, then retry
+            await new Promise((r) => setTimeout(r, 300));
+          }
+        }
         const headers: Record<string, string> = {
           "Content-Type": "application/json",
         };
@@ -177,7 +192,25 @@ export default function PreSignInConsent() {
           applyLocalRecord(parsed);
         }
       } catch {
-        applyLocalRecord(parsed);
+        // Verification failed (network hiccup, token/Clerk still initialising,
+        // or Firefox tracking-protection blocking the session). A signed-in
+        // user whose server consent is already current must NOT be kicked back
+        // to the first-time Welcome modal just because this one check couldn't
+        // complete — the effect re-runs whenever auth settles, and every
+        // server-side write still enforces current consent. So: honor a local
+        // current record if we have one, otherwise stay out of the way and let
+        // the app render (the re-run will resolve it). Showing the blocking
+        // first-time prompt here is exactly the Firefox-only "keeps re-asking"
+        // bug, since Firefox keeps a separate localStorage from Chrome.
+        if (isSignedIn) {
+          if (isConsentCurrent(parsed)) {
+            setShowConsent(false);
+          }
+          // else: leave the dialog closed and rely on the re-run / server
+          // enforcement rather than forcing a spurious re-prompt.
+        } else {
+          applyLocalRecord(parsed);
+        }
       }
     };
 

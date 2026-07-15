@@ -1039,6 +1039,48 @@ html[data-perf="low"] .part-locked-content {
   opacity: 0.12;
 }
 
+/* ── Firefox / Gecko: protect the compositor ──
+   Gecko's rendering engine handles several compositing-heavy effects far worse
+   than Chromium/Safari — on the exact layers this app paints full-viewport and
+   fixed:
+     • backdrop-filter over large/fixed surfaces (the sidebar, modal scrims)
+       re-composites on every scroll frame and is a known Firefox lag source.
+     • mix-blend-mode over a full-viewport layer forces a viewport readback on
+       every intersecting paint — the paper-grain layer is the worst offender.
+     • will-change / CSS filter on a 100dvh, fixed, mask-faded SVG (.crayon-bg)
+       promotes a gigantic layer that overflows the GPU texture budget and
+       silently falls back to software compositing — that is what makes the
+       page feel like it "dies" and the cursor feels heavy in Firefox.
+   We keep the same look but drop the bits Gecko can't composite cheaply. This
+   mirrors the low-tier treatment but is applied ONLY to Firefox, so Chromium
+   and Safari keep their glass/blur richness. */
+html[data-browser="firefox"] *,
+html[data-browser="firefox"] *::before,
+html[data-browser="firefox"] *::after {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+/* No filter / will-change / forced layer on the full-screen crayon painting.
+   The mask-image fade stays (it composites cheaply); we only remove the parts
+   that push Gecko into software rendering. */
+html[data-browser="firefox"] .crayon-bg {
+  filter: none;
+  will-change: auto;
+  transform: none;
+  backface-visibility: visible;
+}
+/* Don't pin enormous (72vmax) aurora blobs to their own GPU layer forever —
+   let Gecko composite them on demand instead of overflowing texture memory. */
+html[data-browser="firefox"] .aurora-blob {
+  will-change: auto;
+}
+/* Grain: a plain low-opacity overlay instead of a multiply blend that forces a
+   full-viewport readback on every paint in Firefox. */
+html[data-browser="firefox"] body::after {
+  mix-blend-mode: normal;
+  opacity: 0.04;
+}
+
 /* ── HIGH tier: richer experience for powerful devices ── */
 html[data-perf="high"] .crayon-bg {
   opacity: 0.42;
