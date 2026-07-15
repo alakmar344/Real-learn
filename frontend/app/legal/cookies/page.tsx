@@ -20,7 +20,7 @@ export default function CookiePolicy() {
         Cookie Policy
       </h2>
       <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
-        Last updated: July 13, 2026
+        Last updated: July 15, 2026 (version 2.2)
       </p>
 
       <section style={{ marginBottom: 28 }}>
@@ -51,11 +51,14 @@ export default function CookiePolicy() {
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Local Storage:</strong> We use browser localStorage (not cookies) to store
-            your consent preferences, theme settings, saved-lesson history index, and your
+            your consent preferences, theme settings, saved-lesson history index, your
             learning-progress and achievement data (experience points, level, daily streaks, daily
-            goals, activity history, and badges), and browser IndexedDB (not cookies) to store the
-            full content of your saved lessons. This data stays on your device and is not sent to
-            our servers.
+            goals, activity history, and badges), and your personalization data (the date you
+            first used RealLearn on this device — shown as a &quot;learning together for N
+            days&quot; counter — and once-per-day markers that stop a seasonal or time-of-day
+            greeting from appearing twice in one day), and browser IndexedDB (not cookies) to
+            store the full content of your saved lessons. This data stays on your device and is
+            not sent to our servers.
           </li>
           <li>
             <strong>Essential Cookies:</strong> We may use strictly necessary cookies for security
@@ -92,6 +95,13 @@ export default function CookiePolicy() {
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           We may update this Cookie Policy from time to time. We will notify you of any changes
           by posting the new policy on this page and updating the &quot;Last updated&quot; date.
+        </p>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+          <strong>Version 2.2 (effective July 15, 2026).</strong> Updated the Local Storage
+          disclosure to cover new locally-stored personalization data: the date you first used
+          RealLearn on this device and once-per-day markers for seasonal greetings. This data
+          never leaves your device. Because the disclosure changed, the consent banner will ask
+          for your choice again.
         </p>
       </section>
 
