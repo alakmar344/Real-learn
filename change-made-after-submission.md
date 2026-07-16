@@ -90,7 +90,52 @@
 A short, human-readable digest of the most recent work. Full detail remains in
 the themed sections below and the chronological table at the end.
 
-### Today — July 15, 2026 (Privacy Policy v2.5, Cookie Policy v2.2, ToS v2.3)
+### Today — July 16, 2026 (security + legal + bug fixes, UX polish, home layout)
+- **Backend regression & robustness fixes.** Raised the fast-mode
+  `maxOutputTokens` from 2500 → 4000 in `backend/src/lib/gemma.js` to stop the
+  JSON-truncation regression that was silently breaking fast-mode quizzes;
+  treated Cloudflare `403` responses as retryable rate-limit events (and
+  excluded them from circuit-breaker trips) so a transient Cloudflare block no
+  longer opens the breaker; and removed the `Cross-Origin-Resource-Policy:
+  same-origin` response header that was blocking the cross-origin frontend
+  (`reallearn.site` → `real-learn.onrender.com`).
+- **Security — UA hash salt no longer derives from DB credentials.** Hardened
+  the `UA_HASH_SALT` fallback so it can never be derived from the `MONGODB_URI`
+  connection string, keeping the device-hash secret independent of database
+  credentials.
+- **Legal / consent correctness (frontend).** Pre-sign-in legal consent is now
+  synced to the backend ONLY when it matches the currently required policy
+  versions, so a stale acceptance can no longer be silently promoted to the
+  current version. Fixed a version-interpolation bug where the re-accept modal
+  rendered the literal string `{CURRENT_PRIVACY_VERSION}` instead of the value.
+  Added `role="tabpanel"` + `aria-labelledby` to the legal policy content for
+  screen readers.
+- **Privacy — Google Analytics off by default when unconfigured.**
+  `GoogleAnalytics.tsx` now disables GA entirely when `NEXT_PUBLIC_GA_ID` is
+  missing, instead of silently falling back to a hardcoded developer
+  measurement ID (which would have sent visitor data to the wrong property).
+- **Bug fixes.** `PreferenceModal`'s "Skip" now records onboarding completion so
+  the modal stops reappearing; the "Perfect Run" badge no longer hardcodes
+  "6/6" in fast mode (`achievements.ts` uses the actual quiz length).
+- **UX — easier question input (`QuestionInput`).** Added a live character
+  counter with a near-limit warning, a `Ctrl/Cmd + Enter` submit shortcut (with
+  an on-focus hint), a clear button that returns focus to the textarea, and made
+  the rotating "Try:" example questions clickable — a click fills the input and
+  focuses it.
+- **Visual polish — loading cinematic.** Larger responsive question quote with
+  accent quotation marks, a soft glow behind the progress bar that intensifies
+  with progress, a gradient progress-bar fill, and rotating facts rendered in a
+  subtle accent-marked card.
+- **Home layout — greeting + chat box moved into the lower area.** The hero
+  section was dead-centered, which left the greeting and input floating
+  uncomfortably high. The section is now a bottom-anchored column
+  (`flexDirection: column`, `justifyContent: flex-end`) with a responsive bottom
+  offset (`clamp(56px, 10vh, 128px)`), and the internal gaps were trimmed
+  (greeting reserve 120 → 96, input `marginTop` 48 → 28) so there is always
+  slack for the block to settle lower on shorter viewports. No legal or data
+  changes — purely presentational. No reconsent required.
+
+### July 15, 2026 (Privacy Policy v2.5, Cookie Policy v2.2, ToS v2.3)
 - **Soothing ambient background (comfort + performance).** Added a theme-aware
   "aurora" layer — three enormous, ultra-soft radial-gradient color washes
   drifting on 70–110s loops using ONLY transform animation (compositor-cheap,

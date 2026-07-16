@@ -137,14 +137,16 @@ export default function HomePage() {
         <section
           style={{
             flex: 1,
-            // Bias the greeting + input toward the lower half of the hero so
-            // the eye rests in a calmer, more natural reading position rather
-            // than floating dead-center. `flex-end` drops the block down and
-            // the generous bottom padding keeps it clear of the footer.
-            padding: "40px 16px clamp(64px, 12vh, 140px)",
+            // Anchor the greeting + input to the LOWER area of the hero. A
+            // column that justifies to flex-end pushes the whole block toward
+            // the bottom (kept clear of the footer by the bottom padding),
+            // which reads far calmer than the old dead-center placement that
+            // left the text floating uncomfortably high.
+            padding: "32px 16px clamp(56px, 10vh, 128px)",
             display: "flex",
-            alignItems: "flex-end",
-            justifyContent: "center",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "flex-end",
             textAlign: "center",
           }}
         >
@@ -175,7 +177,7 @@ export default function HomePage() {
               style={{
                 position: "relative",
                 zIndex: 1,
-                minHeight: 120,
+                minHeight: 96,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",

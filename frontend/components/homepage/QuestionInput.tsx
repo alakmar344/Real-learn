@@ -73,7 +73,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
       onSubmit={handleSubmit}
       aria-label="Ask a question"
       style={{
-        marginTop: 48,
+        marginTop: 28,
         maxWidth: 640,
         width: "100%",
         borderRadius: "var(--radius-2xl)",
