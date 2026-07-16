@@ -137,9 +137,13 @@ export default function HomePage() {
         <section
           style={{
             flex: 1,
-            padding: "32px 16px",
+            // Bias the greeting + input toward the lower half of the hero so
+            // the eye rests in a calmer, more natural reading position rather
+            // than floating dead-center. `flex-end` drops the block down and
+            // the generous bottom padding keeps it clear of the footer.
+            padding: "40px 16px clamp(64px, 12vh, 140px)",
             display: "flex",
-            alignItems: "center",
+            alignItems: "flex-end",
             justifyContent: "center",
             textAlign: "center",
           }}
