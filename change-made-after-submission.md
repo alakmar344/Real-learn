@@ -120,6 +120,15 @@ the themed sections below and the chronological table at the end.
   `CompletionScreen`, `QuestionInput`, `QuizSheet`, and an engraved `Navbar`.
   Extended the low-performance and Firefox fallbacks to the new full-viewport
   blend layers so they still skip gracefully. Colors unchanged.
+- **UX — kill the blue tap-flash + make Fast mode a "switch glider".** Taps
+  anywhere used to flash the browser's default translucent-blue highlight
+  (looked like a copy/selection). Set `-webkit-tap-highlight-color: transparent`
+  globally and gave interactive controls a calm on-brand `:active` press instead
+  of the blue flash. Rebuilt the Fast/Explain answer-mode toggle in
+  `QuestionInput` as a sliding **glider**: a gold pill now glides between the two
+  options on a springy `transform: translateX` (420ms), so switching — especially
+  to Fast — feels like a smooth physical switch rather than a snap. Purely
+  presentational.
 
 ### Today — July 16, 2026 (security + legal + bug fixes, UX polish, home layout)
 - **Backend regression & robustness fixes.** Raised the fast-mode
