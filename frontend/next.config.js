@@ -7,10 +7,20 @@ const scriptSrcEval = process.env.NODE_ENV === "development" ? " 'unsafe-eval'" 
 
 const nextConfig = {
   reactStrictMode: true,
-  // Security: don't advertise the framework via X-Powered-By.
   poweredByHeader: false,
+  // PERFORMANCE: compress server-side payloads (brotli/gzip) even if a CDN
+  // misses them. Next.js uses zlib brotli when available.
+  compress: true,
   images: {
     remotePatterns: [{ protocol: "https", hostname: "img.clerk.com" }],
+    // BANDWIDTH: tell the browser to cache Clerk avatars for a day; they are
+    // immutable per-user and revalidation is cheap.
+    minimumCacheTTL: 86400,
+  },
+  // PERFORMANCE: preconnect to the backend API so lesson-generation POSTs
+  // avoid an extra round-trip for DNS + TCP handshake.
+  experimental: {
+    optimizePackageImports: ["react-markdown", "remark-gfm"],
   },
   async headers() {
     return [

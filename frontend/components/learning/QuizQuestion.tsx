@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, memo } from "react";
 import { QuizQuestion as Question } from "@/types";
 
 interface Props {
@@ -14,7 +14,14 @@ interface Props {
 
 const letters = ["A", "B", "C", "D"];
 
-export default function QuizQuestion({ question, index, totalQuestions, selectedIndex, answered, onSelect }: Props) {
+const QuizQuestionBase = ({
+  question,
+  index,
+  totalQuestions,
+  selectedIndex,
+  answered,
+  onSelect,
+}: Props) => {
   const optionRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const options = question.options ?? [];
@@ -44,7 +51,7 @@ export default function QuizQuestion({ question, index, totalQuestions, selected
   );
 
   return (
-    <div role="group" aria-label={`Question ${index + 1} of ${totalQuestions}`}>
+    <div role="group" aria-label={`Question ${index + 1} of ${totalQuestions}`} className="quiz-question">
       <p style={{ margin: 0, marginBottom: 8, fontSize: 12, color: "var(--text-tertiary)", fontWeight: 500 }}>
         Question {index + 1} of {totalQuestions}
       </p>
@@ -147,4 +154,6 @@ export default function QuizQuestion({ question, index, totalQuestions, selected
       ) : null}
     </div>
   );
-}
+};
+
+export default memo(QuizQuestionBase);

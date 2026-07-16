@@ -10,6 +10,7 @@ import { useSavedJourneysStore } from "@/store/savedJourneysStore";
 import { useLesson } from "@/hooks/useLesson";
 import { getArchivedLesson } from "@/lib/lessonArchive";
 import { useMounted } from "@/hooks/useMounted";
+import { useShallow } from "zustand/shallow";
 import { SavedJourney } from "@/types";
 
 interface Props {
@@ -22,7 +23,12 @@ export default function Sidebar({ open, onClose }: Props) {
   const { isLoaded, isSignedIn } = useAuth();
   const mounted = useMounted();
 
-  const { journeys, removeJourney } = useSavedJourneysStore();
+  const { journeys, removeJourney } = useSavedJourneysStore(
+    useShallow((state) => ({
+      journeys: state.journeys,
+      removeJourney: state.removeJourney,
+    }))
+  );
   const { generateLesson } = useLesson();
 
   const [themeOpen, setThemeOpen] = useState(false);
