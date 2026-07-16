@@ -84,7 +84,7 @@ const PartCardBase = ({
 
   return (
     <article
-      className="part-card animate-fade-up"
+      className="part-card animate-fade-up engraved identity-texture identity-corner"
       aria-label={`Part ${part.partNumber}: ${part.title}`}
       style={{
         marginTop: varSpaceXl,

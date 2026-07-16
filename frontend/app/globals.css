@@ -10,59 +10,68 @@
 :root {
   color-scheme: light;
 
-  --bg-primary: #f2f2f7;
-  --bg-surface: rgba(255, 255, 255, 0.72);
-  --bg-card: rgba(255, 255, 255, 0.8);
-  --bg-card-hover: rgba(255, 255, 255, 0.92);
-  --bg-glass: rgba(255, 255, 255, 0.7);
-  --bg-solid: #ffffff;
+  /* ── ReaLearn identity — warm scholarly gold.
+     A single deliberate accent (not a rainbow of system hues) gives the
+     product a recognizable signature, the way Apple's products read as
+     "themselves" at a glance. Gold reads as learning, knowledge, light. ── */
+  --brand: #b8860b;          /* refined antique-gold: premium, never toy-like */
+  --brand-strong: #a8730a;
+  --brand-bright: #c9950f;
+  --brand-soft: #caa84a;
 
-  --border-subtle: rgba(60, 60, 67, 0.08);
-  --border-default: rgba(60, 60, 67, 0.14);
-  --border-accent: #007AFF;
-  --border-glow: rgba(0, 122, 255, 0.3);
+  --bg-primary: #f6f4ef;
+  --bg-surface: rgba(255, 253, 248, 0.74);
+  --bg-card: rgba(255, 253, 248, 0.82);
+  --bg-card-hover: rgba(255, 253, 248, 0.94);
+  --bg-glass: rgba(255, 253, 248, 0.72);
+  --bg-solid: #fffdf8;
 
-  --glass-blur: 28px;
-  --glass-blur-strong: 44px;
-  --glass-saturate: 200%;
+  --border-subtle: rgba(60, 50, 20, 0.08);
+  --border-default: rgba(60, 50, 20, 0.14);
+  --border-accent: var(--brand);
+  --border-glow: rgba(184, 134, 11, 0.3);
+
+  --glass-blur: 26px;
+  --glass-blur-strong: 40px;
+  --glass-saturate: 165%;
   --glass-highlight: rgba(255, 255, 255, 0.85);
-  --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
-  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 0 0 1px rgba(255, 255, 255, 0.15);
-  --glass-sheen: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 35%, rgba(255,255,255,0) 60%);
+  --glass-shadow: 0 4px 22px rgba(60, 45, 10, 0.05), 0 1px 3px rgba(60, 45, 10, 0.04);
+  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  --glass-sheen: linear-gradient(135deg, rgba(255,255,255,0.34) 0%, rgba(255,255,255,0.08) 38%, rgba(255,255,255,0) 62%);
 
-  --accent: #007AFF;
-  --accent-hover: #0066CC;
-  --accent-dim: rgba(0, 122, 255, 0.06);
-  --accent-glow: rgba(0, 122, 255, 0.12);
-  --accent-companion: #FF2D55;
-  --accent-gradient: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
-  --on-accent: #ffffff;
-  --shadow-glow-accent: 0 2px 12px rgba(0, 122, 255, 0.12);
+  --accent: var(--brand);
+  --accent-hover: var(--brand-strong);
+  --accent-dim: rgba(184, 134, 11, 0.07);
+  --accent-glow: rgba(184, 134, 11, 0.14);
+  --accent-companion: #c2410c;
+  --accent-gradient: linear-gradient(135deg, #caa84a 0%, #a8730a 100%);
+  --on-accent: #1a1408;
+  --shadow-glow-accent: 0 2px 14px rgba(184, 134, 11, 0.18);
 
-  --text-primary: #1c1c1e;
-  --text-secondary: #3a3a3c;
-  --text-tertiary: #8e8e93;
-  --text-gold: #ff9500;
+  --text-primary: #221c10;
+  --text-secondary: #514837;
+  --text-tertiary: #8a7a5e;
+  --text-gold: #b8860b;
 
-  --correct: #34C759;
-  --correct-bg: rgba(52, 199, 89, 0.12);
-  --wrong: #FF3B30;
-  --wrong-bg: rgba(255, 59, 48, 0.12);
-  --locked: #aeaeb2;
+  --correct: #2f8f4e;
+  --correct-bg: rgba(47, 143, 78, 0.12);
+  --wrong: #c0392b;
+  --wrong-bg: rgba(192, 57, 43, 0.1);
+  --locked: #b3a888;
 
-  --subject-physics: #007AFF;
-  --subject-chemistry: #34C759;
-  --subject-economics: #FF9500;
-  --subject-biology: #FF2D55;
-  --subject-cs: #AF52DE;
-  --subject-history: #FF6B6B;
-  --subject-general: #5AC8FA;
+  --subject-physics: #b8860b;
+  --subject-chemistry: #2f8f4e;
+  --subject-economics: #c2410c;
+  --subject-biology: #c2415e;
+  --subject-cs: #7c5cc4;
+  --subject-history: #b05c3a;
+  --subject-general: #4a90b8;
 
-  --radius-sm: 12px;
-  --radius-md: 16px;
-  --radius-lg: 22px;
-  --radius-xl: 26px;
-  --radius-2xl: 32px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 22px;
+  --radius-2xl: 28px;
 
   --text-xs: 11px;
   --text-sm: 13px;
@@ -83,153 +92,165 @@
   --space-2xl: 64px;
   --space-3xl: 96px;
 
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.03);
-  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.08), 0 4px 8px rgba(0, 0, 0, 0.04);
-  --shadow-glow-correct: 0 0 24px rgba(52, 199, 89, 0.2);
+  --shadow-sm: 0 1px 3px rgba(60, 45, 10, 0.05), 0 1px 2px rgba(60, 45, 10, 0.03);
+  --shadow-md: 0 4px 14px rgba(60, 45, 10, 0.07), 0 2px 4px rgba(60, 45, 10, 0.03);
+  --shadow-lg: 0 12px 34px rgba(60, 45, 10, 0.09), 0 4px 8px rgba(60, 45, 10, 0.04);
+  --shadow-glow-correct: 0 0 24px rgba(47, 143, 78, 0.18);
 
-  --ease-reveal: cubic-bezier(0.25, 0.1, 0.25, 1);
-  --ease-color: cubic-bezier(0.25, 0.1, 0.25, 1);
-  --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-reveal: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-color: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  --dur-fast: 150ms;
-  --dur-base: 280ms;
-  --dur-slow: 500ms;
+  --dur-fast: 160ms;
+  --dur-base: 260ms;
+  --dur-slow: 420ms;
 
   --blur-sm: 6px;
   --blur-md: 16px;
 
-  --scrim: rgba(0, 0, 0, 0.2);
+  --scrim: rgba(30, 22, 8, 0.22);
   --focus-ring: 0 0 0 3px var(--accent-glow);
   --focus-ring-simple: 0 0 0 2px var(--accent);
 
-  --aurora-1: rgba(0, 122, 255, 0.12);
-  --aurora-2: rgba(88, 86, 214, 0.1);
-  --aurora-3: rgba(52, 199, 89, 0.08);
+  --aurora-1: rgba(202, 168, 74, 0.14);
+  --aurora-2: rgba(200, 110, 60, 0.1);
+  --aurora-3: rgba(120, 92, 196, 0.08);
 }
 
-/* ── Dark theme — deep, refined, Apple-style ── */
+/* ── Dark theme — deep ink, warm gold, considered (not neon) ── */
 html[data-theme="dark"] {
   color-scheme: dark;
-  --bg-primary: #000000;
-  --bg-surface: rgba(28, 28, 30, 0.72);
-  --bg-card: rgba(28, 28, 30, 0.8);
-  --bg-card-hover: rgba(44, 44, 46, 0.92);
-  --bg-glass: rgba(28, 28, 30, 0.7);
-  --bg-solid: #1c1c1e;
 
-  --border-subtle: rgba(255, 255, 255, 0.06);
-  --border-default: rgba(255, 255, 255, 0.12);
-  --border-accent: #0A84FF;
-  --border-glow: rgba(10, 132, 255, 0.3);
+  --brand: #e0b341;
+  --brand-strong: #f1c75a;
+  --brand-bright: #f4cf63;
+  --brand-soft: #d8b35a;
 
-  --glass-blur: 28px;
-  --glass-blur-strong: 44px;
-  --glass-saturate: 180%;
-  --glass-highlight: rgba(255, 255, 255, 0.12);
-  --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.3), 0 1px 4px rgba(0, 0, 0, 0.2);
-  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
-  --glass-sheen: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 35%, rgba(255,255,255,0) 60%);
+  --bg-primary: #0d0c0a;
+  --bg-surface: rgba(28, 26, 22, 0.72);
+  --bg-card: rgba(30, 28, 23, 0.8);
+  --bg-card-hover: rgba(40, 37, 30, 0.92);
+  --bg-glass: rgba(26, 24, 20, 0.72);
+  --bg-solid: #161410;
 
-  --accent: #0A84FF;
-  --accent-hover: #409CFF;
-  --accent-dim: rgba(10, 132, 255, 0.08);
-  --accent-glow: rgba(10, 132, 255, 0.2);
-  --accent-companion: #FF375F;
-  --accent-gradient: linear-gradient(135deg, #0A84FF 0%, #5E5CE6 100%);
-  --on-accent: #ffffff;
-  --shadow-glow-accent: 0 2px 12px rgba(10, 132, 255, 0.15);
+  --border-subtle: rgba(255, 240, 210, 0.07);
+  --border-default: rgba(255, 240, 210, 0.13);
+  --border-accent: var(--brand);
+  --border-glow: rgba(224, 179, 65, 0.32);
 
-  --text-primary: #f5f5f7;
-  --text-secondary: #a1a1a6;
-  --text-tertiary: #6e6e73;
-  --text-gold: #FFD60A;
+  --glass-blur: 26px;
+  --glass-blur-strong: 40px;
+  --glass-saturate: 150%;
+  --glass-highlight: rgba(255, 245, 220, 0.14);
+  --glass-shadow: 0 4px 22px rgba(0, 0, 0, 0.34), 0 1px 4px rgba(0, 0, 0, 0.22);
+  --glass-edge: inset 0 1px 0 rgba(255, 245, 220, 0.1), inset 0 0 0 1px rgba(255, 240, 210, 0.04);
+  --glass-sheen: linear-gradient(135deg, rgba(255,245,220,0.09) 0%, rgba(255,245,220,0.02) 38%, rgba(255,255,255,0) 62%);
 
-  --correct: #30D158;
-  --correct-bg: rgba(48, 209, 88, 0.12);
-  --wrong: #FF453A;
-  --wrong-bg: rgba(255, 69, 58, 0.12);
-  --locked: #3a3a3c;
+  --accent: var(--brand);
+  --accent-hover: var(--brand-strong);
+  --accent-dim: rgba(224, 179, 65, 0.09);
+  --accent-glow: rgba(224, 179, 65, 0.22);
+  --accent-companion: #e07a5f;
+  --accent-gradient: linear-gradient(135deg, #e0b341 0%, #b8860b 100%);
+  --on-accent: #1a1408;
+  --shadow-glow-accent: 0 2px 14px rgba(224, 179, 65, 0.2);
 
-  --subject-physics: #0A84FF;
-  --subject-chemistry: #30D158;
-  --subject-economics: #FFD60A;
-  --subject-biology: #FF375F;
-  --subject-cs: #BF5AF2;
-  --subject-history: #FF6B6B;
-  --subject-general: #64D2FF;
+  --text-primary: #f6f1e6;
+  --text-secondary: #c2b9a6;
+  --text-tertiary: #8c8576;
+  --text-gold: #f4cf63;
 
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.15);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.2);
-  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.35), 0 4px 8px rgba(0, 0, 0, 0.25);
+  --correct: #4fb477;
+  --correct-bg: rgba(79, 180, 119, 0.12);
+  --wrong: #e57367;
+  --wrong-bg: rgba(229, 115, 103, 0.12);
+  --locked: #4a4639;
 
-  --aurora-1: rgba(10, 132, 255, 0.1);
-  --aurora-2: rgba(94, 92, 230, 0.08);
-  --aurora-3: rgba(48, 209, 88, 0.06);
+  --subject-physics: #e0b341;
+  --subject-chemistry: #4fb477;
+  --subject-economics: #e0a458;
+  --subject-biology: #e07a8f;
+  --subject-cs: #a78bda;
+  --subject-history: #d08a5e;
+  --subject-general: #6db3d6;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.22), 0 1px 2px rgba(0, 0, 0, 0.16);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.28), 0 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 12px 34px rgba(0, 0, 0, 0.38), 0 4px 8px rgba(0, 0, 0, 0.26);
+
+  --aurora-1: rgba(224, 179, 65, 0.12);
+  --aurora-2: rgba(200, 110, 60, 0.09);
+  --aurora-3: rgba(120, 92, 196, 0.07);
 }
 
-/* ── Twilight theme — deep purple vibes with neon pink glow ── */
+/* ── Twilight theme — warm dusk: amber-gold over deep violet, intentional
+   (not a toy box of neons). Keeps the dreamy mood but gives it an identity. ── */
 html[data-theme="twilight"] {
   color-scheme: dark;
-  --scrim: rgba(9, 9, 21, 0.45);
-  --bg-primary: #0a0818;
-  --bg-surface: rgba(46, 38, 84, 0.46);
-  --bg-card: rgba(52, 44, 96, 0.48);
-  --bg-card-hover: rgba(66, 56, 118, 0.62);
-  --bg-glass: rgba(24, 20, 48, 0.5);
+  --scrim: rgba(12, 8, 24, 0.48);
+  --bg-primary: #0e0a1e;
+  --bg-surface: rgba(52, 44, 96, 0.46);
+  --bg-card: rgba(54, 44, 100, 0.5);
+  --bg-card-hover: rgba(68, 56, 122, 0.64);
+  --bg-glass: rgba(28, 22, 56, 0.54);
   --bg-solid: #1a1636;
 
-  --border-subtle: rgba(200, 170, 255, 0.12);
-  --border-default: rgba(200, 170, 255, 0.2);
-  --border-accent: #c084fc;
-  --border-glow: #c084fc;
+  --border-subtle: rgba(220, 200, 255, 0.12);
+  --border-default: rgba(220, 200, 255, 0.2);
+  --border-accent: #e6b85c;
+  --border-glow: #e6b85c;
 
   /* Liquid-glass system tokens — twilight */
   --glass-blur: 24px;
-  --glass-blur-strong: 40px;
-  --glass-saturate: 175%;
-  --glass-highlight: rgba(230, 210, 255, 0.2);
+  --glass-blur-strong: 38px;
+  --glass-saturate: 150%;
+  --glass-highlight: rgba(240, 220, 255, 0.2);
   --glass-shadow: 0 8px 32px rgba(8, 4, 24, 0.5), 0 1px 4px rgba(8, 4, 24, 0.35);
-  --glass-edge: inset 0 1px 0 rgba(220, 200, 255, 0.16), inset 0 0 0 1px rgba(200, 170, 255, 0.04);
-  --glass-sheen: linear-gradient(135deg, rgba(230,210,255,0.14) 0%, rgba(200,170,255,0.04) 30%, rgba(255,255,255,0) 55%);
+  --glass-edge: inset 0 1px 0 rgba(240, 220, 255, 0.16), inset 0 0 0 1px rgba(220, 200, 255, 0.05);
+  --glass-sheen: linear-gradient(135deg, rgba(240,220,255,0.12) 0%, rgba(220,200,255,0.03) 32%, rgba(255,255,255,0) 58%);
 
-  --accent: #b084f0;
-  --accent-hover: #c9a0f5;
-  --accent-dim: rgba(176, 132, 240, 0.1);
-  --accent-glow: rgba(176, 132, 240, 0.16);
-  --accent-companion: #c084fc;
-  --accent-gradient: linear-gradient(135deg, #b084f0 0%, #c9a0f5 100%);
-  --on-accent: #0c0a1d;
-  --shadow-glow-accent: 0 2px 12px rgba(176, 132, 240, 0.14);
+  --brand: #e6b85c;
+  --brand-strong: #f3cd76;
+  --brand-bright: #f6d485;
+  --brand-soft: #dcae5e;
 
-  --text-primary: #f0ebff;
-  --text-secondary: #b8b0d4;
-  --text-tertiary: #8b82a8;
-  --text-gold: #fbbf24;
+  --accent: #e6b85c;
+  --accent-hover: #f3cd76;
+  --accent-dim: rgba(230, 184, 92, 0.11);
+  --accent-glow: rgba(230, 184, 92, 0.2);
+  --accent-companion: #d98c5f;
+  --accent-gradient: linear-gradient(135deg, #f3cd76 0%, #c084fc 100%);
+  --on-accent: #1c1230;
+  --shadow-glow-accent: 0 2px 14px rgba(230, 184, 92, 0.18);
 
-  --correct: #34d399;
-  --correct-bg: rgba(52, 211, 153, 0.14);
-  --wrong: #f87171;
-  --wrong-bg: rgba(248, 113, 113, 0.14);
-  --locked: #3d3560;
+  --text-primary: #f3ecff;
+  --text-secondary: #c4bcdc;
+  --text-tertiary: #9389b4;
+  --text-gold: #f3cd76;
 
-  /* Subject colours — neon purple palette */
-  --subject-physics: #60a5fa;
-  --subject-chemistry: #34d399;
-  --subject-economics: #fbbf24;
-  --subject-biology: #f472b6;
-  --subject-cs: #a78bfa;
-  --subject-history: #fb923c;
-  --subject-general: #c084fc;
+  --correct: #5cc78f;
+  --correct-bg: rgba(92, 199, 143, 0.14);
+  --wrong: #e8908a;
+  --wrong-bg: rgba(232, 144, 138, 0.14);
+  --locked: #43396a;
 
-  --shadow-sm: 0 2px 8px rgba(6, 4, 16, 0.45), inset 0 1px 0 rgba(220, 200, 255, 0.08);
-  --shadow-md: 0 6px 20px rgba(6, 4, 16, 0.5), inset 0 1px 0 rgba(220, 200, 255, 0.08);
-  --shadow-lg: 0 14px 40px rgba(6, 4, 16, 0.6), inset 0 1px 0 rgba(220, 200, 255, 0.1);
+  /* Subject colours — warm dusk palette, harmonious not clashing */
+  --subject-physics: #e6b85c;
+  --subject-chemistry: #5cc78f;
+  --subject-economics: #e0a458;
+  --subject-biology: #e890a8;
+  --subject-cs: #b79bf0;
+  --subject-history: #d89a6e;
+  --subject-general: #c79bf0;
 
-  /* Ambient aurora — dreamy violet-pink dusk tones. */
-  --aurora-1: rgba(176, 132, 240, 0.24);
-  --aurora-2: rgba(236, 72, 153, 0.14);
-  --aurora-3: rgba(96, 165, 250, 0.14);
+  --shadow-sm: 0 2px 8px rgba(6, 4, 16, 0.45), inset 0 1px 0 rgba(240, 220, 255, 0.08);
+  --shadow-md: 0 6px 20px rgba(6, 4, 16, 0.5), inset 0 1px 0 rgba(240, 220, 255, 0.08);
+  --shadow-lg: 0 14px 40px rgba(6, 4, 16, 0.6), inset 0 1px 0 rgba(240, 220, 255, 0.1);
+
+  /* Ambient aurora — dreamy violet-amber dusk tones. */
+  --aurora-1: rgba(230, 184, 92, 0.22);
+  --aurora-2: rgba(192, 132, 252, 0.14);
+  --aurora-3: rgba(217, 140, 95, 0.14);
 
   /* ── Crayon painting — twilight purple scene ── */
   --crayon-sky-top: #1a1040;
@@ -384,7 +405,7 @@ body {
    backdrop-filter. These utilities + the reusable class package that together.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Ambient gradient — refined, subtle, Apple-style ── */
+/* ── Ambient gradient — warm, restrained, identity-consistent ── */
 html::before {
   content: "";
   position: fixed;
@@ -392,10 +413,10 @@ html::before {
   z-index: -2;
   pointer-events: none;
   background:
-    radial-gradient(ellipse at 0% 0%, rgba(0, 122, 255, 0.08) 0%, transparent 50%),
-    radial-gradient(ellipse at 100% 0%, rgba(88, 86, 214, 0.06) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 100%, rgba(52, 199, 89, 0.04) 0%, transparent 50%);
-  opacity: 0.8;
+    radial-gradient(ellipse at 0% 0%, rgba(184, 134, 11, 0.07) 0%, transparent 50%),
+    radial-gradient(ellipse at 100% 0%, rgba(192, 132, 252, 0.05) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 100%, rgba(47, 143, 78, 0.03) 0%, transparent 50%);
+  opacity: 0.85;
 }
 
 /* The reusable glass surface. Ultra-frosted, luminous, Apple-style. */
@@ -437,11 +458,11 @@ html::before {
   z-index: 1;
 }
 
-/* Smooth hover lift — Apple-style micro-interaction. */
+/* Smooth hover lift — calm, considered micro-interaction (not bouncy). */
 .glass-card,
 .glass-panel {
-  transition: box-shadow 500ms var(--ease-color), transform 500ms var(--ease-reveal),
-    border-color 500ms var(--ease-color), background 500ms var(--ease-color);
+  transition: box-shadow 320ms var(--ease-color), transform 320ms var(--ease-reveal),
+    border-color 320ms var(--ease-color), background 320ms var(--ease-color);
 }
 .glass-card:hover,
 .glass-panel:hover {
@@ -497,17 +518,131 @@ html[data-theme="twilight"] .crayon-bg {
   filter: saturate(0.3) brightness(0.15);
 }
 
-/* Paper grain — lightweight CSS-only noise, no SVG filters.
-   Halved from 0.06: at 0.03 it still reads as "paper", not "dust". */
+/* ═══════════════════════════════════════════════════════════════════════════
+   Material texture — gives the flat glass surfaces a real, tactile feel so the
+   UI reads as "crafted" instead of oversimplified. Two layers:
+     • a fine paper fiber (multiply) that sits on every surface
+     • a soft mottled wash (soft-light) for organic, non-uniform depth
+   Both are GPU-cheap static images and composite once.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Fine paper fiber. Slightly stronger than before (0.05) but as fine grain, so
+   it reads as texture/materialscience, never "dust". */
 body::after {
   content: "";
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  opacity: 0.03;
+  opacity: 0.05;
   mix-blend-mode: multiply;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='4' height='4' fill='%23000' opacity='0.15'/%3E%3Crect x='1' y='1' width='1' height='1' fill='%23000' opacity='0.1'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+}
+
+/* Soft mottle — large, low-frequency organic blotches that break up the flat
+   field so no two regions of a surface look identical. Composite once. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='600' height='600' filter='url(%23m)' opacity='0.6'/%3E%3C/svg%3E");
+  background-size: 720px 720px;
+}
+
+/* ── Engraved identity motif — a faint, repeating "scholarly" hairline weave
+   (think fine book-cloth or a diploma border) baked into surfaces that opt in.
+   Pure CSS gradient lines, so it costs nothing to paint. ── */
+.identity-texture {
+  position: relative;
+}
+.identity-texture::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.5;
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      var(--border-glow) 0,
+      var(--border-glow) 0.5px,
+      transparent 0.5px,
+      transparent 6px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      var(--border-glow) 0,
+      var(--border-glow) 0.5px,
+      transparent 0.5px,
+      transparent 6px
+    );
+  -webkit-mask-image: radial-gradient(ellipse at 50% 0%, #000 0%, transparent 72%);
+  mask-image: radial-gradient(ellipse at 50% 0%, #000 0%, transparent 72%);
+  mix-blend-mode: soft-light;
+}
+.identity-texture > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Double hairline border — an outer neutral line + a gold-tinted inner
+   line, which reads as "engraved" / letterpress rather than a single flat
+   stroke. Apply to cards/panels that should feel considered. ── */
+.engraved {
+  border: 1px solid var(--border-default) !important;
+  box-shadow:
+    var(--glass-shadow),
+    inset 0 0 0 1px var(--border-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+/* ── Corner identity mark — a small, consistent gold notch in the top-right
+   corner of primary cards so the *shape* itself carries the brand, the way a
+   publisher's blind-emboss sits on a book cover. ── */
+.identity-corner::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 0 var(--radius-xl) 0 var(--radius-xl);
+  background:
+    linear-gradient(135deg, transparent 50%, var(--accent-dim) 50%) top right / 26px 26px no-repeat;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── Section-divider rule — a refined centered hairline with a gold bead, used
+   to separate content blocks with quiet intentionality. ── */
+.rule-gold {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--border-default);
+}
+.rule-gold::before,
+.rule-gold::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-default), transparent);
+}
+
+/* Hover: the engraved inner line warms to gold — a deliberate, premium cue. */
+.glass-card.engraved:hover,
+.glass-panel.engraved:hover {
+  box-shadow:
+    var(--shadow-lg),
+    inset 0 0 0 1px var(--accent-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 /* Clean background — no ambient wash, just the theme color */
@@ -1094,15 +1229,16 @@ html[data-perf="low"] *::after {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
-/* Background art + paper grain + aurora: skip entirely; the flat theme color
-   remains. */
+/* Background art + paper grain + mottle + aurora: skip entirely; the flat
+   theme color remains. */
 html[data-perf="low"] .crayon-bg {
   display: none;
 }
 html[data-perf="low"] .aurora-bg {
   display: none;
 }
-html[data-perf="low"] body::after {
+html[data-perf="low"] body::after,
+html[data-perf="low"] body::before {
   content: none;
 }
 /* Ambient always-running animations (flame, pulsing dots, floats). */
@@ -1153,11 +1289,12 @@ html[data-browser="firefox"] .crayon-bg {
 html[data-browser="firefox"] .aurora-blob {
   will-change: auto;
 }
-/* Grain: a plain low-opacity overlay instead of a multiply blend that forces a
-   full-viewport readback on every paint in Firefox. */
-html[data-browser="firefox"] body::after {
+/* Grain + mottle: plain low-opacity overlays instead of blend modes that force
+   a full-viewport readback on every paint in Firefox. */
+html[data-browser="firefox"] body::after,
+html[data-browser="firefox"] body::before {
   mix-blend-mode: normal;
-  opacity: 0.04;
+  opacity: 0.035;
 }
 
 /* ── HIGH tier: richer experience for powerful devices ── */
