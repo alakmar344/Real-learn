@@ -9,6 +9,8 @@ import { usePreferenceStore } from "@/store/preferenceStore";
 import { useMounted } from "@/hooks/useMounted";
 import { LessonMode } from "@/types";
 
+const MAX_QUESTION_LENGTH = 1000;
+
 const MODES: { value: LessonMode; label: string; hint: string }[] = [
   {
     value: "fast",
@@ -32,6 +34,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [focused, setFocused] = useState(false);
   const [interimSpeech, setInterimSpeech] = useState("");
+  const [showHint, setShowHint] = useState(false);
   const { isSignedIn } = useAuth();
   const language = usePreferenceStore((s) => s.language);
   const persistedMode = usePreferenceStore((s) => s.mode);
@@ -41,6 +44,8 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
   const mounted = useMounted();
   const mode = mounted ? persistedMode : "fast";
   const activeMode = MODES.find((m) => m.value === mode) ?? MODES[0];
+  const charCount = question.length;
+  const nearLimit = charCount >= MAX_QUESTION_LENGTH * 0.9;
 
   useEffect(() => {
     const textarea = textareaRef.current;
@@ -49,10 +54,18 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
     textarea.style.height = `${Math.min(textarea.scrollHeight, 160)}px`;
   }, [question]);
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (e?: FormEvent) => {
+    e?.preventDefault();
     if (!isSignedIn) return;
     onSubmit();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Ctrl/Cmd + Enter submits; Enter alone adds a new line.
+    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+      e.preventDefault();
+      handleSubmit();
+    }
   };
 
   return (
@@ -60,7 +73,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
       onSubmit={handleSubmit}
       aria-label="Ask a question"
       style={{
-        marginTop: 48,
+        marginTop: 28,
         maxWidth: 640,
         width: "100%",
         borderRadius: "var(--radius-2xl)",
@@ -70,7 +83,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
         transition: "all 300ms var(--ease-color)",
       }}
     >
-      <div style={{ padding: "20px 24px" }}>
+      <div style={{ padding: "20px 24px 12px" }}>
         <label htmlFor="question-input" style={{ display: "none" }}>
           What do you want to understand today?
         </label>
@@ -79,9 +92,17 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           ref={textareaRef}
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-          maxLength={1000}
+          onFocus={() => {
+            setFocused(true);
+            setShowHint(true);
+          }}
+          onBlur={() => {
+            setFocused(false);
+            // Keep the hint visible briefly so users who tab away still notice it.
+            window.setTimeout(() => setShowHint(false), 2000);
+          }}
+          onKeyDown={handleKeyDown}
+          maxLength={MAX_QUESTION_LENGTH}
           placeholder="Start with any question — even a basic one"
           aria-label="Your question"
           style={{
@@ -106,6 +127,56 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
             Listening — {interimSpeech}
           </p>
         ) : null}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginTop: 8,
+            minHeight: 20,
+          }}
+        >
+          <span
+            style={{
+              fontSize: 12,
+              color: "var(--text-tertiary)",
+              opacity: showHint || focused ? 1 : 0,
+              transform: showHint || focused ? "translateY(0)" : "translateY(4px)",
+              transition: "opacity 200ms ease, transform 200ms ease",
+            }}
+          >
+            Press{" "}
+            <kbd
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: 11,
+                padding: "2px 5px",
+                borderRadius: "var(--radius-sm)",
+                background: "var(--bg-surface)",
+                border: "1px solid var(--border-default)",
+                color: "var(--text-secondary)",
+              }}
+            >
+              {typeof navigator !== "undefined" && /Mac|iPod|iPhone|iPad/.test(navigator.platform)
+                ? "⌘"
+                : "Ctrl"}
+              +Enter
+            </kbd>{" "}
+            to submit
+          </span>
+          <span
+            aria-live="polite"
+            style={{
+              fontSize: 12,
+              fontVariantNumeric: "tabular-nums",
+              color: nearLimit ? "var(--wrong)" : "var(--text-tertiary)",
+              fontWeight: nearLimit ? 600 : 400,
+              transition: "color 200ms ease",
+            }}
+          >
+            {charCount}/{MAX_QUESTION_LENGTH}
+          </span>
+        </div>
       </div>
       {/* ── Answer-mode toggle: Fast (1 direct part) vs Explain (3-part journey) ── */}
       <div
@@ -171,7 +242,10 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           gap: 12,
         }}
       >
-        <ExampleQuestions />
+        <ExampleQuestions onPick={(q) => {
+          setQuestion(q);
+          textareaRef.current?.focus();
+        }} />
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <MicButton
             language={language}
@@ -180,6 +254,41 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
             }
             onInterim={setInterimSpeech}
           />
+          {question.trim() && (
+            <button
+              type="button"
+              aria-label="Clear question"
+              title="Clear"
+              onClick={() => {
+                setQuestion("");
+                textareaRef.current?.focus();
+              }}
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: "50%",
+                border: "1px solid var(--border-default)",
+                background: "transparent",
+                color: "var(--text-tertiary)",
+                cursor: "pointer",
+                display: "grid",
+                placeItems: "center",
+                transition: "all 200ms var(--ease-color)",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "var(--wrong)";
+                e.currentTarget.style.color = "var(--wrong)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "var(--border-default)";
+                e.currentTarget.style.color = "var(--text-tertiary)";
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            </button>
+          )}
           {isSignedIn ? (
           <button
             type="submit"

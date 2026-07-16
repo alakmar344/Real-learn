@@ -9,7 +9,7 @@ import LiveRegion from "@/components/shared/LiveRegion";
 import Footer from "@/components/shared/Footer";
 import { useLesson } from "@/hooks/useLesson";
 import { useAuth, useUser } from "@clerk/nextjs";
-import { readLegalConsent, writeLegalConsent } from "@/lib/legalConsent";
+import { isConsentCurrent, readLegalConsent, writeLegalConsent } from "@/lib/legalConsent";
 
 /** Warm, time-aware greeting — the app says hello like a friend would. */
 function greetingForHour(h: number): string {
@@ -60,11 +60,12 @@ export default function HomePage() {
       const parsed = readLegalConsent();
       if (!parsed?.accepted) return;
       if (parsed.syncedClerkId === user.id) return;
-      // A legacy record without version fields predates the versioned-consent
-      // flow. Uploading it as the CURRENT versions would fabricate a v1.3
-      // acceptance the user never made and permanently suppress the re-accept
-      // modal — skip it and let PreSignInConsent collect fresh consent.
-      if (!parsed.privacyVersion || !parsed.termsVersion) return;
+      // Only sync a consent record that matches the currently required
+      // policy versions. Older acceptances must be re-accepted through the
+      // PreSignInConsent re-accept flow; syncing them here would stamp the
+      // server's current version onto a stale acceptance and suppress the
+      // re-prompt forever.
+      if (!isConsentCurrent(parsed)) return;
 
       try {
         const backendUrl =
@@ -136,10 +137,16 @@ export default function HomePage() {
         <section
           style={{
             flex: 1,
-            padding: "32px 16px",
+            // Anchor the greeting + input to the LOWER area of the hero. A
+            // column that justifies to flex-end pushes the whole block toward
+            // the bottom (kept clear of the footer by the bottom padding),
+            // which reads far calmer than the old dead-center placement that
+            // left the text floating uncomfortably high.
+            padding: "32px 16px clamp(56px, 10vh, 128px)",
             display: "flex",
+            flexDirection: "column",
             alignItems: "center",
-            justifyContent: "center",
+            justifyContent: "flex-end",
             textAlign: "center",
           }}
         >
@@ -170,7 +177,7 @@ export default function HomePage() {
               style={{
                 position: "relative",
                 zIndex: 1,
-                minHeight: 120,
+                minHeight: 96,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",

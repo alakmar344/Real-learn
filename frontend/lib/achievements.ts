@@ -218,7 +218,7 @@ export const BADGES: Badge[] = [
     id: "perfect_lesson",
     emoji: "🏆",
     title: "Perfect Run",
-    description: "Finish a journey with a flawless 6/6.",
+    description: "Finish a journey with a perfect score.",
     tier: "gold",
     progress: (s) => ratio(s.perfectLessons, 1),
     earned: (s) => s.perfectLessons >= 1,
