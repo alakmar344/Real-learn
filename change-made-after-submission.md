@@ -126,14 +126,21 @@ the themed sections below and the chronological table at the end.
   accent quotation marks, a soft glow behind the progress bar that intensifies
   with progress, a gradient progress-bar fill, and rotating facts rendered in a
   subtle accent-marked card.
-- **Home layout — greeting + chat box moved into the lower area.** The hero
-  section was dead-centered, which left the greeting and input floating
-  uncomfortably high. The section is now a bottom-anchored column
-  (`flexDirection: column`, `justifyContent: flex-end`) with a responsive bottom
-  offset (`clamp(56px, 10vh, 128px)`), and the internal gaps were trimmed
-  (greeting reserve 120 → 96, input `marginTop` 48 → 28) so there is always
-  slack for the block to settle lower on shorter viewports. No legal or data
-  changes — purely presentational. No reconsent required.
+- **Home layout — greeting + chat box moved firmly into the lower area.** The
+  hero was dead-centered (measured: the input's vertical center sat at ~50% of
+  the viewport), which left the greeting and chat box floating uncomfortably
+  high. Root cause: a chat box's on-screen height is governed by whatever sits
+  *below* it, and the `HomeStats` "daily spark / resume" strip plus a large
+  bottom padding were pushing the input back toward center. Fixes: (1) the
+  section is now a bottom-anchored column (`flexDirection: column`,
+  `justifyContent: flex-end`) with a small responsive bottom offset
+  (`clamp(16px, 3vh, 32px)`); (2) the `HomeStats` strip was moved *above* the
+  greeting so the chat box is the lowest, most prominent element; (3) internal
+  gaps were trimmed (greeting reserve 120 → 96, input `marginTop` 48 → 28,
+  `HomeStats` top margin 24 → 14). Verified with headless-Chrome measurement:
+  the input's center now sits at ~65% (desktop 1280×800) / ~59% (mobile
+  390×844) with calm breathing room above. Purely presentational — no legal or
+  data changes, no reconsent required.
 
 ### July 15, 2026 (Privacy Policy v2.5, Cookie Policy v2.2, ToS v2.3)
 - **Soothing ambient background (comfort + performance).** Added a theme-aware
