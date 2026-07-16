@@ -79,14 +79,14 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
         width: "100%",
         position: "relative",
         borderRadius: "var(--radius-2xl)",
-        border: `1.5px solid ${focused ? "var(--accent)" : "var(--border-subtle)"}`,
+        border: `1.5px solid ${focused ? "var(--border-accent)" : "var(--border-subtle)"}`,
         background: "var(--bg-card)",
         backdropFilter: "blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))",
         WebkitBackdropFilter: "blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))",
         boxShadow: focused
           ? "var(--shadow-lg), 0 0 0 4px var(--accent-glow), var(--glass-edge)"
-          : "var(--shadow-lg), var(--glass-edge)",
-        transition: "all 300ms var(--ease-color)",
+          : "var(--glass-shadow), var(--glass-edge)",
+        transition: "all 350ms var(--ease-color)",
       }}
     >
       <div style={{ padding: "20px 24px 12px" }}>
@@ -227,8 +227,8 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
                   color: active ? "var(--on-accent)" : "var(--text-secondary)",
                   background: active ? "var(--accent)" : "transparent",
                   boxShadow: active ? "var(--shadow-sm)" : "none",
-                  transition: "all 200ms var(--ease-color)",
-                  transform: active ? "scale(1.02)" : "scale(1)",
+                  transition: "all 350ms var(--ease-spring)",
+                  transform: active ? "scale(1.03)" : "scale(1)",
                 }}
               >
                 {opt.label}

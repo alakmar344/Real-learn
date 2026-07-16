@@ -39,6 +39,7 @@ export default function ProgressHub() {
         onClick={() => router.push("/progress")}
         aria-label={`Level ${info.level}, ${streak} day streak, daily goal ${todayCount} of ${dailyGoal}. Open progress.`}
         title="Your progress"
+        className="animate-fade-up"
         style={{
           marginLeft: "auto",
           display: "flex",
@@ -47,9 +48,13 @@ export default function ProgressHub() {
           border: "1px solid var(--border-subtle)",
           background: "var(--bg-card)",
           borderRadius: 999,
-          padding: "4px 10px 4px 6px",
+          padding: "4px 12px 4px 6px",
           cursor: "pointer",
           minHeight: 34,
+          backdropFilter: "blur(var(--glass-blur)) saturate(var(--glass-saturate))",
+          WebkitBackdropFilter: "blur(var(--glass-blur)) saturate(var(--glass-saturate))",
+          boxShadow: "var(--glass-edge)",
+          transition: "all 350ms var(--ease-spring)",
         }}
       >
         {/* Streak */}

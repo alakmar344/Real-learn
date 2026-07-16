@@ -69,9 +69,11 @@ const PartCardBase = ({
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.transform = "scale(1.01)";
+          e.currentTarget.style.boxShadow = "var(--shadow-md), var(--glass-edge)";
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.transform = "scale(1)";
+          e.currentTarget.style.boxShadow = "var(--glass-shadow), var(--glass-edge)";
         }}
       >
         <span>✓ {part.title} · Completed</span>
@@ -89,11 +91,11 @@ const PartCardBase = ({
         borderRadius: "var(--radius-2xl)",
         border: "1px solid var(--border-subtle)",
         background: "var(--bg-card)",
-        boxShadow: "var(--shadow-md)",
+        boxShadow: "var(--glass-shadow), var(--glass-edge)",
         padding: "clamp(20px, 5vw, 36px)",
         position: "relative",
         overflow: "hidden",
-        transition: "all 300ms var(--ease-color)",
+        transition: "all 350ms var(--ease-color)",
       }}
     >
       <div
@@ -220,7 +222,7 @@ const PartCardBase = ({
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = "scale(1.02)";
-                  e.currentTarget.style.boxShadow = "var(--shadow-md)";
+                  e.currentTarget.style.boxShadow = "var(--shadow-md), var(--glass-edge)";
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = "scale(1)";
@@ -235,24 +237,35 @@ const PartCardBase = ({
 
         {/* Collapse completed part */}
         {isCompleted && !isCollapsed ? (
-          <button
-            type="button"
-            onClick={onToggleCollapse}
-            aria-expanded={true}
-            aria-controls={contentId}
-            style={{
-              marginTop: varSpaceBase,
-              border: "1px solid var(--border-default)",
-              borderRadius: "var(--radius-md)",
-              background: "transparent",
-              color: "var(--text-secondary)",
-              padding: "8px 12px",
-              cursor: "pointer",
-              minHeight: 44,
-            }}
-          >
-            Collapse part
-          </button>
+        <button
+          type="button"
+          onClick={onToggleCollapse}
+          aria-expanded={true}
+          aria-controls={contentId}
+          style={{
+            marginTop: varSpaceBase,
+            border: "1px solid var(--border-default)",
+            borderRadius: "var(--radius-md)",
+            background: "transparent",
+            color: "var(--text-secondary)",
+            padding: "8px 12px",
+            cursor: "pointer",
+            minHeight: 44,
+            transition: "all 350ms var(--ease-spring)",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = "var(--border-accent)";
+            e.currentTarget.style.color = "var(--accent)";
+            e.currentTarget.style.transform = "scale(1.02)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = "var(--border-default)";
+            e.currentTarget.style.color = "var(--text-secondary)";
+            e.currentTarget.style.transform = "scale(1)";
+          }}
+        >
+          Collapse part
+        </button>
         ) : null}
       </div>
 
@@ -267,7 +280,8 @@ const PartCardBase = ({
             alignItems: "center",
             justifyContent: "center",
             background: "var(--bg-glass)",
-            backdropFilter: "blur(8px)",
+            backdropFilter: "blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))",
+            WebkitBackdropFilter: "blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))",
             zIndex: 10,
           }}
         >
@@ -278,8 +292,9 @@ const PartCardBase = ({
               borderRadius: "var(--radius-xl)",
               border: "1px solid var(--border-subtle)",
               textAlign: "center",
-              backdropFilter: "blur(8px)",
-              boxShadow: "var(--shadow-lg)",
+              backdropFilter: "blur(var(--glass-blur)) saturate(var(--glass-saturate))",
+              WebkitBackdropFilter: "blur(var(--glass-blur)) saturate(var(--glass-saturate))",
+              boxShadow: "var(--shadow-lg), var(--glass-edge)",
             }}
           >
             <span aria-hidden="true" style={{ display: "block", marginBottom: 12, color: "var(--text-tertiary)" }}>

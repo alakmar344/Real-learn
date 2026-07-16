@@ -90,11 +90,14 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
       style={{
         marginTop: 32,
         borderRadius: "var(--radius-2xl)",
-        border: "1px solid color-mix(in srgb, var(--correct) 30%, transparent)",
+        border: "1px solid color-mix(in srgb, var(--correct) 25%, transparent)",
         background: "var(--correct-bg)",
         padding: "clamp(24px, 5vw, 40px)",
         position: "relative",
         overflow: "hidden",
+        backdropFilter: "blur(var(--glass-blur)) saturate(var(--glass-saturate))",
+        WebkitBackdropFilter: "blur(var(--glass-blur)) saturate(var(--glass-saturate))",
+        boxShadow: "var(--shadow-md), var(--glass-edge)",
       }}
     >
       {showConfetti && <Confetti />}
@@ -214,15 +217,17 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
               fontSize: 14,
               fontWeight: 700,
               minHeight: 48,
-              transition: "all 200ms var(--ease-color)",
+              transition: "all 350ms var(--ease-spring)",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "var(--accent)";
+              e.currentTarget.style.borderColor = "var(--border-accent)";
               e.currentTarget.style.color = "var(--accent)";
+              e.currentTarget.style.transform = "scale(1.03)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.borderColor = "var(--border-default)";
               e.currentTarget.style.color = "var(--text-secondary)";
+              e.currentTarget.style.transform = "scale(1)";
             }}
           >
             Retake Quiz
@@ -243,11 +248,11 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
               fontWeight: 700,
               minHeight: 48,
               boxShadow: "var(--shadow-sm)",
-              transition: "all 300ms var(--ease-color)",
+              transition: "all 350ms var(--ease-spring)",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "scale(1.02)";
-              e.currentTarget.style.boxShadow = "var(--shadow-md)";
+              e.currentTarget.style.transform = "scale(1.03)";
+              e.currentTarget.style.boxShadow = "var(--shadow-md), var(--glass-edge)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = "scale(1)";

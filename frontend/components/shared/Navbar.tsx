@@ -14,8 +14,8 @@ export default function Navbar({ compact = false }: Props) {
         position: "sticky",
         top: 0,
         zIndex: 60,
-        height: compact ? "auto" : 60,
-        minHeight: 60,
+        height: compact ? "auto" : 64,
+        minHeight: 64,
         borderBottom: "1px solid var(--border-subtle)",
         background: "var(--bg-glass)",
         backdropFilter: "blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))",
@@ -29,7 +29,7 @@ export default function Navbar({ compact = false }: Props) {
           maxWidth: 1024,
           margin: "0 auto",
           padding: compact ? "14px 24px" : "0 24px",
-          minHeight: compact ? "auto" : 60,
+          minHeight: compact ? "auto" : 64,
           display: "flex",
           alignItems: "center",
           justifyContent: "flex-start",
@@ -46,7 +46,11 @@ export default function Navbar({ compact = false }: Props) {
             viewBox="0 0 120 40"
             fill="none"
             aria-hidden="true"
-            style={{ width: 42, height: "auto" }}
+            style={{
+              width: 42,
+              height: "auto",
+              filter: "drop-shadow(0 2px 4px rgba(96, 85, 226, 0.2))",
+            }}
           >
             <defs>
               <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">

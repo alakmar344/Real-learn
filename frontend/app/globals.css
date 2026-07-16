@@ -8,75 +8,71 @@
    CSS) AND blocked by our CSP — so remote fonts never actually loaded. */
 
 :root {
-  /* Native UI (form controls, scrollbars, autofill) follows the theme. */
   color-scheme: light;
 
-  /* ── Backgrounds — Apple "liquid glass": frosted translucent surfaces that
-     let the ambient color wash refract through them. ── */
-  --bg-primary: #eef1f8;   /* cool luminous mist so glass has light to bend */
-  --bg-surface: rgba(255, 255, 255, 0.52);   /* frosted panel */
-  --bg-card: rgba(255, 255, 255, 0.58);      /* frosted card */
-  --bg-card-hover: rgba(255, 255, 255, 0.74);
-  --bg-glass: rgba(255, 255, 255, 0.5);
-  --bg-solid: #ffffff;     /* rare opaque fallback (e.g. text-clipping) */
+  /* ── Backgrounds — Apple "liquid glass": ultra-frosted translucent surfaces
+     that let the ambient color wash refract through them. Lower opacity = more
+     glass, more depth. ── */
+  --bg-primary: #eef1f8;
+  --bg-surface: rgba(255, 255, 255, 0.48);
+  --bg-card: rgba(255, 255, 255, 0.52);
+  --bg-card-hover: rgba(255, 255, 255, 0.68);
+  --bg-glass: rgba(255, 255, 255, 0.46);
+  --bg-solid: #ffffff;
 
   /* ── Borders — luminous glass edges (bright highlight, faint frame) ── */
-  --border-subtle: rgba(255, 255, 255, 0.55);
-  --border-default: rgba(140, 130, 175, 0.24);
+  --border-subtle: rgba(255, 255, 255, 0.6);
+  --border-default: rgba(120, 110, 160, 0.18);
   --border-accent: #8a7ff0;
   --border-glow: #b3a8f7;
 
   /* ── Liquid-glass system tokens ── */
-  --glass-blur: 20px;
-  --glass-blur-strong: 34px;
-  --glass-saturate: 175%;
-  --glass-highlight: rgba(255, 255, 255, 0.75);   /* top specular edge */
-  --glass-shadow: 0 10px 34px rgba(60, 55, 120, 0.14), 0 2px 8px rgba(60, 55, 120, 0.08);
-  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
-  --glass-sheen: linear-gradient(135deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.06) 34%, rgba(255,255,255,0) 60%);
+  --glass-blur: 24px;
+  --glass-blur-strong: 40px;
+  --glass-saturate: 180%;
+  --glass-highlight: rgba(255, 255, 255, 0.8);
+  --glass-shadow: 0 8px 32px rgba(60, 55, 120, 0.1), 0 1px 4px rgba(60, 55, 120, 0.06);
+  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.75), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  --glass-sheen: linear-gradient(135deg, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0.08) 30%, rgba(255,255,255,0) 55%);
 
-  /* ── Accent — crayon periwinkle-violet.
-     WCAG AA verified: white text on accent 5.39:1; accent as text ≥4.5:1 on
-     bg-primary/surface/card; hover keeps white text at 4.94:1. ── */
+  /* ── Accent ── */
   --accent: #6055e2;
   --accent-hover: #675ce6;
-  --accent-dim: rgba(96, 85, 226, 0.09);
-  --accent-glow: rgba(96, 85, 226, 0.16);
-  --accent-companion: #ef9fc4;   /* cotton-candy pink crayon */
-  --accent-gradient: linear-gradient(135deg, #7c6ff0 0%, #f4a6c8 100%); /* periwinkle → pink crayon blend */
+  --accent-dim: rgba(96, 85, 226, 0.08);
+  --accent-glow: rgba(96, 85, 226, 0.14);
+  --accent-companion: #ef9fc4;
+  --accent-gradient: linear-gradient(135deg, #7c6ff0 0%, #f4a6c8 100%);
   --on-accent: #ffffff;
-  --shadow-glow-accent: 0 2px 14px rgba(96, 85, 226, 0.18);
+  --shadow-glow-accent: 0 2px 14px rgba(96, 85, 226, 0.14);
 
-  /* ── Text — warm charcoal (softer than ink, still high contrast) ── */
+  /* ── Text ── */
   --text-primary: #3a3340;
   --text-secondary: #5f5768;
-  /* WCAG AA: tertiary 4.62:1 on surface (was 3.1:1); gold 4.5:1. */
   --text-tertiary: #6e6778;
   --text-gold: #96600d;
 
-  /* ── Semantic — chalky crayon green / red ── */
-  /* WCAG AA: correct 4.79:1 / wrong 4.95:1 as text on surface (were <3:1). */
+  /* ── Semantic ── */
   --correct: #2f7452;
-  --correct-bg: rgba(91, 185, 140, 0.16);
+  --correct-bg: rgba(91, 185, 140, 0.14);
   --wrong: #b03f39;
-  --wrong-bg: rgba(232, 131, 127, 0.16);
+  --wrong-bg: rgba(232, 131, 127, 0.14);
   --locked: #ddcfba;
 
-  /* ── Subject colours — full pastel crayon box ── */
-  --subject-physics: #6d9eeb;   /* sky blue */
-  --subject-chemistry: #5bb98c; /* mint green */
-  --subject-economics: #eab861; /* butter yellow */
-  --subject-biology: #ef9fc4;   /* cotton-candy pink */
-  --subject-cs: #a58ce8;        /* lavender */
-  --subject-history: #ef9a8d;   /* coral */
-  --subject-general: #6fc7cf;   /* aqua */
+  /* ── Subject colours ── */
+  --subject-physics: #6d9eeb;
+  --subject-chemistry: #5bb98c;
+  --subject-economics: #eab861;
+  --subject-biology: #ef9fc4;
+  --subject-cs: #a58ce8;
+  --subject-history: #ef9a8d;
+  --subject-general: #6fc7cf;
 
-  /* ── Radii — big, pill-like, modern ── */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
-  --radius-2xl: 24px;
+  /* ── Radii ── */
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 22px;
+  --radius-2xl: 28px;
 
   /* ── Type scale ── */
   --text-xs: 11px;
@@ -100,16 +96,17 @@
   --space-3xl: 64px;
 
   /* ── Shadows — soft, diffused "floating glass" depth ── */
-  --shadow-sm: 0 2px 8px rgba(60, 55, 120, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  --shadow-md: 0 8px 24px rgba(60, 55, 120, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  --shadow-lg: 0 18px 48px rgba(60, 55, 120, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.55);
-  --shadow-glow-correct: 0 0 20px rgba(16, 185, 129, 0.3);
+  --shadow-sm: 0 2px 8px rgba(60, 55, 120, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  --shadow-md: 0 6px 20px rgba(60, 55, 120, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  --shadow-lg: 0 14px 40px rgba(60, 55, 120, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  --shadow-glow-correct: 0 0 20px rgba(16, 185, 129, 0.25);
 
-  /* ── Easing ── */
-  --ease-reveal: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-color: cubic-bezier(0.4, 0, 0.2, 1);
+  /* ── Easing — Apple-style spring curves ── */
+  --ease-reveal: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-color: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  /* ── Motion durations (tokenized so timing stays consistent everywhere) ── */
+  /* ── Motion durations ── */
   --dur-fast: 150ms;
   --dur-base: 240ms;
   --dur-slow: 400ms;
@@ -118,21 +115,17 @@
   --blur-sm: 4px;
   --blur-md: 12px;
 
-  /* ── Modal scrim — a warm, soft veil rather than harsh pure black.
-     Overridden per dark theme below so overlays never feel like a black hole. */
-  --scrim: rgba(40, 38, 70, 0.28);
+  /* ── Modal scrim ── */
+  --scrim: rgba(40, 38, 70, 0.24);
 
   /* ── Clean focus ring ── */
   --focus-ring: 0 0 0 3px var(--accent-glow);
   --focus-ring-simple: 0 0 0 2px var(--accent);
 
-  /* ── Ambient aurora — huge, ultra-soft color washes that drift very slowly
-     behind the crayon painting. Radial gradients that fade to transparent,
-     so NO blur filter is needed (compositor-cheap). Tuned to be felt, not
-     seen: they make the page glow gently instead of sitting flat. ── */
-  --aurora-1: rgba(124, 111, 240, 0.28);   /* periwinkle breath */
-  --aurora-2: rgba(244, 130, 200, 0.26);   /* cotton-candy warmth */
-  --aurora-3: rgba(96, 199, 230, 0.24);    /* aqua calm */
+  /* ── Ambient aurora ── */
+  --aurora-1: rgba(124, 111, 240, 0.24);
+  --aurora-2: rgba(244, 130, 200, 0.22);
+  --aurora-3: rgba(96, 199, 230, 0.2);
 
   /* ── Crayon painting colors ── */
   --crayon-sky-top: #87ceeb;
@@ -180,7 +173,6 @@
   --crayon-flower-2: #ff9800;
   --crayon-flower-3: #9c27b0;
   --crayon-bird: #455a64;
-  /* School, bridge & RealLearn signpost (crayon scene) */
   --crayon-school-wall: #f5cf6e;
   --crayon-school-roof: #e2574c;
   --crayon-school-door: #8b4513;
@@ -198,47 +190,46 @@
 /* ── Dark theme (Night) — deep, rich, with neon accents ── */
 html[data-theme="dark"] {
   color-scheme: dark;
-  --scrim: rgba(0, 0, 0, 0.55);
+  --scrim: rgba(0, 0, 0, 0.45);
   --bg-primary: #07070d;
-  --bg-surface: rgba(38, 38, 52, 0.5);
-  --bg-card: rgba(44, 44, 60, 0.52);
-  --bg-card-hover: rgba(58, 58, 78, 0.66);
-  --bg-glass: rgba(20, 20, 30, 0.55);
+  --bg-surface: rgba(38, 38, 52, 0.46);
+  --bg-card: rgba(44, 44, 60, 0.48);
+  --bg-card-hover: rgba(58, 58, 78, 0.62);
+  --bg-glass: rgba(20, 20, 30, 0.5);
   --bg-solid: #16161c;
 
-  --border-subtle: rgba(255, 255, 255, 0.09);
-  --border-default: rgba(255, 255, 255, 0.16);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-default: rgba(255, 255, 255, 0.14);
   --border-accent: #818cf8;
   --border-glow: #818cf8;
 
   /* Liquid-glass system tokens — night */
-  --glass-blur: 22px;
-  --glass-blur-strong: 36px;
-  --glass-saturate: 165%;
-  --glass-highlight: rgba(255, 255, 255, 0.18);
-  --glass-shadow: 0 12px 40px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.4);
-  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 0 0 1px rgba(255, 255, 255, 0.03);
-  --glass-sheen: linear-gradient(135deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.03) 34%, rgba(255,255,255,0) 60%);
+  --glass-blur: 24px;
+  --glass-blur-strong: 40px;
+  --glass-saturate: 170%;
+  --glass-highlight: rgba(255, 255, 255, 0.16);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 1px 4px rgba(0, 0, 0, 0.25);
+  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+  --glass-sheen: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 30%, rgba(255,255,255,0) 55%);
 
   --accent: #7c82f0;
   --accent-hover: #9ba0f5;
-  --accent-dim: rgba(124, 130, 240, 0.12);
-  --accent-glow: rgba(124, 130, 240, 0.18);
+  --accent-dim: rgba(124, 130, 240, 0.1);
+  --accent-glow: rgba(124, 130, 240, 0.16);
   --accent-companion: #a78bfa;
   --accent-gradient: linear-gradient(135deg, #7c82f0 0%, #9b8ef5 100%);
   --on-accent: #09090b;
-  --shadow-glow-accent: 0 2px 12px rgba(124, 130, 240, 0.18);
+  --shadow-glow-accent: 0 2px 12px rgba(124, 130, 240, 0.14);
 
   --text-primary: #fafafa;
   --text-secondary: #a1a1aa;
-  /* WCAG AA: 5.53:1 on card (was 3.4:1). */
   --text-tertiary: #94949e;
   --text-gold: #fbbf24;
 
   --correct: #34d399;
-  --correct-bg: rgba(52, 211, 153, 0.15);
+  --correct-bg: rgba(52, 211, 153, 0.14);
   --wrong: #f87171;
-  --wrong-bg: rgba(248, 113, 113, 0.15);
+  --wrong-bg: rgba(248, 113, 113, 0.14);
   --locked: #3f3f46;
 
   /* Subject colours — neon vibrant */
@@ -250,14 +241,14 @@ html[data-theme="dark"] {
   --subject-history: #fb923c;
   --subject-general: #22d3ee;
 
-  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  --shadow-md: 0 8px 28px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  --shadow-lg: 0 18px 50px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  --shadow-lg: 0 14px 40px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 
   /* Ambient aurora — cool moonlight tones for the night theme. */
-  --aurora-1: rgba(124, 130, 240, 0.22);
-  --aurora-2: rgba(52, 211, 153, 0.13);
-  --aurora-3: rgba(34, 211, 238, 0.16);
+  --aurora-1: rgba(124, 130, 240, 0.2);
+  --aurora-2: rgba(52, 211, 153, 0.11);
+  --aurora-3: rgba(34, 211, 238, 0.14);
 
   /* ── Crayon painting — night scene ── */
   --crayon-sky-top: #0a1628;
@@ -323,36 +314,36 @@ html[data-theme="dark"] {
 /* ── Twilight theme — deep purple vibes with neon pink glow ── */
 html[data-theme="twilight"] {
   color-scheme: dark;
-  --scrim: rgba(9, 9, 21, 0.5);
+  --scrim: rgba(9, 9, 21, 0.45);
   --bg-primary: #0a0818;
-  --bg-surface: rgba(46, 38, 84, 0.5);
-  --bg-card: rgba(52, 44, 96, 0.54);
-  --bg-card-hover: rgba(66, 56, 118, 0.68);
-  --bg-glass: rgba(24, 20, 48, 0.55);
+  --bg-surface: rgba(46, 38, 84, 0.46);
+  --bg-card: rgba(52, 44, 96, 0.48);
+  --bg-card-hover: rgba(66, 56, 118, 0.62);
+  --bg-glass: rgba(24, 20, 48, 0.5);
   --bg-solid: #1a1636;
 
-  --border-subtle: rgba(200, 170, 255, 0.14);
-  --border-default: rgba(200, 170, 255, 0.24);
+  --border-subtle: rgba(200, 170, 255, 0.12);
+  --border-default: rgba(200, 170, 255, 0.2);
   --border-accent: #c084fc;
   --border-glow: #c084fc;
 
   /* Liquid-glass system tokens — twilight */
-  --glass-blur: 22px;
-  --glass-blur-strong: 36px;
-  --glass-saturate: 170%;
-  --glass-highlight: rgba(230, 210, 255, 0.22);
-  --glass-shadow: 0 12px 42px rgba(8, 4, 24, 0.6), 0 2px 8px rgba(8, 4, 24, 0.45);
-  --glass-edge: inset 0 1px 0 rgba(220, 200, 255, 0.18), inset 0 0 0 1px rgba(200, 170, 255, 0.04);
-  --glass-sheen: linear-gradient(135deg, rgba(230,210,255,0.16) 0%, rgba(200,170,255,0.04) 34%, rgba(255,255,255,0) 60%);
+  --glass-blur: 24px;
+  --glass-blur-strong: 40px;
+  --glass-saturate: 175%;
+  --glass-highlight: rgba(230, 210, 255, 0.2);
+  --glass-shadow: 0 8px 32px rgba(8, 4, 24, 0.5), 0 1px 4px rgba(8, 4, 24, 0.35);
+  --glass-edge: inset 0 1px 0 rgba(220, 200, 255, 0.16), inset 0 0 0 1px rgba(200, 170, 255, 0.04);
+  --glass-sheen: linear-gradient(135deg, rgba(230,210,255,0.14) 0%, rgba(200,170,255,0.04) 30%, rgba(255,255,255,0) 55%);
 
   --accent: #b084f0;
   --accent-hover: #c9a0f5;
-  --accent-dim: rgba(176, 132, 240, 0.12);
-  --accent-glow: rgba(176, 132, 240, 0.18);
+  --accent-dim: rgba(176, 132, 240, 0.1);
+  --accent-glow: rgba(176, 132, 240, 0.16);
   --accent-companion: #c084fc;
   --accent-gradient: linear-gradient(135deg, #b084f0 0%, #c9a0f5 100%);
   --on-accent: #0c0a1d;
-  --shadow-glow-accent: 0 2px 12px rgba(176, 132, 240, 0.18);
+  --shadow-glow-accent: 0 2px 12px rgba(176, 132, 240, 0.14);
 
   --text-primary: #f0ebff;
   --text-secondary: #b8b0d4;
@@ -360,9 +351,9 @@ html[data-theme="twilight"] {
   --text-gold: #fbbf24;
 
   --correct: #34d399;
-  --correct-bg: rgba(52, 211, 153, 0.15);
+  --correct-bg: rgba(52, 211, 153, 0.14);
   --wrong: #f87171;
-  --wrong-bg: rgba(248, 113, 113, 0.15);
+  --wrong-bg: rgba(248, 113, 113, 0.14);
   --locked: #3d3560;
 
   /* Subject colours — neon purple palette */
@@ -374,14 +365,14 @@ html[data-theme="twilight"] {
   --subject-history: #fb923c;
   --subject-general: #c084fc;
 
-  --shadow-sm: 0 2px 10px rgba(6, 4, 16, 0.55), inset 0 1px 0 rgba(220, 200, 255, 0.1);
-  --shadow-md: 0 8px 30px rgba(6, 4, 16, 0.6), inset 0 1px 0 rgba(220, 200, 255, 0.1);
-  --shadow-lg: 0 18px 52px rgba(6, 4, 16, 0.72), inset 0 1px 0 rgba(220, 200, 255, 0.12);
+  --shadow-sm: 0 2px 8px rgba(6, 4, 16, 0.45), inset 0 1px 0 rgba(220, 200, 255, 0.08);
+  --shadow-md: 0 6px 20px rgba(6, 4, 16, 0.5), inset 0 1px 0 rgba(220, 200, 255, 0.08);
+  --shadow-lg: 0 14px 40px rgba(6, 4, 16, 0.6), inset 0 1px 0 rgba(220, 200, 255, 0.1);
 
   /* Ambient aurora — dreamy violet-pink dusk tones. */
-  --aurora-1: rgba(176, 132, 240, 0.26);
-  --aurora-2: rgba(236, 72, 153, 0.16);
-  --aurora-3: rgba(96, 165, 250, 0.16);
+  --aurora-1: rgba(176, 132, 240, 0.24);
+  --aurora-2: rgba(236, 72, 153, 0.14);
+  --aurora-3: rgba(96, 165, 250, 0.14);
 
   /* ── Crayon painting — twilight purple scene ── */
   --crayon-sky-top: #1a1040;
@@ -596,13 +587,14 @@ html::before {
 /* A subtle animated shine that sweeps across glass on hover. */
 .glass-card,
 .glass-panel {
-  transition: box-shadow 300ms var(--ease-color), transform 300ms var(--ease-reveal),
-    border-color 300ms var(--ease-color);
+  transition: box-shadow 350ms var(--ease-color), transform 350ms var(--ease-reveal),
+    border-color 350ms var(--ease-color), background 350ms var(--ease-color);
 }
 .glass-card:hover,
 .glass-panel:hover {
   border-color: var(--border-default);
   box-shadow: var(--shadow-lg), var(--glass-edge);
+  transform: translateY(-1px);
 }
 
 /* ── Automatic frosting ──
@@ -639,22 +631,17 @@ html::before {
   height: 100dvh;
   z-index: -1;
   pointer-events: none;
-  opacity: 0.24;
+  opacity: 0.18;
   background-image: url("/crayon-bg-mobile.svg");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  /* NOTE: no background-attachment: fixed — the element is already
-     position: fixed, so attachment: fixed was a visual no-op that forced
-     slow viewport-relative painting (a classic scroll-jank source). */
   will-change: transform;
   transform: translateZ(0);
   backface-visibility: hidden;
-  filter: saturate(0.75) brightness(1.02);
-  /* Fade the top ~30% where headings and body text live — text floats on
-     calm cream instead of fighting the sky. Applied once, GPU-composited. */
-  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0.8) 32%, #000 60%);
-  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0.8) 32%, #000 60%);
+  filter: saturate(0.65) brightness(1.02);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0.65) 28%, #000 55%);
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0.65) 28%, #000 55%);
 }
 
 /* Desktop: landscape SVG */
@@ -665,13 +652,13 @@ html::before {
 }
 
 html[data-theme="dark"] .crayon-bg {
-  opacity: 0.22;
-  filter: saturate(0.5) brightness(0.2) hue-rotate(200deg) contrast(1.1);
+  opacity: 0.16;
+  filter: saturate(0.45) brightness(0.18) hue-rotate(200deg) contrast(1.1);
 }
 
 html[data-theme="twilight"] .crayon-bg {
-  opacity: 0.22;
-  filter: saturate(0.6) brightness(0.25) hue-rotate(260deg) contrast(1.1);
+  opacity: 0.16;
+  filter: saturate(0.55) brightness(0.22) hue-rotate(260deg) contrast(1.1);
 }
 
 /* Paper grain — lightweight CSS-only noise, no SVG filters.
@@ -871,10 +858,10 @@ pre {
 .animate-fade-up { animation: fadeUp 500ms var(--ease-reveal) both; }
 .animate-slide-bottom { animation: slideFromBottom 400ms var(--ease-reveal) both; }
 .animate-accent-flash { animation: accentFlash 800ms var(--ease-reveal) both; }
-.animate-unlock-pop { animation: unlockPop 500ms var(--ease-reveal) both; }
+.animate-unlock-pop { animation: unlockPop 500ms var(--ease-spring) both; }
 .animate-shake { animation: shake 400ms var(--ease-reveal) both; }
-.animate-correct-pulse { animation: correctPulse 400ms var(--ease-reveal) both; }
-.animate-bounce-in { animation: bounceIn 600ms var(--ease-reveal) both; }
+.animate-correct-pulse { animation: correctPulse 400ms var(--ease-spring) both; }
+.animate-bounce-in { animation: bounceIn 600ms var(--ease-spring) both; }
 .animate-float { animation: float 3s ease-in-out infinite; }
 .animate-glow-pulse { animation: glowPulse 2s ease-in-out infinite; }
 .animate-slide-in { animation: slideIn 400ms var(--ease-reveal) both; }
@@ -1247,11 +1234,11 @@ html[data-browser="firefox"] body::after {
 
 /* ── HIGH tier: richer experience for powerful devices ── */
 html[data-perf="high"] .crayon-bg {
-  opacity: 0.42;
+  opacity: 0.3;
 }
 html[data-theme="dark"][data-perf="high"] .crayon-bg,
 html[data-theme="twilight"][data-perf="high"] .crayon-bg {
-  opacity: 0.27;
+  opacity: 0.2;
 }
 
 /* Users who ask the OS for reduced motion always win, on every tier. */
