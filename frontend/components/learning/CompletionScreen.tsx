@@ -11,15 +11,15 @@ interface Props {
   onRetake?: () => void;
 }
 
-/* ── Confetti particles — vibrant, modern colors ── */
+/* ── Confetti particles — warm brand palette, restrained not rainbow ── */
 const CONFETTI_COLORS = [
-  "#6366f1",
-  "#a855f7",
-  "#ec4899",
-  "#f59e0b",
-  "#10b981",
-  "#3b82f6",
-  "#ef4444",
+  "#e6b85c",
+  "#c9950f",
+  "#caa84a",
+  "#b8860b",
+  "#d08a5e",
+  "#5cc78f",
+  "#c2410c",
 ];
 
 function Confetti() {
@@ -108,8 +108,8 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
           <svg width="100" height="100" viewBox="0 0 100 100">
             <defs>
               <linearGradient id="score-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#10b981" />
-                <stop offset="100%" stopColor="#06b6d4" />
+                <stop offset="0%" stopColor="#e6b85c" />
+                <stop offset="100%" stopColor="#b8860b" />
               </linearGradient>
             </defs>
             <circle cx="50" cy="50" r="42" fill="none" stroke="var(--border-subtle)" strokeWidth="6" />

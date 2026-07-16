@@ -43,16 +43,16 @@ export default function Navbar({ compact = false }: Props) {
         >
           <div
             style={{
-              width: 44,
-              height: 44,
-              borderRadius: "var(--radius-lg)",
+              width: 40,
+              height: 40,
+              borderRadius: "var(--radius-md)",
               background: "var(--accent-gradient)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              color: "white",
+              color: "var(--on-accent)",
               fontWeight: 900,
-              fontSize: 18,
+              fontSize: 17,
               fontFamily: "var(--font-inter)",
               boxShadow: "var(--shadow-glow-accent)",
             }}
