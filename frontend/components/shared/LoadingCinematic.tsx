@@ -143,16 +143,18 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
       >
         <p
           style={{
-            color: "var(--accent)",
+            color: "var(--text-primary)",
             fontFamily: "var(--font-playfair)",
             fontStyle: "italic",
             fontWeight: 700,
-            fontSize: 24,
+            fontSize: "clamp(22px, 5vw, 28px)",
             lineHeight: 1.4,
             marginBottom: 32,
           }}
         >
-          &ldquo;{question}&rdquo;
+          <span style={{ color: "var(--accent)" }}>&ldquo;</span>
+          {question}
+          <span style={{ color: "var(--accent)" }}>&rdquo;</span>
         </p>
 
         {/* Progress bar */}
@@ -161,21 +163,37 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
           aria-valuenow={pct}
           aria-valuemin={0}
           aria-valuemax={100}
+          aria-label="Lesson generation progress"
           style={{
             width: "100%",
-            height: 10,
+            height: 12,
             borderRadius: 999,
             background: "var(--accent-dim)",
             overflow: "hidden",
+            position: "relative",
           }}
         >
+          <div
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              inset: -8,
+              borderRadius: 999,
+              background: "radial-gradient(ellipse at center, var(--accent) 0%, transparent 70%)",
+              opacity: 0.15 + (pct / 100) * 0.25,
+              filter: "blur(8px)",
+              transition: "opacity 200ms linear",
+            }}
+          />
           <div
             style={{
               width: `${pct}%`,
               height: "100%",
               borderRadius: 999,
-              background: "var(--accent)",
+              background: "linear-gradient(90deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 80%, var(--correct)) 100%)",
               transition: "width 200ms linear",
+              position: "relative",
+              zIndex: 1,
             }}
           />
         </div>
@@ -265,20 +283,30 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
         </ul>
 
         {/* Rotating fact */}
-        <p
+        <div
           key={factIndex}
           style={{
             marginTop: 28,
-            color: "var(--text-secondary)",
-            fontSize: 14,
-            lineHeight: 1.6,
-            minHeight: 44,
-            fontFamily: "var(--font-lora)",
+            padding: "12px 18px",
+            borderRadius: "var(--radius-lg)",
+            border: "1px solid color-mix(in srgb, var(--accent) 15%, transparent)",
+            background: "color-mix(in srgb, var(--accent) 4%, transparent)",
             animation: "fadeUp 400ms var(--ease-reveal)",
           }}
         >
-          {facts[factIndex]}
-        </p>
+          <p
+            style={{
+              margin: 0,
+              color: "var(--text-secondary)",
+              fontSize: 14,
+              lineHeight: 1.6,
+              fontFamily: "var(--font-lora)",
+            }}
+          >
+            <span aria-hidden="true" style={{ color: "var(--accent)", marginRight: 8 }}>✦</span>
+            {facts[factIndex]}
+          </p>
+        </div>
 
         {takingLonger && (
           <p
