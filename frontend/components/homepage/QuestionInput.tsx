@@ -183,7 +183,10 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           </span>
         </div>
       </div>
-      {/* ── Answer-mode toggle: Fast (1 direct part) vs Explain (3-part journey) ── */}
+      {/* ── Answer-mode toggle: Fast (1 direct part) vs Explain (3-part journey).
+          A sliding "glider" — the gold pill glides between options on a springy
+          transform so switching modes (especially to Fast) feels like a smooth
+          physical switch, not a snap. ── */}
       <div
         style={{
           padding: "0 20px 16px",
@@ -196,15 +199,34 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
         <div
           role="radiogroup"
           aria-label="Answer mode"
+          className="mode-glider"
           style={{
+            position: "relative",
             display: "inline-flex",
             padding: 5,
-            gap: 4,
+            gap: 0,
             borderRadius: 999,
             border: "1px solid var(--border-subtle)",
             background: "var(--bg-surface)",
           }}
         >
+          {/* The gliding pill — translates to sit under the active option. */}
+          <span
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              top: 5,
+              bottom: 5,
+              left: 5,
+              width: `calc((100% - 10px) / ${MODES.length})`,
+              borderRadius: 999,
+              background: "var(--accent-gradient)",
+              boxShadow: "var(--shadow-glow-accent)",
+              transition: "transform 420ms var(--ease-spring)",
+              transform: `translateX(calc(${MODES.findIndex((m) => m.value === mode)} * 100%))`,
+              willChange: "transform",
+            }}
+          />
           {MODES.map((opt) => {
             const active = mode === opt.value;
             return (
@@ -216,6 +238,8 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
                 title={opt.hint}
                 onClick={() => setMode(opt.value)}
                 style={{
+                  position: "relative",
+                  zIndex: 1,
                   border: "none",
                   borderRadius: 999,
                   padding: "10px 20px",
@@ -223,11 +247,11 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
                   fontWeight: 600,
                   cursor: "pointer",
                   minHeight: 40,
+                  minWidth: 104,
+                  textAlign: "center",
                   color: active ? "var(--on-accent)" : "var(--text-secondary)",
-                  background: active ? "var(--accent)" : "transparent",
-                  boxShadow: active ? "var(--shadow-sm)" : "none",
-                  transition: "all 500ms var(--ease-spring)",
-                  transform: active ? "scale(1.04)" : "scale(1)",
+                  background: "transparent",
+                  transition: "color 320ms var(--ease-color)",
                 }}
               >
                 {opt.label}

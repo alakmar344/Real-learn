@@ -671,6 +671,29 @@ pre {
   border-radius: var(--radius-sm);
 }
 
+/* ── Tap feedback — kill the default blue "copied" flash and replace it with a
+   calm, brand-tinted press so taps feel intentional, never like a selection. ── */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+/* A gentle, on-brand press for buttons/controls (no blue, no jarring snap). */
+button,
+[role="button"],
+a,
+input,
+textarea,
+select,
+[tabindex]:not([tabindex="-1"]) {
+  -webkit-tap-highlight-color: transparent;
+}
+button:active,
+[role="button"]:active,
+a:active {
+  transition: transform 120ms var(--ease-color), box-shadow 120ms var(--ease-color);
+}
+
 /* ── CSS containment — tell the browser what each component can't affect,
     so it can skip unnecessary layout/paint work across the rest of the page. */
 .part-card {

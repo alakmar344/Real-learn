@@ -28,7 +28,12 @@ Ask anything. In seconds, RealLearn engineers a complete educational experience 
 A running log of what's new in RealLearn. The full, exhaustive history from the
 gold redesign onward lives in [`change-made-after-submission.md`](./change-made-after-submission.md).
 
-**Today — July 15, 2026**
+**Today — July 16, 2026**
+- **Restored ReaLearn's scholarly gold identity.** The earlier "Apple-style liquid glass" pass had swapped the brand for generic iOS system-blue and a rainbow of system hues, which read as oversimplified and childish. Re-established a single, deliberate warm gold/amber accent across all three themes (Paper/Night/Twilight) and recolored the Navbar, completion screen, and celebration confetti to match — so the UI reads as *RealLearn* again.
+- **Added material texture + identity-by-shape.** Kept the gold palette (colors were never the problem); the flat glass surfaces were. Surfaces now have real tactile texture (fine paper fiber + a soft organic mottle), and reusable identity primitives — an engraved double-border, a faint scholarly hairline weave, and a small consistent gold corner notch — carry the brand by *shape*, not just color.
+- **UX polish — no more blue tap-flash; Fast mode is a "switch glider".** Removed the default translucent-blue tap highlight (it looked like a copy/selection) and replaced it with a calm on-brand press. The Fast/Explain toggle is now a gold pill that glides between options on a springy transform, so switching — especially to Fast — feels like a smooth physical switch.
+
+**July 15, 2026**
 - **Soothing ambient background.** New theme-aware "aurora" layer — three enormous, ultra-soft color washes drifting on 70–110s transform-only loops (GPU-cheap, no blur filters) — plus a softened crayon scene (lower opacity, gentler saturation, a vertical mask fade under the reading line) and halved paper grain. Easier on the eyes in all three themes; fully skipped on the low performance tier and frozen under reduced-motion.
 - **Easter eggs.** Konami code → confetti storm; typing "magic" or "love" outside inputs → floating hearts; clicking the footer RealLearn wordmark 5× → a heart burst; and quiet once-per-day moments (night-owl / early-bird greetings, New Year, Teachers' Day, Children's Day).
 - **Attachment features.** Time-aware personal greeting on the homepage (uses your first name if signed in), the hero quote is now a stable "quote of the day" ritual, and the footer counts "learning together for N days" with milestone celebrations at 7/30/100/365 days.
@@ -254,9 +259,9 @@ Accessibility isn't an afterthought here — it's wired into the foundation, tar
 
 Switch between three hand-tuned, warm, eye-friendly themes:
 
-- **Paper** — a warm cream "light" mode that reads like an open book.
-- **Night** — a deep, luminous teal-on-slate "dark" mode for late-night study.
-- **Twilight** — a bold deep-indigo mode with a violet-to-rose glow for those who want personality.
+- **Paper** — a warm cream/gold "light" mode that reads like an open book.
+- **Night** — a deep ink "dark" mode warmed by a scholarly gold accent for late-night study.
+- **Twilight** — a warm amber-dusk mode over deep violet for those who want personality.
 
 Your choice persists across sessions and applies instantly via CSS variables, with carefully balanced semantic colors (correct/incorrect, accents, subject hues) tuned separately for each theme. The theme system is defined in a single source of truth (`lib/themes.ts`) consumed by every theme picker in the app.
 
@@ -491,7 +496,7 @@ This section documents every file in the repository and what it does — so you 
 |---|---|
 | `layout.tsx` | Root layout. Wraps everything in `ClerkProvider`, `ThemeApplier`, `AppShell`, `ToastContainer`, `CookieConsent`, `PreSignInConsent`, and `SkipToContent`. Sets page metadata. |
 | `page.tsx` | **Homepage.** The landing experience — rotating educational quotes, "The World Is Your Textbook" hero, `QuestionInput` form, `HomeStats` (daily spark topic, resume-in-progress card, streak/level link), `Footer`. Syncs legal consent to backend on sign-in. |
-| `globals.css` | **The design system.** CSS custom properties for 3 themes (Paper, Night, Twilight), typography scale, spacing scale, shadows, subject colors, semantic colors. 15+ keyframe animations (fadeUp, accentFlash, unlockPop, shake, correctPulse, confettiFall, flameFlicker, xpPopIn, badgePop, levelBurst, ringSweep, sheen). Markdown content styles. App shell layout (sidebar + main). `prefers-reduced-motion` support. |
+| `globals.css` | **The design system.** CSS custom properties for 3 themes (Paper, Night, Twilight) built around a deliberate warm gold/amber brand accent; typography scale, spacing scale, shadows, subject colors, semantic colors. Material-texture layers (paper fiber + organic mottle) and reusable identity primitives (`.engraved` double-border, `.identity-texture` scholarly hairline weave, `.identity-corner` gold notch, `.rule-gold` divider). 15+ keyframe animations (fadeUp, accentFlash, unlockPop, shake, correctPulse, confettiFall, flameFlicker, xpPopIn, badgePop, levelBurst, ringSweep, sheen). Markdown content styles. App shell layout (sidebar + main). `prefers-reduced-motion` support. |
 | `learn/page.tsx` | **The learning experience.** Orchestrates the full journey: `ProgressRail`, `PartCard` for each part, `QuizSheet` modal, `CompletionScreen`, `FollowUpBox`, `UnlockAnimation`. Persists journeys to localStorage on every progress change. Records XP, streaks, daily goals, and badges via `progressStore`. |
 | `progress/page.tsx` | **Progress dashboard.** Level hero with XP bar, streak flame with freeze count, daily goal ring with target selector, lifetime stats grid (journeys, quizzes, perfect runs, languages, subjects, follow-ups), GitHub-style activity heatmap, achievements grid with progress bars. |
 | `settings/page.tsx` | **Settings page.** Theme picker, answer mode toggle (Fast/Explain), language selector, level selector, Clerk `UserButton`, data export (JSON download combining backend + local storage), permanent account deletion with confirmation modal. |

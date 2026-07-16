@@ -90,6 +90,46 @@
 A short, human-readable digest of the most recent work. Full detail remains in
 the themed sections below and the chronological table at the end.
 
+### Today — July 16, 2026 (design identity: gold restored + material texture)
+- **Design — restore ReaLearn's scholarly gold identity (`f57b9ed`).** The
+  earlier "Apple-style liquid glass" pass had thrown out the product's own
+  identity and swapped in generic iOS system-blue (`#007AFF`) plus a rainbow of
+  system hues — which read as oversimplified and childish and erased what made
+  RealLearn *look like itself*. Re-established a single, deliberate warm
+  gold/amber accent (antique-gold `#b8860b` light, `#e0b341` dark, warm amber
+  twilight) as the one brand color, with paper-tinted neutral surfaces, a
+  harmonious warm subject palette, and a brand-consistent warm aurora/ambient
+  gradient. Updated the Navbar mark + wordmark, completion-screen confetti and
+  score-ring, and the easter-egg/engagement confetti bursts to the warm palette.
+  Every component already referenced `--accent`, so the identity now propagates
+  everywhere from the token alone (verified: zero legacy blue in the compiled
+  CSS). Purely presentational — no legal/data changes, no reconsent.
+- **Design — add material texture + identity-by-shape (`f4c2d9c`).** The gold
+  palette was kept (colors were never the problem); the flat "liquid glass"
+  surfaces were — they read as oversimplified because they had no texture and
+  no identity of their own. Added a two-layer material texture (fine
+  fractal-noise paper fiber in `multiply` + a soft low-frequency organic mottle
+  in `soft-light`, both static/GPU-cheap) so no region of a surface looks
+  uniform. Added reusable identity primitives: `.identity-texture` (a faint
+  engraved "scholarly" hairline weave — book-cloth / diploma motif), `.engraved`
+  (a double hairline border: neutral outer + gold-tinted inner, for a
+  letterpress/engraved read), `.identity-corner` (a small consistent gold notch
+  carrying the brand by *shape*, like a publisher's blind-emboss), and
+  `.rule-gold` (a refined divider with a gold bead). Applied `engraved` +
+  `identity-texture` (+ `identity-corner` on cards) to `PartCard`,
+  `CompletionScreen`, `QuestionInput`, `QuizSheet`, and an engraved `Navbar`.
+  Extended the low-performance and Firefox fallbacks to the new full-viewport
+  blend layers so they still skip gracefully. Colors unchanged.
+- **UX — kill the blue tap-flash + make Fast mode a "switch glider".** Taps
+  anywhere used to flash the browser's default translucent-blue highlight
+  (looked like a copy/selection). Set `-webkit-tap-highlight-color: transparent`
+  globally and gave interactive controls a calm on-brand `:active` press instead
+  of the blue flash. Rebuilt the Fast/Explain answer-mode toggle in
+  `QuestionInput` as a sliding **glider**: a gold pill now glides between the two
+  options on a springy `transform: translateX` (420ms), so switching — especially
+  to Fast — feels like a smooth physical switch rather than a snap. Purely
+  presentational.
+
 ### Today — July 16, 2026 (security + legal + bug fixes, UX polish, home layout)
 - **Backend regression & robustness fixes.** Raised the fast-mode
   `maxOutputTokens` from 2500 → 4000 in `backend/src/lib/gemma.js` to stop the
@@ -535,6 +575,12 @@ vendors). All of these live between `2b239b5` (start) and now:
 - **`c285e2d`** — Responsive crayon background (portrait mobile SVG +
   scroll-stable positioning).
 - **`7b11224`** — Frontend: WCAG 2.1 AA compliance fixes.
+- **`f57b9ed`** — Restore ReaLearn's scholarly gold identity (replace the
+  generic iOS-blue "liquid glass" accent with a deliberate warm gold/amber brand
+  color across all three themes).
+- **`f4c2d9c`** — Add material texture + identity-by-shape (paper-fiber +
+  mottle grain, engraved double-border, scholarly hairline weave, gold corner
+  notch) so surfaces feel crafted instead of oversimplified.
 
 ## 7. Voice, TTS & STT (text-to-speech service)
 
@@ -701,6 +747,8 @@ vendors). All of these live between `2b239b5` (start) and now:
 | 2026-07-14 | lang + storage | 12 languages, all-chats IndexedDB split, legal v2.4/ToS v2.3 |
 | 2026-07-15 | `f944320` | Aurora background, softened crayon scene, easter eggs, attachment features |
 | 2026-07-15 | legal docs | **Current: Privacy Policy v2.5, Cookie Policy v2.2 (reconsent), ToS v2.3** |
+| 2026-07-16 | `f57b9ed` | Restore ReaLearn's scholarly gold identity (gold/amber accent, replace generic iOS-blue) |
+| 2026-07-16 | `f4c2d9c` | Material texture + identity-by-shape (paper/mottle grain, engraved border, gold corner) |
 
 ---
 

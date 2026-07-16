@@ -74,7 +74,7 @@ RealLearn rebuilds the learning journey automatically — Foundation → Mechani
 7. **Personal Learning Library** — Auto-saved journeys, de-duplicated by stable signature
 8. **Follow-Up Loop** — Ask deeper questions without returning to homepage
 9. **WCAG 2.1 AA Accessibility** — Skip-to-content, ARIA live regions, keyboard navigation, focus trapping, reduced-motion support, 44px touch targets
-10. **Three Themes** — Paper (warm cream), Night (teal-on-slate), Twilight (deep indigo)
+10. **Three Themes** — Paper (warm cream/gold), Night (ink + warm gold), Twilight (warm amber dusk over deep violet)
 11. **Voice Learning** — Web Speech API for input (12 languages) and read-aloud with intelligent voice selection
 12. **Gamification** — XP, levels, daily streaks, streak freezes, 17 achievements, activity heatmap
 13. **Shareable Result Cards** — Canvas-generated 1080x1920 PNG with Web Share API
@@ -264,6 +264,8 @@ The most dramatic section. The AI provider was migrated through multiple vendors
 - GPU-composited static SVG background
 - Responsive crayon background
 - Ambient aurora layer (drifting theme-aware color washes) + softened crayon scene and paper grain
+- Restore ReaLearn's scholarly gold/amber identity (replaced the generic iOS-blue "liquid glass" accent)
+- Material texture + identity-by-shape (fine paper-fiber + organic mottle grain, engraved double-border, scholarly hairline weave, gold corner notch)
 - WCAG 2.1 AA compliance
 
 #### Voice, TTS & STT (4 commits)
@@ -284,6 +286,10 @@ The most dramatic section. The AI provider was migrated through multiple vendors
 - **Soothing ambient background** — Aurora layer, softened crayon scene, halved paper grain; skipped on low-perf devices
 - **Easter eggs & attachment features** — Konami code, secret words, personal greetings, day counter, daily quote ritual
 - **Legal v2.5 / Cookie v2.2 with reconsent** — New locally-stored personalization data disclosed; all users re-prompted
+
+#### Latest Changes (July 16, 2026)
+- **Restore ReaLearn's scholarly gold identity** — Replaced the generic iOS-blue "liquid glass" accent with a deliberate warm gold/amber brand color across all three themes; recolored Navbar, completion screen, and confetti to the warm palette. No color complaints — the goal was identity, not recoloring.
+- **Material texture + identity-by-shape** — Surfaces gained real tactile texture (fine paper-fiber + soft organic mottle) so they no longer read as flat/oversimplified, plus reusable identity primitives (engraved double-border, scholarly hairline weave, gold corner notch) that carry the brand by *shape*.
 
 #### July 14, 2026 Changes
 - **Expanded language support from 8 to 12** — Added Malayalam, Punjabi, Urdu, Odia
