@@ -74,11 +74,11 @@ const Footer = () => {
     <footer
       style={{
         borderTop: "1px solid var(--border-subtle)",
-        padding: "20px 24px",
+        padding: "24px 28px",
         textAlign: "center",
         fontSize: 12,
         color: "var(--text-tertiary)",
-        lineHeight: 1.7,
+        lineHeight: 1.6,
         background: "var(--bg-glass)",
         backdropFilter: "blur(var(--glass-blur)) saturate(var(--glass-saturate))",
         WebkitBackdropFilter: "blur(var(--glass-blur)) saturate(var(--glass-saturate))",

@@ -120,8 +120,8 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
         display: "grid",
         placeItems: "center",
         opacity: isRevealing ? 0 : 1,
-        transform: isRevealing ? "scale(0.97)" : "scale(1)",
-        transition: "opacity 400ms var(--ease-reveal), transform 400ms var(--ease-reveal)",
+        transform: isRevealing ? "scale(0.96)" : "scale(1)",
+        transition: "opacity 500ms var(--ease-reveal), transform 500ms var(--ease-reveal)",
         pointerEvents: isRevealing ? "none" : "auto",
       }}
     >
@@ -136,9 +136,9 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
         style={{
           position: "relative",
           textAlign: "center",
-          padding: 24,
+          padding: 32,
           width: "100%",
-          maxWidth: 520,
+          maxWidth: 560,
         }}
       >
         <p
@@ -199,9 +199,9 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
         </div>
         <p
           style={{
-            marginTop: 10,
+            marginTop: 12,
             color: "var(--accent)",
-            fontSize: 15,
+            fontSize: 16,
             fontWeight: 700,
             fontVariantNumeric: "tabular-nums",
           }}
@@ -286,12 +286,12 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
         <div
           key={factIndex}
           style={{
-            marginTop: 28,
-            padding: "12px 18px",
+            marginTop: 32,
+            padding: "14px 20px",
             borderRadius: "var(--radius-lg)",
-            border: "1px solid color-mix(in srgb, var(--accent) 15%, transparent)",
-            background: "color-mix(in srgb, var(--accent) 4%, transparent)",
-            animation: "fadeUp 400ms var(--ease-reveal)",
+            border: "1px solid color-mix(in srgb, var(--accent) 12%, transparent)",
+            background: "color-mix(in srgb, var(--accent) 3%, transparent)",
+            animation: "fadeUp 500ms var(--ease-reveal)",
           }}
         >
           <p
@@ -313,9 +313,9 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
             className="animate-fade-up"
             role="status"
             style={{
-              marginTop: 16,
+              marginTop: 18,
               color: "var(--accent)",
-              fontSize: 13,
+              fontSize: 14,
               lineHeight: 1.6,
               fontWeight: 600,
               fontStyle: "italic",
@@ -333,24 +333,28 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
             onClick={onCancel}
             style={{
               marginTop: "var(--space-xl)",
-              padding: "12px 24px",
+              padding: "14px 28px",
               borderRadius: "var(--radius-lg)",
               border: "1px solid var(--border-default)",
               background: "transparent",
               color: "var(--text-secondary)",
               cursor: "pointer",
-              fontSize: 14,
+              fontSize: 15,
               fontWeight: 600,
-              minHeight: 48,
-              transition: "all 200ms var(--ease-color)",
+              minHeight: 50,
+              transition: "all 500ms var(--ease-spring)",
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.background = "var(--bg-card-hover)";
               e.currentTarget.style.borderColor = "var(--accent)";
+              e.currentTarget.style.color = "var(--accent)";
+              e.currentTarget.style.transform = "scale(1.03)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.background = "transparent";
               e.currentTarget.style.borderColor = "var(--border-default)";
+              e.currentTarget.style.color = "var(--text-secondary)";
+              e.currentTarget.style.transform = "scale(1)";
             }}
           >
             Cancel

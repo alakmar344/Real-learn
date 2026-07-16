@@ -69,7 +69,7 @@ const PartCardBase = ({
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.transform = "scale(1.01)";
-          e.currentTarget.style.boxShadow = "var(--shadow-md), var(--glass-edge)";
+          e.currentTarget.style.boxShadow = "var(--shadow-lg), var(--glass-edge)";
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.transform = "scale(1)";
@@ -92,10 +92,10 @@ const PartCardBase = ({
         border: "1px solid var(--border-subtle)",
         background: "var(--bg-card)",
         boxShadow: "var(--glass-shadow), var(--glass-edge)",
-        padding: "clamp(20px, 5vw, 36px)",
+        padding: "clamp(24px, 5vw, 40px)",
         position: "relative",
         overflow: "hidden",
-        transition: "all 350ms var(--ease-color)",
+        transition: "all 500ms var(--ease-color)",
       }}
     >
       <div
@@ -221,8 +221,8 @@ const PartCardBase = ({
                   transition: "all 300ms var(--ease-color)",
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "scale(1.02)";
-                  e.currentTarget.style.boxShadow = "var(--shadow-md), var(--glass-edge)";
+                  e.currentTarget.style.transform = "scale(1.03)";
+                  e.currentTarget.style.boxShadow = "var(--shadow-lg), var(--glass-edge)";
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = "scale(1)";
@@ -248,15 +248,15 @@ const PartCardBase = ({
             borderRadius: "var(--radius-md)",
             background: "transparent",
             color: "var(--text-secondary)",
-            padding: "8px 12px",
+            padding: "10px 16px",
             cursor: "pointer",
             minHeight: 44,
-            transition: "all 350ms var(--ease-spring)",
+            transition: "all 500ms var(--ease-spring)",
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.borderColor = "var(--border-accent)";
             e.currentTarget.style.color = "var(--accent)";
-            e.currentTarget.style.transform = "scale(1.02)";
+            e.currentTarget.style.transform = "scale(1.03)";
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.borderColor = "var(--border-default)";
@@ -288,7 +288,7 @@ const PartCardBase = ({
           <div
             style={{
               background: "var(--bg-card)",
-              padding: "20px 28px",
+              padding: "24px 32px",
               borderRadius: "var(--radius-xl)",
               border: "1px solid var(--border-subtle)",
               textAlign: "center",

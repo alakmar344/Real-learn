@@ -48,13 +48,13 @@ export default function ProgressHub() {
           border: "1px solid var(--border-subtle)",
           background: "var(--bg-card)",
           borderRadius: 999,
-          padding: "4px 12px 4px 6px",
+          padding: "6px 14px 6px 8px",
           cursor: "pointer",
-          minHeight: 34,
+          minHeight: 36,
           backdropFilter: "blur(var(--glass-blur)) saturate(var(--glass-saturate))",
           WebkitBackdropFilter: "blur(var(--glass-blur)) saturate(var(--glass-saturate))",
           boxShadow: "var(--glass-edge)",
-          transition: "all 350ms var(--ease-spring)",
+          transition: "all 500ms var(--ease-spring)",
         }}
       >
         {/* Streak */}

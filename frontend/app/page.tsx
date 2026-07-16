@@ -34,7 +34,6 @@ function iconForHour(h: number): string {
 export default function HomePage() {
   const [question, setQuestion] = useState("");
   const [loadingQuestion, setLoadingQuestion] = useState<string | null>(null);
-  // Greeting is rendered after mount so SSR and the client never disagree.
   const [greeting, setGreeting] = useState("");
   const [greetingIcon, setGreetingIcon] = useState("");
   const { generateLesson } = useLesson();
@@ -51,20 +50,12 @@ export default function HomePage() {
     setGreetingIcon(iconForHour(hour));
   }, []);
 
-  // Sync a consent accepted BEFORE sign-in to the backend, once per user.
-  // Previously this posted hardcoded version "1.0" on EVERY home visit —
-  // fighting the current-version re-consent check and wasting a request per page load.
   useEffect(() => {
     const syncLegalConsent = async () => {
       if (!isSignedIn || !user?.id) return;
       const parsed = readLegalConsent();
       if (!parsed?.accepted) return;
       if (parsed.syncedClerkId === user.id) return;
-      // Only sync a consent record that matches the currently required
-      // policy versions. Older acceptances must be re-accepted through the
-      // PreSignInConsent re-accept flow; syncing them here would stamp the
-      // server's current version onto a stale acceptance and suppress the
-      // re-prompt forever.
       if (!isConsentCurrent(parsed)) return;
 
       try {
@@ -91,10 +82,6 @@ export default function HomePage() {
         });
 
         if (res.ok) {
-          // Re-read before writing: the POST can take many seconds (Render
-          // cold start), during which the user may have accepted a NEWER
-          // policy version — merging onto the stale `parsed` snapshot would
-          // clobber that fresh record.
           const latest = readLegalConsent();
           writeLegalConsent({ ...(latest ?? parsed), syncedClerkId: user.id });
         }
@@ -123,8 +110,6 @@ export default function HomePage() {
   return (
     <>
       <LiveRegion />
-      {/* PreSignInConsent is rendered once globally in app/layout.tsx — a
-          second instance here stacked two independent consent modals. */}
       <main
         style={{
           minHeight: "100vh",
@@ -137,13 +122,7 @@ export default function HomePage() {
         <section
           style={{
             flex: 1,
-            // Anchor the greeting + input to the LOWER area of the hero. A
-            // column that justifies to flex-end pushes the whole block toward
-            // the bottom. The input's on-screen height is governed by whatever
-            // sits BELOW it (the stats strip + this bottom padding), so we keep
-            // that padding small to let the chat box settle genuinely low
-            // rather than floating back toward dead-center.
-            padding: "24px 16px clamp(16px, 3vh, 32px)",
+            padding: "48px 20px clamp(60px, 10vh, 100px)",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -160,31 +139,27 @@ export default function HomePage() {
                 top: "50%",
                 left: "50%",
                 transform: "translate(-50%, -55%)",
-                width: "min(520px, 90vw)",
-                height: "min(260px, 45vw)",
+                width: "min(560px, 90vw)",
+                height: "min(280px, 45vw)",
                 borderRadius: "50%",
                 background:
-                  "radial-gradient(ellipse at center, rgba(96, 85, 226, 0.12) 0%, rgba(244, 166, 200, 0.08) 45%, transparent 70%)",
-                filter: "blur(40px)",
+                  "radial-gradient(ellipse at center, rgba(0, 122, 255, 0.1) 0%, rgba(88, 86, 214, 0.06) 45%, transparent 70%)",
+                filter: "blur(50px)",
                 zIndex: 0,
                 pointerEvents: "none",
               }}
             />
 
-            {/* The slim daily-spark / resume strip sits ABOVE the greeting so
-                the chat box stays the lowest, most prominent element — this is
-                what lets the input settle into the lower area instead of being
-                pushed back toward center by content beneath it. */}
+            {/* The slim daily-spark / resume strip sits above the greeting */}
             <HomeStats onStartTopic={(topic) => submit(topic)} />
 
-            {/* Personal, time-aware hello — rendered after mount so SSR and
-                the client never disagree. */}
+            {/* Personal, time-aware hello */}
             <div
               className="hero-greeting"
               style={{
                 position: "relative",
                 zIndex: 1,
-                minHeight: 96,
+                minHeight: 120,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -206,7 +181,7 @@ export default function HomePage() {
                   <span
                     className="hero-greeting-icon"
                     aria-hidden="true"
-                    style={{ marginRight: 16 }}
+                    style={{ marginRight: 12 }}
                   >
                     {greetingIcon}
                   </span>
@@ -217,8 +192,8 @@ export default function HomePage() {
                       <span
                         style={{
                           background: "var(--accent-gradient)",
-                          WebkitBackgroundClip: "text",
                           backgroundClip: "text",
+                          WebkitBackgroundClip: "text",
                           color: "transparent",
                         }}
                       >
@@ -232,10 +207,9 @@ export default function HomePage() {
               )}
             </div>
 
-            <div style={{ position: "relative", zIndex: 1, display: "flex", justifyContent: "center" }}>
+            <div style={{ position: "relative", zIndex: 1, display: "flex", justifyContent: "center", marginTop: 40 }}>
               <QuestionInput question={question} setQuestion={setQuestion} onSubmit={submit} />
             </div>
-
           </div>
         </section>
 

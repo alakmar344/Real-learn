@@ -295,19 +295,25 @@ export default function LearnPage() {
   return (
     <>
       <LiveRegion />
-      <main style={{ minHeight: "100vh", color: "var(--text-primary)" }}>
+      <main
+        style={{
+          minHeight: "100vh",
+          color: "var(--text-primary)",
+        }}
+      >
         <div
           style={{
             position: "sticky",
             top: 0,
             zIndex: 50,
             background: "var(--bg-glass)",
-            backdropFilter: "blur(12px)",
+            backdropFilter: "blur(var(--glass-blur)) saturate(var(--glass-saturate))",
+            WebkitBackdropFilter: "blur(var(--glass-blur)) saturate(var(--glass-saturate))",
             borderBottom: "1px solid var(--border-subtle)",
           }}
         >
           <Navbar compact />
-          <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 12px" }}>
+          <div style={{ maxWidth: 800, margin: "0 auto", padding: "0 clamp(16px, 4vw, 48px) 16px" }}>
             <span
               style={{
                 display: "inline-block",
@@ -325,7 +331,7 @@ export default function LearnPage() {
             >
               {isFastMode ? "FAST" : "GUIDED"}
             </span>
-            <span style={{ fontSize: 12, color: "var(--text-tertiary)", marginRight: 8 }}>Understanding:</span>
+             <span style={{ fontSize: 13, color: "var(--text-tertiary)", marginRight: 10 }}>Understanding:</span>
             {/* The lesson question is the page's h1 (WCAG 1.3.1/2.4.6) —
                 visually styled as the compact header line it always was. */}
             <h1
@@ -333,7 +339,7 @@ export default function LearnPage() {
                 fontFamily: "var(--font-playfair)",
                 fontStyle: "italic",
                 fontWeight: 600,
-                fontSize: 14,
+                fontSize: 15,
                 color: "var(--accent)",
                 whiteSpace: "nowrap",
                 overflow: "hidden",
@@ -350,7 +356,7 @@ export default function LearnPage() {
           </div>
         </div>
 
-        <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 64px" }}>
+        <div style={{ maxWidth: 800, margin: "0 auto", padding: "0 clamp(16px, 4vw, 48px) 80px" }}>
           <ProgressRail unlockedPart={unlockedPart} completedParts={completedParts} totalParts={totalParts} />
 
           {lesson.parts.map((part) => (
