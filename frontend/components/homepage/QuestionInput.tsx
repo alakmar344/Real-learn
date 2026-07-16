@@ -72,14 +72,20 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
     <form
       onSubmit={handleSubmit}
       aria-label="Ask a question"
+      className="liquid-sheen"
       style={{
         marginTop: 28,
         maxWidth: 640,
         width: "100%",
+        position: "relative",
         borderRadius: "var(--radius-2xl)",
-        border: `2px solid ${focused ? "var(--accent)" : "var(--border-subtle)"}`,
+        border: `1.5px solid ${focused ? "var(--accent)" : "var(--border-subtle)"}`,
         background: "var(--bg-card)",
-        boxShadow: focused ? "var(--shadow-md)" : "var(--shadow-lg)",
+        backdropFilter: "blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))",
+        WebkitBackdropFilter: "blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))",
+        boxShadow: focused
+          ? "var(--shadow-lg), 0 0 0 4px var(--accent-glow), var(--glass-edge)"
+          : "var(--shadow-lg), var(--glass-edge)",
         transition: "all 300ms var(--ease-color)",
       }}
     >

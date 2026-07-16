@@ -11,18 +11,29 @@
   /* Native UI (form controls, scrollbars, autofill) follows the theme. */
   color-scheme: light;
 
-  /* ── Backgrounds — soft pastel "crayon paper" ── */
-  --bg-primary: #fbf7f0;   /* warm crayon-paper cream */
-  --bg-surface: #f4ecdf;   /* soft manila */
-  --bg-card: #fffdf9;      /* creamy sketch card */
-  --bg-card-hover: #f7f0e4;
-  --bg-glass: rgba(251, 247, 240, 0.85);
+  /* ── Backgrounds — Apple "liquid glass": frosted translucent surfaces that
+     let the ambient color wash refract through them. ── */
+  --bg-primary: #eef1f8;   /* cool luminous mist so glass has light to bend */
+  --bg-surface: rgba(255, 255, 255, 0.52);   /* frosted panel */
+  --bg-card: rgba(255, 255, 255, 0.58);      /* frosted card */
+  --bg-card-hover: rgba(255, 255, 255, 0.74);
+  --bg-glass: rgba(255, 255, 255, 0.5);
+  --bg-solid: #ffffff;     /* rare opaque fallback (e.g. text-clipping) */
 
-  /* ── Borders — soft, waxy edges ── */
-  --border-subtle: #ece2d2;
-  --border-default: #ddcfba;
+  /* ── Borders — luminous glass edges (bright highlight, faint frame) ── */
+  --border-subtle: rgba(255, 255, 255, 0.55);
+  --border-default: rgba(140, 130, 175, 0.24);
   --border-accent: #8a7ff0;
   --border-glow: #b3a8f7;
+
+  /* ── Liquid-glass system tokens ── */
+  --glass-blur: 20px;
+  --glass-blur-strong: 34px;
+  --glass-saturate: 175%;
+  --glass-highlight: rgba(255, 255, 255, 0.75);   /* top specular edge */
+  --glass-shadow: 0 10px 34px rgba(60, 55, 120, 0.14), 0 2px 8px rgba(60, 55, 120, 0.08);
+  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  --glass-sheen: linear-gradient(135deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.06) 34%, rgba(255,255,255,0) 60%);
 
   /* ── Accent — crayon periwinkle-violet.
      WCAG AA verified: white text on accent 5.39:1; accent as text ≥4.5:1 on
@@ -88,10 +99,10 @@
   --space-2xl: 48px;
   --space-3xl: 64px;
 
-  /* ── Shadows — bold, modern depth ── */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06);
+  /* ── Shadows — soft, diffused "floating glass" depth ── */
+  --shadow-sm: 0 2px 8px rgba(60, 55, 120, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  --shadow-md: 0 8px 24px rgba(60, 55, 120, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  --shadow-lg: 0 18px 48px rgba(60, 55, 120, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.55);
   --shadow-glow-correct: 0 0 20px rgba(16, 185, 129, 0.3);
 
   /* ── Easing ── */
@@ -109,7 +120,7 @@
 
   /* ── Modal scrim — a warm, soft veil rather than harsh pure black.
      Overridden per dark theme below so overlays never feel like a black hole. */
-  --scrim: rgba(38, 30, 16, 0.42);
+  --scrim: rgba(40, 38, 70, 0.28);
 
   /* ── Clean focus ring ── */
   --focus-ring: 0 0 0 3px var(--accent-glow);
@@ -119,9 +130,9 @@
      behind the crayon painting. Radial gradients that fade to transparent,
      so NO blur filter is needed (compositor-cheap). Tuned to be felt, not
      seen: they make the page glow gently instead of sitting flat. ── */
-  --aurora-1: rgba(124, 111, 240, 0.1);   /* periwinkle breath */
-  --aurora-2: rgba(244, 166, 200, 0.12);  /* cotton-candy warmth */
-  --aurora-3: rgba(111, 199, 207, 0.09);  /* aqua calm */
+  --aurora-1: rgba(124, 111, 240, 0.28);   /* periwinkle breath */
+  --aurora-2: rgba(244, 130, 200, 0.26);   /* cotton-candy warmth */
+  --aurora-3: rgba(96, 199, 230, 0.24);    /* aqua calm */
 
   /* ── Crayon painting colors ── */
   --crayon-sky-top: #87ceeb;
@@ -187,17 +198,27 @@
 /* ── Dark theme (Night) — deep, rich, with neon accents ── */
 html[data-theme="dark"] {
   color-scheme: dark;
-  --scrim: rgba(0, 0, 0, 0.7);
-  --bg-primary: #09090b;
-  --bg-surface: #18181b;
-  --bg-card: #1e1e22;
-  --bg-card-hover: #27272a;
-  --bg-glass: rgba(9, 9, 11, 0.9);
+  --scrim: rgba(0, 0, 0, 0.55);
+  --bg-primary: #07070d;
+  --bg-surface: rgba(38, 38, 52, 0.5);
+  --bg-card: rgba(44, 44, 60, 0.52);
+  --bg-card-hover: rgba(58, 58, 78, 0.66);
+  --bg-glass: rgba(20, 20, 30, 0.55);
+  --bg-solid: #16161c;
 
-  --border-subtle: #27272a;
-  --border-default: #3f3f46;
+  --border-subtle: rgba(255, 255, 255, 0.09);
+  --border-default: rgba(255, 255, 255, 0.16);
   --border-accent: #818cf8;
   --border-glow: #818cf8;
+
+  /* Liquid-glass system tokens — night */
+  --glass-blur: 22px;
+  --glass-blur-strong: 36px;
+  --glass-saturate: 165%;
+  --glass-highlight: rgba(255, 255, 255, 0.18);
+  --glass-shadow: 0 12px 40px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.4);
+  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+  --glass-sheen: linear-gradient(135deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.03) 34%, rgba(255,255,255,0) 60%);
 
   --accent: #7c82f0;
   --accent-hover: #9ba0f5;
@@ -229,14 +250,14 @@ html[data-theme="dark"] {
   --subject-history: #fb923c;
   --subject-general: #22d3ee;
 
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.5);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.6);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.7);
+  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --shadow-md: 0 8px 28px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --shadow-lg: 0 18px 50px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 
   /* Ambient aurora — cool moonlight tones for the night theme. */
-  --aurora-1: rgba(124, 130, 240, 0.09);
-  --aurora-2: rgba(52, 211, 153, 0.05);
-  --aurora-3: rgba(34, 211, 238, 0.06);
+  --aurora-1: rgba(124, 130, 240, 0.22);
+  --aurora-2: rgba(52, 211, 153, 0.13);
+  --aurora-3: rgba(34, 211, 238, 0.16);
 
   /* ── Crayon painting — night scene ── */
   --crayon-sky-top: #0a1628;
@@ -302,17 +323,27 @@ html[data-theme="dark"] {
 /* ── Twilight theme — deep purple vibes with neon pink glow ── */
 html[data-theme="twilight"] {
   color-scheme: dark;
-  --scrim: rgba(9, 9, 11, 0.75);
-  --bg-primary: #0c0a1d;
-  --bg-surface: #13102a;
-  --bg-card: #1a1636;
-  --bg-card-hover: #221d45;
-  --bg-glass: rgba(12, 10, 29, 0.9);
+  --scrim: rgba(9, 9, 21, 0.5);
+  --bg-primary: #0a0818;
+  --bg-surface: rgba(46, 38, 84, 0.5);
+  --bg-card: rgba(52, 44, 96, 0.54);
+  --bg-card-hover: rgba(66, 56, 118, 0.68);
+  --bg-glass: rgba(24, 20, 48, 0.55);
+  --bg-solid: #1a1636;
 
-  --border-subtle: #2a2450;
-  --border-default: #3d3560;
+  --border-subtle: rgba(200, 170, 255, 0.14);
+  --border-default: rgba(200, 170, 255, 0.24);
   --border-accent: #c084fc;
   --border-glow: #c084fc;
+
+  /* Liquid-glass system tokens — twilight */
+  --glass-blur: 22px;
+  --glass-blur-strong: 36px;
+  --glass-saturate: 170%;
+  --glass-highlight: rgba(230, 210, 255, 0.22);
+  --glass-shadow: 0 12px 42px rgba(8, 4, 24, 0.6), 0 2px 8px rgba(8, 4, 24, 0.45);
+  --glass-edge: inset 0 1px 0 rgba(220, 200, 255, 0.18), inset 0 0 0 1px rgba(200, 170, 255, 0.04);
+  --glass-sheen: linear-gradient(135deg, rgba(230,210,255,0.16) 0%, rgba(200,170,255,0.04) 34%, rgba(255,255,255,0) 60%);
 
   --accent: #b084f0;
   --accent-hover: #c9a0f5;
@@ -343,14 +374,14 @@ html[data-theme="twilight"] {
   --subject-history: #fb923c;
   --subject-general: #c084fc;
 
-  --shadow-sm: 0 2px 8px rgba(6, 4, 16, 0.6);
-  --shadow-md: 0 4px 16px rgba(6, 4, 16, 0.7);
-  --shadow-lg: 0 8px 32px rgba(6, 4, 16, 0.8);
+  --shadow-sm: 0 2px 10px rgba(6, 4, 16, 0.55), inset 0 1px 0 rgba(220, 200, 255, 0.1);
+  --shadow-md: 0 8px 30px rgba(6, 4, 16, 0.6), inset 0 1px 0 rgba(220, 200, 255, 0.1);
+  --shadow-lg: 0 18px 52px rgba(6, 4, 16, 0.72), inset 0 1px 0 rgba(220, 200, 255, 0.12);
 
   /* Ambient aurora — dreamy violet-pink dusk tones. */
-  --aurora-1: rgba(176, 132, 240, 0.1);
-  --aurora-2: rgba(236, 72, 153, 0.06);
-  --aurora-3: rgba(96, 165, 250, 0.06);
+  --aurora-1: rgba(176, 132, 240, 0.26);
+  --aurora-2: rgba(236, 72, 153, 0.16);
+  --aurora-3: rgba(96, 165, 250, 0.16);
 
   /* ── Crayon painting — twilight purple scene ── */
   --crayon-sky-top: #1a1040;
@@ -499,6 +530,106 @@ body {
   50% { transform: translate3d(-5%, -3%, 0) scale(0.96); }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   Liquid glass system — Apple-style frosted, translucent, specular surfaces.
+   Any element carrying a translucent --bg-* token becomes "glass" once it has
+   backdrop-filter. These utilities + the reusable class package that together.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Enrich the base backdrop so frosted glass has vivid color to refract.
+   A trio of ultra-soft conic/radial washes painted directly onto <html>. */
+html::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 90% at 12% 0%, var(--aurora-1) 0%, transparent 55%),
+    radial-gradient(110% 90% at 92% 8%, var(--aurora-2) 0%, transparent 52%),
+    radial-gradient(120% 100% at 50% 108%, var(--aurora-3) 0%, transparent 60%);
+  opacity: 0.9;
+}
+
+/* The reusable glass surface. Translucent tint + blur + saturation boost +
+   luminous top edge + soft floating shadow. */
+.glass,
+.glass-card,
+.glass-panel {
+  background: var(--bg-card);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--glass-shadow), var(--glass-edge);
+  border-radius: var(--radius-xl);
+  position: relative;
+}
+
+/* Stronger frost for overlays / modals / sheets that sit above everything. */
+.glass-strong {
+  background: var(--bg-glass);
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--glass-shadow), var(--glass-edge);
+}
+
+/* Specular streak — the signature liquid-glass diagonal light catch. Add
+   `liquid-sheen` to any position:relative glass surface. */
+.liquid-sheen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--glass-sheen);
+  pointer-events: none;
+  z-index: 0;
+  mix-blend-mode: screen;
+}
+
+/* Keep real content above the sheen layer. */
+.liquid-sheen > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* A subtle animated shine that sweeps across glass on hover. */
+.glass-card,
+.glass-panel {
+  transition: box-shadow 300ms var(--ease-color), transform 300ms var(--ease-reveal),
+    border-color 300ms var(--ease-color);
+}
+.glass-card:hover,
+.glass-panel:hover {
+  border-color: var(--border-default);
+  box-shadow: var(--shadow-lg), var(--glass-edge);
+}
+
+/* ── Automatic frosting ──
+   Every component in this app paints its surfaces with inline styles that carry
+   the translucent --bg-* design tokens (e.g. style="background:var(--bg-card)").
+   Rather than touch dozens of files, we frost them all in one place: an
+   attribute-substring selector matches the inline style string and layers the
+   Apple-style blur + saturation behind the now-translucent tint. Because it
+   keys off the token literal, conditional styles (active ? accent : surface)
+   only frost on the branch that actually renders the glass token — exactly the
+   behaviour we want. The per-tier / Firefox rules later in this file strip
+   backdrop-filter with !important, so weak GPUs still degrade gracefully. */
+[style*="var(--bg-card)"],
+[style*="var(--bg-card-hover)"],
+[style*="var(--bg-surface)"],
+[style*="var(--bg-glass)"] {
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+}
+
+/* Modal / sheet scrims (blur already inline) get a heavier, more saturated
+   frost so the page behind melts into soft color. */
+[style*="var(--scrim"] {
+  -webkit-backdrop-filter: blur(14px) saturate(150%) !important;
+  backdrop-filter: blur(14px) saturate(150%) !important;
+}
+
 /* Crayon background — static SVG, GPU-composited, theme-tinted via CSS filter.
    Softened: lower opacity + a gentle vertical mask fade so the scene rests
    quietly at the bottom of the viewport and never competes with reading. */
@@ -508,7 +639,7 @@ body {
   height: 100dvh;
   z-index: -1;
   pointer-events: none;
-  opacity: 0.34;
+  opacity: 0.24;
   background-image: url("/crayon-bg-mobile.svg");
   background-size: cover;
   background-position: center;
@@ -901,10 +1032,12 @@ pre {
   z-index: 80;
   display: flex;
   flex-direction: column;
-  background: var(--bg-surface);
+  background: var(--bg-glass);
   border-right: 1px solid var(--border-subtle);
   transition: transform 240ms var(--ease-reveal);
-  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  box-shadow: var(--glass-edge);
 }
 
 .app-sidebar-backdrop {
@@ -963,6 +1096,8 @@ pre {
     inset: 0;
     z-index: 70;
     background: var(--scrim);
+    -webkit-backdrop-filter: blur(8px) saturate(140%);
+    backdrop-filter: blur(8px) saturate(140%);
   }
   .app-sidebar-toggle {
     display: inline-flex;
@@ -977,11 +1112,12 @@ pre {
     border-radius: var(--radius-lg);
     border: 1px solid var(--border-subtle);
     background: var(--bg-glass);
-    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
     color: var(--text-primary);
     cursor: pointer;
     font-size: 20px;
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--glass-shadow), var(--glass-edge);
   }
 }
 
