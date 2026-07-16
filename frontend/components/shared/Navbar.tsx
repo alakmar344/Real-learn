@@ -18,7 +18,9 @@ export default function Navbar({ compact = false }: Props) {
         minHeight: 60,
         borderBottom: "1px solid var(--border-subtle)",
         background: "var(--bg-glass)",
-        backdropFilter: "blur(16px)",
+        backdropFilter: "blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))",
+        WebkitBackdropFilter: "blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))",
+        boxShadow: "var(--glass-edge)",
       }}
     >
       <div
