@@ -11,38 +11,32 @@ import { useLesson } from "@/hooks/useLesson";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { readLegalConsent, writeLegalConsent } from "@/lib/legalConsent";
 
-const QUOTES = [
-  "Education is the kindling of a flame, not the filling of a vessel.",
-  "Live as if you were to die tomorrow. Learn as if you were to live forever.",
-  "The only true wisdom is in knowing you know nothing.",
-  "Learning never exhausts the mind.",
-  "The mind is not a vessel to be filled, but a fire to be kindled.",
-  "Tell me and I forget. Teach me and I remember. Involve me and I learn.",
-  "Education is not preparation for life; education is life itself.",
-  "The beautiful thing about learning is that nobody can take it away from you.",
-  "An investment in knowledge pays the best interest.",
-  "Curiosity is the wick in the candle of learning.",
-];
-
 /** Warm, time-aware greeting — the app says hello like a friend would. */
 function greetingForHour(h: number): string {
-  if (h < 4) return "Still awake? The stars are studying with you 🌙";
-  if (h < 7) return "Up with the sun — beautiful start ☀️";
+  if (h < 4) return "Still awake?";
+  if (h < 7) return "Up with the sun";
   if (h < 12) return "Good morning";
   if (h < 17) return "Good afternoon";
   if (h < 21) return "Good evening";
-  return "A quiet night is perfect for wondering ✨";
+  return "A quiet night";
+}
+
+/** A small time-of-day companion emoji to make the hello feel alive. */
+function iconForHour(h: number): string {
+  if (h < 4) return "🌙";
+  if (h < 7) return "🌅";
+  if (h < 12) return "☀️";
+  if (h < 17) return "🌤️";
+  if (h < 21) return "🌆";
+  return "✨";
 }
 
 export default function HomePage() {
   const [question, setQuestion] = useState("");
   const [loadingQuestion, setLoadingQuestion] = useState<string | null>(null);
-  // Pick the quote after mount: choosing during render made the SSR HTML and
-  // the client's first render disagree → hydration error + flicker. It is now
-  // DETERMINISTIC per calendar day — a small daily ritual ("today's quote")
-  // rather than a slot machine on every reload.
-  const [quote, setQuote] = useState("");
+  // Greeting is rendered after mount so SSR and the client never disagree.
   const [greeting, setGreeting] = useState("");
+  const [greetingIcon, setGreetingIcon] = useState("");
   const { generateLesson } = useLesson();
   const { isSignedIn, getToken } = useAuth();
   const { user } = useUser();
@@ -52,11 +46,9 @@ export default function HomePage() {
 
   useEffect(() => {
     const now = new Date();
-    const dayOfYear = Math.floor(
-      (now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 86_400_000
-    );
-    setQuote(QUOTES[dayOfYear % QUOTES.length]);
-    setGreeting(greetingForHour(now.getHours()));
+    const hour = now.getHours();
+    setGreeting(greetingForHour(hour));
+    setGreetingIcon(iconForHour(hour));
   }, []);
 
   // Sync a consent accepted BEFORE sign-in to the backend, once per user.
@@ -151,81 +143,82 @@ export default function HomePage() {
             textAlign: "center",
           }}
         >
-          <div style={{ width: "100%", maxWidth: 800 }}>
-            {/* Personal, time-aware hello \u2014 rendered after mount so SSR and
-                the client never disagree. Reserves its line to avoid shift. */}
-            <p
+          <div style={{ width: "100%", maxWidth: 800, position: "relative" }}>
+            {/* Soft decorative glow behind the greeting */}
+            <div
+              aria-hidden="true"
               style={{
-                fontSize: 15,
-                color: "var(--text-secondary)",
-                fontWeight: 500,
-                margin: "0 0 8px",
-                fontFamily: "var(--font-lora)",
-                fontStyle: "italic",
-                minHeight: 22,
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -55%)",
+                width: "min(520px, 90vw)",
+                height: "min(260px, 45vw)",
+                borderRadius: "50%",
+                background:
+                  "radial-gradient(ellipse at center, rgba(96, 85, 226, 0.12) 0%, rgba(244, 166, 200, 0.08) 45%, transparent 70%)",
+                filter: "blur(40px)",
+                zIndex: 0,
+                pointerEvents: "none",
               }}
-              suppressHydrationWarning
+            />
+
+            {/* Personal, time-aware hello — rendered after mount so SSR and
+                the client never disagree. The only text on the welcome screen. */}
+            <div
+              className="hero-greeting"
+              style={{
+                position: "relative",
+                zIndex: 1,
+                minHeight: 120,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
             >
               {greeting ? (
-                <>
-                  <span className="animate-gentle-wave" aria-hidden="true">{"\uD83D\uDC4B"}</span>{" "}
+                <h1
+                  suppressHydrationWarning
+                  style={{
+                    margin: 0,
+                    fontFamily: "var(--font-playfair)",
+                    fontWeight: 900,
+                    lineHeight: 1.05,
+                    letterSpacing: "-0.03em",
+                    fontSize: "clamp(42px, 8vw, 76px)",
+                    color: "var(--text-primary)",
+                  }}
+                >
+                  <span
+                    className="hero-greeting-icon"
+                    aria-hidden="true"
+                    style={{ marginRight: 16 }}
+                  >
+                    {greetingIcon}
+                  </span>
                   {greeting}
-                  {firstName ? `, ${firstName}` : ""}
-                </>
+                  {firstName ? (
+                    <>
+                      ,{" "}
+                      <span
+                        style={{
+                          background: "var(--accent-gradient)",
+                          WebkitBackgroundClip: "text",
+                          backgroundClip: "text",
+                          color: "transparent",
+                        }}
+                      >
+                        {firstName}
+                      </span>
+                    </>
+                  ) : null}
+                </h1>
               ) : (
-                "\u00A0"
+                <div style={{ height: 76 }} aria-hidden="true" />
               )}
-            </p>
-            <p
-              style={{
-                fontSize: 14,
-                letterSpacing: "0.15em",
-                textTransform: "uppercase",
-                color: "var(--accent)",
-                fontWeight: 600,
-                margin: "0 0 12px",
-                fontFamily: "var(--font-inter)",
-              }}
-            >
-              {quote || "\u00A0"}
-            </p>
-            <h1
-              style={{
-                margin: "16px 0 0",
-                fontFamily: "var(--font-playfair)",
-                fontWeight: 900,
-                lineHeight: 1.05,
-                color: "var(--text-primary)",
-                fontSize: "clamp(44px, 9vw, 72px)",
-                letterSpacing: "-0.03em",
-              }}
-            >
-              The World Is
-              <br />
-              <span
-                style={{
-                  position: "relative",
-                  display: "inline-block",
-                  color: "var(--accent)",
-                }}
-              >
-                Your Textbook
-              </span>
-            </h1>
-            <p
-              style={{
-                margin: "20px auto 0",
-                maxWidth: 500,
-                color: "var(--text-secondary)",
-                fontSize: "var(--text-lg)",
-                lineHeight: 1.6,
-                fontFamily: "var(--font-lora)",
-                fontStyle: "italic",
-              }}
-            >
-             No pressure, no trick questions. Start with a quick answer, then switch to a guided 3-part journey when you want to go deeper.
-            </p>
-            <div style={{ display: "flex", justifyContent: "center" }}>
+            </div>
+
+            <div style={{ position: "relative", zIndex: 1, display: "flex", justifyContent: "center" }}>
               <QuestionInput question={question} setQuestion={setQuestion} onSubmit={submit} />
             </div>
 
