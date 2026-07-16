@@ -45,9 +45,11 @@ export default async function LegalPage({ searchParams }: { searchParams: Search
           }}
         >
           <a
+            id="legal-tab-privacy"
             href="/legal?tab=privacy"
             role="tab"
             aria-selected={tab === "privacy"}
+            aria-controls="legal-panel-privacy"
             style={{
               padding: "12px 20px",
               textDecoration: "none",
@@ -61,9 +63,11 @@ export default async function LegalPage({ searchParams }: { searchParams: Search
             Privacy Policy
           </a>
           <a
+            id="legal-tab-terms"
             href="/legal?tab=terms"
             role="tab"
             aria-selected={tab === "terms"}
+            aria-controls="legal-panel-terms"
             style={{
               padding: "12px 20px",
               textDecoration: "none",
@@ -77,9 +81,11 @@ export default async function LegalPage({ searchParams }: { searchParams: Search
             Terms of Service
           </a>
           <a
+            id="legal-tab-cookies"
             href="/legal?tab=cookies"
             role="tab"
             aria-selected={tab === "cookies"}
+            aria-controls="legal-panel-cookies"
             style={{
               padding: "12px 20px",
               textDecoration: "none",
@@ -95,7 +101,14 @@ export default async function LegalPage({ searchParams }: { searchParams: Search
         </div>
 
         <Suspense fallback={<p style={{ color: "var(--text-secondary)" }}>Loading...</p>}>
-          {tab === "cookies" ? <CookiePolicy /> : tab === "terms" ? <TermsOfService /> : <PrivacyPolicy />}
+          <div
+            id={`legal-panel-${tab}`}
+            role="tabpanel"
+            aria-labelledby={`legal-tab-${tab}`}
+            tabIndex={0}
+          >
+            {tab === "cookies" ? <CookiePolicy /> : tab === "terms" ? <TermsOfService /> : <PrivacyPolicy />}
+          </div>
         </Suspense>
       </div>
     </main>

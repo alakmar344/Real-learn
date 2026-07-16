@@ -273,7 +273,16 @@ export default function PreferenceModal({ open, onClose }: Props) {
         <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 28 }}>
           <button
             type="button"
-            onClick={onClose}
+            onClick={() => {
+              // Treat Skip the same as Save for onboarding completion so the
+              // modal doesn't reappear on the next sign-in.
+              try {
+                localStorage.setItem("reallearn-preferences-onboarding", "true");
+              } catch {
+                // ignore
+              }
+              onClose();
+            }}
             disabled={saving}
             style={{
               border: "1px solid var(--border-default)",

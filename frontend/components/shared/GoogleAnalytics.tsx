@@ -10,10 +10,11 @@ import {
   hasAnalyticsConsent,
 } from "@/lib/legalConsent";
 
-const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID || "G-ECZSC4ZVCL";
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID;
 
 function loadGtag() {
   if (typeof window === "undefined") return;
+  if (!GA_MEASUREMENT_ID) return;
 
   // Clear a previous opt-out flag if the user re-consents.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -42,6 +43,7 @@ function loadGtag() {
  * and delete its cookies (best-effort — first-party _ga* cookies only). */
 function disableGtag() {
   if (typeof window === "undefined") return;
+  if (!GA_MEASUREMENT_ID) return;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (window as any)[`ga-disable-${GA_MEASUREMENT_ID}`] = true;
   try {

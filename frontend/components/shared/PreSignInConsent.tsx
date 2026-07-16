@@ -561,7 +561,7 @@ export default function PreSignInConsent() {
             </p>
 
             <h3 style={{ fontWeight: 600, fontSize: 15, marginBottom: 8, marginTop: 16 }}>
-              Privacy Policy changes (updated to v{CURRENT_PRIVACY_VERSION}):
+              {`Privacy Policy changes (updated to v${CURRENT_PRIVACY_VERSION}):`}
             </h3>
             <ul style={{ paddingLeft: 20, margin: 0, fontSize: 14, color: "var(--text-secondary)" }}>
               {POLICY_CHANGES.map((change, index) => (
@@ -572,7 +572,7 @@ export default function PreSignInConsent() {
             </ul>
 
             <h3 style={{ fontWeight: 600, fontSize: 15, marginBottom: 8, marginTop: 16 }}>
-              Terms of Service changes (updated to v{CURRENT_TERMS_VERSION}):
+              {`Terms of Service changes (updated to v${CURRENT_TERMS_VERSION}):`}
             </h3>
             <ul style={{ paddingLeft: 20, margin: 0, fontSize: 14, color: "var(--text-secondary)" }}>
               {TERMS_CHANGES.map((change, index) => (

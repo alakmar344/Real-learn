@@ -69,14 +69,20 @@ function logTokenUsage(requestId, mode, provider, promptTokens, completionTokens
 // across restarts/instances or the stored hashes are useless for their
 // stated purpose (detecting repeat-device consent fraud) — a per-process
 // random salt would produce a different hash for the same device after
-// every deploy. Configure UA_HASH_SALT in the environment; the derived
-// fallback keeps hashes stable per-deployment without committing a secret.
+// every deploy. Configure UA_HASH_SALT in the environment.
+// Fallback: derive a stable value from CLERK_ISSUER only (not MONGODB_URI,
+// which may contain credentials). If neither is set, warn and use a fixed
+// placeholder — fraud detection is weakened until UA_HASH_SALT is configured.
 const UA_HASH_SALT =
   process.env.UA_HASH_SALT ||
-  crypto
-    .createHash("sha256")
-    .update(`reallearn-ua-salt:${process.env.MONGODB_URI || ""}:${process.env.CLERK_ISSUER || ""}`)
-    .digest("hex");
+  (process.env.CLERK_ISSUER
+    ? crypto.createHash("sha256").update(`reallearn-ua-salt:${process.env.CLERK_ISSUER}`).digest("hex")
+    : "reallearn-default-ua-salt-not-configured");
+if (!process.env.UA_HASH_SALT) {
+  console.warn(
+    "[privacy] UA_HASH_SALT is not configured. User-Agent hashes are derived from CLERK_ISSUER (or a fixed fallback), which is stable but less secure than an explicit secret. Set UA_HASH_SALT in production."
+  );
+}
 function hashUserAgent(ua) {
   if (typeof ua !== "string" || !ua) return "unknown";
   return crypto.createHash("sha256").update(`${UA_HASH_SALT}:${ua}`).digest("hex").slice(0, 32);
@@ -604,7 +610,10 @@ function securityHeaders(req, res, next) {
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
   res.setHeader("X-XSS-Protection", "0");
   res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
-  res.setHeader("Cross-Origin-Resource-Policy", "same-origin");
+  // Cross-Origin-Resource-Policy is intentionally NOT set. The backend API is
+  // consumed cross-origin by the frontend (reallearn.site -> real-learn.onrender.com).
+  // A `same-origin` CORP header would block those responses even though CORS is
+  // configured correctly.
   res.setHeader(
     "Permissions-Policy",
     "camera=(), microphone=(), geolocation=(), interest-cohort=()"
@@ -1365,7 +1374,10 @@ Level: ${level}${
     // tokens disabled for the primary provider, the overhead is minimal, and
     // these ceilings prevent runaway generation while leaving ample room for
     // the structured JSON output.
-    const maxOutputTokens = mode === "fast" ? 2500 : 4000;
+    // Both modes use the same ceiling: max_tokens is a ceiling, not a target,
+    // and Gemma's thinking overhead is constant. A larger cap prevents the
+    // JSON truncation that broke fast mode when the quiz was cut off mid-object.
+    const maxOutputTokens = 4000;
     // Fast mode uses a lower temperature for more focused, deterministic
     // output — less sampling overhead means faster generation.
     const temperature = mode === "fast" ? 0.2 : 0.6;

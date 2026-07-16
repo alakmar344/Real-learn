@@ -225,11 +225,13 @@ function isRetryableGemmaError(error) {
   if (error instanceof GemmaTimeoutError) return true;
   if (error instanceof GemmaApiError) {
     // 408 = upstream request timeout (transient), 429 = rate limit
-    // (transient), 5xx = server error (transient). 401/403 are auth errors —
-    // retrying won't help. 404/400 are handled via model rotation.
+    // (transient), 403 = Cloudflare Workers AI rate limiting (transient),
+    // 5xx = server error (transient). 401 is an auth error — retrying won't
+    // help. 404/400 are handled via model rotation.
     if (
       error.status === 408 ||
       error.status === 429 ||
+      error.status === 403 ||
       (error.status >= 500 && error.status < 600)
     ) {
       return true;
@@ -248,7 +250,8 @@ function isAvailabilityFailure(error) {
   return (
     error instanceof GemmaTimeoutError ||
     (error instanceof GemmaApiError &&
-      (error.status === 408 || error.status === 429 || error.status >= 500)) ||
+      (error.status === 408 || error.status === 429 || error.status === 403 ||
+        error.status >= 500)) ||
     isRetryableNetworkGemmaError(error)
   );
 }

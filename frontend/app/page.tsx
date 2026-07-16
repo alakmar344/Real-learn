@@ -9,7 +9,7 @@ import LiveRegion from "@/components/shared/LiveRegion";
 import Footer from "@/components/shared/Footer";
 import { useLesson } from "@/hooks/useLesson";
 import { useAuth, useUser } from "@clerk/nextjs";
-import { readLegalConsent, writeLegalConsent } from "@/lib/legalConsent";
+import { isConsentCurrent, readLegalConsent, writeLegalConsent } from "@/lib/legalConsent";
 
 /** Warm, time-aware greeting — the app says hello like a friend would. */
 function greetingForHour(h: number): string {
@@ -60,11 +60,12 @@ export default function HomePage() {
       const parsed = readLegalConsent();
       if (!parsed?.accepted) return;
       if (parsed.syncedClerkId === user.id) return;
-      // A legacy record without version fields predates the versioned-consent
-      // flow. Uploading it as the CURRENT versions would fabricate a v1.3
-      // acceptance the user never made and permanently suppress the re-accept
-      // modal — skip it and let PreSignInConsent collect fresh consent.
-      if (!parsed.privacyVersion || !parsed.termsVersion) return;
+      // Only sync a consent record that matches the currently required
+      // policy versions. Older acceptances must be re-accepted through the
+      // PreSignInConsent re-accept flow; syncing them here would stamp the
+      // server's current version onto a stale acceptance and suppress the
+      // re-prompt forever.
+      if (!isConsentCurrent(parsed)) return;
 
       try {
         const backendUrl =
