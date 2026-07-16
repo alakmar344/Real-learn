@@ -75,7 +75,7 @@ export default function HomeStats({ onStartTopic }: Props) {
   const hasActivity = xp > 0 || journeys.length > 0;
 
   return (
-    <div style={{ marginTop: 24, display: "flex", flexDirection: "column", gap: 12, alignItems: "center" }}>
+    <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 12, alignItems: "center" }}>
       {/* Today's spark — changes every day. Signed-out visitors are routed to
           sign-in instead of firing an unauthenticated lesson request that
           would bounce off the protected /learn route with an error flash. */}

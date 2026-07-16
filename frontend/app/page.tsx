@@ -139,10 +139,11 @@ export default function HomePage() {
             flex: 1,
             // Anchor the greeting + input to the LOWER area of the hero. A
             // column that justifies to flex-end pushes the whole block toward
-            // the bottom (kept clear of the footer by the bottom padding),
-            // which reads far calmer than the old dead-center placement that
-            // left the text floating uncomfortably high.
-            padding: "32px 16px clamp(56px, 10vh, 128px)",
+            // the bottom. The input's on-screen height is governed by whatever
+            // sits BELOW it (the stats strip + this bottom padding), so we keep
+            // that padding small to let the chat box settle genuinely low
+            // rather than floating back toward dead-center.
+            padding: "24px 16px clamp(16px, 3vh, 32px)",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -170,8 +171,14 @@ export default function HomePage() {
               }}
             />
 
+            {/* The slim daily-spark / resume strip sits ABOVE the greeting so
+                the chat box stays the lowest, most prominent element — this is
+                what lets the input settle into the lower area instead of being
+                pushed back toward center by content beneath it. */}
+            <HomeStats onStartTopic={(topic) => submit(topic)} />
+
             {/* Personal, time-aware hello — rendered after mount so SSR and
-                the client never disagree. The only text on the welcome screen. */}
+                the client never disagree. */}
             <div
               className="hero-greeting"
               style={{
@@ -229,7 +236,6 @@ export default function HomePage() {
               <QuestionInput question={question} setQuestion={setQuestion} onSubmit={submit} />
             </div>
 
-            <HomeStats onStartTopic={(topic) => submit(topic)} />
           </div>
         </section>
 
