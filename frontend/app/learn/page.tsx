@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, lazy, Suspense, useShallow } from "react";
+import { useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
 import Navbar from "@/components/shared/Navbar";
 import ProgressRail from "@/components/learning/ProgressRail";
 import PartCard from "@/components/learning/PartCard";
@@ -17,6 +17,7 @@ import { useSavedJourneysStore, journeySignature } from "@/store/savedJourneysSt
 import { useLesson } from "@/hooks/useLesson";
 import { useMounted } from "@/hooks/useMounted";
 import { LessonJourney } from "@/types";
+import { useShallow } from "zustand/shallow";
 
 const CompletionScreen = lazy(() => import("@/components/learning/CompletionScreen"));
 const FollowUpBox = lazy(() => import("@/components/learning/FollowUpBox"));
