@@ -708,6 +708,22 @@ pre {
   transform-origin: 70% 70%;
 }
 
+/* ── Hero greeting — the emotional centre of the welcome screen ── */
+.hero-greeting {
+  animation: fadeUp 700ms var(--ease-reveal) both;
+}
+
+.hero-greeting-icon {
+  display: inline-block;
+  animation: gentleWave 1.8s ease-in-out, iconFloat 4s ease-in-out 1.8s infinite;
+  transform-origin: 70% 70%;
+}
+
+@keyframes iconFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-6px) rotate(4deg); }
+}
+
 /* ── Animation utilities ── */
 .animate-fade-up { animation: fadeUp 500ms var(--ease-reveal) both; }
 .animate-slide-bottom { animation: slideFromBottom 400ms var(--ease-reveal) both; }
