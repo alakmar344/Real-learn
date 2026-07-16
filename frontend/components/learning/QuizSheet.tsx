@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, memo } from "react";
 import { QuizQuestion as Question } from "@/types";
 import QuizQuestion from "@/components/learning/QuizQuestion";
 import { reshuffleQuestion } from "@/lib/quizShuffle";
@@ -12,7 +12,7 @@ interface Props {
   onPass: (score: number) => void;
 }
 
-export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
+const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
   // Derive the quiz length from the actual questions instead of hardcoding 2.
   // The backend can legitimately deliver a salvaged single-question quiz
   // (e.g. when the model's output was truncated); with a hardcoded total of 2
@@ -154,6 +154,7 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
       aria-modal="true"
       aria-label={`Quiz – Question ${current + 1} of ${totalQuestions}`}
       onClick={answered ? undefined : onClose}
+      className="quiz-sheet"
       style={{
         position: "fixed",
         inset: 0,
@@ -349,3 +350,4 @@ export default function QuizSheet({ open, questions, onClose, onPass }: Props) {
     </div>
   );
 }
+export default memo(QuizSheetBase);

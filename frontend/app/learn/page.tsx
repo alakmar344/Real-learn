@@ -1,13 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
 import Navbar from "@/components/shared/Navbar";
 import ProgressRail from "@/components/learning/ProgressRail";
 import PartCard from "@/components/learning/PartCard";
 import QuizSheet from "@/components/learning/QuizSheet";
-import CompletionScreen from "@/components/learning/CompletionScreen";
-import FollowUpBox from "@/components/learning/FollowUpBox";
-import UnlockAnimation from "@/components/learning/UnlockAnimation";
 import LoadingCinematic from "@/components/shared/LoadingCinematic";
 import ErrorState from "@/components/shared/ErrorState";
 import LiveRegion from "@/components/shared/LiveRegion";
@@ -20,6 +17,15 @@ import { useSavedJourneysStore, journeySignature } from "@/store/savedJourneysSt
 import { useLesson } from "@/hooks/useLesson";
 import { useMounted } from "@/hooks/useMounted";
 import { LessonJourney } from "@/types";
+import { useShallow } from "zustand/shallow";
+
+const CompletionScreen = lazy(() => import("@/components/learning/CompletionScreen"));
+const FollowUpBox = lazy(() => import("@/components/learning/FollowUpBox"));
+const UnlockAnimation = lazy(() => import("@/components/learning/UnlockAnimation"));
+
+function SuspenseFallback() {
+  return null;
+}
 
 function scrollToTop() {
   // Respect prefers-reduced-motion: an explicit behavior option overrides the
@@ -55,7 +61,24 @@ export default function LearnPage() {
     resetProgress,
     showCompletion,
     showFollowUp,
-  } = useLessonStore();
+  } = useLessonStore(
+    useShallow((state) => ({
+      question: state.question,
+      lesson: state.lesson,
+      isLoading: state.isLoading,
+      error: state.error,
+      unlockedPart: state.unlockedPart,
+      completedParts: state.completedParts,
+      partScores: state.partScores,
+      collapsedParts: state.collapsedParts,
+      passPart: state.passPart,
+      togglePartCollapse: state.togglePartCollapse,
+      resetAll: state.resetAll,
+      resetProgress: state.resetProgress,
+      showCompletion: state.showCompletion,
+      showFollowUp: state.showFollowUp,
+    }))
+  );
 
   const language = usePreferenceStore((s) => s.language);
   const level = usePreferenceStore((s) => s.level);
@@ -344,35 +367,36 @@ export default function LearnPage() {
           ))}
 
           {showCompletion ? (
-            <CompletionScreen
-              lesson={lesson}
-              totalScore={totalScore}
-              onRetake={() => {
-                resetProgress();
-                scrollToTop();
-              }}
-              onRestart={() => {
-                resetAll();
-                restart();
-              }}
-            />
+            <Suspense fallback={<SuspenseFallback />}>
+              <CompletionScreen
+                lesson={lesson}
+                totalScore={totalScore}
+                onRetake={() => {
+                  resetProgress();
+                  scrollToTop();
+                }}
+                onRestart={() => {
+                  resetAll();
+                  restart();
+                }}
+              />
+            </Suspense>
           ) : null}
 
           {showFollowUp ? (
-            <FollowUpBox
-              onSubmit={async (nextQuestion) => {
-                console.log("[frontend][LearnPage] follow-up submit", {
-                  nextQuestionLength: nextQuestion.length,
-                });
-                const ok = await generateLesson(nextQuestion, false);
-                // Only count follow-ups that actually produced a lesson —
-                // counting before generation let failed/rate-limited attempts
-                // farm the follow-up badge offline.
-                if (ok) recordFollowUp();
-                scrollToTop();
-                console.log("[frontend][LearnPage] follow-up completed + scrolled");
-              }}
-            />
+            <Suspense fallback={<SuspenseFallback />}>
+              <FollowUpBox
+                onSubmit={async (nextQuestion) => {
+                  console.log("[frontend][LearnPage] follow-up submit", {
+                    nextQuestionLength: nextQuestion.length,
+                  });
+                  const ok = await generateLesson(nextQuestion, false);
+                  if (ok) recordFollowUp();
+                  scrollToTop();
+                  console.log("[frontend][LearnPage] follow-up completed + scrolled");
+                }}
+              />
+            </Suspense>
           ) : null}
 
           {!showCompletion && (
@@ -410,9 +434,6 @@ export default function LearnPage() {
               });
               passPart(activePart.partNumber, score);
 
-              // ── Engagement: award XP, streak, daily-goal, badges ──
-              // The creditKey makes awards idempotent per lesson+part, so
-              // "Retake Quiz" can never be used to farm XP/streaks/badges.
               const lessonSignature = `${lesson.question ?? lesson.topic ?? ""}|${language}`;
               const maxPerPart = activePart.quiz?.length ?? 2;
               recordPartPassed({
@@ -431,9 +452,6 @@ export default function LearnPage() {
                       : partScores[p.partNumber] ?? 0),
                   0
                 );
-                // maxScore must reflect the ACTUAL quiz sizes — the store's
-                // default of 6 made perfection unreachable for fast-mode
-                // lessons (max 2) and salvaged short quizzes.
                 const maxScore = lesson.parts.reduce(
                   (sum, p) => sum + (p.quiz?.length ?? 2),
                   0
@@ -458,7 +476,9 @@ export default function LearnPage() {
           />
         ) : null}
 
-        <UnlockAnimation show={showUnlockFx} />
+        <Suspense fallback={<SuspenseFallback />}>
+          <UnlockAnimation show={showUnlockFx} />
+        </Suspense>
 
         <Footer />
       </main>

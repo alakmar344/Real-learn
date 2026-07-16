@@ -713,6 +713,18 @@ pre {
   border-radius: var(--radius-sm);
 }
 
+/* ── CSS containment — tell the browser what each component can't affect,
+    so it can skip unnecessary layout/paint work across the rest of the page. */
+.part-card {
+  contain: layout style paint;
+}
+.quiz-sheet {
+  contain: layout style paint;
+}
+.quiz-question {
+  contain: layout style;
+}
+
 /* ── Scrollbar — sleek, modern ── */
 ::-webkit-scrollbar {
   width: 6px;

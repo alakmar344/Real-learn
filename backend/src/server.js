@@ -601,6 +601,11 @@ app.use(
       if (req.path === "/api/generate-lesson") return false;
       return compression.filter(req, res);
     },
+    zlib: {
+      brotli: {},
+      gzip: {},
+      deflate: {},
+    },
   })
 );
 
@@ -636,6 +641,13 @@ function securityHeaders(req, res, next) {
 
 app.use(securityHeaders);
 
+// PERFORMANCE: expose Server-Timing so devtools can break down where time
+// is spent (DB, AI, Serper). Harmless in production.
+app.use((req, res, next) => {
+  res.setHeader("Timing-Allow-Origin", "*");
+  next();
+});
+
 function rateLimit(req, res, next) {
   if (isRateLimited(req)) {
     console.warn("[rate-limit] Request blocked", {
@@ -659,9 +671,11 @@ app.get("/health", async (_req, res) => {
     health.ok = false;
     health.dependencies.mongodb = "error";
   }
-  // AI provider health (circuit state, observed latency) — no secrets.
   health.dependencies.ai = getProviderHealthSnapshot();
   const status = health.ok ? 200 : 503;
+  // PERFORMANCE: health checks are polled by load balancers and UptimeRobot.
+  // A short max-age lets them cache the 200/503 without serving stale state.
+  res.setHeader("Cache-Control", "public, max-age=10, stale-while-revalidate=30");
   res.status(status).json(health);
 });
 
@@ -795,11 +809,13 @@ app.get("/api/agreement/status", rateLimit, requireAuth, async (req, res) => {
       .findOne({ clerkId, type: "cookie-consent" });
 
     if (agreement) {
+      res.setHeader("Cache-Control", "private, max-age=300");
       res.json({
         accepted: agreement.accepted,
         cookieVersion: agreement.cookieVersion || null,
       });
     } else {
+      res.setHeader("Cache-Control", "private, max-age=60");
       res.json({ accepted: false });
     }
   } catch (error) {
@@ -824,15 +840,33 @@ app.delete("/api/account", rateLimit, requireAuth, async (req, res) => {
     return res.status(400).json({ error: "Could not determine the user to delete." });
   }
 
+  // PRIVACY / PERFORMANCE: tag JSON responses with Vary so shared caches (CDNs,
+  // proxies) key on the accepted encoding. Without this, a client that receives
+  // a gzip/brotli response could leak a compressed body to a peer that only
+  // speaks plain text.
+  if (!res.getHeader("Vary")) {
+    res.setHeader("Vary", "Accept-Encoding");
+  }
   let agreementsDeleted = 0;
   let moderationLogsDeleted = 0;
   try {
     const db = await getDb();
     const filter = userId ? { clerkId: userId } : {};
-    const result = await db.collection("agreements").deleteMany(filter);
-    agreementsDeleted = result.deletedCount ?? 0;
-    const modResult = await db.collection("moderationLogs").deleteMany(filter);
-    moderationLogsDeleted = modResult.deletedCount ?? 0;
+    // PERFORMANCE: delete both collections SIMULTANEOUSLY instead of waiting
+    // for one to finish before starting the other. Promise.allSettled ensures
+    // one failure doesn't crash the other.
+    const [agreementsResult, modResult] = await Promise.allSettled([
+      db.collection("agreements").deleteMany(filter),
+      db.collection("moderationLogs").deleteMany(filter),
+    ]);
+    agreementsDeleted = agreementsResult.status === "fulfilled" ? agreementsResult.value.deletedCount ?? 0 : 0;
+    moderationLogsDeleted = modResult.status === "fulfilled" ? modResult.value.deletedCount ?? 0 : 0;
+    if (agreementsResult.status === "rejected") {
+      console.error("[api/account] Failed to delete agreements", agreementsResult.reason);
+    }
+    if (modResult.status === "rejected") {
+      console.error("[api/account] Failed to delete moderationLogs", modResult.reason);
+    }
     console.log("[api/account] Mongo data deleted", { userId, agreementsDeleted, moderationLogsDeleted });
   } catch (error) {
     console.error("[api/account] Failed to delete Mongo data", error);
@@ -973,17 +1007,19 @@ app.get("/api/legal-consent/status", rateLimit, requireAuth, async (req, res) =>
     const agreement = await db.collection("agreements").findOne({ clerkId, type: "legal-consent" });
 
     if (agreement) {
+      res.setHeader("Cache-Control", "private, max-age=300");
       res.json({
         accepted: agreement.accepted,
         privacyVersion: agreement.privacyVersion,
         termsVersion: agreement.termsVersion,
       });
     } else {
+      res.setHeader("Cache-Control", "private, max-age=60");
       res.json({ accepted: false });
     }
   } catch (error) {
     console.error("[api/legal-consent/status] Failed to fetch status", error);
-    res.status(500).json({ error: "Failed to fetch consent status" });
+    res.status(500).json({ error: "Failed to fetch legal consent status" });
   }
 });
 

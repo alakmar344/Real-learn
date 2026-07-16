@@ -1,5 +1,6 @@
 "use client";
 
+import React, { memo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useReadingTimer } from "@/hooks/useReadingTimer";
@@ -28,7 +29,7 @@ interface Props {
   onToggleCollapse: () => void;
 }
 
-export default function PartCard({
+const PartCardBase = ({
   part,
   isUnlocked,
   isCompleted,
@@ -36,7 +37,7 @@ export default function PartCard({
   score,
   onStartQuiz,
   onToggleCollapse,
-}: Props) {
+}: Props) => {
   const timer = useReadingTimer(isUnlocked && !isCompleted);
   const contentId = `part-${part.partNumber}-content`;
   const lessonLanguage = useLessonStore((s) => s.lesson?.language);
@@ -81,7 +82,7 @@ export default function PartCard({
 
   return (
     <article
-      className="animate-fade-up"
+      className="part-card animate-fade-up"
       aria-label={`Part ${part.partNumber}: ${part.title}`}
       style={{
         marginTop: varSpaceXl,
@@ -306,3 +307,5 @@ const varSpaceSm = "var(--space-sm)";
 const varSpaceBase = "var(--space-base)";
 const varSpaceLg = "var(--space-lg)";
 const varSpaceXl = "var(--space-xl)";
+
+export default memo(PartCardBase);

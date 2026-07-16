@@ -9,6 +9,7 @@ import AchievementsGrid from "@/components/shared/AchievementsGrid";
 import { useProgressStore } from "@/store/progressStore";
 import { levelInfo, levelTitle, dayKey, daysBetween, ProgressSnapshot } from "@/lib/achievements";
 import { useMounted } from "@/hooks/useMounted";
+import { useShallow } from "zustand/shallow";
 
 function Card({ children, span }: { children: React.ReactNode; span?: boolean }) {
   return (
@@ -49,7 +50,31 @@ function StatTile({ label, value, accent }: { label: string; value: string | num
 
 export default function ProgressPage() {
   const mounted = useMounted();
-  const s = useProgressStore();
+  const s = useProgressStore(
+    useShallow((state) => ({
+      xp: state.xp,
+      dailyCount: state.dailyCount,
+      dailyCountDay: state.dailyCountDay,
+      dailyGoalMetDay: state.dailyGoalMetDay,
+      lastActiveDay: state.lastActiveDay,
+      streak: state.streak,
+      streakFreezes: state.streakFreezes,
+      longestStreak: state.longestStreak,
+      dailyGoal: state.dailyGoal,
+      lessonsCompleted: state.lessonsCompleted,
+      partsPassed: state.partsPassed,
+      perfectParts: state.perfectParts,
+      perfectLessons: state.perfectLessons,
+      languagesUsed: state.languagesUsed,
+      subjectsSeen: state.subjectsSeen,
+      followUps: state.followUps,
+      dailyGoalsMet: state.dailyGoalsMet,
+      lastActivityHour: state.lastActivityHour,
+      history: state.history,
+      badges: state.badges,
+      setDailyGoal: state.setDailyGoal,
+    }))
+  );
 
   const info = levelInfo(s.xp);
   const todayCount = mounted && s.dailyCountDay === dayKey() ? s.dailyCount : 0;

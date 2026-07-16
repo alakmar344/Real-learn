@@ -82,6 +82,9 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <script dangerouslySetInnerHTML={{ __html: perfInitScript }} />
+        {/* PERFORMANCE: preconnect to the backend API so lesson-generation requests
+            avoid an extra round-trip for DNS + TCP. */}
+        <link rel="preconnect" href={process.env.NEXT_PUBLIC_BACKEND_URL?.replace(/\/$/, "") || "https://real-learn.onrender.com"} crossOrigin="anonymous" />
       </head>
       <body>
         <CrayonBackground />
