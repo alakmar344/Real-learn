@@ -10,6 +10,7 @@ interface Props {
 export default function Navbar({ compact = false }: Props) {
   return (
     <header
+      className="engraved"
       style={{
         position: "sticky",
         top: 0,
