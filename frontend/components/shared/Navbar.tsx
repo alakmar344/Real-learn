@@ -14,8 +14,8 @@ export default function Navbar({ compact = false }: Props) {
         position: "sticky",
         top: 0,
         zIndex: 60,
-        height: compact ? "auto" : 60,
-        minHeight: 60,
+        height: compact ? "auto" : 72,
+        minHeight: 72,
         borderBottom: "1px solid var(--border-subtle)",
         background: "var(--bg-glass)",
         backdropFilter: "blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))",
@@ -26,44 +26,44 @@ export default function Navbar({ compact = false }: Props) {
       <div
         className="navbar-inner"
         style={{
-          maxWidth: 1024,
+          maxWidth: 1200,
           margin: "0 auto",
-          padding: compact ? "14px 24px" : "0 24px",
-          minHeight: compact ? "auto" : 60,
+          padding: compact ? "16px 28px" : "0 28px",
+          minHeight: compact ? "auto" : 72,
           display: "flex",
           alignItems: "center",
           justifyContent: "flex-start",
-          gap: 12,
+          gap: 16,
         }}
       >
         <Link
           href="/"
           aria-label="RealLearn – Home"
-          style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 8 }}
+          style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 120 40"
-            fill="none"
-            aria-hidden="true"
-            style={{ width: 42, height: "auto" }}
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: "var(--radius-lg)",
+              background: "var(--accent-gradient)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "white",
+              fontWeight: 900,
+              fontSize: 18,
+              fontFamily: "var(--font-inter)",
+              boxShadow: "var(--shadow-glow-accent)",
+            }}
           >
-            <defs>
-              <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#5b5bd6" />
-                <stop offset="100%" stopColor="#7c6eef" />
-              </linearGradient>
-            </defs>
-            <rect width="120" height="40" rx="12" fill="url(#logo-gradient)" />
-            <text x="10" y="27" fontFamily="Inter, sans-serif" fontWeight="900" fontSize="18" fill="white">
-              RL
-            </text>
-          </svg>
+            RL
+          </div>
           <span
             style={{
               fontFamily: "var(--font-playfair)",
               fontWeight: 800,
-              fontSize: 24,
+              fontSize: 26,
               letterSpacing: -0.5,
             }}
           >
@@ -76,10 +76,9 @@ export default function Navbar({ compact = false }: Props) {
       </div>
 
       <style jsx>{`
-        /* Make room for the fixed sidebar toggle on small screens. */
         @media (max-width: 900px) {
           .navbar-inner {
-            padding-left: 68px !important;
+            padding-left: 72px !important;
           }
         }
       `}</style>

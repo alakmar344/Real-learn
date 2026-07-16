@@ -159,7 +159,8 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
         position: "fixed",
         inset: 0,
         background: "var(--scrim, rgba(0,0,0,0.7))",
-        backdropFilter: "blur(var(--blur-sm, 6px))",
+        backdropFilter: "blur(24px) saturate(180%)",
+        WebkitBackdropFilter: "blur(24px) saturate(180%)",
         zIndex: 90,
       }}
     >
@@ -172,12 +173,12 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
           left: 0,
           right: 0,
           bottom: 0,
-          maxHeight: "85vh",
+          maxHeight: "90vh",
           overflowY: "auto",
           background: "var(--bg-card)",
           borderRadius: "var(--radius-2xl) var(--radius-2xl) 0 0",
-          padding: "0 24px 40px",
-          boxShadow: "var(--shadow-lg)",
+          padding: "0 28px 48px",
+          boxShadow: "var(--shadow-lg), var(--glass-edge)",
         }}
       >
         {/* Top border accent */}
@@ -212,24 +213,26 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
           aria-label="Close quiz"
           style={{
             position: "absolute",
-            top: 16,
-            right: 24,
+            top: 18,
+            right: 28,
             background: "transparent",
             border: "1px solid var(--border-subtle)",
             borderRadius: "var(--radius-md)",
-            padding: "6px 12px",
+            padding: "8px 14px",
             color: "var(--text-secondary)",
             cursor: "pointer",
             fontSize: 14,
-            transition: "all 200ms var(--ease-color)",
+            transition: "all 500ms var(--ease-spring)",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = "var(--accent)";
+            e.currentTarget.style.borderColor = "var(--border-accent)";
             e.currentTarget.style.color = "var(--accent)";
+            e.currentTarget.style.transform = "scale(1.08)";
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.borderColor = "var(--border-subtle)";
             e.currentTarget.style.color = "var(--text-secondary)";
+            e.currentTarget.style.transform = "scale(1)";
           }}
         >
           ✕
@@ -297,10 +300,10 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
                   : "Read again"
             }
             style={{
-              marginTop: 20,
+              marginTop: 24,
               width: "100%",
               borderRadius: "var(--radius-lg)",
-              padding: "14px",
+              padding: "16px",
               border:
                 score === perfectScore && current === lastQuestionIndex
                   ? "none"
@@ -313,31 +316,31 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
                 score === perfectScore && current === lastQuestionIndex
                   ? "white"
                   : "var(--text-primary)",
-              fontSize: 14,
-              fontWeight: 700,
+              fontSize: 15,
+              fontWeight: 600,
               cursor: "pointer",
-              transition: "all 300ms var(--ease-color)",
+              transition: "all 500ms var(--ease-spring)",
               boxShadow: "none",
-              minHeight: 48,
+              minHeight: 50,
             }}
             onMouseEnter={(e) => {
-              if (score === perfectScore && current === lastQuestionIndex) {
-                e.currentTarget.style.transform = "scale(1.02)";
-                e.currentTarget.style.boxShadow = "var(--shadow-md)";
-              } else {
-                e.currentTarget.style.borderColor = "var(--accent)";
-                e.currentTarget.style.color = "var(--accent)";
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "scale(1)";
-              if (score === perfectScore && current === lastQuestionIndex) {
-                e.currentTarget.style.boxShadow = "none";
-              } else {
-                e.currentTarget.style.borderColor = "var(--border-default)";
-                e.currentTarget.style.color = "var(--text-primary)";
-              }
-            }}
+                if (score === perfectScore && current === lastQuestionIndex) {
+                  e.currentTarget.style.transform = "scale(1.03)";
+                  e.currentTarget.style.boxShadow = "var(--shadow-lg), var(--glass-edge)";
+                } else {
+                  e.currentTarget.style.borderColor = "var(--border-accent)";
+                  e.currentTarget.style.color = "var(--accent)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+                if (score === perfectScore && current === lastQuestionIndex) {
+                  e.currentTarget.style.boxShadow = "none";
+                } else {
+                  e.currentTarget.style.borderColor = "var(--border-default)";
+                  e.currentTarget.style.color = "var(--text-primary)";
+                }
+              }}
           >
             {current < lastQuestionIndex
               ? "Next Question →"

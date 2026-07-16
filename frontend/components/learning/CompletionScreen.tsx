@@ -90,11 +90,14 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
       style={{
         marginTop: 32,
         borderRadius: "var(--radius-2xl)",
-        border: "1px solid color-mix(in srgb, var(--correct) 30%, transparent)",
+        border: "1px solid color-mix(in srgb, var(--correct) 20%, transparent)",
         background: "var(--correct-bg)",
-        padding: "clamp(24px, 5vw, 40px)",
+        padding: "clamp(28px, 5vw, 48px)",
         position: "relative",
         overflow: "hidden",
+        backdropFilter: "blur(var(--glass-blur)) saturate(var(--glass-saturate))",
+        WebkitBackdropFilter: "blur(var(--glass-blur)) saturate(var(--glass-saturate))",
+        boxShadow: "var(--shadow-md), var(--glass-edge)",
       }}
     >
       {showConfetti && <Confetti />}
@@ -209,20 +212,22 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
               borderRadius: "var(--radius-lg)",
               background: "transparent",
               color: "var(--text-secondary)",
-              padding: "12px 20px",
+              padding: "14px 24px",
               cursor: "pointer",
-              fontSize: 14,
-              fontWeight: 700,
-              minHeight: 48,
-              transition: "all 200ms var(--ease-color)",
+              fontSize: 15,
+              fontWeight: 600,
+              minHeight: 50,
+              transition: "all 500ms var(--ease-spring)",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "var(--accent)";
+              e.currentTarget.style.borderColor = "var(--border-accent)";
               e.currentTarget.style.color = "var(--accent)";
+              e.currentTarget.style.transform = "scale(1.04)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.borderColor = "var(--border-default)";
               e.currentTarget.style.color = "var(--text-secondary)";
+              e.currentTarget.style.transform = "scale(1)";
             }}
           >
             Retake Quiz
@@ -237,17 +242,17 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
               borderRadius: "var(--radius-lg)",
               background: "var(--accent)",
               color: "var(--on-accent)",
-              padding: "12px 24px",
+              padding: "14px 28px",
               cursor: "pointer",
-              fontSize: 14,
-              fontWeight: 700,
-              minHeight: 48,
+              fontSize: 15,
+              fontWeight: 600,
+              minHeight: 50,
               boxShadow: "var(--shadow-sm)",
-              transition: "all 300ms var(--ease-color)",
+              transition: "all 500ms var(--ease-spring)",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "scale(1.02)";
-              e.currentTarget.style.boxShadow = "var(--shadow-md)";
+              e.currentTarget.style.transform = "scale(1.04)";
+              e.currentTarget.style.boxShadow = "var(--shadow-lg), var(--glass-edge)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = "scale(1)";

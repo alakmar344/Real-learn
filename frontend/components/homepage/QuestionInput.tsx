@@ -74,22 +74,22 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
       aria-label="Ask a question"
       className="liquid-sheen"
       style={{
-        marginTop: 28,
-        maxWidth: 640,
+        marginTop: 32,
+        maxWidth: 680,
         width: "100%",
         position: "relative",
         borderRadius: "var(--radius-2xl)",
-        border: `1.5px solid ${focused ? "var(--accent)" : "var(--border-subtle)"}`,
+        border: `1.5px solid ${focused ? "var(--border-accent)" : "var(--border-subtle)"}`,
         background: "var(--bg-card)",
         backdropFilter: "blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))",
         WebkitBackdropFilter: "blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))",
         boxShadow: focused
-          ? "var(--shadow-lg), 0 0 0 4px var(--accent-glow), var(--glass-edge)"
-          : "var(--shadow-lg), var(--glass-edge)",
-        transition: "all 300ms var(--ease-color)",
+          ? "var(--shadow-lg), 0 0 0 6px var(--accent-glow), var(--glass-edge)"
+          : "var(--glass-shadow), var(--glass-edge)",
+        transition: "all 500ms var(--ease-color)",
       }}
     >
-      <div style={{ padding: "20px 24px 12px" }}>
+      <div style={{ padding: "24px 28px 14px" }}>
         <label htmlFor="question-input" style={{ display: "none" }}>
           What do you want to understand today?
         </label>
@@ -104,7 +104,6 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           }}
           onBlur={() => {
             setFocused(false);
-            // Keep the hint visible briefly so users who tab away still notice it.
             window.setTimeout(() => setShowHint(false), 2000);
           }}
           onKeyDown={handleKeyDown}
@@ -113,14 +112,14 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           aria-label="Your question"
           style={{
             width: "100%",
-            minHeight: 56,
-            maxHeight: 160,
+            minHeight: 64,
+            maxHeight: 180,
             resize: "none",
             border: "none",
             outline: "none",
             background: "transparent",
             color: "var(--text-primary)",
-            fontSize: 16,
+            fontSize: 17,
             lineHeight: 1.6,
             fontFamily: "var(--font-lora)",
           }}
@@ -187,10 +186,10 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
       {/* ── Answer-mode toggle: Fast (1 direct part) vs Explain (3-part journey) ── */}
       <div
         style={{
-          padding: "0 16px 14px",
+          padding: "0 20px 16px",
           display: "flex",
           alignItems: "center",
-          gap: 10,
+          gap: 12,
           flexWrap: "wrap",
         }}
       >
@@ -199,8 +198,8 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           aria-label="Answer mode"
           style={{
             display: "inline-flex",
-            padding: 4,
-            gap: 3,
+            padding: 5,
+            gap: 4,
             borderRadius: 999,
             border: "1px solid var(--border-subtle)",
             background: "var(--bg-surface)",
@@ -219,16 +218,16 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
                 style={{
                   border: "none",
                   borderRadius: 999,
-                  padding: "8px 16px",
-                  fontSize: 13,
-                  fontWeight: 700,
+                  padding: "10px 20px",
+                  fontSize: 14,
+                  fontWeight: 600,
                   cursor: "pointer",
-                  minHeight: 36,
+                  minHeight: 40,
                   color: active ? "var(--on-accent)" : "var(--text-secondary)",
                   background: active ? "var(--accent)" : "transparent",
                   boxShadow: active ? "var(--shadow-sm)" : "none",
-                  transition: "all 200ms var(--ease-color)",
-                  transform: active ? "scale(1.02)" : "scale(1)",
+                  transition: "all 500ms var(--ease-spring)",
+                  transform: active ? "scale(1.04)" : "scale(1)",
                 }}
               >
                 {opt.label}
@@ -236,12 +235,12 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
             );
           })}
         </div>
-        <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>{activeMode.hint}</span>
+        <span style={{ fontSize: 13, color: "var(--text-tertiary)", fontWeight: 500 }}>{activeMode.hint}</span>
       </div>
       <div
         style={{
           borderTop: "1px solid var(--border-subtle)",
-          padding: "14px 18px",
+          padding: "16px 20px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -270,8 +269,8 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
                 textareaRef.current?.focus();
               }}
               style={{
-                width: 36,
-                height: 36,
+                width: 38,
+                height: 38,
                 borderRadius: "50%",
                 border: "1px solid var(--border-default)",
                 background: "transparent",
@@ -279,15 +278,17 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
                 cursor: "pointer",
                 display: "grid",
                 placeItems: "center",
-                transition: "all 200ms var(--ease-color)",
+                transition: "all 400ms var(--ease-spring)",
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = "var(--wrong)";
                 e.currentTarget.style.color = "var(--wrong)";
+                e.currentTarget.style.transform = "scale(1.08)";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.borderColor = "var(--border-default)";
                 e.currentTarget.style.color = "var(--text-tertiary)";
+                e.currentTarget.style.transform = "scale(1)";
               }}
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -303,26 +304,25 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
             style={{
               border: "none",
               borderRadius: "var(--radius-lg)",
-              padding: "12px 24px",
-              fontSize: 14,
-              fontWeight: 700,
+              padding: "14px 28px",
+              fontSize: 15,
+              fontWeight: 600,
               color: "var(--on-accent)",
               background: question.trim() ? "var(--accent)" : "var(--border-default)",
               cursor: question.trim() ? "pointer" : "not-allowed",
-              transition: "all 300ms var(--ease-color)",
-              minHeight: 48,
-              boxShadow: question.trim() ? "var(--shadow-sm)" : "var(--shadow-sm)",
-              transform: question.trim() ? "scale(1)" : "scale(1)",
+              transition: "all 500ms var(--ease-spring)",
+              minHeight: 50,
+              boxShadow: question.trim() ? "var(--shadow-glow-accent)" : "none",
             }}
             onMouseEnter={(e) => {
               if (question.trim()) {
-                e.currentTarget.style.transform = "scale(1.02)";
-                e.currentTarget.style.boxShadow = "var(--shadow-md)";
+                e.currentTarget.style.transform = "scale(1.04)";
+                e.currentTarget.style.boxShadow = "var(--shadow-lg), var(--glass-edge)";
               }
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = "scale(1)";
-              e.currentTarget.style.boxShadow = question.trim() ? "var(--shadow-sm)" : "var(--shadow-sm)";
+              e.currentTarget.style.boxShadow = question.trim() ? "var(--shadow-glow-accent)" : "none";
             }}
           >
             {mode === "fast" ? "Get a Quick Answer →" : "Start Guided Lesson →"}
@@ -335,23 +335,23 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
               style={{
                 border: "none",
                 borderRadius: "var(--radius-lg)",
-                padding: "12px 24px",
-                fontSize: 14,
-                fontWeight: 700,
+                padding: "14px 28px",
+                fontSize: 15,
+                fontWeight: 600,
                 color: "var(--on-accent)",
                 background: "var(--accent)",
                 cursor: "pointer",
-                transition: "all 300ms var(--ease-color)",
-                minHeight: 48,
-                boxShadow: "var(--shadow-sm)",
+                transition: "all 500ms var(--ease-spring)",
+                minHeight: 50,
+                boxShadow: "var(--shadow-glow-accent)",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "scale(1.02)";
-                e.currentTarget.style.boxShadow = "var(--shadow-md)";
+                e.currentTarget.style.transform = "scale(1.04)";
+                e.currentTarget.style.boxShadow = "var(--shadow-lg), var(--glass-edge)";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = "scale(1)";
-                e.currentTarget.style.boxShadow = "var(--shadow-sm)";
+                e.currentTarget.style.boxShadow = "var(--shadow-glow-accent)";
               }}
             >
               Sign in to Learn →
