@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { showToast } from "@/components/shared/ToastContainer";
 import {
   markFeedbackGiven,
@@ -15,8 +16,12 @@ interface Props {
 const MAX_TEXT_LENGTH = 1000;
 
 /**
- * Optional, non-blocking review prompt. Shown the day after a user completes
- * their first learning journey. Asks three things only:
+ * Optional, non-blocking review prompt shown as a centered modal that POPS UP
+ * over the screen (with a scrim), so it is immediately visible and never
+ * buried at the bottom of a long page. It appears the moment a user is eligible
+ * (just after their first lesson) — including on a refresh / return visit.
+ *
+ * Asks three things only:
  *   - what they liked,
  *   - what we should improve, and
  *   - a 1–10 star rating.
@@ -32,6 +37,7 @@ export default function FeedbackPrompt({ onDone }: Props) {
   const [improvements, setImprovements] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  const trapRef = useFocusTrap<HTMLDivElement>(true);
   const stars = Array.from({ length: 10 }, (_, i) => i + 1);
 
   async function postReview() {
@@ -109,179 +115,204 @@ export default function FeedbackPrompt({ onDone }: Props) {
   };
 
   return (
-    <section
-      aria-label="Share your feedback"
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="How was your first lesson?"
       style={{
-        marginTop: "var(--space-lg)",
-        borderRadius: "var(--radius-2xl)",
-        border: "1px solid color-mix(in srgb, var(--accent) 22%, transparent)",
-        background: "color-mix(in srgb, var(--accent) 6%, var(--bg-card))",
-        padding: "clamp(24px, 4vw, 36px)",
-        position: "relative",
+        position: "fixed",
+        inset: 0,
+        zIndex: 300,
+        background: "var(--scrim, rgba(0,0,0,0.6))",
+        backdropFilter: "blur(var(--blur-sm, 4px))",
+        display: "flex",
+        alignItems: "flex-start",
+        justifyContent: "center",
+        padding: "24px 16px",
+        overflowY: "auto",
       }}
     >
-      <h3
+      <div
+        ref={trapRef}
+        tabIndex={-1}
+        className="animate-fade-up"
         style={{
-          margin: "0 0 4px",
-          fontSize: 20,
-          fontWeight: 800,
-          color: "var(--text-primary)",
+          background: "var(--bg-card)",
+          borderRadius: "var(--radius-xl)",
+          padding: "clamp(24px, 4vw, 36px)",
+          width: "100%",
+          maxWidth: 520,
+          marginTop: "8vh",
+          maxHeight: "84vh",
+          overflowY: "auto",
+          border: "1px solid var(--border-subtle)",
+          boxShadow: "var(--shadow-lg)",
+          outline: "none",
         }}
       >
-        How was your first lesson?
-      </h3>
-      <p style={{ marginTop: 0, marginBottom: "var(--space-md)", color: "var(--text-secondary)", fontSize: 14 }}>
-        A quick, optional review — no account needed and nothing tied to you. Takes under a minute.
-      </p>
-
-      {/* Star rating 1–10 */}
-      <div style={{ marginBottom: "var(--space-md)" }}>
-        <label
+        <h3
           style={{
-            display: "block",
-            fontSize: 14,
-            fontWeight: 700,
+            margin: "0 0 4px",
+            fontSize: 22,
+            fontWeight: 800,
             color: "var(--text-primary)",
-            marginBottom: 8,
           }}
         >
-          How would you rate RealLearn? (1–10 stars)
-        </label>
-        <div
-          role="radiogroup"
-          aria-label="Star rating from 1 to 10"
-          style={{ display: "flex", gap: 4, flexWrap: "wrap" }}
-          onMouseLeave={() => setHoverRating(0)}
-        >
-          {stars.map((n) => {
-            const active = (hoverRating || rating) >= n;
-            return (
-              <button
-                key={n}
-                type="button"
-                role="radio"
-                aria-checked={rating === n}
-                aria-label={`${n} star${n > 1 ? "s" : ""}`}
-                onClick={() => setRating(n)}
-                onMouseEnter={() => setHoverRating(n)}
+          How was your first lesson?
+        </h3>
+        <p style={{ marginTop: 0, marginBottom: "var(--space-md)", color: "var(--text-secondary)", fontSize: 14 }}>
+          A quick, optional review — no account needed and nothing tied to you. Takes under a minute.
+        </p>
+
+        {/* Star rating 1–10 */}
+        <div style={{ marginBottom: "var(--space-md)" }}>
+          <label
+            style={{
+              display: "block",
+              fontSize: 14,
+              fontWeight: 700,
+              color: "var(--text-primary)",
+              marginBottom: 8,
+            }}
+          >
+            How would you rate RealLearn? (1–10 stars)
+          </label>
+          <div
+            role="radiogroup"
+            aria-label="Star rating from 1 to 10"
+            style={{ display: "flex", gap: 4, flexWrap: "wrap" }}
+            onMouseLeave={() => setHoverRating(0)}
+          >
+            {stars.map((n) => {
+              const active = (hoverRating || rating) >= n;
+              return (
+                <button
+                  key={n}
+                  type="button"
+                  role="radio"
+                  aria-checked={rating === n}
+                  aria-label={`${n} star${n > 1 ? "s" : ""}`}
+                  onClick={() => setRating(n)}
+                  onMouseEnter={() => setHoverRating(n)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    fontSize: 28,
+                    lineHeight: 1,
+                    padding: 2,
+                    color: active ? "#f5b301" : "var(--border-accent)",
+                    transition: "transform 200ms var(--ease-spring), color 200ms ease",
+                    transform: active ? "scale(1.15)" : "scale(1)",
+                  }}
+                >
+                  ★
+                </button>
+              );
+            })}
+            {rating > 0 && (
+              <span
                 style={{
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  fontSize: 26,
-                  lineHeight: 1,
-                  padding: 2,
-                  color: active ? "#f5b301" : "var(--border-accent)",
-                  transition: "transform 200ms var(--ease-spring), color 200ms ease",
-                  transform: active ? "scale(1.12)" : "scale(1)",
+                  marginLeft: 10,
+                  alignSelf: "center",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: "var(--accent)",
                 }}
               >
-                ★
-              </button>
-            );
-          })}
-          {rating > 0 && (
-            <span
-              style={{
-                marginLeft: 10,
-                alignSelf: "center",
-                fontSize: 14,
-                fontWeight: 700,
-                color: "var(--accent)",
-              }}
-            >
-              {rating}/10
-            </span>
-          )}
+                {rating}/10
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* What they like */}
+        <div style={{ marginBottom: "var(--space-md)" }}>
+          <label
+            htmlFor="feedback-likes"
+            style={{
+              display: "block",
+              fontSize: 14,
+              fontWeight: 700,
+              color: "var(--text-primary)",
+              marginBottom: 8,
+            }}
+          >
+            What did you like? <span style={{ fontWeight: 500, color: "var(--text-tertiary)" }}>(optional)</span>
+          </label>
+          <textarea
+            id="feedback-likes"
+            value={likes}
+            maxLength={MAX_TEXT_LENGTH}
+            onChange={(e) => setLikes(e.target.value)}
+            rows={3}
+            placeholder="The explanations, the quizzes, the vibe…"
+            style={{
+              width: "100%",
+              borderRadius: "var(--radius-md)",
+              border: "1px solid var(--border-default)",
+              background: "var(--bg-input)",
+              color: "var(--text-primary)",
+              padding: "12px 14px",
+              fontSize: 14,
+              resize: "vertical",
+              boxSizing: "border-box",
+            }}
+          />
+        </div>
+
+        {/* What to improve */}
+        <div style={{ marginBottom: "var(--space-md)" }}>
+          <label
+            htmlFor="feedback-improvements"
+            style={{
+              display: "block",
+              fontSize: 14,
+              fontWeight: 700,
+              color: "var(--text-primary)",
+              marginBottom: 8,
+            }}
+          >
+            What should we improve? <span style={{ fontWeight: 500, color: "var(--text-tertiary)" }}>(optional)</span>
+          </label>
+          <textarea
+            id="feedback-improvements"
+            value={improvements}
+            maxLength={MAX_TEXT_LENGTH}
+            onChange={(e) => setImprovements(e.target.value)}
+            rows={3}
+            placeholder="Anything that felt slow, confusing, or missing…"
+            style={{
+              width: "100%",
+              borderRadius: "var(--radius-md)",
+              border: "1px solid var(--border-default)",
+              background: "var(--bg-input)",
+              color: "var(--text-primary)",
+              padding: "12px 14px",
+              fontSize: 14,
+              resize: "vertical",
+              boxSizing: "border-box",
+            }}
+          />
+        </div>
+
+        <div style={{ display: "flex", gap: "var(--space-sm)", flexWrap: "wrap", alignItems: "center" }}>
+          <button type="button" onClick={handleSubmit} disabled={submitting} style={debouncedBtn}>
+            {submitting ? "Sending…" : "Send feedback"}
+          </button>
+          <button type="button" onClick={handleSnooze} disabled={submitting} style={ghostBtn}>
+            Ask later
+          </button>
+          <button
+            type="button"
+            onClick={handleNoThanks}
+            disabled={submitting}
+            style={{ ...ghostBtn, borderColor: "transparent", color: "var(--text-tertiary)" }}
+          >
+            No thanks
+          </button>
         </div>
       </div>
-
-      {/* What they like */}
-      <div style={{ marginBottom: "var(--space-md)" }}>
-        <label
-          htmlFor="feedback-likes"
-          style={{
-            display: "block",
-            fontSize: 14,
-            fontWeight: 700,
-            color: "var(--text-primary)",
-            marginBottom: 8,
-          }}
-        >
-          What did you like? <span style={{ fontWeight: 500, color: "var(--text-tertiary)" }}>(optional)</span>
-        </label>
-        <textarea
-          id="feedback-likes"
-          value={likes}
-          maxLength={MAX_TEXT_LENGTH}
-          onChange={(e) => setLikes(e.target.value)}
-          rows={3}
-          placeholder="The explanations, the quizzes, the vibe…"
-          style={{
-            width: "100%",
-            borderRadius: "var(--radius-md)",
-            border: "1px solid var(--border-default)",
-            background: "var(--bg-input)",
-            color: "var(--text-primary)",
-            padding: "12px 14px",
-            fontSize: 14,
-            resize: "vertical",
-            boxSizing: "border-box",
-          }}
-        />
-      </div>
-
-      {/* What to improve */}
-      <div style={{ marginBottom: "var(--space-md)" }}>
-        <label
-          htmlFor="feedback-improvements"
-          style={{
-            display: "block",
-            fontSize: 14,
-            fontWeight: 700,
-            color: "var(--text-primary)",
-            marginBottom: 8,
-          }}
-        >
-          What should we improve? <span style={{ fontWeight: 500, color: "var(--text-tertiary)" }}>(optional)</span>
-        </label>
-        <textarea
-          id="feedback-improvements"
-          value={improvements}
-          maxLength={MAX_TEXT_LENGTH}
-          onChange={(e) => setImprovements(e.target.value)}
-          rows={3}
-          placeholder="Anything that felt slow, confusing, or missing…"
-          style={{
-            width: "100%",
-            borderRadius: "var(--radius-md)",
-            border: "1px solid var(--border-default)",
-            background: "var(--bg-input)",
-            color: "var(--text-primary)",
-            padding: "12px 14px",
-            fontSize: 14,
-            resize: "vertical",
-            boxSizing: "border-box",
-          }}
-        />
-      </div>
-
-      <div style={{ display: "flex", gap: "var(--space-sm)", flexWrap: "wrap", alignItems: "center" }}>
-        <button type="button" onClick={handleSubmit} disabled={submitting} style={debouncedBtn}>
-          {submitting ? "Sending…" : "Send feedback"}
-        </button>
-        <button type="button" onClick={handleSnooze} disabled={submitting} style={ghostBtn}>
-          Ask later
-        </button>
-        <button
-          type="button"
-          onClick={handleNoThanks}
-          disabled={submitting}
-          style={{ ...ghostBtn, borderColor: "transparent", color: "var(--text-tertiary)" }}
-        >
-          No thanks
-        </button>
-      </div>
-    </section>
+    </div>
   );
 }
