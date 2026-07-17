@@ -173,7 +173,11 @@ RealLearn runs on **Gemma 4** — and we didn't just call the model and hope for
   - **Strict schema validation** runs before anything is streamed to your screen — wrong shape, wrong part count, or malformed quizzes are rejected automatically. But validation is *lenient by design*: 1-2 quiz questions per part are accepted (not just exactly 2), and missing key takeaways are backfilled from part titles. A truncated-but-coherent lesson degrades gracefully instead of failing.
   - **Clear, human error messages** appear when the model is briefly unavailable after retries, so you're never left staring at a broken screen.
 
-This architecture keeps average generation time at a brisk **15-25 seconds** while maintaining high structural integrity and educational value. Gemma 4's strong reasoning, combined with our deliberate prompting and reliability layer, is what lets RealLearn deliver coherent, progressive, context-aware journeys instead of generic one-shot answers.
+This architecture keeps average generation time at a brisk **2–5 seconds**
+while maintaining high structural integrity and educational value. Gemma 4's
+strong reasoning, combined with our deliberate prompting and reliability layer,
+is what lets RealLearn deliver coherent, progressive, context-aware journeys
+instead of generic one-shot answers.
 
 ---
 

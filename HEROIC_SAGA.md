@@ -472,7 +472,7 @@ From a single commit on May 6, 2026, to **531 commits** spanning 42 days, RealLe
 | Legal policy versions | Privacy v2.6, Terms v2.4, Cookie v2.2 |
 | Security vulnerabilities fixed | 7 (from deep scan) + 21 frontend bugs + countless smaller fixes |
 | Token spend reduction | ~50–60% |
-| Cold-start latency | ~109s → ~50s |
+| Cold-start latency | ~109s → ~50s → **2–5s** |
 | Achievements | 17 |
 | Themes | 3 (Paper, Night, Twilight) |
 | Performance tiers | 3 (Low, Mid, High) |
