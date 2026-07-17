@@ -12,12 +12,21 @@
 
   /* ── RealLearn identity — refined editorial ink & cobalt.
      Warm paper white, near-black ink, a confident cobalt-blue accent with a
-     vermilion counterpoint. The palette is slightly warmed and deepened for a
-     more mature, premium feel while retaining its designed-by-a-human soul. ── */
-  --brand: #2f4cd0;
-  --brand-strong: #2538a8;
-  --brand-bright: #4060f0;
-  --brand-soft: #5a6ce0;
+     vermilion counterpoint. The palette is deeply saturated with true cobalt
+     (#0047AB family) and rich ink tones for an authoritative, textbook-grade
+     editorial presence. ── */
+  --brand: #1a3a8a;
+  --brand-strong: #0f2d72;
+  --brand-bright: #2e5ac8;
+  --brand-soft: #4a6ad4;
+
+  /* Extended cobalt palette — layered depths for editorial richness */
+  --cobalt-deep: #0c1f5c;
+  --cobalt-mid: #1a3a8a;
+  --cobalt-vivid: #2e5ac8;
+  --cobalt-pale: #6b8ce8;
+  --cobalt-wash: rgba(26, 58, 138, 0.08);
+  --cobalt-ink: #0a1744;
 
   --bg-primary: #f5f4f0;
   --bg-surface: rgba(255, 253, 250, 0.78);
@@ -27,32 +36,32 @@
   --bg-solid: #faf9f6;
   --bg-warm: rgba(250, 248, 244, 0.55);
 
-  --border-subtle: rgba(23, 23, 33, 0.09);
-  --border-default: rgba(23, 23, 33, 0.14);
+  --border-subtle: rgba(10, 23, 68, 0.1);
+  --border-default: rgba(10, 23, 68, 0.16);
   --border-accent: var(--brand);
-  --border-glow: rgba(43, 68, 224, 0.25);
+  --border-glow: rgba(26, 58, 138, 0.3);
 
   --glass-blur: 28px;
   --glass-blur-strong: 44px;
-  --glass-saturate: 170%;
-  --glass-highlight: rgba(255, 255, 255, 0.88);
-  --glass-shadow: 0 4px 24px rgba(25, 25, 45, 0.06), 0 1px 3px rgba(25, 25, 45, 0.04);
-  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.85), inset 0 0 0 1px rgba(255, 255, 255, 0.14);
-  --glass-sheen: linear-gradient(135deg, rgba(255,255,255,0.38) 0%, rgba(255,255,255,0.1) 38%, rgba(255,255,255,0) 62%);
+  --glass-saturate: 180%;
+  --glass-highlight: rgba(230, 235, 255, 0.92);
+  --glass-shadow: 0 4px 24px rgba(10, 23, 68, 0.08), 0 1px 3px rgba(10, 23, 68, 0.05);
+  --glass-edge: inset 0 1px 0 rgba(230, 240, 255, 0.9), inset 0 0 0 1px rgba(26, 58, 138, 0.12);
+  --glass-sheen: linear-gradient(135deg, rgba(230,240,255,0.42) 0%, rgba(200,215,255,0.14) 38%, rgba(255,255,255,0) 62%);
 
   --accent: var(--brand);
   --accent-hover: var(--brand-strong);
-  --accent-dim: rgba(43, 68, 224, 0.07);
-  --accent-glow: rgba(43, 68, 224, 0.16);
-  --accent-companion: #d84a28;
-  --accent-gradient: linear-gradient(135deg, #4060f0 0%, #2538a8 100%);
+  --accent-dim: rgba(26, 58, 138, 0.09);
+  --accent-glow: rgba(26, 58, 138, 0.2);
+  --accent-companion: #c43a18;
+  --accent-gradient: linear-gradient(135deg, #2e5ac8 0%, #0f2d72 100%);
   --on-accent: #ffffff;
-  --shadow-glow-accent: 0 2px 16px rgba(43, 68, 224, 0.2);
+  --shadow-glow-accent: 0 2px 20px rgba(26, 58, 138, 0.28);
 
-  --text-primary: #17171f;
-  --text-secondary: #4c4c58;
-  --text-tertiary: #7a7a86;
-  --text-accent-strong: #2f4cd0;
+  --text-primary: #0a0e1a;
+  --text-secondary: #3a3c4e;
+  --text-tertiary: #6a6c7e;
+  --text-accent-strong: #1a3a8a;
 
   --correct: #1a8a5c;
   --correct-bg: rgba(26, 138, 92, 0.1);
@@ -93,9 +102,9 @@
   --space-2xl: 64px;
   --space-3xl: 96px;
 
-  --shadow-sm: 0 1px 3px rgba(25, 25, 45, 0.05), 0 1px 2px rgba(25, 25, 45, 0.03);
-  --shadow-md: 0 4px 14px rgba(25, 25, 45, 0.07), 0 2px 4px rgba(25, 25, 45, 0.03);
-  --shadow-lg: 0 12px 34px rgba(25, 25, 45, 0.1), 0 4px 8px rgba(25, 25, 45, 0.05);
+  --shadow-sm: 0 1px 3px rgba(10, 23, 68, 0.06), 0 1px 2px rgba(10, 23, 68, 0.04);
+  --shadow-md: 0 4px 14px rgba(10, 23, 68, 0.09), 0 2px 4px rgba(10, 23, 68, 0.04);
+  --shadow-lg: 0 12px 34px rgba(10, 23, 68, 0.13), 0 4px 8px rgba(10, 23, 68, 0.06);
   --shadow-glow-correct: 0 0 24px rgba(26, 138, 92, 0.16);
 
   --ease-reveal: cubic-bezier(0.22, 0.61, 0.36, 1);
@@ -114,54 +123,62 @@
   --focus-ring: 0 0 0 3px var(--accent-glow);
   --focus-ring-simple: 0 0 0 2px var(--accent);
 
-  --aurora-1: rgba(43, 68, 224, 0.09);
-  --aurora-2: rgba(216, 74, 40, 0.06);
-  --aurora-3: rgba(26, 138, 92, 0.06);
+  --aurora-1: rgba(26, 58, 138, 0.12);
+  --aurora-2: rgba(196, 58, 24, 0.07);
+  --aurora-3: rgba(15, 45, 114, 0.08);
 }
 
-/* ── Dark theme — neutral charcoal ink, the same cobalt brightened just enough
-   to hold contrast. No color-cast backgrounds, no glow — quiet confidence. ── */
+/* ── Dark theme — deep ink-black canvas, vivid cobalt that cuts through
+   the darkness. True editorial night: text is luminous silver on near-black,
+   accent is electric cobalt that feels alive. ── */
 html[data-theme="dark"] {
   color-scheme: dark;
 
-  --brand: #8898ff;
-  --brand-strong: #9dacff;
-  --brand-bright: #a8b8ff;
-  --brand-soft: #6479f0;
+  --brand: #6b8ce8;
+  --brand-strong: #8aa4ff;
+  --brand-bright: #a0b8ff;
+  --brand-soft: #4a6ad4;
 
-  --bg-primary: #0e0e14;
-  --bg-surface: rgba(28, 28, 36, 0.74);
-  --bg-card: rgba(30, 30, 38, 0.82);
-  --bg-card-hover: rgba(42, 42, 52, 0.94);
-  --bg-glass: rgba(24, 24, 32, 0.74);
-  --bg-solid: #16161e;
+  --cobalt-deep: #0a0e1a;
+  --cobalt-mid: #1a2a5c;
+  --cobalt-vivid: #6b8ce8;
+  --cobalt-pale: #a0b8ff;
+  --cobalt-wash: rgba(107, 140, 232, 0.1);
+  --cobalt-ink: #060812;
 
-  --border-subtle: rgba(235, 235, 245, 0.07);
-  --border-default: rgba(235, 235, 245, 0.13);
+  --bg-primary: #080a12;
+  --bg-surface: rgba(18, 22, 40, 0.78);
+  --bg-card: rgba(20, 24, 44, 0.85);
+  --bg-card-hover: rgba(30, 36, 58, 0.95);
+  --bg-glass: rgba(14, 18, 34, 0.78);
+  --bg-solid: #0e1020;
+
+  --border-subtle: rgba(107, 140, 232, 0.1);
+  --border-default: rgba(107, 140, 232, 0.18);
   --border-accent: var(--brand);
-  --border-glow: rgba(136, 152, 255, 0.28);
+  --border-glow: rgba(107, 140, 232, 0.35);
 
   --glass-blur: 28px;
   --glass-blur-strong: 44px;
-  --glass-saturate: 155%;
-  --glass-highlight: rgba(240, 240, 250, 0.12);
-  --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.38), 0 1px 4px rgba(0, 0, 0, 0.22);
-  --glass-edge: inset 0 1px 0 rgba(240, 240, 250, 0.1), inset 0 0 0 1px rgba(235, 235, 245, 0.05);
-  --glass-sheen: linear-gradient(135deg, rgba(240,240,250,0.1) 0%, rgba(240,240,250,0.03) 38%, rgba(255,255,255,0) 62%);
+  --glass-saturate: 165%;
+  --glass-highlight: rgba(140, 170, 255, 0.14);
+  --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.45), 0 1px 4px rgba(0, 0, 0, 0.28);
+  --glass-edge: inset 0 1px 0 rgba(107, 140, 232, 0.12), inset 0 0 0 1px rgba(107, 140, 232, 0.06);
+  --glass-sheen: linear-gradient(135deg, rgba(107,140,232,0.12) 0%, rgba(107,140,232,0.04) 38%, rgba(255,255,255,0) 62%);
 
   --accent: var(--brand);
   --accent-hover: var(--brand-strong);
-  --accent-dim: rgba(136, 152, 255, 0.1);
-  --accent-glow: rgba(136, 152, 255, 0.22);
-  --accent-companion: #f48060;
-  --accent-gradient: linear-gradient(135deg, #8898ff 0%, #5a6ce0 100%);
-  --on-accent: #0e0e18;
-  --shadow-glow-accent: 0 2px 16px rgba(136, 152, 255, 0.22);
+  --accent-dim: rgba(107, 140, 232, 0.12);
+  --accent-glow: rgba(107, 140, 232, 0.28);
+  --accent-companion: #e87050;
+  --accent-gradient: linear-gradient(135deg, #6b8ce8 0%, #4a6ad4 100%);
+  --on-accent: #060812;
+  --shadow-glow-accent: 0 2px 20px rgba(107, 140, 232, 0.3);
 
-  --text-primary: #f0f0f4;
-  --text-secondary: #b0b0ba;
-  --text-tertiary: #70707a;
-  --text-accent-strong: #a8b8ff;
+  --text-primary: #e8ecf8;
+  --text-secondary: #a0a8c4;
+  --text-tertiary: #5c6488;
+  --text-accent-strong: #a0b8ff;
 
   --correct: #3dba85;
   --correct-bg: rgba(61, 186, 133, 0.12);
@@ -169,7 +186,7 @@ html[data-theme="dark"] {
   --wrong-bg: rgba(232, 112, 96, 0.12);
   --locked: #404048;
 
-  --subject-physics: #8898ff;
+  --subject-physics: #6b8ce8;
   --subject-chemistry: #3dba85;
   --subject-economics: #d9975a;
   --subject-biology: #d97690;
@@ -177,59 +194,67 @@ html[data-theme="dark"] {
   --subject-history: #c98a68;
   --subject-general: #6da3d6;
 
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.24), 0 1px 2px rgba(0, 0, 0, 0.16);
-  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.22);
-  --shadow-lg: 0 12px 34px rgba(0, 0, 0, 0.4), 0 4px 8px rgba(0, 0, 0, 0.28);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.38), 0 2px 4px rgba(0, 0, 0, 0.28);
+  --shadow-lg: 0 12px 34px rgba(0, 0, 0, 0.48), 0 4px 8px rgba(0, 0, 0, 0.32);
 
-  --aurora-1: rgba(136, 152, 255, 0.08);
-  --aurora-2: rgba(244, 128, 96, 0.05);
-  --aurora-3: rgba(61, 186, 133, 0.04);
+  --aurora-1: rgba(107, 140, 232, 0.1);
+  --aurora-2: rgba(232, 112, 80, 0.06);
+  --aurora-3: rgba(61, 186, 133, 0.05);
 }
 
-/* ── Twilight theme — deep dusk indigo lit by a pale periwinkle accent and a
-   low ember of peach. Same cobalt family as the brand, dimmed for nightfall. ── */
+/* ── Twilight theme — deep indigo night sky, lit by rich cobalt-violet
+   accents and a low ember of peach. True editorial twilight: the cobalt
+   here is deeper and more saturated, like ink mixed with dusk. ── */
 html[data-theme="twilight"] {
   color-scheme: dark;
-  --scrim: rgba(12, 8, 24, 0.48);
-  --bg-primary: #0e0a1e;
-  --bg-surface: rgba(52, 44, 96, 0.46);
-  --bg-card: rgba(54, 44, 100, 0.5);
-  --bg-card-hover: rgba(68, 56, 122, 0.64);
-  --bg-glass: rgba(28, 22, 56, 0.54);
-  --bg-solid: #1a1636;
+  --scrim: rgba(8, 4, 20, 0.52);
+  --bg-primary: #08061a;
+  --bg-surface: rgba(36, 28, 78, 0.5);
+  --bg-card: rgba(40, 30, 84, 0.55);
+  --bg-card-hover: rgba(52, 40, 100, 0.68);
+  --bg-glass: rgba(20, 14, 48, 0.58);
+  --bg-solid: #141030;
 
-  --border-subtle: rgba(220, 200, 255, 0.12);
-  --border-default: rgba(220, 200, 255, 0.2);
-  --border-accent: #9fb0ff;
-  --border-glow: #9fb0ff;
+  --cobalt-deep: #0c0828;
+  --cobalt-mid: #1a1460;
+  --cobalt-vivid: #7080e8;
+  --cobalt-pale: #a8b8ff;
+  --cobalt-wash: rgba(112, 128, 232, 0.1);
+  --cobalt-ink: #060418;
 
-  /* Liquid-glass system tokens — twilight */
+  --border-subtle: rgba(168, 184, 255, 0.14);
+  --border-default: rgba(168, 184, 255, 0.22);
+  --border-accent: #7080e8;
+  --border-glow: #7080e8;
+
+  /* Liquid-glass system tokens — twilight, cobalt-tinted */
   --glass-blur: 24px;
   --glass-blur-strong: 38px;
-  --glass-saturate: 150%;
-  --glass-highlight: rgba(240, 220, 255, 0.2);
-  --glass-shadow: 0 8px 32px rgba(8, 4, 24, 0.5), 0 1px 4px rgba(8, 4, 24, 0.35);
-  --glass-edge: inset 0 1px 0 rgba(240, 220, 255, 0.16), inset 0 0 0 1px rgba(220, 200, 255, 0.05);
-  --glass-sheen: linear-gradient(135deg, rgba(240,220,255,0.12) 0%, rgba(220,200,255,0.03) 32%, rgba(255,255,255,0) 58%);
+  --glass-saturate: 160%;
+  --glass-highlight: rgba(168, 184, 255, 0.22);
+  --glass-shadow: 0 8px 32px rgba(6, 4, 20, 0.55), 0 1px 4px rgba(6, 4, 20, 0.4);
+  --glass-edge: inset 0 1px 0 rgba(168, 184, 255, 0.18), inset 0 0 0 1px rgba(112, 128, 232, 0.08);
+  --glass-sheen: linear-gradient(135deg, rgba(168,184,255,0.14) 0%, rgba(112,128,232,0.04) 32%, rgba(255,255,255,0) 58%);
 
-  --brand: #9fb0ff;
-  --brand-strong: #b6c3ff;
-  --brand-bright: #c4ceff;
-  --brand-soft: #8496f0;
+  --brand: #7080e8;
+  --brand-strong: #8a98ff;
+  --brand-bright: #a0b8ff;
+  --brand-soft: #5a6ce0;
 
-  --accent: #9fb0ff;
-  --accent-hover: #b6c3ff;
-  --accent-dim: rgba(159, 176, 255, 0.11);
-  --accent-glow: rgba(159, 176, 255, 0.2);
-  --accent-companion: #e8a075;
-  --accent-gradient: linear-gradient(135deg, #b6c3ff 0%, #7385e8 100%);
-  --on-accent: #141028;
-  --shadow-glow-accent: 0 2px 14px rgba(159, 176, 255, 0.18);
+  --accent: #7080e8;
+  --accent-hover: #8a98ff;
+  --accent-dim: rgba(112, 128, 232, 0.13);
+  --accent-glow: rgba(112, 128, 232, 0.24);
+  --accent-companion: #e89060;
+  --accent-gradient: linear-gradient(135deg, #8a98ff 0%, #5a6ce0 100%);
+  --on-accent: #0c0820;
+  --shadow-glow-accent: 0 2px 16px rgba(112, 128, 232, 0.22);
 
-  --text-primary: #f3ecff;
-  --text-secondary: #c4bcdc;
-  --text-tertiary: #9389b4;
-  --text-accent-strong: #c4ceff;
+  --text-primary: #e8e0ff;
+  --text-secondary: #b8b0d4;
+  --text-tertiary: #7a70a0;
+  --text-accent-strong: #a0b8ff;
 
   --correct: #5cc78f;
   --correct-bg: rgba(92, 199, 143, 0.14);
@@ -238,22 +263,22 @@ html[data-theme="twilight"] {
   --locked: #43396a;
 
   /* Subject colours — dusk palette, harmonious not clashing */
-  --subject-physics: #9fb0ff;
+  --subject-physics: #7080e8;
   --subject-chemistry: #5cc78f;
   --subject-economics: #e0a458;
   --subject-biology: #e890a8;
   --subject-cs: #7cc4de;
   --subject-history: #d89a6e;
-  --subject-general: #b0a8e8;
+  --subject-general: #9a90d8;
 
-  --shadow-sm: 0 2px 8px rgba(6, 4, 16, 0.45), inset 0 1px 0 rgba(240, 220, 255, 0.08);
-  --shadow-md: 0 6px 20px rgba(6, 4, 16, 0.5), inset 0 1px 0 rgba(240, 220, 255, 0.08);
-  --shadow-lg: 0 14px 40px rgba(6, 4, 16, 0.6), inset 0 1px 0 rgba(240, 220, 255, 0.1);
+  --shadow-sm: 0 2px 8px rgba(6, 4, 20, 0.5), inset 0 1px 0 rgba(168, 184, 255, 0.1);
+  --shadow-md: 0 6px 20px rgba(6, 4, 20, 0.55), inset 0 1px 0 rgba(168, 184, 255, 0.1);
+  --shadow-lg: 0 14px 40px rgba(6, 4, 20, 0.65), inset 0 1px 0 rgba(168, 184, 255, 0.12);
 
-  /* Ambient aurora — dreamy indigo-ember dusk tones. */
-  --aurora-1: rgba(159, 176, 255, 0.18);
-  --aurora-2: rgba(132, 150, 240, 0.12);
-  --aurora-3: rgba(232, 160, 117, 0.12);
+  /* Ambient aurora — deep indigo-cobalt dusk tones. */
+  --aurora-1: rgba(112, 128, 232, 0.2);
+  --aurora-2: rgba(90, 108, 224, 0.14);
+  --aurora-3: rgba(232, 144, 96, 0.12);
 
   /* ── Crayon painting — twilight purple scene ── */
   --crayon-sky-top: #1a1040;
@@ -408,7 +433,7 @@ body {
    backdrop-filter. These utilities + the reusable class package that together.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Ambient gradient — cool, restrained, identity-consistent ── */
+/* ── Ambient gradient — editorial cobalt wash, restrained but present ── */
 html::before {
   content: "";
   position: fixed;
@@ -416,10 +441,10 @@ html::before {
   z-index: -2;
   pointer-events: none;
   background:
-    radial-gradient(ellipse at 0% 0%, rgba(43, 68, 224, 0.05) 0%, transparent 50%),
-    radial-gradient(ellipse at 100% 0%, rgba(224, 83, 47, 0.03) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 100%, rgba(26, 138, 92, 0.03) 0%, transparent 50%);
-  opacity: 0.85;
+    radial-gradient(ellipse at 0% 0%, rgba(26, 58, 138, 0.07) 0%, transparent 50%),
+    radial-gradient(ellipse at 100% 0%, rgba(15, 45, 114, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 100%, rgba(10, 23, 68, 0.04) 0%, transparent 50%);
+  opacity: 0.9;
 }
 
 /* The reusable glass surface. Ultra-frosted, luminous, Apple-style. */
@@ -628,6 +653,188 @@ body::before {
   z-index: 1;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   Editorial ink & cobalt texture system — rich, tactile, authoritative.
+   Layered ink-wash effects that give surfaces the weight and depth of a
+   printed broadsheet or a leather-bound textbook.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Ink-wash overlay — a deep cobalt-ink wash that bleeds across surfaces,
+   creating the feel of aged editorial paper with ink saturation. ── */
+.ink-wash {
+  position: relative;
+}
+.ink-wash::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.03;
+  background:
+    radial-gradient(ellipse at 20% 20%, var(--cobalt-vivid, var(--brand)) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 80%, var(--cobalt-deep, var(--brand-strong)) 0%, transparent 60%);
+  mix-blend-mode: multiply;
+}
+.ink-wash > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Editorial heading — letterpress ink effect for h1–h4.
+   Deep ink with subtle text-shadow that evokes hot-stamped type on premium paper. */
+h1, h2, h3, h4 {
+  text-shadow:
+    0 0.5px 0 rgba(10, 23, 68, 0.08),
+    0 1px 2px rgba(10, 23, 68, 0.04);
+}
+html[data-theme="dark"] h1,
+html[data-theme="dark"] h2,
+html[data-theme="dark"] h3,
+html[data-theme="dark"] h4 {
+  text-shadow:
+    0 0.5px 0 rgba(107, 140, 232, 0.15),
+    0 1px 3px rgba(0, 0, 0, 0.3);
+}
+html[data-theme="twilight"] h1,
+html[data-theme="twilight"] h2,
+html[data-theme="twilight"] h3,
+html[data-theme="twilight"] h4 {
+  text-shadow:
+    0 0.5px 0 rgba(112, 128, 232, 0.18),
+    0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+/* ── Cobalt texture — a dense, fine crosshatch that reads as book-cloth or
+   library binding. Stronger than identity-texture. ── */
+.cobalt-texture {
+  position: relative;
+}
+.cobalt-texture::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.6;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      var(--cobalt-wash) 0,
+      var(--cobalt-wash) 0.5px,
+      transparent 0.5px,
+      transparent 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      var(--cobalt-wash) 0,
+      var(--cobalt-wash) 0.5px,
+      transparent 0.5px,
+      transparent 4px
+    );
+  -webkit-mask-image: radial-gradient(ellipse at 50% 50%, #000 0%, transparent 80%);
+  mask-image: radial-gradient(ellipse at 50% 50%, #000 0%, transparent 80%);
+  mix-blend-mode: multiply;
+}
+.cobalt-texture > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Ink bleed border — a double-stroke border that evokes editorial printing:
+   an outer ink line + an inner cobalt accent line, with subtle bleeding. ── */
+.ink-border {
+  border: 1.5px solid var(--border-default) !important;
+  box-shadow:
+    var(--glass-shadow),
+    inset 0 0 0 1px var(--border-glow),
+    inset 0 0 0 2.5px transparent,
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transition: box-shadow 320ms var(--ease-color), border-color 320ms var(--ease-color);
+}
+.ink-border:hover {
+  border-color: var(--border-accent) !important;
+  box-shadow:
+    var(--shadow-lg),
+    inset 0 0 0 1px var(--accent-glow),
+    inset 0 0 0 2.5px var(--accent-dim),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+/* ── Cobalt accent line — a thick, confident left-border accent like an
+   editorial pull-quote or chapter marker. ── */
+.cobalt-rule {
+  border-left: 4px solid var(--brand) !important;
+  padding-left: var(--space-md);
+  position: relative;
+}
+.cobalt-rule::before {
+  content: "";
+  position: absolute;
+  left: -4px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--accent-gradient);
+  border-radius: 2px;
+}
+
+/* ── Editorial drop-cap effect — for the first letter of lesson content. ── */
+.editorial-dropcap::first-letter {
+  float: left;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 3.2em;
+  line-height: 0.8;
+  padding-right: 8px;
+  padding-top: 4px;
+  color: var(--brand);
+  font-weight: 800;
+  text-shadow: 1px 1px 0 var(--accent-dim);
+}
+
+/* ── Ink-stain effect — a subtle, organic cobalt stain on card hover ── */
+.ink-stain {
+  position: relative;
+  overflow: hidden;
+}
+.ink-stain::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--cobalt-wash) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 400ms var(--ease-color);
+  pointer-events: none;
+  z-index: 0;
+}
+.ink-stain:hover::after {
+  opacity: 1;
+}
+.ink-stain > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Cobalt shimmer — a slow, elegant brand-colored shimmer for loading states ── */
+.cobalt-shimmer {
+  background: linear-gradient(
+    110deg,
+    var(--bg-card) 0%,
+    var(--bg-card) 30%,
+    var(--cobalt-wash) 50%,
+    var(--bg-card) 70%,
+    var(--bg-card) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 3s linear infinite;
+}
+
 /* ── Double hairline border — an outer neutral line + an accent-tinted inner
    line, which reads as "engraved" / letterpress rather than a single flat
    stroke. Apply to cards/panels that should feel considered. ── */
@@ -678,6 +885,7 @@ body::before {
   box-shadow:
     var(--shadow-lg),
     inset 0 0 0 1px var(--accent-glow),
+    inset 0 0 0 2.5px var(--cobalt-wash),
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
@@ -743,15 +951,16 @@ a:active {
   contain: layout style;
 }
 
-/* ── Scrollbar — sleek, modern ── */
+/* ── Scrollbar — sleek, cobalt-tinted ── */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--accent);
+  background: var(--brand);
   border-radius: 999px;
+  box-shadow: 0 0 4px var(--cobalt-wash);
 }
 
 ::-webkit-scrollbar-track {
@@ -848,8 +1057,8 @@ a:active {
 }
 
 @keyframes glowPulse {
-  0%, 100% { box-shadow: 0 0 12px var(--accent-glow); }
-  50% { box-shadow: 0 0 24px var(--accent-glow); }
+  0%, 100% { box-shadow: 0 0 12px var(--accent-glow), 0 0 24px var(--cobalt-wash); }
+  50% { box-shadow: 0 0 24px var(--accent-glow), 0 0 48px var(--cobalt-wash); }
 }
 
 @keyframes slideIn {
@@ -1010,13 +1219,13 @@ a:active {
 
 /* ── Gen Z interaction utilities — springy, tactile, satisfying ── */
 
-/* Interactive lift — spring-based hover with accent glow */
+/* Interactive lift — spring-based hover with deep cobalt glow */
 .interactive-lift {
   transition: transform 420ms var(--ease-spring), box-shadow 420ms var(--ease-spring), border-color 320ms var(--ease-color);
 }
 .interactive-lift:hover {
   transform: translateY(-3px) scale(1.01);
-  box-shadow: var(--shadow-lg), var(--glass-edge), 0 0 0 4px var(--accent-glow);
+  box-shadow: var(--shadow-lg), var(--glass-edge), 0 0 0 4px var(--cobalt-wash), 0 0 24px var(--accent-glow);
   border-color: var(--border-accent);
 }
 
@@ -1026,12 +1235,12 @@ a:active {
   transition: transform 120ms var(--ease-color) !important;
 }
 
-/* Glow accent hover — subtle brand glow on interactive elements */
+/* Glow accent hover — deep cobalt glow on interactive elements */
 .glow-accent {
   transition: box-shadow 400ms var(--ease-spring), border-color 400ms var(--ease-color), background 400ms var(--ease-color);
 }
 .glow-accent:hover {
-  box-shadow: var(--shadow-lg), var(--glass-edge), 0 0 24px var(--accent-glow);
+  box-shadow: var(--shadow-lg), var(--glass-edge), 0 0 24px var(--accent-glow), 0 0 48px var(--cobalt-wash);
   border-color: var(--border-accent);
   background: var(--bg-card-hover);
 }
@@ -1153,7 +1362,7 @@ a:active {
   }
 }
 
-/* ── Markdown content — clean, readable ── */
+/* ── Markdown content — editorial ink on paper, rich and readable ── */
 .markdown-content h2 {
   margin: var(--space-lg) 0 var(--space-md);
   font-family: var(--font-display), system-ui, sans-serif;
@@ -1161,30 +1370,35 @@ a:active {
   font-size: 22px;
   color: var(--text-primary);
   letter-spacing: -0.02em;
+  border-bottom: 2px solid var(--border-glow);
+  padding-bottom: 8px;
 }
 
 .markdown-content h3 {
   margin: 20px 0 var(--space-sm);
   font-weight: 700;
   font-size: 17px;
-  color: var(--text-primary);
+  color: var(--brand);
+  letter-spacing: -0.01em;
 }
 
 .markdown-content p {
   margin-bottom: var(--space-base);
   font-family: var(--font-lora);
   font-size: 16px;
-  line-height: 1.8;
+  line-height: 1.85;
   color: var(--text-secondary);
+  letter-spacing: 0.005em;
 }
 
 .markdown-content strong {
   color: var(--text-primary);
   font-weight: 700;
+  text-shadow: 0 0.5px 0 var(--cobalt-wash);
 }
 
 .markdown-content em {
-  color: var(--accent);
+  color: var(--brand);
   font-style: italic;
 }
 
@@ -1200,12 +1414,14 @@ a:active {
 
 .markdown-content blockquote {
   margin: 20px 0;
-  border-left: 3px solid var(--accent);
-  background: var(--accent-dim);
+  border-left: 4px solid var(--brand);
+  background: var(--cobalt-wash);
   padding: 14px 18px;
-  border-radius: var(--radius-md);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
   color: var(--text-secondary);
   font-style: italic;
+  font-family: var(--font-lora);
+  box-shadow: inset 2px 0 8px var(--cobalt-wash);
 }
 
 .markdown-content ul,
@@ -1456,8 +1672,9 @@ html[data-perf="high"] {
 
 /* Brand-tinted text selection instead of the browser default. */
 ::selection {
-  background: var(--accent-glow);
-  color: var(--text-primary);
+  background: var(--brand);
+  color: var(--on-accent);
+  text-shadow: none;
 }
 
 /* Slim, theme-aware scrollbars for internal scroll areas (sidebar history,
