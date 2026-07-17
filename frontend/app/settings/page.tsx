@@ -154,6 +154,7 @@ export default function SettingsPage() {
           "reallearn-cookie-consent",
           "reallearn-theme",
           "reallearn-preferences-onboarding",
+          "reallearn-feedback",
         ];
         REALLEARN_KEYS.forEach((k) => {
           try { localStorage.removeItem(k); } catch { /* ignore */ }
@@ -257,6 +258,14 @@ export default function SettingsPage() {
         localData.progress = (() => {
           try {
             return JSON.parse(localStorage.getItem("reallearn-progress") || "null");
+          } catch {
+            return null;
+          }
+        })();
+
+        localData.feedback = (() => {
+          try {
+            return JSON.parse(localStorage.getItem("reallearn-feedback") || "null");
           } catch {
             return null;
           }

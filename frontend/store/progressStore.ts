@@ -39,6 +39,8 @@ interface ProgressState {
   dailyGoalMetDay: string | null;
 
   lessonsCompleted: number;
+  /** Epoch ms of the user's very first completed lesson (set once, never moved). */
+  firstLessonCompletedAt: number | null;
   partsPassed: number;
   perfectParts: number;
   perfectLessons: number;
@@ -147,6 +149,7 @@ const initialEngagement = {
   dailyGoalsMet: 0,
   dailyGoalMetDay: null as string | null,
   lessonsCompleted: 0,
+  firstLessonCompletedAt: null as number | null,
   partsPassed: 0,
   perfectParts: 0,
   perfectLessons: 0,
@@ -261,6 +264,11 @@ export const useProgressStore = create<ProgressState>()(
               : prev.creditedKeys,
             xp: prev.xp + gained,
             lessonsCompleted: prev.lessonsCompleted + 1,
+            // Capture the timestamp of the FIRST completed lesson only. This
+            // gate drives the optional feedback prompt (shown the day after the
+            // user's first journey), and must never advance on later lessons.
+            firstLessonCompletedAt:
+              prev.firstLessonCompletedAt ?? Date.now(),
             perfectLessons: prev.perfectLessons + (isPerfect ? 1 : 0),
             languagesUsed: language && !prev.languagesUsed.includes(language)
               ? [...prev.languagesUsed, language]

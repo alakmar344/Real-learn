@@ -3,6 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { LessonJourney } from "@/types";
 import ShareResult from "@/components/learning/ShareResult";
+import FeedbackPrompt from "@/components/learning/FeedbackPrompt";
+import { useProgressStore } from "@/store/progressStore";
+import { isFeedbackEligible } from "@/lib/feedback";
 
 interface Props {
   lesson: LessonJourney;
@@ -60,6 +63,11 @@ function Confetti() {
 export default function CompletionScreen({ lesson, totalScore, onRestart, onRetake }: Props) {
   const [showConfetti, setShowConfetti] = useState(true);
   const sectionRef = useRef<HTMLElement>(null);
+
+  const firstLessonCompletedAt = useProgressStore((s) => s.firstLessonCompletedAt);
+  const [feedbackDismissed, setFeedbackDismissed] = useState(false);
+
+  const showFeedback = !feedbackDismissed && isFeedbackEligible(firstLessonCompletedAt);
 
   useEffect(() => {
     const id = setTimeout(() => setShowConfetti(false), 4000);
@@ -200,6 +208,11 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
 
       {/* Share your result */}
       <ShareResult question={lesson.question ?? lesson.topic ?? ""} totalScore={totalScore} maxScore={maxScore} />
+
+      {/* Optional, anonymous review — shown the day after the first lesson */}
+      {showFeedback && (
+        <FeedbackPrompt onDone={() => setFeedbackDismissed(true)} />
+      )}
 
       {/* Action buttons */}
       <div style={{ marginTop: varSpaceLg, display: "flex", gap: varSpaceSm, flexWrap: "wrap" }}>
