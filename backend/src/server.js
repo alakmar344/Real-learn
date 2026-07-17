@@ -295,8 +295,8 @@ const SPEECH_LANG_TO_VOICE = {
   "en-US": "en-US-AriaNeural",
 };
 
-const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "2.5";
-const TERMS_OF_SERVICE_VERSION = process.env.TERMS_OF_SERVICE_VERSION || "2.3";
+const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "2.6";
+const TERMS_OF_SERVICE_VERSION = process.env.TERMS_OF_SERVICE_VERSION || "2.4";
 const COOKIE_POLICY_VERSION = process.env.COOKIE_POLICY_VERSION || "2.2";
 
 // ── Input validation limits (security: bound prompt size and lock free-text
