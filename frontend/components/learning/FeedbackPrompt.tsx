@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { showToast } from "@/components/shared/ToastContainer";
 import {
@@ -114,7 +115,13 @@ export default function FeedbackPrompt({ onDone }: Props) {
     transition: "all 500ms var(--ease-spring)",
   };
 
-  return (
+  // Render into document.body via a portal so the modal escapes any stacking
+  // context created by ancestors (e.g. .app-shell / .app-main) and is not
+  // painted under sibling overlays such as the re-consent dialog. FeedbackGate
+  // already guarantees this component only mounts client-side.
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
@@ -313,6 +320,7 @@ export default function FeedbackPrompt({ onDone }: Props) {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
