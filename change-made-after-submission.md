@@ -139,7 +139,8 @@ the themed sections below and the chronological table at the end.
   improve"). The prompt is strictly optional and never forced — users can skip,
   ask to be reminded later (7-day snooze), or decline permanently. The first
   completion timestamp is captured once in `progressStore`
-  (`firstLessonCompletedAt`) so the prompt is gated to ≥24h after that moment.
+  (`firstLessonCompletedAt`) so the prompt is gated to appear on the very next
+  page view after that moment (a few-second buffer, not a day-long wait).
   On submit, the review is `POST`ed to a new **public** backend endpoint
   `POST /api/feedback` that stores **only** the rating and review text — no IP
   address, Clerk ID, or email, and no auth header — so the feedback is
@@ -778,7 +779,7 @@ vendors). All of these live between `2b239b5` (start) and now:
 | 2026-07-15 | legal docs | **Current: Privacy Policy v2.5, Cookie Policy v2.2 (reconsent), ToS v2.3** |
 | 2026-07-16 | `f57b9ed` | Restore ReaLearn's scholarly gold identity (gold/amber accent, replace generic iOS-blue) |
 | 2026-07-16 | `f4c2d9c` | Material texture + identity-by-shape (paper/mottle grain, engraved border, gold corner) |
-| 2026-07-17 | `23779fa` | Optional anonymous feedback prompt (1–10 stars + notes) shown the day after first lesson; public /api/feedback stores only rating+text (no identifiers) |
+| 2026-07-17 | `23779fa` | Optional anonymous feedback prompt (1–10 stars + notes) shown soon after first lesson; public /api/feedback stores only rating+text (no identifiers) |
 | 2026-07-17 | `f1a3398` | Privacy Policy v2.6 + Terms of Service v2.4 disclose the anonymous feedback feature |
 | 2026-07-17 | reconsent | Bump CURRENT_PRIVACY_VERSION 2.6 / CURRENT_TERMS_VERSION 2.4 (frontend + backend) so all users re-accept |
 

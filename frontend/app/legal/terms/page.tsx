@@ -218,7 +218,7 @@ export default function TermsOfService() {
           <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
             <strong>Version 2.4 (effective July 17, 2026).</strong> This update adds Section 22
             (&quot;Optional Feedback&quot;), describing the new optional, anonymous review feature
-            offered the day after a user&apos;s first completed lesson. The review is submitted with
+            offered soon after a user&apos;s first completed lesson. The review is submitted with
             no account identity and stores only the rating and review text — never an IP address,
             Clerk ID, or email. The prompt is optional and never required to use the Service. This is
             a transparency update; because it introduces no new required data and no new third
@@ -365,7 +365,7 @@ export default function TermsOfService() {
           22. Optional Feedback
         </h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
-          The day after you complete your first learning journey, RealLearn may invite you to leave
+          Soon after you complete your first learning journey, RealLearn may invite you to leave
           an optional review — a 1–10 star rating plus free-text notes on what you liked and what we
           should improve. This feedback is <strong>entirely optional and never required</strong> to
           use the Service: you may skip it, ask to be reminded later, or dismiss it permanently, and

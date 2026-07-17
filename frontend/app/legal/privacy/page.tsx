@@ -113,7 +113,7 @@ export default function PrivacyPolicy() {
             saved lesson loads it directly from your device.
           </li>
           <li>
-            <strong>Optional Feedback (anonymous, not linked to you):</strong> The day after you
+            <strong>Optional Feedback (anonymous, not linked to you):</strong> Soon after you
             complete your <em>first</em> learning journey, RealLearn may invite you to leave an
             optional review: what you liked, what we should improve, and a 1–10 star rating. This
             feedback is <strong>completely anonymous</strong>. When you submit it, we store
@@ -399,7 +399,7 @@ export default function PrivacyPolicy() {
          </p>
           <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
             <strong>Version 2.6 (effective July 17, 2026).</strong> This update discloses the new
-            optional, anonymous <strong>feedback</strong> feature: the day after a user completes
+            optional, anonymous <strong>feedback</strong> feature: soon after a user completes
             their first learning journey, RealLearn may invite an optional 1–10 star rating plus
             free-text notes on what they liked and what to improve. The review is submitted with no
             account identity and we store only the rating and review text — never the IP address,

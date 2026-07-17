@@ -1,6 +1,6 @@
 // Feedback collection helpers.
 //
-// RealLearn asks for a short, optional review the day after a user completes
+// RealLearn asks for a short, optional review soon after a user completes
 // their FIRST learning journey. The review is deliberately anonymous:
 //   - nothing is ever tied to the user's identity (no Clerk ID, email, or IP),
 //   - we only ever transmit the review question/answer fields, and
@@ -13,8 +13,16 @@
 
 export const FEEDBACK_STORAGE_KEY = "reallearn-feedback";
 
-/** Minimum gap between first completion and showing the prompt: 1 full day. */
-export const FEEDBACK_ELIGIBLE_AFTER_MS = 24 * 60 * 60 * 1000;
+/**
+ * Minimum gap between first completion and showing the prompt.
+ *
+ * Intentionally tiny: the prompt should appear on the very next page view
+ * after the user finishes their first lesson (e.g. they generate a lesson,
+ * go to the home screen, and refresh — the review shows up immediately). The
+ * small buffer just avoids a same-millisecond race with the in-session
+ * completion render; it is NOT a "wait a day" delay.
+ */
+export const FEEDBACK_ELIGIBLE_AFTER_MS = 3 * 1000;
 
 export interface FeedbackRecord {
   /** Set true once a review is submitted or permanently dismissed. */
