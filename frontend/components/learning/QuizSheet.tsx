@@ -166,7 +166,7 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
     >
       <div
         ref={sheetRef}
-        className="animate-slide-bottom engraved identity-texture"
+        className="animate-slide-bottom engraved identity-texture texture-noise"
         onClick={(e) => e.stopPropagation()}
         style={{
           position: "fixed",

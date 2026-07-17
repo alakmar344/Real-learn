@@ -72,7 +72,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
     <form
       onSubmit={handleSubmit}
       aria-label="Ask a question"
-      className="liquid-sheen engraved identity-texture"
+      className="liquid-sheen engraved identity-texture texture-noise"
       style={{
         marginTop: 32,
         maxWidth: 680,
