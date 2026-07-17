@@ -154,7 +154,7 @@ const PartCardBase = ({
           </div>
         </div>
 
-        <h2 style={{ margin: "12px 0 0", fontSize: "clamp(20px, 4vw, 26px)", fontWeight: 600, fontFamily: "var(--font-playfair)" }}>
+        <h2 style={{ margin: "12px 0 0", fontSize: "clamp(20px, 4vw, 26px)", fontWeight: 600, fontFamily: "var(--font-display)" }}>
           {part.title}
         </h2>
 

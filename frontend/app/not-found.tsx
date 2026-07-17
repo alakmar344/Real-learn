@@ -22,7 +22,7 @@ export default function NotFound() {
         <p
           aria-hidden="true"
           style={{
-            fontFamily: "var(--font-playfair), Georgia, serif",
+            fontFamily: "var(--font-display), system-ui, sans-serif",
             fontSize: 72,
             fontWeight: 800,
             margin: 0,
@@ -34,7 +34,7 @@ export default function NotFound() {
         </p>
         <h1
           style={{
-            fontFamily: "var(--font-playfair), Georgia, serif",
+            fontFamily: "var(--font-display), system-ui, sans-serif",
             fontSize: 24,
             fontWeight: 700,
             margin: "var(--space-md) 0 var(--space-sm)",

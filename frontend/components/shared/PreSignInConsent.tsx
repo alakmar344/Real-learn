@@ -327,7 +327,7 @@ export default function PreSignInConsent() {
         >
           <h2
             style={{
-              fontFamily: "var(--font-playfair)",
+              fontFamily: "var(--font-display)",
               fontWeight: 800,
               fontSize: 22,
               marginBottom: 12,
@@ -545,7 +545,7 @@ export default function PreSignInConsent() {
         >
           <h2
             style={{
-              fontFamily: "var(--font-playfair)",
+              fontFamily: "var(--font-display)",
               fontWeight: 800,
               fontSize: 22,
               marginBottom: 12,
@@ -688,7 +688,7 @@ export default function PreSignInConsent() {
         >
           <h2
             style={{
-              fontFamily: "var(--font-playfair)",
+              fontFamily: "var(--font-display)",
               fontWeight: 800,
               fontSize: 22,
               marginBottom: 12,

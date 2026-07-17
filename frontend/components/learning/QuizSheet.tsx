@@ -241,7 +241,7 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
         <h3
           style={{
             margin: 0,
-            fontFamily: "var(--font-playfair)",
+            fontFamily: "var(--font-display)",
             fontWeight: 800,
             fontSize: 20,
             background: "var(--accent)",

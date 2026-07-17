@@ -100,7 +100,7 @@ export default function Sidebar({ open, onClose }: Props) {
             </svg>
             <span
               style={{
-                fontFamily: "var(--font-playfair)",
+                fontFamily: "var(--font-display)",
                 fontWeight: 800,
                 fontSize: 22,
                 letterSpacing: -0.5,

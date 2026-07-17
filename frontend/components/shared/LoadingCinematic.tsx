@@ -144,7 +144,7 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
         <p
           style={{
             color: "var(--text-primary)",
-            fontFamily: "var(--font-playfair)",
+            fontFamily: "var(--font-display)",
             fontStyle: "italic",
             fontWeight: 700,
             fontSize: "clamp(22px, 5vw, 28px)",

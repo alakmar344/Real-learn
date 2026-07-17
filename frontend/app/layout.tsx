@@ -3,7 +3,7 @@ import {
   Inter,
   JetBrains_Mono,
   Lora,
-  Playfair_Display,
+  Space_Grotesk,
 } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import CookieConsent from "@/components/shared/CookieConsent";
@@ -31,10 +31,11 @@ const lora = Lora({
   variable: "--font-lora",
   display: "swap",
 });
-const playfair = Playfair_Display({
+// Display face: Space Grotesk — a working designer's grotesk (quirky enough to
+// have personality, disciplined enough to never read as a template).
+const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
-  style: ["normal", "italic"],
-  variable: "--font-playfair",
+  variable: "--font-display",
   display: "swap",
 });
 const jetbrainsMono = JetBrains_Mono({
@@ -50,7 +51,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#fafafa",
+  themeColor: "#f7f6f2",
 };
 
 // Applies the persisted theme BEFORE first paint so dark-theme users never
@@ -59,7 +60,7 @@ export const viewport: Viewport = {
 // ({"state":{"theme":...}}), not a bare string; and the theme-color meta must
 // UPDATE the existing tag (Next renders one from viewport.themeColor — the
 // first meta in tree order wins, so appending a second one did nothing).
-const themeInitScript = `(function(){try{var t=null;var p=localStorage.getItem("reallearn-preferences");if(p){var s=JSON.parse(p);t=s&&s.state&&s.state.theme}if(!t){var l=localStorage.getItem("reallearn-theme");if(l){var v=JSON.parse(l);t=typeof v==="string"?v:v&&v.state&&v.state.theme}}if(t==="dark"||t==="twilight"){document.documentElement.dataset.theme=t;var m=document.querySelector('meta[name="theme-color"]');if(!m){m=document.createElement("meta");m.name="theme-color";document.head.appendChild(m)}m.content=t==="dark"?"#09090b":"#0c0a1d"}}catch(e){}})();`;
+const themeInitScript = `(function(){try{var t=null;var p=localStorage.getItem("reallearn-preferences");if(p){var s=JSON.parse(p);t=s&&s.state&&s.state.theme}if(!t){var l=localStorage.getItem("reallearn-theme");if(l){var v=JSON.parse(l);t=typeof v==="string"?v:v&&v.state&&v.state.theme}}if(t==="dark"||t==="twilight"){document.documentElement.dataset.theme=t;var m=document.querySelector('meta[name="theme-color"]');if(!m){m=document.createElement("meta");m.name="theme-color";document.head.appendChild(m)}m.content=t==="dark"?"#101014":"#0e0a1e"}}catch(e){}})();`;
 
 // Resolves the visual-performance tier BEFORE first paint so low-end devices
 // never pay for a single expensive frame (backdrop blurs, grain, ambient
@@ -77,7 +78,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${inter.variable} ${lora.variable} ${playfair.variable} ${jetbrainsMono.variable}`}
+      className={`${inter.variable} ${lora.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable}`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />

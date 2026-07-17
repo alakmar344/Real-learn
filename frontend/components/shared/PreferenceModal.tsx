@@ -118,7 +118,7 @@ export default function PreferenceModal({ open, onClose }: Props) {
       >
         <h2
           style={{
-            fontFamily: "var(--font-playfair)",
+            fontFamily: "var(--font-display)",
             fontWeight: 800,
             fontSize: 22,
             marginBottom: 4,

@@ -47,7 +47,7 @@ export default function ErrorState({ message, onRetry, onHome }: Props) {
             fontSize: 26,
             fontWeight: 700,
             fontStyle: "italic",
-            fontFamily: "var(--font-playfair)",
+            fontFamily: "var(--font-display)",
             lineHeight: 1.3,
           }}
         >

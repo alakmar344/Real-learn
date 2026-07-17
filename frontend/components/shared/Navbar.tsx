@@ -62,7 +62,7 @@ export default function Navbar({ compact = false }: Props) {
           </div>
           <span
             style={{
-              fontFamily: "var(--font-playfair)",
+              fontFamily: "var(--font-display)",
               fontWeight: 800,
               fontSize: 26,
               letterSpacing: -0.5,
