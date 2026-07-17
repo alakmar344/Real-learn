@@ -20,7 +20,7 @@ export default function TermsOfService() {
         Terms of Service
       </h2>
       <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
-        Last updated: July 14, 2026 (version 2.3)
+        Last updated: July 17, 2026 (version 2.4)
       </p>
 
       <section style={{ marginBottom: 28 }}>
@@ -215,8 +215,17 @@ export default function TermsOfService() {
            continuing to access or use the Service after any revisions become effective, you agree
            to be bound by the updated terms.
          </p>
-         <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
-           <strong>Version 2.3 (effective July 14, 2026).</strong> This update describes where your
+          <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+            <strong>Version 2.4 (effective July 17, 2026).</strong> This update adds Section 22
+            (&quot;Optional Feedback&quot;), describing the new optional, anonymous review feature
+            offered the day after a user&apos;s first completed lesson. The review is submitted with
+            no account identity and stores only the rating and review text — never an IP address,
+            Clerk ID, or email. The prompt is optional and never required to use the Service. This is
+            a transparency update; because it introduces no new required data and no new third
+            parties, existing consent remains valid.
+          </p>
+          <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+            <strong>Version 2.3 (effective July 14, 2026).</strong> This update describes where your
            saved lesson history is stored: the full content of every saved lesson (chat) now lives
            in your browser&apos;s <strong>IndexedDB</strong> on your own device (with only a
            lightweight history index in localStorage), and never on our servers. Clearing your
@@ -348,6 +357,24 @@ export default function TermsOfService() {
           acknowledge that we may process data as described there to provide the product, prevent
           abuse, and meet legal obligations. If law requires us to notify you of material compliance
           or policy changes, we will do so through in-app notice, email, or an updated legal notice.
+        </p>
+      </section>
+
+      <section style={{ marginTop: 28 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
+          22. Optional Feedback
+        </h3>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+          The day after you complete your first learning journey, RealLearn may invite you to leave
+          an optional review — a 1–10 star rating plus free-text notes on what you liked and what we
+          should improve. This feedback is <strong>entirely optional and never required</strong> to
+          use the Service: you may skip it, ask to be reminded later, or dismiss it permanently, and
+          doing so in no way limits your access to any feature. Any review you submit is
+          <strong>anonymous</strong>: it is sent without your account identity and we store only the
+          rating and the text you wrote — never your IP address, Clerk ID, or email. Once you respond
+          or decline, a local flag in your browser prevents the prompt from reappearing; this flag
+          lives only on your device and is removed by &quot;Delete My Data&quot;. Feedback you
+          submit is provided &quot;as is&quot; and may be used to improve the Service.
         </p>
       </section>
     </article>
