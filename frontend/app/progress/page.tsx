@@ -118,7 +118,7 @@ export default function ProgressPage() {
           <h1
             style={{
               margin: 0,
-              fontFamily: "var(--font-playfair)",
+              fontFamily: "var(--font-display)",
               fontWeight: 700,
               fontSize: "clamp(26px, 5vw, 34px)",
               letterSpacing: "-0.02em",

@@ -143,7 +143,7 @@ export default function HomePage() {
                 height: "min(280px, 45vw)",
                 borderRadius: "50%",
                 background:
-                  "radial-gradient(ellipse at center, rgba(184, 134, 11, 0.12) 0%, rgba(192, 110, 60, 0.07) 45%, transparent 70%)",
+                  "radial-gradient(ellipse at center, rgba(43, 68, 224, 0.1) 0%, rgba(224, 83, 47, 0.05) 45%, transparent 70%)",
                 filter: "blur(50px)",
                 zIndex: 0,
                 pointerEvents: "none",
@@ -170,7 +170,7 @@ export default function HomePage() {
                   suppressHydrationWarning
                   style={{
                     margin: 0,
-                    fontFamily: "var(--font-playfair)",
+                    fontFamily: "var(--font-display)",
                     fontWeight: 900,
                     lineHeight: 1.05,
                     letterSpacing: "-0.03em",

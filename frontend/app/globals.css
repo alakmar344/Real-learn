@@ -3,69 +3,70 @@
 @tailwind utilities;
 
 /* Fonts are self-hosted via next/font in app/layout.tsx, which defines
-   --font-inter / --font-lora / --font-playfair / --font-mono. The old Google
+   --font-inter / --font-lora / --font-display / --font-mono. The old Google
    Fonts @import was placed after the Tailwind directives (making it invalid
    CSS) AND blocked by our CSP — so remote fonts never actually loaded. */
 
 :root {
   color-scheme: light;
 
-  /* ── ReaLearn identity — warm scholarly gold.
-     A single deliberate accent (not a rainbow of system hues) gives the
-     product a recognizable signature, the way Apple's products read as
-     "themselves" at a glance. Gold reads as learning, knowledge, light. ── */
-  --brand: #b8860b;          /* refined antique-gold: premium, never toy-like */
-  --brand-strong: #a8730a;
-  --brand-bright: #c9950f;
-  --brand-soft: #caa84a;
+  /* ── RealLearn identity — editorial ink & cobalt.
+     Warm paper white, near-black ink, ONE confident cobalt-blue accent with a
+     vermilion counterpoint — the classic Swiss-poster pairing that reads as
+     designed-by-a-human: confident, current, zero gimmicks. The interest comes
+     from typography, spacing and restraint, not from loud color. ── */
+  --brand: #2b44e0;          /* working cobalt — Klein-blue lineage, legible */
+  --brand-strong: #2236b8;
+  --brand-bright: #3b5bff;
+  --brand-soft: #6479f0;
 
-  --bg-primary: #f6f4ef;
-  --bg-surface: rgba(255, 253, 248, 0.74);
-  --bg-card: rgba(255, 253, 248, 0.82);
-  --bg-card-hover: rgba(255, 253, 248, 0.94);
-  --bg-glass: rgba(255, 253, 248, 0.72);
-  --bg-solid: #fffdf8;
+  --bg-primary: #f7f6f2;
+  --bg-surface: rgba(255, 255, 252, 0.74);
+  --bg-card: rgba(255, 255, 252, 0.82);
+  --bg-card-hover: rgba(255, 255, 252, 0.94);
+  --bg-glass: rgba(255, 254, 250, 0.72);
+  --bg-solid: #fdfcf9;
 
-  --border-subtle: rgba(60, 50, 20, 0.08);
-  --border-default: rgba(60, 50, 20, 0.14);
+  --border-subtle: rgba(23, 23, 33, 0.08);
+  --border-default: rgba(23, 23, 33, 0.14);
   --border-accent: var(--brand);
-  --border-glow: rgba(184, 134, 11, 0.3);
+  --border-glow: rgba(43, 68, 224, 0.28);
 
   --glass-blur: 26px;
   --glass-blur-strong: 40px;
   --glass-saturate: 165%;
   --glass-highlight: rgba(255, 255, 255, 0.85);
-  --glass-shadow: 0 4px 22px rgba(60, 45, 10, 0.05), 0 1px 3px rgba(60, 45, 10, 0.04);
+  --glass-shadow: 0 4px 22px rgba(25, 25, 45, 0.05), 0 1px 3px rgba(25, 25, 45, 0.04);
   --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 0 0 1px rgba(255, 255, 255, 0.12);
   --glass-sheen: linear-gradient(135deg, rgba(255,255,255,0.34) 0%, rgba(255,255,255,0.08) 38%, rgba(255,255,255,0) 62%);
 
   --accent: var(--brand);
   --accent-hover: var(--brand-strong);
-  --accent-dim: rgba(184, 134, 11, 0.07);
-  --accent-glow: rgba(184, 134, 11, 0.14);
-  --accent-companion: #c2410c;
-  --accent-gradient: linear-gradient(135deg, #caa84a 0%, #a8730a 100%);
-  --on-accent: #1a1408;
-  --shadow-glow-accent: 0 2px 14px rgba(184, 134, 11, 0.18);
+  --accent-dim: rgba(43, 68, 224, 0.06);
+  --accent-glow: rgba(43, 68, 224, 0.14);
+  --accent-companion: #e0532f;
+  --accent-gradient: linear-gradient(135deg, #3b5bff 0%, #2236b8 100%);
+  --on-accent: #ffffff;
+  --shadow-glow-accent: 0 2px 14px rgba(43, 68, 224, 0.18);
 
-  --text-primary: #221c10;
-  --text-secondary: #514837;
-  --text-tertiary: #8a7a5e;
-  --text-gold: #b8860b;
+  --text-primary: #17171f;
+  --text-secondary: #4c4c58;
+  --text-tertiary: #85858f;
+  --text-accent-strong: #2b44e0;
 
-  --correct: #2f8f4e;
-  --correct-bg: rgba(47, 143, 78, 0.12);
-  --wrong: #c0392b;
-  --wrong-bg: rgba(192, 57, 43, 0.1);
-  --locked: #b3a888;
+  --correct: #1a8a5c;
+  --correct-bg: rgba(26, 138, 92, 0.1);
+  --wrong: #d24040;
+  --wrong-bg: rgba(210, 64, 64, 0.09);
+  --locked: #a8a8ae;
 
-  --subject-physics: #b8860b;
-  --subject-chemistry: #2f8f4e;
-  --subject-economics: #c2410c;
-  --subject-biology: #c2415e;
-  --subject-cs: #7c5cc4;
-  --subject-history: #b05c3a;
-  --subject-general: #4a90b8;
+  --subject-physics: #2b44e0;
+  --subject-chemistry: #1a8a5c;
+  --subject-economics: #c96a1f;
+  --subject-biology: #bd3f66;
+  --subject-cs: #0e7490;
+  --subject-history: #a85a32;
+  --subject-general: #4a6fa5;
 
   --radius-sm: 10px;
   --radius-md: 14px;
@@ -92,10 +93,10 @@
   --space-2xl: 64px;
   --space-3xl: 96px;
 
-  --shadow-sm: 0 1px 3px rgba(60, 45, 10, 0.05), 0 1px 2px rgba(60, 45, 10, 0.03);
-  --shadow-md: 0 4px 14px rgba(60, 45, 10, 0.07), 0 2px 4px rgba(60, 45, 10, 0.03);
-  --shadow-lg: 0 12px 34px rgba(60, 45, 10, 0.09), 0 4px 8px rgba(60, 45, 10, 0.04);
-  --shadow-glow-correct: 0 0 24px rgba(47, 143, 78, 0.18);
+  --shadow-sm: 0 1px 3px rgba(25, 25, 45, 0.05), 0 1px 2px rgba(25, 25, 45, 0.03);
+  --shadow-md: 0 4px 14px rgba(25, 25, 45, 0.07), 0 2px 4px rgba(25, 25, 45, 0.03);
+  --shadow-lg: 0 12px 34px rgba(25, 25, 45, 0.09), 0 4px 8px rgba(25, 25, 45, 0.04);
+  --shadow-glow-correct: 0 0 24px rgba(26, 138, 92, 0.16);
 
   --ease-reveal: cubic-bezier(0.22, 0.61, 0.36, 1);
   --ease-color: cubic-bezier(0.4, 0, 0.2, 1);
@@ -108,83 +109,84 @@
   --blur-sm: 6px;
   --blur-md: 16px;
 
-  --scrim: rgba(30, 22, 8, 0.22);
+  --scrim: rgba(18, 18, 26, 0.24);
   --focus-ring: 0 0 0 3px var(--accent-glow);
   --focus-ring-simple: 0 0 0 2px var(--accent);
 
-  --aurora-1: rgba(202, 168, 74, 0.14);
-  --aurora-2: rgba(200, 110, 60, 0.1);
-  --aurora-3: rgba(120, 92, 196, 0.08);
+  --aurora-1: rgba(43, 68, 224, 0.08);
+  --aurora-2: rgba(224, 83, 47, 0.05);
+  --aurora-3: rgba(26, 138, 92, 0.05);
 }
 
-/* ── Dark theme — deep ink, warm gold, considered (not neon) ── */
+/* ── Dark theme — neutral charcoal ink, the same cobalt brightened just enough
+   to hold contrast. No color-cast backgrounds, no glow — quiet confidence. ── */
 html[data-theme="dark"] {
   color-scheme: dark;
 
-  --brand: #e0b341;
-  --brand-strong: #f1c75a;
-  --brand-bright: #f4cf63;
-  --brand-soft: #d8b35a;
+  --brand: #7b90ff;
+  --brand-strong: #93a5ff;
+  --brand-bright: #a3b2ff;
+  --brand-soft: #6479f0;
 
-  --bg-primary: #0d0c0a;
-  --bg-surface: rgba(28, 26, 22, 0.72);
-  --bg-card: rgba(30, 28, 23, 0.8);
-  --bg-card-hover: rgba(40, 37, 30, 0.92);
-  --bg-glass: rgba(26, 24, 20, 0.72);
-  --bg-solid: #161410;
+  --bg-primary: #101014;
+  --bg-surface: rgba(28, 28, 34, 0.72);
+  --bg-card: rgba(30, 30, 37, 0.8);
+  --bg-card-hover: rgba(40, 40, 48, 0.92);
+  --bg-glass: rgba(26, 26, 32, 0.72);
+  --bg-solid: #17171c;
 
-  --border-subtle: rgba(255, 240, 210, 0.07);
-  --border-default: rgba(255, 240, 210, 0.13);
+  --border-subtle: rgba(235, 235, 245, 0.07);
+  --border-default: rgba(235, 235, 245, 0.13);
   --border-accent: var(--brand);
-  --border-glow: rgba(224, 179, 65, 0.32);
+  --border-glow: rgba(123, 144, 255, 0.3);
 
   --glass-blur: 26px;
   --glass-blur-strong: 40px;
   --glass-saturate: 150%;
-  --glass-highlight: rgba(255, 245, 220, 0.14);
+  --glass-highlight: rgba(240, 240, 250, 0.12);
   --glass-shadow: 0 4px 22px rgba(0, 0, 0, 0.34), 0 1px 4px rgba(0, 0, 0, 0.22);
-  --glass-edge: inset 0 1px 0 rgba(255, 245, 220, 0.1), inset 0 0 0 1px rgba(255, 240, 210, 0.04);
-  --glass-sheen: linear-gradient(135deg, rgba(255,245,220,0.09) 0%, rgba(255,245,220,0.02) 38%, rgba(255,255,255,0) 62%);
+  --glass-edge: inset 0 1px 0 rgba(240, 240, 250, 0.09), inset 0 0 0 1px rgba(235, 235, 245, 0.04);
+  --glass-sheen: linear-gradient(135deg, rgba(240,240,250,0.08) 0%, rgba(240,240,250,0.02) 38%, rgba(255,255,255,0) 62%);
 
   --accent: var(--brand);
   --accent-hover: var(--brand-strong);
-  --accent-dim: rgba(224, 179, 65, 0.09);
-  --accent-glow: rgba(224, 179, 65, 0.22);
-  --accent-companion: #e07a5f;
-  --accent-gradient: linear-gradient(135deg, #e0b341 0%, #b8860b 100%);
-  --on-accent: #1a1408;
-  --shadow-glow-accent: 0 2px 14px rgba(224, 179, 65, 0.2);
+  --accent-dim: rgba(123, 144, 255, 0.09);
+  --accent-glow: rgba(123, 144, 255, 0.2);
+  --accent-companion: #f0764f;
+  --accent-gradient: linear-gradient(135deg, #7b90ff 0%, #4b63e8 100%);
+  --on-accent: #101018;
+  --shadow-glow-accent: 0 2px 14px rgba(123, 144, 255, 0.2);
 
-  --text-primary: #f6f1e6;
-  --text-secondary: #c2b9a6;
-  --text-tertiary: #8c8576;
-  --text-gold: #f4cf63;
+  --text-primary: #f0f0f2;
+  --text-secondary: #b3b3bc;
+  --text-tertiary: #7d7d87;
+  --text-accent-strong: #a3b2ff;
 
-  --correct: #4fb477;
-  --correct-bg: rgba(79, 180, 119, 0.12);
-  --wrong: #e57367;
-  --wrong-bg: rgba(229, 115, 103, 0.12);
-  --locked: #4a4639;
+  --correct: #3dba85;
+  --correct-bg: rgba(61, 186, 133, 0.12);
+  --wrong: #e8695f;
+  --wrong-bg: rgba(232, 105, 95, 0.12);
+  --locked: #45454e;
 
-  --subject-physics: #e0b341;
-  --subject-chemistry: #4fb477;
-  --subject-economics: #e0a458;
-  --subject-biology: #e07a8f;
-  --subject-cs: #a78bda;
-  --subject-history: #d08a5e;
-  --subject-general: #6db3d6;
+  --subject-physics: #7b90ff;
+  --subject-chemistry: #3dba85;
+  --subject-economics: #d9975a;
+  --subject-biology: #d97690;
+  --subject-cs: #56b8d0;
+  --subject-history: #c98a68;
+  --subject-general: #6da3d6;
 
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.22), 0 1px 2px rgba(0, 0, 0, 0.16);
   --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.28), 0 2px 4px rgba(0, 0, 0, 0.2);
   --shadow-lg: 0 12px 34px rgba(0, 0, 0, 0.38), 0 4px 8px rgba(0, 0, 0, 0.26);
 
-  --aurora-1: rgba(224, 179, 65, 0.12);
-  --aurora-2: rgba(200, 110, 60, 0.09);
-  --aurora-3: rgba(120, 92, 196, 0.07);
+  --aurora-1: rgba(123, 144, 255, 0.07);
+  --aurora-2: rgba(240, 118, 79, 0.05);
+  --aurora-3: rgba(61, 186, 133, 0.04);
 }
 
-/* ── Twilight theme — warm dusk: amber-gold over deep violet, intentional
-   (not a toy box of neons). Keeps the dreamy mood but gives it an identity. ── */
+/* ── Twilight theme — deep dusk indigo lit by a pale periwinkle accent and a
+   low ember of peach. Same cobalt family as the brand, dimmed for nightfall. ── */
 html[data-theme="twilight"] {
   color-scheme: dark;
   --scrim: rgba(12, 8, 24, 0.48);
@@ -197,8 +199,8 @@ html[data-theme="twilight"] {
 
   --border-subtle: rgba(220, 200, 255, 0.12);
   --border-default: rgba(220, 200, 255, 0.2);
-  --border-accent: #e6b85c;
-  --border-glow: #e6b85c;
+  --border-accent: #9fb0ff;
+  --border-glow: #9fb0ff;
 
   /* Liquid-glass system tokens — twilight */
   --glass-blur: 24px;
@@ -209,24 +211,24 @@ html[data-theme="twilight"] {
   --glass-edge: inset 0 1px 0 rgba(240, 220, 255, 0.16), inset 0 0 0 1px rgba(220, 200, 255, 0.05);
   --glass-sheen: linear-gradient(135deg, rgba(240,220,255,0.12) 0%, rgba(220,200,255,0.03) 32%, rgba(255,255,255,0) 58%);
 
-  --brand: #e6b85c;
-  --brand-strong: #f3cd76;
-  --brand-bright: #f6d485;
-  --brand-soft: #dcae5e;
+  --brand: #9fb0ff;
+  --brand-strong: #b6c3ff;
+  --brand-bright: #c4ceff;
+  --brand-soft: #8496f0;
 
-  --accent: #e6b85c;
-  --accent-hover: #f3cd76;
-  --accent-dim: rgba(230, 184, 92, 0.11);
-  --accent-glow: rgba(230, 184, 92, 0.2);
-  --accent-companion: #d98c5f;
-  --accent-gradient: linear-gradient(135deg, #f3cd76 0%, #c084fc 100%);
-  --on-accent: #1c1230;
-  --shadow-glow-accent: 0 2px 14px rgba(230, 184, 92, 0.18);
+  --accent: #9fb0ff;
+  --accent-hover: #b6c3ff;
+  --accent-dim: rgba(159, 176, 255, 0.11);
+  --accent-glow: rgba(159, 176, 255, 0.2);
+  --accent-companion: #e8a075;
+  --accent-gradient: linear-gradient(135deg, #b6c3ff 0%, #7385e8 100%);
+  --on-accent: #141028;
+  --shadow-glow-accent: 0 2px 14px rgba(159, 176, 255, 0.18);
 
   --text-primary: #f3ecff;
   --text-secondary: #c4bcdc;
   --text-tertiary: #9389b4;
-  --text-gold: #f3cd76;
+  --text-accent-strong: #c4ceff;
 
   --correct: #5cc78f;
   --correct-bg: rgba(92, 199, 143, 0.14);
@@ -234,23 +236,23 @@ html[data-theme="twilight"] {
   --wrong-bg: rgba(232, 144, 138, 0.14);
   --locked: #43396a;
 
-  /* Subject colours — warm dusk palette, harmonious not clashing */
-  --subject-physics: #e6b85c;
+  /* Subject colours — dusk palette, harmonious not clashing */
+  --subject-physics: #9fb0ff;
   --subject-chemistry: #5cc78f;
   --subject-economics: #e0a458;
   --subject-biology: #e890a8;
-  --subject-cs: #b79bf0;
+  --subject-cs: #7cc4de;
   --subject-history: #d89a6e;
-  --subject-general: #c79bf0;
+  --subject-general: #b0a8e8;
 
   --shadow-sm: 0 2px 8px rgba(6, 4, 16, 0.45), inset 0 1px 0 rgba(240, 220, 255, 0.08);
   --shadow-md: 0 6px 20px rgba(6, 4, 16, 0.5), inset 0 1px 0 rgba(240, 220, 255, 0.08);
   --shadow-lg: 0 14px 40px rgba(6, 4, 16, 0.6), inset 0 1px 0 rgba(240, 220, 255, 0.1);
 
-  /* Ambient aurora — dreamy violet-amber dusk tones. */
-  --aurora-1: rgba(230, 184, 92, 0.22);
-  --aurora-2: rgba(192, 132, 252, 0.14);
-  --aurora-3: rgba(217, 140, 95, 0.14);
+  /* Ambient aurora — dreamy indigo-ember dusk tones. */
+  --aurora-1: rgba(159, 176, 255, 0.18);
+  --aurora-2: rgba(132, 150, 240, 0.12);
+  --aurora-3: rgba(232, 160, 117, 0.12);
 
   /* ── Crayon painting — twilight purple scene ── */
   --crayon-sky-top: #1a1040;
@@ -405,7 +407,7 @@ body {
    backdrop-filter. These utilities + the reusable class package that together.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Ambient gradient — warm, restrained, identity-consistent ── */
+/* ── Ambient gradient — cool, restrained, identity-consistent ── */
 html::before {
   content: "";
   position: fixed;
@@ -413,9 +415,9 @@ html::before {
   z-index: -2;
   pointer-events: none;
   background:
-    radial-gradient(ellipse at 0% 0%, rgba(184, 134, 11, 0.07) 0%, transparent 50%),
-    radial-gradient(ellipse at 100% 0%, rgba(192, 132, 252, 0.05) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 100%, rgba(47, 143, 78, 0.03) 0%, transparent 50%);
+    radial-gradient(ellipse at 0% 0%, rgba(43, 68, 224, 0.05) 0%, transparent 50%),
+    radial-gradient(ellipse at 100% 0%, rgba(224, 83, 47, 0.03) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 100%, rgba(26, 138, 92, 0.03) 0%, transparent 50%);
   opacity: 0.85;
 }
 
@@ -554,7 +556,7 @@ body::before {
   background-size: 720px 720px;
 }
 
-/* ── Engraved identity motif — a faint, repeating "scholarly" hairline weave
+/* ── Engraved identity motif — a faint, repeating hairline weave
    (think fine book-cloth or a diploma border) baked into surfaces that opt in.
    Pure CSS gradient lines, so it costs nothing to paint. ── */
 .identity-texture {
@@ -592,7 +594,7 @@ body::before {
   z-index: 1;
 }
 
-/* ── Double hairline border — an outer neutral line + a gold-tinted inner
+/* ── Double hairline border — an outer neutral line + an accent-tinted inner
    line, which reads as "engraved" / letterpress rather than a single flat
    stroke. Apply to cards/panels that should feel considered. ── */
 .engraved {
@@ -603,7 +605,7 @@ body::before {
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
-/* ── Corner identity mark — a small, consistent gold notch in the top-right
+/* ── Corner identity mark — a small, consistent accent notch in the top-right
    corner of primary cards so the *shape* itself carries the brand, the way a
    publisher's blind-emboss sits on a book cover. ── */
 .identity-corner::before {
@@ -620,23 +622,23 @@ body::before {
   z-index: 1;
 }
 
-/* ── Section-divider rule — a refined centered hairline with a gold bead, used
+/* ── Section-divider rule — a refined centered hairline with an accent bead, used
    to separate content blocks with quiet intentionality. ── */
-.rule-gold {
+.rule-accent {
   display: flex;
   align-items: center;
   gap: 12px;
   color: var(--border-default);
 }
-.rule-gold::before,
-.rule-gold::after {
+.rule-accent::before,
+.rule-accent::after {
   content: "";
   flex: 1;
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--border-default), transparent);
 }
 
-/* Hover: the engraved inner line warms to gold — a deliberate, premium cue. */
+/* Hover: the engraved inner line warms to the accent — a deliberate, premium cue. */
 .glass-card.engraved:hover,
 .glass-panel.engraved:hover {
   box-shadow:
@@ -651,7 +653,8 @@ h1,
 h2,
 h3,
 h4 {
-  font-family: var(--font-playfair), Georgia, serif;
+  font-family: var(--font-display), system-ui, sans-serif;
+  letter-spacing: -0.02em;
 }
 
 code,
@@ -1041,7 +1044,7 @@ a:active {
 /* ── Markdown content — clean, readable ── */
 .markdown-content h2 {
   margin: var(--space-lg) 0 var(--space-md);
-  font-family: var(--font-playfair), Georgia, serif;
+  font-family: var(--font-display), system-ui, sans-serif;
   font-weight: 700;
   font-size: 22px;
   color: var(--text-primary);

@@ -20,7 +20,7 @@ export default async function LegalPage({ searchParams }: { searchParams: Search
       <div style={{ maxWidth: 800, margin: "0 auto" }}>
         <h1
           style={{
-            fontFamily: "var(--font-playfair)",
+            fontFamily: "var(--font-display)",
             fontWeight: 800,
             fontSize: 32,
             marginBottom: 8,

@@ -11,7 +11,7 @@ export default function PrivacyPolicy() {
     >
       <h2
         style={{
-          fontFamily: "var(--font-playfair)",
+          fontFamily: "var(--font-display)",
           fontWeight: 700,
           fontSize: 24,
           marginBottom: 16,

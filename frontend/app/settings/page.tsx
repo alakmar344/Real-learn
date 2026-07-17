@@ -345,7 +345,7 @@ export default function SettingsPage() {
 
         <h1
           style={{
-            fontFamily: "var(--font-playfair)",
+            fontFamily: "var(--font-display)",
             fontWeight: 800,
             fontSize: 32,
             marginBottom: 8,

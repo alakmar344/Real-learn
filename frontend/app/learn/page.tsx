@@ -257,7 +257,7 @@ export default function LearnPage() {
               style={{
                 fontWeight: 700,
                 marginBottom: 8,
-                fontFamily: "var(--font-playfair)",
+                fontFamily: "var(--font-display)",
                 fontStyle: "italic",
                 fontSize: 26,
               }}
@@ -336,7 +336,7 @@ export default function LearnPage() {
                 visually styled as the compact header line it always was. */}
             <h1
               style={{
-                fontFamily: "var(--font-playfair)",
+                fontFamily: "var(--font-display)",
                 fontStyle: "italic",
                 fontWeight: 600,
                 fontSize: 15,

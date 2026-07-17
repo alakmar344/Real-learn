@@ -58,10 +58,10 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
 
       // Rich dark gradient — purple core to teal edges
       const bgGrad = ctx.createRadialGradient(W / 2, H * 0.35, 80, W / 2, H / 2, H);
-      bgGrad.addColorStop(0, "#6c3c97");
-      bgGrad.addColorStop(0.45, "#3b1566");
-      bgGrad.addColorStop(0.85, "#0f2b46");
-      bgGrad.addColorStop(1, "#051b2c");
+      bgGrad.addColorStop(0, "#2b2f6e");
+      bgGrad.addColorStop(0.45, "#181c4a");
+      bgGrad.addColorStop(0.85, "#101229");
+      bgGrad.addColorStop(1, "#0a0b18");
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, W, H);
 
@@ -100,7 +100,7 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
       ctx.font = "900 92px Inter, sans-serif";
       ctx.fillStyle = "#ffffff";
       ctx.fillText("Real", W / 2 + 10, 180);
-      ctx.fillStyle = "#00e0c6";
+      ctx.fillStyle = "#9fb0ff";
       ctx.fillText("Learn", W / 2 + 10, 280);
       ctx.font = "600 36px Inter, sans-serif";
       ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
@@ -134,7 +134,7 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
       const dot = (dx: number, dy: number) => {
         ctx.beginPath();
         ctx.arc(72 + dx, boxY + dy, 6, 0, Math.PI * 2);
-        ctx.fillStyle = "#00e0c6";
+        ctx.fillStyle = "#9fb0ff";
         ctx.fill();
       };
       dot(0, 0);
@@ -143,12 +143,12 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
       dot(W - 72 - 72, 480);
 
       ctx.textAlign = "center";
-      ctx.fillStyle = "#00e0c6";
+      ctx.fillStyle = "#9fb0ff";
       ctx.font = "600 42px Inter, sans-serif";
       ctx.fillText("QUESTION", W / 2, boxY + 70);
 
       ctx.fillStyle = "#ffffff";
-      ctx.font = "700 56px Georgia, serif";
+      ctx.font = "700 56px 'Space Grotesk', Inter, sans-serif";
       const qLines = wrapText(ctx, question, W - 184, 4);
       const qStartY = boxY + 160;
       qLines.forEach((ln, i) => ctx.fillText(ln, W / 2, qStartY + i * 90));
@@ -156,9 +156,9 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
 
       // Stats row — clean bordered glass pills
       const pills = [
-        { text: `⭐ Level ${info.level} · ${levelTitle(info.level)}`, color: "#7a47f0" },
-        { text: `🔥 ${streak}-day streak`, color: "#ff5a7e" },
-        totalScore >= maxScore ? { text: "🏆 Perfect run", color: "#00e0c6" } : { text: "✅ Completed", color: "#00e0c6" },
+        { text: `⭐ Level ${info.level} · ${levelTitle(info.level)}`, color: "#3b5bff" },
+        { text: `🔥 ${streak}-day streak`, color: "#f0764f" },
+        totalScore >= maxScore ? { text: "🏆 Perfect run", color: "#9fb0ff" } : { text: "✅ Completed", color: "#9fb0ff" },
       ];
       ctx.font = "700 34px Inter, sans-serif";
       let px = 72;
@@ -201,8 +201,8 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
 
       // Progress arc
       const arcGrad = ctx.createLinearGradient(cx - r, cy, cx + r, cy);
-      arcGrad.addColorStop(0, "#00e0c6");
-      arcGrad.addColorStop(1, "#7a47f0");
+      arcGrad.addColorStop(0, "#9fb0ff");
+      arcGrad.addColorStop(1, "#3b5bff");
       ctx.strokeStyle = arcGrad;
       ctx.lineWidth = 18;
       ctx.lineCap = "round";
@@ -236,14 +236,14 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
 
       ctx.textAlign = "center";
       ctx.font = "700 32px Inter, sans-serif";
-      ctx.fillStyle = "#00e0c6";
+      ctx.fillStyle = "#9fb0ff";
       ctx.fillText(totalScore >= maxScore ? "PERFECT" : "COMPLETED", cx, cy + 80);
 
       ctx.textAlign = "left";
 
       // CTA band — prominent but structured
       const ctaY = H - 130;
-      ctx.fillStyle = "#00e0c6";
+      ctx.fillStyle = "#9fb0ff";
       ctx.shadowColor = "rgba(0, 224, 198, 0.35)";
       ctx.shadowBlur = 35;
       ctx.beginPath();
@@ -258,7 +258,7 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
       ctx.fill();
 
       ctx.textAlign = "center";
-      ctx.fillStyle = "#051b2c";
+      ctx.fillStyle = "#0a0b18";
       ctx.font = "900 46px Inter, sans-serif";
       ctx.fillText("👉  REALLEARN.SITE  👈", W / 2, ctaY + 65);
 

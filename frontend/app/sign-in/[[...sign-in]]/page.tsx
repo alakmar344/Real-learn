@@ -29,7 +29,7 @@ export default function SignInPage() {
               border: "1px solid var(--border-default)",
             },
             headerTitle: {
-              fontFamily: "var(--font-playfair)",
+              fontFamily: "var(--font-display)",
               color: "var(--text-primary)",
             },
             headerSubtitle: {
