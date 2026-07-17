@@ -130,6 +130,35 @@ the themed sections below and the chronological table at the end.
   to Fast — feels like a smooth physical switch rather than a snap. Purely
   presentational.
 
+### Today — July 17, 2026 (optional anonymous feedback + reconsent)
+
+- **Feature — optional anonymous feedback after first lesson (`23779fa`).**
+  Added a low-friction review prompt that appears the day after a user
+  completes their **first** learning journey. It asks for a 1–10 star rating
+  plus two optional free-text notes ("what you liked", "what we should
+  improve"). The prompt is strictly optional and never forced — users can skip,
+  ask to be reminded later (7-day snooze), or decline permanently. The first
+  completion timestamp is captured once in `progressStore`
+  (`firstLessonCompletedAt`) so the prompt is gated to ≥24h after that moment.
+  On submit, the review is `POST`ed to a new **public** backend endpoint
+  `POST /api/feedback` that stores **only** the rating and review text — no IP
+  address, Clerk ID, or email, and no auth header — so the feedback is
+  completely anonymous. A local flag in `reallearn-feedback` (localStorage)
+  records that feedback was given (or declined) so the prompt never reappears;
+  that flag is cleared by "Delete My Data" and included in "Export My Data".
+- **Legal — reconsent + Privacy Policy v2.6 / Terms of Service v2.4
+  (`f1a3398`, `23779fa` follow-through).** Disclosed the new optional anonymous
+  feedback feature in both legal docs: what data is collected (only the rating
+  and review text), that it is stripped of all identifiers (IP/Clerk ID/email),
+  that the prompt is optional/non-forcing, and that a local-only "given" flag
+  prevents re-prompting (cleared via Delete My Data). Bumped
+  `CURRENT_PRIVACY_VERSION` → `2.6` and `CURRENT_TERMS_VERSION` → `2.4` (and the
+  matching backend `PRIVACY_POLICY_VERSION` / `TERMS_OF_SERVICE_VERSION`
+  defaults) so all users are re-prompted to re-accept the updated policies. The
+  re-accept modal's change lists now include the feedback disclosure. No new
+  server-side personal data and no new third parties, so reconsent is a
+  transparency/consent-currency update rather than a new-collection event.
+
 ### Today — July 16, 2026 (security + legal + bug fixes, UX polish, home layout)
 - **Backend regression & robustness fixes.** Raised the fast-mode
   `maxOutputTokens` from 2500 → 4000 in `backend/src/lib/gemma.js` to stop the
@@ -749,6 +778,9 @@ vendors). All of these live between `2b239b5` (start) and now:
 | 2026-07-15 | legal docs | **Current: Privacy Policy v2.5, Cookie Policy v2.2 (reconsent), ToS v2.3** |
 | 2026-07-16 | `f57b9ed` | Restore ReaLearn's scholarly gold identity (gold/amber accent, replace generic iOS-blue) |
 | 2026-07-16 | `f4c2d9c` | Material texture + identity-by-shape (paper/mottle grain, engraved border, gold corner) |
+| 2026-07-17 | `23779fa` | Optional anonymous feedback prompt (1–10 stars + notes) shown the day after first lesson; public /api/feedback stores only rating+text (no identifiers) |
+| 2026-07-17 | `f1a3398` | Privacy Policy v2.6 + Terms of Service v2.4 disclose the anonymous feedback feature |
+| 2026-07-17 | reconsent | Bump CURRENT_PRIVACY_VERSION 2.6 / CURRENT_TERMS_VERSION 2.4 (frontend + backend) so all users re-accept |
 
 ---
 

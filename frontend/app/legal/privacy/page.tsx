@@ -20,7 +20,7 @@ export default function PrivacyPolicy() {
         Privacy Policy
       </h2>
       <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
-        Last updated: July 15, 2026 (version 2.5)
+        Last updated: July 17, 2026 (version 2.6)
       </p>
 
       <section style={{ marginBottom: 28 }}>
@@ -111,6 +111,19 @@ export default function PrivacyPolicy() {
             dates, and part/quiz counts) is kept in localStorage. Both live only on your device
             and are <strong>never transmitted to or stored on our servers</strong>; re-opening a
             saved lesson loads it directly from your device.
+          </li>
+          <li>
+            <strong>Optional Feedback (anonymous, not linked to you):</strong> The day after you
+            complete your <em>first</em> learning journey, RealLearn may invite you to leave an
+            optional review: what you liked, what we should improve, and a 1–10 star rating. This
+            feedback is <strong>completely anonymous</strong>. When you submit it, we store
+            <strong> only</strong> the review text and rating — we deliberately strip and never
+            include your IP address, Clerk ID, or email, and the request is sent with no account
+            identity attached. The prompt is optional and never forced: you can skip it, ask to be
+            reminded later, or dismiss it permanently. Once you have responded (or permanently
+            declined), we record a single local flag in your browser so the prompt does not appear
+            again — this &quot;given&quot; flag lives only in your device&apos;s localStorage and is
+            never sent to our servers. You can clear it at any time with &quot;Delete My Data&quot;.
           </li>
           <li>
             <strong>Learning Progress &amp; Achievements (stored locally):</strong> To power our
@@ -384,8 +397,19 @@ export default function PrivacyPolicy() {
            by posting the new policy on this page and updating the &quot;Last updated&quot; date.
            Continued use of the service after changes constitutes acceptance of the updated policy.
          </p>
-         <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
-           <strong>Version 2.5 (effective July 15, 2026).</strong> This update discloses new{" "}
+          <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+            <strong>Version 2.6 (effective July 17, 2026).</strong> This update discloses the new
+            optional, anonymous <strong>feedback</strong> feature: the day after a user completes
+            their first learning journey, RealLearn may invite an optional 1–10 star rating plus
+            free-text notes on what they liked and what to improve. The review is submitted with no
+            account identity and we store only the rating and review text — never the IP address,
+            Clerk ID, or email. The prompt is optional, never forced, and is suppressed once the
+            user responds (or declines) via a local-only flag in localStorage. No new third parties
+            and no change to analytics. We are surfacing this disclosure for transparency; the
+            change does not re-prompt consent because no new server-side personal data is collected.
+          </p>
+          <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+            <strong>Version 2.5 (effective July 15, 2026).</strong> This update discloses new{" "}
            <strong>locally-stored personalization data</strong> introduced with our friendlier
            experience: the date you first used RealLearn on this device (shown as a
            &quot;learning together for N days&quot; counter), once-per-day markers that prevent a

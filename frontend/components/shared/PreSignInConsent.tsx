@@ -17,14 +17,16 @@ import {
 const ALLOWED_PATHS_WHEN_DECLINED = ["/sign-in", "/sign-up", "/legal"];
 
 const POLICY_CHANGES = [
-  "Privacy Policy updated to version 2.5 — all users are re-prompted to re-accept.",
+  "Privacy Policy updated to version 2.6 — all users are re-prompted to re-accept.",
+  "Optional anonymous feedback: the day after you complete your first lesson, RealLearn may invite an optional 1–10 star rating plus free-text notes on what you liked and what to improve. The review is submitted with no account identity and we store only the rating and review text — never your IP address, Clerk ID, or email. The prompt is optional, never forced, and is suppressed once you respond (or decline) via a local-only flag in localStorage.",
   "New locally-stored personalization data: the date you first used RealLearn on this device (shown as a \"learning together for N days\" counter), once-per-day markers so seasonal or time-of-day greetings never appear twice in a day, and an on-screen greeting that may display your first name. All of this stays in your browser only — nothing is sent to our servers — and \"Delete My Data\" or clearing your browser data removes it.",
   "Saved lessons live in IndexedDB (since v2.4): the full content of every saved lesson (chat) is stored in your browser's IndexedDB on your own device, with only a lightweight history index (question, scores, dates) in localStorage. Nothing is sent to our servers, and re-opening a saved lesson loads it locally.",
   "IP addresses are anonymized before storage (since v2.3): consent records keep only a truncated network prefix (e.g. 203.0.113.0), never your full IP address.",
 ];
 
 const TERMS_CHANGES = [
-  "Terms of Service updated to version 2.3: your saved lesson history lives only on your device (full lesson content in browser IndexedDB, lightweight index in localStorage). Clearing your browser's site data removes your saved lessons and we cannot restore them — re-opening such an entry generates the lesson again.",
+  "Terms of Service updated to version 2.4: your saved lesson history lives only on your device (full lesson content in browser IndexedDB, lightweight index in localStorage). Clearing your browser's site data removes your saved lessons and we cannot restore them — re-opening such an entry generates the lesson again.",
+  "Optional feedback (new Section 22): the day after your first completed lesson, RealLearn may invite an optional 1–10 star rating plus free-text notes. The review is entirely optional and never required to use the Service; it is submitted anonymously (no account identity, no IP/Clerk ID/email stored), and a local flag prevents the prompt from reappearing once you respond or decline.",
 ];
 
 // Build year/month options once
