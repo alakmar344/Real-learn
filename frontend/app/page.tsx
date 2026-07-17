@@ -7,6 +7,7 @@ import HomeStats from "@/components/homepage/HomeStats";
 import LoadingCinematic from "@/components/shared/LoadingCinematic";
 import LiveRegion from "@/components/shared/LiveRegion";
 import Footer from "@/components/shared/Footer";
+import FeedbackGate from "@/components/shared/FeedbackGate";
 import { useLesson } from "@/hooks/useLesson";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { isConsentCurrent, readLegalConsent, writeLegalConsent } from "@/lib/legalConsent";
@@ -214,6 +215,10 @@ export default function HomePage() {
         </section>
 
         <Footer />
+
+        {/* Optional, anonymous review — shows the day after the first lesson
+            on any return visit, so it is never missed after a refresh. */}
+        <FeedbackGate />
 
         {loadingQuestion ? (
           <LoadingCinematic question={loadingQuestion} />

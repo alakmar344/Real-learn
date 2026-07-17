@@ -9,6 +9,7 @@ import LoadingCinematic from "@/components/shared/LoadingCinematic";
 import ErrorState from "@/components/shared/ErrorState";
 import LiveRegion from "@/components/shared/LiveRegion";
 import Footer from "@/components/shared/Footer";
+import FeedbackGate from "@/components/shared/FeedbackGate";
 import { showToast } from "@/components/shared/ToastContainer";
 import { useLessonStore } from "@/store/lessonStore";
 import { usePreferenceStore } from "@/store/preferenceStore";
@@ -426,6 +427,11 @@ export default function LearnPage() {
               Learn Something New
             </button>
           )}
+
+          {/* Optional, anonymous review — appears the day after the first
+              lesson on any return visit (not only at the moment of completion).
+              Hidden while the completion screen is up to avoid a duplicate. */}
+          {!showCompletion && <FeedbackGate />}
         </div>
 
         {activePart ? (
