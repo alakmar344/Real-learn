@@ -85,7 +85,7 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
   return (
     <section
       ref={sectionRef}
-      className="animate-fade-up engraved identity-texture"
+      className="animate-fade-up engraved identity-texture texture-noise"
       aria-label="Journey complete"
       style={{
         marginTop: 32,

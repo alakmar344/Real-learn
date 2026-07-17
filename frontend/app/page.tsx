@@ -143,8 +143,8 @@ export default function HomePage() {
                 height: "min(280px, 45vw)",
                 borderRadius: "50%",
                 background:
-                  "radial-gradient(ellipse at center, rgba(43, 68, 224, 0.1) 0%, rgba(224, 83, 47, 0.05) 45%, transparent 70%)",
-                filter: "blur(50px)",
+                  "radial-gradient(ellipse at center, rgba(43, 68, 224, 0.12) 0%, rgba(216, 74, 40, 0.06) 45%, transparent 70%)",
+                filter: "blur(60px)",
                 zIndex: 0,
                 pointerEvents: "none",
               }}

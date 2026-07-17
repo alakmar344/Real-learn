@@ -54,7 +54,7 @@ export default function ThemeModal({ open, onClose }: Props) {
       <div
         ref={trapRef}
         tabIndex={-1}
-        className="animate-fade-up"
+        className="animate-fade-up engraved identity-texture texture-noise"
         onClick={(e) => e.stopPropagation()}
         style={{
           width: "100%",
@@ -96,6 +96,7 @@ export default function ThemeModal({ open, onClose }: Props) {
                 key={opt.value}
                 type="button"
                 onClick={() => setTheme(opt.value)}
+                className="interactive-lift"
                 style={{
                   display: "flex",
                   alignItems: "center",

@@ -10,7 +10,7 @@ interface Props {
 export default function Navbar({ compact = false }: Props) {
   return (
     <header
-      className="engraved"
+      className="engraved texture-dots"
       style={{
         position: "sticky",
         top: 0,
@@ -61,15 +61,21 @@ export default function Navbar({ compact = false }: Props) {
             RL
           </div>
           <span
+            className="animate-gradient-shift"
             style={{
               fontFamily: "var(--font-display)",
               fontWeight: 800,
               fontSize: 26,
               letterSpacing: -0.5,
+              background: "linear-gradient(135deg, var(--text-primary) 0%, var(--accent) 50%, var(--text-primary) 100%)",
+              backgroundSize: "200% 100%",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
             }}
           >
-            <span style={{ color: "var(--text-primary)" }}>Real</span>
-            <span style={{ color: "var(--accent)" }}>Learn</span>
+            <span style={{ WebkitTextFillColor: "var(--text-primary)" }}>Real</span>
+            <span style={{ WebkitTextFillColor: "var(--accent)" }}>Learn</span>
           </span>
         </Link>
 

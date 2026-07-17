@@ -88,6 +88,7 @@ export default function HomeStats({ onStartTopic }: Props) {
           }
           onStartTopic(topic);
         }}
+        className="interactive-press glow-accent"
         style={{
           display: "inline-flex",
           alignItems: "center",
@@ -142,7 +143,10 @@ export default function HomeStats({ onStartTopic }: Props) {
             padding: "10px 14px",
             cursor: "pointer",
             boxShadow: "var(--shadow-sm)",
+            position: "relative",
+            overflow: "hidden",
           }}
+          className="interactive-lift texture-noise"
         >
           <span style={{ fontSize: 20 }}>↩️</span>
           <span style={{ flex: 1, minWidth: 0 }}>

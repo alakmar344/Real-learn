@@ -84,7 +84,7 @@ const PartCardBase = ({
 
   return (
     <article
-      className="part-card animate-fade-up engraved identity-texture identity-corner"
+      className="part-card animate-fade-up engraved identity-texture identity-corner texture-noise"
       aria-label={`Part ${part.partNumber}: ${part.title}`}
       style={{
         marginTop: varSpaceXl,
@@ -95,7 +95,18 @@ const PartCardBase = ({
         padding: "clamp(24px, 5vw, 40px)",
         position: "relative",
         overflow: "hidden",
-        transition: "all 500ms var(--ease-color)",
+        transition: "all 500ms var(--ease-spring)",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = "translateY(-4px) scale(1.005)";
+        e.currentTarget.style.boxShadow =
+          "var(--shadow-lg), var(--glass-edge), 0 0 0 4px var(--accent-glow)";
+        e.currentTarget.style.borderColor = "var(--border-accent)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = "translateY(0) scale(1)";
+        e.currentTarget.style.boxShadow = "var(--glass-shadow), var(--glass-edge)";
+        e.currentTarget.style.borderColor = "var(--border-subtle)";
       }}
     >
       <div

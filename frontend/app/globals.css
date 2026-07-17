@@ -10,57 +10,57 @@
 :root {
   color-scheme: light;
 
-  /* ── RealLearn identity — editorial ink & cobalt.
-     Warm paper white, near-black ink, ONE confident cobalt-blue accent with a
-     vermilion counterpoint — the classic Swiss-poster pairing that reads as
-     designed-by-a-human: confident, current, zero gimmicks. The interest comes
-     from typography, spacing and restraint, not from loud color. ── */
-  --brand: #2b44e0;          /* working cobalt — Klein-blue lineage, legible */
-  --brand-strong: #2236b8;
-  --brand-bright: #3b5bff;
-  --brand-soft: #6479f0;
+  /* ── RealLearn identity — refined editorial ink & cobalt.
+     Warm paper white, near-black ink, a confident cobalt-blue accent with a
+     vermilion counterpoint. The palette is slightly warmed and deepened for a
+     more mature, premium feel while retaining its designed-by-a-human soul. ── */
+  --brand: #2f4cd0;
+  --brand-strong: #2538a8;
+  --brand-bright: #4060f0;
+  --brand-soft: #5a6ce0;
 
-  --bg-primary: #f7f6f2;
-  --bg-surface: rgba(255, 255, 252, 0.74);
-  --bg-card: rgba(255, 255, 252, 0.82);
-  --bg-card-hover: rgba(255, 255, 252, 0.94);
-  --bg-glass: rgba(255, 254, 250, 0.72);
-  --bg-solid: #fdfcf9;
+  --bg-primary: #f5f4f0;
+  --bg-surface: rgba(255, 253, 250, 0.78);
+  --bg-card: rgba(255, 254, 252, 0.84);
+  --bg-card-hover: rgba(255, 255, 253, 0.95);
+  --bg-glass: rgba(253, 252, 248, 0.74);
+  --bg-solid: #faf9f6;
+  --bg-warm: rgba(250, 248, 244, 0.55);
 
-  --border-subtle: rgba(23, 23, 33, 0.08);
+  --border-subtle: rgba(23, 23, 33, 0.09);
   --border-default: rgba(23, 23, 33, 0.14);
   --border-accent: var(--brand);
-  --border-glow: rgba(43, 68, 224, 0.28);
+  --border-glow: rgba(43, 68, 224, 0.25);
 
-  --glass-blur: 26px;
-  --glass-blur-strong: 40px;
-  --glass-saturate: 165%;
-  --glass-highlight: rgba(255, 255, 255, 0.85);
-  --glass-shadow: 0 4px 22px rgba(25, 25, 45, 0.05), 0 1px 3px rgba(25, 25, 45, 0.04);
-  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 0 0 1px rgba(255, 255, 255, 0.12);
-  --glass-sheen: linear-gradient(135deg, rgba(255,255,255,0.34) 0%, rgba(255,255,255,0.08) 38%, rgba(255,255,255,0) 62%);
+  --glass-blur: 28px;
+  --glass-blur-strong: 44px;
+  --glass-saturate: 170%;
+  --glass-highlight: rgba(255, 255, 255, 0.88);
+  --glass-shadow: 0 4px 24px rgba(25, 25, 45, 0.06), 0 1px 3px rgba(25, 25, 45, 0.04);
+  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.85), inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+  --glass-sheen: linear-gradient(135deg, rgba(255,255,255,0.38) 0%, rgba(255,255,255,0.1) 38%, rgba(255,255,255,0) 62%);
 
   --accent: var(--brand);
   --accent-hover: var(--brand-strong);
-  --accent-dim: rgba(43, 68, 224, 0.06);
-  --accent-glow: rgba(43, 68, 224, 0.14);
-  --accent-companion: #e0532f;
-  --accent-gradient: linear-gradient(135deg, #3b5bff 0%, #2236b8 100%);
+  --accent-dim: rgba(43, 68, 224, 0.07);
+  --accent-glow: rgba(43, 68, 224, 0.16);
+  --accent-companion: #d84a28;
+  --accent-gradient: linear-gradient(135deg, #4060f0 0%, #2538a8 100%);
   --on-accent: #ffffff;
-  --shadow-glow-accent: 0 2px 14px rgba(43, 68, 224, 0.18);
+  --shadow-glow-accent: 0 2px 16px rgba(43, 68, 224, 0.2);
 
   --text-primary: #17171f;
   --text-secondary: #4c4c58;
-  --text-tertiary: #85858f;
-  --text-accent-strong: #2b44e0;
+  --text-tertiary: #7a7a86;
+  --text-accent-strong: #2f4cd0;
 
   --correct: #1a8a5c;
   --correct-bg: rgba(26, 138, 92, 0.1);
   --wrong: #d24040;
   --wrong-bg: rgba(210, 64, 64, 0.09);
-  --locked: #a8a8ae;
+  --locked: #a0a0a6;
 
-  --subject-physics: #2b44e0;
+  --subject-physics: #2f4cd0;
   --subject-chemistry: #1a8a5c;
   --subject-economics: #c96a1f;
   --subject-biology: #bd3f66;
@@ -95,12 +95,13 @@
 
   --shadow-sm: 0 1px 3px rgba(25, 25, 45, 0.05), 0 1px 2px rgba(25, 25, 45, 0.03);
   --shadow-md: 0 4px 14px rgba(25, 25, 45, 0.07), 0 2px 4px rgba(25, 25, 45, 0.03);
-  --shadow-lg: 0 12px 34px rgba(25, 25, 45, 0.09), 0 4px 8px rgba(25, 25, 45, 0.04);
+  --shadow-lg: 0 12px 34px rgba(25, 25, 45, 0.1), 0 4px 8px rgba(25, 25, 45, 0.05);
   --shadow-glow-correct: 0 0 24px rgba(26, 138, 92, 0.16);
 
   --ease-reveal: cubic-bezier(0.22, 0.61, 0.36, 1);
   --ease-color: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
 
   --dur-fast: 160ms;
   --dur-base: 260ms;
@@ -113,9 +114,9 @@
   --focus-ring: 0 0 0 3px var(--accent-glow);
   --focus-ring-simple: 0 0 0 2px var(--accent);
 
-  --aurora-1: rgba(43, 68, 224, 0.08);
-  --aurora-2: rgba(224, 83, 47, 0.05);
-  --aurora-3: rgba(26, 138, 92, 0.05);
+  --aurora-1: rgba(43, 68, 224, 0.09);
+  --aurora-2: rgba(216, 74, 40, 0.06);
+  --aurora-3: rgba(26, 138, 92, 0.06);
 }
 
 /* ── Dark theme — neutral charcoal ink, the same cobalt brightened just enough
@@ -123,52 +124,52 @@
 html[data-theme="dark"] {
   color-scheme: dark;
 
-  --brand: #7b90ff;
-  --brand-strong: #93a5ff;
-  --brand-bright: #a3b2ff;
+  --brand: #8898ff;
+  --brand-strong: #9dacff;
+  --brand-bright: #a8b8ff;
   --brand-soft: #6479f0;
 
-  --bg-primary: #101014;
-  --bg-surface: rgba(28, 28, 34, 0.72);
-  --bg-card: rgba(30, 30, 37, 0.8);
-  --bg-card-hover: rgba(40, 40, 48, 0.92);
-  --bg-glass: rgba(26, 26, 32, 0.72);
-  --bg-solid: #17171c;
+  --bg-primary: #0e0e14;
+  --bg-surface: rgba(28, 28, 36, 0.74);
+  --bg-card: rgba(30, 30, 38, 0.82);
+  --bg-card-hover: rgba(42, 42, 52, 0.94);
+  --bg-glass: rgba(24, 24, 32, 0.74);
+  --bg-solid: #16161e;
 
   --border-subtle: rgba(235, 235, 245, 0.07);
   --border-default: rgba(235, 235, 245, 0.13);
   --border-accent: var(--brand);
-  --border-glow: rgba(123, 144, 255, 0.3);
+  --border-glow: rgba(136, 152, 255, 0.28);
 
-  --glass-blur: 26px;
-  --glass-blur-strong: 40px;
-  --glass-saturate: 150%;
+  --glass-blur: 28px;
+  --glass-blur-strong: 44px;
+  --glass-saturate: 155%;
   --glass-highlight: rgba(240, 240, 250, 0.12);
-  --glass-shadow: 0 4px 22px rgba(0, 0, 0, 0.34), 0 1px 4px rgba(0, 0, 0, 0.22);
-  --glass-edge: inset 0 1px 0 rgba(240, 240, 250, 0.09), inset 0 0 0 1px rgba(235, 235, 245, 0.04);
-  --glass-sheen: linear-gradient(135deg, rgba(240,240,250,0.08) 0%, rgba(240,240,250,0.02) 38%, rgba(255,255,255,0) 62%);
+  --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.38), 0 1px 4px rgba(0, 0, 0, 0.22);
+  --glass-edge: inset 0 1px 0 rgba(240, 240, 250, 0.1), inset 0 0 0 1px rgba(235, 235, 245, 0.05);
+  --glass-sheen: linear-gradient(135deg, rgba(240,240,250,0.1) 0%, rgba(240,240,250,0.03) 38%, rgba(255,255,255,0) 62%);
 
   --accent: var(--brand);
   --accent-hover: var(--brand-strong);
-  --accent-dim: rgba(123, 144, 255, 0.09);
-  --accent-glow: rgba(123, 144, 255, 0.2);
-  --accent-companion: #f0764f;
-  --accent-gradient: linear-gradient(135deg, #7b90ff 0%, #4b63e8 100%);
-  --on-accent: #101018;
-  --shadow-glow-accent: 0 2px 14px rgba(123, 144, 255, 0.2);
+  --accent-dim: rgba(136, 152, 255, 0.1);
+  --accent-glow: rgba(136, 152, 255, 0.22);
+  --accent-companion: #f48060;
+  --accent-gradient: linear-gradient(135deg, #8898ff 0%, #5a6ce0 100%);
+  --on-accent: #0e0e18;
+  --shadow-glow-accent: 0 2px 16px rgba(136, 152, 255, 0.22);
 
-  --text-primary: #f0f0f2;
-  --text-secondary: #b3b3bc;
-  --text-tertiary: #7d7d87;
-  --text-accent-strong: #a3b2ff;
+  --text-primary: #f0f0f4;
+  --text-secondary: #b0b0ba;
+  --text-tertiary: #70707a;
+  --text-accent-strong: #a8b8ff;
 
   --correct: #3dba85;
   --correct-bg: rgba(61, 186, 133, 0.12);
-  --wrong: #e8695f;
-  --wrong-bg: rgba(232, 105, 95, 0.12);
-  --locked: #45454e;
+  --wrong: #e87060;
+  --wrong-bg: rgba(232, 112, 96, 0.12);
+  --locked: #404048;
 
-  --subject-physics: #7b90ff;
+  --subject-physics: #8898ff;
   --subject-chemistry: #3dba85;
   --subject-economics: #d9975a;
   --subject-biology: #d97690;
@@ -176,12 +177,12 @@ html[data-theme="dark"] {
   --subject-history: #c98a68;
   --subject-general: #6da3d6;
 
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.22), 0 1px 2px rgba(0, 0, 0, 0.16);
-  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.28), 0 2px 4px rgba(0, 0, 0, 0.2);
-  --shadow-lg: 0 12px 34px rgba(0, 0, 0, 0.38), 0 4px 8px rgba(0, 0, 0, 0.26);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.24), 0 1px 2px rgba(0, 0, 0, 0.16);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.22);
+  --shadow-lg: 0 12px 34px rgba(0, 0, 0, 0.4), 0 4px 8px rgba(0, 0, 0, 0.28);
 
-  --aurora-1: rgba(123, 144, 255, 0.07);
-  --aurora-2: rgba(240, 118, 79, 0.05);
+  --aurora-1: rgba(136, 152, 255, 0.08);
+  --aurora-2: rgba(244, 128, 96, 0.05);
   --aurora-3: rgba(61, 186, 133, 0.04);
 }
 
@@ -487,14 +488,16 @@ html::before {
   backdrop-filter: blur(18px) saturate(180%) !important;
 }
 
-/* Crayon background — subtle, refined, behind the glass. */
+/* Crayon background — visible, beautiful, behind the glass.
+   A soft warm overlay lets the artwork breathe through while keeping text
+   readable. On high-perf devices we add a subtle blur for depth. */
 .crayon-bg {
   position: fixed;
   inset: 0;
   height: 100dvh;
   z-index: -1;
   pointer-events: none;
-  opacity: 0.12;
+  opacity: 0.28;
   background-image: url("/crayon-bg-mobile.svg");
   background-size: cover;
   background-position: center;
@@ -502,9 +505,9 @@ html::before {
   will-change: transform;
   transform: translateZ(0);
   backface-visibility: hidden;
-  filter: saturate(0.5) brightness(1.05);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0.8) 100%);
-  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0.8) 100%);
+  filter: saturate(0.85) brightness(1.02);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.4) 30%, rgba(0,0,0,0.75) 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.4) 30%, rgba(0,0,0,0.75) 100%);
 }
 
 /* Desktop: landscape SVG */
@@ -516,27 +519,38 @@ html::before {
 
 html[data-theme="dark"] .crayon-bg,
 html[data-theme="twilight"] .crayon-bg {
-  opacity: 0.1;
-  filter: saturate(0.3) brightness(0.15);
+  opacity: 0.22;
+  filter: saturate(0.5) brightness(0.35);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.35) 30%, rgba(0,0,0,0.7) 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.35) 30%, rgba(0,0,0,0.7) 100%);
+}
+
+/* High tier: add subtle blur to crayon for depth */
+html[data-perf="high"] .crayon-bg {
+  filter: saturate(0.8) brightness(1.0) blur(0.5px);
+}
+html[data-theme="dark"][data-perf="high"] .crayon-bg,
+html[data-theme="twilight"][data-perf="high"] .crayon-bg {
+  filter: saturate(0.45) brightness(0.3) blur(0.5px);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   Material texture — gives the flat glass surfaces a real, tactile feel so the
-   UI reads as "crafted" instead of oversimplified. Two layers:
-     • a fine paper fiber (multiply) that sits on every surface
-     • a soft mottled wash (soft-light) for organic, non-uniform depth
-   Both are GPU-cheap static images and composite once.
+   Material textures — layered grain for a richer, tactile feel.
+   Three complementary layers that composite once for a handcrafted surface:
+     • fine fiber (multiply) — paper grain, slightly stronger
+     • soft mottle (soft-light) — organic depth
+     • micro-noise (overlay, opt-in via .texture-noise) — Gen Z tactile grain
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Fine paper fiber. Slightly stronger than before (0.05) but as fine grain, so
-   it reads as texture/materialscience, never "dust". */
+/* Fine paper fiber. Stronger grain (0.06) that reads as texture/materialscience,
+   never "dust". */
 body::after {
   content: "";
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  opacity: 0.05;
+  opacity: 0.06;
   mix-blend-mode: multiply;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
   background-size: 180px 180px;
@@ -550,10 +564,30 @@ body::before {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  opacity: 0.5;
+  opacity: 0.55;
   mix-blend-mode: soft-light;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='600' height='600' filter='url(%23m)' opacity='0.6'/%3E%3C/svg%3E");
   background-size: 720px 720px;
+}
+
+/* Micro-noise overlay — a finer, higher-frequency grain that gives interactive
+   surfaces a "tactile" feel, like premium paper or a well-worn object.
+   Applied selectively via .texture-noise on cards, buttons, inputs. */
+.texture-noise::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.04;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+  background-size: 100px 100px;
+}
+.texture-noise > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* ── Engraved identity motif — a faint, repeating hairline weave
@@ -751,10 +785,15 @@ a:active {
 }
 
 @keyframes unlockPop {
-  0% { transform: scale(0.7); }
-  50% { transform: scale(1.08); box-shadow: 0 0 40px var(--accent-glow); }
-  100% { transform: scale(1); }
-}
+   0% { transform: scale(0.7); }
+   50% { transform: scale(1.08); box-shadow: 0 0 40px var(--accent-glow); }
+   100% { transform: scale(1); }
+ }
+
+@keyframes crayonReveal {
+   from { opacity: 0; transform: translateZ(0) scale(1.02); }
+   to { opacity: 1; transform: translateZ(0) scale(1); }
+ }
 
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
@@ -968,6 +1007,79 @@ a:active {
   animation: shimmer 3s linear infinite;
 }
 .animate-spin { animation: spin 1.5s linear infinite; }
+
+/* ── Gen Z interaction utilities — springy, tactile, satisfying ── */
+
+/* Interactive lift — spring-based hover with accent glow */
+.interactive-lift {
+  transition: transform 420ms var(--ease-spring), box-shadow 420ms var(--ease-spring), border-color 320ms var(--ease-color);
+}
+.interactive-lift:hover {
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: var(--shadow-lg), var(--glass-edge), 0 0 0 4px var(--accent-glow);
+  border-color: var(--border-accent);
+}
+
+/* Press feedback — satisfying click/tap */
+.interactive-press:active {
+  transform: scale(0.97) !important;
+  transition: transform 120ms var(--ease-color) !important;
+}
+
+/* Glow accent hover — subtle brand glow on interactive elements */
+.glow-accent {
+  transition: box-shadow 400ms var(--ease-spring), border-color 400ms var(--ease-color), background 400ms var(--ease-color);
+}
+.glow-accent:hover {
+  box-shadow: var(--shadow-lg), var(--glass-edge), 0 0 24px var(--accent-glow);
+  border-color: var(--border-accent);
+  background: var(--bg-card-hover);
+}
+
+/* Ripple container — position relative, overflow hidden */
+.ripple-container {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Texture dots — subtle dot grid pattern for tactile feel */
+.texture-dots::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.025;
+  background-image: radial-gradient(circle, var(--text-tertiary) 0.5px, transparent 0.5px);
+  background-size: 12px 12px;
+}
+.texture-dots > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Texture lines — subtle lined-paper pattern */
+.texture-lines::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.02;
+  background-image: repeating-linear-gradient(
+    0deg,
+    var(--border-subtle) 0,
+    var(--border-subtle) 1px,
+    transparent 1px,
+    transparent 24px
+  );
+}
+.texture-lines > * {
+  position: relative;
+  z-index: 1;
+}
 
 /* ── Engagement animations — refined, Apple-style ── */
 @keyframes flameFlicker {
