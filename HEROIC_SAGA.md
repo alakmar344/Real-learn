@@ -496,7 +496,7 @@ This was not the work of one. It was the work of many sessions, many branches, m
 
 - **The AI Provider Migrators** who fought through five wrong providers and never gave up.
 - **The Security Wardens** who patched 7 vulnerabilities in a single night and rebuilt after a bad merge.
-- **The Performance Knights** who slashed latency from 109s to 50s and cut token spend in half.
+- **The Performance Knights** who slashed latency from 109s to 50s and then to 2–5s, and cut token spend in half.
 - **The Design Artisans** who restored a scholarly gold identity and added material textures.
 - **The Legal Scribes** who wrote Privacy Policy v2.6 and kept it in sync with every feature.
 - **The Accessibility Advocates** who targeted WCAG 2.1 AA and never stopped refining.
