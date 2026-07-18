@@ -28,6 +28,10 @@ Ask anything. In seconds, RealLearn engineers a complete educational experience 
 A running log of what's new in RealLearn. The full, exhaustive history from the
 gold redesign onward lives in [`change-made-after-submission.md`](./change-made-after-submission.md).
 
+**Today — July 18, 2026**
+- **Japanese culture-inspired design transformation.** Replaced the entire cobalt-blue editorial design system with a Japanese aesthetic palette rooted in traditional arts: sumi-e ink painting, vermillion hanko stamps, washi paper textures, and indigo (ai-zome) night skies. The three themes are now: **Shiro** (Paper) — warm washi ivory with sumi ink text and vermillion accents; **Yoru** (Night) — deep ai-zome indigo with warm golden-vermillion accents; **Tasogare** (Twilight) — deep murasaki purple with sakura-pink accents. All CSS custom properties, aurora ambient layers, crayon painting palettes, and texture overlays updated to the new palette.
+- **Updated all documentation.** Comprehensive updates across README.md, errors.md, DESIGN_AUDIT.md, IMPROVEMENT_PRIORITIES.md, change-made-after-submission.md, HEROIC_SAGA.md, and reallearn-summarised.md to reflect the current state of the project and the new Japanese design identity.
+
 **Today — July 16, 2026**
 - **Restored ReaLearn's scholarly gold identity.** The earlier "Apple-style liquid glass" pass had swapped the brand for generic iOS system-blue and a rainbow of system hues, which read as oversimplified and childish. Re-established a single, deliberate warm gold/amber accent across all three themes (Paper/Night/Twilight) and recolored the Navbar, completion screen, and celebration confetti to match — so the UI reads as *RealLearn* again.
 - **Added material texture + identity-by-shape.** Kept the gold palette (colors were never the problem); the flat glass surfaces were. Surfaces now have real tactile texture (fine paper fiber + a soft organic mottle), and reusable identity primitives — an engraved double-border, a faint scholarly hairline weave, and a small consistent gold corner notch — carry the brand by *shape*, not just color.
@@ -230,14 +234,14 @@ The Serper integration includes its own in-memory cache (10-minute TTL, 200 entr
 
 ### 6. A Cinematic, Calm Experience
 
-RealLearn is designed to feel like a quiet, beautiful study space — not a noisy app:
+RealLearn is designed to feel like a quiet, beautiful study space inspired by Japanese aesthetics — not a noisy app:
 
 - A **cinematic loading screen** with a glowing radial backdrop, a progress bar that auto-completes to 100% on an ease-out curve and fades gracefully into the lesson, a six-step checklist (Understanding your question -> Researching real-world context -> Writing the foundation -> Explaining how it works -> Connecting it to the real world -> Crafting quiz questions), and rotating learning-fact cards keeps you company while your lesson builds.
 - A **progress rail** shows your three-part journey as connected nodes that fill from locked -> active -> complete.
 - A full-screen **unlock animation** rewards every part you clear.
 - A **completion screen** celebrates the finish with an animated score ring, falling confetti, key takeaways, and a shareable result card.
 - **Toast notifications** quietly confirm milestones — *"Lesson ready!"*, *"Journey complete!"*
-- Typography is intentional and editorial: **Playfair Display** for headlines, **Inter** for the interface, **Lora** for reading content, and **JetBrains Mono** for code — a book-like, scholarly aesthetic throughout.
+- Typography is intentional and scholarly: **Playfair Display** for headlines, **Inter** for the interface, **Lora** for reading content, and **JetBrains Mono** for code — a book-like, Japanese-inspired aesthetic throughout.
 
 ### 7. Your Personal Learning Library
 
@@ -261,11 +265,11 @@ Accessibility isn't an afterthought here — it's wired into the foundation, tar
 
 ### 10. Three Beautiful Themes
 
-Switch between three hand-tuned, warm, eye-friendly themes:
+Switch between three hand-tuned, Japanese culture-inspired themes:
 
-- **Paper** — a warm cream/gold "light" mode that reads like an open book.
-- **Night** — a deep ink "dark" mode warmed by a scholarly gold accent for late-night study.
-- **Twilight** — a warm amber-dusk mode over deep violet for those who want personality.
+- **Shiro (Paper)** — a warm washi-paper ivory "light" mode that reads like a page from a traditional Japanese book, with sumi ink text and vermillion accents.
+- **Yoru (Night)** — a deep ai-zome indigo "dark" mode warmed by golden-vermillion accents for late-night study.
+- **Tasogare (Twilight)** — a deep murasaki purple mode with sakura-pink accents for those who want personality.
 
 Your choice persists across sessions and applies instantly via CSS variables, with carefully balanced semantic colors (correct/incorrect, accents, subject hues) tuned separately for each theme. The theme system is defined in a single source of truth (`lib/themes.ts`) consumed by every theme picker in the app.
 
@@ -412,7 +416,7 @@ RealLearn was designed to fix concrete, everyday learning frustrations:
 | Auth | **Clerk** (`@clerk/nextjs`) | Authentication, user management, route protection |
 | State | **Zustand** (5 stores) with `persist` middleware | Lesson state, preferences, progress/gamification, saved journeys — all localStorage-backed |
 | Content | **React Markdown** + `remark-gfm` | Rich Markdown rendering of lesson content |
-| Styling | **Tailwind CSS** + custom CSS variables | Token-based design system, fluid type, bespoke keyframe animations |
+| Styling | **Tailwind CSS** + custom CSS variables | Token-based Japanese-inspired design system, fluid type, bespoke keyframe animations |
 | Speech | **Web Speech API** | Voice input (SpeechRecognition) and read-aloud (speechSynthesis) |
 | Sharing | **Canvas API** + Web Share API | Generate and share 1080x1920 result cards |
 
@@ -500,7 +504,7 @@ This section documents every file in the repository and what it does — so you 
 |---|---|
 | `layout.tsx` | Root layout. Wraps everything in `ClerkProvider`, `ThemeApplier`, `AppShell`, `ToastContainer`, `CookieConsent`, `PreSignInConsent`, and `SkipToContent`. Sets page metadata. |
 | `page.tsx` | **Homepage.** The landing experience — rotating educational quotes, "The World Is Your Textbook" hero, `QuestionInput` form, `HomeStats` (daily spark topic, resume-in-progress card, streak/level link), `Footer`. Syncs legal consent to backend on sign-in. |
-| `globals.css` | **The design system.** CSS custom properties for 3 themes (Paper, Night, Twilight) built around a deliberate warm gold/amber brand accent; typography scale, spacing scale, shadows, subject colors, semantic colors. Material-texture layers (paper fiber + organic mottle) and reusable identity primitives (`.engraved` double-border, `.identity-texture` scholarly hairline weave, `.identity-corner` gold notch, `.rule-gold` divider). 15+ keyframe animations (fadeUp, accentFlash, unlockPop, shake, correctPulse, confettiFall, flameFlicker, xpPopIn, badgePop, levelBurst, ringSweep, sheen). Markdown content styles. App shell layout (sidebar + main). `prefers-reduced-motion` support. |
+| `globals.css` | **The design system.** CSS custom properties for 3 themes (Shiro, Yoru, Tasogare) built around a Japanese-inspired palette — sumi ink, vermillion hanko accents, washi paper textures; typography scale, spacing scale, shadows, subject colors, semantic colors. Material-texture layers (washi fiber + organic mottle) and reusable identity primitives (`.engraved` double-border, `.identity-texture` scholarly hairline weave, `.identity-corner` vermillion notch, `.rule-accent` divider). 15+ keyframe animations (fadeUp, accentFlash, unlockPop, shake, correctPulse, confettiFall, flameFlicker, xpPopIn, badgePop, levelBurst, ringSweep, sheen). Markdown content styles. App shell layout (sidebar + main). `prefers-reduced-motion` support. |
 | `learn/page.tsx` | **The learning experience.** Orchestrates the full journey: `ProgressRail`, `PartCard` for each part, `QuizSheet` modal, `CompletionScreen`, `FollowUpBox`, `UnlockAnimation`. Persists journeys to localStorage on every progress change. Records XP, streaks, daily goals, and badges via `progressStore`. |
 | `progress/page.tsx` | **Progress dashboard.** Level hero with XP bar, streak flame with freeze count, daily goal ring with target selector, lifetime stats grid (journeys, quizzes, perfect runs, languages, subjects, follow-ups), GitHub-style activity heatmap, achievements grid with progress bars. |
 | `settings/page.tsx` | **Settings page.** Theme picker, answer mode toggle (Fast/Explain), language selector, level selector, Clerk `UserButton`, data export (JSON download combining backend + local storage), permanent account deletion with confirmation modal. |

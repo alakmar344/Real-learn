@@ -168,7 +168,7 @@ content was usable.
 
 ## Current state
 
-As of this writing (2026-07-17), the backend:
+As of this writing (2026-07-18), the backend:
 - Calls Gemma 4 31B via **Cerebras Cloud** as primary, with **Cloudflare
   Workers AI** as automatic fallback, using the hedged multi-provider engine
   described above.
@@ -182,6 +182,61 @@ As of this writing (2026-07-17), the backend:
 - Applies fail-open input moderation and fail-closed output moderation, each
   with its own independent timeout, isolated in logging from the main
   lesson-generation timeout.
+
+### Sessions since July 9
+
+**Session 2026-07-13: Cerebras primary + performance overhaul**
+- Switched AI provider stack to Cerebras Cloud (gemma-4-31b) as primary,
+  Cloudflare Workers AI as automatic fallback.
+- Enabled "no-thinking" mode on Cerebras to cut token spend by ~30-50%.
+- Added ultra-fast inference knobs and cost-aware inference.
+- Compressed system prompts, tightened output ceilings (fast 4000→2500,
+  explain 6000→4000).
+- Added per-request token logging to monitor daily burn.
+- Loading cinematic overhaul: counter auto-completes to 100% on ease-out
+  curve, fixing "stuck at 35%" disconnect on fast Cerebras responses.
+
+**Session 2026-07-15: Ambient aurora, easter eggs, attachment features**
+- Added soothing ambient background: three ultra-soft radial-gradient color
+  washes drifting on 70–110s transform-only loops (GPU-cheap, no blur).
+- Halved paper grain, softened crayon scene, added vertical mask fade.
+- Easter eggs: Konami code → confetti storm; typing "magic" or "love" →
+  floating hearts; clicking footer wordmark 5× → heart burst.
+- Time-aware personal greeting, quote-of-the-day ritual, "learning
+  together for N days" counter with milestone celebrations.
+- Legal v2.5 (Privacy) & v2.2 (Cookie) with reconsent for new
+  locally-stored personalization data.
+
+**Session 2026-07-16: Design identity restoration + security hardening**
+- Restored scholarly gold identity after "Apple-style liquid glass" pass had
+  swapped the brand for generic iOS system-blue. Re-established warm
+  gold/amber accent across all three themes.
+- Added material texture + identity-by-shape: fine paper fiber + organic
+  mottle grain, engraved double-border, scholarly hairline weave, gold
+  corner notch.
+- Killed blue tap-flash, made Fast/Explain toggle a sliding "switch glider".
+- Backend: raised fast-mode maxOutputTokens from 2500→4000 to fix
+  JSON-truncation regression. Treated Cloudflare 403 as retryable.
+- Security: UA hash salt no longer derives from DB credentials.
+- Frontend: version-interpolation bug fix, PreferenceModal "Skip" now
+  records onboarding completion, Google Analytics off by default when
+  unconfigured.
+
+**Session 2026-07-17: Anonymous feedback + reconsent**
+- Added optional anonymous feedback prompt (1–10 star rating + notes)
+  shown after first lesson. Public `/api/feedback` endpoint stores only
+  rating and text — no IP, Clerk ID, or email.
+- Privacy Policy v2.6 and Terms of Service v2.4 with reconsent for
+  feedback disclosure.
+
+**Session 2026-07-18: Japanese culture-inspired design transformation**
+- Replaced the entire cobalt-blue editorial design system with a Japanese
+  aesthetic palette: sumi-e ink painting, vermillion hanko stamps, washi
+  paper textures, and indigo (ai-zome) night skies.
+- Three themes renamed: Shiro (Paper), Yoru (Night), Tasogare (Twilight).
+- All CSS custom properties, aurora ambient layers, crayon painting
+  palettes, and texture overlays updated.
+- Comprehensive documentation updates across all markdown files.
 
 ### Known open question
 Whether the *quality* difference some testing has shown between this

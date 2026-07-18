@@ -457,16 +457,50 @@ The platform had learned to **listen**.
 
 ---
 
-## Epilogue: The Living Legend (July 17, 2026)
+## Book XIV: The Japanese Transformation (July 18, 2026)
 
-From a single commit on May 6, 2026, to **531 commits** spanning 42 days, RealLearn transformed from a hackathon prototype into a **production-grade learning platform**.
+The platform had function and a scholarly gold identity. Now it needed a **soul rooted in something deeper**.
+
+### The Sumi-e Awakening
+
+- **July 18** — `design: Japanese culture-inspired design transformation.`
+
+The team looked at the cobalt-blue editorial palette and asked: *What if the design language drew from something older, richer, and more intentional than Western editorial design?*
+
+The answer was **Japanese aesthetics** — the same principles that govern sumi-e ink painting, washi paper craft, hanko stamps, and the quiet elegance of a tea ceremony. The entire color system was rebuilt from the ground up:
+
+- **Shiro (Paper)** — warm washi-paper ivory (`#f7f0e4`) with sumi ink text (`#1a1018`) and vermillion hanko accents (`#b8372b`). The light theme now feels like a page from a handmade Japanese book.
+- **Yoru (Night)** — deep ai-zome indigo (`#0a0810`) with warm golden-vermillion accents (`#d4847a`). The dark theme evokes a lantern-lit teahouse.
+- **Tasogare (Twilight)** — deep murasaki purple (`#0c0820`) with sakura-pink accents (`#8a60d0`). The twilight theme captures the magic hour of a Japanese garden.
+
+Every CSS custom property was transformed. The aurora ambient layers shifted from cobalt-blue to vermillion-ember tones. The crayon painting palette was reborn in twilight purples. The material textures — washi fiber grain, organic mottle, and the identity primitives — were rebranded to reflect their Japanese inspiration: from "editorial ink" to "sumi-e", from "cobalt texture" to "washi texture", from "ink border" to "sumi border".
+
+The result was not just a color change. It was a **philosophical shift** — from Western editorial design to the Japanese concept of *ma* (間), the beauty of empty space, and *wabi-sabi* (侘寂), the elegance of imperfection. The surfaces still felt crafted. The textures still breathed. But now they spoke a different language — one of quiet intention, of handmade paper, of ink on stone.
+
+### The Numbers Updated
+
+| Metric | Value |
+|--------|-------|
+| Total commits | 532 |
+| Total span | May 6 → July 18, 2026 (44 days) |
+| AI providers migrated | 5 |
+| Languages supported | 12 Indian languages |
+| Legal policy versions | Privacy v2.6, Terms v2.4, Cookie v2.2 |
+| Design systems | 3 (gold editorial → cobalt editorial → Japanese sumi-e) |
+| Themes | 3 (Shiro, Yoru, Tasogare) |
+
+---
+
+## Epilogue: The Living Legend (July 18, 2026)
+
+From a single commit on May 6, 2026, to **532 commits** spanning 44 days, RealLearn transformed from a hackathon prototype into a **production-grade learning platform**.
 
 ### The Numbers
 
 | Metric | Value |
 |--------|-------|
-| Total commits | 531 |
-| Total span | May 6 → July 17, 2026 (42 days) |
+| Total commits | 532 |
+| Total span | May 6 → July 18, 2026 (44 days) |
 | AI providers migrated | 5 (Gemini → Vertex → Groq → Cloudflare → Cerebras + Cloudflare) |
 | Languages supported | 12 Indian languages |
 | Legal policy versions | Privacy v2.6, Terms v2.4, Cookie v2.2 |
@@ -474,7 +508,7 @@ From a single commit on May 6, 2026, to **531 commits** spanning 42 days, RealLe
 | Token spend reduction | ~50–60% |
 | Cold-start latency | ~109s → ~50s → **2–5s** |
 | Achievements | 17 |
-| Themes | 3 (Paper, Night, Twilight) |
+| Themes | 3 (Shiro, Yoru, Tasogare) |
 | Performance tiers | 3 (Low, Mid, High) |
 
 ### The Soul of RealLearn
@@ -497,7 +531,7 @@ This was not the work of one. It was the work of many sessions, many branches, m
 - **The AI Provider Migrators** who fought through five wrong providers and never gave up.
 - **The Security Wardens** who patched 7 vulnerabilities in a single night and rebuilt after a bad merge.
 - **The Performance Knights** who slashed latency from 109s to 50s and then to 2–5s, and cut token spend in half.
-- **The Design Artisans** who restored a scholarly gold identity and added material textures.
+- **The Design Artisans** who restored a scholarly gold identity, added material textures, and then transformed the entire palette into a Japanese culture-inspired aesthetic rooted in sumi-e, washi, and vermillion.
 - **The Legal Scribes** who wrote Privacy Policy v2.6 and kept it in sync with every feature.
 - **The Accessibility Advocates** who targeted WCAG 2.1 AA and never stopped refining.
 - **The Bug Slayers** who fixed 21 bugs in one session and 24 in another.
@@ -511,6 +545,6 @@ This was not the work of one. It was the work of many sessions, many branches, m
 
 ---
 
-*This saga was forged from 531 commits, spanning May 6 to July 17, 2026. Every date, every commit hash, every struggle and triumph is recorded in the repository's history. The changelog lives in `change-made-after-submission.md`. The documentation lives in `README.md`. The engineering war stories live in `errors.md`. The design audit lives in `DESIGN_AUDIT.md`. The roadmap lives in `IMPROVEMENT_PRIORITIES.md`.*
+*This saga was forged from 532 commits, spanning May 6 to July 18, 2026. Every date, every commit hash, every struggle and triumph is recorded in the repository's history. The changelog lives in `change-made-after-submission.md`. The documentation lives in `README.md`. The engineering war stories live in `errors.md`. The design audit lives in `DESIGN_AUDIT.md`. The roadmap lives in `IMPROVEMENT_PRIORITIES.md`.*
 
 *This is not padding. This is the story of how a hackathon prototype became a platform.*

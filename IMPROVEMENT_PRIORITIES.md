@@ -12,8 +12,8 @@ This document breaks down design improvements into actionable sprints with estim
 ### Tasks
 
 #### 1. Color Contrast Fixes (2 hours)
-- [ ] Update `--text-tertiary` from `#555555` to `#6b7280`
-- [ ] Update `--text-secondary` from `#888888` to `#9ca3af` (extra buffer)
+- [x] Update `--text-tertiary` — resolved in Japanese design update (#807078, 4.6:1)
+- [x] Update `--text-secondary` — resolved in Japanese design update (#4a3a40, 6.5:1)
 - [ ] Test all text against WCAG AA standards
 - [ ] Document contrast ratios in design tokens
 
@@ -285,7 +285,7 @@ This document breaks down design improvements into actionable sprints with estim
 
 ## Quick Wins (Can be done in 1-2 hours each)
 
-1. ✅ Update `--text-tertiary` color for contrast
+1. ✅ Update `--text-tertiary` color for contrast (resolved in Japanese design)
 2. ✅ Add ARIA label to navigation logo
 3. ✅ Add focus styles to all buttons
 4. ✅ Add `aria-expanded` to collapsible parts

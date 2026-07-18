@@ -130,6 +130,25 @@ the themed sections below and the chronological table at the end.
   to Fast — feels like a smooth physical switch rather than a snap. Purely
   presentational.
 
+### Today — July 18, 2026 (Japanese culture-inspired design transformation)
+- **Design — Japanese culture-inspired design transformation.** Replaced the
+  entire cobalt-blue editorial design system with a Japanese aesthetic palette
+  rooted in traditional arts: sumi-e ink painting, vermillion hanko stamps,
+  washi paper textures, and indigo (ai-zome) night skies. The three themes
+  are now: **Shiro** (Paper) — warm washi ivory with sumi ink text and
+  vermillion accents; **Yoru** (Night) — deep ai-zome indigo with warm
+  golden-vermillion accents; **Tasogare** (Twilight) — deep murasaki purple
+  with sakura-pink accents. All CSS custom properties, aurora ambient layers,
+  crayon painting palettes, and texture overlays updated to the new palette.
+  Identity primitives rebranded: "editorial ink" → "sumi-e", "cobalt texture"
+  → "washi texture", "ink border" → "sumi border". The design now evokes the
+  Japanese concepts of *ma* (beauty of empty space) and *wabi-sabi* (elegance
+  of imperfection).
+- **Documentation — comprehensive updates.** Updated README.md, errors.md,
+  DESIGN_AUDIT.md, IMPROVEMENT_PRIORITIES.md, change-made-after-submission.md,
+  HEROIC_SAGA.md, and reallearn-summarised.md to reflect the current state
+  of the project and the new Japanese design identity.
+
 ### Today — July 17, 2026 (optional anonymous feedback + reconsent)
 
 - **Feature — optional anonymous feedback after first lesson (`23779fa`).**
