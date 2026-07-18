@@ -53,6 +53,14 @@ export interface LessonPart {
 }
 
 export interface LessonJourney {
+  /**
+   * Client-stamped unique id for THIS generated lesson instance (set once in
+   * lessonStore.setLesson, persisted with the lesson). Distinguishes two
+   * generations of the same question so engagement credit and saved-journey
+   * history treat them as different lessons, while retakes of the same
+   * instance stay idempotent. Optional for lessons saved by older versions.
+   */
+  lessonId?: string;
   question?: string;
   topic?: string;
   language: Language;

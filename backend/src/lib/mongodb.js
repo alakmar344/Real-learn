@@ -21,6 +21,18 @@ async function getMongoClient() {
   clientPromise = client.connect().then((connectedClient) => {
     console.log("[MongoDB] Connected successfully");
     return connectedClient;
+  }).catch((error) => {
+    // RELIABILITY: never cache a REJECTED connection promise. Without this,
+    // one transient DNS/network blip during the first connect permanently
+    // poisoned `clientPromise` — every later getDb() re-returned the same
+    // rejected promise and all DB-backed endpoints 500'd until a manual
+    // restart. Reset so the next request retries the connection.
+    clientPromise = null;
+    const failedClient = client;
+    client = null;
+    // Best-effort teardown of the half-open client (ignore close errors).
+    failedClient?.close?.().catch(() => {});
+    throw error;
   });
 
   return clientPromise;

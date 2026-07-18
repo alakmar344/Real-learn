@@ -28,13 +28,20 @@
   --cobalt-wash: rgba(26, 58, 138, 0.08);
   --cobalt-ink: #0a1744;
 
-  --bg-primary: #f5f4f0;
-  --bg-surface: rgba(255, 253, 250, 0.78);
-  --bg-card: rgba(255, 254, 252, 0.84);
-  --bg-card-hover: rgba(255, 255, 253, 0.95);
-  --bg-glass: rgba(253, 252, 248, 0.74);
-  --bg-solid: #faf9f6;
-  --bg-warm: rgba(250, 248, 244, 0.55);
+  /* Tone-warmed paper: same neutral-warm hue family, but the tones now lean
+     toward sun-touched ivory and cream — storybook paper instead of office
+     stock. The cobalt hues are untouched; only the tones grew warmer. */
+  --bg-primary: #f6f2e9;
+  --bg-surface: rgba(255, 252, 244, 0.8);
+  --bg-card: rgba(255, 253, 247, 0.86);
+  --bg-card-hover: rgba(255, 254, 249, 0.96);
+  --bg-glass: rgba(253, 250, 242, 0.76);
+  --bg-solid: #fbf7ed;
+  --bg-warm: rgba(250, 245, 235, 0.6);
+  /* Warm ambient light — a low afternoon-sun wash layered under the cobalt
+     ambience so the page always feels gently lit, never clinical. */
+  --sun-wash: rgba(235, 170, 80, 0.07);
+  --hearth-glow: rgba(226, 140, 70, 0.055);
 
   --border-subtle: rgba(10, 23, 68, 0.1);
   --border-default: rgba(10, 23, 68, 0.16);
@@ -58,9 +65,11 @@
   --on-accent: #ffffff;
   --shadow-glow-accent: 0 2px 20px rgba(26, 58, 138, 0.28);
 
-  --text-primary: #0a0e1a;
-  --text-secondary: #3a3c4e;
-  --text-tertiary: #6a6c7e;
+  /* Ink tones softened: still cobalt-leaning ink, but a touch lighter and
+     warmer so long reading feels like a well-loved book, not a spec sheet. */
+  --text-primary: #191e2e;
+  --text-secondary: #43465a;
+  --text-tertiary: #71738a;
   --text-accent-strong: #1a3a8a;
 
   --correct: #1a8a5c;
@@ -102,9 +111,11 @@
   --space-2xl: 64px;
   --space-3xl: 96px;
 
-  --shadow-sm: 0 1px 3px rgba(10, 23, 68, 0.06), 0 1px 2px rgba(10, 23, 68, 0.04);
-  --shadow-md: 0 4px 14px rgba(10, 23, 68, 0.09), 0 2px 4px rgba(10, 23, 68, 0.04);
-  --shadow-lg: 0 12px 34px rgba(10, 23, 68, 0.13), 0 4px 8px rgba(10, 23, 68, 0.06);
+  /* Shadows warmed: cobalt ink mixed with a drop of umber, so depth reads as
+     soft afternoon shade on paper rather than a cold blue drop-shadow. */
+  --shadow-sm: 0 1px 3px rgba(46, 36, 40, 0.06), 0 1px 2px rgba(10, 23, 68, 0.04);
+  --shadow-md: 0 4px 14px rgba(46, 36, 40, 0.08), 0 2px 4px rgba(10, 23, 68, 0.05);
+  --shadow-lg: 0 12px 34px rgba(46, 36, 40, 0.12), 0 4px 8px rgba(10, 23, 68, 0.06);
   --shadow-glow-correct: 0 0 24px rgba(26, 138, 92, 0.16);
 
   --ease-reveal: cubic-bezier(0.22, 0.61, 0.36, 1);
@@ -123,9 +134,11 @@
   --focus-ring: 0 0 0 3px var(--accent-glow);
   --focus-ring-simple: 0 0 0 2px var(--accent);
 
-  --aurora-1: rgba(26, 58, 138, 0.12);
-  --aurora-2: rgba(196, 58, 24, 0.07);
-  --aurora-3: rgba(15, 45, 114, 0.08);
+  /* The vermilion ember is a touch warmer and more present — the breathing
+     layer now feels like lantern-light drifting under the paper. */
+  --aurora-1: rgba(26, 58, 138, 0.11);
+  --aurora-2: rgba(214, 110, 48, 0.09);
+  --aurora-3: rgba(15, 45, 114, 0.07);
 }
 
 /* ── Dark theme — deep ink-black canvas, vivid cobalt that cuts through
@@ -145,6 +158,11 @@ html[data-theme="dark"] {
   --cobalt-pale: #a0b8ff;
   --cobalt-wash: rgba(107, 140, 232, 0.1);
   --cobalt-ink: #060812;
+
+  /* Night kept cobalt, but with a faint candle warmth so the dark feels like
+     a lamplit study rather than a server room. */
+  --sun-wash: rgba(232, 150, 80, 0.035);
+  --hearth-glow: rgba(240, 160, 90, 0.028);
 
   --bg-primary: #080a12;
   --bg-surface: rgba(18, 22, 40, 0.78);
@@ -199,7 +217,7 @@ html[data-theme="dark"] {
   --shadow-lg: 0 12px 34px rgba(0, 0, 0, 0.48), 0 4px 8px rgba(0, 0, 0, 0.32);
 
   --aurora-1: rgba(107, 140, 232, 0.1);
-  --aurora-2: rgba(232, 112, 80, 0.06);
+  --aurora-2: rgba(236, 128, 82, 0.075);
   --aurora-3: rgba(61, 186, 133, 0.05);
 }
 
@@ -208,6 +226,9 @@ html[data-theme="dark"] {
    here is deeper and more saturated, like ink mixed with dusk. ── */
 html[data-theme="twilight"] {
   color-scheme: dark;
+  /* Dusk ember-light — the warm counterpoint to the indigo sky. */
+  --sun-wash: rgba(240, 160, 80, 0.05);
+  --hearth-glow: rgba(232, 144, 96, 0.04);
   --scrim: rgba(8, 4, 20, 0.52);
   --bg-primary: #08061a;
   --bg-surface: rgba(36, 28, 78, 0.5);
@@ -433,7 +454,10 @@ body {
    backdrop-filter. These utilities + the reusable class package that together.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Ambient gradient — editorial cobalt wash, restrained but present ── */
+/* ── Ambient gradient — editorial cobalt wash, now crossed by a warm
+   sunbeam from the upper-right and a low hearth-glow at the foot of the
+   page. The cobalt hues are unchanged; the warmth is a second light source
+   layered over them, like late sun through a study window. ── */
 html::before {
   content: "";
   position: fixed;
@@ -441,10 +465,12 @@ html::before {
   z-index: -2;
   pointer-events: none;
   background:
+    radial-gradient(ellipse at 82% -8%, var(--sun-wash, rgba(235, 170, 80, 0.07)) 0%, transparent 55%),
     radial-gradient(ellipse at 0% 0%, rgba(26, 58, 138, 0.07) 0%, transparent 50%),
     radial-gradient(ellipse at 100% 0%, rgba(15, 45, 114, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 30% 104%, var(--hearth-glow, rgba(226, 140, 70, 0.055)) 0%, transparent 52%),
     radial-gradient(ellipse at 50% 100%, rgba(10, 23, 68, 0.04) 0%, transparent 50%);
-  opacity: 0.9;
+  opacity: 0.95;
 }
 
 /* The reusable glass surface. Ultra-frosted, luminous, Apple-style. */
@@ -567,18 +593,21 @@ html[data-theme="twilight"][data-perf="high"] .crayon-bg {
      • micro-noise (overlay, opt-in via .texture-noise) — Gen Z tactile grain
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Fine paper fiber. Stronger grain (0.06) that reads as texture/materialscience,
-   never "dust". */
+/* Fine paper fiber. Stronger grain (0.07) with a hint of long-fiber washi
+   drag baked into the same composite layer, so the page reads as handmade
+   paper — texture, never "dust". */
 body::after {
   content: "";
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  opacity: 0.06;
+  opacity: 0.07;
   mix-blend-mode: multiply;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
-  background-size: 180px 180px;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.004 0.09' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='420' height='420' filter='url(%23w)' opacity='0.32'/%3E%3C/svg%3E");
+  background-size: 180px 180px, 420px 420px;
 }
 
 /* Soft mottle — large, low-frequency organic blotches that break up the flat
@@ -1727,4 +1756,160 @@ html[data-perf="high"] {
   display: inline-block;
   animation: gentleWave 1.8s ease-in-out;
   transform-origin: 70% 70%;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Achievements — warm badge tiles with a "how to earn" story card.
+   Hover (desktop) or tap (touch) any badge and a little paper card unfolds
+   with gentle guidance and your progress toward it.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.badge-tile {
+  position: relative;
+  display: block;
+  width: 100%;
+  border-radius: var(--radius-lg);
+  padding: 10px 8px;
+  text-align: center;
+  cursor: pointer;
+  font-family: inherit;
+  color: inherit;
+  transition:
+    transform 320ms var(--ease-spring),
+    box-shadow 320ms var(--ease-color),
+    border-color 320ms var(--ease-color);
+}
+.badge-tile__inner {
+  position: relative;
+}
+.badge-tile:hover,
+.badge-tile:focus-visible,
+.badge-tile--open {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md), 0 0 0 3px var(--cobalt-wash);
+  z-index: 5;
+}
+.badge-tile--earned:hover,
+.badge-tile--earned.badge-tile--open {
+  box-shadow: var(--shadow-md), 0 0 18px var(--accent-glow);
+}
+
+/* The story card. Sits above the tile; fades/rises in on hover, focus or tap. */
+.badge-tooltip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(6px) scale(0.97);
+  width: min(240px, 78vw);
+  padding: 12px 14px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-default);
+  background: var(--bg-card-hover);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  box-shadow: var(--shadow-lg), var(--glass-edge);
+  text-align: left;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 60;
+  transition:
+    opacity 220ms var(--ease-reveal),
+    transform 260ms var(--ease-spring),
+    visibility 0s linear 220ms;
+}
+/* Little paper arrow pointing at the badge. */
+.badge-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 7px solid transparent;
+  border-top-color: var(--border-default);
+}
+.badge-tile:hover .badge-tooltip,
+.badge-tile:focus-visible .badge-tooltip,
+.badge-tile--open .badge-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0) scale(1);
+  transition:
+    opacity 220ms var(--ease-reveal),
+    transform 260ms var(--ease-spring);
+}
+
+.badge-tooltip__header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 6px;
+}
+.badge-tooltip__title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+  flex: 1;
+  min-width: 0;
+}
+.badge-tooltip__tier {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid;
+  border-radius: 999px;
+  padding: 2px 7px;
+  flex-shrink: 0;
+}
+.badge-tooltip__how {
+  margin: 0;
+  font-family: var(--font-lora), Georgia, serif;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+.badge-tooltip__status {
+  margin: 8px 0 0;
+  font-size: 11px;
+  font-weight: 700;
+}
+.badge-tooltip__status--earned {
+  color: var(--correct);
+}
+.badge-tooltip__progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 9px;
+}
+.badge-tooltip__progress > span {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+.badge-tooltip__bar {
+  flex: 1;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--border-subtle);
+  overflow: hidden;
+}
+.badge-tooltip__bar > div {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent-gradient);
+  transition: width 500ms var(--ease-reveal);
+}
+
+/* ── Loving-touch hover — cards catch a whisper of warm light, as if a
+   reading lamp leaned closer. Layered on the existing cobalt system. ── */
+.glass-card:hover,
+.glass-panel:hover {
+  box-shadow:
+    var(--shadow-lg),
+    var(--glass-edge),
+    0 -12px 40px -18px var(--sun-wash, rgba(235, 170, 80, 0.07));
 }

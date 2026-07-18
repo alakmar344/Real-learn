@@ -100,7 +100,9 @@ export function clearFeedback(): void {
  *
  * Eligibility requires ALL of:
  *   - a first lesson has actually been completed (`firstLessonCompletedAt` set),
- *   - at least one full day has passed since that first completion,
+ *   - the short `FEEDBACK_ELIGIBLE_AFTER_MS` buffer has passed since that
+ *     first completion (a few seconds — just enough to avoid racing the
+ *     in-session completion render; see the constant's doc above),
  *   - the user has not already given (or permanently declined) feedback, and
  *   - any snooze window has expired.
  */
