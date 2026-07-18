@@ -4,8 +4,16 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import Sidebar from "@/components/shared/Sidebar";
-import PreferenceModal from "@/components/shared/PreferenceModal";
-import EngagementLayer from "@/components/shared/EngagementLayer";
+import dynamic from "next/dynamic";
+
+const PreferenceModal = dynamic(() => import("@/components/shared/PreferenceModal"), {
+  ssr: false,
+  loading: () => null,
+});
+const EngagementLayer = dynamic(() => import("@/components/shared/EngagementLayer"), {
+  ssr: false,
+  loading: () => null,
+});
 
 const HIDE_SIDEBAR_PREFIXES = ["/sign-in", "/sign-up"];
 

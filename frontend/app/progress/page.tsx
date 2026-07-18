@@ -2,14 +2,22 @@
 
 import Link from "next/link";
 import Navbar from "@/components/shared/Navbar";
+import dynamic from "next/dynamic";
 import Footer from "@/components/shared/Footer";
 import DailyGoalRing from "@/components/shared/DailyGoalRing";
-import ActivityHeatmap from "@/components/shared/ActivityHeatmap";
-import AchievementsGrid from "@/components/shared/AchievementsGrid";
 import { useProgressStore } from "@/store/progressStore";
 import { levelInfo, levelTitle, dayKey, daysBetween, ProgressSnapshot } from "@/lib/achievements";
 import { useMounted } from "@/hooks/useMounted";
 import { useShallow } from "zustand/shallow";
+
+const ActivityHeatmap = dynamic(() => import("@/components/shared/ActivityHeatmap"), {
+  loading: () => <div style={{ height: 140 }} aria-hidden="true" />,
+  ssr: true,
+});
+const AchievementsGrid = dynamic(() => import("@/components/shared/AchievementsGrid"), {
+  loading: () => <div style={{ height: 300 }} aria-hidden="true" />,
+  ssr: true,
+});
 
 function Card({ children, span }: { children: React.ReactNode; span?: boolean }) {
   return (
@@ -266,7 +274,7 @@ export default function ProgressPage() {
             </Card>
 
             {/* Activity */}
-            <div style={{ marginTop: 14 }}>
+            <div style={{ marginTop: 14 }} className="progress-activity">
               <Card span>
                 <h3 style={{ margin: "0 0 12px", fontSize: 15, fontWeight: 700 }}>Activity</h3>
                 <ActivityHeatmap history={s.history} />
@@ -274,7 +282,7 @@ export default function ProgressPage() {
             </div>
 
             {/* Achievements */}
-            <div style={{ marginTop: 14 }}>
+            <div style={{ marginTop: 14 }} className="progress-achievements">
               <Card span>
                 <AchievementsGrid unlocked={s.badges} snapshot={snapshot} />
               </Card>
