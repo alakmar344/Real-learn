@@ -46,7 +46,7 @@ function CompanionDays() {
         : `Learning together for ${days} days 💛`;
 
   return (
-    <p style={{ margin: "6px 0 0", fontSize: 12, color: "var(--text-tertiary)", fontStyle: "italic" }}>
+    <p style={{ margin: "8px 0 0", fontSize: 12, color: "var(--text-tertiary)", fontStyle: "italic", lineHeight: 1.7 }}>
       {label}
     </p>
   );
@@ -75,17 +75,17 @@ const Footer = ({ className }: { className?: string }) => {
       className={className}
       style={{
         borderTop: "1px solid var(--border-subtle)",
-        padding: "24px 28px",
+        padding: "28px 32px",
         textAlign: "center",
         fontSize: 12,
         color: "var(--text-tertiary)",
-        lineHeight: 1.6,
+        lineHeight: 1.7,
         background: "var(--bg-glass)",
         backdropFilter: "blur(var(--glass-blur)) saturate(var(--glass-saturate))",
         WebkitBackdropFilter: "blur(var(--glass-blur)) saturate(var(--glass-saturate))",
       }}
     >
-      <p style={{ margin: 0, display: "flex", justifyContent: "center", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+      <p style={{ margin: 0, display: "flex", justifyContent: "center", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
         <span
           onClick={onBrandClick}
           style={{
@@ -103,7 +103,7 @@ const Footer = ({ className }: { className?: string }) => {
         <span aria-hidden="true">·</span>
         <span>AI-generated — verify with pros</span>
       </p>
-      <p style={{ margin: "4px 0 0", display: "flex", justifyContent: "center", alignItems: "center", gap: 4, flexWrap: "wrap" }}>
+      <p style={{ margin: "6px 0 0", display: "flex", justifyContent: "center", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
         <a href="/legal?tab=privacy" style={linkStyle}>Privacy</a>
         <span aria-hidden="true">·</span>
         <a href="/legal?tab=terms" style={linkStyle}>Terms</a>

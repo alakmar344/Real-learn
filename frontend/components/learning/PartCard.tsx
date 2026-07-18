@@ -92,7 +92,7 @@ const PartCardBase = ({
         border: "1px solid var(--border-subtle)",
         background: "var(--bg-card)",
         boxShadow: "var(--glass-shadow), var(--glass-edge)",
-        padding: "clamp(24px, 5vw, 40px)",
+        padding: "clamp(28px, 6vw, 48px)",
         position: "relative",
         overflow: "hidden",
         transition: "all 500ms var(--ease-spring)",
@@ -165,17 +165,17 @@ const PartCardBase = ({
           </div>
         </div>
 
-        <h2 style={{ margin: "12px 0 0", fontSize: "clamp(20px, 4vw, 26px)", fontWeight: 600, fontFamily: "var(--font-display)" }}>
+        <h2 style={{ margin: "16px 0 0", fontSize: "clamp(22px, 4.5vw, 28px)", fontWeight: 600, fontFamily: "var(--font-display)", lineHeight: "var(--leading-snug)" }}>
           {part.title}
         </h2>
 
         <div
           className="markdown-content"
           style={{
-            marginTop: 20,
+            marginTop: 24,
             fontSize: "var(--text-base)",
             color: "var(--text-secondary)",
-            lineHeight: 1.9,
+            lineHeight: "var(--leading-loose)",
             maxWidth: 640,
             fontFamily: "var(--font-lora)",
           }}
@@ -191,7 +191,7 @@ const PartCardBase = ({
 
         {/* Reading timer / Quiz button */}
         {isUnlocked && !isCompleted ? (
-          <div style={{ marginTop: 20 }}>
+          <div style={{ marginTop: 28 }}>
             {!timer.isComplete ? (
               <div
                 role="progressbar"
@@ -228,7 +228,7 @@ const PartCardBase = ({
                   fontWeight: 700,
                   cursor: "pointer",
                   boxShadow: "var(--shadow-sm)",
-                  minHeight: 48,
+                  minHeight: 52,
                   transition: "all 300ms var(--ease-color)",
                 }}
                 onMouseEnter={(e) => {
@@ -259,9 +259,9 @@ const PartCardBase = ({
             borderRadius: "var(--radius-md)",
             background: "transparent",
             color: "var(--text-secondary)",
-            padding: "10px 16px",
+            padding: "12px 18px",
             cursor: "pointer",
-            minHeight: 44,
+            minHeight: 48,
             transition: "all 500ms var(--ease-spring)",
           }}
           onMouseEnter={(e) => {

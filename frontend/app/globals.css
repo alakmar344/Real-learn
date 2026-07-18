@@ -103,12 +103,23 @@
 
   --space-xs: 6px;
   --space-sm: 10px;
-  --space-md: 16px;
-  --space-base: 20px;
-  --space-lg: 32px;
-  --space-xl: 44px;
-  --space-2xl: 64px;
-  --space-3xl: 96px;
+  --space-md: 18px;
+  --space-base: 24px;
+  --space-lg: 40px;
+  --space-xl: 64px;
+  --space-2xl: 96px;
+  --space-3xl: 140px;
+  --space-4xl: 200px;
+
+  --leading-tight: 1.25;
+  --leading-snug: 1.45;
+  --leading-normal: 1.65;
+  --leading-relaxed: 1.85;
+  --leading-loose: 2.05;
+
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.04em;
 
   /* Shadows warmed: sumi ink mixed with umber, so depth reads as
      soft shade on washi paper rather than a cold drop-shadow. */
@@ -714,29 +725,126 @@ body::before {
   z-index: 1;
 }
 
-/* ── Wave divider — a gentle seigaiha-inspired horizontal rule that separates
-   content blocks with quiet Japanese intentionality. ── */
-.wave-divider {
+/* Ichimatsu (checkerboard) — a simple alternating grid used in Japanese
+   architecture, from temple floors to modern fashion. It represents balance
+   and quiet order. Applied as a very subtle overlay on section dividers. */
+.pattern-ichimatsu {
+  position: relative;
+}
+.pattern-ichimatsu::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Crect width='12' height='12' fill='none' stroke='%23b8372b' stroke-opacity='0.35' stroke-width='0.5'/%3E%3Crect x='12' y='12' width='12' height='12' fill='none' stroke='%23b8372b' stroke-opacity='0.35' stroke-width='0.5'/%3E%3C/svg%3E");
+  background-size: 24px 24px;
+  mix-blend-mode: multiply;
+}
+.pattern-ichimatsu > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Kikko (tortoise shell) — overlapping hexagons symbolizing longevity and
+   good fortune. Used sparingly as a refined texture on achievement cards. */
+.pattern-kikko {
+  position: relative;
+}
+.pattern-kikko::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='32' viewBox='0 0 36 32'%3E%3Cpath d='M18 0l18 10v12L18 32 0 22V10z' fill='none' stroke='%23b8372b' stroke-opacity='0.3' stroke-width='0.5'/%3E%3Cpath d='M18 10l9 5v6l-9 5-9-5v-6z' fill='none' stroke='%23b8372b' stroke-opacity='0.2' stroke-width='0.5'/%3E%3C/svg%3E");
+  background-size: 36px 32px;
+  mix-blend-mode: multiply;
+}
+.pattern-kikko > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Shoji-screen texture — a faint, elegant grid that evokes the rice-paper
+   sliding doors of traditional Japanese interiors. Applied to section
+   backgrounds for quiet architectural depth. */
+.shoji-screen {
+  position: relative;
+}
+.shoji-screen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.025;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      var(--border-default) 0,
+      var(--border-default) 0.5px,
+      transparent 0.5px,
+      transparent 40px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      var(--border-default) 0,
+      var(--border-default) 0.5px,
+      transparent 0.5px,
+      transparent 40px
+    );
+  mix-blend-mode: multiply;
+}
+.shoji-screen > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Ma-breath — intentional negative space for sections that need to feel
+   considered and unhurried, like a pause between brush strokes. ── */
+.ma-breath {
+  margin-top: var(--space-3xl);
+  margin-bottom: var(--space-3xl);
+}
+.ma-breath--sm {
+  margin-top: var(--space-xl);
+  margin-bottom: var(--space-xl);
+}
+.ma-breath--lg {
+  margin-top: var(--space-4xl);
+  margin-bottom: var(--space-4xl);
+}
+
+/* ── Wa-divider — a refined section separator with an ichimatsu bead in the
+   center, representing the balance (wa) between content blocks. ── */
+.wa-divider {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 18px 0;
-  opacity: 0.5;
+  gap: 16px;
+  padding: var(--space-lg) 0;
 }
-.wave-divider span {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
+.wa-divider::before,
+.wa-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-default), transparent);
+}
+.wa-divider__bead {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
   background: var(--brand);
-  opacity: 0.5;
+  opacity: 0.35;
+  transform: rotate(45deg);
 }
-.wave-divider span:nth-child(1) { opacity: 0.25; transform: scale(0.8); }
-.wave-divider span:nth-child(2) { opacity: 0.4; transform: scale(0.9); }
-.wave-divider span:nth-child(3) { opacity: 0.55; transform: scale(1); }
-.wave-divider span:nth-child(4) { opacity: 0.4; transform: scale(0.9); }
-.wave-divider span:nth-child(5) { opacity: 0.25; transform: scale(0.8); }
 
 /* ── Seasonal accent — subtle color hints for Japanese seasons.
    Applied via .seasonal-[spring|summer|autumn|winter] on sections. ── */
@@ -1511,33 +1619,34 @@ a:active {
   }
 }
 
-/* ── Markdown content — sumi ink on washi, rich and readable ── */
+/* ── Markdown content — sumi ink on washi, generous breathing room ── */
 .markdown-content h2 {
-  margin: var(--space-lg) 0 var(--space-md);
+  margin: var(--space-lg) 0 var(--space-base);
   font-family: var(--font-display), system-ui, sans-serif;
   font-weight: 700;
   font-size: 22px;
   color: var(--text-primary);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--tracking-tight);
   border-bottom: 2px solid var(--border-glow);
-  padding-bottom: 8px;
+  padding-bottom: 10px;
 }
 
 .markdown-content h3 {
-  margin: 20px 0 var(--space-sm);
+  margin: var(--space-lg) 0 var(--space-sm);
   font-weight: 700;
   font-size: 17px;
   color: var(--brand);
-  letter-spacing: -0.01em;
+  letter-spacing: var(--tracking-normal);
 }
 
 .markdown-content p {
-  margin-bottom: var(--space-base);
+  margin-bottom: var(--space-lg);
   font-family: var(--font-lora);
   font-size: 16px;
-  line-height: 1.85;
+  line-height: var(--leading-loose);
   color: var(--text-secondary);
   letter-spacing: 0.005em;
+  max-width: 65ch;
 }
 
 .markdown-content strong {
@@ -1562,10 +1671,10 @@ a:active {
 }
 
 .markdown-content blockquote {
-  margin: 20px 0;
+  margin: var(--space-lg) 0;
   border-left: 4px solid var(--brand);
   background: var(--cobalt-wash);
-  padding: 14px 18px;
+  padding: var(--space-base) var(--space-md);
   border-radius: 0 var(--radius-md) var(--radius-md) 0;
   color: var(--text-secondary);
   font-style: italic;
@@ -1575,8 +1684,23 @@ a:active {
 
 .markdown-content ul,
 .markdown-content ol {
-  margin-left: 20px;
-  line-height: 1.9;
+  margin-left: 24px;
+  line-height: var(--leading-relaxed);
+  margin-bottom: var(--space-lg);
+}
+
+.markdown-content li {
+  margin-bottom: var(--space-xs);
+}
+
+.markdown-content a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid var(--accent-dim);
+  transition: border-color 200ms var(--ease-color);
+}
+.markdown-content a:hover {
+  border-bottom-color: var(--accent);
 }
 
 /* ── App shell — refined, spacious, Apple-style ── */
@@ -1938,7 +2062,8 @@ html[data-perf="high"] {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* Japanese-inspired heading treatment — a thin vermillion rule sits just
-   below the text like a chapter marker in a hand-bound book. */
+   below the text like a chapter marker in a hand-bound book, with generous
+   breathing room for a considered reading pace. */
 h1, h2, h3 {
   position: relative;
 }
@@ -1949,19 +2074,33 @@ h1::after, h2::after {
   height: 3px;
   background: var(--accent-gradient);
   border-radius: 2px;
-  margin-top: 8px;
+  margin-top: 10px;
   opacity: 0.7;
 }
-h1::after { width: 56px; margin-top: 10px; opacity: 0.85; }
+h1::after { width: 56px; margin-top: 12px; opacity: 0.85; }
 h3::after { display: none; }
+
+h1, h2 {
+  letter-spacing: var(--tracking-tight);
+}
+h3 {
+  letter-spacing: var(--tracking-normal);
+}
+
+h1 { line-height: var(--leading-tight); }
+h2 { line-height: var(--leading-snug); }
+h3 { line-height: var(--leading-normal); }
 
 /* Slightly looser tracking for display headings — reads as scholarly
    and intentional, like a well-set book. */
-h1, h2 {
-  letter-spacing: -0.02em;
+h1 {
+  margin-bottom: var(--space-lg);
+}
+h2 {
+  margin-bottom: var(--space-md);
 }
 h3 {
-  letter-spacing: -0.01em;
+  margin-bottom: var(--space-sm);
 }
 
 /* Improve text rendering for mixed Latin + CJK content. */
@@ -1969,6 +2108,14 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  line-height: var(--leading-normal);
+}
+
+/* Paragraphs — generous leading for a calm, scholarly reading rhythm. */
+p {
+  line-height: var(--leading-loose);
+  margin-bottom: var(--space-lg);
+  max-width: 65ch;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

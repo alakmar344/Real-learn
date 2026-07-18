@@ -177,7 +177,7 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
           overflowY: "auto",
           background: "var(--bg-card)",
           borderRadius: "var(--radius-2xl) var(--radius-2xl) 0 0",
-          padding: "0 28px 48px",
+          padding: "0 32px 56px",
           boxShadow: "var(--shadow-lg), var(--glass-edge)",
         }}
       >
@@ -213,12 +213,12 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
           aria-label="Close quiz"
           style={{
             position: "absolute",
-            top: 18,
-            right: 28,
+            top: 22,
+            right: 32,
             background: "transparent",
             border: "1px solid var(--border-subtle)",
             borderRadius: "var(--radius-md)",
-            padding: "8px 14px",
+            padding: "10px 16px",
             color: "var(--text-secondary)",
             cursor: "pointer",
             fontSize: 14,
@@ -252,10 +252,10 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
         >
           Quick Check
         </h3>
-        <p style={{ marginTop: 6, marginBottom: 16, fontSize: 13, color: "var(--text-secondary)" }}>
+        <p style={{ marginTop: 8, marginBottom: 20, fontSize: 13, color: "var(--text-secondary)" }}>
           {totalQuestions} question{totalQuestions === 1 ? "" : "s"} about what you just read
         </p>
-        <div style={{ borderBottom: "1px solid var(--border-subtle)", marginBottom: 16 }} />
+        <div style={{ borderBottom: "1px solid var(--border-subtle)", marginBottom: 20 }} />
 
         {shuffledHint ? (
           <div
@@ -300,10 +300,10 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
                   : "Read again"
             }
             style={{
-              marginTop: 24,
+              marginTop: 28,
               width: "100%",
               borderRadius: "var(--radius-lg)",
-              padding: "16px",
+              padding: "18px",
               border:
                 score === perfectScore && current === lastQuestionIndex
                   ? "none"

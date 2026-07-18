@@ -29,12 +29,12 @@ export default function Navbar({ compact = false }: Props) {
         style={{
           maxWidth: 1200,
           margin: "0 auto",
-          padding: compact ? "16px 28px" : "0 28px",
+          padding: compact ? "18px 32px" : "0 32px",
           minHeight: compact ? "auto" : 72,
           display: "flex",
           alignItems: "center",
           justifyContent: "flex-start",
-          gap: 16,
+          gap: 18,
         }}
       >
         <Link
@@ -44,8 +44,8 @@ export default function Navbar({ compact = false }: Props) {
         >
           <div
             style={{
-              width: 40,
-              height: 40,
+              width: 42,
+              height: 42,
               borderRadius: "var(--radius-md)",
               background: "var(--accent-gradient)",
               display: "flex",
@@ -59,7 +59,7 @@ export default function Navbar({ compact = false }: Props) {
             }}
             aria-hidden="true"
           >
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" style={{ position: "relative", zIndex: 1 }}>
+            <svg width="30" height="30" viewBox="0 0 28 28" fill="none" style={{ position: "relative", zIndex: 1 }}>
               <circle cx="14" cy="14" r="12" stroke="currentColor" strokeWidth="2.5" opacity="0.4" />
               <path d="M9 18L14 9L19 18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
               <circle cx="14" cy="14" r="3" fill="currentColor" opacity="0.6" />
@@ -70,7 +70,7 @@ export default function Navbar({ compact = false }: Props) {
             style={{
               fontFamily: "var(--font-display)",
               fontWeight: 800,
-              fontSize: 26,
+              fontSize: 28,
               letterSpacing: -0.5,
               background: "linear-gradient(135deg, var(--text-primary) 0%, var(--accent) 50%, var(--text-primary) 100%)",
               backgroundSize: "200% 100%",
