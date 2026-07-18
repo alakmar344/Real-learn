@@ -168,16 +168,20 @@ content was usable.
 
 ## Current state
 
-As of this session, the backend:
-- Calls Gemma 4 26B A4B exclusively via Cloudflare Workers AI, using direct
-  `fetch` against the OpenAI-compatible endpoint (no SDK).
+As of this writing (2026-07-17), the backend:
+- Calls Gemma 4 31B via **Cerebras Cloud** as primary, with **Cloudflare
+  Workers AI** as automatic fallback, using the hedged multi-provider engine
+  described above.
+- Typical warm-model latency is **2–5 seconds** end-to-end for a complete
+  three-part lesson with quizzes.
 - Strips Gemma's thinking-mode output before parsing.
-- Retries on `403` (Cloudflare rate limiting), `429`, and `5xx` responses;
+- Retries on `403` (Cloudflare rate limiting), `429`, `408`, and `5xx` responses;
   fails immediately on `400`.
 - Accepts partial lesson responses (1–N parts) rather than requiring an
   exact part count, and backfills missing key takeaways.
-- Applies fail-open input/output moderation with its own independent
-  timeout, isolated in logging from the main lesson-generation timeout.
+- Applies fail-open input moderation and fail-closed output moderation, each
+  with its own independent timeout, isolated in logging from the main
+  lesson-generation timeout.
 
 ### Known open question
 Whether the *quality* difference some testing has shown between this
