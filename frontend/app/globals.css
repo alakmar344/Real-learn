@@ -643,6 +643,127 @@ body::before {
   z-index: 1;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   Traditional Japanese geometric patterns — CSS-only, GPU-cheap.
+   Used as subtle overlays on cards, dividers, and section headers.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Seigaiha (wave) — concentric overlapping circles evoking ocean waves.
+   A classic Japanese pattern symbolizing peace, tranquility, and good fortune. */
+.pattern-seigaiha {
+  position: relative;
+}
+.pattern-seigaiha::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cpath d='M28 28c0-4.4-3.6-8-8-8-2.2 0-4.2.9-5.6 2.4C13.4 20.6 12 22.6 12 25c0 4.4 3.6 8 8 8 2.2 0 4.2-.9 5.6-2.4C27.4 29.4 28 27.4 28 25zM20 36c-4.4 0-8-3.6-8-8 0-2.2.9-4.2 2.4-5.6C13.4 20.6 15.4 19 18 19c4.4 0 8 3.6 8 8 0 2.2-.9 4.2-2.4 5.6C22.6 34.6 20.6 36 20 36zM36 20c-2.2 0-4.2.9-5.6 2.4C29.4 23.4 28 25.4 28 28c0 4.4 3.6 8 8 8 2.2 0 4.2-.9 5.6-2.4C42.6 32.6 44 30.6 44 28c0-4.4-3.6-8-8-8z' fill='%23b8372b' fill-opacity='0.3'/%3E%3C/svg%3E");
+  background-size: 56px 56px;
+  mix-blend-mode: multiply;
+}
+.pattern-seigaiha > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Asanoha (hemp leaf) — a six-pointed star lattice symbolizing growth and
+   prosperity. Used on paper-textured surfaces and achievement cards. */
+.pattern-asanoha {
+  position: relative;
+}
+.pattern-asanoha::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cpath d='M30 0l30 30-30 30L0 30z' fill='none' stroke='%23b8372b' stroke-opacity='0.25' stroke-width='0.5'/%3E%3Cpath d='M30 10l20 20-20 20-20-20z' fill='none' stroke='%23b8372b' stroke-opacity='0.2' stroke-width='0.5'/%3E%3C/svg%3E");
+  background-size: 60px 60px;
+  mix-blend-mode: multiply;
+}
+.pattern-asanoha > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Shippo (seven treasures) — overlapping circles representing the seven
+   treasures of the Buddhist teachings. Used as a refined accent pattern. */
+.pattern-shippo {
+  position: relative;
+}
+.pattern-shippo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Ccircle cx='24' cy='12' r='10' fill='none' stroke='%23b8372b' stroke-opacity='0.3' stroke-width='0.5'/%3E%3Ccircle cx='36' cy='30' r='10' fill='none' stroke='%23b8372b' stroke-opacity='0.3' stroke-width='0.5'/%3E%3Ccircle cx='12' cy='30' r='10' fill='none' stroke='%23b8372b' stroke-opacity='0.3' stroke-width='0.5'/%3E%3C/svg%3E");
+  background-size: 48px 48px;
+  mix-blend-mode: multiply;
+}
+.pattern-shippo > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Wave divider — a gentle seigaiha-inspired horizontal rule that separates
+   content blocks with quiet Japanese intentionality. ── */
+.wave-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 18px 0;
+  opacity: 0.5;
+}
+.wave-divider span {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--brand);
+  opacity: 0.5;
+}
+.wave-divider span:nth-child(1) { opacity: 0.25; transform: scale(0.8); }
+.wave-divider span:nth-child(2) { opacity: 0.4; transform: scale(0.9); }
+.wave-divider span:nth-child(3) { opacity: 0.55; transform: scale(1); }
+.wave-divider span:nth-child(4) { opacity: 0.4; transform: scale(0.9); }
+.wave-divider span:nth-child(5) { opacity: 0.25; transform: scale(0.8); }
+
+/* ── Seasonal accent — subtle color hints for Japanese seasons.
+   Applied via .seasonal-[spring|summer|autumn|winter] on sections. ── */
+.seasonal-spring {
+  --seasonal-accent: #e8a0b0;
+  --seasonal-wash: rgba(232, 160, 176, 0.08);
+}
+.seasonal-summer {
+  --seasonal-accent: #2a8a6a;
+  --seasonal-wash: rgba(42, 138, 106, 0.08);
+}
+.seasonal-autumn {
+  --seasonal-accent: #c86830;
+  --seasonal-wash: rgba(200, 104, 48, 0.08);
+}
+.seasonal-winter {
+  --seasonal-accent: #6090c0;
+  --seasonal-wash: rgba(96, 144, 192, 0.08);
+}
+
+/* Auto-seasonal: apply subtle seasonal washes based on data-season attribute
+   set by the layout init script. */
+html[data-season="spring"] body { background-image: radial-gradient(ellipse at 20% 10%, rgba(232, 160, 176, 0.04) 0%, transparent 50%); }
+html[data-season="summer"] body { background-image: radial-gradient(ellipse at 80% 10%, rgba(42, 138, 106, 0.04) 0%, transparent 50%); }
+html[data-season="autumn"] body { background-image: radial-gradient(ellipse at 20% 90%, rgba(200, 104, 48, 0.04) 0%, transparent 50%); }
+html[data-season="winter"] body { background-image: radial-gradient(ellipse at 80% 90%, rgba(96, 144, 192, 0.04) 0%, transparent 50%); }
+
 /* ── Engraved identity motif — a faint, repeating hairline weave
    (think fine book-cloth or a diploma border) baked into surfaces that opt in.
    Pure CSS gradient lines, so it costs nothing to paint. ── */
@@ -1578,6 +1699,61 @@ a:active {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   Rendering performance — content-visibility, containment, intrinsic sizes.
+   These tell the browser to skip work for off-screen content and predict
+   element sizes so scrollbar and layout stay stable.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Off-screen sections are rendered lazily. The intrinsic size reserves space
+   so the scrollbar doesn't jump when they enter the viewport. */
+.content-optimize {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 600px;
+}
+
+/* The main lesson rail and each part card benefit from independent containment. */
+.progress-rail {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 80px;
+}
+.part-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 800px;
+  contain: layout style paint;
+}
+.quiz-sheet {
+  contain: layout style paint;
+}
+.quiz-question {
+  contain: layout style;
+}
+
+/* Sidebar history scroll area — limit paint to the visible list. */
+.app-sidebar {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 100%;
+}
+
+/* Footer is below the fold on most pages — lazy render it. */
+.app-footer {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 180px;
+}
+
+/* Achievement and activity sections on /progress are below the fold. */
+.progress-achievements,
+.progress-activity {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 500px;
+}
+
+/* Settings page form sections can be independently skipped when off-screen. */
+.settings-section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 300px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    Adaptive visual-performance tiers  (html[data-perf="low|mid|high"])
    Set pre-paint by app/layout.tsx, kept in sync by ThemeApplier; resolved
    from device hints (memory, cores, reduced-motion, data-saver) or the
@@ -1758,6 +1934,44 @@ html[data-perf="high"] {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   Japanese typography & reading rhythm
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Japanese-inspired heading treatment — a thin vermillion rule sits just
+   below the text like a chapter marker in a hand-bound book. */
+h1, h2, h3 {
+  position: relative;
+}
+h1::after, h2::after {
+  content: "";
+  display: block;
+  width: 40px;
+  height: 3px;
+  background: var(--accent-gradient);
+  border-radius: 2px;
+  margin-top: 8px;
+  opacity: 0.7;
+}
+h1::after { width: 56px; margin-top: 10px; opacity: 0.85; }
+h3::after { display: none; }
+
+/* Slightly looser tracking for display headings — reads as scholarly
+   and intentional, like a well-set book. */
+h1, h2 {
+  letter-spacing: -0.02em;
+}
+h3 {
+  letter-spacing: -0.01em;
+}
+
+/* Improve text rendering for mixed Latin + CJK content. */
+body {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    Achievements — warm badge tiles with a "how to earn" story card.
    Hover (desktop) or tap (touch) any badge and a little paper card unfolds
    with gentle guidance and your progress toward it.
@@ -1903,12 +2117,67 @@ html[data-perf="high"] {
   transition: width 500ms var(--ease-reveal);
 }
 
-/* ── Loving-touch hover — cards catch a whisper of warm light, as if a
-   paper lantern leaned closer. Layered on the existing vermillion system. ── */
-.glass-card:hover,
-.glass-panel:hover {
-  box-shadow:
-    var(--shadow-lg),
-    var(--glass-edge),
-    0 -12px 40px -18px var(--sun-wash, rgba(235, 170, 80, 0.07));
+/* ── Washi-fold — a subtle corner fold effect on cards, evoking the folded
+   corner of a traditional book page or a carefully turned sheet of washi. ── */
+.washi-fold {
+  position: relative;
+}
+.washi-fold::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, transparent 50%, var(--border-subtle) 50%);
+  border-radius: 0 0 var(--radius-xl) 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.6;
+}
+
+/* ── Brush-underline — a hand-painted vermillion underline for links and
+   interactive text, like a calligrapher's brush stroke. ── */
+.brush-underline {
+  position: relative;
+  text-decoration: none;
+}
+.brush-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 3px;
+  background: var(--accent-gradient);
+  border-radius: 2px;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 280ms var(--ease-spring);
+}
+.brush-underline:hover::after {
+  transform: scaleX(1);
+}
+
+/* ── Hanko-stamp — a circular vermillion seal effect for badges and
+   achievement markers, inspired by traditional Japanese hanko stamps. ── */
+.hanko-stamp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 2px solid var(--brand);
+  color: var(--brand);
+  font-weight: 800;
+  text-align: center;
+  box-shadow: inset 0 0 0 1px var(--accent-dim);
+  position: relative;
+}
+.hanko-stamp::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  border: 1px solid var(--brand);
+  opacity: 0.4;
 }

@@ -6,11 +6,19 @@ import QuestionInput from "@/components/homepage/QuestionInput";
 import HomeStats from "@/components/homepage/HomeStats";
 import LoadingCinematic from "@/components/shared/LoadingCinematic";
 import LiveRegion from "@/components/shared/LiveRegion";
-import Footer from "@/components/shared/Footer";
-import FeedbackGate from "@/components/shared/FeedbackGate";
+import dynamic from "next/dynamic";
 import { useLesson } from "@/hooks/useLesson";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { isConsentCurrent, readLegalConsent, writeLegalConsent } from "@/lib/legalConsent";
+
+const Footer = dynamic(() => import("@/components/shared/Footer"), {
+  loading: () => <div style={{ height: 120 }} aria-hidden="true" />,
+  ssr: true,
+});
+const FeedbackGate = dynamic(() => import("@/components/shared/FeedbackGate"), {
+  loading: () => null,
+  ssr: false,
+});
 
 /** Warm, time-aware greeting — the app says hello like a friend would. */
 function greetingForHour(h: number): string {
@@ -214,7 +222,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <Footer />
+        <Footer className="app-footer" />
 
         {/* Optional, anonymous review — shows the day after the first lesson
             on any return visit, so it is never missed after a refresh. */}

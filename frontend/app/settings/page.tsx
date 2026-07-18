@@ -368,6 +368,7 @@ export default function SettingsPage() {
 
         {/* Preferences Section */}
         <section
+          className="settings-section"
           style={{
             border: "1px solid var(--border-default)",
             borderRadius: "var(--radius-lg)",
@@ -586,6 +587,7 @@ export default function SettingsPage() {
 
         {/* Account Section */}
         <section
+          className="settings-section"
           style={{
             border: "1px solid var(--border-default)",
             borderRadius: "var(--radius-lg)",
@@ -619,6 +621,7 @@ export default function SettingsPage() {
 
         {/* Privacy Section */}
         <section
+          className="settings-section"
           style={{
             border: "1px solid var(--border-default)",
             borderRadius: "var(--radius-lg)",
@@ -670,6 +673,7 @@ export default function SettingsPage() {
 
         {/* Data Section */}
         <section
+          className="settings-section"
           style={{
             border: "1px solid var(--border-default)",
             borderRadius: "var(--radius-lg)",

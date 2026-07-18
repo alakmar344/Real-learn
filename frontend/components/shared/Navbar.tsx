@@ -53,12 +53,17 @@ export default function Navbar({ compact = false }: Props) {
               justifyContent: "center",
               color: "var(--on-accent)",
               fontWeight: 900,
-              fontSize: 17,
-              fontFamily: "var(--font-inter)",
               boxShadow: "var(--shadow-glow-accent)",
+              overflow: "hidden",
+              position: "relative",
             }}
+            aria-hidden="true"
           >
-            RL
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" style={{ position: "relative", zIndex: 1 }}>
+              <circle cx="14" cy="14" r="12" stroke="currentColor" strokeWidth="2.5" opacity="0.4" />
+              <path d="M9 18L14 9L19 18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              <circle cx="14" cy="14" r="3" fill="currentColor" opacity="0.6" />
+            </svg>
           </div>
           <span
             className="animate-gradient-shift"

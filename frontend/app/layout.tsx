@@ -69,6 +69,11 @@ const themeInitScript = `(function(){try{var t=null;var p=localStorage.getItem("
 // afterwards when the user changes the setting.
 const perfInitScript = `(function(){try{var mode=null;try{var p=localStorage.getItem("reallearn-preferences");if(p){var s=JSON.parse(p);mode=s&&s.state&&s.state.perfMode}}catch(e){}var tier;if(mode==="low"||mode==="high"){tier=mode}else{var mem=navigator.deviceMemory||8;var cores=navigator.hardwareConcurrency||8;var rm=false;try{rm=window.matchMedia("(prefers-reduced-motion: reduce)").matches}catch(e){}var sd=Boolean(navigator.connection&&navigator.connection.saveData);tier=(mem<=4||cores<=4||rm||sd)?"low":((mem>=8&&cores>=8)?"high":"mid")}document.documentElement.dataset.perf=tier;var ua=(navigator.userAgent||"").toLowerCase();if(ua.indexOf("firefox")>-1&&ua.indexOf("seamonkey")===-1){document.documentElement.dataset.browser="firefox"}}catch(e){}})();`;
 
+// Adds a seasonal Japanese accent class based on the current month so the UI
+// subtly shifts with the seasons (spring=sakura, summer=green, autumn=maple,
+// winter=snow). Runs once per page load.
+const seasonalInitScript = `(function(){try{var m=new Date().getMonth();var s="winter";if(m>=2&&m<=4)s="spring";else if(m>=5&&m<=7)s="summer";else if(m>=8&&m<=10)s="autumn";document.documentElement.dataset.season=s}catch(e){}})();`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -83,9 +88,24 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <script dangerouslySetInnerHTML={{ __html: perfInitScript }} />
-        {/* PERFORMANCE: preconnect to the backend API so lesson-generation requests
-            avoid an extra round-trip for DNS + TCP. */}
+        <script dangerouslySetInnerHTML={{ __html: seasonalInitScript }} />
+        {/* PERFORMANCE: preconnect to critical origins so lesson-generation requests,
+            auth handshakes, and analytics avoid extra DNS+TCP round-trips. */}
         <link rel="preconnect" href={process.env.NEXT_PUBLIC_BACKEND_URL?.replace(/\/$/, "") || "https://real-learn.onrender.com"} crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://img.clerk.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://clerk.reallearn.site" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+        <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+        <link rel="dns-prefetch" href="https://*.clerk.accounts.dev" />
+        <link rel="dns-prefetch" href="https://*.clerk.com" />
+        {/* PERFORMANCE: preload critical fonts to avoid layout shifts and
+            ensure text renders immediately on first paint. */}
+        <link rel="preload" as="font" type="font/woff2" href="/fonts/inter.woff2" crossOrigin="anonymous" />
+        <link rel="preload" as="font" type="font/woff2" href="/fonts/lora.woff2" crossOrigin="anonymous" />
+        <link rel="preload" as="font" type="font/woff2" href="/fonts/space-grotesk.woff2" crossOrigin="anonymous" />
+        <link rel="preload" as="font" type="font/woff2" href="/fonts/jetbrains-mono.woff2" crossOrigin="anonymous" />
+        {/* PERFORMANCE: prefetch the most likely navigation target. */}
+        <link rel="prefetch" href="/learn" />
       </head>
       <body>
         <CrayonBackground />

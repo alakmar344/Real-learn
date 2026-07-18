@@ -52,7 +52,7 @@ function CompanionDays() {
   );
 }
 
-const Footer = () => {
+const Footer = ({ className }: { className?: string }) => {
   const clicks = useRef<number[]>([]);
 
   // Easter egg: click/tap the RealLearn wordmark 5 times within 3 seconds
@@ -72,6 +72,7 @@ const Footer = () => {
 
   return (
     <footer
+      className={className}
       style={{
         borderTop: "1px solid var(--border-subtle)",
         padding: "24px 28px",
