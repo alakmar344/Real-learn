@@ -1,6 +1,8 @@
 # RealLearn — Complete Documentation Summary
 
 > **Purpose:** This document provides a full, detailed summary of every documentation file in the RealLearn repository. It is intended as a single-reference guide for judges, reviewers, contributors, and anyone seeking to understand the full scope of the project.
+>
+> **Last updated:** July 18, 2026 — after the Japanese culture-inspired design transformation.
 
 ---
 
@@ -74,7 +76,7 @@ RealLearn rebuilds the learning journey automatically — Foundation → Mechani
 7. **Personal Learning Library** — Auto-saved journeys, de-duplicated by stable signature
 8. **Follow-Up Loop** — Ask deeper questions without returning to homepage
 9. **WCAG 2.1 AA Accessibility** — Skip-to-content, ARIA live regions, keyboard navigation, focus trapping, reduced-motion support, 44px touch targets
-10. **Three Themes** — Paper (warm cream/gold), Night (ink + warm gold), Twilight (warm amber dusk over deep violet)
+10. **Three Themes** — Shiro (washi paper ivory), Yoru (ai-zome indigo night), Tasogare (murasaki twilight with sakura accents)
 11. **Voice Learning** — Web Speech API for input (12 languages) and read-aloud with intelligent voice selection
 12. **Gamification** — XP, levels, daily streaks, streak freezes, 17 achievements, activity heatmap
 13. **Shareable Result Cards** — Canvas-generated 1080x1920 PNG with Web Share API
@@ -317,7 +319,7 @@ A complete table of 290 commits from 2026-06-20 to 2026-07-14, with dates, commi
 **Rating:** 7/10
 
 **Strengths:**
-- Modern, cohesive dark theme with elegant gold accent
+- Modern, cohesive Japanese-inspired theme with elegant vermillion accent
 - Well-crafted loading states and animations
 - Clear visual hierarchy with excellent typography (Playfair Display + Inter)
 - Thoughtful component structure
@@ -643,7 +645,7 @@ The most striking theme across all documents is the **massive iteration** that h
 3. **Legal compliance** — From no legal framework to versioned Privacy Policy (v2.5), Terms of Service (v2.3), and Cookie Policy (v2.2) with COPPA/CCPA/DPDP compliance
 4. **Accessibility** — From basic UI to WCAG 2.1 AA targeting with ARIA labels, keyboard navigation, focus management, and reduced-motion support
 5. **Performance** — From 109-second cold starts to 50-second generation with caching, retries, and circuit breakers
-6. **Design** — From gold-noir aesthetic to three beautiful themes with crayon backgrounds, a drifting ambient aurora layer, and adaptive performance tiers
+6. **Design** — From gold-noir aesthetic to cobalt editorial to Japanese culture-inspired aesthetic (sumi-e, washi, vermillion) with three themes (Shiro, Yoru, Tasogare), a crayon-painting background, ambient aurora layer, and adaptive performance tiers
 7. **Gamification** — From no engagement system to XP, levels, streaks, 17 achievements, shareable result cards, hidden easter eggs, and attachment features (personal greetings, quote-of-the-day, a "learning together for N days" counter)
 8. **Voice** — From no voice features to full TTS/STT in 12 languages
 9. **Storage** — From localStorage-only to IndexedDB archiving with tiered retention
@@ -698,8 +700,8 @@ RealLearn is a comprehensive, production-grade AI learning platform built for th
 - **Security policy** (SECURITY.md)
 - **MIT License** (LICENSE)
 
-The project demonstrates a remarkable evolution from a basic hackathon submission to a sophisticated, well-documented, security-conscious, accessibility-focused learning platform — all built in approximately 3 weeks of intensive iteration.
+The project demonstrates a remarkable evolution from a basic hackathon submission to a sophisticated, well-documented, security-conscious, accessibility-focused learning platform with a Japanese culture-inspired design — all built in approximately 6 weeks of intensive iteration.
 
 ---
 
-*This summary was generated from all documentation files in the RealLearn repository.*
+*This summary was generated from all documentation files in the RealLearn repository. Last updated July 18, 2026.*

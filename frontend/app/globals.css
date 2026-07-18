@@ -10,81 +10,80 @@
 :root {
   color-scheme: light;
 
-  /* ── RealLearn identity — refined editorial ink & cobalt.
-     Warm paper white, near-black ink, a confident cobalt-blue accent with a
-     vermilion counterpoint. The palette is deeply saturated with true cobalt
-     (#0047AB family) and rich ink tones for an authoritative, textbook-grade
-     editorial presence. ── */
-  --brand: #1a3a8a;
-  --brand-strong: #0f2d72;
-  --brand-bright: #2e5ac8;
-  --brand-soft: #4a6ad4;
+  /* ── RealLearn identity — Japanese aesthetic: washi, sumi, vermillion.
+     Warm washi-paper white, near-black sumi ink, a confident vermillion
+     accent inspired by hanko stamps and torii gates. The palette evokes
+     traditional Japanese calligraphy, lacquerware, and ink-wash painting. ── */
+  --brand: #b8372b;
+  --brand-strong: #942c22;
+  --brand-bright: #d4443a;
+  --brand-soft: #e06b5a;
 
-  /* Extended cobalt palette — layered depths for editorial richness */
-  --cobalt-deep: #0c1f5c;
-  --cobalt-mid: #1a3a8a;
-  --cobalt-vivid: #2e5ac8;
-  --cobalt-pale: #6b8ce8;
-  --cobalt-wash: rgba(26, 58, 138, 0.08);
-  --cobalt-ink: #0a1744;
+  /* Extended sumi/vermillion palette — layered depths for Japanese richness */
+  --cobalt-deep: #2a1520;
+  --cobalt-mid: #5c2030;
+  --cobalt-vivid: #b8372b;
+  --cobalt-pale: #d4847a;
+  --cobalt-wash: rgba(184, 55, 43, 0.08);
+  --cobalt-ink: #1a0a10;
 
-  /* Tone-warmed paper: same neutral-warm hue family, but the tones now lean
-     toward sun-touched ivory and cream — storybook paper instead of office
-     stock. The cobalt hues are untouched; only the tones grew warmer. */
-  --bg-primary: #f6f2e9;
-  --bg-surface: rgba(255, 252, 244, 0.8);
-  --bg-card: rgba(255, 253, 247, 0.86);
-  --bg-card-hover: rgba(255, 254, 249, 0.96);
-  --bg-glass: rgba(253, 250, 242, 0.76);
-  --bg-solid: #fbf7ed;
-  --bg-warm: rgba(250, 245, 235, 0.6);
-  /* Warm ambient light — a low afternoon-sun wash layered under the cobalt
-     ambience so the page always feels gently lit, never clinical. */
-  --sun-wash: rgba(235, 170, 80, 0.07);
-  --hearth-glow: rgba(226, 140, 70, 0.055);
+  /* Washi paper: the warm, handmade feel of traditional Japanese paper —
+     sun-touched ivory with a faint linen warmth, like a shoji screen
+     filtering afternoon light. */
+  --bg-primary: #f7f0e4;
+  --bg-surface: rgba(255, 250, 238, 0.8);
+  --bg-card: rgba(255, 251, 242, 0.86);
+  --bg-card-hover: rgba(255, 252, 246, 0.96);
+  --bg-glass: rgba(253, 248, 236, 0.76);
+  --bg-solid: #fbf5e8;
+  --bg-warm: rgba(250, 244, 230, 0.6);
+  /* Warm ambient light — like sunlight through shoji screens, a gentle
+     golden wash layered under the vermillion ambience. */
+  --sun-wash: rgba(220, 160, 80, 0.07);
+  --hearth-glow: rgba(200, 120, 60, 0.055);
 
-  --border-subtle: rgba(10, 23, 68, 0.1);
-  --border-default: rgba(10, 23, 68, 0.16);
+  --border-subtle: rgba(42, 21, 32, 0.1);
+  --border-default: rgba(42, 21, 32, 0.16);
   --border-accent: var(--brand);
-  --border-glow: rgba(26, 58, 138, 0.3);
+  --border-glow: rgba(184, 55, 43, 0.3);
 
   --glass-blur: 28px;
   --glass-blur-strong: 44px;
   --glass-saturate: 180%;
-  --glass-highlight: rgba(230, 235, 255, 0.92);
-  --glass-shadow: 0 4px 24px rgba(10, 23, 68, 0.08), 0 1px 3px rgba(10, 23, 68, 0.05);
-  --glass-edge: inset 0 1px 0 rgba(230, 240, 255, 0.9), inset 0 0 0 1px rgba(26, 58, 138, 0.12);
-  --glass-sheen: linear-gradient(135deg, rgba(230,240,255,0.42) 0%, rgba(200,215,255,0.14) 38%, rgba(255,255,255,0) 62%);
+  --glass-highlight: rgba(255, 245, 230, 0.92);
+  --glass-shadow: 0 4px 24px rgba(42, 21, 32, 0.08), 0 1px 3px rgba(42, 21, 32, 0.05);
+  --glass-edge: inset 0 1px 0 rgba(255, 245, 230, 0.9), inset 0 0 0 1px rgba(184, 55, 43, 0.12);
+  --glass-sheen: linear-gradient(135deg, rgba(255,245,230,0.42) 0%, rgba(255,220,200,0.14) 38%, rgba(255,255,255,0) 62%);
 
   --accent: var(--brand);
   --accent-hover: var(--brand-strong);
-  --accent-dim: rgba(26, 58, 138, 0.09);
-  --accent-glow: rgba(26, 58, 138, 0.2);
-  --accent-companion: #c43a18;
-  --accent-gradient: linear-gradient(135deg, #2e5ac8 0%, #0f2d72 100%);
+  --accent-dim: rgba(184, 55, 43, 0.09);
+  --accent-glow: rgba(184, 55, 43, 0.2);
+  --accent-companion: #1a5c6a;
+  --accent-gradient: linear-gradient(135deg, #b8372b 0%, #942c22 100%);
   --on-accent: #ffffff;
-  --shadow-glow-accent: 0 2px 20px rgba(26, 58, 138, 0.28);
+  --shadow-glow-accent: 0 2px 20px rgba(184, 55, 43, 0.28);
 
-  /* Ink tones softened: still cobalt-leaning ink, but a touch lighter and
-     warmer so long reading feels like a well-loved book, not a spec sheet. */
-  --text-primary: #191e2e;
-  --text-secondary: #43465a;
-  --text-tertiary: #71738a;
-  --text-accent-strong: #1a3a8a;
+  /* Sumi ink tones: the deep, layered blacks and grays of Japanese
+     calligraphy — a touch warmer than pure gray, like ink on washi. */
+  --text-primary: #1a1018;
+  --text-secondary: #4a3a40;
+  --text-tertiary: #807078;
+  --text-accent-strong: #b8372b;
 
-  --correct: #1a8a5c;
-  --correct-bg: rgba(26, 138, 92, 0.1);
-  --wrong: #d24040;
-  --wrong-bg: rgba(210, 64, 64, 0.09);
-  --locked: #a0a0a6;
+  --correct: #2a7a50;
+  --correct-bg: rgba(42, 122, 80, 0.1);
+  --wrong: #c43030;
+  --wrong-bg: rgba(196, 48, 48, 0.09);
+  --locked: #a09898;
 
-  --subject-physics: #2f4cd0;
-  --subject-chemistry: #1a8a5c;
-  --subject-economics: #c96a1f;
-  --subject-biology: #bd3f66;
-  --subject-cs: #0e7490;
-  --subject-history: #a85a32;
-  --subject-general: #4a6fa5;
+  --subject-physics: #3a5ab0;
+  --subject-chemistry: #2a7a50;
+  --subject-economics: #b86a1a;
+  --subject-biology: #a83060;
+  --subject-cs: #0e7480;
+  --subject-history: #8a5030;
+  --subject-general: #4a6090;
 
   --radius-sm: 10px;
   --radius-md: 14px;
@@ -111,12 +110,12 @@
   --space-2xl: 64px;
   --space-3xl: 96px;
 
-  /* Shadows warmed: cobalt ink mixed with a drop of umber, so depth reads as
-     soft afternoon shade on paper rather than a cold blue drop-shadow. */
-  --shadow-sm: 0 1px 3px rgba(46, 36, 40, 0.06), 0 1px 2px rgba(10, 23, 68, 0.04);
-  --shadow-md: 0 4px 14px rgba(46, 36, 40, 0.08), 0 2px 4px rgba(10, 23, 68, 0.05);
-  --shadow-lg: 0 12px 34px rgba(46, 36, 40, 0.12), 0 4px 8px rgba(10, 23, 68, 0.06);
-  --shadow-glow-correct: 0 0 24px rgba(26, 138, 92, 0.16);
+  /* Shadows warmed: sumi ink mixed with umber, so depth reads as
+     soft shade on washi paper rather than a cold drop-shadow. */
+  --shadow-sm: 0 1px 3px rgba(42, 21, 32, 0.06), 0 1px 2px rgba(42, 21, 32, 0.04);
+  --shadow-md: 0 4px 14px rgba(42, 21, 32, 0.08), 0 2px 4px rgba(42, 21, 32, 0.05);
+  --shadow-lg: 0 12px 34px rgba(42, 21, 32, 0.12), 0 4px 8px rgba(42, 21, 32, 0.06);
+  --shadow-glow-correct: 0 0 24px rgba(42, 122, 80, 0.16);
 
   --ease-reveal: cubic-bezier(0.22, 0.61, 0.36, 1);
   --ease-color: cubic-bezier(0.4, 0, 0.2, 1);
@@ -134,232 +133,232 @@
   --focus-ring: 0 0 0 3px var(--accent-glow);
   --focus-ring-simple: 0 0 0 2px var(--accent);
 
-  /* The vermilion ember is a touch warmer and more present — the breathing
-     layer now feels like lantern-light drifting under the paper. */
-  --aurora-1: rgba(26, 58, 138, 0.11);
-  --aurora-2: rgba(214, 110, 48, 0.09);
-  --aurora-3: rgba(15, 45, 114, 0.07);
+  /* The vermillion ember is a touch warmer and more present — the breathing
+     layer now feels like lantern-light drifting under the washi. */
+  --aurora-1: rgba(184, 55, 43, 0.11);
+  --aurora-2: rgba(210, 130, 60, 0.09);
+  --aurora-3: rgba(148, 44, 34, 0.07);
 }
 
-/* ── Dark theme — deep ink-black canvas, vivid cobalt that cuts through
-   the darkness. True editorial night: text is luminous silver on near-black,
-   accent is electric cobalt that feels alive. ── */
+/* ── Dark theme — deep indigo night sky (ai-zome), lit by warm kinsaku
+   gold accents. True Japanese night: luminous silver text on near-black,
+   accent is a rich vermillion-gold that feels alive against the indigo. ── */
 html[data-theme="dark"] {
   color-scheme: dark;
 
-  --brand: #6b8ce8;
-  --brand-strong: #8aa4ff;
-  --brand-bright: #a0b8ff;
-  --brand-soft: #4a6ad4;
+  --brand: #d4847a;
+  --brand-strong: #e8a89c;
+  --brand-bright: #f0c4b8;
+  --brand-soft: #c06050;
 
-  --cobalt-deep: #0a0e1a;
-  --cobalt-mid: #1a2a5c;
-  --cobalt-vivid: #6b8ce8;
-  --cobalt-pale: #a0b8ff;
-  --cobalt-wash: rgba(107, 140, 232, 0.1);
-  --cobalt-ink: #060812;
+  --cobalt-deep: #0a0810;
+  --cobalt-mid: #1a1030;
+  --cobalt-vivid: #d4847a;
+  --cobalt-pale: #e8c0b8;
+  --cobalt-wash: rgba(212, 132, 122, 0.1);
+  --cobalt-ink: #060408;
 
-  /* Night kept cobalt, but with a faint candle warmth so the dark feels like
-     a lamplit study rather than a server room. */
-  --sun-wash: rgba(232, 150, 80, 0.035);
-  --hearth-glow: rgba(240, 160, 90, 0.028);
+  /* Night kept the indigo depth, but with a faint candle warmth so the dark
+     feels like a lantern-lit teahouse rather than a server room. */
+  --sun-wash: rgba(220, 150, 80, 0.035);
+  --hearth-glow: rgba(230, 140, 70, 0.028);
 
-  --bg-primary: #080a12;
-  --bg-surface: rgba(18, 22, 40, 0.78);
-  --bg-card: rgba(20, 24, 44, 0.85);
-  --bg-card-hover: rgba(30, 36, 58, 0.95);
-  --bg-glass: rgba(14, 18, 34, 0.78);
-  --bg-solid: #0e1020;
+  --bg-primary: #0a0810;
+  --bg-surface: rgba(22, 16, 30, 0.78);
+  --bg-card: rgba(26, 18, 36, 0.85);
+  --bg-card-hover: rgba(36, 26, 48, 0.95);
+  --bg-glass: rgba(16, 10, 24, 0.78);
+  --bg-solid: #100c18;
 
-  --border-subtle: rgba(107, 140, 232, 0.1);
-  --border-default: rgba(107, 140, 232, 0.18);
+  --border-subtle: rgba(212, 132, 122, 0.1);
+  --border-default: rgba(212, 132, 122, 0.18);
   --border-accent: var(--brand);
-  --border-glow: rgba(107, 140, 232, 0.35);
+  --border-glow: rgba(212, 132, 122, 0.35);
 
   --glass-blur: 28px;
   --glass-blur-strong: 44px;
   --glass-saturate: 165%;
-  --glass-highlight: rgba(140, 170, 255, 0.14);
+  --glass-highlight: rgba(232, 180, 168, 0.14);
   --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.45), 0 1px 4px rgba(0, 0, 0, 0.28);
-  --glass-edge: inset 0 1px 0 rgba(107, 140, 232, 0.12), inset 0 0 0 1px rgba(107, 140, 232, 0.06);
-  --glass-sheen: linear-gradient(135deg, rgba(107,140,232,0.12) 0%, rgba(107,140,232,0.04) 38%, rgba(255,255,255,0) 62%);
+  --glass-edge: inset 0 1px 0 rgba(212, 132, 122, 0.12), inset 0 0 0 1px rgba(212, 132, 122, 0.06);
+  --glass-sheen: linear-gradient(135deg, rgba(212,132,122,0.12) 0%, rgba(212,132,122,0.04) 38%, rgba(255,255,255,0) 62%);
 
   --accent: var(--brand);
   --accent-hover: var(--brand-strong);
-  --accent-dim: rgba(107, 140, 232, 0.12);
-  --accent-glow: rgba(107, 140, 232, 0.28);
-  --accent-companion: #e87050;
-  --accent-gradient: linear-gradient(135deg, #6b8ce8 0%, #4a6ad4 100%);
-  --on-accent: #060812;
-  --shadow-glow-accent: 0 2px 20px rgba(107, 140, 232, 0.3);
+  --accent-dim: rgba(212, 132, 122, 0.12);
+  --accent-glow: rgba(212, 132, 122, 0.28);
+  --accent-companion: #5aadaa;
+  --accent-gradient: linear-gradient(135deg, #d4847a 0%, #c06050 100%);
+  --on-accent: #060408;
+  --shadow-glow-accent: 0 2px 20px rgba(212, 132, 122, 0.3);
 
-  --text-primary: #e8ecf8;
-  --text-secondary: #a0a8c4;
-  --text-tertiary: #5c6488;
-  --text-accent-strong: #a0b8ff;
+  --text-primary: #f0e8e4;
+  --text-secondary: #b8a8b0;
+  --text-tertiary: #6a5868;
+  --text-accent-strong: #e8c0b8;
 
-  --correct: #3dba85;
-  --correct-bg: rgba(61, 186, 133, 0.12);
-  --wrong: #e87060;
-  --wrong-bg: rgba(232, 112, 96, 0.12);
-  --locked: #404048;
+  --correct: #5cb880;
+  --correct-bg: rgba(92, 184, 128, 0.12);
+  --wrong: #e87068;
+  --wrong-bg: rgba(232, 112, 104, 0.12);
+  --locked: #403038;
 
-  --subject-physics: #6b8ce8;
-  --subject-chemistry: #3dba85;
-  --subject-economics: #d9975a;
-  --subject-biology: #d97690;
-  --subject-cs: #56b8d0;
-  --subject-history: #c98a68;
-  --subject-general: #6da3d6;
+  --subject-physics: #d4847a;
+  --subject-chemistry: #5cb880;
+  --subject-economics: #d89a58;
+  --subject-biology: #d87088;
+  --subject-cs: #58b8c8;
+  --subject-history: #c08860;
+  --subject-general: #6898c8;
 
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.38), 0 2px 4px rgba(0, 0, 0, 0.28);
   --shadow-lg: 0 12px 34px rgba(0, 0, 0, 0.48), 0 4px 8px rgba(0, 0, 0, 0.32);
 
-  --aurora-1: rgba(107, 140, 232, 0.1);
-  --aurora-2: rgba(236, 128, 82, 0.075);
-  --aurora-3: rgba(61, 186, 133, 0.05);
+  --aurora-1: rgba(212, 132, 122, 0.1);
+  --aurora-2: rgba(220, 140, 60, 0.075);
+  --aurora-3: rgba(92, 184, 128, 0.05);
 }
 
-/* ── Twilight theme — deep indigo night sky, lit by rich cobalt-violet
-   accents and a low ember of peach. True editorial twilight: the cobalt
-   here is deeper and more saturated, like ink mixed with dusk. ── */
+/* ── Twilight theme — deep murasaki (purple) night sky, lit by sakura-pink
+   accents and a warm ember of gold. True Japanese twilight: the purple here
+   is deep and saturated, like wisteria draped over a moonlit garden. ── */
 html[data-theme="twilight"] {
   color-scheme: dark;
-  /* Dusk ember-light — the warm counterpoint to the indigo sky. */
-  --sun-wash: rgba(240, 160, 80, 0.05);
-  --hearth-glow: rgba(232, 144, 96, 0.04);
-  --scrim: rgba(8, 4, 20, 0.52);
-  --bg-primary: #08061a;
-  --bg-surface: rgba(36, 28, 78, 0.5);
-  --bg-card: rgba(40, 30, 84, 0.55);
-  --bg-card-hover: rgba(52, 40, 100, 0.68);
-  --bg-glass: rgba(20, 14, 48, 0.58);
-  --bg-solid: #141030;
+  /* Dusk ember-light — the warm counterpoint to the murasaki sky. */
+  --sun-wash: rgba(230, 150, 70, 0.05);
+  --hearth-glow: rgba(220, 130, 80, 0.04);
+  --scrim: rgba(12, 6, 24, 0.52);
+  --bg-primary: #0c0820;
+  --bg-surface: rgba(40, 28, 72, 0.5);
+  --bg-card: rgba(44, 30, 80, 0.55);
+  --bg-card-hover: rgba(56, 40, 96, 0.68);
+  --bg-glass: rgba(24, 14, 48, 0.58);
+  --bg-solid: #181040;
 
-  --cobalt-deep: #0c0828;
-  --cobalt-mid: #1a1460;
-  --cobalt-vivid: #7080e8;
-  --cobalt-pale: #a8b8ff;
-  --cobalt-wash: rgba(112, 128, 232, 0.1);
-  --cobalt-ink: #060418;
+  --cobalt-deep: #100830;
+  --cobalt-mid: #201060;
+  --cobalt-vivid: #8a60d0;
+  --cobalt-pale: #b898e8;
+  --cobalt-wash: rgba(138, 96, 208, 0.1);
+  --cobalt-ink: #080420;
 
-  --border-subtle: rgba(168, 184, 255, 0.14);
-  --border-default: rgba(168, 184, 255, 0.22);
-  --border-accent: #7080e8;
-  --border-glow: #7080e8;
+  --border-subtle: rgba(184, 152, 232, 0.14);
+  --border-default: rgba(184, 152, 232, 0.22);
+  --border-accent: #8a60d0;
+  --border-glow: #8a60d0;
 
-  /* Liquid-glass system tokens — twilight, cobalt-tinted */
+  /* Liquid-glass system tokens — twilight, murasaki-tinted */
   --glass-blur: 24px;
   --glass-blur-strong: 38px;
   --glass-saturate: 160%;
-  --glass-highlight: rgba(168, 184, 255, 0.22);
-  --glass-shadow: 0 8px 32px rgba(6, 4, 20, 0.55), 0 1px 4px rgba(6, 4, 20, 0.4);
-  --glass-edge: inset 0 1px 0 rgba(168, 184, 255, 0.18), inset 0 0 0 1px rgba(112, 128, 232, 0.08);
-  --glass-sheen: linear-gradient(135deg, rgba(168,184,255,0.14) 0%, rgba(112,128,232,0.04) 32%, rgba(255,255,255,0) 58%);
+  --glass-highlight: rgba(184, 152, 232, 0.22);
+  --glass-shadow: 0 8px 32px rgba(8, 4, 20, 0.55), 0 1px 4px rgba(8, 4, 20, 0.4);
+  --glass-edge: inset 0 1px 0 rgba(184, 152, 232, 0.18), inset 0 0 0 1px rgba(138, 96, 208, 0.08);
+  --glass-sheen: linear-gradient(135deg, rgba(184,152,232,0.14) 0%, rgba(138,96,208,0.04) 32%, rgba(255,255,255,0) 58%);
 
-  --brand: #7080e8;
-  --brand-strong: #8a98ff;
-  --brand-bright: #a0b8ff;
-  --brand-soft: #5a6ce0;
+  --brand: #8a60d0;
+  --brand-strong: #a880e8;
+  --brand-bright: #c0a0f0;
+  --brand-soft: #7050c0;
 
-  --accent: #7080e8;
-  --accent-hover: #8a98ff;
-  --accent-dim: rgba(112, 128, 232, 0.13);
-  --accent-glow: rgba(112, 128, 232, 0.24);
-  --accent-companion: #e89060;
-  --accent-gradient: linear-gradient(135deg, #8a98ff 0%, #5a6ce0 100%);
-  --on-accent: #0c0820;
-  --shadow-glow-accent: 0 2px 16px rgba(112, 128, 232, 0.22);
+  --accent: #8a60d0;
+  --accent-hover: #a880e8;
+  --accent-dim: rgba(138, 96, 208, 0.13);
+  --accent-glow: rgba(138, 96, 208, 0.24);
+  --accent-companion: #d8908a;
+  --accent-gradient: linear-gradient(135deg, #a880e8 0%, #7050c0 100%);
+  --on-accent: #100830;
+  --shadow-glow-accent: 0 2px 16px rgba(138, 96, 208, 0.22);
 
-  --text-primary: #e8e0ff;
-  --text-secondary: #b8b0d4;
-  --text-tertiary: #7a70a0;
-  --text-accent-strong: #a0b8ff;
+  --text-primary: #f0e8ff;
+  --text-secondary: #c0b0d8;
+  --text-tertiary: #7a68a0;
+  --text-accent-strong: #c0a0f0;
 
-  --correct: #5cc78f;
-  --correct-bg: rgba(92, 199, 143, 0.14);
+  --correct: #60c890;
+  --correct-bg: rgba(96, 200, 144, 0.14);
   --wrong: #e8908a;
   --wrong-bg: rgba(232, 144, 138, 0.14);
-  --locked: #43396a;
+  --locked: #403068;
 
   /* Subject colours — dusk palette, harmonious not clashing */
-  --subject-physics: #7080e8;
-  --subject-chemistry: #5cc78f;
-  --subject-economics: #e0a458;
-  --subject-biology: #e890a8;
-  --subject-cs: #7cc4de;
-  --subject-history: #d89a6e;
-  --subject-general: #9a90d8;
+  --subject-physics: #8a60d0;
+  --subject-chemistry: #60c890;
+  --subject-economics: #d8a058;
+  --subject-biology: #d888a0;
+  --subject-cs: #70c0d8;
+  --subject-history: #c89068;
+  --subject-general: #9888d0;
 
-  --shadow-sm: 0 2px 8px rgba(6, 4, 20, 0.5), inset 0 1px 0 rgba(168, 184, 255, 0.1);
-  --shadow-md: 0 6px 20px rgba(6, 4, 20, 0.55), inset 0 1px 0 rgba(168, 184, 255, 0.1);
-  --shadow-lg: 0 14px 40px rgba(6, 4, 20, 0.65), inset 0 1px 0 rgba(168, 184, 255, 0.12);
+  --shadow-sm: 0 2px 8px rgba(8, 4, 20, 0.5), inset 0 1px 0 rgba(184, 152, 232, 0.1);
+  --shadow-md: 0 6px 20px rgba(8, 4, 20, 0.55), inset 0 1px 0 rgba(184, 152, 232, 0.1);
+  --shadow-lg: 0 14px 40px rgba(8, 4, 20, 0.65), inset 0 1px 0 rgba(184, 152, 232, 0.12);
 
-  /* Ambient aurora — deep indigo-cobalt dusk tones. */
-  --aurora-1: rgba(112, 128, 232, 0.2);
-  --aurora-2: rgba(90, 108, 224, 0.14);
-  --aurora-3: rgba(232, 144, 96, 0.12);
+  /* Ambient aurora — deep murasaki dusk tones. */
+  --aurora-1: rgba(138, 96, 208, 0.2);
+  --aurora-2: rgba(112, 80, 192, 0.14);
+  --aurora-3: rgba(216, 144, 120, 0.12);
 
-  /* ── Crayon painting — twilight purple scene ── */
-  --crayon-sky-top: #1a1040;
-  --crayon-sky-bottom: #2d1b69;
-  --crayon-sun: #f0a050;
-  --crayon-sun-glow: #e07030;
-  --crayon-cloud: #3a2870;
-  --crayon-hill-far: #2a2050;
-  --crayon-hill-mid: #221845;
-  --crayon-hill-near: #1c1238;
-  --crayon-grass: #16102e;
-  --crayon-ground: #1e1540;
-  --crayon-grass-stroke: #2a1a4a;
-  --crayon-trunk: #4a3020;
-  --crayon-tree-dark: #2a1a3a;
-  --crayon-tree-light: #3a2858;
-  --crayon-bush: #2e1a4a;
-  --crayon-river: #3a2a80;
-  --crayon-river-light: #5040a0;
-  --crayon-river-edge: #2a1a6a;
-  --crayon-river-sparkle: #a080e0;
-  --crayon-house-wall: #3a2a50;
-  --crayon-house-roof: #6a2050;
-  --crayon-house-chimney: #3a2030;
-  --crayon-house-door: #2a1830;
-  --crayon-house-doorknob: #b080d0;
-  --crayon-house-window: #2a2060;
-  --crayon-house-outline: #2a1a38;
-  --crayon-window-glow: #c080f0;
-  --crayon-smoke: #4a3868;
-  --crayon-library-wall: #302048;
-  --crayon-library-roof: #4a2050;
-  --crayon-library-column: #382850;
-  --crayon-library-door: #201030;
-  --crayon-library-window: #2a2060;
-  --crayon-library-outline: #201030;
-  --crayon-library-sign: #2a1a38;
-  --crayon-library-sign-text: #b090d0;
-  --crayon-book-1: #8a2050;
-  --crayon-book-2: #3a30a0;
-  --crayon-book-3: #a08030;
-  --crayon-path: #3a2848;
-  --crayon-fence: #3a2840;
-  --crayon-flower-1: #a03080;
-  --crayon-flower-2: #b06020;
-  --crayon-flower-3: #6030a0;
-  --crayon-bird: #3a2860;
+  /* ── Crayon painting — twilight murasaki scene ── */
+  --crayon-sky-top: #1a0840;
+  --crayon-sky-bottom: #2d1868;
+  --crayon-sun: #e8a050;
+  --crayon-sun-glow: #d06830;
+  --crayon-cloud: #382068;
+  --crayon-hill-far: #281850;
+  --crayon-hill-mid: #201045;
+  --crayon-hill-near: #1a0c38;
+  --crayon-grass: #140c30;
+  --crayon-ground: #1c1040;
+  --crayon-grass-stroke: #281448;
+  --crayon-trunk: #482818;
+  --crayon-tree-dark: #281438;
+  --crayon-tree-light: #382058;
+  --crayon-bush: #2c1448;
+  --crayon-river: #382078;
+  --crayon-river-light: #503898;
+  --crayon-river-edge: #281468;
+  --crayon-river-sparkle: #a070d8;
+  --crayon-house-wall: #382050;
+  --crayon-house-roof: #681848;
+  --crayon-house-chimney: #381830;
+  --crayon-house-door: #281030;
+  --crayon-house-doorknob: #a870c8;
+  --crayon-house-window: #281860;
+  --crayon-house-outline: #281438;
+  --crayon-window-glow: #b870e0;
+  --crayon-smoke: #483068;
+  --crayon-library-wall: #301848;
+  --crayon-library-roof: #481850;
+  --crayon-library-column: #382050;
+  --crayon-library-door: #1c0830;
+  --crayon-library-window: #281860;
+  --crayon-library-outline: #1c0830;
+  --crayon-library-sign: #281438;
+  --crayon-library-sign-text: #a880c8;
+  --crayon-book-1: #881848;
+  --crayon-book-2: #3828a0;
+  --crayon-book-3: #a07828;
+  --crayon-path: #382048;
+  --crayon-fence: #382040;
+  --crayon-flower-1: #a02878;
+  --crayon-flower-2: #b05818;
+  --crayon-flower-3: #5828a0;
+  --crayon-bird: #382060;
   /* School, bridge & RealLearn signpost (crayon scene) */
-  --crayon-school-wall: #43305c;
-  --crayon-school-roof: #70284e;
-  --crayon-school-door: #2a1830;
-  --crayon-school-outline: #2a1a38;
-  --crayon-school-flag: #c05070;
-  --crayon-school-sign: #2e2260;
-  --crayon-school-sign-text: #d8c8f0;
-  --crayon-school-bell: #b08030;
-  --crayon-bridge: #4a3060;
-  --crayon-bridge-dark: #382048;
-  --crayon-brand-board: #6a50b0;
-  --crayon-brand-text: #f0e8ff;
+  --crayon-school-wall: #402858;
+  --crayon-school-roof: #682048;
+  --crayon-school-door: #281030;
+  --crayon-school-outline: #281438;
+  --crayon-school-flag: #b84868;
+  --crayon-school-sign: #2c1a60;
+  --crayon-school-sign-text: #d0b8e8;
+  --crayon-school-bell: #a87028;
+  --crayon-bridge: #482860;
+  --crayon-bridge-dark: #381848;
+  --crayon-brand-board: #6848a8;
+  --crayon-brand-text: #f0e0ff;
 }
 
 html {
@@ -454,10 +453,10 @@ body {
    backdrop-filter. These utilities + the reusable class package that together.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Ambient gradient — editorial cobalt wash, now crossed by a warm
+/* ── Ambient gradient — washi wash, now crossed by a warm
    sunbeam from the upper-right and a low hearth-glow at the foot of the
-   page. The cobalt hues are unchanged; the warmth is a second light source
-   layered over them, like late sun through a study window. ── */
+   page. The vermillion hues are unchanged; the warmth is a second light
+   source layered over them, like late sun through a shoji screen. ── */
 html::before {
   content: "";
   position: fixed;
@@ -465,11 +464,11 @@ html::before {
   z-index: -2;
   pointer-events: none;
   background:
-    radial-gradient(ellipse at 82% -8%, var(--sun-wash, rgba(235, 170, 80, 0.07)) 0%, transparent 55%),
-    radial-gradient(ellipse at 0% 0%, rgba(26, 58, 138, 0.07) 0%, transparent 50%),
-    radial-gradient(ellipse at 100% 0%, rgba(15, 45, 114, 0.04) 0%, transparent 50%),
-    radial-gradient(ellipse at 30% 104%, var(--hearth-glow, rgba(226, 140, 70, 0.055)) 0%, transparent 52%),
-    radial-gradient(ellipse at 50% 100%, rgba(10, 23, 68, 0.04) 0%, transparent 50%);
+    radial-gradient(ellipse at 82% -8%, var(--sun-wash, rgba(220, 160, 80, 0.07)) 0%, transparent 55%),
+    radial-gradient(ellipse at 0% 0%, rgba(184, 55, 43, 0.07) 0%, transparent 50%),
+    radial-gradient(ellipse at 100% 0%, rgba(148, 44, 34, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 30% 104%, var(--hearth-glow, rgba(200, 120, 60, 0.055)) 0%, transparent 52%),
+    radial-gradient(ellipse at 50% 100%, rgba(42, 21, 32, 0.04) 0%, transparent 50%);
   opacity: 0.95;
 }
 
@@ -595,7 +594,7 @@ html[data-theme="twilight"][data-perf="high"] .crayon-bg {
 
 /* Fine paper fiber. Stronger grain (0.07) with a hint of long-fiber washi
    drag baked into the same composite layer, so the page reads as handmade
-   paper — texture, never "dust". */
+   Japanese paper — texture, never "dust". */
 body::after {
   content: "";
   position: fixed;
@@ -683,13 +682,13 @@ body::before {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   Editorial ink & cobalt texture system — rich, tactile, authoritative.
-   Layered ink-wash effects that give surfaces the weight and depth of a
-   printed broadsheet or a leather-bound textbook.
+   Japanese ink & vermillion texture system — sumi, hanko, washi.
+   Layered ink-wash effects that give surfaces the depth and elegance of
+   traditional Japanese calligraphy, lacquerware, and ink-wash painting.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Ink-wash overlay — a deep cobalt-ink wash that bleeds across surfaces,
-   creating the feel of aged editorial paper with ink saturation. ── */
+/* ── Sumi-wash overlay — a deep ink wash that bleeds across surfaces,
+   creating the feel of aged washi with ink saturation. ── */
 .ink-wash {
   position: relative;
 }
@@ -711,19 +710,19 @@ body::before {
   z-index: 1;
 }
 
-/* ── Editorial heading — letterpress ink effect for h1–h4.
-   Deep ink with subtle text-shadow that evokes hot-stamped type on premium paper. */
+/* ── Editorial heading — sumi ink effect for h1–h4.
+   Deep ink with subtle text-shadow that evokes calligraphy on premium washi. */
 h1, h2, h3, h4 {
   text-shadow:
-    0 0.5px 0 rgba(10, 23, 68, 0.08),
-    0 1px 2px rgba(10, 23, 68, 0.04);
+    0 0.5px 0 rgba(42, 21, 32, 0.08),
+    0 1px 2px rgba(42, 21, 32, 0.04);
 }
 html[data-theme="dark"] h1,
 html[data-theme="dark"] h2,
 html[data-theme="dark"] h3,
 html[data-theme="dark"] h4 {
   text-shadow:
-    0 0.5px 0 rgba(107, 140, 232, 0.15),
+    0 0.5px 0 rgba(212, 132, 122, 0.15),
     0 1px 3px rgba(0, 0, 0, 0.3);
 }
 html[data-theme="twilight"] h1,
@@ -731,12 +730,12 @@ html[data-theme="twilight"] h2,
 html[data-theme="twilight"] h3,
 html[data-theme="twilight"] h4 {
   text-shadow:
-    0 0.5px 0 rgba(112, 128, 232, 0.18),
+    0 0.5px 0 rgba(138, 96, 208, 0.18),
     0 1px 3px rgba(0, 0, 0, 0.35);
 }
 
-/* ── Cobalt texture — a dense, fine crosshatch that reads as book-cloth or
-   library binding. Stronger than identity-texture. ── */
+/* ── Washi texture — a dense, fine crosshatch that reads as traditional
+   Japanese handmade paper. Stronger than identity-texture. ── */
 .cobalt-texture {
   position: relative;
 }
@@ -772,8 +771,8 @@ html[data-theme="twilight"] h4 {
   z-index: 1;
 }
 
-/* ── Ink bleed border — a double-stroke border that evokes editorial printing:
-   an outer ink line + an inner cobalt accent line, with subtle bleeding. ── */
+/* ── Sumi border — a double-stroke border that evokes Japanese ink painting:
+   an outer sumi line + an inner vermillion accent line, with subtle bleeding. ── */
 .ink-border {
   border: 1.5px solid var(--border-default) !important;
   box-shadow:
@@ -792,8 +791,8 @@ html[data-theme="twilight"] h4 {
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
-/* ── Cobalt accent line — a thick, confident left-border accent like an
-   editorial pull-quote or chapter marker. ── */
+/* ── Vermillion accent line — a thick, confident left-border accent like a
+   hanko stamp mark or a chapter divider in a Japanese book. ── */
 .cobalt-rule {
   border-left: 4px solid var(--brand) !important;
   padding-left: var(--space-md);
@@ -823,7 +822,7 @@ html[data-theme="twilight"] h4 {
   text-shadow: 1px 1px 0 var(--accent-dim);
 }
 
-/* ── Ink-stain effect — a subtle, organic cobalt stain on card hover ── */
+/* ── Sumi stain effect — a subtle, organic vermillion stain on card hover ── */
 .ink-stain {
   position: relative;
   overflow: hidden;
@@ -850,7 +849,7 @@ html[data-theme="twilight"] h4 {
   z-index: 1;
 }
 
-/* ── Cobalt shimmer — a slow, elegant brand-colored shimmer for loading states ── */
+/* ── Vermillion shimmer — a slow, elegant brand-colored shimmer for loading states ── */
 .cobalt-shimmer {
   background: linear-gradient(
     110deg,
@@ -980,7 +979,7 @@ a:active {
   contain: layout style;
 }
 
-/* ── Scrollbar — sleek, cobalt-tinted ── */
+/* ── Scrollbar — sleek, vermillion-tinted ── */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -1248,7 +1247,7 @@ a:active {
 
 /* ── Gen Z interaction utilities — springy, tactile, satisfying ── */
 
-/* Interactive lift — spring-based hover with deep cobalt glow */
+/* Interactive lift — spring-based hover with deep vermillion glow */
 .interactive-lift {
   transition: transform 420ms var(--ease-spring), box-shadow 420ms var(--ease-spring), border-color 320ms var(--ease-color);
 }
@@ -1264,7 +1263,7 @@ a:active {
   transition: transform 120ms var(--ease-color) !important;
 }
 
-/* Glow accent hover — deep cobalt glow on interactive elements */
+/* Glow accent hover — deep vermillion glow on interactive elements */
 .glow-accent {
   transition: box-shadow 400ms var(--ease-spring), border-color 400ms var(--ease-color), background 400ms var(--ease-color);
 }
@@ -1391,7 +1390,7 @@ a:active {
   }
 }
 
-/* ── Markdown content — editorial ink on paper, rich and readable ── */
+/* ── Markdown content — sumi ink on washi, rich and readable ── */
 .markdown-content h2 {
   margin: var(--space-lg) 0 var(--space-md);
   font-family: var(--font-display), system-ui, sans-serif;
@@ -1905,7 +1904,7 @@ html[data-perf="high"] {
 }
 
 /* ── Loving-touch hover — cards catch a whisper of warm light, as if a
-   reading lamp leaned closer. Layered on the existing cobalt system. ── */
+   paper lantern leaned closer. Layered on the existing vermillion system. ── */
 .glass-card:hover,
 .glass-panel:hover {
   box-shadow:
