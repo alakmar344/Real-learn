@@ -52,6 +52,19 @@ function storeLog(action: string, details?: unknown) {
   console.log(`[frontend][lessonStore] ${action}`, details);
 }
 
+/** Unique id for a freshly generated lesson instance. Falls back to a
+ * random string when crypto.randomUUID is unavailable (older WebViews). */
+function newLessonId(): string {
+  try {
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+      return crypto.randomUUID();
+    }
+  } catch {
+    // fall through to the manual generator
+  }
+  return `l-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 const initialState = {
   question: "",
   lesson: null,
@@ -101,6 +114,13 @@ export const useLessonStore = create<LessonStore>()(
           partsCount: lesson.parts?.length ?? 0,
           takeawaysCount: lesson.keyTakeaways?.length ?? 0,
         });
+        // Stamp every freshly generated lesson with a unique instance id.
+        // Engagement credit keys include it, so asking the SAME question again
+        // tomorrow yields a new lesson that still earns XP/streak progress,
+        // while retaking quizzes on THIS instance stays credit-idempotent.
+        if (!lesson.lessonId) {
+          lesson = { ...lesson, lessonId: newLessonId() };
+        }
         set({
           lesson,
           question: lesson.question ?? lesson.topic ?? "",

@@ -244,10 +244,16 @@ export async function requireAuth(req, res, next) {
     return res.status(401).json({ error: "Invalid or expired token." });
   }
 
+  // SECURITY: spread the raw claims FIRST and pin the identity fields LAST.
+  // The previous order (`userId` first, spread after) let any token that
+  // carried a custom claim literally named `userId`/`sessionId` override the
+  // server-derived identity — every endpoint keys account deletion, data
+  // export, and consent records off `req.auth.userId`, so a crafted claim
+  // would have been a full IDOR. `sub` is the only trusted identity source.
   req.auth = {
+    ...result.payload,
     userId: result.payload.sub,
     sessionId: result.payload.sid,
-    ...result.payload,
   };
 
   next();

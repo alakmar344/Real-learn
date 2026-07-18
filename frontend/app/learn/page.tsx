@@ -154,7 +154,11 @@ export default function LearnPage() {
   useEffect(() => {
     if (!lesson) return;
     const displayQuestion = lesson.question ?? lesson.topic ?? "";
-    const id = journeySignature(displayQuestion, lesson.parts[0]?.title);
+    // Fold the per-instance lesson id into the saved-journey key so two
+    // different generations of the same question never overwrite each other's
+    // history/archive entry (content signatures alone can collide).
+    const baseId = journeySignature(displayQuestion, lesson.parts[0]?.title);
+    const id = lesson.lessonId ? `${baseId}::${lesson.lessonId.slice(0, 8)}` : baseId;
     saveJourney({
       id,
       question: displayQuestion,
@@ -446,7 +450,12 @@ export default function LearnPage() {
               });
               passPart(activePart.partNumber, score);
 
-              const lessonSignature = `${lesson.question ?? lesson.topic ?? ""}|${language}`;
+              // Include the per-instance lesson id: retaking a quiz on THIS
+              // lesson stays idempotent (no XP farming), but generating a NEW
+              // lesson for the same question tomorrow earns credit again —
+              // previously the content-only key silently blocked all XP,
+              // daily-goal and streak progress for repeat topics.
+              const lessonSignature = `${lesson.question ?? lesson.topic ?? ""}|${language}|${lesson.lessonId ?? ""}`;
               const maxPerPart = activePart.quiz?.length ?? 2;
               recordPartPassed({
                 score,
