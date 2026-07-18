@@ -131,7 +131,7 @@ export default function HomePage() {
         <section
           style={{
             flex: 1,
-            padding: "48px 20px clamp(60px, 10vh, 100px)",
+            padding: "clamp(60px, 12vh, 120px) clamp(24px, 5vw, 48px) clamp(80px, 14vh, 160px)",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -168,10 +168,11 @@ export default function HomePage() {
               style={{
                 position: "relative",
                 zIndex: 1,
-                minHeight: 120,
+                minHeight: 140,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                marginTop: 48,
               }}
             >
               {greeting ? (

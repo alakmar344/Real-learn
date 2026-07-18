@@ -74,7 +74,7 @@ export default function Sidebar({ open, onClose }: Props) {
       >
         <div
           style={{
-            padding: "16px 16px 12px",
+            padding: "20px 20px 16px",
             borderBottom: "1px solid var(--border-subtle)",
           }}
         >
@@ -82,8 +82,8 @@ export default function Sidebar({ open, onClose }: Props) {
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 10,
-              marginBottom: 16,
+              gap: 12,
+              marginBottom: 18,
             }}
           >
             <svg viewBox="0 0 120 40" fill="none" aria-hidden="true" style={{ width: 38, height: "auto" }}>
@@ -125,13 +125,13 @@ export default function Sidebar({ open, onClose }: Props) {
               width: "100%",
               border: "none",
               borderRadius: "var(--radius-lg)",
-              padding: "12px 16px",
-              background: "var(--accent)",
-              color: "var(--on-accent)",
-              fontWeight: 700,
-              fontSize: 14,
-              cursor: "pointer",
-              minHeight: 48,
+              padding: "14px 18px",
+               background: "var(--accent)",
+               color: "var(--on-accent)",
+               fontWeight: 700,
+               fontSize: 14,
+               cursor: "pointer",
+               minHeight: 52,
               boxShadow: "var(--shadow-glow-accent)",
               transition: "all 200ms var(--ease-color)",
             }}
@@ -148,10 +148,10 @@ export default function Sidebar({ open, onClose }: Props) {
           </button>
         </div>
 
-        <div style={{ flex: 1, overflowY: "auto", padding: "12px 12px 8px" }}>
+        <div style={{ flex: 1, overflowY: "auto", padding: "14px 14px 10px" }}>
           <p
             style={{
-              margin: "0 4px 8px",
+              margin: "0 6px 10px",
               fontSize: 11,
               letterSpacing: "0.12em",
               textTransform: "uppercase",
@@ -165,18 +165,18 @@ export default function Sidebar({ open, onClose }: Props) {
           {(!mounted || journeys.length === 0) ? (
             <p
               style={{
-                margin: "8px 4px",
+                margin: "10px 6px",
                 fontSize: 13,
                 color: "var(--text-tertiary)",
                 fontStyle: "italic",
-                lineHeight: 1.6,
+                lineHeight: 1.7,
               }}
             >
               Ask a question and your lesson will be saved here automatically. You can
               return anytime to continue where you left off.
             </p>
           ) : (
-            <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 4 }}>
+            <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 6 }}>
               {journeys.map((journey) => (
                 <li key={journey.id} style={{ position: "relative" }}>
                   <button
@@ -190,7 +190,7 @@ export default function Sidebar({ open, onClose }: Props) {
                       borderRadius: "var(--radius-md)",
                       background: "transparent",
                       color: "var(--text-primary)",
-                      padding: "10px 34px 10px 10px",
+                      padding: "12px 38px 12px 12px",
                       cursor: "pointer",
                       display: "block",
                       transition: "background var(--dur-fast) var(--ease-color)",
@@ -252,10 +252,10 @@ export default function Sidebar({ open, onClose }: Props) {
         <div
           style={{
             borderTop: "1px solid var(--border-subtle)",
-            padding: 12,
+            padding: 16,
             display: "flex",
             flexDirection: "column",
-            gap: 10,
+            gap: 12,
           }}
         >
           <button
@@ -269,11 +269,11 @@ export default function Sidebar({ open, onClose }: Props) {
               borderRadius: "var(--radius-lg)",
               background: "var(--bg-card)",
               color: "var(--text-primary)",
-              padding: "12px 14px",
-              cursor: "pointer",
-              fontSize: 13,
-              fontWeight: 500,
-              minHeight: 48,
+              padding: "14px 18px",
+               cursor: "pointer",
+               fontSize: 13,
+               fontWeight: 500,
+               minHeight: 52,
               transition: "all 200ms var(--ease-color)",
             }}
             onMouseEnter={(e) => {
@@ -300,11 +300,11 @@ export default function Sidebar({ open, onClose }: Props) {
                 borderRadius: "var(--radius-lg)",
                 background: "var(--bg-card)",
                 color: "var(--text-primary)",
-                padding: "12px 14px",
-                cursor: "pointer",
-                fontSize: 13,
-                fontWeight: 500,
-                minHeight: 48,
+              padding: "14px 18px",
+               cursor: "pointer",
+               fontSize: 13,
+               fontWeight: 500,
+               minHeight: 52,
                 transition: "all 200ms var(--ease-color)",
               }}
               onMouseEnter={(e) => {

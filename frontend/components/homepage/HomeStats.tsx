@@ -75,7 +75,7 @@ export default function HomeStats({ onStartTopic }: Props) {
   const hasActivity = xp > 0 || journeys.length > 0;
 
   return (
-    <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 12, alignItems: "center" }}>
+    <div style={{ marginTop: 18, display: "flex", flexDirection: "column", gap: 14, alignItems: "center" }}>
       {/* Today's spark — changes every day. Signed-out visitors are routed to
           sign-in instead of firing an unauthenticated lesson request that
           would bounce off the protected /learn route with an error flash. */}
@@ -97,7 +97,7 @@ export default function HomeStats({ onStartTopic }: Props) {
           border: "1px dashed var(--border-default)",
           background: "transparent",
           borderRadius: 999,
-          padding: "9px 18px",
+          padding: "10px 20px",
           cursor: "pointer",
           color: "var(--text-secondary)",
           fontSize: 13,
@@ -140,7 +140,7 @@ export default function HomeStats({ onStartTopic }: Props) {
             border: "1px solid var(--border-default)",
             background: "var(--bg-card)",
             borderRadius: "var(--radius-lg)",
-            padding: "10px 14px",
+            padding: "12px 18px",
             cursor: "pointer",
             boxShadow: "var(--shadow-sm)",
             position: "relative",

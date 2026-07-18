@@ -89,7 +89,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
         transition: "all 500ms var(--ease-color)",
       }}
     >
-      <div style={{ padding: "24px 28px 14px" }}>
+      <div style={{ padding: "28px 32px 18px" }}>
         <label htmlFor="question-input" style={{ display: "none" }}>
           What do you want to understand today?
         </label>
@@ -137,8 +137,8 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            marginTop: 8,
-            minHeight: 20,
+            marginTop: 12,
+            minHeight: 24,
           }}
         >
           <span
@@ -189,10 +189,10 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           physical switch, not a snap. ── */}
       <div
         style={{
-          padding: "0 20px 16px",
+          padding: "0 24px 20px",
           display: "flex",
           alignItems: "center",
-          gap: 12,
+          gap: 14,
           flexWrap: "wrap",
         }}
       >
@@ -264,11 +264,11 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
       <div
         style={{
           borderTop: "1px solid var(--border-subtle)",
-          padding: "16px 20px",
+          padding: "20px 24px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          gap: 12,
+          gap: 14,
         }}
       >
         <ExampleQuestions onPick={(q) => {
@@ -328,14 +328,14 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
             style={{
               border: "none",
               borderRadius: "var(--radius-lg)",
-              padding: "14px 28px",
-              fontSize: 15,
-              fontWeight: 600,
-              color: "var(--on-accent)",
-              background: question.trim() ? "var(--accent)" : "var(--border-default)",
-              cursor: question.trim() ? "pointer" : "not-allowed",
-              transition: "all 500ms var(--ease-spring)",
-              minHeight: 50,
+              padding: "12px 24px",
+                  fontSize: 15,
+                  fontWeight: 600,
+                  color: "var(--on-accent)",
+                  background: question.trim() ? "var(--accent)" : "var(--border-default)",
+                  cursor: question.trim() ? "pointer" : "not-allowed",
+                  transition: "all 500ms var(--ease-spring)",
+                  minHeight: 52,
               boxShadow: question.trim() ? "var(--shadow-glow-accent)" : "none",
             }}
             onMouseEnter={(e) => {
@@ -359,14 +359,14 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
               style={{
                 border: "none",
                 borderRadius: "var(--radius-lg)",
-                padding: "14px 28px",
-                fontSize: 15,
-                fontWeight: 600,
-                color: "var(--on-accent)",
-                background: "var(--accent)",
-                cursor: "pointer",
-                transition: "all 500ms var(--ease-spring)",
-                minHeight: 50,
+              padding: "12px 24px",
+                  fontSize: 15,
+                  fontWeight: 600,
+                  color: "var(--on-accent)",
+                  background: "var(--accent)",
+                  cursor: "pointer",
+                  transition: "all 500ms var(--ease-spring)",
+                  minHeight: 52,
                 boxShadow: "var(--shadow-glow-accent)",
               }}
               onMouseEnter={(e) => {
