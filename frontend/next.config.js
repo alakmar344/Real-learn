@@ -26,6 +26,62 @@ const nextConfig = {
     const backendUrl =
       (process.env.NEXT_PUBLIC_BACKEND_URL || "https://real-learn.onrender.com").replace(/\/$/, "");
 
+    // Build the CSP from the SAME env-derived hosts the app actually calls
+    // (useLesson/useSpeech/legalConsent all honor NEXT_PUBLIC_BACKEND_URL, and
+    // Clerk honors NEXT_PUBLIC_CLERK_FRONTEND_API). Previously these were
+    // computed but the CSP string hardcoded the production hosts, so any deploy
+    // pointing at a different backend/Clerk domain had every fetch blocked by
+    // connect-src with no obvious cause. De-dupe in case the env values equal
+    // the defaults already present.
+    const uniq = (list) => Array.from(new Set(list.filter(Boolean))).join(" ");
+    const scriptSrc = uniq([
+      "'self'",
+      "'unsafe-inline'",
+      scriptSrcEval.trim(),
+      "https://www.googletagmanager.com",
+      "https://www.google-analytics.com",
+      "https://*.clerk.accounts.dev",
+      "https://*.clerk.com",
+      "https://clerk.reallearn.site",
+      clerkDomain,
+      "https://challenges.cloudflare.com",
+    ]);
+    const connectSrc = uniq([
+      "'self'",
+      "https://*.clerk.accounts.dev",
+      "https://*.clerk.com",
+      "https://clerk.reallearn.site",
+      clerkDomain,
+      "https://real-learn.onrender.com",
+      backendUrl,
+      "https://www.google-analytics.com",
+      "https://*.google-analytics.com",
+      "https://www.googletagmanager.com",
+    ]);
+    const frameSrc = uniq([
+      "'self'",
+      "https://*.clerk.accounts.dev",
+      "https://*.clerk.com",
+      "https://clerk.reallearn.site",
+      clerkDomain,
+      "https://challenges.cloudflare.com",
+    ]);
+    const csp = [
+      "default-src 'self'",
+      `script-src ${scriptSrc}`,
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' https://img.clerk.com https://www.google-analytics.com data:",
+      `connect-src ${connectSrc}`,
+      `frame-src ${frameSrc}`,
+      "worker-src 'self' blob:",
+      "font-src 'self'",
+      "media-src 'self' blob:",
+      "object-src 'none'",
+      "frame-ancestors 'self'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join("; ");
+
     return [
       {
         source: "/:path*.svg",
@@ -101,8 +157,7 @@ const nextConfig = {
           },
           {
             key: "Content-Security-Policy",
-            value:
-              `default-src 'self'; script-src 'self' 'unsafe-inline'${scriptSrcEval} https://www.googletagmanager.com https://www.google-analytics.com https://*.clerk.accounts.dev https://*.clerk.com https://clerk.reallearn.site https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' https://img.clerk.com https://www.google-analytics.com data:; connect-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://clerk.reallearn.site https://real-learn.onrender.com https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com; frame-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://clerk.reallearn.site https://challenges.cloudflare.com; worker-src 'self' blob:; font-src 'self'; media-src 'self' blob:; object-src 'none'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'`,
+            value: csp,
           },
         ],
       },

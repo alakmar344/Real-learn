@@ -8,6 +8,12 @@ interface Props {
   onSubmit: (question: string) => Promise<void>;
 }
 
+// Must match the backend's MAX_QUESTION_LENGTH so an over-long follow-up is
+// caught in the UI instead of bouncing off a 400 after a round trip. Voice
+// transcripts append programmatically (bypassing the textarea's maxLength), so
+// we also hard-clamp on every mutation.
+const MAX_QUESTION_LENGTH = 1000;
+
 export default function FollowUpBox({ onSubmit }: Props) {
   const [value, setValue] = useState("");
   const [loading, setLoading] = useState(false);
@@ -35,9 +41,10 @@ export default function FollowUpBox({ onSubmit }: Props) {
       <textarea
         id="followup-input"
         value={value}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => setValue(e.target.value.slice(0, MAX_QUESTION_LENGTH))}
         placeholder="Go deeper..."
         aria-label="Follow-up question"
+        maxLength={MAX_QUESTION_LENGTH}
         style={{
           width: "100%",
           minHeight: 80,
@@ -63,7 +70,9 @@ export default function FollowUpBox({ onSubmit }: Props) {
         <MicButton
           language={language}
           onTranscript={(text) =>
-            setValue((current) => (current.trim() ? `${current.trim()} ${text}` : text))
+            setValue((current) =>
+              (current.trim() ? `${current.trim()} ${text}` : text).slice(0, MAX_QUESTION_LENGTH)
+            )
           }
           onInterim={setInterimSpeech}
         />
