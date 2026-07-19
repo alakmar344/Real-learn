@@ -74,8 +74,17 @@ function collapseWhitespace(text) {
   return text.replace(/\s+/g, " ").trim();
 }
 
+// SECURITY: strip invisible/zero-width characters BEFORE pattern matching.
+// Without this, "b​omb" (zero-width space inside the word) defeats every
+// word-boundary regex while rendering identically to the user. Also NFKC-fold
+// so fullwidth/compatibility forms ("ｂｏｍｂ") collapse to plain ASCII.
+const INVISIBLE_CHARS_PATTERN = /[­͏؜᠎​-‏‪-‮⁠-⁤﻿]/g;
+function stripInvisible(text) {
+  return text.normalize("NFKC").replace(INVISIBLE_CHARS_PATTERN, "");
+}
+
 function normalizeForModeration(text) {
-  return collapseWhitespace(normalizeLeet(text.toLowerCase()));
+  return collapseWhitespace(normalizeLeet(stripInvisible(text).toLowerCase()));
 }
 
 // IMPORTANT — why the gaps are `[^.!?]*` and not `.*`:
@@ -139,6 +148,39 @@ const INSTRUCTIONAL_PATTERNS = [
 
   // ── Trafficking / smuggling (instructional intent) ──
   /\bhow\b[^.!?]*\b(traffic|smuggle)\b[^.!?]*\b(people|humans|a\s*person|drugs|weapons)\b/i,
+
+  // ── Paraphrased instructional intent (no "how") ──
+  // "steps/instructions/recipe to make a bomb", "teach me to build an IED".
+  // The indefinite article ("a bomb", "an explosive") is deliberate: it
+  // distinguishes wanting to MAKE one from historical questions about "the
+  // atomic bomb", which must remain answerable.
+  /\b(steps?|instructions?|guide|tutorial|recipe|blueprint)\b[^.!?]*\b(to|for)\b[^.!?]*\b(make|making|build|building|create|creating|assemble|assembling)\b[^.!?]*\b(a|an|my\s+own)\s+(bomb|explosive|ied|grenade|pipe\s*bomb|molotov|landmine|gun|firearm|silencer)\b/i,
+  /\b(teach|show|tell|help)\b[^.!?]*\bme\b[^.!?]*\b(make|build|create|assemble|synthesize|cook)\b[^.!?]*\b(a|an|my\s+own)\s+(bomb|explosive|ied|grenade|pipe\s*bomb|molotov|landmine|gun|firearm|silencer)\b/i,
+  // Drug synthesis has no legitimate at-home framing at all.
+  /\b(steps?|instructions?|guide|tutorial|recipe|formula|blueprint|teach\s+me|show\s+me)\b[^.!?]*\b(make|making|synthesize|synthesizing|cook|cooking|produce|producing|manufacture|manufacturing)\b[^.!?]*\b(meth|methamphetamine|cocaine|crack|heroin|fentanyl|mdma|ecstasy|lsd)\b/i,
+  /\b(recipe|formula)\b[^.!?]*\b(for|of)\b[^.!?]*\b(meth|methamphetamine|cocaine|crack|heroin|fentanyl|mdma|ecstasy|lsd)\b/i,
+  // Self-harm paraphrases: "ways to end my life", "methods to kill myself".
+  /\b(ways?|methods?|ideas?|tips?)\b[^.!?]*\b(kill\s+myself|end\s+my\s+life|commit\s+suicide|hurt\s+myself|harm\s+myself)\b/i,
+
+  // ── Multilingual coverage (the product serves 12 languages; the patterns
+  // above are English-only, which previously let the same harmful requests
+  // through verbatim in Hindi/Hinglish). Devanagari + romanized-Hindi forms of
+  // the highest-severity intents. `।` (danda) is the Devanagari sentence
+  // terminator and joins the sentence-scoping exclusion set. ──
+  // Bomb-making (Devanagari): "बम कैसे बनाएं", "बम बनाने का तरीका"
+  /बम[^.!?।]*(कैसे|बनान|बनाना|बनाने|बनाऊ|बनाए|तरीक)/,
+  /(कैसे|तरीक)[^.!?।]*बम[^.!?।]*बना/,
+  // Bomb-making (romanized): "bomb kaise banaye", "bam banane ka tarika"
+  /\b(bomb|bam)\b[^.!?]*\b(kaise|banane|banana|banau|banaye|tarika|tareeka)\b/i,
+  /\b(kaise|tarika|tareeka)\b[^.!?]*\b(bomb|bam)\b[^.!?]*\bbana/i,
+  // Suicide (Devanagari): "आत्महत्या कैसे करें", "खुदकुशी का तरीका"
+  /(आत्महत्या|खुदकुशी|ख़ुदकुशी)[^.!?।]*(कैसे|तरीक|करू|करें|करने)/,
+  /(कैसे|तरीक)[^.!?।]*(आत्महत्या|खुदकुशी|ख़ुदकुशी)/,
+  // Suicide (romanized): "khudkushi kaise kare", "atmahatya karne ka tarika"
+  /\b(khudkushi|khudkhushi|atmahatya|aatmahatya)\b[^.!?]*\b(kaise|kare|karu|karne|tarika|tareeka)\b/i,
+  /\b(kaise|tarika|tareeka)\b[^.!?]*\b(khudkushi|khudkhushi|atmahatya|aatmahatya)\b/i,
+  // Killing someone (Devanagari): "किसी को कैसे मारें"
+  /(किसी\s*को|उसे|उन्हें)[^.!?।]*(कैसे)[^.!?।]*(मार|जान\s*से)/,
 ];
 
 // Full input guardrail = always-illegal content + harmful instructional intent.

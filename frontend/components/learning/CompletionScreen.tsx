@@ -69,10 +69,13 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
 
   // Max score = the ACTUAL number of quiz questions — salvaged quizzes can
   // have 1 question, so hardcoding 2 per part made perfection unreachable.
-  const maxScore = (lesson.parts ?? []).reduce(
-    (sum, part) => sum + (part.quiz?.length ?? 2),
-    0
-  ) || (lesson.parts?.length ?? 3) * 2;
+  // Guard the denominator: an empty/salvaged lesson (no parts) would otherwise
+  // yield maxScore 0 → NaN% and a NaN strokeDashoffset (broken ring).
+  const maxScore = Math.max(
+    1,
+    (lesson.parts ?? []).reduce((sum, part) => sum + (part.quiz?.length ?? 2), 0) ||
+      (lesson.parts?.length ?? 3) * 2
+  );
 
   /* Announce to screen readers */
   useEffect(() => {

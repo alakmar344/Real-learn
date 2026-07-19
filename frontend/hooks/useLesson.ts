@@ -157,11 +157,28 @@ const TECHNICAL_ERROR_FRAGMENTS = [
   "failed to parse",
   "response format",
   "aborted",
+  "json",
+  "parse",
+  "unexpected token",
   "http",
   "5xx",
   "502",
   "503",
 ];
+
+// Robustness: SSE frames arrive over an unreliable network and are produced by
+// a streaming backend, so a single frame can be truncated or corrupt. An
+// unguarded JSON.parse would throw a SyntaxError that unwinds out of the read
+// loop and fails the WHOLE generation — even when a valid `lesson` frame was
+// about to follow — and that SyntaxError's message ("Unexpected token…") would
+// leak to the user as a technical error. Parse defensively instead.
+function safeParseEvent<T>(data: string): T | null {
+  try {
+    return JSON.parse(data) as T;
+  } catch {
+    return null;
+  }
+}
 
 export function humanizeErrorMessage(error: unknown): string {
   const raw = error instanceof Error ? error.message : typeof error === "string" ? error : "";
@@ -346,13 +363,19 @@ export function useLesson() {
                   attempt,
                   dataLength: entry.data.length,
                 });
-                lesson = JSON.parse(entry.data) as LessonJourney;
+                // A corrupt lesson frame leaves `lesson` null; the loop then
+                // ends with the friendly "closed connection" error rather than
+                // a raw SyntaxError.
+                const parsedLesson = safeParseEvent<LessonJourney>(entry.data);
+                if (parsedLesson) lesson = parsedLesson;
                 continue;
               }
               if (entry.event === "progress") {
-                const payload = JSON.parse(entry.data) as { stage: string; percent: number };
-                logLessonDebug("progress event received", { requestId, attempt, payload });
-                setProgress(payload.stage, payload.percent);
+                const payload = safeParseEvent<{ stage: string; percent: number }>(entry.data);
+                if (payload) {
+                  logLessonDebug("progress event received", { requestId, attempt, payload });
+                  setProgress(payload.stage, payload.percent);
+                }
                 continue;
               }
               if (entry.event === "ping") {
@@ -364,9 +387,9 @@ export function useLesson() {
                 continue;
               }
               if (entry.event === "error") {
-                const payload = JSON.parse(entry.data) as { error?: string };
+                const payload = safeParseEvent<{ error?: string }>(entry.data);
                 logLessonDebug("error event received", { requestId, attempt, payload });
-                throw new Error(payload.error || "Unable to generate lesson");
+                throw new Error(payload?.error || "Unable to generate lesson");
               }
               logLessonDebug("unknown SSE event received", {
                 requestId,
@@ -391,15 +414,18 @@ export function useLesson() {
                   attempt,
                   dataLength: entry.data.length,
                 });
-                lesson = JSON.parse(entry.data) as LessonJourney;
+                const parsedLesson = safeParseEvent<LessonJourney>(entry.data);
+                if (parsedLesson) lesson = parsedLesson;
               } else if (entry.event === "progress") {
-                const payload = JSON.parse(entry.data) as { stage: string; percent: number };
-                logLessonDebug("progress event in residual buffer", { requestId, attempt, payload });
-                setProgress(payload.stage, payload.percent);
+                const payload = safeParseEvent<{ stage: string; percent: number }>(entry.data);
+                if (payload) {
+                  logLessonDebug("progress event in residual buffer", { requestId, attempt, payload });
+                  setProgress(payload.stage, payload.percent);
+                }
               } else if (entry.event === "error") {
-                const payload = JSON.parse(entry.data) as { error?: string };
+                const payload = safeParseEvent<{ error?: string }>(entry.data);
                 logLessonDebug("error event in residual buffer", { requestId, attempt, payload });
-                throw new Error(payload.error || "Unable to generate lesson");
+                throw new Error(payload?.error || "Unable to generate lesson");
               } else {
                 logLessonDebug("non-lesson residual event", {
                   requestId,

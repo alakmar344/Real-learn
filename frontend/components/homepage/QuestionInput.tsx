@@ -162,9 +162,11 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
                 color: "var(--text-secondary)",
               }}
             >
-              {typeof navigator !== "undefined" && /Mac|iPod|iPhone|iPad/.test(navigator.platform)
-                ? "⌘"
-                : "Ctrl"}
+              {/* Gate on `mounted`: reading navigator.platform during the
+                  first render produces "Ctrl" on the server but "⌘" on a Mac
+                  client, a hydration text mismatch. Render the neutral default
+                  until mounted, then swap. */}
+              {mounted && /Mac|iPod|iPhone|iPad/.test(navigator.platform) ? "⌘" : "Ctrl"}
               +Enter
             </kbd>{" "}
             to submit
@@ -279,7 +281,15 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           <MicButton
             language={language}
             onTranscript={(text) =>
-              setQuestion(question.trim() ? `${question.trim()} ${text}` : text)
+              // Voice transcripts are appended programmatically, which bypasses
+              // the textarea's maxLength — clamp so we can't exceed the backend
+              // limit and eat a 400.
+              setQuestion(
+                (question.trim() ? `${question.trim()} ${text}` : text).slice(
+                  0,
+                  MAX_QUESTION_LENGTH
+                )
+              )
             }
             onInterim={setInterimSpeech}
           />

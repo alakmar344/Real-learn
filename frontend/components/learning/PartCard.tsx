@@ -170,7 +170,7 @@ const PartCardBase = ({
         </h2>
 
         <div
-          className="markdown-content"
+          className="markdown-content editorial-dropcap"
           style={{
             marginTop: 24,
             fontSize: "var(--text-base)",

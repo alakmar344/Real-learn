@@ -141,7 +141,9 @@ export default function HomePage() {
           }}
         >
           <div style={{ width: "100%", maxWidth: 800, position: "relative" }}>
-            {/* Soft decorative glow behind the greeting */}
+            {/* Soft decorative glow behind the greeting — vermillion/washi warmth
+                to match the Japanese palette (an old cobalt-blue tint used to
+                bleed through here, clashing with the theme). */}
             <div
               aria-hidden="true"
               style={{
@@ -153,12 +155,38 @@ export default function HomePage() {
                 height: "min(220px, 40vw)",
                 borderRadius: "50%",
                 background:
-                  "radial-gradient(ellipse at center, rgba(43, 68, 224, 0.1) 0%, rgba(216, 74, 40, 0.05) 45%, transparent 70%)",
+                  "radial-gradient(ellipse at center, var(--accent-glow) 0%, var(--sun-wash) 45%, transparent 70%)",
                 filter: "blur(50px)",
                 zIndex: 0,
                 pointerEvents: "none",
               }}
             />
+
+            {/* 学ぶ — "to learn". A faint vertical brush-script watermark, set
+                in authentic top-to-bottom Japanese writing, gives the hero a
+                quiet cultural signature without competing with the greeting. */}
+            <span
+              aria-hidden="true"
+              style={{
+                position: "absolute",
+                top: "50%",
+                right: "clamp(-8px, 2vw, 24px)",
+                transform: "translateY(-50%)",
+                writingMode: "vertical-rl",
+                fontFamily: "var(--font-display), serif",
+                fontWeight: 900,
+                fontSize: "clamp(64px, 14vw, 132px)",
+                lineHeight: 1,
+                letterSpacing: "0.08em",
+                color: "var(--brand)",
+                opacity: 0.06,
+                zIndex: 0,
+                pointerEvents: "none",
+                userSelect: "none",
+              }}
+            >
+              学ぶ
+            </span>
 
             {/* The slim daily-spark / resume strip sits above the greeting */}
             <div style={{ position: "relative", zIndex: 1 }}>

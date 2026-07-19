@@ -1,4 +1,30 @@
 const REQUIRED_QUIZ_OPTIONS_COUNT = 4;
+const MAX_SOURCES_PER_PART = 5;
+const MAX_SOURCE_URL_LENGTH = 500;
+
+// SECURITY: the model's `sources` array is attacker-influenceable output that
+// is cached and served to EVERY future user asking the same question. Only
+// well-formed http(s) URLs may pass — a `javascript:`/`data:` scheme (or any
+// non-string junk) would otherwise become a stored-XSS payload the moment any
+// client renders it as a link href.
+export function sanitizeSources(sources) {
+  if (!Array.isArray(sources)) return [];
+  const clean = [];
+  for (const source of sources) {
+    if (typeof source !== "string") continue;
+    const trimmed = source.trim();
+    if (!trimmed || trimmed.length > MAX_SOURCE_URL_LENGTH) continue;
+    try {
+      const url = new URL(trimmed);
+      if (url.protocol !== "http:" && url.protocol !== "https:") continue;
+      clean.push(url.href);
+    } catch {
+      continue; // not a parseable absolute URL — drop it
+    }
+    if (clean.length >= MAX_SOURCES_PER_PART) break;
+  }
+  return clean;
+}
 
 // Per-mode structural expectations.
 // - "explain": the classic 3-part learning journey.
@@ -77,7 +103,9 @@ export function normalizeJourney(data, mode = "explain") {
       .map((part, index) => ({
         ...part,
         partNumber: index + 1,
-        sources: Array.isArray(part.sources) ? part.sources : [],
+        // Security: only clean, absolute http(s) URLs survive normalization —
+        // see sanitizeSources above.
+        sources: sanitizeSources(part.sources),
       }));
     normalized.parts = normalizedParts;
   }
