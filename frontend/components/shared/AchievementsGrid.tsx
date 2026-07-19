@@ -44,13 +44,14 @@ export default function AchievementsGrid({ unlocked, snapshot }: Props) {
   }, [openId]);
 
   return (
-    <div>
+    <div style={{ overflow: "visible" }}>
       <div
+        ref={gridRef}
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "baseline",
-          marginBottom: 10,
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(96px, 1fr))",
+          gap: 8,
+          overflow: "visible",
         }}
       >
         <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>Achievements</h4>
@@ -65,6 +66,7 @@ export default function AchievementsGrid({ unlocked, snapshot }: Props) {
           display: "grid",
           gridTemplateColumns: "repeat(auto-fill, minmax(96px, 1fr))",
           gap: 8,
+          overflow: "visible",
         }}
       >
         {BADGES.map((badge) => {
