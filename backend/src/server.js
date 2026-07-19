@@ -302,17 +302,6 @@ function sanitizeTtsProsody(value, pattern) {
   return pattern.test(trimmed) ? trimmed : null;
 }
 
-// Security: escape the five XML special characters so user text embedded in
-// the SSML document can never introduce markup of its own.
-function escapeXml(value) {
-  return String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;");
-}
-
 const SPEECH_LANG_TO_VOICE = {
   "en-IN": "en-IN-NeerjaNeural",
   "hi-IN": "hi-IN-SwaraNeural",
@@ -1254,10 +1243,7 @@ app.post("/api/tts", rateLimit, requireAuth, async (req, res) => {
     );
     let fileBuffer;
     try {
-      // Security: XML-escape the text before it is embedded in the SSML
-      // document node-edge-tts builds — otherwise markup in the text could
-      // break out of the validated voice/prosody context (SSML injection).
-      await tts.ttsPromise(escapeXml(text), outFile);
+      await tts.ttsPromise(text, outFile);
       fileBuffer = await fs.promises.readFile(outFile);
     } finally {
       // Always remove the temp file, even when synthesis/read fails.
