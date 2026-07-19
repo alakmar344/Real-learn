@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: real-learn
+    plan: free
+    rootDir: backend
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: FRONTEND_ORIGIN
+        value: https://reallearn.site
+      - key: CLERK_FRONTEND_API
+        value: https://clerk.reallearn.site
+      - key: CLERK_API_URL
+        value: https://api.clerk.com
+      - key: CEREBRAS_API_KEY
+        sync: false
+      - key: CLOUDFLARE_API_TOKEN
+        sync: false
+      - key: CLOUDFLARE_ACCOUNT_ID
+        sync: false
+      - key: MONGODB_URI
+        sync: false
+      - key: CLERK_SECRET_KEY
+        sync: false
+      - key: SERPER_API_KEY
+        sync: false
+
+  - type: web
+    name: reallearn-frontend
+    plan: free
+    rootDir: frontend
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_BACKEND_URL
+        value: https://real-learn.onrender.com
+      - key: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+        sync: false
+      - key: CLERK_SECRET_KEY
+        sync: false
