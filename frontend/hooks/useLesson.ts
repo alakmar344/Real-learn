@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
+import { createParser, type EventSourceMessage } from "eventsource-parser";
 import { useAuth } from "@clerk/nextjs";
 import { useLessonStore } from "@/store/lessonStore";
 import { usePreferenceStore } from "@/store/preferenceStore";
@@ -57,10 +58,19 @@ export function cancelActiveLessonRequest() {
   activeController = null;
 }
 
-type StreamEvent = {
-  event: string;
-  data: string;
-};
+type StreamEvent = EventSourceMessage;
+
+// Decode a network chunk. On `done`, flush the TextDecoder so a multi-byte
+// UTF-8 character split across the final chunk isn't silently dropped; on
+// mid-stream chunks decode incrementally (`stream: true`).
+function bufferOrFinalChunk(
+  decoder: TextDecoder,
+  value: Uint8Array | undefined,
+  done: boolean
+): string {
+  if (done) return decoder.decode();
+  return decoder.decode(value, { stream: true });
+}
 
 type RetryableError = Error & {
   status?: number;
@@ -77,28 +87,31 @@ function logLessonDebug(stage: string, details?: unknown) {
   console.log(`[frontend][useLesson] ${stage}`, details);
 }
 
-function parseSSEChunk(buffer: string): { events: StreamEvent[]; remainder: string } {
-  const normalizedBuffer = buffer.includes("\r")
-    ? buffer.replace(/\r\n/g, "\n").replace(/\r/g, "\n")
-    : buffer;
-  const blocks = normalizedBuffer.split("\n\n");
-  const remainder = blocks.pop() ?? "";
-  const events = blocks
-    .map((block) => {
-      const lines = block.split("\n");
-      const event = lines.find((line) => line.startsWith("event:"))?.slice(6).trim();
-      const data = lines
-        .filter((line) => line.startsWith("data:"))
-        .map((line) => {
-          const value = line.slice(5);
-          return value.startsWith(" ") ? value.slice(1) : value;
-        })
-        .join("\n");
-      if (!event || !data) return null;
-      return { event, data };
-    })
-    .filter((value): value is StreamEvent => value !== null);
-  return { events, remainder };
+// SSE framing is parsed by `eventsource-parser`, the well-established,
+// spec-compliant SSE parser (used by the Vercel AI SDK, OpenAI SDK, etc.).
+// It correctly handles `\r\n`/`\r`/`\n` line endings, multi-line `data:`
+// fields, and partial frames split across chunks — replacing the hand-rolled
+// splitter below. We feed decoded chunks in and drain the `data:` payloads it
+// emits into a small queue the read loop consumes.
+function createSSEParser() {
+  const queue: EventSourceMessage[] = [];
+  const parser = createParser({
+    onEvent: (msg) => {
+      // Skip the default "message" event name — our backend always sends an
+      // explicit `event:` field, which is what the original code keyed on.
+      if (msg.event) queue.push(msg);
+    },
+  });
+  return {
+    feed(chunk: string) {
+      parser.feed(chunk);
+    },
+    drain(): EventSourceMessage[] {
+      const out = queue.slice();
+      queue.length = 0;
+      return out;
+    },
+  };
 }
 
 function sleep(ms: number) {
@@ -318,122 +331,93 @@ export function useLesson() {
           }
 
           const decoder = new TextDecoder();
-          let buffer = "";
+          const sse = createSSEParser();
           let lesson: LessonJourney | null = null;
           let chunkCount = 0;
           let totalBytes = 0;
 
+          // Handle one parsed SSE event. A corrupt lesson frame leaves
+          // `lesson` null; the loop then ends with the friendly "closed
+          // connection" error rather than a raw SyntaxError. Returns the
+          // parsed lesson (or null) so the read loop can assign it directly —
+          // assigning from inside this closure would defeat TS narrowing.
+          const handleEvent = (entry: StreamEvent): LessonJourney | null => {
+            if (entry.event === "lesson") {
+              logLessonDebug("lesson event received", {
+                requestId,
+                attempt,
+                dataLength: entry.data.length,
+              });
+              return safeParseEvent<LessonJourney>(entry.data);
+            }
+            if (entry.event === "progress") {
+              const payload = safeParseEvent<{ stage: string; percent: number }>(entry.data);
+              if (payload) {
+                logLessonDebug("progress event received", { requestId, attempt, payload });
+                setProgress(payload.stage, payload.percent);
+              }
+              return null;
+            }
+            if (entry.event === "ping") {
+              logLessonDebug("ping event received", { requestId, attempt, ping: entry.data });
+              return null;
+            }
+            if (entry.event === "done") {
+              logLessonDebug("done event received", { requestId, attempt, payload: entry.data });
+              return null;
+            }
+            if (entry.event === "error") {
+              const payload = safeParseEvent<{ error?: string }>(entry.data);
+              logLessonDebug("error event received", { requestId, attempt, payload });
+              throw new Error(payload?.error || "Unable to generate lesson");
+            }
+            logLessonDebug("unknown SSE event received", {
+              requestId,
+              attempt,
+              event: entry.event,
+              payloadPreview: entry.data.slice(0, 120),
+            });
+            return null;
+          };
+
           while (true) {
             const { value, done } = await reader.read();
+            // Flush the decoder: a multi-byte UTF-8 character split across the
+            // final network chunk is otherwise silently dropped. `eventsource-
+            // parser` keeps its own cross-chunk frame state, so feeding the
+            // final decode and draining yields any trailing event.
+            const decoded = bufferOrFinalChunk(decoder, value, done);
             if (done) {
-              // Flush the decoder: a multi-byte UTF-8 character split across
-              // the final network chunk is otherwise silently dropped, which
-              // corrupts the buffered JSON of the terminal `lesson` event.
-              buffer += decoder.decode();
               logLessonDebug("stream reader done", { requestId, attempt, chunkCount, totalBytes });
+              sse.feed(decoded);
+              for (const entry of sse.drain()) {
+                const parsed = handleEvent(entry);
+                if (parsed) lesson = parsed;
+              }
               break;
             }
             chunkCount += 1;
             totalBytes += value?.byteLength ?? 0;
-            buffer += decoder.decode(value, { stream: true });
             refreshIdleTimeout();
             logLessonDebug("stream chunk decoded", {
               requestId,
               attempt,
               chunkCount,
               chunkBytes: value?.byteLength ?? 0,
-              bufferedChars: buffer.length,
             });
-            const { events, remainder } = parseSSEChunk(buffer);
-            buffer = remainder;
+            sse.feed(decoded);
+            const events = sse.drain();
             if (events.length > 0) {
               logLessonDebug("parsed SSE events from chunk", {
                 requestId,
                 attempt,
                 chunkCount,
                 events: events.map((entry) => entry.event),
-                remainderChars: remainder.length,
               });
             }
-
             for (const entry of events) {
-              if (entry.event === "lesson") {
-                logLessonDebug("lesson event received", {
-                  requestId,
-                  attempt,
-                  dataLength: entry.data.length,
-                });
-                // A corrupt lesson frame leaves `lesson` null; the loop then
-                // ends with the friendly "closed connection" error rather than
-                // a raw SyntaxError.
-                const parsedLesson = safeParseEvent<LessonJourney>(entry.data);
-                if (parsedLesson) lesson = parsedLesson;
-                continue;
-              }
-              if (entry.event === "progress") {
-                const payload = safeParseEvent<{ stage: string; percent: number }>(entry.data);
-                if (payload) {
-                  logLessonDebug("progress event received", { requestId, attempt, payload });
-                  setProgress(payload.stage, payload.percent);
-                }
-                continue;
-              }
-              if (entry.event === "ping") {
-                logLessonDebug("ping event received", { requestId, attempt, ping: entry.data });
-                continue;
-              }
-              if (entry.event === "done") {
-                logLessonDebug("done event received", { requestId, attempt, payload: entry.data });
-                continue;
-              }
-              if (entry.event === "error") {
-                const payload = safeParseEvent<{ error?: string }>(entry.data);
-                logLessonDebug("error event received", { requestId, attempt, payload });
-                throw new Error(payload?.error || "Unable to generate lesson");
-              }
-              logLessonDebug("unknown SSE event received", {
-                requestId,
-                attempt,
-                event: entry.event,
-                payloadPreview: entry.data.slice(0, 120),
-              });
-            }
-          }
-
-          if (buffer.trim()) {
-            logLessonDebug("processing residual stream buffer", {
-              requestId,
-              attempt,
-              residualChars: buffer.length,
-            });
-            const { events } = parseSSEChunk(buffer + "\n\n");
-            for (const entry of events) {
-              if (entry.event === "lesson") {
-                logLessonDebug("lesson event in residual buffer", {
-                  requestId,
-                  attempt,
-                  dataLength: entry.data.length,
-                });
-                const parsedLesson = safeParseEvent<LessonJourney>(entry.data);
-                if (parsedLesson) lesson = parsedLesson;
-              } else if (entry.event === "progress") {
-                const payload = safeParseEvent<{ stage: string; percent: number }>(entry.data);
-                if (payload) {
-                  logLessonDebug("progress event in residual buffer", { requestId, attempt, payload });
-                  setProgress(payload.stage, payload.percent);
-                }
-              } else if (entry.event === "error") {
-                const payload = safeParseEvent<{ error?: string }>(entry.data);
-                logLessonDebug("error event in residual buffer", { requestId, attempt, payload });
-                throw new Error(payload?.error || "Unable to generate lesson");
-              } else {
-                logLessonDebug("non-lesson residual event", {
-                  requestId,
-                  attempt,
-                  event: entry.event,
-                  payloadPreview: entry.data.slice(0, 120),
-                });
-              }
+              const parsed = handleEvent(entry);
+              if (parsed) lesson = parsed;
             }
           }
 
