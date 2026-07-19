@@ -13,6 +13,7 @@
 // is grounded in "what's happening in the real world right now".
 
 import crypto from "node:crypto";
+import { LRUCache } from "lru-cache";
 import { getDb } from "./mongodb.js";
 
 const DEFAULT_LESSON_CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
@@ -38,29 +39,27 @@ export function isLessonCacheEnabled() {
   return !["false", "0", "off", "no"].includes(raw);
 }
 
-// Insertion-ordered Map used as an LRU: reads re-insert, writes evict oldest.
-const memoryCache = new Map();
+// In-memory LRU tier. `lru-cache` handles recency-eviction (reads bump
+// recency, writes evict the oldest entry) and the capacity cap for us; per-
+// entry TTL expiry is enforced by storing each value with its own `ttl`.
+const memoryCache = new LRUCache({
+  max: LESSON_CACHE_MAX_MEMORY_ENTRIES,
+});
 
 function memoryGet(key) {
   const entry = memoryCache.get(key);
-  if (!entry) return null;
+  if (entry === undefined) return null;
   if (entry.expiresAt <= Date.now()) {
     memoryCache.delete(key);
     return null;
   }
-  // Refresh recency.
-  memoryCache.delete(key);
-  memoryCache.set(key, entry);
   return entry.lesson;
 }
 
 function memorySet(key, lesson, expiresAt) {
-  if (memoryCache.has(key)) memoryCache.delete(key);
-  memoryCache.set(key, { lesson, expiresAt });
-  while (memoryCache.size > LESSON_CACHE_MAX_MEMORY_ENTRIES) {
-    const oldestKey = memoryCache.keys().next().value;
-    memoryCache.delete(oldestKey);
-  }
+  // ttls are keyed per-entry so each lesson expires exactly at its own
+  // expiresAt, independent of when it was written.
+  memoryCache.set(key, { lesson, expiresAt }, { ttl: expiresAt - Date.now() });
 }
 
 /**

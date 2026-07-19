@@ -1,3 +1,5 @@
+import { LRUCache } from "lru-cache";
+
 const SERPER_API_KEY = process.env.SERPER_API_KEY;
 // SPEED: the news lookup is nice-to-have context, not a hard dependency — a
 // slow retrieval must not hold the whole lesson hostage. 4s is enough for a
@@ -18,25 +20,16 @@ const SERPER_CACHE_TTL_MS =
     ? configuredSerperCacheTtlMs
     : DEFAULT_SERPER_CACHE_TTL_MS;
 const SERPER_CACHE_MAX_ENTRIES = 200;
-const contextCache = new Map();
+// `lru-cache` provides recency-eviction + capacity cap; the per-entry TTL
+// (10 min) is set per write so every cached context expires on its own clock.
+const contextCache = new LRUCache({ max: SERPER_CACHE_MAX_ENTRIES });
 
 function contextCacheGet(cacheKey) {
-  const entry = contextCache.get(cacheKey);
-  if (!entry) return undefined;
-  if (entry.expiresAt <= Date.now()) {
-    contextCache.delete(cacheKey);
-    return undefined;
-  }
-  return entry.context;
+  return contextCache.get(cacheKey);
 }
 
 function contextCacheSet(cacheKey, context) {
-  if (contextCache.has(cacheKey)) contextCache.delete(cacheKey);
-  contextCache.set(cacheKey, { context, expiresAt: Date.now() + SERPER_CACHE_TTL_MS });
-  while (contextCache.size > SERPER_CACHE_MAX_ENTRIES) {
-    const oldestKey = contextCache.keys().next().value;
-    contextCache.delete(oldestKey);
-  }
+  contextCache.set(cacheKey, context, { ttl: SERPER_CACHE_TTL_MS });
 }
 
 const SERPER_LANGUAGE_MAP = {

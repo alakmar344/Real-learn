@@ -6,6 +6,7 @@
 // Both degrade gracefully — `supported` is false where the APIs are missing.
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { LRUCache } from "lru-cache";
 import { useAuth } from "@clerk/nextjs";
 import { Language } from "@/types";
 
@@ -68,33 +69,18 @@ function chunkForSpeech(text: string, maxLen = 200): string[] {
 
 // BANDWIDTH: in-memory LRU of synthesized audio blobs. Replaying the same
 // text (pause/restart, re-listening to a part) reuses the blob instead of
-// re-downloading ~1 MB of MP3 from the backend.
+// re-downloading ~1 MB of MP3 from the backend. `lru-cache` enforces the
+// byte budget and evicts least-recently-used entries for us.
 const TTS_BLOB_CACHE_MAX_BYTES = 12 * 1024 * 1024;
-const ttsBlobCache = new Map<string, Blob>();
-let ttsBlobCacheBytes = 0;
+const ttsBlobCache = new LRUCache<string, Blob>({
+  maxSize: TTS_BLOB_CACHE_MAX_BYTES,
+  sizeCalculation: (blob) => blob.size,
+});
 function ttsBlobCacheGet(key: string): Blob | undefined {
-  const blob = ttsBlobCache.get(key);
-  if (blob) {
-    // Refresh recency (insertion-ordered Map as LRU).
-    ttsBlobCache.delete(key);
-    ttsBlobCache.set(key, blob);
-  }
-  return blob;
+  return ttsBlobCache.get(key);
 }
-function ttsBlobCacheSet(key: string, blob: Blob) {
-  if (blob.size > TTS_BLOB_CACHE_MAX_BYTES) return;
-  const existing = ttsBlobCache.get(key);
-  if (existing) {
-    ttsBlobCacheBytes -= existing.size;
-    ttsBlobCache.delete(key);
-  }
+function ttsBlobCacheSet(key: string, blob: Blob): void {
   ttsBlobCache.set(key, blob);
-  ttsBlobCacheBytes += blob.size;
-  while (ttsBlobCacheBytes > TTS_BLOB_CACHE_MAX_BYTES && ttsBlobCache.size > 0) {
-    const oldestKey = ttsBlobCache.keys().next().value as string;
-    ttsBlobCacheBytes -= ttsBlobCache.get(oldestKey)!.size;
-    ttsBlobCache.delete(oldestKey);
-  }
 }
 
 export function useEdgeTts() {

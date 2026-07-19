@@ -1392,6 +1392,8 @@ export function startPeriodicWarmUp(intervalMs) {
 
 // ── Tolerant JSON extraction from model output ──────────────────────────────
 
+import { jsonrepair } from "jsonrepair";
+
 function closeTruncatedJSON(text) {
   const stack = [];
   let inString = false;
@@ -1448,6 +1450,15 @@ export function parseJSON(text) {
     console.error("[parseJSON] No JSON structure found in response");
     return null;
   }
+
+  // Primary repair: `jsonrepair` is the well-established, battle-tested library
+  // for repairing broken/truncated JSON from LLMs — it handles trailing
+  // commas, unterminated strings/arrays/objects, and fence artifacts far more
+  // robustly than a hand-rolled pipeline. We run it first; the bespoke pipeline
+  // below stays as a final fallback for any shape jsonrepair doesn't cover.
+  try {
+    return JSON.parse(jsonrepair(cleaned));
+  } catch {}
 
   const stripTrailingCommas = (s) => s.replace(/,\s*([}\]])/g, "$1");
 
