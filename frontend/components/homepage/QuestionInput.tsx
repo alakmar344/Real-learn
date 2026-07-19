@@ -11,18 +11,16 @@ import { LessonMode } from "@/types";
 
 const MAX_QUESTION_LENGTH = 1000;
 
-const MODES: { value: LessonMode; label: string; hint: string; emoji: string }[] = [
+const MODES: { value: LessonMode; label: string; hint: string }[] = [
   {
     value: "fast",
-    label: "Quick Answer",
-    hint: "A fast, direct answer to get started",
-    emoji: "⚡",
+    label: "Fast",
+    hint: "A quick, simple answer to get started",
   },
   {
     value: "explain",
-    label: "Deep Dive",
+    label: "Explain",
     hint: "A guided 3-part lesson with real-world context",
-    emoji: "🔍",
   },
 ];
 
@@ -41,12 +39,13 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
   const language = usePreferenceStore((s) => s.language);
   const persistedMode = usePreferenceStore((s) => s.mode);
   const setMode = usePreferenceStore((s) => s.setMode);
+  // Hydration gate: `mode` is persisted, so the first client render must
+  // match the SSR default until we're mounted.
   const mounted = useMounted();
   const mode = mounted ? persistedMode : "fast";
   const activeMode = MODES.find((m) => m.value === mode) ?? MODES[0];
   const charCount = question.length;
   const nearLimit = charCount >= MAX_QUESTION_LENGTH * 0.9;
-  const canSubmit = question.trim().length > 0;
 
   useEffect(() => {
     const textarea = textareaRef.current;
@@ -62,6 +61,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Ctrl/Cmd + Enter submits; Enter alone adds a new line.
     if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
       e.preventDefault();
       handleSubmit();
@@ -75,7 +75,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
       className="liquid-sheen engraved identity-texture texture-noise"
       style={{
         marginTop: 20,
-        maxWidth: 720,
+        maxWidth: 680,
         width: "100%",
         position: "relative",
         borderRadius: "var(--radius-2xl)",
@@ -84,10 +84,9 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
         backdropFilter: "blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))",
         WebkitBackdropFilter: "blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))",
         boxShadow: focused
-          ? "var(--shadow-lg), 0 0 0 8px var(--accent-glow), var(--glass-edge)"
+          ? "var(--shadow-lg), 0 0 0 6px var(--accent-glow), var(--glass-edge)"
           : "var(--glass-shadow), var(--glass-edge)",
         transition: "all 500ms var(--ease-color)",
-        transform: focused ? "translateY(-2px)" : "translateY(0)",
       }}
     >
       <div style={{ padding: "28px 32px 18px" }}>
@@ -111,7 +110,6 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           maxLength={MAX_QUESTION_LENGTH}
           placeholder="Start with any question — even a basic one"
           aria-label="Your question"
-          aria-describedby="question-hint"
           style={{
             width: "100%",
             minHeight: 64,
@@ -126,9 +124,6 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
             fontFamily: "var(--font-lora)",
           }}
         />
-        <span id="question-hint" style={{ display: "none" }}>
-          Press Ctrl+Enter or Cmd+Enter to submit
-        </span>
         {interimSpeech ? (
           <p
             aria-live="polite"
@@ -167,6 +162,10 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
                 color: "var(--text-secondary)",
               }}
             >
+              {/* Gate on `mounted`: reading navigator.platform during the
+                  first render produces "Ctrl" on the server but "⌘" on a Mac
+                  client, a hydration text mismatch. Render the neutral default
+                  until mounted, then swap. */}
               {mounted && /Mac|iPod|iPhone|iPad/.test(navigator.platform) ? "⌘" : "Ctrl"}
               +Enter
             </kbd>{" "}
@@ -186,8 +185,10 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           </span>
         </div>
       </div>
-
-      {/* Answer-mode toggle */}
+      {/* ── Answer-mode toggle: Fast (1 direct part) vs Explain (3-part journey).
+          A sliding "glider" — the gold pill glides between options on a springy
+          transform so switching modes (especially to Fast) feels like a smooth
+          physical switch, not a snap. ── */}
       <div
         style={{
           padding: "0 24px 20px",
@@ -211,7 +212,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
             background: "var(--bg-surface)",
           }}
         >
-          {/* The gliding pill */}
+          {/* The gliding pill — translates to sit under the active option. */}
           <span
             aria-hidden="true"
             style={{
@@ -243,32 +244,25 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
                   zIndex: 1,
                   border: "none",
                   borderRadius: 999,
-                  padding: "10px 18px",
-                  fontSize: 13,
+                  padding: "10px 20px",
+                  fontSize: 14,
                   fontWeight: 600,
                   cursor: "pointer",
                   minHeight: 40,
-                  minWidth: 100,
+                  minWidth: 104,
                   textAlign: "center",
                   color: active ? "var(--on-accent)" : "var(--text-secondary)",
                   background: "transparent",
                   transition: "color 320ms var(--ease-color)",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 6,
                 }}
               >
-                <span style={{ fontSize: 15 }}>{opt.emoji}</span>
                 {opt.label}
               </button>
             );
           })}
         </div>
-        <span style={{ fontSize: 13, color: "var(--text-tertiary)", fontWeight: 500 }}>
-          {activeMode.hint}
-        </span>
+        <span style={{ fontSize: 13, color: "var(--text-tertiary)", fontWeight: 500 }}>{activeMode.hint}</span>
       </div>
-
       <div
         style={{
           borderTop: "1px solid var(--border-subtle)",
@@ -287,6 +281,9 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           <MicButton
             language={language}
             onTranscript={(text) =>
+              // Voice transcripts are appended programmatically, which bypasses
+              // the textarea's maxLength — clamp so we can't exceed the backend
+              // limit and eat a 400.
               setQuestion(
                 (question.trim() ? `${question.trim()} ${text}` : text).slice(
                   0,
@@ -334,76 +331,66 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
             </button>
           )}
           {isSignedIn ? (
+          <button
+            type="submit"
+            disabled={!question.trim()}
+            aria-label="Start learning"
+            style={{
+              border: "none",
+              borderRadius: "var(--radius-lg)",
+              padding: "12px 24px",
+                  fontSize: 15,
+                  fontWeight: 600,
+                  color: "var(--on-accent)",
+                  background: question.trim() ? "var(--accent)" : "var(--border-default)",
+                  cursor: question.trim() ? "pointer" : "not-allowed",
+                  transition: "all 500ms var(--ease-spring)",
+                  minHeight: 52,
+              boxShadow: question.trim() ? "var(--shadow-glow-accent)" : "none",
+            }}
+            onMouseEnter={(e) => {
+              if (question.trim()) {
+                e.currentTarget.style.transform = "scale(1.04)";
+                e.currentTarget.style.boxShadow = "var(--shadow-lg), var(--glass-edge)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "scale(1)";
+              e.currentTarget.style.boxShadow = question.trim() ? "var(--shadow-glow-accent)" : "none";
+            }}
+          >
+            {mode === "fast" ? "Get a Quick Answer →" : "Start Guided Lesson →"}
+          </button>
+        ) : (
+          <SignInButton mode="modal">
             <button
-              type="submit"
-              disabled={!canSubmit}
-              aria-label="Start learning"
-              className="ripple-primary"
+              type="button"
+              aria-label="Sign in to start learning"
               style={{
                 border: "none",
                 borderRadius: "var(--radius-lg)",
-                padding: "14px 28px",
-                fontSize: 15,
-                fontWeight: 700,
-                color: "var(--on-accent)",
-                background: canSubmit ? "var(--accent)" : "var(--border-default)",
-                cursor: canSubmit ? "pointer" : "not-allowed",
-                transition: "all 500ms var(--ease-spring)",
-                minHeight: 52,
-                boxShadow: canSubmit ? "var(--shadow-glow-accent)" : "none",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-              }}
-              onMouseEnter={(e) => {
-                if (canSubmit) {
-                  e.currentTarget.style.transform = "scale(1.04)";
-                  e.currentTarget.style.boxShadow = "var(--shadow-lg), var(--glass-edge)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "scale(1)";
-                e.currentTarget.style.boxShadow = canSubmit ? "var(--shadow-glow-accent)" : "none";
-              }}
-            >
-              {mode === "fast" ? "⚡ Quick Answer" : "🔍 Start Deep Dive"}
-              <span style={{ fontSize: 16 }}>→</span>
-            </button>
-          ) : (
-            <SignInButton mode="modal">
-              <button
-                type="button"
-                aria-label="Sign in to start learning"
-                className="ripple-primary"
-                style={{
-                  border: "none",
-                  borderRadius: "var(--radius-lg)",
-                  padding: "14px 28px",
+              padding: "12px 24px",
                   fontSize: 15,
-                  fontWeight: 700,
+                  fontWeight: 600,
                   color: "var(--on-accent)",
                   background: "var(--accent)",
                   cursor: "pointer",
                   transition: "all 500ms var(--ease-spring)",
                   minHeight: 52,
-                  boxShadow: "var(--shadow-glow-accent)",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 8,
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "scale(1.04)";
-                  e.currentTarget.style.boxShadow = "var(--shadow-lg), var(--glass-edge)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "scale(1)";
-                  e.currentTarget.style.boxShadow = "var(--shadow-glow-accent)";
-                }}
-              >
-                Sign in to Learn
-                <span style={{ fontSize: 16 }}>→</span>
-              </button>
-            </SignInButton>
+                boxShadow: "var(--shadow-glow-accent)",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "scale(1.04)";
+                e.currentTarget.style.boxShadow = "var(--shadow-lg), var(--glass-edge)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.boxShadow = "var(--shadow-glow-accent)";
+              }}
+            >
+              Sign in to Learn →
+            </button>
+          </SignInButton>
           )}
         </div>
       </div>

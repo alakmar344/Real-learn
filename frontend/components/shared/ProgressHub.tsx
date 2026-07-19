@@ -5,6 +5,9 @@ import { useProgressStore } from "@/store/progressStore";
 import { levelInfo, dayKey } from "@/lib/achievements";
 import { useMounted } from "@/hooks/useMounted";
 
+/** Compact navbar widget: streak flame, level ring, daily-goal dots. Navigates
+ * to the full /progress dashboard on click. This is the persistent "growing
+ * self" the whole engagement loop revolves around. */
 export default function ProgressHub() {
   const mounted = useMounted();
   const router = useRouter();
@@ -19,6 +22,7 @@ export default function ProgressHub() {
   const todayCount = mounted && dailyCountDay === dayKey() ? dailyCount : 0;
   const pct = Math.round(info.progress * 100);
 
+  // Placeholder keeps navbar layout stable before hydration.
   if (!mounted) {
     return <div style={{ marginLeft: "auto", width: 118, height: 34 }} aria-hidden="true" />;
   }
@@ -35,16 +39,16 @@ export default function ProgressHub() {
         onClick={() => router.push("/progress")}
         aria-label={`Level ${info.level}, ${streak} day streak, daily goal ${todayCount} of ${dailyGoal}. Open progress.`}
         title="Your progress"
-        className="animate-fade-up interactive-lift"
+        className="animate-fade-up"
         style={{
           marginLeft: "auto",
           display: "flex",
           alignItems: "center",
-          gap: 8,
+          gap: 10,
           border: "1px solid var(--border-subtle)",
           background: "var(--bg-card)",
           borderRadius: 999,
-          padding: "6px 12px 6px 6px",
+          padding: "6px 14px 6px 8px",
           cursor: "pointer",
           minHeight: 36,
           backdropFilter: "blur(var(--glass-blur)) saturate(var(--glass-saturate))",
@@ -98,7 +102,7 @@ export default function ProgressHub() {
           </span>
         </span>
 
-        {/* Daily goal mini-progress */}
+        {/* Daily goal mini-progress (hidden on very small screens via title only) */}
         <span
           className="progress-hub-daily"
           style={{ fontSize: 11, color: todayCount >= dailyGoal ? "var(--correct)" : "var(--text-tertiary)", fontWeight: 700 }}

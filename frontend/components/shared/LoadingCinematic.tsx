@@ -3,6 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useLessonStore } from "@/store/lessonStore";
 
+// Each step "completes" once the real progress passes its threshold. The
+// thresholds are spread across the whole 0–100 range (no two steps share a
+// value) so the checklist advances continuously alongside the bar instead of
+// two items lighting up at once and then stalling.
 const steps = [
   { label: "Understanding your question", at: 5, stage: "starting" },
   { label: "Researching real-world context", at: 15, stage: "searching" },
@@ -20,12 +24,12 @@ const facts = [
   "Connecting ideas to real-world examples makes them easier to remember.",
   "Short breaks between focused study sessions boost how much you retain.",
   "Curiosity primes your brain to absorb information.",
-  "Writing things down by hand improves comprehension and recall.",
 ];
 
+// Clean vector check — a small, deliberate mark instead of an emoji.
 function CheckIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
       <path
         d="M3 8.5 6.5 12 13 4.5"
         stroke="currentColor"
@@ -43,7 +47,13 @@ interface Props {
   isRevealing?: boolean;
 }
 
+// After this long, show a gentle reassurance line — a slow generation should
+// feel deliberate ("we're taking care with your lesson"), never broken.
 const PATIENCE_MESSAGE_AFTER_MS = 30000;
+
+// Auto-complete the counter to 100% in ~3.5s with an ease-out curve so it
+// always reaches full progress even when the backend only sends a handful of
+// progress events (e.g. fast-mode Cerebras can finish in 2-3s).
 const AUTO_COMPLETE_DURATION_MS = 3500;
 
 export default function LoadingCinematic({ question, onCancel, isRevealing = false }: Props) {
@@ -59,12 +69,18 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
     return () => window.clearTimeout(id);
   }, []);
 
+  // Reset the start time whenever a fresh question loads so the auto-complete
+  // curve always begins from zero.
   useEffect(() => {
     startTimeRef.current = Date.now();
     displayRef.current = 0;
     setDisplayProgress(0);
   }, [question]);
 
+  // Smoothly animate the bar so it ALWAYS drifts forward. An ease-out curve
+  // auto-completes to 100% in ~3.5s, and any real server progress event leads
+  // the counter by a small margin so it never stalls. When the lesson arrives,
+  // the parent passes `isRevealing` and we fade out gracefully.
   useEffect(() => {
     const id = window.setInterval(() => {
       const elapsed = Date.now() - startTimeRef.current;
@@ -81,10 +97,11 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
     return () => window.clearInterval(id);
   }, [progressPercent]);
 
+  // Rotate the encouraging facts so there's always something fresh to read.
   useEffect(() => {
     const id = window.setInterval(() => {
       setFactIndex((prev) => (prev + 1) % facts.length);
-    }, 5000);
+    }, 4000);
     return () => window.clearInterval(id);
   }, []);
 
@@ -121,29 +138,9 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
           textAlign: "center",
           padding: 32,
           width: "100%",
-          maxWidth: 580,
+          maxWidth: 560,
         }}
       >
-        {/* Animated icon */}
-        <div
-          aria-hidden="true"
-          style={{
-            width: 64,
-            height: 64,
-            borderRadius: "var(--radius-xl)",
-            background: "var(--accent-dim)",
-            border: "1px solid var(--border-accent)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            margin: "0 auto 24px",
-            fontSize: 28,
-          }}
-          className="animate-bounce-in"
-        >
-          📚
-        </div>
-
         <p
           style={{
             color: "var(--text-primary)",
@@ -160,7 +157,7 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
           <span style={{ color: "var(--accent)" }}>&rdquo;</span>
         </p>
 
-        {/* Progress bar with glow */}
+        {/* Progress bar */}
         <div
           role="progressbar"
           aria-valuenow={pct}
@@ -169,23 +166,22 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
           aria-label="Lesson generation progress"
           style={{
             width: "100%",
-            height: 10,
+            height: 12,
             borderRadius: 999,
             background: "var(--accent-dim)",
             overflow: "hidden",
             position: "relative",
-            marginBottom: 12,
           }}
         >
           <div
             aria-hidden="true"
             style={{
               position: "absolute",
-              inset: -10,
+              inset: -8,
               borderRadius: 999,
-              background: `radial-gradient(ellipse at center, var(--accent) 0%, transparent 70%)`,
-              opacity: 0.12 + (pct / 100) * 0.2,
-              filter: "blur(10px)",
+              background: "radial-gradient(ellipse at center, var(--accent) 0%, transparent 70%)",
+              opacity: 0.15 + (pct / 100) * 0.25,
+              filter: "blur(8px)",
               transition: "opacity 200ms linear",
             }}
           />
@@ -201,39 +197,35 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
             }}
           />
         </div>
-
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
-          <p
-            style={{
-              margin: 0,
-              color: "var(--accent)",
-              fontSize: 18,
-              fontWeight: 800,
-              fontVariantNumeric: "tabular-nums",
-            }}
-          >
-            {pct}%
-          </p>
-          <p style={{ margin: 0, fontSize: 12, color: "var(--text-tertiary)" }}>
-            {pct < 100 ? "Generating..." : "Almost ready..."}
-          </p>
-        </div>
+        <p
+          style={{
+            marginTop: 12,
+            color: "var(--accent)",
+            fontSize: 16,
+            fontWeight: 700,
+            fontVariantNumeric: "tabular-nums",
+          }}
+        >
+          {pct}%
+        </p>
 
         {/* Step checklist */}
         <ul
           style={{
             listStyle: "none",
             padding: 0,
-            margin: "0 auto 28px",
+            margin: "24px auto 0",
             textAlign: "left",
-            maxWidth: 360,
+            maxWidth: 340,
             display: "grid",
-            gap: 10,
+            gap: 12,
           }}
         >
           {steps.map((step) => {
             const done = displayProgress >= step.at;
-            const active = !done && displayProgress >= (steps[steps.indexOf(step) - 1]?.at ?? 0);
+            const active =
+              !done &&
+              displayProgress >= (steps[steps.indexOf(step) - 1]?.at ?? 0);
             return (
               <li
                 key={step.label}
@@ -244,8 +236,8 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
                   color: done
                     ? "var(--text-primary)"
                     : active
-                      ? "var(--accent)"
-                      : "var(--text-tertiary)",
+                    ? "var(--accent)"
+                    : "var(--text-secondary)",
                   opacity: done || active ? 1 : 0.4,
                   fontSize: "var(--text-base)",
                   fontFamily: "var(--font-lora)",
@@ -268,7 +260,6 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
                     background: done ? "var(--accent)" : "transparent",
                     color: done ? "var(--on-accent)" : "inherit",
                     fontSize: 14,
-                    transition: "all 300ms var(--ease-color)",
                   }}
                 >
                   {done ? (
@@ -295,15 +286,12 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
         <div
           key={factIndex}
           style={{
-            marginTop: 20,
-            padding: "16px 22px",
+            marginTop: 32,
+            padding: "14px 20px",
             borderRadius: "var(--radius-lg)",
             border: "1px solid color-mix(in srgb, var(--accent) 12%, transparent)",
             background: "color-mix(in srgb, var(--accent) 3%, transparent)",
             animation: "fadeUp 500ms var(--ease-reveal)",
-            maxWidth: 420,
-            marginLeft: "auto",
-            marginRight: "auto",
           }}
         >
           <p
@@ -343,7 +331,6 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
           <button
             type="button"
             onClick={onCancel}
-            className="interactive-focus"
             style={{
               marginTop: "var(--space-xl)",
               padding: "14px 28px",
@@ -356,9 +343,6 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
               fontWeight: 600,
               minHeight: 50,
               transition: "all 500ms var(--ease-spring)",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.background = "var(--bg-card-hover)";
@@ -373,7 +357,6 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
               e.currentTarget.style.transform = "scale(1)";
             }}
           >
-            <span aria-hidden="true" style={{ fontSize: 16 }}>←</span>
             Cancel
           </button>
         )}
