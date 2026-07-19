@@ -88,11 +88,29 @@ const Footer = ({ className }: { className?: string }) => {
       <p style={{ margin: 0, display: "flex", justifyContent: "center", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
         <span
           onClick={onBrandClick}
+          role="button"
+          tabIndex={0}
+          title="RealLearn — tap 5× for a surprise 💜"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              onBrandClick();
+            }
+          }}
           style={{
             fontWeight: 800,
             color: "var(--accent)",
-            cursor: "default",
+            cursor: "pointer",
             userSelect: "none",
+            borderRadius: "var(--radius-sm)",
+            padding: "2px 6px",
+            transition: "background 200ms var(--ease-color)",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "var(--accent-dim)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "transparent";
           }}
         >
           RealLearn

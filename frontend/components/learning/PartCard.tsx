@@ -50,31 +50,8 @@ const PartCardBase = ({
         onClick={onToggleCollapse}
         aria-expanded={false}
         aria-controls={contentId}
-        style={{
-          marginTop: varSpaceLg,
-          width: "100%",
-          height: 56,
-          borderRadius: "var(--radius-lg)",
-          border: "1px solid color-mix(in srgb, var(--correct) 30%, transparent)",
-          background: "var(--correct-bg)",
-          color: "var(--correct)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "0 20px",
-          cursor: "pointer",
-          minHeight: 48,
-          fontWeight: 600,
-          transition: "all 200ms var(--ease-color)",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = "scale(1.01)";
-          e.currentTarget.style.boxShadow = "var(--shadow-lg), var(--glass-edge)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = "scale(1)";
-          e.currentTarget.style.boxShadow = "var(--glass-shadow), var(--glass-edge)";
-        }}
+        className="part-done-bar"
+        style={{ marginTop: varSpaceLg }}
       >
         <span>✓ {part.title} · Completed</span>
         <strong>{score ?? 0}/{part.quiz?.length ?? 2}</strong>
@@ -95,18 +72,6 @@ const PartCardBase = ({
         padding: "clamp(28px, 6vw, 48px)",
         position: "relative",
         overflow: "hidden",
-        transition: "all 500ms var(--ease-spring)",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = "translateY(-4px) scale(1.005)";
-        e.currentTarget.style.boxShadow =
-          "var(--shadow-lg), var(--glass-edge), 0 0 0 4px var(--accent-glow)";
-        e.currentTarget.style.borderColor = "var(--border-accent)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = "translateY(0) scale(1)";
-        e.currentTarget.style.boxShadow = "var(--glass-shadow), var(--glass-edge)";
-        e.currentTarget.style.borderColor = "var(--border-subtle)";
       }}
     >
       <div
@@ -215,30 +180,8 @@ const PartCardBase = ({
                 type="button"
                 onClick={onStartQuiz}
                 aria-label={`Take quiz for Part ${part.partNumber}`}
-                className="animate-fade-up"
-                style={{
-                  marginTop: 4,
-                  width: "100%",
-                  height: 56,
-                  borderRadius: "var(--radius-lg)",
-                  border: "none",
-                  background: "var(--accent)",
-                  color: "var(--on-accent)",
-                  fontSize: "var(--text-base)",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                  boxShadow: "var(--shadow-sm)",
-                  minHeight: 52,
-                  transition: "all 300ms var(--ease-color)",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "scale(1.03)";
-                  e.currentTarget.style.boxShadow = "var(--shadow-lg), var(--glass-edge)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "scale(1)";
-                  e.currentTarget.style.boxShadow = "var(--shadow-sm)";
-                }}
+                className="part-cta animate-fade-up"
+                style={{ marginTop: 4 }}
               >
                 I&apos;ve Read This → Take Quiz
               </button>
@@ -253,27 +196,8 @@ const PartCardBase = ({
           onClick={onToggleCollapse}
           aria-expanded={true}
           aria-controls={contentId}
-          style={{
-            marginTop: varSpaceBase,
-            border: "1px solid var(--border-default)",
-            borderRadius: "var(--radius-md)",
-            background: "transparent",
-            color: "var(--text-secondary)",
-            padding: "12px 18px",
-            cursor: "pointer",
-            minHeight: 48,
-            transition: "all 500ms var(--ease-spring)",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = "var(--border-accent)";
-            e.currentTarget.style.color = "var(--accent)";
-            e.currentTarget.style.transform = "scale(1.03)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = "var(--border-default)";
-            e.currentTarget.style.color = "var(--text-secondary)";
-            e.currentTarget.style.transform = "scale(1)";
-          }}
+          className="btn-toggle"
+          style={{ marginTop: varSpaceBase }}
         >
           Collapse part
         </button>
