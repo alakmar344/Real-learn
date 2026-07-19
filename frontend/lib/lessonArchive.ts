@@ -1,5 +1,6 @@
 "use client";
 
+import { openDB, type IDBPDatabase } from "idb";
 import type { LessonJourney } from "@/types";
 
 /**
@@ -21,83 +22,81 @@ import type { LessonJourney } from "@/types";
  * Everything in this module is best-effort and never throws: if IndexedDB is
  * unavailable (SSR, private mode, ancient browser) the app degrades to the
  * previous behavior (regenerate on open) instead of breaking.
+ *
+ * The bespoke promise-wrapped IndexedDB boilerplate was replaced by `idb`,
+ * Jake Archibald's tiny, well-established Promise wrapper for IndexedDB —
+ * it owns the DB-open/upgrade + transaction lifecycle and gives us simple
+ * async `get`/`put`/`delete`/`clear` calls.
  */
 
 const DB_NAME = "reallearn-lesson-archive";
 const DB_VERSION = 1;
 const STORE = "lessons";
 
-function openDb(): Promise<IDBDatabase | null> {
-  if (typeof indexedDB === "undefined") return Promise.resolve(null);
-  return new Promise((resolve) => {
-    try {
-      const request = indexedDB.open(DB_NAME, DB_VERSION);
-      request.onupgradeneeded = () => {
-        const db = request.result;
-        if (!db.objectStoreNames.contains(STORE)) {
-          db.createObjectStore(STORE);
-        }
-      };
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => resolve(null);
-      request.onblocked = () => resolve(null);
-    } catch {
-      resolve(null);
-    }
-  });
-}
+let dbPromise: Promise<IDBPDatabase | null> | null = null;
 
-/** Run one operation on the lessons store; resolves fallback on any failure. */
-async function withStore<T>(
-  mode: IDBTransactionMode,
-  fallback: T,
-  operation: (store: IDBObjectStore) => IDBRequest
-): Promise<T> {
-  const db = await openDb();
-  if (!db) return fallback;
-  return new Promise<T>((resolve) => {
+function openDb(): Promise<IDBPDatabase | null> {
+  if (dbPromise) return dbPromise;
+  dbPromise = (async () => {
+    if (typeof indexedDB === "undefined") return null;
     try {
-      const tx = db.transaction(STORE, mode);
-      const request = operation(tx.objectStore(STORE));
-      request.onsuccess = () => {
-        resolve(request.result as T);
-        db.close();
-      };
-      request.onerror = () => {
-        resolve(fallback);
-        db.close();
-      };
+      return await openDB(DB_NAME, DB_VERSION, {
+        upgrade(db) {
+          if (!db.objectStoreNames.contains(STORE)) {
+            db.createObjectStore(STORE);
+          }
+        },
+      });
     } catch {
-      resolve(fallback);
-      db.close();
+      return null;
     }
-  });
+  })();
+  return dbPromise;
 }
 
 /** Persist a full lesson body keyed by journey id. Fire-and-forget safe. */
 export async function saveArchivedLesson(id: string, lesson: LessonJourney): Promise<void> {
   if (!id || !lesson) return;
-  await withStore<unknown>("readwrite", undefined, (store) => store.put(lesson, id));
+  const db = await openDb();
+  if (!db) return;
+  try {
+    await db.put(STORE, lesson, id);
+  } catch {
+    // best-effort persistence — never throw
+  }
 }
 
 /** Load an archived lesson body, or null if we don't have one. */
 export async function getArchivedLesson(id: string): Promise<LessonJourney | null> {
   if (!id) return null;
-  const result = await withStore<LessonJourney | null | undefined>(
-    "readonly",
-    null,
-    (store) => store.get(id)
-  );
-  return result ?? null;
+  const db = await openDb();
+  if (!db) return null;
+  try {
+    return (await db.get(STORE, id)) ?? null;
+  } catch {
+    return null;
+  }
 }
 
 /** Drop one archived lesson (journey deleted from history). */
 export async function deleteArchivedLesson(id: string): Promise<void> {
   if (!id) return;
-  await withStore<unknown>("readwrite", undefined, (store) => store.delete(id));
+  const db = await openDb();
+  if (!db) return;
+  try {
+    await db.delete(STORE, id);
+  } catch {
+    // best-effort — never throw
+  }
 }
 
 /** Drop every archived lesson (used by "Delete My Data"). */
 export async function clearArchivedLessons(): Promise<void> {
-  await withStore<unknown>("readwrite", undefined, (store) => store.clear());
+  const db = await openDb();
+  if (!db) return;
+  try {
+    await db.clear(STORE);
+  } catch {
+    // best-effort — never throw
+  }
 }

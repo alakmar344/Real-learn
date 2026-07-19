@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { LRUCache } from "lru-cache";
 
 const DEFAULT_MODERATION_TIMEOUT_MS = 8000;
 const configuredTimeoutMs = Number(process.env.MODERATION_TIMEOUT_MS);
@@ -20,29 +21,20 @@ const MODERATION_CACHE_TTL_MS =
     ? configuredCacheTtlMs
     : DEFAULT_MODERATION_CACHE_TTL_MS;
 const MODERATION_CACHE_MAX_ENTRIES = 500;
-const verdictCache = new Map();
+// `lru-cache` provides recency-eviction + capacity cap; the per-entry TTL is
+// set per write so every verdict expires on its own clock.
+const verdictCache = new LRUCache({ max: MODERATION_CACHE_MAX_ENTRIES });
 
 function verdictCacheKey(kind, snippet) {
   return crypto.createHash("sha256").update(`${kind}|${snippet}`).digest("hex");
 }
 
 function verdictCacheGet(key) {
-  const entry = verdictCache.get(key);
-  if (!entry) return null;
-  if (entry.expiresAt <= Date.now()) {
-    verdictCache.delete(key);
-    return null;
-  }
-  return entry.verdict;
+  return verdictCache.get(key);
 }
 
 function verdictCacheSet(key, verdict) {
-  if (verdictCache.has(key)) verdictCache.delete(key);
-  verdictCache.set(key, { verdict, expiresAt: Date.now() + MODERATION_CACHE_TTL_MS });
-  while (verdictCache.size > MODERATION_CACHE_MAX_ENTRIES) {
-    const oldestKey = verdictCache.keys().next().value;
-    verdictCache.delete(oldestKey);
-  }
+  verdictCache.set(key, verdict, { ttl: MODERATION_CACHE_TTL_MS });
 }
 
 function isModerationEnabled() {

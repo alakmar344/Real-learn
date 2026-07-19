@@ -2,6 +2,8 @@ import crypto from "node:crypto";
 import compression from "compression";
 import cors from "cors";
 import express from "express";
+import expressRateLimit from "express-rate-limit";
+import { LRUCache } from "lru-cache";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -179,78 +181,73 @@ const TTS_RATE_LIMIT_MAX = 30;
 //   2. Each IP may create at most MAX_TOKEN_KEYS_PER_IP distinct token buckets
 //      per window. Beyond that the request is rejected outright (fail closed):
 //      spraying unique fake tokens becomes self-defeating instead of a
-//      memory-growth vector (previously one IP could insert one Map entry per
-//      request between cleanup ticks).
-//   3. The whole store is hard-capped; when full, expired entries are purged
-//      inline and, as a last resort, the oldest entry is evicted — the Map can
-//      never grow unboundedly no matter the traffic shape.
+//      memory-growth vector.
+//   3. The limiter store is bounded by express-rate-limit's internal LRU so it
+//      can never grow unboundedly no matter the traffic shape.
+//
+// The custom sliding-window Map was replaced by `express-rate-limit`, the
+// de-facto standard request-rate limiter for Express. It owns the per-window
+// counting, expiry, and store-bounding; we keep the security-critical key
+// logic (per-token vs IP backstop, token-shape gate, spray cap) via its
+// `keyGenerator` + `limit` hooks.
 const JWT_SHAPE_PATTERN = /^[\w-]{4,2048}\.[\w-]{4,4096}\.[\w-]{4,2048}$/;
 const MAX_TOKEN_KEYS_PER_IP = 200; // generous for real NATs (schools/offices)
-const MAX_RATE_LIMIT_STORE_KEYS = 100_000;
+// LRU-capped set of (ip -> set of token buckets) used for the spray gate.
+const ipTokenBuckets = new LRUCache({
+  max: 10_000,
+  ttl: 60_000,
+});
+
+function tokenFromRequest(req) {
+  const rawToken = extractBearerToken(req);
+  return rawToken && JWT_SHAPE_PATTERN.test(rawToken) ? rawToken : null;
+}
+
+// Fail closed when one IP mints too many distinct token buckets in a single
+// window — that traffic shape is a token-spray attack, not a legitimate NAT.
+function isTokenSpray(ip, tokenKey) {
+  if (!ipTokenBuckets.has(ip)) {
+    ipTokenBuckets.set(ip, new Set());
+  }
+  const buckets = ipTokenBuckets.get(ip);
+  if (buckets.has(tokenKey)) return false;
+  buckets.add(tokenKey);
+  return buckets.size > MAX_TOKEN_KEYS_PER_IP;
+}
+
 function createRateLimiter({ windowMs, max, ipMultiplier = 5 }) {
-  const store = new Map();
-  const purgeExpired = (now) => {
-    for (const [key, record] of store) {
-      if (now > record.resetAt) store.delete(key);
-    }
-  };
-  const hit = (key, limit, now) => {
-    const record = store.get(key);
-    if (!record || now > record.resetAt) {
-      if (!record && store.size >= MAX_RATE_LIMIT_STORE_KEYS) {
-        purgeExpired(now);
-        if (store.size >= MAX_RATE_LIMIT_STORE_KEYS) {
-          // Evict the oldest-created entry (Map preserves insertion order).
-          const oldestKey = store.keys().next().value;
-          if (oldestKey !== undefined) store.delete(oldestKey);
-        }
-      }
-      store.set(key, { count: 1, resetAt: now + windowMs });
-      return false;
-    }
-    record.count += 1;
-    return record.count > limit;
-  };
-  return {
-    isLimited(req) {
-      const now = Date.now();
+  return expressRateLimit({
+    windowMs,
+    // Per-request limit: IP backstop gets a higher cap when a well-formed
+    // token is present (legitimate users behind shared NAT), else the base cap.
+    limit: (req) => (tokenFromRequest(req) ? max * ipMultiplier : max),
+    standardHeaders: true,
+    legacyHeaders: false,
+    // Key combines the IP backstop with a per-token bucket. express-rate-limit
+    // counts each distinct key in its own window, so this yields both gates.
+    keyGenerator: (req) => {
       const ip = req.ip || req.socket?.remoteAddress || "unknown";
-      const rawToken = extractBearerToken(req);
-      // Hash the WHOLE token (bounded by the shape pattern to prevent CPU
-      // amplification from megabyte-sized tokens). A prefix of a JWT is just
-      // the base64 header, which is identical for every user.
-      const token =
-        rawToken && JWT_SHAPE_PATTERN.test(rawToken) ? rawToken : null;
-      let tokenLimited = false;
-      if (token) {
-        const tokenKey = `user:${crypto.createHash("sha256").update(token).digest("hex").slice(0, 32)}`;
-        const isNewTokenBucket = !store.has(tokenKey);
-        if (isNewTokenBucket) {
-          // Fail closed when one IP mints too many distinct token buckets in
-          // a single window — that traffic shape is a token-spray attack, not
-          // a legitimate NAT.
-          const sprayLimited = hit(`iptok:${ip}`, MAX_TOKEN_KEYS_PER_IP, now);
-          if (sprayLimited) return true;
-        }
-        tokenLimited = hit(tokenKey, max, now);
-      }
-      const ipLimited = hit(`ip:${ip}`, token ? max * ipMultiplier : max, now);
-      return tokenLimited || ipLimited;
+      const token = tokenFromRequest(req);
+      if (!token) return `ip:${ip}`;
+      const tokenKey = `user:${crypto
+        .createHash("sha256")
+        .update(token)
+        .digest("hex")
+        .slice(0, 32)}`;
+      if (isTokenSpray(ip, tokenKey)) return `spray:${ip}`;
+      return `ip:${ip}|${tokenKey}`;
     },
-    cleanup() {
-      purgeExpired(Date.now());
+    handler: (_req, res) => {
+      res.setHeader("Retry-After", Math.ceil(windowMs / 1000));
+      res.status(429).json({ error: "Too many requests. Please slow down." });
     },
-  };
+  });
 }
 
 const ttsRateLimiter = createRateLimiter({
   windowMs: TTS_RATE_LIMIT_WINDOW_MS,
   max: TTS_RATE_LIMIT_MAX,
 });
-setInterval(() => ttsRateLimiter.cleanup(), TTS_RATE_LIMIT_WINDOW_MS).unref?.();
-function isTtsRateLimited(req) {
-  return ttsRateLimiter.isLimited(req);
-}
 
 // ── TTS response cache ──
 // BANDWIDTH: synthesized audio is by far the largest payload this server
@@ -259,35 +256,20 @@ function isTtsRateLimited(req) {
 // browser can revalidate to a 9-byte 304 instead of re-downloading megabytes.
 const TTS_CACHE_MAX_BYTES = 24 * 1024 * 1024; // 24 MB in-memory LRU
 const TTS_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-const ttsCache = new Map(); // key -> { buffer, expiresAt }
-let ttsCacheBytes = 0;
+// `lru-cache` with `maxSize`/`sizeCalculation` enforces a byte budget and
+// evicts least-recently-used entries automatically — replacing the hand-rolled
+// byte-accounting Map below. Each entry carries its own 24h TTL.
+const ttsCache = new LRUCache({
+  maxSize: TTS_CACHE_MAX_BYTES,
+  sizeCalculation: (buffer) => buffer.length,
+  ttl: TTS_CACHE_TTL_MS,
+});
 function ttsCacheGet(key) {
-  const entry = ttsCache.get(key);
-  if (!entry) return null;
-  if (entry.expiresAt <= Date.now()) {
-    ttsCacheBytes -= entry.buffer.length;
-    ttsCache.delete(key);
-    return null;
-  }
-  // Refresh recency (insertion-ordered Map as LRU).
-  ttsCache.delete(key);
-  ttsCache.set(key, entry);
-  return entry.buffer;
+  return ttsCache.get(key) ?? null;
 }
 function ttsCacheSet(key, buffer) {
   if (buffer.length > TTS_CACHE_MAX_BYTES) return;
-  const existing = ttsCache.get(key);
-  if (existing) {
-    ttsCacheBytes -= existing.buffer.length;
-    ttsCache.delete(key);
-  }
-  ttsCache.set(key, { buffer, expiresAt: Date.now() + TTS_CACHE_TTL_MS });
-  ttsCacheBytes += buffer.length;
-  while (ttsCacheBytes > TTS_CACHE_MAX_BYTES && ttsCache.size > 0) {
-    const oldestKey = ttsCache.keys().next().value;
-    ttsCacheBytes -= ttsCache.get(oldestKey).buffer.length;
-    ttsCache.delete(oldestKey);
-  }
+  ttsCache.set(key, buffer);
 }
 
 // SECURITY: rate/pitch/volume are interpolated into the SSML sent to the TTS
@@ -356,10 +338,6 @@ const apiRateLimiter = createRateLimiter({
   windowMs: RATE_LIMIT_WINDOW_MS,
   max: RATE_LIMIT_MAX_REQUESTS,
 });
-function isRateLimited(req) {
-  return apiRateLimiter.isLimited(req);
-}
-setInterval(() => apiRateLimiter.cleanup(), RATE_LIMIT_WINDOW_MS).unref?.();
 
 const DEFAULT_LESSON_TIMEOUT_MS = 300000;
 const MIN_LESSON_TIMEOUT_MS = 30000;
@@ -689,18 +667,11 @@ app.use((req, res, next) => {
   next();
 });
 
-function rateLimit(req, res, next) {
-  if (isRateLimited(req)) {
-    console.warn("[rate-limit] Request blocked", {
-      endpoint: req.path,
-      ip: req.ip,
-      authenticated: Boolean(extractBearerToken(req)),
-    });
-    res.setHeader("Retry-After", Math.ceil(RATE_LIMIT_WINDOW_MS / 1000));
-    return res.status(429).json({ error: "Too many requests. Please slow down." });
-  }
-  next();
-}
+// Routes below register `rateLimit(req, res, next)` as middleware. With the
+// custom limiter gone, that is simply the express-rate-limit middleware
+// instance — it counts the request in its own window, sets RateLimit headers,
+// and short-circuits with 429 + Retry-After when the budget is exhausted.
+const rateLimit = apiRateLimiter;
 
 app.get("/health", async (_req, res) => {
   const health = { ok: true, dependencies: {} };
@@ -1157,15 +1128,12 @@ app.get("/api/export-data", rateLimit, requireAuth, async (req, res) => {
 
 // Security: TTS requires auth like every other data endpoint — it drives an
 // external synthesis service (network/CPU/disk cost) and fills an in-memory
-// cache, so it must not be an anonymous cost amplifier.
-app.post("/api/tts", rateLimit, requireAuth, async (req, res) => {
+// cache, so it must not be an anonymous cost amplifier. Uses its own
+// dedicated limiter (ttsRateLimiter) separate from the general API budget.
+app.post("/api/tts", ttsRateLimiter, requireAuth, async (req, res) => {
   try {
     if (!EdgeTTS) {
       return res.status(500).json({ error: "TTS service is not available." });
-    }
-    if (isTtsRateLimited(req)) {
-      res.setHeader("Retry-After", Math.ceil(TTS_RATE_LIMIT_WINDOW_MS / 1000));
-      return res.status(429).json({ error: "Too many requests. Please slow down." });
     }
 
     const text = typeof req.body?.text === "string" ? req.body.text.trim() : "";

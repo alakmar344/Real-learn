@@ -35,7 +35,9 @@ The early commits read like a war diary:
 - **May 6** — `523e48f`: "Refactor: simplify gemma thinking filter regex." The spell improved.
 - **May 6** — `c178ef2`: "Fix: handle multiline reasoning prefixes in parser." The enemy adapted; the hero adapted faster.
 
-This pattern repeated **ten times** in a single day. Each iteration stripped another layer of Gemma's chaotic reasoning. A 7-stage JSON repair pipeline was forged: strip thinking blocks → remove markdown fences → extract JSON structure → strip trailing commas → close truncated brackets → chop to last complete bracket → retry with comma fix.
+This pattern repeated **ten times** in a single day. Each iteration stripped another layer of Gemma's chaotic reasoning. A JSON repair pipeline was forged: strip thinking blocks → remove markdown fences → extract JSON structure → strip trailing commas → close truncated brackets → chop to last complete bracket → retry with comma fix.
+
+That hand-forged pipeline lived on for months — until a later cleanup (July 19) replaced it with the battle-tested **`jsonrepair`** library as its primary stage, keeping the bespoke steps only as a final fallback for any shape `jsonrepair` doesn't cover. The same day swept out the other home-grown primitives: the bespoke in-memory LRUs (lesson/news/moderation/TTS caches) became **`lru-cache`**, the sliding-window rate limiter became **`express-rate-limit`**, the manual IndexedDB wrapper became **`idb`**, and the custom SSE frame splitter became **`eventsource-parser`**.
 
 ### The SSE Abyss
 

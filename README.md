@@ -419,6 +419,9 @@ RealLearn was designed to fix concrete, everyday learning frustrations:
 | Styling | **Tailwind CSS** + custom CSS variables | Token-based Japanese-inspired design system, fluid type, bespoke keyframe animations |
 | Speech | **Web Speech API** | Voice input (SpeechRecognition) and read-aloud (speechSynthesis) |
 | Sharing | **Canvas API** + Web Share API | Generate and share 1080x1920 result cards |
+| Local persistence | **`idb`** | Promise-based IndexedDB wrapper for the full-lesson archive (hundreds-of-MB quota, async, never blocks render) |
+| Stream parsing | **`eventsource-parser`** | Spec-compliant SSE frame parser (same library used by the Vercel AI SDK & OpenAI SDK) for the lesson stream |
+| In-memory cache | **`lru-cache`** | Bounded LRU for the TTS audio blob cache |
 
 ### Backend — deployed on **Render**
 
@@ -431,7 +434,10 @@ RealLearn was designed to fix concrete, everyday learning frustrations:
 | News | **Serper API** | Real-world news context for Part 3 |
 | Auth | **Clerk JWT** verification via `jose` | Remote JWKS + offline PEM fallback |
 | Persistence | **MongoDB** | Consent records, moderation logs, lesson cache |
-| Reliability | Custom-built | Output validation, multi-stage JSON repair, retries, circuit breaker, concurrency limits, rate limiting, two-tier caching, timeout handling |
+| Rate limiting | **`express-rate-limit`** | Per-user (hashed token) + per-IP sliding-window request limits |
+| In-memory cache | **`lru-cache`** | Bounded LRU tiers (lesson, news, moderation verdicts, TTS audio) |
+| JSON repair | **`jsonrepair`** | Battle-tested repair of truncated/malformed model JSON, primary stage of the repair pipeline |
+| Reliability | Custom-built | Output validation, multi-stage JSON repair, retries, circuit breaker, concurrency limits, two-tier caching, timeout handling |
 
 ---
 
@@ -483,17 +489,17 @@ This section documents every file in the repository and what it does — so you 
 
 | File | What It Does |
 |---|---|
-| `package.json` | Backend manifest. ES Modules, Express + Cloudflare + jose + MongoDB deps. `npm start` boots the server. |
+| `package.json` | Backend manifest. ES Modules, Express + Cloudflare + jose + MongoDB deps. Adds `lru-cache` (bounded in-memory caches), `express-rate-limit` (request rate limiting), and `jsonrepair` (model-JSON repair). `npm start` boots the server. |
 | `.env.example` | Template for every environment variable with descriptions. Copy to `.env` and fill in your keys. |
-| `src/server.js` | **The heart of the backend.** Express app with CORS, security headers, JSON body parsing (100KB limit), rate limiting (sliding window, per-user hashed token keys), SSE streaming with heartbeat pings, concurrency gates, failure-streak tracking, and all 8 API endpoints. Validates startup config on boot. |
+| `src/server.js` | **The heart of the backend.** Express app with CORS, security headers, JSON body parsing (100KB limit), rate limiting (**`express-rate-limit`** — sliding window, per-user hashed token keys, IP backstop, token-spray guard), SSE streaming with heartbeat pings, concurrency gates, failure-streak tracking, and all 8 API endpoints. Validates startup config on boot. |
 | `src/validation.js` | Journey normalization and schema validation. `normalizeJourney()` salvages partial output — filters malformed quiz questions, drops unusable parts, backfills missing key takeaways. `isValidJourney()` accepts 1-N parts (up to mode max) with 1-2 quiz questions each. Mode-aware: "explain" expects 3 parts, "fast" expects 1. |
-| `src/lib/gemma.js` | **Gemma 4 client.** Direct `fetch` to Cloudflare Workers AI (OpenAI-compatible endpoint). Handles retries on 429/403/5xx/network errors with exponential backoff, timeout circuit breaker (opens after N consecutive timeouts, auto-recovers after cooldown), thinking-tag stripping, and a **7-stage JSON repair pipeline** (strip thinking blocks -> remove markdown fences -> extract JSON structure -> strip trailing commas -> close truncated brackets -> chop to last complete bracket -> retry with comma fix). |
+| `src/lib/gemma.js` | **Gemma 4 client.** Direct `fetch` to Cloudflare Workers AI (OpenAI-compatible endpoint). Handles retries on 429/403/5xx/network errors with exponential backoff, timeout circuit breaker (opens after N consecutive timeouts, auto-recovers after cooldown), thinking-tag stripping, and a JSON repair pipeline that uses **`jsonrepair`** as its primary stage (battle-tested truncation/trailing-comma/fence repair) with a hand-rolled fallback for any shape it doesn't cover. |
 | `src/lib/prompts.js` | Two system prompts: `GENERATE_LESSON_PROMPT` (3-part Explain mode with voice/tone guidance, safety rules, structured JSON schema) and `GENERATE_FAST_ANSWER_PROMPT` (1-part Fast mode with "do not think out loud" instruction, shorter output budget). Both enforce strict JSON output schemas. |
-| `src/lib/serper.js` | Real-world news fetcher. Calls Serper's news endpoint with language-aware search (BCP-47 codes for all 12 app languages), 6-second timeout, 10-minute in-memory cache (200 entries). Returns formatted context with titles, dates, snippets, and source URLs. Gracefully degrades on failure. |
+| `src/lib/serper.js` | Real-world news fetcher. Calls Serper's news endpoint with language-aware search (BCP-47 codes for all 12 app languages), 6-second timeout, 10-minute in-memory cache (**`lru-cache`**, 200 entries). Returns formatted context with titles, dates, snippets, and source URLs. Gracefully degrades on failure. |
 | `src/lib/auth.js` | Clerk JWT verification. Remote JWKS (rotating keys) as primary, offline PEM public key as fallback. Issuer trust: configured Frontend API, explicit allowlist, `*.reallearn.site` — wildcard dev domains only in non-production. `extractBearerToken()`, `inspectToken()` (diagnostic), `requireAuth()` middleware. |
 | `src/lib/contentGuard.js` | Regex-based content safety filter. Targets genuinely harmful *intent* (CSAM, weapons manufacturing, violence instructions, self-harm methods, hate speech generation, cybercrime tutorials) while preserving educational content about sensitive topics. Separate patterns for user input and AI output. |
-| `src/lib/moderation.js` | LLM-powered content classifier. Runs Gemma as a safety judge with a dedicated prompt, 8-second timeout, temperature 0 for deterministic output, 15-minute verdict cache (500 entries). **Fails open** — a moderation timeout allows content through rather than blocking the user. |
-| `src/lib/lessonCache.js` | Two-tier lesson cache. Tier 1: in-memory LRU (200 entries). Tier 2: MongoDB with TTL index (6-hour default). Deterministic cache keys (SHA-256 of normalized question + language + level + mode). Fire-and-forget writes. Cache hits bypass Serper, Gemma, and both moderation passes. |
+| `src/lib/moderation.js` | LLM-powered content classifier. Runs Gemma as a safety judge with a dedicated prompt, 8-second timeout, temperature 0 for deterministic output, 15-minute verdict cache (**`lru-cache`**, 500 entries). **Fails open** — a moderation timeout allows content through rather than blocking the user. |
+| `src/lib/lessonCache.js` | Two-tier lesson cache. Tier 1: in-memory LRU (**`lru-cache`**, 200 entries, 6-hour TTL per entry). Tier 2: MongoDB with TTL index (6-hour default). Deterministic cache keys (SHA-256 of normalized question + language + level + mode). Fire-and-forget writes. Cache hits bypass Serper, Gemma, and both moderation passes. |
 | `src/lib/mongodb.js` | MongoDB connection helper. Singleton client with lazy connection. Reads `MONGODB_URI` (or `MONGODB_URL`) and `MONGODB_DB` from environment. |
 
 ### Frontend (`frontend/`)
@@ -570,9 +576,9 @@ This section documents every file in the repository and what it does — so you 
 
 | File | What It Does |
 |---|---|
-| `useLesson.ts` | **The lesson generation hook.** Manages the full lifecycle: sends POST to `/api/generate-lesson`, parses SSE stream (event/data blocks), handles ping/lesson/done/error events, idle timeout detection (default 120s), automatic retry with exponential backoff (default 2 attempts, 1.5s base, 8s cap), retryable error classification (status codes, network errors, timeout messages). |
+| `useLesson.ts` | **The lesson generation hook.** Manages the full lifecycle: sends POST to `/api/generate-lesson`, parses the SSE stream with **`eventsource-parser`** (spec-compliant, used by the Vercel AI SDK & OpenAI SDK — handles `\r\n`/partial-frame edge cases), handles ping/lesson/done/error events, idle timeout detection (default 120s), automatic retry with exponential backoff (default 2 attempts, 1.5s base, 8s cap), retryable error classification (status codes, network errors, timeout messages). |
 | `useReadingTimer.ts` | Reading timer hook. Tracks elapsed time against a configurable duration (default 10s). Returns `isComplete`, `remainingMs`, `progress` (0-100). Updates every 100ms. |
-| `useSpeech.ts` | Speech utilities. `useTextToSpeech` — reads text aloud with voice scoring (Google neural, Microsoft natural, Apple enhanced preferred), sentence chunking, rate/pitch tuning. `useSpeechRecognition` — voice input with interim results, language-aware, toggle start/stop. `markdownToPlainText` — strips markdown for clean TTS. |
+| `useSpeech.ts` | Speech utilities. `useTextToSpeech` — reads text aloud with voice scoring (Google neural, Microsoft natural, Apple enhanced preferred), sentence chunking, rate/pitch tuning, and an in-memory **`lru-cache`** blob cache (byte-budgeted) so replays reuse audio instead of re-downloading. `useSpeechRecognition` — voice input with interim results, language-aware, toggle start/stop. `markdownToPlainText` — strips markdown for clean TTS. |
 | `useMounted.ts` | Hydration guard. Returns `true` only after client-side mount. Gates localStorage-dependent rendering to prevent hydration mismatches. |
 
 #### Stores (`store/`)
@@ -608,7 +614,7 @@ This section documents every file in the repository and what it does — so you 
 
 | File | What It Does |
 |---|---|
-| `package.json` | Frontend manifest. Next.js 15, React 19, Clerk, Zustand, React Markdown, Tailwind CSS. Scripts: `dev`, `build`, `start`, `lint`, `verify:quiz`. |
+| `package.json` | Frontend manifest. Next.js 15, React 19, Clerk, Zustand, React Markdown, Tailwind CSS. Adds **`idb`** (Promise-based IndexedDB wrapper for the lesson archive), **`eventsource-parser`** (SSE stream parsing), and **`lru-cache`** (bounded in-memory TTS blob cache). Scripts: `dev`, `build`, `start`, `lint`, `verify:quiz`. |
 | `next.config.js` | Next.js config. React strict mode, Clerk image domain, security headers (HSTS, CSP, X-Frame-Options, etc.), Permissions-Policy with microphone=(self) for voice input. |
 | `tailwind.config.js` | Tailwind config. Custom color palette (background, surface, card, accent, text hierarchy, subject colors), font families (Inter, Playfair Display, JetBrains Mono), border radius scale, 12 custom animations with keyframes. |
 | `tsconfig.json` | TypeScript config. Strict mode, ES2017 target, bundler module resolution, path alias `@/*`. |
