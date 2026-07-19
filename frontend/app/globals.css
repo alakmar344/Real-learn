@@ -2003,80 +2003,6 @@ a:active {
   }
 }
 
-.app-sidebar-toggle {
-  display: none;
-}
-
-/* Close button lives inside the drawer; only shown on mobile where the drawer
-   overlays content and the hamburger toggle is hidden behind it. */
-.app-sidebar-close {
-  display: none;
-}
-
-@media (max-width: 900px) {
-  .app-sidebar-close {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    margin-left: auto;
-    width: 38px;
-    height: 38px;
-    flex-shrink: 0;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border-subtle);
-    background: transparent;
-    color: var(--text-secondary);
-    cursor: pointer;
-    font-size: 16px;
-    line-height: 1;
-  }
-  .app-main {
-    margin-left: 0;
-  }
-  .app-sidebar {
-    transform: translateX(-100%);
-    box-shadow: var(--shadow-lg);
-    visibility: hidden;
-    transition:
-      transform 400ms var(--ease-reveal),
-      visibility 0s linear 400ms;
-  }
-  .app-sidebar.open {
-    transform: translateX(0);
-    visibility: visible;
-    transition: transform 400ms var(--ease-reveal);
-  }
-  .app-sidebar-backdrop.open {
-    display: block;
-    position: fixed;
-    inset: 0;
-    z-index: 70;
-    background: var(--scrim);
-    -webkit-backdrop-filter: blur(12px) saturate(160%);
-    backdrop-filter: blur(12px) saturate(160%);
-  }
-  .app-sidebar-toggle {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    position: fixed;
-    top: 14px;
-    left: 14px;
-    z-index: 65;
-    width: 42px;
-    height: 42px;
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border-subtle);
-    background: var(--bg-glass);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-    color: var(--text-primary);
-    cursor: pointer;
-    font-size: 20px;
-    box-shadow: var(--glass-shadow), var(--glass-edge);
-  }
-}
-
 @media (max-width: 640px) {
   .markdown-content {
     font-size: var(--text-sm);
@@ -2119,10 +2045,19 @@ a:active {
   contain: layout style;
 }
 
-/* Sidebar history scroll area — limit paint to the visible list. */
-.app-sidebar {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 100%;
+/* Sidebar scroll area — limit paint to the visible list. */
+.app-sidebar *::-webkit-scrollbar {
+  width: 3px;
+}
+.app-sidebar *::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: 999px;
+}
+.app-sidebar *::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+.app-sidebar *::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 /* Footer is below the fold on most pages — lazy render it. */

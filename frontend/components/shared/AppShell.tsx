@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import Sidebar from "@/components/shared/Sidebar";
 import dynamic from "next/dynamic";
+import { SidebarContext } from "@/contexts/SidebarContext";
 
 const PreferenceModal = dynamic(() => import("@/components/shared/PreferenceModal"), {
   ssr: false,
@@ -16,7 +17,6 @@ const EngagementLayer = dynamic(() => import("@/components/shared/EngagementLaye
 });
 
 const HIDE_SIDEBAR_PREFIXES = ["/sign-in", "/sign-up"];
-const OPEN_SIDEBAR_EVENT = "reallearn:open-sidebar";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -57,12 +57,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     };
   }, [open]);
 
-  useEffect(() => {
-    const handler = () => setOpen(true);
-    window.addEventListener(OPEN_SIDEBAR_EVENT, handler);
-    return () => window.removeEventListener(OPEN_SIDEBAR_EVENT, handler);
-  }, []);
-
   if (hideSidebar) {
     return (
       <>
@@ -73,11 +67,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="app-shell">
-      <Sidebar open={open} onClose={() => setOpen(false)} />
-      <div id="main-content" className="app-main">{children}</div>
-      <EngagementLayer />
-      <PreferenceModal open={showFirstPrefs} onClose={() => setShowFirstPrefs(false)} />
-    </div>
+    <SidebarContext.Provider value={{ open, setOpen }}>
+      <div className="app-shell">
+        <Sidebar open={open} onClose={() => setOpen(false)} />
+        <div id="main-content" className="app-main">{children}</div>
+        <EngagementLayer />
+        <PreferenceModal open={showFirstPrefs} onClose={() => setShowFirstPrefs(false)} />
+      </div>
+    </SidebarContext.Provider>
   );
 }

@@ -1,53 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import ProgressHub from "@/components/shared/ProgressHub";
+import { useSidebar } from "@/contexts/SidebarContext";
 
 interface Props {
   compact?: boolean;
 }
 
-const OPEN_SIDEBAR_EVENT = "reallearn:open-sidebar";
-
 export default function Navbar({ compact = false }: Props) {
   const pathname = usePathname();
   const { isSignedIn } = useAuth();
+  const { open, setOpen } = useSidebar();
 
   useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
-
-  const [mobileOpen, setMobileOpen] = useState(false);
-
-  useEffect(() => {
-    if (!mobileOpen) return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setMobileOpen(false);
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  }, [mobileOpen]);
-
-  const navLinks = [
-    { href: "/", label: "Home", icon: "🏠" },
-    { href: "/learn", label: "Learn", icon: "📚" },
-    { href: "/progress", label: "Progress", icon: "📈" },
-    { href: "/settings", label: "Settings", icon: "⚙️" },
-  ];
+    setOpen(false);
+  }, [pathname, setOpen]);
 
   const handleToggle = () => {
-    if (!mobileOpen) {
-      window.dispatchEvent(new Event(OPEN_SIDEBAR_EVENT));
-    }
-    setMobileOpen(!mobileOpen);
+    setOpen(!open);
   };
 
   return (
@@ -79,13 +53,13 @@ export default function Navbar({ compact = false }: Props) {
           gap: 16,
         }}
       >
-        {/* Mobile hamburger — triggers AppShell sidebar */}
+        {/* Mobile hamburger — left side on mobile */}
         {isSignedIn && (
           <button
             type="button"
             className="mobile-nav-toggle"
-            aria-label={mobileOpen ? "Close menu" : "Open menu"}
-            aria-expanded={mobileOpen}
+            aria-label={open ? "Close menu" : "Open menu"}
+            aria-expanded={open}
             onClick={handleToggle}
             style={{
               display: "flex",
@@ -120,7 +94,7 @@ export default function Navbar({ compact = false }: Props) {
               strokeLinecap="round"
               style={{ transition: "transform 300ms var(--ease-spring)" }}
             >
-              {mobileOpen ? (
+              {open ? (
                 <>
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
@@ -209,7 +183,12 @@ export default function Navbar({ compact = false }: Props) {
           }}
           className="desktop-nav"
         >
-          {navLinks.map((link) => (
+          {[
+            { href: "/", label: "Home", icon: "🏠" },
+            { href: "/learn", label: "Learn", icon: "📚" },
+            { href: "/progress", label: "Progress", icon: "📈" },
+            { href: "/settings", label: "Settings", icon: "⚙️" },
+          ].map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -244,64 +223,6 @@ export default function Navbar({ compact = false }: Props) {
             </Link>
           ))}
         </nav>
-
-        {/* Mobile hamburger — triggers AppShell sidebar */}
-        {isSignedIn && (
-          <button
-            type="button"
-            className="mobile-nav-toggle"
-            aria-label={mobileOpen ? "Close menu" : "Open menu"}
-            aria-expanded={mobileOpen}
-            onClick={handleToggle}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: 40,
-              height: 40,
-              borderRadius: "var(--radius-md)",
-              border: "1px solid var(--border-subtle)",
-              background: "var(--bg-card)",
-              color: "var(--text-secondary)",
-              cursor: "pointer",
-              marginRight: 8,
-              transition: "all 250ms var(--ease-color)",
-              flexShrink: 0,
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "var(--border-accent)";
-              e.currentTarget.style.color = "var(--accent)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "var(--border-subtle)";
-              e.currentTarget.style.color = "var(--text-secondary)";
-            }}
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              style={{ transition: "transform 300ms var(--ease-spring)" }}
-            >
-              {mobileOpen ? (
-                <>
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </>
-              ) : (
-                <>
-                  <line x1="3" y1="6" x2="21" y2="6" />
-                  <line x1="3" y1="12" x2="21" y2="12" />
-                  <line x1="3" y1="18" x2="21" y2="18" />
-                </>
-              )}
-            </svg>
-          </button>
-        )}
       </div>
 
       <style jsx>{`
