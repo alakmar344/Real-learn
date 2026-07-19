@@ -13,10 +13,6 @@ interface Props {
 }
 
 const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
-  // Derive the quiz length from the actual questions instead of hardcoding 2.
-  // The backend can legitimately deliver a salvaged single-question quiz
-  // (e.g. when the model's output was truncated); with a hardcoded total of 2
-  // such a quiz could never be passed and the learner would be stuck forever.
   const totalQuestions = Math.max(questions?.length ?? 0, 1);
   const lastQuestionIndex = totalQuestions - 1;
   const perfectScore = totalQuestions;
@@ -25,16 +21,11 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
   const [answers, setAnswers] = useState<Array<number | null>>(
     Array.from({ length: totalQuestions }, () => null)
   );
-  // Local working copy of the questions whose option order we control. On a
-  // failed attempt the options are reshuffled so the learner has to find the
-  // correct answer again.
   const [quizQuestions, setQuizQuestions] = useState<Question[]>(questions ?? []);
   const [shuffledHint, setShuffledHint] = useState(false);
   const sheetRef = useRef<HTMLDivElement>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
 
-  // Reset to the original (unshuffled) questions whenever the source changes
-  // (e.g. a new part) or the sheet is (re)opened.
   useEffect(() => {
     setQuizQuestions(questions ?? []);
     setCurrent(0);
@@ -67,7 +58,6 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
       );
       if (focusable && focusable.length) focusable[0].focus();
     };
-    /* Small delay so DOM renders first */
     const id = setTimeout(focusFirst, 80);
 
     return () => {
@@ -140,8 +130,6 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
       return;
     }
 
-    // Failed attempt → retake. Reshuffle every question's options so the
-    // correct answer moves to a new position and must be found again.
     setQuizQuestions((prev) => prev.map(reshuffleQuestion));
     setCurrent(0);
     setAnswers(Array.from({ length: totalQuestions }, () => null));
@@ -174,10 +162,12 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
           right: 0,
           bottom: 0,
           maxHeight: "90vh",
+          maxWidth: 720,
+          margin: "0 auto",
           overflowY: "auto",
           background: "var(--bg-card)",
           borderRadius: "var(--radius-2xl) var(--radius-2xl) 0 0",
-          padding: "0 32px 56px",
+          padding: "0 28px 56px",
           boxShadow: "var(--shadow-lg), var(--glass-edge)",
         }}
       >
@@ -204,6 +194,7 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
             background: "var(--border-default)",
             margin: "14px auto 20px",
           }}
+          aria-hidden="true"
         />
 
         {/* Close button */}
@@ -211,10 +202,11 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
           type="button"
           onClick={onClose}
           aria-label="Close quiz"
+          className="interactive-focus"
           style={{
             position: "absolute",
             top: 22,
-            right: 32,
+            right: 28,
             background: "transparent",
             border: "1px solid var(--border-subtle)",
             borderRadius: "var(--radius-md)",
@@ -223,6 +215,9 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
             cursor: "pointer",
             fontSize: 14,
             transition: "all 500ms var(--ease-spring)",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 4,
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.borderColor = "var(--border-accent)";
@@ -235,26 +230,30 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
             e.currentTarget.style.transform = "scale(1)";
           }}
         >
-          ✕
+          <span aria-hidden="true" style={{ fontSize: 16 }}>✕</span>
+          Close
         </button>
 
-        <h3
-          style={{
-            margin: 0,
-            fontFamily: "var(--font-display)",
-            fontWeight: 800,
-            fontSize: 20,
-            background: "var(--accent)",
-            backgroundClip: "text",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-          }}
-        >
-          Quick Check
-        </h3>
-        <p style={{ marginTop: 8, marginBottom: 20, fontSize: 13, color: "var(--text-secondary)" }}>
-          {totalQuestions} question{totalQuestions === 1 ? "" : "s"} about what you just read
-        </p>
+        <div style={{ textAlign: "center", marginBottom: 20 }}>
+          <h3
+            style={{
+              margin: 0,
+              fontFamily: "var(--font-display)",
+              fontWeight: 800,
+              fontSize: 22,
+              background: "var(--accent)",
+              backgroundClip: "text",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            Quick Check
+          </h3>
+          <p style={{ marginTop: 8, marginBottom: 0, fontSize: 14, color: "var(--text-secondary)" }}>
+            {totalQuestions} question{totalQuestions === 1 ? "" : "s"} about what you just read
+          </p>
+        </div>
+
         <div style={{ borderBottom: "1px solid var(--border-subtle)", marginBottom: 20 }} />
 
         {shuffledHint ? (
@@ -263,7 +262,7 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
             role="status"
             style={{
               marginBottom: 16,
-              padding: "12px 16px",
+              padding: "14px 18px",
               borderRadius: "var(--radius-lg)",
               border: "1px solid color-mix(in srgb, var(--accent) 30%, transparent)",
               background: "var(--accent-dim)",
@@ -275,6 +274,7 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
               gap: 10,
             }}
           >
+            <span aria-hidden="true" style={{ fontSize: 16 }}>🔀</span>
             Answers reshuffled — the correct one has moved. Find it again.
           </div>
         ) : null}
@@ -299,6 +299,7 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
                   ? "Unlock next part"
                   : "Read again"
             }
+            className="interactive-press"
             style={{
               marginTop: 28,
               width: "100%",
@@ -317,40 +318,44 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
                   ? "white"
                   : "var(--text-primary)",
               fontSize: 15,
-              fontWeight: 600,
+              fontWeight: 700,
               cursor: "pointer",
               transition: "all 500ms var(--ease-spring)",
               boxShadow: "none",
               minHeight: 50,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
             }}
             onMouseEnter={(e) => {
-                if (score === perfectScore && current === lastQuestionIndex) {
-                  e.currentTarget.style.transform = "scale(1.03)";
-                  e.currentTarget.style.boxShadow = "var(--shadow-lg), var(--glass-edge)";
-                } else {
-                  e.currentTarget.style.borderColor = "var(--border-accent)";
-                  e.currentTarget.style.color = "var(--accent)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "scale(1)";
-                if (score === perfectScore && current === lastQuestionIndex) {
-                  e.currentTarget.style.boxShadow = "none";
-                } else {
-                  e.currentTarget.style.borderColor = "var(--border-default)";
-                  e.currentTarget.style.color = "var(--text-primary)";
-                }
-              }}
+              if (score === perfectScore && current === lastQuestionIndex) {
+                e.currentTarget.style.transform = "scale(1.03)";
+                e.currentTarget.style.boxShadow = "var(--shadow-lg), var(--glass-edge)";
+              } else {
+                e.currentTarget.style.borderColor = "var(--border-accent)";
+                e.currentTarget.style.color = "var(--accent)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "scale(1)";
+              if (score === perfectScore && current === lastQuestionIndex) {
+                e.currentTarget.style.boxShadow = "none";
+              } else {
+                e.currentTarget.style.borderColor = "var(--border-default)";
+                e.currentTarget.style.color = "var(--text-primary)";
+              }
+            }}
           >
             {current < lastQuestionIndex
-              ? "Next Question →"
+              ? <>Next Question <span aria-hidden="true">→</span></>
               : score === perfectScore
-                ? "Unlock Next Part →"
-                : "Read Again"}
+                ? <>Unlock Next Part <span aria-hidden="true">🎉</span></>
+                : <>Read Again</>}
           </button>
         ) : null}
       </div>
     </div>
   );
-}
+};
 export default memo(QuizSheetBase);

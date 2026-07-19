@@ -30,12 +30,12 @@ const THEMES = THEME_OPTIONS;
 const MODES: { value: LessonMode; label: string; hint: string }[] = [
   {
     value: "fast",
-    label: "Fast",
+    label: "Quick Answer",
     hint: "One instant, direct answer — quick like a chat reply",
   },
   {
     value: "explain",
-    label: "Explain",
+    label: "Deep Dive",
     hint: "Deep 3-part journey with quizzes and real-world context",
   },
 ];
@@ -48,9 +48,6 @@ export default function SettingsPage() {
   const router = useRouter();
   const { isLoaded, isSignedIn, getToken } = useAuth();
   const { signOut } = useClerk();
-  // The preference store is persisted: rendering persisted theme/mode on the
-  // first client render mismatches the SSR HTML (which has the defaults) and
-  // triggers a React hydration error. Gate on mount, like the learn page.
   const mounted = useMounted();
 
   const theme = usePreferenceStore((s) => s.theme);
@@ -68,10 +65,6 @@ export default function SettingsPage() {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [cookieChoiceLabel, setCookieChoiceLabel] = useState("Not set");
 
-  // Reflect the current cookie/analytics choice, live — including when it is
-  // changed via the banner this page can re-open. For signed-in users the
-  // server-side DB record is the source of truth (it survives a localStorage
-  // wipe / re-login), so we query it first and fall back to localStorage.
   useEffect(() => {
     const refresh = async () => {
       if (isSignedIn) {
@@ -91,8 +84,6 @@ export default function SettingsPage() {
     refresh();
     window.addEventListener(COOKIE_CONSENT_ACCEPTED_EVENT, refresh);
     window.addEventListener(COOKIE_CONSENT_REVOKED_EVENT, refresh);
-    // The banner also saves "decline" without a revoke event when there was no
-    // prior acceptance; poll cheaply on focus to stay accurate.
     window.addEventListener("focus", refresh);
     return () => {
       window.removeEventListener(COOKIE_CONSENT_ACCEPTED_EVENT, refresh);
@@ -109,9 +100,6 @@ export default function SettingsPage() {
     }
   }, []);
 
-  // Navigation is a side effect — calling router.push during render is
-  // illegal (React "Cannot update Router while rendering" error) and can
-  // fire multiple times across re-renders.
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
       router.push("/sign-in?redirect_url=/settings");
@@ -135,51 +123,34 @@ export default function SettingsPage() {
       }
 
       try {
-        // Clear the in-memory stores FIRST (this navigation is client-side —
-        // no reload — so stale in-memory state could otherwise re-persist),
-        // then drop any debounced write that was scheduled before deletion,
-        // then remove the persisted keys.
-        try {
-          useLessonStore.getState().resetAll();
-          useProgressStore.getState().resetEngagement();
-          useSavedJourneysStore.setState({ journeys: [] });
-        } catch { /* ignore */ }
-        cancelPendingDebouncedWrites();
-        const REALLEARN_KEYS = [
-          "reallearn-preferences",
-          "reallearn-journey",
-          "reallearn-progress",
-          "reallearn-saved-journeys",
-          "reallearn-legal-consent",
-          "reallearn-cookie-consent",
-          "reallearn-theme",
-          "reallearn-preferences-onboarding",
-          "reallearn-feedback",
-        ];
-        REALLEARN_KEYS.forEach((k) => {
-          try { localStorage.removeItem(k); } catch { /* ignore */ }
-        });
-        // Also wipe the IndexedDB lesson archive (full bodies of older
-        // journeys live there, not in localStorage).
-        await clearArchivedLessons().catch(() => { /* best-effort */ });
-      } catch {
-        // ignore storage errors
-      }
-
-      await signOut(() => {
-        showToast("Account deleted successfully", "success");
-        router.push("/");
+        useLessonStore.getState().resetAll();
+        useProgressStore.getState().resetEngagement();
+        useSavedJourneysStore.setState({ journeys: [] });
+      } catch { /* ignore */ }
+      cancelPendingDebouncedWrites();
+      const REALLEARN_KEYS = [
+        "reallearn-preferences",
+        "reallearn-journey",
+        "reallearn-progress",
+        "reallearn-saved-journeys",
+        "reallearn-legal-consent",
+        "reallearn-cookie-consent",
+        "reallearn-theme",
+        "reallearn-preferences-onboarding",
+        "reallearn-feedback",
+      ];
+      REALLEARN_KEYS.forEach((k) => {
+        try { localStorage.removeItem(k); } catch { /* ignore */ }
       });
-    } catch (err) {
-      console.error("[frontend][Settings] delete data failed", err);
-      showToast(
-        err instanceof Error
-          ? `Could not delete your data: ${err.message}`
-          : "Could not delete your data. Please try again.",
-        "error"
-      );
-      setDeleting(false);
+      await clearArchivedLessons().catch(() => { /* best-effort */ });
+    } catch {
+      // ignore storage errors
     }
+
+    await signOut(() => {
+      showToast("Account deleted successfully", "success");
+      router.push("/");
+    });
   };
 
   const handleExportData = async () => {
@@ -227,10 +198,6 @@ export default function SettingsPage() {
           }
         })();
 
-        // Current preferences live under "reallearn-preferences" (the old
-        // "reallearn-theme" key is legacy); the lesson store persists under
-        // "reallearn-journey". Exporting the wrong keys silently omitted
-        // both from this privacy/GDPR export.
         localData.preferences = (() => {
           try {
             return JSON.parse(localStorage.getItem("reallearn-preferences") || "null");
@@ -314,13 +281,15 @@ export default function SettingsPage() {
           justifyContent: "center",
         }}
       >
-        <p style={{ color: "var(--text-secondary)" }}>Loading…</p>
+        <div style={{ textAlign: "center" }}>
+          <div className="animate-spin" style={{ width: 32, height: 32, margin: "0 auto 16px", border: "3px solid var(--border-subtle)", borderTopColor: "var(--accent)", borderRadius: "50%" }} />
+          <p style={{ color: "var(--text-secondary)", fontSize: 14 }}>Loading…</p>
+        </div>
       </main>
     );
   }
 
   if (!isSignedIn) {
-    // The redirect is handled by the effect above.
     return null;
   }
 
@@ -331,11 +300,13 @@ export default function SettingsPage() {
         color: "var(--text-primary)",
         padding: "40px 24px",
       }}
+      className="page-enter"
     >
-      <div style={{ maxWidth: 600, margin: "0 auto" }}>
+      <div style={{ maxWidth: 640, margin: "0 auto" }}>
         <button
           type="button"
           onClick={() => router.back()}
+          className="interactive-focus"
           style={{
             border: "none",
             background: "transparent",
@@ -343,10 +314,17 @@ export default function SettingsPage() {
             cursor: "pointer",
             fontSize: 14,
             padding: "4px 0",
-            marginBottom: 16,
-            display: "flex",
+            marginBottom: 20,
+            display: "inline-flex",
             alignItems: "center",
             gap: 6,
+            transition: "color 200ms var(--ease-color)",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = "var(--accent)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = "var(--text-secondary)";
           }}
         >
           <span style={{ fontSize: 18 }}>←</span> Back
@@ -356,13 +334,14 @@ export default function SettingsPage() {
           style={{
             fontFamily: "var(--font-display)",
             fontWeight: 800,
-            fontSize: 32,
+            fontSize: 34,
             marginBottom: 8,
+            letterSpacing: "-0.02em",
           }}
         >
           Settings
         </h1>
-        <p style={{ color: "var(--text-secondary)", marginBottom: 32, fontSize: 14 }}>
+        <p style={{ color: "var(--text-secondary)", marginBottom: 32, fontSize: 15, lineHeight: 1.6 }}>
           Manage your account, data, and preferences.
         </p>
 
@@ -373,8 +352,9 @@ export default function SettingsPage() {
             border: "1px solid var(--border-default)",
             borderRadius: "var(--radius-lg)",
             padding: 24,
-            marginBottom: 24,
+            marginBottom: 20,
             background: "var(--bg-card)",
+            boxShadow: "var(--shadow-sm)",
           }}
         >
           <h2
@@ -383,15 +363,20 @@ export default function SettingsPage() {
               fontWeight: 700,
               marginBottom: 4,
               color: "var(--text-primary)",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
             }}
           >
+            <span aria-hidden="true" style={{ fontSize: 18 }}>🎨</span>
             Preferences
           </h2>
-          <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 20 }}>
+          <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 20, lineHeight: 1.6 }}>
             Appearance, language, and learning level are saved on this device.
           </p>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+            {/* Theme */}
             <div>
               <label
                 style={{
@@ -412,24 +397,26 @@ export default function SettingsPage() {
                       key={opt.value}
                       type="button"
                       onClick={() => setTheme(opt.value)}
+                      className="interactive-focus"
                       style={{
                         display: "flex",
                         alignItems: "center",
-                        gap: 12,
+                        gap: 14,
                         textAlign: "left",
-                        padding: "10px 12px",
+                        padding: "12px 14px",
                         borderRadius: "var(--radius-md)",
                         border: active ? "2px solid var(--accent)" : "1px solid var(--border-default)",
                         background: active ? "var(--accent-dim)" : "var(--bg-surface)",
                         cursor: "pointer",
-                        minHeight: 44,
+                        minHeight: 52,
+                        transition: "all 250ms var(--ease-spring)",
                       }}
                     >
                       <span
                         aria-hidden="true"
                         style={{
-                          width: 28,
-                          height: 28,
+                          width: 32,
+                          height: 32,
                           borderRadius: "50%",
                           background: `linear-gradient(135deg, ${opt.swatch} 55%, ${opt.accent} 55%)`,
                           border: "1px solid var(--border-default)",
@@ -440,12 +427,10 @@ export default function SettingsPage() {
                         <span style={{ display: "block", fontWeight: 600, fontSize: 14, color: "var(--text-primary)" }}>
                           {opt.label}
                         </span>
-                        <span style={{ display: "block", fontSize: 12, color: "var(--text-tertiary)" }}>{opt.hint}</span>
+                        <span style={{ display: "block", fontSize: 12, color: "var(--text-tertiary)", lineHeight: 1.4 }}>{opt.hint}</span>
                       </span>
                       {active && (
-                        <span aria-hidden="true" style={{ color: "var(--accent)", fontSize: 16 }}>
-                          ✓
-                        </span>
+                        <span aria-hidden="true" style={{ color: "var(--accent)", fontSize: 18 }}>✓</span>
                       )}
                     </button>
                   );
@@ -453,6 +438,7 @@ export default function SettingsPage() {
               </div>
             </div>
 
+            {/* Answer mode */}
             <div>
               <label
                 style={{
@@ -473,29 +459,30 @@ export default function SettingsPage() {
                       key={opt.value}
                       type="button"
                       onClick={() => setMode(opt.value)}
+                      className="interactive-focus"
                       style={{
                         display: "flex",
                         alignItems: "center",
                         gap: 12,
                         textAlign: "left",
-                        padding: "10px 12px",
+                        padding: "12px 14px",
                         borderRadius: "var(--radius-md)",
                         border: active ? "2px solid var(--accent)" : "1px solid var(--border-default)",
                         background: active ? "var(--accent-dim)" : "var(--bg-surface)",
                         cursor: "pointer",
-                        minHeight: 44,
+                        minHeight: 52,
+                        transition: "all 250ms var(--ease-spring)",
                       }}
                     >
+                      <span style={{ fontSize: 20, width: 28, textAlign: "center" }}>⚡</span>
                       <span style={{ flex: 1 }}>
                         <span style={{ display: "block", fontWeight: 600, fontSize: 14, color: "var(--text-primary)" }}>
                           {opt.label}
                         </span>
-                        <span style={{ display: "block", fontSize: 12, color: "var(--text-tertiary)" }}>{opt.hint}</span>
+                        <span style={{ display: "block", fontSize: 12, color: "var(--text-tertiary)", lineHeight: 1.4 }}>{opt.hint}</span>
                       </span>
                       {active && (
-                        <span aria-hidden="true" style={{ color: "var(--accent)", fontSize: 16 }}>
-                          ✓
-                        </span>
+                        <span aria-hidden="true" style={{ color: "var(--accent)", fontSize: 18 }}>✓</span>
                       )}
                     </button>
                   );
@@ -503,6 +490,7 @@ export default function SettingsPage() {
               </div>
             </div>
 
+            {/* Language */}
             <div>
               <label
                 style={{
@@ -518,6 +506,7 @@ export default function SettingsPage() {
               <LanguageSelector value={language} onChange={setLanguage} />
             </div>
 
+            {/* Level */}
             <div>
               <label
                 style={{
@@ -533,6 +522,7 @@ export default function SettingsPage() {
               <LevelSelector value={level} onChange={setLevel} />
             </div>
 
+            {/* Performance */}
             <div>
               <label
                 style={{
@@ -553,29 +543,29 @@ export default function SettingsPage() {
                       key={opt.value}
                       type="button"
                       onClick={() => setPerfMode(opt.value)}
+                      className="interactive-focus"
                       style={{
                         display: "flex",
                         alignItems: "center",
                         gap: 12,
                         textAlign: "left",
-                        padding: "10px 12px",
+                        padding: "12px 14px",
                         borderRadius: "var(--radius-md)",
                         border: active ? "2px solid var(--accent)" : "1px solid var(--border-default)",
                         background: active ? "var(--accent-dim)" : "var(--bg-surface)",
                         cursor: "pointer",
-                        minHeight: 44,
+                        minHeight: 52,
+                        transition: "all 250ms var(--ease-spring)",
                       }}
                     >
                       <span style={{ flex: 1 }}>
                         <span style={{ display: "block", fontWeight: 600, fontSize: 14, color: "var(--text-primary)" }}>
                           {opt.label}
                         </span>
-                        <span style={{ display: "block", fontSize: 12, color: "var(--text-tertiary)" }}>{opt.description}</span>
+                        <span style={{ display: "block", fontSize: 12, color: "var(--text-tertiary)", lineHeight: 1.4 }}>{opt.description}</span>
                       </span>
                       {active && (
-                        <span aria-hidden="true" style={{ color: "var(--accent)", fontSize: 16 }}>
-                          ✓
-                        </span>
+                        <span aria-hidden="true" style={{ color: "var(--accent)", fontSize: 18 }}>✓</span>
                       )}
                     </button>
                   );
@@ -592,8 +582,9 @@ export default function SettingsPage() {
             border: "1px solid var(--border-default)",
             borderRadius: "var(--radius-lg)",
             padding: 24,
-            marginBottom: 24,
+            marginBottom: 20,
             background: "var(--bg-card)",
+            boxShadow: "var(--shadow-sm)",
           }}
         >
           <h2
@@ -602,17 +593,21 @@ export default function SettingsPage() {
               fontWeight: 700,
               marginBottom: 16,
               color: "var(--text-primary)",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
             }}
           >
+            <span aria-hidden="true" style={{ fontSize: 18 }}>👤</span>
             Account
           </h2>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <UserButton />
             <div>
-              <p style={{ fontSize: 14, fontWeight: 500, color: "var(--text-primary)" }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>
                 Your account
               </p>
-              <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginTop: 2 }}>
+              <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginTop: 3, lineHeight: 1.5 }}>
                 Manage your profile, sign out, or delete your account via the menu above.
               </p>
             </div>
@@ -626,8 +621,9 @@ export default function SettingsPage() {
             border: "1px solid var(--border-default)",
             borderRadius: "var(--radius-lg)",
             padding: 24,
-            marginBottom: 24,
+            marginBottom: 20,
             background: "var(--bg-card)",
+            boxShadow: "var(--shadow-sm)",
           }}
         >
           <h2
@@ -636,37 +632,53 @@ export default function SettingsPage() {
               fontWeight: 700,
               marginBottom: 8,
               color: "var(--text-primary)",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
             }}
           >
+            <span aria-hidden="true" style={{ fontSize: 18 }}>🔒</span>
             Privacy
           </h2>
-          <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 20 }}>
+          <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 20, lineHeight: 1.6 }}>
             Change your cookie and analytics choice anytime — withdrawing consent
             is as easy as giving it.
           </p>
           <button
             type="button"
             onClick={() => window.dispatchEvent(new Event(COOKIE_SETTINGS_OPEN_EVENT))}
+            className="interactive-focus"
             style={{
               border: "1px solid var(--border-default)",
               borderRadius: "var(--radius-md)",
               background: "transparent",
               color: "var(--text-secondary)",
-              padding: "12px 16px",
+              padding: "14px 18px",
               cursor: "pointer",
               fontSize: 14,
               fontWeight: 500,
-              minHeight: 44,
+              minHeight: 48,
               textAlign: "left",
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
               width: "100%",
+              transition: "all 250ms var(--ease-spring)",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "var(--border-accent)";
+              e.currentTarget.style.color = "var(--text-primary)";
+              e.currentTarget.style.background = "var(--bg-card-hover)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "var(--border-default)";
+              e.currentTarget.style.color = "var(--text-secondary)";
+              e.currentTarget.style.background = "transparent";
             }}
           >
             <span>Cookie &amp; analytics preferences</span>
-            <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
-              {cookieChoiceLabel}
+            <span style={{ fontSize: 12, color: "var(--text-tertiary)", fontWeight: 600 }}>
+              {cookieChoiceLabel} →
             </span>
           </button>
         </section>
@@ -679,6 +691,7 @@ export default function SettingsPage() {
             borderRadius: "var(--radius-lg)",
             padding: 24,
             background: "var(--bg-card)",
+            boxShadow: "var(--shadow-sm)",
           }}
         >
           <h2
@@ -687,11 +700,15 @@ export default function SettingsPage() {
               fontWeight: 700,
               marginBottom: 8,
               color: "var(--text-primary)",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
             }}
           >
+            <span aria-hidden="true" style={{ fontSize: 18 }}>📦</span>
             Data
           </h2>
-          <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 20 }}>
+          <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 20, lineHeight: 1.6 }}>
             Export or permanently delete your data stored on RealLearn.
           </p>
 
@@ -699,52 +716,103 @@ export default function SettingsPage() {
             <button
               type="button"
               onClick={handleExportData}
+              className="interactive-focus"
               style={{
                 border: "1px solid var(--border-default)",
                 borderRadius: "var(--radius-md)",
                 background: "transparent",
                 color: "var(--text-secondary)",
-                padding: "12px 16px",
+                padding: "14px 18px",
                 cursor: "pointer",
                 fontSize: 14,
                 fontWeight: 500,
-                minHeight: 44,
+                minHeight: 48,
                 textAlign: "left",
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
+                width: "100%",
+                transition: "all 250ms var(--ease-spring)",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "var(--border-accent)";
+                e.currentTarget.style.color = "var(--text-primary)";
+                e.currentTarget.style.background = "var(--bg-card-hover)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "var(--border-default)";
+                e.currentTarget.style.color = "var(--text-secondary)";
+                e.currentTarget.style.background = "transparent";
               }}
             >
-              <span>Export my data</span>
-              <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>Download JSON</span>
+              <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span aria-hidden="true" style={{ fontSize: 16 }}>📥</span>
+                Export my data
+              </span>
+              <span style={{ fontSize: 12, color: "var(--text-tertiary)", fontWeight: 600 }}>Download JSON</span>
             </button>
 
             <button
               type="button"
               onClick={() => setDeleteConfirmOpen(true)}
               disabled={deleting}
+              className="interactive-focus"
               style={{
                 border: "1px solid var(--wrong)",
                 borderRadius: "var(--radius-md)",
                 background: "var(--wrong-bg)",
                 color: "var(--wrong)",
-                padding: "12px 16px",
+                padding: "14px 18px",
                 cursor: deleting ? "not-allowed" : "pointer",
                 fontWeight: 600,
                 fontSize: 14,
-                minHeight: 44,
+                minHeight: 48,
                 opacity: deleting ? 0.6 : 1,
                 textAlign: "left",
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
+                width: "100%",
+                transition: "all 250ms var(--ease-spring)",
+              }}
+              onMouseEnter={(e) => {
+                if (!deleting) {
+                  e.currentTarget.style.background = "var(--wrong)";
+                  e.currentTarget.style.color = "white";
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "var(--wrong-bg)";
+                e.currentTarget.style.color = "var(--wrong)";
               }}
             >
-              <span>{deleting ? "Deleting…" : "Delete my data"}</span>
-              <span style={{ fontSize: 12, fontWeight: 400, opacity: 0.7 }}>Permanent</span>
+              <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span aria-hidden="true" style={{ fontSize: 16 }}>🗑️</span>
+                {deleting ? "Deleting…" : "Delete my data"}
+              </span>
+              <span style={{ fontSize: 12, fontWeight: 500, opacity: 0.8 }}>Permanent</span>
             </button>
           </div>
         </section>
+
+        {/* Version info */}
+        <div
+          style={{
+            marginTop: 24,
+            textAlign: "center",
+            padding: "16px",
+            borderRadius: "var(--radius-md)",
+            border: "1px solid var(--border-subtle)",
+            background: "var(--bg-card)",
+          }}
+        >
+          <p style={{ margin: 0, fontSize: 12, color: "var(--text-tertiary)", lineHeight: 1.6 }}>
+            RealLearn v1.0 — Built with curiosity ❤️
+          </p>
+          <p style={{ margin: "4px 0 0", fontSize: 11, color: "var(--text-tertiary)", opacity: 0.7 }}>
+            Japanese-inspired design · Vermillion & Washi
+          </p>
+        </div>
       </div>
 
       <ConfirmModal
