@@ -55,9 +55,18 @@ const BANNED_RESPONSE_PATTERNS = [
   /i['']m\s*(not\s*able|unable)\s*to\s*(assist|help|provide)/i,
 ];
 
+// SECURITY: strip zero-width/invisible characters and NFKC-fold before
+// matching — "b​omb" (zero-width space inside the word) or fullwidth "ｂｏｍｂ"
+// would otherwise slip past every word-boundary pattern below.
+const INVISIBLE_CHARS_PATTERN = /[­͏؜᠎​-‏‪-‮⁠-⁤﻿]/g;
+
 function matchesBannedPattern(text, patterns) {
   if (!text || typeof text !== "string") return false;
-  const normalized = text.replace(/\s+/g, " ").trim();
+  const normalized = text
+    .normalize("NFKC")
+    .replace(INVISIBLE_CHARS_PATTERN, "")
+    .replace(/\s+/g, " ")
+    .trim();
   return patterns.some((pattern) => pattern.test(normalized));
 }
 
