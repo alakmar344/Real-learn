@@ -1,16 +1,15 @@
 services:
   - type: web
     name: real-learn
-    runtime: node
+    runtime: image
     plan: free
-    rootDir: backend
-    buildCommand: npm ci
-    startCommand: npm start
+    image:
+      url: DOCKER_IMAGE_URL_HERE
     envVars:
       - key: NODE_ENV
         value: production
       - key: FRONTEND_ORIGIN
-        value: https://reallearn.vercel.app
+        value: https://reallearn.site
       - key: CLERK_FRONTEND_API
         value: https://clerk.reallearn.site
       - key: CLERK_API_URL
@@ -27,20 +26,5 @@ services:
         sync: false
       - key: SERPER_API_KEY
         sync: false
-
-  - type: web
-    name: reallearn-frontend
-    runtime: node
-    plan: free
-    rootDir: frontend
-    buildCommand: npm ci && npm run build
-    startCommand: npm start
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: NEXT_PUBLIC_BACKEND_URL
-        value: https://real-learn.onrender.com
-      - key: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-        sync: false
-      - key: CLERK_SECRET_KEY
-        sync: false
+      - key: PORT
+        value: "10000"
