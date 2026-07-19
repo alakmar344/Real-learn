@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { useRouter } from "next/navigation";
 import { useProgressStore } from "@/store/progressStore";
 import { levelInfo, dayKey } from "@/lib/achievements";
@@ -7,8 +8,12 @@ import { useMounted } from "@/hooks/useMounted";
 
 /** Compact navbar widget: streak flame, level ring, daily-goal dots. Navigates
  * to the full /progress dashboard on click. This is the persistent "growing
- * self" the whole engagement loop revolves around. */
-export default function ProgressHub() {
+ * self" the whole engagement loop revolves around.
+ *
+ * Wrapped in React.memo so parent re-renders (e.g. Navbar toggling its own
+ * state) don't cascade into re-rendering this widget — it only re-renders when
+ * one of its five zustand selector fields actually changes. */
+function ProgressHubImpl() {
   const mounted = useMounted();
   const router = useRouter();
 
@@ -123,3 +128,6 @@ export default function ProgressHub() {
     </>
   );
 }
+
+const ProgressHub = memo(ProgressHubImpl);
+export default ProgressHub;

@@ -415,6 +415,7 @@ body {
   z-index: -1;
   pointer-events: none;
   overflow: hidden;
+  contain: layout style paint;
 }
 
 .aurora-blob {
@@ -474,12 +475,11 @@ html::before {
   inset: 0;
   z-index: -2;
   pointer-events: none;
+  contain: layout style paint;
   background:
     radial-gradient(ellipse at 82% -8%, var(--sun-wash, rgba(220, 160, 80, 0.07)) 0%, transparent 55%),
     radial-gradient(ellipse at 0% 0%, rgba(184, 55, 43, 0.07) 0%, transparent 50%),
-    radial-gradient(ellipse at 100% 0%, rgba(148, 44, 34, 0.04) 0%, transparent 50%),
-    radial-gradient(ellipse at 30% 104%, var(--hearth-glow, rgba(200, 120, 60, 0.055)) 0%, transparent 52%),
-    radial-gradient(ellipse at 50% 100%, rgba(42, 21, 32, 0.04) 0%, transparent 50%);
+    radial-gradient(ellipse at 30% 104%, var(--hearth-glow, rgba(200, 120, 60, 0.055)) 0%, transparent 52%);
   opacity: 0.95;
 }
 
@@ -535,19 +535,12 @@ html::before {
   transform: translateY(-2px);
 }
 
-/* Automatic frosting — all surfaces with translucent bg-* tokens get glass. */
-[style*="var(--bg-card)"],
-[style*="var(--bg-card-hover)"],
-[style*="var(--bg-surface)"],
-[style*="var(--bg-glass)"] {
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-}
-
-[style*="var(--scrim"] {
-  -webkit-backdrop-filter: blur(18px) saturate(180%) !important;
-  backdrop-filter: blur(18px) saturate(180%) !important;
-}
+/* Glass frosting is applied EXPLICITLY via .glass / .glass-card / .glass-panel
+   / .glass-strong classes only. The previous [style*="var(--bg-card")]
+   attribute-selector approach forced the browser to substring-match the inline
+   style of EVERY element in the DOM on every style recalculation and apply an
+   expensive backdrop-filter blur to any match — a massive, hidden performance
+   tax. Elements that need frosting now opt in via a class. */
 
 /* Crayon background — visible, beautiful, behind the glass.
    A soft warm overlay lets the artwork breathe through while keeping text
@@ -612,6 +605,7 @@ body::after {
   inset: 0;
   z-index: -1;
   pointer-events: none;
+  contain: layout style paint;
   opacity: 0.07;
   mix-blend-mode: multiply;
   background-image:
@@ -628,6 +622,7 @@ body::before {
   inset: 0;
   z-index: -1;
   pointer-events: none;
+  contain: layout style paint;
   opacity: 0.55;
   mix-blend-mode: soft-light;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='600' height='600' filter='url(%23m)' opacity='0.6'/%3E%3C/svg%3E");
@@ -1833,6 +1828,23 @@ html[data-perf="low"] .aurora-bg {
 }
 html[data-perf="low"] body::after,
 html[data-perf="low"] body::before {
+  content: none;
+}
+
+/* MID tier: keep the aurora blobs but freeze their animation (the infinite
+   transform loop keeps a compositor layer alive and burns battery on
+   mid-range mobile GPUs). The static gradient wash still gives warmth. */
+html[data-perf="mid"] .aurora-blob {
+  animation: none !important;
+}
+/* MID tier: drop the mix-blend-mode paper textures — blend modes force a
+   full-viewport readback on every paint, which is the #1 jank source on
+   mid-tier mobile. A flat tinted background keeps the warmth without the
+   compositing cost. */
+html[data-perf="mid"] body::after {
+  content: none;
+}
+html[data-perf="mid"] body::before {
   content: none;
 }
 /* Ambient always-running animations (flame, pulsing dots, floats). */
