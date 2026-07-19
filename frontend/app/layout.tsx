@@ -94,12 +94,14 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
         <link rel="dns-prefetch" href="https://*.clerk.accounts.dev" />
         <link rel="dns-prefetch" href="https://*.clerk.com" />
-        {/* PERFORMANCE: preload critical fonts to avoid layout shifts and
-            ensure text renders immediately on first paint. */}
-        <link rel="preload" as="font" type="font/woff2" href="/fonts/inter.woff2" crossOrigin="anonymous" />
-        <link rel="preload" as="font" type="font/woff2" href="/fonts/lora.woff2" crossOrigin="anonymous" />
-        <link rel="preload" as="font" type="font/woff2" href="/fonts/space-grotesk.woff2" crossOrigin="anonymous" />
-        <link rel="preload" as="font" type="font/woff2" href="/fonts/jetbrains-mono.woff2" crossOrigin="anonymous" />
+        {/* PERFORMANCE: critical fonts are self-hosted via next/font, which
+            injects the correct <link rel="preload" as="font"> tags (with its
+            immutable hashed /_next/static/media/*.woff2 URLs) automatically in
+            production — rendering text in the real face immediately, with no
+            fallback-font flash (FOUT). The old manual preloads pointed at
+            /fonts/*.woff2, which do not exist (next/font self-hosts under
+            /_next/static/media), so they 404'd on every load and wasted the
+            preload budget. They are intentionally omitted here. */}
         {/* PERFORMANCE: prefetch the most likely navigation target. */}
         <link rel="prefetch" href="/learn" />
       </head>
