@@ -1323,83 +1323,12 @@ a:active {
   to { opacity: 1; transform: translateX(0); }
 }
 
-@keyframes slideFromBottom {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
-}
-
-@keyframes accentFlash {
-  0% { background: transparent; box-shadow: 0 0 0 transparent; }
-  40% { background: var(--accent-dim); box-shadow: 0 0 40px var(--accent-glow); }
-  100% { background: transparent; box-shadow: 0 0 0 transparent; }
-}
-
-@keyframes unlockPop {
-  0% { transform: scale(0.8); }
-  50% { transform: scale(1.05); box-shadow: 0 0 20px var(--accent-glow); }
-  100% { transform: scale(1); }
-}
-
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  20% { transform: translateX(-4px); }
-  40% { transform: translateX(4px); }
-  60% { transform: translateX(-3px); }
-  80% { transform: translateX(3px); }
-}
-
-@keyframes correctPulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.02); }
-}
-
-@keyframes progressFill {
-  from { width: 0; }
-  to { width: 100%; }
-}
-
-@keyframes shimmer {
-  from { background-position: -200% 0; }
-  to { background-position: 200% 0; }
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-@keyframes confettiFall {
-  0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
-  100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
-}
-
-@keyframes bounceIn {
-  0% { opacity: 0; transform: scale(0.3); }
-  50% { opacity: 1; transform: scale(1.05); }
-  70% { transform: scale(0.95); }
-  100% { transform: scale(1); }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-@keyframes glowPulse {
-  0%, 100% { box-shadow: 0 0 8px var(--accent-glow); }
-  50% { box-shadow: 0 0 16px var(--accent-glow); }
-}
-
-@keyframes slideIn {
-  from { opacity: 0; transform: translateX(-20px); }
-  to { opacity: 1; transform: translateX(0); }
-}
+/* NOTE: a second, redundant copy of the keyframes above (slideFromBottom,
+   accentFlash, unlockPop, shake, correctPulse, progressFill, shimmer, spin,
+   confettiFall, bounceIn, float, gradientShift, glowPulse, slideIn) used to
+   live here and silently overrode the richer definitions above with flatter,
+   less springy ones. The duplicates were removed so the intended motion is
+   what actually plays. */
 
 /* ── Easter-egg keyframes ── */
 @keyframes heartFloat {
@@ -1422,23 +1351,6 @@ a:active {
 /* ── Hero greeting — Apple-style, clean, confident ── */
 .hero-greeting {
   animation: fadeUp 800ms var(--ease-reveal) both;
-}
-
-.hero-greeting-icon {
-  display: inline-block;
-  animation: gentleWave 2s ease-in-out, iconFloat 5s ease-in-out 2s infinite;
-  transform-origin: 70% 70%;
-}
-
-@keyframes gentleWave {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(8deg); }
-  75% { transform: rotate(-6deg); }
-}
-
-@keyframes iconFloat {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-8px) rotate(3deg); }
 }
 
 .hero-greeting-icon {
@@ -2039,23 +1951,9 @@ html[data-perf="high"] {
   }
 }
 
-/* Easter-egg keyframes */
-@keyframes heartFloat {
-  0% { opacity: 0; transform: translateY(0) scale(0.5) rotate(0deg); }
-  12% { opacity: 1; }
-  100% { opacity: 0; transform: translateY(-55vh) scale(1.25) rotate(14deg); }
-}
-
-@keyframes gentleWave {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(8deg); }
-  75% { transform: rotate(-6deg); }
-}
-.animate-gentle-wave {
-  display: inline-block;
-  animation: gentleWave 1.8s ease-in-out;
-  transform-origin: 70% 70%;
-}
+/* (heartFloat, gentleWave and .animate-gentle-wave are defined once, higher up
+   in the Easter-egg keyframes section — the redundant second copies that used
+   to sit here were removed.) */
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Japanese typography & reading rhythm

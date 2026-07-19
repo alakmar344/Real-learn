@@ -396,6 +396,12 @@ export default function LearnPage() {
 
           {showFollowUp ? (
             <Suspense fallback={<SuspenseFallback />}>
+              {/* Wa (和) divider — a balanced ichimatsu bead between the lesson
+                  and the follow-up, marking a considered pause before going
+                  deeper. */}
+              <div className="wa-divider" aria-hidden="true">
+                <span className="wa-divider__bead" />
+              </div>
               <FollowUpBox
                 onSubmit={async (nextQuestion) => {
                   console.log("[frontend][LearnPage] follow-up submit", {
