@@ -2065,12 +2065,18 @@ p {
 }
 
 /* The story card. Sits above the tile; fades/rises in on hover, focus or tap. */
-.badge-tooltip {
-  position: absolute;
-  bottom: calc(100% + 10px);
-  left: 50%;
-  transform: translateX(-50%) translateY(6px) scale(0.97);
-  width: min(240px, 78vw);
+/* ── Badge popover ── A single `position: fixed` element rendered at the
+   AchievementsGrid root (NOT inside each badge tile). Fixed positioning
+   means it's placed relative to the viewport, so it can never be clipped by
+   an ancestor's `content-visibility` paint containment or `overflow`.
+   The JS measures the clicked badge's rect and the popover's own size, then
+   clamps the coordinates so the popover always stays fully inside the
+   viewport — flipping below the badge when there isn't room above, and
+   shifting horizontally when near the left/right edge. */
+.badge-popover {
+  position: fixed;
+  width: min(260px, calc(100vw - 16px));
+  max-width: 260px;
   padding: 12px 14px;
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-default);
@@ -2082,40 +2088,32 @@ p {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  z-index: 60;
+  z-index: 9999;
+  transform: translateY(6px) scale(0.97);
   transition:
-    opacity 220ms var(--ease-reveal),
-    transform 260ms var(--ease-spring),
-    visibility 0s linear 220ms;
+    opacity 180ms var(--ease-reveal),
+    transform 220ms var(--ease-spring);
 }
-/* Little paper arrow pointing at the badge. */
-.badge-tooltip::after {
+/* Little paper arrow pointing at the badge. Horizontal position is set
+   inline by JS (it aligns to the badge centre). The vertical side (top or
+   bottom) and the coloured border edge are set inline based on whether the
+   popover is above or below the badge. */
+.badge-popover__arrow {
   content: "";
   position: absolute;
-  top: 100%;
-  left: 50%;
   transform: translateX(-50%);
   border: 7px solid transparent;
-  border-top-color: var(--border-default);
-}
-.badge-tile:hover .badge-tooltip,
-.badge-tile:focus-visible .badge-tooltip,
-.badge-tile--open .badge-tooltip {
-  opacity: 1;
-  visibility: visible;
-  transform: translateX(-50%) translateY(0) scale(1);
-  transition:
-    opacity 220ms var(--ease-reveal),
-    transform 260ms var(--ease-spring);
+  width: 0;
+  height: 0;
 }
 
-.badge-tooltip__header {
+.badge-popover__header {
   display: flex;
   align-items: center;
   gap: 7px;
   margin-bottom: 6px;
 }
-.badge-tooltip__title {
+.badge-popover__title {
   font-size: 13px;
   font-weight: 800;
   color: var(--text-primary);
@@ -2123,7 +2121,7 @@ p {
   flex: 1;
   min-width: 0;
 }
-.badge-tooltip__tier {
+.badge-popover__tier {
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -2133,41 +2131,41 @@ p {
   padding: 2px 7px;
   flex-shrink: 0;
 }
-.badge-tooltip__how {
+.badge-popover__how {
   margin: 0;
   font-family: var(--font-lora), Georgia, serif;
   font-size: 12.5px;
   line-height: 1.55;
   color: var(--text-secondary);
 }
-.badge-tooltip__status {
+.badge-popover__status {
   margin: 8px 0 0;
   font-size: 11px;
   font-weight: 700;
 }
-.badge-tooltip__status--earned {
+.badge-popover__status--earned {
   color: var(--correct);
 }
-.badge-tooltip__progress {
+.badge-popover__progress {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-top: 9px;
 }
-.badge-tooltip__progress > span {
+.badge-popover__progress > span {
   font-size: 10.5px;
   font-weight: 700;
   color: var(--text-tertiary);
   white-space: nowrap;
 }
-.badge-tooltip__bar {
+.badge-popover__bar {
   flex: 1;
   height: 4px;
   border-radius: 4px;
   background: var(--border-subtle);
   overflow: hidden;
 }
-.badge-tooltip__bar > div {
+.badge-popover__bar > div {
   height: 100%;
   border-radius: inherit;
   background: var(--accent-gradient);
