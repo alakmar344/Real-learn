@@ -118,9 +118,9 @@ RealLearn rebuilds the learning journey automatically — Foundation → Mechani
 
 ### Technology Stack
 
-**Frontend (Vercel):** Next.js 15, React 19, TypeScript, Clerk, Zustand, React Markdown, Tailwind CSS, Web Speech API, Canvas API
+**Frontend (Vercel):** Next.js 15, React 19, TypeScript, Clerk, Zustand, React Markdown, Tailwind CSS, Web Speech API, Canvas API — plus **`idb`** (IndexedDB wrapper), **`eventsource-parser`** (SSE stream parsing), and **`lru-cache`** (bounded TTS blob cache)
 
-**Backend (Render):** Node.js, Express, JSON + SSE, Gemma 4 (Cerebras primary, Cloudflare fallback), Serper API, Clerk JWT, MongoDB
+**Backend (Render):** Node.js, Express, JSON + SSE, Gemma 4 (Cerebras primary, Cloudflare fallback), Serper API, Clerk JWT, MongoDB — plus **`lru-cache`** (bounded in-memory caches), **`express-rate-limit`** (request rate limiting), and **`jsonrepair`** (model-JSON repair)
 
 ### Architecture
 
