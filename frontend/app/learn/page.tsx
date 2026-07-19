@@ -29,8 +29,6 @@ function SuspenseFallback() {
 }
 
 function scrollToTop() {
-  // Respect prefers-reduced-motion: an explicit behavior option overrides the
-  // CSS `scroll-behavior: auto !important` reduced-motion rule.
   const reduce =
     typeof window !== "undefined" &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -42,9 +40,6 @@ export default function LearnPage() {
   const [showUnlockFx, setShowUnlockFx] = useState(false);
   const [isRevealing, setIsRevealing] = useState(false);
   const unlockTimeoutRef = useRef<number | null>(null);
-  // Guards the reveal so it fires exactly once per lesson. Keying it on the
-  // lesson object (not a boolean) also prevents the reveal effect from
-  // re-arming on unrelated re-renders.
   const revealedLessonRef = useRef<LessonJourney | null>(null);
 
   const {
@@ -102,9 +97,6 @@ export default function LearnPage() {
     );
   }, [partScores]);
 
-  // The lesson store is persisted: rendering persisted state on the first
-  // client render mismatches the SSR HTML (which always has the defaults)
-  // and triggers a React hydration failure. Gate on mount instead.
   const mounted = useMounted();
 
   useEffect(() => {
@@ -114,13 +106,6 @@ export default function LearnPage() {
     };
   }, [mounted]);
 
-  // When a lesson lands, fade the loading overlay out and reveal the lesson.
-  // `isRevealing` is deliberately NOT in the dependency array: including it
-  // made the effect's own setState re-run it synchronously, which cleared the
-  // 420ms timer before it fired and left `isRevealing` stuck `true` forever —
-  // the invisible overlay then blocked the (never-rendered) lesson, i.e. a
-  // blank page after the loader hit 100%. The `revealedLessonRef` guard keeps
-  // this from re-arming for the same lesson.
   useEffect(() => {
     if (!isLoading && lesson && revealedLessonRef.current !== lesson) {
       revealedLessonRef.current = lesson;
@@ -130,9 +115,6 @@ export default function LearnPage() {
     }
   }, [isLoading, lesson]);
 
-  // Initialize from the CURRENT (already-hydrated) store values — the lesson
-  // store persists, so starting these at null/false made every reload of a
-  // persisted lesson re-fire "Lesson ready!" / "Journey complete! 🎉" toasts.
   const prevLessonRef = useRef<LessonJourney | null>(lesson);
   const prevCompletionRef = useRef(showCompletion);
 
@@ -150,13 +132,9 @@ export default function LearnPage() {
     prevCompletionRef.current = showCompletion;
   }, [showCompletion]);
 
-  /* ── Persist journey to local storage on generation and on progress changes ── */
   useEffect(() => {
     if (!lesson) return;
     const displayQuestion = lesson.question ?? lesson.topic ?? "";
-    // Fold the per-instance lesson id into the saved-journey key so two
-    // different generations of the same question never overwrite each other's
-    // history/archive entry (content signatures alone can collide).
     const baseId = journeySignature(displayQuestion, lesson.parts[0]?.title);
     const id = lesson.lessonId ? `${baseId}::${lesson.lessonId.slice(0, 8)}` : baseId;
     saveJourney({
@@ -207,7 +185,6 @@ export default function LearnPage() {
     showUnlockFx,
   ]);
 
-  /* ── Hydration gate: neutral shell until the client has mounted ── */
   if (!mounted) {
     return (
       <>
@@ -217,7 +194,6 @@ export default function LearnPage() {
     );
   }
 
-  /* ── Error state ── */
   if (error && !isLoading && !lesson) {
     return (
       <>
@@ -233,7 +209,6 @@ export default function LearnPage() {
     );
   }
 
-  /* ── Loading cinematic ── */
   if ((isLoading || isRevealing) && question) {
     return (
       <>
@@ -250,44 +225,76 @@ export default function LearnPage() {
     );
   }
 
-  /* ── No lesson yet ── */
   if (!lesson) {
     return (
       <>
         <LiveRegion />
-        <main style={{ minHeight: "100vh", color: "var(--text-primary)", padding: 24 }}>
+        <main style={{ minHeight: "100vh", color: "var(--text-primary)" }} className="page-enter">
           <Navbar />
-          <div style={{ maxWidth: 640, margin: "80px auto", textAlign: "center" }}>
+          <div style={{ maxWidth: 640, margin: "80px auto", textAlign: "center", padding: "0 20px" }}>
+            <div
+              aria-hidden="true"
+              style={{
+                width: 64,
+                height: 64,
+                borderRadius: "50%",
+                background: "var(--accent-dim)",
+                border: "2px solid var(--border-accent)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto var(--space-lg)",
+                fontSize: 28,
+              }}
+            >
+              📚
+            </div>
             <h2
               style={{
-                fontWeight: 700,
+                fontWeight: 800,
                 marginBottom: 8,
                 fontFamily: "var(--font-display)",
                 fontStyle: "italic",
-                fontSize: 26,
+                fontSize: 28,
+                letterSpacing: "-0.02em",
               }}
             >
               No lesson loaded yet
             </h2>
-            <p style={{ color: "var(--text-secondary)", fontSize: 14, marginBottom: 24 }}>
+            <p style={{ color: "var(--text-secondary)", fontSize: 15, marginBottom: 28, lineHeight: 1.6, fontFamily: "var(--font-lora)" }}>
               Head back home and ask a question to start learning.
             </p>
             <button
               type="button"
               onClick={restart}
+              className="interactive-press"
               style={{
                 border: "none",
                 borderRadius: "var(--radius-md)",
-                padding: "12px 24px",
+                padding: "14px 28px",
                 background: "var(--accent)",
                 color: "var(--on-accent)",
                 fontWeight: 700,
                 fontSize: 15,
                 cursor: "pointer",
-                minHeight: 44,
+                minHeight: 50,
+                boxShadow: "var(--shadow-glow-accent)",
+                transition: "all 300ms var(--ease-spring)",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "scale(1.04)";
+                e.currentTarget.style.boxShadow = "var(--shadow-lg), var(--glass-edge)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.boxShadow = "var(--shadow-glow-accent)";
               }}
             >
-              Go Home →
+              <span aria-hidden="true" style={{ fontSize: 16 }}>←</span>
+              Go Home
             </button>
           </div>
         </main>
@@ -305,6 +312,7 @@ export default function LearnPage() {
           minHeight: "100vh",
           color: "var(--text-primary)",
         }}
+        className="page-enter"
       >
         <div
           style={{
@@ -321,24 +329,24 @@ export default function LearnPage() {
           <div style={{ maxWidth: 800, margin: "0 auto", padding: "0 clamp(16px, 4vw, 48px) 16px" }}>
             <span
               style={{
-                display: "inline-block",
-                marginRight: 8,
-                padding: "2px 10px",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                marginRight: 10,
+                padding: "3px 10px",
                 borderRadius: 999,
                 fontSize: 11,
                 fontWeight: 700,
-                letterSpacing: "0.05em",
+                letterSpacing: "0.06em",
                 color: "var(--accent)",
                 background: "var(--accent-dim)",
                 border: "1px solid var(--accent)",
                 verticalAlign: "middle",
               }}
             >
-              {isFastMode ? "FAST" : "GUIDED"}
+              {isFastMode ? "⚡ FAST" : "🔍 GUIDED"}
             </span>
-             <span style={{ fontSize: 13, color: "var(--text-tertiary)", marginRight: 10 }}>Understanding:</span>
-            {/* The lesson question is the page's h1 (WCAG 1.3.1/2.4.6) —
-                visually styled as the compact header line it always was. */}
+            <span style={{ fontSize: 13, color: "var(--text-tertiary)", marginRight: 10, fontWeight: 500 }}>Understanding:</span>
             <h1
               style={{
                 fontFamily: "var(--font-display)",
@@ -361,7 +369,7 @@ export default function LearnPage() {
           </div>
         </div>
 
-        <div style={{ maxWidth: 800, margin: "0 auto", padding: "0 clamp(16px, 4vw, 48px) 80px" }}>
+        <div style={{ maxWidth: 800, margin: "0 auto", padding: "0 clamp(16px, 4vw, 48px) 80px" }} className="stagger-children">
           <ProgressRail unlockedPart={unlockedPart} completedParts={completedParts} totalParts={totalParts} />
 
           {lesson.parts.map((part) => (
@@ -396,9 +404,6 @@ export default function LearnPage() {
 
           {showFollowUp ? (
             <Suspense fallback={<SuspenseFallback />}>
-              {/* Wa (和) divider — a balanced ichimatsu bead between the lesson
-                  and the follow-up, marking a considered pause before going
-                  deeper. */}
               <div className="wa-divider" aria-hidden="true">
                 <span className="wa-divider__bead" />
               </div>
@@ -423,24 +428,37 @@ export default function LearnPage() {
                 resetAll();
                 restart();
               }}
+              className="interactive-focus"
               style={{
                 marginTop: 20,
                 borderRadius: "var(--radius-md)",
                 border: "1px solid var(--border-default)",
                 background: "transparent",
                 color: "var(--text-secondary)",
-                padding: "10px 14px",
+                padding: "12px 20px",
                 cursor: "pointer",
-                minHeight: 44,
+                minHeight: 48,
+                transition: "all 300ms var(--ease-spring)",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "var(--border-accent)";
+                e.currentTarget.style.color = "var(--accent)";
+                e.currentTarget.style.transform = "scale(1.03)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "var(--border-default)";
+                e.currentTarget.style.color = "var(--text-secondary)";
+                e.currentTarget.style.transform = "scale(1)";
               }}
             >
+              <span aria-hidden="true" style={{ fontSize: 16 }}>✨</span>
               Learn Something New
             </button>
           )}
 
-          {/* Optional, anonymous review — appears the day after the first
-              lesson on any return visit (not only at the moment of completion).
-              Hidden while the completion screen is up to avoid a duplicate. */}
           {!showCompletion && <FeedbackGate />}
         </div>
 
@@ -456,11 +474,6 @@ export default function LearnPage() {
               });
               passPart(activePart.partNumber, score);
 
-              // Include the per-instance lesson id: retaking a quiz on THIS
-              // lesson stays idempotent (no XP farming), but generating a NEW
-              // lesson for the same question tomorrow earns credit again —
-              // previously the content-only key silently blocked all XP,
-              // daily-goal and streak progress for repeat topics.
               const lessonSignature = `${lesson.question ?? lesson.topic ?? ""}|${language}|${lesson.lessonId ?? ""}`;
               const maxPerPart = activePart.quiz?.length ?? 2;
               recordPartPassed({

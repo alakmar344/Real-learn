@@ -59,8 +59,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   if (hideSidebar) {
     return (
       <>
-        {/* A11y: the skip link targets #main-content, which must exist on
-            EVERY page — including the auth pages — or it jumps nowhere. */}
         <div id="main-content">{children}</div>
         <PreferenceModal open={showFirstPrefs} onClose={() => setShowFirstPrefs(false)} />
       </>
@@ -74,8 +72,42 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         className="app-sidebar-toggle"
         aria-label="Open menu"
         onClick={() => setOpen(true)}
+        style={{
+          position: "fixed",
+          bottom: 20,
+          right: 20,
+          width: 52,
+          height: 52,
+          borderRadius: "50%",
+          border: "1px solid var(--border-subtle)",
+          background: "var(--bg-card)",
+          color: "var(--text-secondary)",
+          cursor: "pointer",
+          zIndex: 55,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: "var(--shadow-md), var(--glass-edge)",
+          backdropFilter: "blur(var(--glass-blur)) saturate(var(--glass-saturate))",
+          WebkitBackdropFilter: "blur(var(--glass-blur)) saturate(var(--glass-saturate))",
+          transition: "all 350ms var(--ease-spring)",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.borderColor = "var(--border-accent)";
+          e.currentTarget.style.color = "var(--accent)";
+          e.currentTarget.style.transform = "scale(1.08)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.borderColor = "var(--border-subtle)";
+          e.currentTarget.style.color = "var(--text-secondary)";
+          e.currentTarget.style.transform = "scale(1)";
+        }}
       >
-        ☰
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <line x1="4" y1="6" x2="20" y2="6" />
+          <line x1="4" y1="12" x2="20" y2="12" />
+          <line x1="4" y1="18" x2="20" y2="18" />
+        </svg>
       </button>
       <Sidebar open={open} onClose={() => setOpen(false)} />
       <div id="main-content" className="app-main">{children}</div>

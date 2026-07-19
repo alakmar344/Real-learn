@@ -1364,6 +1364,34 @@ a:active {
   50% { transform: translateY(-6px) rotate(4deg); }
 }
 
+@keyframes bounceIn {
+  0% { opacity: 0; transform: scale(0.3); }
+  50% { opacity: 1; transform: scale(1.08); }
+  70% { transform: scale(0.94); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 12px var(--accent-glow), 0 0 24px var(--cobalt-wash); }
+  50% { box-shadow: 0 0 24px var(--accent-glow), 0 0 48px var(--cobalt-wash); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-24px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
 /* ── Animation utilities — Apple-style, smooth, springy ── */
 .animate-fade-up { animation: fadeUp 600ms var(--ease-reveal) both; }
 .animate-slide-bottom { animation: slideFromBottom 500ms var(--ease-reveal) both; }
@@ -1519,6 +1547,15 @@ a:active {
   pointer-events: none;
 }
 
+.animate-bounce-in { animation: bounceIn 700ms var(--ease-spring) both; }
+.animate-float { animation: float 4s ease-in-out infinite; }
+.animate-glow-pulse { animation: glowPulse 3s ease-in-out infinite; }
+.animate-slide-in { animation: slideIn 500ms var(--ease-reveal) both; }
+.animate-gradient-shift {
+  background-size: 200% 200%;
+  animation: gradientShift 4s ease infinite;
+}
+
 /* ── Respect reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -1528,6 +1565,351 @@ a:active {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Skeleton loading — refined, Japanese-washi texture shimmer.
+   Used while content is loading to maintain layout stability and reduce
+   perceived wait time.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--cobalt-wash) 40%,
+    var(--cobalt-wash) 60%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: skeletonShimmer 2.2s ease-in-out infinite;
+  border-radius: inherit;
+}
+
+@keyframes skeletonShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-text {
+  height: 14px;
+  margin-bottom: 8px;
+  border-radius: var(--radius-sm);
+}
+
+.skeleton-text:last-child {
+  width: 60%;
+  margin-bottom: 0;
+}
+
+.skeleton-title {
+  height: 22px;
+  width: 70%;
+  margin-bottom: 12px;
+  border-radius: var(--radius-sm);
+}
+
+.skeleton-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.skeleton-card {
+  height: 180px;
+  border-radius: var(--radius-xl);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Mobile navbar — hamburger menu & slide-out panel.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.mobile-nav-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: var(--scrim, rgba(18, 18, 26, 0.35));
+  backdrop-filter: blur(8px) saturate(180%);
+  -webkit-backdrop-filter: blur(8px) saturate(180%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 350ms var(--ease-color);
+}
+
+.mobile-nav-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mobile-nav-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: min(320px, 85vw);
+  z-index: 71;
+  background: var(--bg-card);
+  border-right: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-lg);
+  transform: translateX(-100%);
+  transition: transform 420ms var(--ease-reveal);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobile-nav-panel.open {
+  transform: translateX(0);
+}
+
+.mobile-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 14px 20px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: background 200ms var(--ease-color), color 200ms var(--ease-color);
+  min-height: 52px;
+  text-decoration: none;
+  font-family: var(--font-inter), system-ui, sans-serif;
+}
+
+.mobile-nav-item:hover,
+.mobile-nav-item:focus-visible {
+  background: var(--accent-dim);
+  color: var(--accent);
+  outline: none;
+}
+
+.mobile-nav-item:active {
+  transform: scale(0.98);
+  transition: transform 120ms var(--ease-color);
+}
+
+.mobile-nav-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-default), transparent);
+  margin: 8px 20px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Responsive utilities — ensure great experience on all devices.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+  .container-responsive {
+    padding-left: clamp(12px, 4vw, 20px);
+    padding-right: clamp(12px, 4vw, 20px);
+  }
+
+  .heading-responsive {
+    font-size: clamp(28px, 7vw, 42px);
+  }
+
+  .subheading-responsive {
+    font-size: clamp(16px, 4vw, 20px);
+  }
+}
+
+/* Hide scrollbar on mobile panels */
+@media (max-width: 640px) {
+  .mobile-nav-panel::-webkit-scrollbar {
+    width: 3px;
+  }
+  .mobile-nav-panel::-webkit-scrollbar-thumb {
+    background: var(--border-default);
+    border-radius: 999px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Japanese pattern overlays — refined, GPU-cheap.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Hikari (light ray) — subtle diagonal rays evoking sunlight through shoji */
+.pattern-hikari::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.018;
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent 0,
+    transparent 38px,
+    var(--border-default) 38px,
+    var(--border-default) 38.5px
+  );
+  mix-blend-mode: multiply;
+}
+.pattern-hikari > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Golden ratio divider — a refined section break */
+.golden-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: var(--space-md) 0;
+}
+.golden-divider::before,
+.golden-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-default), transparent);
+}
+.golden-divider__mark {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--brand);
+  opacity: 0.3;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Micro-interaction polish — tactile, satisfying, Japanese-minimal.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Ripple effect for primary actions */
+.ripple-primary {
+  position: relative;
+  overflow: hidden;
+}
+.ripple-primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--ripple-x, 50%) var(--ripple-y, 50%), rgba(255,255,255,0.25) 0%, transparent 60%);
+  opacity: 0;
+  transform: scale(0);
+  transition: transform 600ms var(--ease-reveal), opacity 600ms var(--ease-color);
+  pointer-events: none;
+  border-radius: inherit;
+}
+.ripple-primary:active::after {
+  opacity: 1;
+  transform: scale(2.5);
+  transition: transform 0ms, opacity 0ms;
+}
+
+/* Subtle scale on focus for interactive elements */
+.interactive-focus:focus-visible {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-lg), var(--glass-edge), 0 0 0 3px var(--accent-glow);
+}
+
+/* Page entrance animation */
+.page-enter {
+  animation: pageEnter 600ms var(--ease-reveal) both;
+}
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Stagger children animation helper */
+.stagger-children > * {
+  animation: fadeUp 600ms var(--ease-reveal) both;
+}
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 80ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 160ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 240ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 320ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 400ms; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Toast notification polish — calm, on-brand, non-blocking.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.toast-enter {
+  animation: toastIn 400ms var(--ease-spring) both;
+}
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.toast-exit {
+  animation: toastOut 300ms var(--ease-color) both;
+}
+@keyframes toastOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Focus ring — refined, accessible, Japanese-minimal.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 0 0 6px var(--accent-dim);
+}
+
+/* Remove focus ring for mouse users */
+:focus:not(:focus-visible) {
+  outline: none;
+  box-shadow: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Print styles — clean, minimal.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media print {
+  .aurora-bg,
+  .crayon-bg,
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: white;
+    color: black;
   }
 }
 

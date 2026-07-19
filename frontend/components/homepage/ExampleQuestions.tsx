@@ -8,6 +8,9 @@ const EXAMPLES = [
   "What actually happens inside a black hole?",
   "Why did the Roman Empire collapse?",
   "How do vaccines teach the immune system?",
+  "What is the speed of thought?",
+  "Why do cats purr?",
+  "How does GPS know where you are?",
 ];
 
 interface Props {
@@ -20,7 +23,7 @@ export default function ExampleQuestions({ onPick }: Props) {
   useEffect(() => {
     const id = window.setInterval(() => {
       setIndex((prev) => (prev + 1) % EXAMPLES.length);
-    }, 3000);
+    }, 4000);
     return () => window.clearInterval(id);
   }, []);
 
@@ -31,27 +34,36 @@ export default function ExampleQuestions({ onPick }: Props) {
       title="Click to use this example"
       onClick={() => onPick?.(EXAMPLES[index])}
       disabled={!onPick}
+      className="interactive-focus"
       style={{
-        fontSize: 12,
+        fontSize: 13,
         color: "var(--accent)",
         margin: 0,
         fontWeight: 500,
-        animation: "fadeUp 200ms var(--ease-reveal)",
+        animation: "fadeUp 300ms var(--ease-reveal)",
         background: "transparent",
-        border: "none",
-        padding: "4px 8px",
-        borderRadius: "var(--radius-sm)",
+        border: "1px solid transparent",
+        padding: "6px 12px",
+        borderRadius: "var(--radius-md)",
         cursor: onPick ? "pointer" : "default",
         textAlign: "left",
-        transition: "background 200ms var(--ease-color)",
+        transition: "all 250ms var(--ease-color)",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
       }}
       onMouseEnter={(e) => {
-        if (onPick) e.currentTarget.style.background = "var(--accent-dim)";
+        if (onPick) {
+          e.currentTarget.style.background = "var(--accent-dim)";
+          e.currentTarget.style.borderColor = "var(--border-accent)";
+        }
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.background = "transparent";
+        e.currentTarget.style.borderColor = "transparent";
       }}
     >
+      <span aria-hidden="true" style={{ fontSize: 14 }}>💡</span>
       Try: {EXAMPLES[index]}
     </button>
   );

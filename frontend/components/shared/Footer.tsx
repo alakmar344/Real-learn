@@ -9,17 +9,14 @@ const linkStyle: React.CSSProperties = {
   display: "inline-flex",
   alignItems: "center",
   fontWeight: 500,
+  textDecoration: "none",
+  transition: "all 200ms var(--ease-color)",
+  borderRadius: "var(--radius-sm)",
 };
 
 const FIRST_VISIT_KEY = "reallearn-first-visit";
 const MILESTONES = new Set([7, 30, 100, 365]);
 
-/**
- * "Learning together for N days" — a tiny companionship counter. The first
- * visit timestamp is remembered locally, so the app quietly keeps track of
- * your shared history and celebrates the big round numbers with you.
- * Rendered only after mount (SSR shows nothing) so hydration never mismatches.
- */
 function CompanionDays() {
   const [days, setDays] = useState<number | null>(null);
 
@@ -46,7 +43,7 @@ function CompanionDays() {
         : `Learning together for ${days} days 💛`;
 
   return (
-    <p style={{ margin: "8px 0 0", fontSize: 12, color: "var(--text-tertiary)", fontStyle: "italic", lineHeight: 1.7 }}>
+    <p style={{ margin: "10px 0 0", fontSize: 12, color: "var(--text-tertiary)", fontStyle: "italic", lineHeight: 1.7 }}>
       {label}
     </p>
   );
@@ -55,8 +52,6 @@ function CompanionDays() {
 const Footer = ({ className }: { className?: string }) => {
   const clicks = useRef<number[]>([]);
 
-  // Easter egg: click/tap the RealLearn wordmark 5 times within 3 seconds
-  // → heart burst (handled globally by <EasterEggs />).
   const onBrandClick = () => {
     const now = Date.now();
     clicks.current = [...clicks.current.filter((t) => now - t < 3000), now];
@@ -85,7 +80,7 @@ const Footer = ({ className }: { className?: string }) => {
         WebkitBackdropFilter: "blur(var(--glass-blur)) saturate(var(--glass-saturate))",
       }}
     >
-      <p style={{ margin: 0, display: "flex", justifyContent: "center", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, flexWrap: "wrap" }}>
         <span
           onClick={onBrandClick}
           style={{
@@ -93,25 +88,40 @@ const Footer = ({ className }: { className?: string }) => {
             color: "var(--accent)",
             cursor: "default",
             userSelect: "none",
+            transition: "transform 200ms var(--ease-spring)",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "scale(1.05)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "scale(1)";
           }}
         >
           RealLearn
         </span>
-        {/* suppressHydrationWarning: statically prerendered HTML cached across
-            a year boundary would otherwise hydration-error on the year. */}
         <span suppressHydrationWarning>© {new Date().getFullYear()} alakmar344</span>
-        <span aria-hidden="true">·</span>
+        <span aria-hidden="true" style={{ opacity: 0.5 }}>·</span>
         <span>AI-generated — verify with pros</span>
-      </p>
-      <p style={{ margin: "6px 0 0", display: "flex", justifyContent: "center", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-        <a href="/legal?tab=privacy" style={linkStyle}>Privacy</a>
-        <span aria-hidden="true">·</span>
-        <a href="/legal?tab=terms" style={linkStyle}>Terms</a>
-        <span aria-hidden="true">·</span>
-        <a href="/legal" style={linkStyle}>Legal</a>
-        <span aria-hidden="true">·</span>
-        <a href="mailto:esamzai365@gmail.com" style={linkStyle}>Support</a>
-      </p>
+      </div>
+      <nav
+        aria-label="Footer navigation"
+        style={{
+          marginTop: 10,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 6,
+          flexWrap: "wrap",
+        }}
+      >
+        <a href="/legal?tab=privacy" style={linkStyle} onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = "var(--accent)"; (e.currentTarget as HTMLAnchorElement).style.background = "var(--accent-dim)"; }} onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = "var(--accent)"; (e.currentTarget as HTMLAnchorElement).style.background = "transparent"; }}>Privacy</a>
+        <span aria-hidden="true" style={{ opacity: 0.5 }}>·</span>
+        <a href="/legal?tab=terms" style={linkStyle} onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = "var(--accent)"; (e.currentTarget as HTMLAnchorElement).style.background = "var(--accent-dim)"; }} onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = "var(--accent)"; (e.currentTarget as HTMLAnchorElement).style.background = "transparent"; }}>Terms</a>
+        <span aria-hidden="true" style={{ opacity: 0.5 }}>·</span>
+        <a href="/legal" style={linkStyle} onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = "var(--accent)"; (e.currentTarget as HTMLAnchorElement).style.background = "var(--accent-dim)"; }} onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = "var(--accent)"; (e.currentTarget as HTMLAnchorElement).style.background = "transparent"; }}>Legal</a>
+        <span aria-hidden="true" style={{ opacity: 0.5 }}>·</span>
+        <a href="mailto:esamzai365@gmail.com" style={linkStyle} onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = "var(--accent)"; (e.currentTarget as HTMLAnchorElement).style.background = "var(--accent-dim)"; }} onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = "var(--accent)"; (e.currentTarget as HTMLAnchorElement).style.background = "transparent"; }}>Support</a>
+      </nav>
       <CompanionDays />
     </footer>
   );

@@ -3,7 +3,6 @@
 interface Props {
   unlockedPart: number;
   completedParts: number[];
-  /** Total parts in this journey — 1 for fast mode, 3 for explain mode. */
   totalParts?: number;
 }
 
@@ -24,7 +23,6 @@ function NodeIcon({ part, unlockedPart, completedParts }: { part: number; unlock
 }
 
 export default function ProgressRail({ unlockedPart, completedParts, totalParts = 3 }: Props) {
-  /* ── Fast mode: a single direct answer — show a light badge, not a rail ── */
   if (totalParts <= 1) {
     const done = completedParts.includes(1);
     return (
@@ -32,7 +30,7 @@ export default function ProgressRail({ unlockedPart, completedParts, totalParts 
         role="status"
         aria-label={done ? "Quick answer mastered" : "Fast mode – one quick answer"}
         style={{
-          marginTop: varSpaceXl,
+          marginTop: "var(--space-xl)",
           display: "flex",
           justifyContent: "center",
         }}
@@ -43,7 +41,7 @@ export default function ProgressRail({ unlockedPart, completedParts, totalParts 
             display: "inline-flex",
             alignItems: "center",
             gap: 10,
-            padding: "10px 20px",
+            padding: "12px 22px",
             borderRadius: 999,
             fontSize: 13,
             fontWeight: 700,
@@ -52,6 +50,7 @@ export default function ProgressRail({ unlockedPart, completedParts, totalParts 
             background: done ? "var(--correct-bg)" : "var(--accent-dim)",
             border: `1.5px solid ${done ? "var(--correct)" : "var(--accent)"}`,
             boxShadow: "none",
+            transition: "all 300ms var(--ease-spring)",
           }}
         >
           <span aria-hidden="true" style={{ fontSize: 16 }}>{done ? "✓" : "•"}</span>
@@ -68,8 +67,8 @@ export default function ProgressRail({ unlockedPart, completedParts, totalParts 
     <nav
       aria-label="Learning progress"
       style={{
-        marginTop: varSpaceXl,
-        maxWidth: 400,
+        marginTop: "var(--space-xl)",
+        maxWidth: 420,
         marginInline: "auto",
         display: "flex",
         alignItems: "flex-start",
@@ -85,6 +84,7 @@ export default function ProgressRail({ unlockedPart, completedParts, totalParts 
           display: "flex",
           alignItems: "flex-start",
           width: "100%",
+          justifyContent: "space-between",
         }}
       >
         {parts.map((part, index) => {
@@ -101,25 +101,24 @@ export default function ProgressRail({ unlockedPart, completedParts, totalParts 
               aria-label={`Part ${part}: ${statusLabel}`}
               style={{ display: "flex", alignItems: "center", flex: 1 }}
             >
-              <div style={{ display: "grid", placeItems: "center", minWidth: 44 }}>
+              <div style={{ display: "grid", placeItems: "center", minWidth: 44, position: "relative" }}>
                 <div
                   className={active ? "animate-unlock-pop" : undefined}
                   aria-hidden="true"
                   style={{
-                    width: 44,
-                    height: 44,
+                    width: 48,
+                    height: 48,
                     borderRadius: "50%",
                     display: "grid",
                     placeItems: "center",
                     background: done ? "var(--correct)" : active ? "var(--accent)" : "var(--bg-card)",
                     border: locked ? "2px solid var(--border-default)" : "none",
                     boxShadow: done
-                      ? "none"
+                      ? "var(--shadow-glow-accent)"
                       : active
                         ? "var(--shadow-sm)"
                         : "none",
-                    backgroundSize: "200% 200%",
-                    animation: undefined,
+                    transition: "all 400ms var(--ease-spring)",
                   }}
                 >
                   <NodeIcon part={part} unlockedPart={unlockedPart} completedParts={completedParts} />
@@ -127,10 +126,13 @@ export default function ProgressRail({ unlockedPart, completedParts, totalParts 
                 <span
                   aria-hidden="true"
                   style={{
+                    position: "absolute",
+                    bottom: -18,
                     marginTop: 10,
-                    fontSize: 12,
-                    fontWeight: 600,
+                    fontSize: 11,
+                    fontWeight: 700,
                     color: done ? "var(--correct)" : active ? "var(--accent)" : "var(--text-tertiary)",
+                    whiteSpace: "nowrap",
                   }}
                 >
                   Part {part}
@@ -142,7 +144,7 @@ export default function ProgressRail({ unlockedPart, completedParts, totalParts 
                   style={{
                     height: 3,
                     flexGrow: 1,
-                    margin: "0 10px 18px",
+                    margin: "0 8px 22px",
                     borderRadius: 2,
                     background: done ? "var(--correct)" : "var(--border-default)",
                     transition: "background 350ms var(--ease-color)",
@@ -157,4 +159,3 @@ export default function ProgressRail({ unlockedPart, completedParts, totalParts 
   );
 }
 
-const varSpaceXl = "var(--space-xl)";

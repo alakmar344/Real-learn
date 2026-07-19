@@ -50,8 +50,9 @@ const PartCardBase = ({
         onClick={onToggleCollapse}
         aria-expanded={false}
         aria-controls={contentId}
+        className="interactive-lift"
         style={{
-          marginTop: varSpaceLg,
+          marginTop: "var(--space-lg)",
           width: "100%",
           height: 56,
           borderRadius: "var(--radius-lg)",
@@ -65,19 +66,25 @@ const PartCardBase = ({
           cursor: "pointer",
           minHeight: 48,
           fontWeight: 600,
-          transition: "all 200ms var(--ease-color)",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = "scale(1.01)";
-          e.currentTarget.style.boxShadow = "var(--shadow-lg), var(--glass-edge)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = "scale(1)";
-          e.currentTarget.style.boxShadow = "var(--glass-shadow), var(--glass-edge)";
+          transition: "all 300ms var(--ease-spring)",
         }}
       >
-        <span>✓ {part.title} · Completed</span>
-        <strong>{score ?? 0}/{part.quiz?.length ?? 2}</strong>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+          <span aria-hidden="true" style={{ fontSize: 18 }}>✓</span>
+          {part.title} · Completed
+        </span>
+        <span
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            fontSize: 14,
+            fontWeight: 700,
+          }}
+        >
+          {score ?? 0}/{part.quiz?.length ?? 2}
+          <span aria-hidden="true" style={{ fontSize: 12, opacity: 0.7 }}>expand</span>
+        </span>
       </button>
     );
   }
@@ -87,7 +94,7 @@ const PartCardBase = ({
       className="part-card animate-fade-up engraved identity-texture identity-corner texture-noise"
       aria-label={`Part ${part.partNumber}: ${part.title}`}
       style={{
-        marginTop: varSpaceXl,
+        marginTop: "var(--space-xl)",
         borderRadius: "var(--radius-2xl)",
         border: "1px solid var(--border-subtle)",
         background: "var(--bg-card)",
@@ -118,9 +125,8 @@ const PartCardBase = ({
           margin: "calc(-1 * clamp(20px, 5vw, 36px)) calc(-1 * clamp(20px, 5vw, 36px)) 0",
         }}
       />
-      {/* Locked-state obfuscation lives in globals.css (.part-locked-content)
-          so low-end devices can swap the expensive 12px blur for a cheap fade
-          via the data-perf tier. */}
+
+      {/* Locked-state obfuscation lives in globals.css (.part-locked-content) */}
       <div
         id={contentId}
         className={`part-locked-content${isUnlocked ? " is-unlocked" : ""}`}
@@ -133,13 +139,14 @@ const PartCardBase = ({
               border: "1px solid var(--border-accent)",
               background: "var(--accent-dim)",
               color: "var(--accent)",
-              padding: "4px 10px",
+              padding: "4px 12px",
               fontSize: 11,
               letterSpacing: "0.12em",
-              fontWeight: 600,
+              fontWeight: 700,
+              textTransform: "uppercase",
             }}
           >
-            PART {part.partNumber}
+            Part {part.partNumber}
           </span>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <span
@@ -165,7 +172,7 @@ const PartCardBase = ({
           </div>
         </div>
 
-        <h2 style={{ margin: "16px 0 0", fontSize: "clamp(22px, 4.5vw, 28px)", fontWeight: 600, fontFamily: "var(--font-display)", lineHeight: "var(--leading-snug)" }}>
+        <h2 style={{ margin: "16px 0 0", fontSize: "clamp(22px, 4.5vw, 28px)", fontWeight: 700, fontFamily: "var(--font-display)", lineHeight: "var(--leading-snug)" }}>
           {part.title}
         </h2>
 
@@ -183,7 +190,7 @@ const PartCardBase = ({
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{part.content}</ReactMarkdown>
         </div>
 
-        <div style={{ marginTop: varSpaceBase, display: "flex", flexWrap: "wrap", gap: varSpaceSm }}>
+        <div style={{ marginTop: "var(--space-base)", display: "flex", flexWrap: "wrap", gap: "var(--space-sm)" }}>
           {(part.sources ?? []).map((source) => (
             <SourceTag key={source} href={source} />
           ))}
@@ -215,7 +222,7 @@ const PartCardBase = ({
                 type="button"
                 onClick={onStartQuiz}
                 aria-label={`Take quiz for Part ${part.partNumber}`}
-                className="animate-fade-up"
+                className="animate-fade-up interactive-press"
                 style={{
                   marginTop: 4,
                   width: "100%",
@@ -230,6 +237,10 @@ const PartCardBase = ({
                   boxShadow: "var(--shadow-sm)",
                   minHeight: 52,
                   transition: "all 300ms var(--ease-color)",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = "scale(1.03)";
@@ -241,6 +252,7 @@ const PartCardBase = ({
                 }}
               >
                 I&apos;ve Read This → Take Quiz
+                <span aria-hidden="true" style={{ fontSize: 16 }}>📝</span>
               </button>
             )}
           </div>
@@ -248,35 +260,40 @@ const PartCardBase = ({
 
         {/* Collapse completed part */}
         {isCompleted && !isCollapsed ? (
-        <button
-          type="button"
-          onClick={onToggleCollapse}
-          aria-expanded={true}
-          aria-controls={contentId}
-          style={{
-            marginTop: varSpaceBase,
-            border: "1px solid var(--border-default)",
-            borderRadius: "var(--radius-md)",
-            background: "transparent",
-            color: "var(--text-secondary)",
-            padding: "12px 18px",
-            cursor: "pointer",
-            minHeight: 48,
-            transition: "all 500ms var(--ease-spring)",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = "var(--border-accent)";
-            e.currentTarget.style.color = "var(--accent)";
-            e.currentTarget.style.transform = "scale(1.03)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = "var(--border-default)";
-            e.currentTarget.style.color = "var(--text-secondary)";
-            e.currentTarget.style.transform = "scale(1)";
-          }}
-        >
-          Collapse part
-        </button>
+          <button
+            type="button"
+            onClick={onToggleCollapse}
+            aria-expanded={true}
+            aria-controls={contentId}
+            className="interactive-focus"
+            style={{
+              marginTop: "var(--space-base)",
+              border: "1px solid var(--border-default)",
+              borderRadius: "var(--radius-md)",
+              background: "transparent",
+              color: "var(--text-secondary)",
+              padding: "12px 18px",
+              cursor: "pointer",
+              minHeight: 48,
+              transition: "all 500ms var(--ease-spring)",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "var(--border-accent)";
+              e.currentTarget.style.color = "var(--accent)";
+              e.currentTarget.style.transform = "scale(1.03)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "var(--border-default)";
+              e.currentTarget.style.color = "var(--text-secondary)";
+              e.currentTarget.style.transform = "scale(1)";
+            }}
+          >
+            <span aria-hidden="true" style={{ fontSize: 14 }}>↑</span>
+            Collapse part
+          </button>
         ) : null}
       </div>
 
@@ -294,31 +311,29 @@ const PartCardBase = ({
             backdropFilter: "blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))",
             WebkitBackdropFilter: "blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))",
             zIndex: 10,
+            borderRadius: "var(--radius-2xl)",
           }}
         >
           <div
             style={{
               background: "var(--bg-card)",
-              padding: "24px 32px",
+              padding: "28px 36px",
               borderRadius: "var(--radius-xl)",
               border: "1px solid var(--border-subtle)",
               textAlign: "center",
               backdropFilter: "blur(var(--glass-blur)) saturate(var(--glass-saturate))",
               WebkitBackdropFilter: "blur(var(--glass-blur)) saturate(var(--glass-saturate))",
               boxShadow: "var(--shadow-lg), var(--glass-edge)",
+              maxWidth: 280,
             }}
           >
-            <span aria-hidden="true" style={{ display: "block", marginBottom: 12, color: "var(--text-tertiary)" }}>
-              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" style={{ display: "block", margin: "0 auto" }}>
-                <rect x="5" y="10.5" width="14" height="9.5" rx="2.5" stroke="currentColor" strokeWidth="1.8" />
-                <path d="M8 10V7.8C8 5.6 9.8 4 12 4s4 1.6 4 3.8V10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                <circle cx="12" cy="15.2" r="1.4" fill="currentColor" />
-              </svg>
+            <span aria-hidden="true" style={{ display: "block", marginBottom: 14, color: "var(--text-tertiary)", fontSize: 36 }}>
+              🔒
             </span>
             <h3 style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", margin: "0 0 6px" }}>
               Part {part.partNumber} Locked
             </h3>
-            <p style={{ fontSize: 13, color: "var(--text-tertiary)", margin: 0 }}>
+            <p style={{ fontSize: 13, color: "var(--text-tertiary)", margin: 0, lineHeight: 1.5 }}>
               Complete Part {part.partNumber - 1} quiz to unlock
             </p>
           </div>
@@ -326,12 +341,6 @@ const PartCardBase = ({
       )}
     </article>
   );
-}
-
-/* Design-token spacing helpers (avoid magic numbers) */
-const varSpaceSm = "var(--space-sm)";
-const varSpaceBase = "var(--space-base)";
-const varSpaceLg = "var(--space-lg)";
-const varSpaceXl = "var(--space-xl)";
+};
 
 export default memo(PartCardBase);
