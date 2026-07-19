@@ -131,12 +131,13 @@ export default function HomePage() {
         <section
           style={{
             flex: 1,
-            padding: "clamp(60px, 12vh, 120px) clamp(24px, 5vw, 48px) clamp(80px, 14vh, 160px)",
+            padding: "clamp(20px, 5vh, 48px) clamp(16px, 4vw, 32px)",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            justifyContent: "flex-end",
+            justifyContent: "center",
             textAlign: "center",
+            minHeight: 0,
           }}
         >
           <div style={{ width: "100%", maxWidth: 800, position: "relative" }}>
@@ -145,22 +146,24 @@ export default function HomePage() {
               aria-hidden="true"
               style={{
                 position: "absolute",
-                top: "50%",
+                top: "45%",
                 left: "50%",
-                transform: "translate(-50%, -55%)",
-                width: "min(560px, 90vw)",
-                height: "min(280px, 45vw)",
+                transform: "translate(-50%, -50%)",
+                width: "min(420px, 75vw)",
+                height: "min(220px, 40vw)",
                 borderRadius: "50%",
                 background:
-                  "radial-gradient(ellipse at center, rgba(43, 68, 224, 0.12) 0%, rgba(216, 74, 40, 0.06) 45%, transparent 70%)",
-                filter: "blur(60px)",
+                  "radial-gradient(ellipse at center, rgba(43, 68, 224, 0.1) 0%, rgba(216, 74, 40, 0.05) 45%, transparent 70%)",
+                filter: "blur(50px)",
                 zIndex: 0,
                 pointerEvents: "none",
               }}
             />
 
             {/* The slim daily-spark / resume strip sits above the greeting */}
-            <HomeStats onStartTopic={(topic) => submit(topic)} />
+            <div style={{ position: "relative", zIndex: 1 }}>
+              <HomeStats onStartTopic={(topic) => submit(topic)} />
+            </div>
 
             {/* Personal, time-aware hello */}
             <div
@@ -168,11 +171,7 @@ export default function HomePage() {
               style={{
                 position: "relative",
                 zIndex: 1,
-                minHeight: 140,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                marginTop: 48,
+                marginTop: 24,
               }}
             >
               {greeting ? (
@@ -217,7 +216,7 @@ export default function HomePage() {
               )}
             </div>
 
-            <div style={{ position: "relative", zIndex: 1, display: "flex", justifyContent: "center", marginTop: 40 }}>
+            <div style={{ position: "relative", zIndex: 1, display: "flex", justifyContent: "center", marginTop: 20 }}>
               <QuestionInput question={question} setQuestion={setQuestion} onSubmit={submit} />
             </div>
           </div>
