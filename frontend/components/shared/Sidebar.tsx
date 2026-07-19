@@ -86,15 +86,15 @@ export default function Sidebar({ open, onClose }: Props) {
               marginBottom: 18,
             }}
           >
-            <svg viewBox="0 0 120 40" fill="none" aria-hidden="true" style={{ width: 38, height: "auto" }}>
+            <svg viewBox="0 0 120 40" fill="none" aria-hidden="true" style={{ width: 38, height: 38, flexShrink: 0 }}>
               <defs>
                 <linearGradient id="sidebar-logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#5b5bd6" />
-                  <stop offset="100%" stopColor="#7c6eef" />
+                  <stop offset="0%" stopColor="#b8372b" />
+                  <stop offset="100%" stopColor="#942c22" />
                 </linearGradient>
               </defs>
-              <rect width="120" height="40" rx="12" fill="url(#sidebar-logo-gradient)" />
-              <text x="10" y="27" fontFamily="Inter, sans-serif" fontWeight="900" fontSize="18" fill="white">
+              <rect width="40" height="40" rx="12" fill="url(#sidebar-logo-gradient)" />
+              <text x="9" y="27" fontFamily="Inter, sans-serif" fontWeight="900" fontSize="17" fill="white">
                 RL
               </text>
             </svg>
@@ -111,9 +111,10 @@ export default function Sidebar({ open, onClose }: Props) {
             </span>
             <button
               type="button"
-              className="app-sidebar-close"
+              className="app-sidebar-close btn-icon"
               aria-label="Close menu"
               onClick={onClose}
+              style={{ width: 34, height: 34, minHeight: "auto", fontSize: 14 }}
             >
               ✕
             </button>
@@ -121,28 +122,8 @@ export default function Sidebar({ open, onClose }: Props) {
           <button
             type="button"
             onClick={handleNewLesson}
-            style={{
-              width: "100%",
-              border: "none",
-              borderRadius: "var(--radius-lg)",
-              padding: "14px 18px",
-               background: "var(--accent)",
-               color: "var(--on-accent)",
-               fontWeight: 700,
-               fontSize: 14,
-               cursor: "pointer",
-               minHeight: 52,
-              boxShadow: "var(--shadow-glow-accent)",
-              transition: "all 200ms var(--ease-color)",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "scale(1.02)";
-              e.currentTarget.style.boxShadow = "var(--shadow-md)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "scale(1)";
-              e.currentTarget.style.boxShadow = "var(--shadow-sm)";
-            }}
+            className="btn-primary"
+            style={{ width: "100%" }}
           >
             ＋ New lesson
           </button>
@@ -261,29 +242,10 @@ export default function Sidebar({ open, onClose }: Props) {
           <button
             type="button"
             onClick={() => setThemeOpen(true)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              border: "1px solid var(--border-subtle)",
-              borderRadius: "var(--radius-lg)",
-              background: "var(--bg-card)",
-              color: "var(--text-primary)",
-              padding: "14px 18px",
-               cursor: "pointer",
-               fontSize: 13,
-               fontWeight: 500,
-               minHeight: 52,
-              transition: "all 200ms var(--ease-color)",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "var(--accent)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "var(--border-subtle)";
-            }}
+            className="btn-ghost"
+            style={{ width: "100%", justifyContent: "space-between", fontSize: 13 }}
           >
-            <span>Theme</span>
+            <span>🎨 Theme</span>
             <span style={{ color: "var(--accent)", fontSize: 12 }}>Open</span>
           </button>
 
@@ -292,27 +254,8 @@ export default function Sidebar({ open, onClose }: Props) {
             <button
               type="button"
               onClick={() => { onClose(); router.push("/settings"); }}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                border: "1px solid var(--border-subtle)",
-                borderRadius: "var(--radius-lg)",
-                background: "var(--bg-card)",
-                color: "var(--text-primary)",
-              padding: "14px 18px",
-               cursor: "pointer",
-               fontSize: 13,
-               fontWeight: 500,
-               minHeight: 52,
-                transition: "all 200ms var(--ease-color)",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = "var(--accent)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "var(--border-subtle)";
-              }}
+              className="btn-ghost"
+              style={{ width: "100%", justifyContent: "space-between", fontSize: 13 }}
             >
               <span>⚙️ Settings</span>
               <span style={{ color: "var(--accent)", fontSize: 12 }}>Account & data</span>

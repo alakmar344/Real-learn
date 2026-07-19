@@ -298,31 +298,10 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
               type="button"
               aria-label="Clear question"
               title="Clear"
+              className="btn-icon btn-icon--danger"
               onClick={() => {
                 setQuestion("");
                 textareaRef.current?.focus();
-              }}
-              style={{
-                width: 38,
-                height: 38,
-                borderRadius: "50%",
-                border: "1px solid var(--border-default)",
-                background: "transparent",
-                color: "var(--text-tertiary)",
-                cursor: "pointer",
-                display: "grid",
-                placeItems: "center",
-                transition: "all 400ms var(--ease-spring)",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = "var(--wrong)";
-                e.currentTarget.style.color = "var(--wrong)";
-                e.currentTarget.style.transform = "scale(1.08)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "var(--border-default)";
-                e.currentTarget.style.color = "var(--text-tertiary)";
-                e.currentTarget.style.transform = "scale(1)";
               }}
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -335,29 +314,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
             type="submit"
             disabled={!question.trim()}
             aria-label="Start learning"
-            style={{
-              border: "none",
-              borderRadius: "var(--radius-lg)",
-              padding: "12px 24px",
-                  fontSize: 15,
-                  fontWeight: 600,
-                  color: "var(--on-accent)",
-                  background: question.trim() ? "var(--accent)" : "var(--border-default)",
-                  cursor: question.trim() ? "pointer" : "not-allowed",
-                  transition: "all 500ms var(--ease-spring)",
-                  minHeight: 52,
-              boxShadow: question.trim() ? "var(--shadow-glow-accent)" : "none",
-            }}
-            onMouseEnter={(e) => {
-              if (question.trim()) {
-                e.currentTarget.style.transform = "scale(1.04)";
-                e.currentTarget.style.boxShadow = "var(--shadow-lg), var(--glass-edge)";
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "scale(1)";
-              e.currentTarget.style.boxShadow = question.trim() ? "var(--shadow-glow-accent)" : "none";
-            }}
+            className="btn-primary"
           >
             {mode === "fast" ? "Get a Quick Answer →" : "Start Guided Lesson →"}
           </button>
@@ -366,27 +323,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
             <button
               type="button"
               aria-label="Sign in to start learning"
-              style={{
-                border: "none",
-                borderRadius: "var(--radius-lg)",
-              padding: "12px 24px",
-                  fontSize: 15,
-                  fontWeight: 600,
-                  color: "var(--on-accent)",
-                  background: "var(--accent)",
-                  cursor: "pointer",
-                  transition: "all 500ms var(--ease-spring)",
-                  minHeight: 52,
-                boxShadow: "var(--shadow-glow-accent)",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "scale(1.04)";
-                e.currentTarget.style.boxShadow = "var(--shadow-lg), var(--glass-edge)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "scale(1)";
-                e.currentTarget.style.boxShadow = "var(--shadow-glow-accent)";
-              }}
+              className="btn-primary"
             >
               Sign in to Learn →
             </button>

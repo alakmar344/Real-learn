@@ -39,19 +39,11 @@ function Card({ children, span }: { children: React.ReactNode; span?: boolean })
 
 function StatTile({ label, value, accent }: { label: string; value: string | number; accent?: boolean }) {
   return (
-    <div
-      style={{
-        borderRadius: "var(--radius-lg)",
-        border: "1px solid var(--border-subtle)",
-        background: "var(--bg-surface)",
-        padding: "14px 10px",
-        textAlign: "center",
-      }}
-    >
-      <div style={{ fontSize: 24, fontWeight: 800, color: accent ? "var(--accent)" : "var(--text-primary)", lineHeight: 1.1 }}>
+    <div className="stat-tile">
+      <div className="stat-tile__value" style={accent ? { color: "var(--accent)" } : undefined}>
         {value}
       </div>
-      <div style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 3 }}>{label}</div>
+      <div className="stat-tile__label">{label}</div>
     </div>
   );
 }
@@ -123,6 +115,9 @@ export default function ProgressPage() {
       <div style={{ maxWidth: 880, margin: "0 auto", padding: "24px 20px 56px" }}>
         {/* Page heading */}
         <div style={{ marginBottom: 20 }}>
+          <span className="section-overline" style={{ marginBottom: 6 }}>
+            進捗 — Progress
+          </span>
           <h1
             style={{
               margin: 0,
@@ -137,6 +132,9 @@ export default function ProgressPage() {
           <p style={{ margin: "6px 0 0", color: "var(--text-secondary)", fontSize: 14 }}>
             Every quiz you pass builds this. Keep the flame alive.
           </p>
+        </div>
+        <div className="kusari" style={{ margin: "0 0 24px", maxWidth: 240 }} aria-hidden="true">
+          <span className="kusari__bead" />
         </div>
 
         {!mounted ? (

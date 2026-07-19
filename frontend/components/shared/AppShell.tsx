@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import Sidebar from "@/components/shared/Sidebar";
+import ScrollToTop from "@/components/shared/ScrollToTop";
 import dynamic from "next/dynamic";
 
 const PreferenceModal = dynamic(() => import("@/components/shared/PreferenceModal"), {
@@ -79,6 +80,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       </button>
       <Sidebar open={open} onClose={() => setOpen(false)} />
       <div id="main-content" className="app-main">{children}</div>
+      <ScrollToTop />
       <EngagementLayer />
       <PreferenceModal open={showFirstPrefs} onClose={() => setShowFirstPrefs(false)} />
     </div>

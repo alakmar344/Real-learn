@@ -352,6 +352,9 @@ export default function SettingsPage() {
           <span style={{ fontSize: 18 }}>←</span> Back
         </button>
 
+        <span className="section-overline" style={{ marginBottom: 6 }}>
+          設定 — Settings
+        </span>
         <h1
           style={{
             fontFamily: "var(--font-display)",

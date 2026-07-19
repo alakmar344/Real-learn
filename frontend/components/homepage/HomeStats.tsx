@@ -88,20 +88,7 @@ export default function HomeStats({ onStartTopic }: Props) {
           }
           onStartTopic(topic);
         }}
-        className="interactive-press glow-accent"
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 8,
-          maxWidth: "100%",
-          border: "1px dashed var(--border-default)",
-          background: "transparent",
-          borderRadius: 999,
-          padding: "10px 20px",
-          cursor: "pointer",
-          color: "var(--text-secondary)",
-          fontSize: 13,
-        }}
+        className="chip"
         title="Start today's suggested topic"
       >
         <span style={{ color: "var(--text-tertiary)" }}>Today&apos;s spark:</span>
@@ -130,6 +117,7 @@ export default function HomeStats({ onStartTopic }: Props) {
             // question flow — usually a server-cache hit.
             onStartTopic(inProgress.question);
           }}
+          className="rl-card"
           style={{
             display: "flex",
             alignItems: "center",
@@ -137,16 +125,8 @@ export default function HomeStats({ onStartTopic }: Props) {
             maxWidth: 460,
             width: "100%",
             textAlign: "left",
-            border: "1px solid var(--border-default)",
-            background: "var(--bg-card)",
-            borderRadius: "var(--radius-lg)",
             padding: "12px 18px",
-            cursor: "pointer",
-            boxShadow: "var(--shadow-sm)",
-            position: "relative",
-            overflow: "hidden",
           }}
-          className="interactive-lift texture-noise"
         >
           <span style={{ fontSize: 20 }}>↩️</span>
           <span style={{ flex: 1, minWidth: 0 }}>

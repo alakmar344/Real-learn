@@ -1,13 +1,25 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import ProgressHub from "@/components/shared/ProgressHub";
 
 interface Props {
   compact?: boolean;
 }
 
+/** Primary navigation. The links are hidden on the auth pages and on very
+ *  small screens (the sidebar + ProgressHub cover wayfinding there), keeping
+ *  the bar calm and focused on the brand + the growing-self widget. */
+const NAV_ITEMS = [
+  { href: "/", label: "Home", kanji: "家" },
+  { href: "/learn", label: "Learn", kanji: "学" },
+  { href: "/progress", label: "Progress", kanji: "進" },
+];
+
 export default function Navbar({ compact = false }: Props) {
+  const pathname = usePathname();
+
   return (
     <header
       className="engraved texture-dots"
@@ -40,7 +52,7 @@ export default function Navbar({ compact = false }: Props) {
         <Link
           href="/"
           aria-label="RealLearn – Home"
-          style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}
+          style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}
         >
           <div
             style={{
@@ -84,6 +96,34 @@ export default function Navbar({ compact = false }: Props) {
           </span>
         </Link>
 
+        {/* ── Wayfinding links — calm pills with a soft kanji overline.
+            Hidden below 900px where the sidebar is the primary nav. ── */}
+        <nav
+          aria-label="Primary"
+          className="navbar-links"
+          style={{ display: "flex", alignItems: "center", gap: 4, marginLeft: 8 }}
+        >
+          {NAV_ITEMS.map((item) => {
+            const active =
+              item.href === "/"
+                ? pathname === "/"
+                : pathname?.startsWith(item.href) ?? false;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`nav-link${active ? " nav-link--active" : ""}`}
+                aria-current={active ? "page" : undefined}
+              >
+                <span aria-hidden="true" style={{ fontSize: 11, opacity: 0.6, lineHeight: 1 }}>
+                  {item.kanji}
+                </span>
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+
         <ProgressHub />
       </div>
 
@@ -91,6 +131,9 @@ export default function Navbar({ compact = false }: Props) {
         @media (max-width: 900px) {
           .navbar-inner {
             padding-left: 72px !important;
+          }
+          .navbar-links {
+            display: none !important;
           }
         }
       `}</style>
