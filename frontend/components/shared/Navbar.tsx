@@ -79,6 +79,63 @@ export default function Navbar({ compact = false }: Props) {
           gap: 16,
         }}
       >
+        {/* Mobile hamburger — triggers AppShell sidebar */}
+        {isSignedIn && (
+          <button
+            type="button"
+            className="mobile-nav-toggle"
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileOpen}
+            onClick={handleToggle}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 40,
+              height: 40,
+              borderRadius: "var(--radius-md)",
+              border: "1px solid var(--border-subtle)",
+              background: "var(--bg-card)",
+              color: "var(--text-secondary)",
+              cursor: "pointer",
+              transition: "all 250ms var(--ease-color)",
+              flexShrink: 0,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "var(--border-accent)";
+              e.currentTarget.style.color = "var(--accent)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "var(--border-subtle)";
+              e.currentTarget.style.color = "var(--text-secondary)";
+            }}
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              style={{ transition: "transform 300ms var(--ease-spring)" }}
+            >
+              {mobileOpen ? (
+                <>
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </>
+              ) : (
+                <>
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <line x1="3" y1="12" x2="21" y2="12" />
+                  <line x1="3" y1="18" x2="21" y2="18" />
+                </>
+              )}
+            </svg>
+          </button>
+        )}
+
         <Link
           href="/"
           aria-label="RealLearn – Home"
@@ -207,8 +264,9 @@ export default function Navbar({ compact = false }: Props) {
               background: "var(--bg-card)",
               color: "var(--text-secondary)",
               cursor: "pointer",
-              marginLeft: "auto",
+              marginRight: 8,
               transition: "all 250ms var(--ease-color)",
+              flexShrink: 0,
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.borderColor = "var(--border-accent)";
@@ -256,14 +314,11 @@ export default function Navbar({ compact = false }: Props) {
           }
         }
         @media (max-width: 900px) {
-          .navbar-inner {
-            padding-left: 72px !important;
+          .mobile-nav-toggle {
+            display: flex !important;
           }
           .desktop-nav {
             display: none !important;
-          }
-          .mobile-nav-toggle {
-            display: flex !important;
           }
         }
       `}</style>
