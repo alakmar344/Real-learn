@@ -6,15 +6,11 @@ import {
   Space_Grotesk,
 } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
-import CookieConsent from "@/components/shared/CookieConsent";
-import GoogleAnalytics from "@/components/shared/GoogleAnalytics";
-import PreSignInConsent from "@/components/shared/PreSignInConsent";
 import AppShell from "@/components/shared/AppShell";
 import ThemeApplier from "@/components/shared/ThemeApplier";
 import CrayonBackground from "@/components/shared/CrayonBackground";
-import EasterEggs from "@/components/shared/EasterEggs";
-import ToastContainer from "@/components/shared/ToastContainer";
 import SkipToContent from "@/components/shared/SkipToContent";
+import DeferredProviders from "@/components/shared/DeferredProviders";
 import "./globals.css";
 
 // Self-hosted fonts via next/font: subsetted, cached immutably, zero
@@ -113,11 +109,7 @@ export default function RootLayout({
         <ClerkProvider afterSignOutUrl="/">
           <ThemeApplier />
           <AppShell>{children}</AppShell>
-          <ToastContainer />
-          <EasterEggs />
-          <GoogleAnalytics />
-          <CookieConsent />
-          <PreSignInConsent />
+          <DeferredProviders />
         </ClerkProvider>
       </body>
     </html>

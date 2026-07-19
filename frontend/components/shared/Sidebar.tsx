@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { useAuth } from "@clerk/nextjs";
-import ConfirmModal from "@/components/shared/ConfirmModal";
-import ThemeModal from "@/components/shared/ThemeModal";
 import { useLessonStore } from "@/store/lessonStore";
 import { useSavedJourneysStore } from "@/store/savedJourneysStore";
 import { useLesson } from "@/hooks/useLesson";
@@ -12,6 +11,18 @@ import { getArchivedLesson } from "@/lib/lessonArchive";
 import { useMounted } from "@/hooks/useMounted";
 import { useShallow } from "zustand/shallow";
 import { SavedJourney } from "@/types";
+
+// Lazy-load modals — they are only needed when the user clicks to open them.
+// This removes both components (and their deps, e.g. focus-trap hooks) from
+// the initial JS bundle, cutting parse/compile time on first paint.
+const ThemeModal = dynamic(
+  () => import("@/components/shared/ThemeModal"),
+  { ssr: false }
+);
+const ConfirmModal = dynamic(
+  () => import("@/components/shared/ConfirmModal"),
+  { ssr: false }
+);
 
 interface Props {
   open: boolean;
