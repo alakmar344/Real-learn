@@ -52,33 +52,12 @@ const QuizQuestionBase = ({
 
   return (
     <div role="group" aria-label={`Question ${index + 1} of ${totalQuestions}`} className="quiz-question">
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-        <span
-          aria-hidden="true"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: 28,
-            height: 28,
-            borderRadius: "var(--radius-sm)",
-            background: "var(--accent-dim)",
-            color: "var(--accent)",
-            fontSize: 12,
-            fontWeight: 800,
-          }}
-        >
-          {index + 1}
-        </span>
-        <p style={{ margin: 0, fontSize: 12, color: "var(--text-tertiary)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em" }}>
-          Question {index + 1} of {totalQuestions}
-        </p>
-      </div>
-
-      <p style={{ margin: "0 0 20px", fontSize: 16, fontWeight: 600, color: "var(--text-primary)", lineHeight: 1.5 }}>
+      <p style={{ margin: 0, marginBottom: 8, fontSize: 12, color: "var(--text-tertiary)", fontWeight: 500 }}>
+        Question {index + 1} of {totalQuestions}
+      </p>
+      <p style={{ margin: 0, marginBottom: 16, fontSize: 16, fontWeight: 600, color: "var(--text-primary)" }}>
         {question.question}
       </p>
-
       <div role="radiogroup" aria-label="Answer options">
         {options.map((option, optionIndex) => {
           const isSelected = selectedIndex === optionIndex;
@@ -92,6 +71,8 @@ const QuizQuestionBase = ({
 
           if (showCorrectAnswer) {
             background = "var(--correct-bg)";
+            // Derive from the theme token — the old hardcoded light-palette
+            // green was nearly invisible against dark-theme backgrounds.
             border = "1.5px solid color-mix(in srgb, var(--correct) 45%, transparent)";
             color = "var(--text-primary)";
           }
@@ -104,6 +85,8 @@ const QuizQuestionBase = ({
 
           return (
             <button
+              // Index-keyed: options are model-generated and can contain
+              // duplicate text, which broke reconciliation after reshuffles.
               key={`${optionIndex}-${option}`}
               ref={(el) => { optionRefs.current[optionIndex] = el; }}
               type="button"
@@ -117,65 +100,53 @@ const QuizQuestionBase = ({
               style={{
                 width: "100%",
                 textAlign: "left",
-                marginBottom: 10,
+                marginBottom: 8,
                 borderRadius: "var(--radius-md)",
                 border,
                 background,
                 color,
-                padding: "16px 18px",
+                padding: "14px 16px",
                 cursor: answered ? "default" : "pointer",
                 fontSize: 14,
                 transition: "all 150ms var(--ease-color)",
-                minHeight: 52,
-                display: "flex",
-                alignItems: "center",
-                gap: 14,
+                minHeight: 44, /* Touch-friendly target */
               }}
             >
               <span
                 style={{
                   display: "inline-grid",
                   placeItems: "center",
-                  width: 28,
-                  height: 28,
+                  width: 24,
+                  height: 24,
+                  marginRight: 12,
                   borderRadius: "var(--radius-sm)",
                   background: showCorrectAnswer ? "var(--correct)" : isWrongSelected ? "var(--wrong)" : "var(--border-default)",
                   color: showCorrectAnswer || isWrongSelected ? "white" : "var(--text-secondary)",
-                  fontWeight: 800,
+                  fontWeight: 700,
                   fontSize: 12,
-                  flexShrink: 0,
-                  transition: "all 200ms var(--ease-color)",
                 }}
               >
                 {letters[optionIndex]}
               </span>
-              <span style={{ flex: 1, lineHeight: 1.5 }}>{option}</span>
-              {showCorrectAnswer && (
-                <span aria-hidden="true" style={{ color: "var(--correct)", fontSize: 18 }}>✓</span>
-              )}
-              {isWrongSelected && (
-                <span aria-hidden="true" style={{ color: "var(--wrong)", fontSize: 18 }}>✕</span>
-              )}
+              {option}
             </button>
           );
         })}
       </div>
-
       {answered ? (
         <div
           className="animate-fade-up"
           role="alert"
           style={{
-            marginTop: 12,
-            padding: "14px 18px",
+            marginTop: 8,
+            padding: "12px 16px",
             borderRadius: "var(--radius-md)",
-            borderLeft: `4px solid ${selectedIndex === question.correctIndex ? "var(--correct)" : "var(--wrong)"}`,
+            borderLeft: `3px solid ${selectedIndex === question.correctIndex ? "var(--correct)" : "var(--wrong)"}`,
             background: "var(--bg-primary)",
             color: "var(--text-secondary)",
             fontSize: 13,
             fontFamily: "var(--font-lora)",
             fontStyle: "italic",
-            lineHeight: 1.6,
           }}
         >
           {question.explanation}

@@ -45,7 +45,6 @@ export default function HomePage() {
   const [loadingQuestion, setLoadingQuestion] = useState<string | null>(null);
   const [greeting, setGreeting] = useState("");
   const [greetingIcon, setGreetingIcon] = useState("");
-  const [mounted, setMounted] = useState(false);
   const { generateLesson } = useLesson();
   const { isSignedIn, getToken } = useAuth();
   const { user } = useUser();
@@ -54,7 +53,6 @@ export default function HomePage() {
   const firstName = user?.firstName || "";
 
   useEffect(() => {
-    setMounted(true);
     const now = new Date();
     const hour = now.getHours();
     setGreeting(greetingForHour(hour));
@@ -67,7 +65,7 @@ export default function HomePage() {
       const parsed = readLegalConsent();
       if (!parsed?.accepted) return;
       if (parsed.syncedClerkId === user.id) return;
-      if (isConsentCurrent(parsed)) return;
+      if (!isConsentCurrent(parsed)) return;
 
       try {
         const backendUrl =
@@ -118,15 +116,6 @@ export default function HomePage() {
     console.log("[frontend][HomePage] submit finished");
   };
 
-  if (!mounted) {
-    return (
-      <>
-        <LiveRegion />
-        <main style={{ minHeight: "100vh" }} />
-      </>
-    );
-  }
-
   return (
     <>
       <LiveRegion />
@@ -136,45 +125,46 @@ export default function HomePage() {
           display: "flex",
           flexDirection: "column",
         }}
-        className="page-enter"
       >
         <Navbar />
 
         <section
           style={{
             flex: 1,
-            padding: "clamp(24px, 6vh, 64px) clamp(16px, 4vw, 32px)",
+            padding: "clamp(20px, 5vh, 48px) clamp(16px, 4vw, 32px)",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
             textAlign: "center",
             minHeight: 0,
-            position: "relative",
           }}
         >
           <div style={{ width: "100%", maxWidth: 800, position: "relative" }}>
-            {/* Soft decorative glow behind the greeting */}
+            {/* Soft decorative glow behind the greeting — vermillion/washi warmth
+                to match the Japanese palette (an old cobalt-blue tint used to
+                bleed through here, clashing with the theme). */}
             <div
               aria-hidden="true"
               style={{
                 position: "absolute",
-                top: "40%",
+                top: "45%",
                 left: "50%",
                 transform: "translate(-50%, -50%)",
-                width: "min(480px, 80vw)",
-                height: "min(280px, 50vw)",
+                width: "min(420px, 75vw)",
+                height: "min(220px, 40vw)",
                 borderRadius: "50%",
                 background:
                   "radial-gradient(ellipse at center, var(--accent-glow) 0%, var(--sun-wash) 45%, transparent 70%)",
-                filter: "blur(60px)",
+                filter: "blur(50px)",
                 zIndex: 0,
                 pointerEvents: "none",
-                opacity: 0.7,
               }}
             />
 
-            {/* 学ぶ — vertical brush-script watermark */}
+            {/* 学ぶ — "to learn". A faint vertical brush-script watermark, set
+                in authentic top-to-bottom Japanese writing, gives the hero a
+                quiet cultural signature without competing with the greeting. */}
             <span
               aria-hidden="true"
               style={{
@@ -209,7 +199,7 @@ export default function HomePage() {
               style={{
                 position: "relative",
                 zIndex: 1,
-                marginTop: 28,
+                marginTop: 24,
               }}
             >
               {greeting ? (
@@ -228,7 +218,7 @@ export default function HomePage() {
                   <span
                     className="hero-greeting-icon"
                     aria-hidden="true"
-                    style={{ marginRight: 12, display: "inline-block" }}
+                    style={{ marginRight: 12 }}
                   >
                     {greetingIcon}
                   </span>
@@ -254,50 +244,7 @@ export default function HomePage() {
               )}
             </div>
 
-            {/* Subtitle / value prop */}
-            <p
-              style={{
-                position: "relative",
-                zIndex: 1,
-                marginTop: 16,
-                fontSize: "clamp(16px, 3.5vw, 20px)",
-                color: "var(--text-secondary)",
-                fontFamily: "var(--font-lora), Georgia, serif",
-                lineHeight: 1.6,
-                maxWidth: 560,
-                marginLeft: "auto",
-                marginRight: "auto",
-              }}
-            >
-              Ask anything. Learn everything. Unlock knowledge through progressive discovery.
-            </p>
-
-            {/* Onboarding hint for new users */}
-            {!isSignedIn && (
-              <div
-                className="animate-fade-up"
-                style={{
-                  position: "relative",
-                  zIndex: 1,
-                  marginTop: 16,
-                  padding: "12px 20px",
-                  borderRadius: "var(--radius-lg)",
-                  border: "1px solid var(--border-subtle)",
-                  background: "var(--bg-card)",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 10,
-                  fontSize: 14,
-                  color: "var(--text-secondary)",
-                  fontFamily: "var(--font-lora), Georgia, serif",
-                }}
-              >
-                <span aria-hidden="true" style={{ fontSize: 18 }}>💡</span>
-                Sign in to save your progress, track streaks, and build your learning journey.
-              </div>
-            )}
-
-            <div style={{ position: "relative", zIndex: 1, display: "flex", justifyContent: "center", marginTop: 24 }}>
+            <div style={{ position: "relative", zIndex: 1, display: "flex", justifyContent: "center", marginTop: 20 }}>
               <QuestionInput question={question} setQuestion={setQuestion} onSubmit={submit} />
             </div>
           </div>
@@ -305,7 +252,8 @@ export default function HomePage() {
 
         <Footer className="app-footer" />
 
-        {/* Optional, anonymous review */}
+        {/* Optional, anonymous review — shows the day after the first lesson
+            on any return visit, so it is never missed after a refresh. */}
         <FeedbackGate />
 
         {loadingQuestion ? (

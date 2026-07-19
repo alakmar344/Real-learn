@@ -12,26 +12,26 @@ interface Props {
   onRetake?: () => void;
 }
 
+/* ── Confetti particles — brand palette, restrained not rainbow ── */
 const CONFETTI_COLORS = [
-  "#b8372b",
-  "#d4443a",
-  "#e06b5a",
-  "#942c22",
-  "#f0c4b8",
-  "#2a7a50",
-  "#5cb880",
-  "#d89a58",
+  "#3b5bff",
+  "#2b44e0",
+  "#7b90ff",
+  "#e0532f",
+  "#f0764f",
+  "#1a8a5c",
+  "#17171f",
 ];
 
 function Confetti() {
   const [particles] = useState(() =>
-    Array.from({ length: 60 }, (_, i) => ({
+    Array.from({ length: 50 }, (_, i) => ({
       id: i,
       left: Math.random() * 100,
-      delay: Math.random() * 2,
-      size: 5 + Math.random() * 8,
+      delay: Math.random() * 1.5,
+      size: 6 + Math.random() * 8,
       color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
-      duration: 2.5 + Math.random() * 2,
+      duration: 2 + Math.random() * 2,
       rotation: Math.random() * 360,
     }))
   );
@@ -47,7 +47,7 @@ function Confetti() {
             left: `${p.left}%`,
             width: p.size,
             height: p.size,
-            borderRadius: p.id % 3 === 0 ? "50%" : p.id % 3 === 1 ? "3px" : "0",
+            borderRadius: p.id % 3 === 0 ? "50%" : p.id % 3 === 1 ? "2px" : "0",
             background: p.color,
             animation: `confettiFall ${p.duration}s ${p.delay}s var(--ease-reveal) both`,
             transform: `rotate(${p.rotation}deg)`,
@@ -60,39 +60,31 @@ function Confetti() {
 
 export default function CompletionScreen({ lesson, totalScore, onRestart, onRetake }: Props) {
   const [showConfetti, setShowConfetti] = useState(true);
-  const [showScore, setShowScore] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    const confettiId = setTimeout(() => setShowConfetti(false), 4000);
-    const scoreId = setTimeout(() => setShowScore(true), 300);
-    return () => {
-      clearTimeout(confettiId);
-      clearTimeout(scoreId);
-    };
+    const id = setTimeout(() => setShowConfetti(false), 4000);
+    return () => clearTimeout(id);
   }, []);
 
+  // Max score = the ACTUAL number of quiz questions — salvaged quizzes can
+  // have 1 question, so hardcoding 2 per part made perfection unreachable.
+  // Guard the denominator: an empty/salvaged lesson (no parts) would otherwise
+  // yield maxScore 0 → NaN% and a NaN strokeDashoffset (broken ring).
   const maxScore = Math.max(
     1,
     (lesson.parts ?? []).reduce((sum, part) => sum + (part.quiz?.length ?? 2), 0) ||
       (lesson.parts?.length ?? 3) * 2
   );
 
+  /* Announce to screen readers */
   useEffect(() => {
     const el = document.getElementById("sr-live-region");
     if (el) el.textContent = "Journey complete. Your score is " + totalScore + " out of " + maxScore + ".";
   }, [totalScore, maxScore]);
   const pct = Math.round((totalScore / maxScore) * 100);
-  const circumference = 2 * Math.PI * 44;
+  const circumference = 2 * Math.PI * 42;
   const offset = circumference - (pct / 100) * circumference;
-
-  const getScoreMessage = () => {
-    if (pct >= 100) return "Perfect score — you're a master!";
-    if (pct >= 80) return "Excellent work — truly impressive!";
-    if (pct >= 60) return "Great effort — keep it up!";
-    if (pct >= 40) return "Good try — another pass will seal it.";
-    return "A tough one — worth another look.";
-  };
 
   return (
     <section
@@ -115,31 +107,28 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
       {showConfetti && <Confetti />}
 
       {/* Score circle */}
-      <div style={{ display: "flex", alignItems: "center", gap: "var(--space-lg)", flexWrap: "wrap" }}>
-        <div style={{ position: "relative", width: 110, height: 110, flexShrink: 0 }} aria-hidden="true">
-          <svg width="110" height="110" viewBox="0 0 110 110">
+      <div style={{ display: "flex", alignItems: "center", gap: varSpaceLg, flexWrap: "wrap" }}>
+        <div style={{ position: "relative", width: 100, height: 100, flexShrink: 0 }} aria-hidden="true">
+          <svg width="100" height="100" viewBox="0 0 100 100">
             <defs>
               <linearGradient id="score-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="var(--correct)" />
-                <stop offset="100%" stopColor="var(--accent)" />
+                <stop offset="0%" stopColor="#3b5bff" />
+                <stop offset="100%" stopColor="#2236b8" />
               </linearGradient>
             </defs>
-            <circle cx="55" cy="55" r="44" fill="none" stroke="var(--border-subtle)" strokeWidth="6" />
+            <circle cx="50" cy="50" r="42" fill="none" stroke="var(--border-subtle)" strokeWidth="6" />
             <circle
-              cx="55"
-              cy="55"
-              r="44"
+              cx="50"
+              cy="50"
+              r="42"
               fill="none"
               stroke="url(#score-gradient)"
               strokeWidth="6"
               strokeDasharray={circumference}
               strokeDashoffset={offset}
               strokeLinecap="round"
-              transform="rotate(-90 55 55)"
-              style={{
-                transition: "stroke-dashoffset 800ms var(--ease-reveal)",
-                filter: "drop-shadow(0 2px 8px var(--accent-glow))",
-              }}
+              transform="rotate(-90 50 50)"
+              style={{ transition: "stroke-dashoffset 800ms var(--ease-reveal)" }}
             />
           </svg>
           <div
@@ -148,59 +137,38 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
               inset: 0,
               display: "grid",
               placeItems: "center",
-              fontSize: showScore ? 28 : 0,
+              fontSize: 24,
               fontWeight: 800,
               color: "var(--correct)",
-              transition: "all 600ms var(--ease-spring)",
-              fontFamily: "var(--font-display)",
             }}
           >
             {totalScore}/{maxScore}
           </div>
         </div>
 
-        <div style={{ flex: 1, minWidth: 200 }}>
+        <div>
           <h3
             style={{
               margin: 0,
-              fontSize: 32,
+              fontSize: 30,
               fontWeight: 800,
               background: "var(--accent)",
               backgroundClip: "text",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
-              lineHeight: 1.2,
             }}
           >
             {(lesson.parts?.length ?? 3) === 1 ? "Quick Answer Mastered" : "Journey Complete"}
           </h3>
-          <p style={{ marginTop: 8, color: "var(--text-secondary)", fontSize: 15, lineHeight: 1.6 }}>
-            You scored <strong style={{ color: "var(--correct)" }}>{totalScore}/{maxScore}</strong> — {getScoreMessage()}
+          <p style={{ marginTop: 6, color: "var(--text-secondary)", fontSize: 15 }}>
+            You scored <strong style={{ color: "var(--correct)" }}>{totalScore}/{maxScore}</strong> — {pct >= 80 ? "excellent work." : pct >= 50 ? "a solid effort." : "a tough one, worth another pass."}
           </p>
-          <div
-            style={{
-              marginTop: 10,
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              padding: "6px 14px",
-              borderRadius: 999,
-              background: "var(--accent-dim)",
-              border: "1px solid var(--border-accent)",
-              fontSize: 12,
-              fontWeight: 700,
-              color: "var(--accent)",
-            }}
-          >
-            {pct}% correct
-          </div>
         </div>
       </div>
 
       {/* Key takeaways */}
-      <div style={{ marginTop: "var(--space-lg)" }}>
-        <h4 style={{ margin: "0 0 var(--space-md)", fontSize: 18, fontWeight: 700, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 8 }}>
-          <span aria-hidden="true" style={{ fontSize: 18 }}>💡</span>
+      <div style={{ marginTop: varSpaceLg }}>
+        <h4 style={{ margin: "0 0 var(--space-md)", fontSize: 18, fontWeight: 700, color: "var(--text-primary)" }}>
           Key takeaways
         </h4>
         {(lesson.keyTakeaways ?? []).map((takeaway, index) => (
@@ -212,11 +180,10 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
               fontSize: 14,
               display: "flex",
               gap: varSpaceSm,
-              padding: "12px 16px",
+              padding: "10px 14px",
               borderRadius: "var(--radius-md)",
               background: "color-mix(in srgb, var(--accent) 5%, transparent)",
               border: "1px solid color-mix(in srgb, var(--accent) 15%, transparent)",
-              lineHeight: 1.5,
             }}
           >
             <span
@@ -238,16 +205,15 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
       {/* Share your result */}
       <ShareResult question={lesson.question ?? lesson.topic ?? ""} totalScore={totalScore} maxScore={maxScore} />
 
-      {/* Optional, anonymous review */}
+      {/* Optional, anonymous review — shown the day after the first lesson */}
       <FeedbackGate />
 
       {/* Action buttons */}
-      <div style={{ marginTop: "var(--space-lg)", display: "flex", gap: varSpaceSm, flexWrap: "wrap" }}>
+      <div style={{ marginTop: varSpaceLg, display: "flex", gap: varSpaceSm, flexWrap: "wrap" }}>
         {onRetake && (
           <button
             type="button"
             onClick={onRetake}
-            className="interactive-focus"
             style={{
               border: "1.5px solid var(--border-default)",
               borderRadius: "var(--radius-lg)",
@@ -259,9 +225,6 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
               fontWeight: 600,
               minHeight: 50,
               transition: "all 500ms var(--ease-spring)",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.borderColor = "var(--border-accent)";
@@ -274,7 +237,6 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
               e.currentTarget.style.transform = "scale(1)";
             }}
           >
-            <span aria-hidden="true" style={{ fontSize: 16 }}>↻</span>
             Retake Quiz
           </button>
         )}
@@ -282,7 +244,6 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
           <button
             type="button"
             onClick={onRestart}
-            className="interactive-press"
             style={{
               border: "none",
               borderRadius: "var(--radius-lg)",
@@ -291,13 +252,10 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
               padding: "14px 28px",
               cursor: "pointer",
               fontSize: 15,
-              fontWeight: 700,
+              fontWeight: 600,
               minHeight: 50,
-              boxShadow: "var(--shadow-glow-accent)",
+              boxShadow: "var(--shadow-sm)",
               transition: "all 500ms var(--ease-spring)",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = "scale(1.04)";
@@ -305,11 +263,10 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = "scale(1)";
-              e.currentTarget.style.boxShadow = "var(--shadow-glow-accent)";
+              e.currentTarget.style.boxShadow = "var(--shadow-sm)";
             }}
           >
-            Continue Learning
-            <span aria-hidden="true" style={{ fontSize: 16 }}>→</span>
+            Continue Learning →
           </button>
         )}
       </div>
@@ -318,4 +275,4 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
 }
 
 const varSpaceSm = "var(--space-sm)";
-
+const varSpaceLg = "var(--space-lg)";

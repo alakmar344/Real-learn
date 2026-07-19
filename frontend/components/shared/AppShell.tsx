@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import Sidebar from "@/components/shared/Sidebar";
 import dynamic from "next/dynamic";
-import { SidebarContext } from "@/contexts/SidebarContext";
 
 const PreferenceModal = dynamic(() => import("@/components/shared/PreferenceModal"), {
   ssr: false,
@@ -60,6 +59,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   if (hideSidebar) {
     return (
       <>
+        {/* A11y: the skip link targets #main-content, which must exist on
+            EVERY page — including the auth pages — or it jumps nowhere. */}
         <div id="main-content">{children}</div>
         <PreferenceModal open={showFirstPrefs} onClose={() => setShowFirstPrefs(false)} />
       </>
@@ -67,13 +68,19 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <SidebarContext.Provider value={{ open, setOpen }}>
-      <div className="app-shell">
-        <Sidebar open={open} onClose={() => setOpen(false)} />
-        <div id="main-content" className="app-main">{children}</div>
-        <EngagementLayer />
-        <PreferenceModal open={showFirstPrefs} onClose={() => setShowFirstPrefs(false)} />
-      </div>
-    </SidebarContext.Provider>
+    <div className="app-shell">
+      <button
+        type="button"
+        className="app-sidebar-toggle"
+        aria-label="Open menu"
+        onClick={() => setOpen(true)}
+      >
+        ☰
+      </button>
+      <Sidebar open={open} onClose={() => setOpen(false)} />
+      <div id="main-content" className="app-main">{children}</div>
+      <EngagementLayer />
+      <PreferenceModal open={showFirstPrefs} onClose={() => setShowFirstPrefs(false)} />
+    </div>
   );
 }
