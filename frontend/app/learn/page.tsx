@@ -17,8 +17,10 @@ import { useProgressStore } from "@/store/progressStore";
 import { useSavedJourneysStore, journeySignature } from "@/store/savedJourneysStore";
 import { useLesson } from "@/hooks/useLesson";
 import { useMounted } from "@/hooks/useMounted";
+import { triggerHaptic } from "@/lib/haptics";
 import { LessonJourney } from "@/types";
 import { useShallow } from "zustand/shallow";
+import confetti from "canvas-confetti";
 
 const CompletionScreen = lazy(() => import("@/components/learning/CompletionScreen"));
 const FollowUpBox = lazy(() => import("@/components/learning/FollowUpBox"));
@@ -453,6 +455,14 @@ export default function LearnPage() {
               console.log("[frontend][LearnPage] quiz passed", {
                 part: activePart.partNumber,
                 score,
+              });
+              triggerHaptic("success");
+              confetti({
+                particleCount: 70,
+                spread: 60,
+                origin: { y: 0.6 },
+                colors: ["#b8860b", "#e0b341", "#d4847a", "#ffffff"],
+                disableForReducedMotion: true,
               });
               passPart(activePart.partNumber, score);
 

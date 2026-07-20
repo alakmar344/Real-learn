@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import { LRUCache } from "lru-cache";
+import { Filter } from "bad-words";
 
 const DEFAULT_MODERATION_TIMEOUT_MS = 8000;
 const configuredTimeoutMs = Number(process.env.MODERATION_TIMEOUT_MS);
@@ -44,10 +45,46 @@ function isModerationEnabled() {
   return !["false", "0", "off", "no"].includes(raw);
 }
 
+// Additional library-backed layer for profanity, slurs, and high-severity
+// harmful keywords (especially kidnapping / abduction). Normalization runs
+// before this check so leet-speak and invisible characters cannot trivially
+// bypass it.
+const profanityFilter = new Filter();
+profanityFilter.addWords(
+  "kidnap",
+  "kidnapping",
+  "kidnapper",
+  "kidnapped",
+  "abduct",
+  "abduction",
+  "abductor",
+  "abducted",
+  "abducting",
+  "hostage",
+  "hostages",
+  "ransom",
+  "ransoms",
+  "captivity",
+  "captive",
+  "captives",
+  "trafficking",
+  "humantrafficking",
+  "sextrafficking",
+  "childtrafficking",
+  "torture",
+  "torturing",
+  "tortured",
+  "groom",
+  "grooming",
+  "groomed"
+);
+
 const LEEK_MAP = {
   "@": "a",
   "4": "a",
+  "8": "b",
   "3": "e",
+  "9": "g",
   "1": "i",
   "!": "i",
   "0": "o",
@@ -121,10 +158,13 @@ const INSTRUCTIONAL_PATTERNS = [
   /\bhow\b[^.!?]*\b(make|build|3d\s*print|manufacture|obtain|get)\b[^.!?]*\b(gun|firearm|silencer|ghost\s*gun|untraceable\s*weapon)\b/i,
   /\bhow\b[^.!?]*\b(make|synthesize|cook|manufacture|produce|grow)\b[^.!?]*\b(meth|methamphetamine|cocaine|crack|heroin|fentanyl|mdma|ecstasy|lsd|illegal\s*drugs)\b/i,
 
-  // ── Violence against a person (instructional intent) ──
-  /\bhow\b[^.!?]*\b(kill|murder|poison|stab|strangle|assault|kidnap)\b[^.!?]*\b(someone|somebody|a\s*person|people|him|her|them|my)\b/i,
-  /\bhow\b[^.!?]*\b(get\s*away\s*with|commit)\b[^.!?]*\b(murder|killing|crime)\b/i,
-  /\b(plan|planning|carry\s*out|execute)\b[^.!?]*\b(terror|terrorist|mass|school)\b[^.!?]*\b(attack|shooting|bombing)\b/i,
+  // ── Violence / kidnapping against a person (instructional intent) ──
+  /\bhow\b[^.!?]*\b(kill|murder|poison|stab|strangle|assault|kidnap)\b[^.!?]*\b(someone|somebody|a\s*person|people|him|her|them|my|a\s*child|children)\b/i,
+  /\bhow\b[^.!?]*\b(kidnap|abduct)\b[^.!?]*\b(someone|somebody|a\s*person|people|him|her|them|my|a\s*child|children|hostage|ransom)\b/i,
+  /\b(kidnap|abduct|abduction|kidnapping)\b[^.!?]*\b(guide|tutorial|steps?|instructions?|recipe|tips?|plan|planning|carry\s*out|execute|hostage|ransom|captive)\b/i,
+  /\bhow\b[^.!?]*\b(get\s*away\s*with|commit)\b[^.!?]*\b(murder|killing|crime|kidnapping|abduction)\b/i,
+  /\b(plan|planning|carry\s*out|execute)\b[^.!?]*\b(terror|terrorist|mass|school)\b[^.!?]*\b(attack|shooting|bombing|kidnapping)\b/i,
+  /\b(hold\s*someone|take\s*someone|keep\s*someone)\b[^.!?]*\b(hostage|captive|captivity|ransom)\b/i,
 
   // ── Self-harm / suicide encouragement or methods ──
   /\bhow\b[^.!?]*\b(commit\s*)?(suicide|kill\s*myself|end\s*my\s*life)\b/i,
@@ -175,6 +215,14 @@ const INSTRUCTIONAL_PATTERNS = [
   /\b(kaise|tarika|tareeka)\b[^.!?]*\b(khudkushi|khudkhushi|atmahatya|aatmahatya)\b/i,
   // Killing someone (Devanagari): "किसी को कैसे मारें"
   /(किसी\s*को|उसे|उन्हें)[^.!?।]*(कैसे)[^.!?।]*(मार|जान\s*से)/,
+  // Kidnapping / abduction (Devanagari): "अपहरण कैसे करें", "किडनैप का तरीका"
+  /(अपहरण|किडनैप|किडनैपिंग)[^.!?।]*(कैसे|तरीक|करू|करें|करने|प्लान|योजना)/,
+  /(कैसे|तरीक)[^.!?।]*(अपहरण|किडनैप|किडनैपिंग)[^.!?।]*(करें|करू|करने|करो)/,
+  /(किसी\s*को|बच्चे\s*को|उसे|उन्हें)[^.!?।]*(किडनैप|अपहरण|उठा)[^.!?।]*(कैसे|करें|करो|ले\s*जा)/,
+  // Kidnapping (romanized Hindi): "kidnap kaise kare", "apharan ka tarika"
+  /\b(kidnap|apharan|apaharan|udha)\b[^.!?]*\b(kaise|banane|kare|karu|karne|tarika|tareeka|plan|tarike)\b/i,
+  /\b(kaise|tarika|tareeka|plan|tarike)\b[^.!?]*\b(kidnap|apharan|apaharan|udha)\b[^.!?]*\b(kare|karu|karne|karo|banaye)\b/i,
+  /\b(kisi\s*ko|bachhe\s*ko|use|unhe)\b[^.!?]*\b(kidnap|apharan|apaharan|udha)\b[^.!?]*\b(kaise|kare|karu|le\s*ja)\b/i,
 ];
 
 // Full input guardrail = always-illegal content + harmful instructional intent.
@@ -200,19 +248,27 @@ function matchesBannedPattern(text, patterns) {
   return patterns.some((pattern) => pattern.test(normalized));
 }
 
+function containsProfanity(text) {
+  if (!text || typeof text !== "string") return false;
+  const normalized = normalizeForModeration(text);
+  return profanityFilter.isProfane(normalized);
+}
+
 function containsBannedUserInput(text) {
-  return matchesBannedPattern(text, BANNED_PATTERNS);
+  return matchesBannedPattern(text, BANNED_PATTERNS) || containsProfanity(text);
 }
 
 function containsBannedAIResponse(text) {
-  // Output check = always-illegal content + genuine refusals ONLY. We do NOT
-  // apply INSTRUCTIONAL_PATTERNS here: those describe a user asking how to do
-  // harm, and firing them on a generated lesson wrongly blocks legitimate
-  // educational content (history of the atomic bomb, chemistry, etc.).
-  return matchesBannedPattern(text, [
-    ...ALWAYS_ILLEGAL_PATTERNS,
-    ...BANNED_RESPONSE_PATTERNS,
-  ]);
+  // Output check = always-illegal content + genuine refusals + profanity layer.
+  // We do NOT apply INSTRUCTIONAL_PATTERNS here: those describe a user asking
+  // how to do harm, and firing them on a generated lesson wrongly blocks
+  // legitimate educational content (history of the atomic bomb, chemistry, etc.).
+  return (
+    matchesBannedPattern(text, [
+      ...ALWAYS_ILLEGAL_PATTERNS,
+      ...BANNED_RESPONSE_PATTERNS,
+    ]) || containsProfanity(text)
+  );
 }
 
 function getUserInputBlockReason(text) {
@@ -221,6 +277,9 @@ function getUserInputBlockReason(text) {
     if (pattern.test(normalized)) {
       return "Your question appears to contain content that violates our community guidelines. Please rephrase your request.";
     }
+  }
+  if (containsProfanity(text)) {
+    return "Your question appears to contain content that violates our community guidelines. Please rephrase your request.";
   }
   return "Your question was flagged by our safety review. Please try a different question.";
 }
@@ -236,6 +295,9 @@ function getAIResponseBlockReason(text) {
     if (pattern.test(normalized)) {
       return "The generated content was flagged for review. Please try a different question or rephrase your request.";
     }
+  }
+  if (containsProfanity(text)) {
+    return "The generated content was flagged for review. Please try a different question or rephrase your request.";
   }
   return "This content was flagged by our safety review. Please try a different question.";
 }
