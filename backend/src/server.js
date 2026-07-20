@@ -7,6 +7,7 @@ import { LRUCache } from "lru-cache";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import zlib from "node:zlib";
 import { fileURLToPath } from "node:url";
 import {
   callGemma,
@@ -610,20 +611,30 @@ app.use(
 // Every legitimate request body here is tiny (a question + a few enum
 // fields). 100kb still leaves huge headroom while blunting memory abuse.
 app.use(express.json({ limit: "100kb" }));
-// BANDWIDTH: gzip every compressible response (lesson JSON shrinks ~75%).
-// SSE streams are exempt — compression buffers them, which would delay
-// heartbeats and events; audio/mpeg is skipped automatically as already
-// compressed.
+// BANDWIDTH: compress every compressible response. compression@1.8 natively
+// negotiates Brotli first (falling back to gzip/deflate), which shrinks
+// lesson JSON ~80% — critical for staying under the monthly transfer cap.
+// The old `zlib: { brotli: {} }` key was a silent no-op; the real options
+// are top-level. SSE streams are exempt — compression buffers them, which
+// would delay heartbeats and events; audio/mpeg is skipped automatically as
+// already compressed.
 app.use(
   compression({
     filter: (req, res) => {
       if (req.path === "/api/generate-lesson") return false;
       return compression.filter(req, res);
     },
-    zlib: {
-      brotli: {},
-      gzip: {},
-      deflate: {},
+    // Compress even small JSON bodies (error payloads, health checks) —
+    // every byte counts against the bandwidth budget.
+    threshold: 256,
+    // gzip effort 6 = best ratio/CPU trade-off for dynamic responses.
+    level: 6,
+    // Brotli quality 5 beats gzip-9 ratios at a fraction of the CPU of the
+    // library default (11), which is far too slow for on-the-fly responses.
+    brotli: {
+      params: {
+        [zlib.constants.BROTLI_PARAM_QUALITY]: 5,
+      },
     },
   })
 );
@@ -673,7 +684,16 @@ app.use((req, res, next) => {
 // and short-circuits with 429 + Retry-After when the budget is exhausted.
 const rateLimit = apiRateLimiter;
 
-app.get("/health", async (_req, res) => {
+// SECURITY: /health is unauthenticated and pings MongoDB on every hit —
+// without its own limiter it is a free amplification vector onto the
+// database. 120/min per IP is far above any legitimate load-balancer or
+// uptime-monitor cadence while capping a flood.
+const healthRateLimiter = createRateLimiter({
+  windowMs: 60_000,
+  max: 120,
+});
+
+app.get("/health", healthRateLimiter, async (_req, res) => {
   const health = { ok: true, dependencies: {} };
   try {
     const db = await getDb();
@@ -1039,10 +1059,12 @@ app.post("/api/legal-consent", rateLimit, requireAuth, async (req, res) => {
     };
 
 await collection.updateOne(filter, update, { upsert: true });
+    // Security: log the PARSED timestamp, not the raw client string —
+    // unsanitized client input has no business in structured logs.
     console.log("[api/legal-consent] Legal consent saved", {
       clerkId,
       accepted,
-      timestamp,
+      timestamp: parsedTimestamp,
     });
 
     res.json({ ok: true });
@@ -1359,16 +1381,18 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
     activeLessonRequests,
   });
 
-  res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
-  res.setHeader("Cache-Control", "no-cache, no-transform");
-  res.setHeader("Connection", "keep-alive");
-  res.setHeader("X-Accel-Buffering", "no");
-  res.flushHeaders();
-  console.log("[SSE] Headers flushed", { requestId });
-
   let finished = false;
+  let heartbeat = null;
   const generationAbortController = new AbortController();
   const generateAbortSignal = generationAbortController.signal;
+  // Every progress ticker created inside the generation flow registers here
+  // so finishRequest can always release it, no matter where the request
+  // stops. (Previously an early abort could strand a 1.5s interval forever.)
+  const activeTickers = new Set();
+  const trackTicker = (ticker) => {
+    activeTickers.add(ticker);
+    return ticker;
+  };
   const safeWrite = (chunk) => {
     try {
       if (res.writableEnded) return false;
@@ -1382,7 +1406,9 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
     if (finished) return;
     finished = true;
     generationAbortController.abort();
-    clearInterval(heartbeat);
+    if (heartbeat !== null) clearInterval(heartbeat);
+    for (const ticker of activeTickers) clearInterval(ticker);
+    activeTickers.clear();
     decrementActiveLessonRequests();
     decrementUserLessonRequests(concurrencyUserId);
     console.log("[generate-lesson] Finishing request", {
@@ -1393,23 +1419,50 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
       responseFinished: res.finished,
     });
     if (!res.writableEnded) {
+      // Cleanup must never throw — the socket may already be destroyed.
+      try {
         res.end();
+      } catch {
+        /* socket gone */
+      }
     }
   };
-  const sendPing = () => {
-    if (finished) return;
-    // failures in heartbeat are non-fatal to maintain stream connectivity
-    safeWrite(`event: ping\ndata: ${Date.now()}\n\n`);
-  };
-  sendPing();
-  const heartbeat = setInterval(sendPing, HEARTBEAT_INTERVAL_MS);
 
+  // Reliability: register the disconnect handlers BEFORE flushing headers.
+  // If the client is already gone, the flush below must route into cleanup
+  // (releasing the global/per-user concurrency slots we just took) instead
+  // of throwing into an async handler as an unhandled rejection — which
+  // both crashes Node >= 15 and permanently leaks the concurrency slot.
   req.on("aborted", () => finishRequest("request aborted"));
   res.on("close", () => finishRequest("response closed"));
   res.on("error", (error) => {
     console.error("[SSE] response error", { requestId, error });
     finishRequest("response error");
   });
+
+  try {
+    res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
+    res.setHeader("Cache-Control", "no-cache, no-transform");
+    res.setHeader("Connection", "keep-alive");
+    res.setHeader("X-Accel-Buffering", "no");
+    res.flushHeaders();
+  } catch (error) {
+    console.warn("[SSE] Header flush failed (client gone?)", {
+      requestId,
+      error: error?.message,
+    });
+    finishRequest("headers flush failed");
+    return;
+  }
+  console.log("[SSE] Headers flushed", { requestId });
+
+  const sendPing = () => {
+    if (finished) return;
+    // failures in heartbeat are non-fatal to maintain stream connectivity
+    safeWrite(`event: ping\ndata: ${Date.now()}\n\n`);
+  };
+  sendPing();
+  heartbeat = setInterval(sendPing, HEARTBEAT_INTERVAL_MS);
 
   const sendEvent = (event, payload) => {
     const eventWritten = safeWrite(`event: ${event}\n`);
@@ -1531,7 +1584,7 @@ END_EXTERNAL_CONTEXT>>>`
     });
     sendEvent("progress", { stage: "generating", percent: 40 });
     let generationPercent = 40;
-    const generationTicker = setInterval(() => {
+    const generationTicker = trackTicker(setInterval(() => {
       if (finished) return;
       const remaining = 82 - generationPercent;
       if (remaining <= 0.5) return;
@@ -1540,7 +1593,7 @@ END_EXTERNAL_CONTEXT>>>`
         stage: "generating",
         percent: Math.round(generationPercent),
       });
-    }, 1500);
+    }, 1500));
 
     console.log("[Gemma] Provider plan", {
       requestId,
@@ -1565,7 +1618,7 @@ END_EXTERNAL_CONTEXT>>>`
         : temperature;
       clearInterval(generationTicker);
       generationPercent = 40;
-      const attemptTicker = setInterval(() => {
+      const attemptTicker = trackTicker(setInterval(() => {
         if (finished) return;
         const remaining = 82 - generationPercent;
         if (remaining <= 0.5) return;
@@ -1574,7 +1627,7 @@ END_EXTERNAL_CONTEXT>>>`
           stage: "generating",
           percent: Math.round(generationPercent),
         });
-      }, 1500);
+      }, 1500));
 
       console.log("[Gemma] generate start", {
         requestId,
@@ -1988,6 +2041,16 @@ try {
     // earlier releases. Fire-and-forget; errors are logged, not fatal.
     void scrubStoredConsentIps();
   });
+
+  // SECURITY (Slowloris): bound how long a client may take to send its
+  // headers and its whole request. These apply to request RECEPTION only, so
+  // long-lived SSE responses (lesson streams) are unaffected. Node's
+  // defaults (60s/300s) leave sockets hostage far longer than any legitimate
+  // client needs to upload a <100kb JSON body.
+  server.headersTimeout = 15_000;
+  server.requestTimeout = 30_000;
+  // Keep idle keep-alive sockets on a short leash as well.
+  server.keepAliveTimeout = 10_000;
 
   // Graceful shutdown: stop accepting new connections, wait for in-flight
   // requests to finish (up to 30s), then close MongoDB and exit.

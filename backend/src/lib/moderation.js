@@ -10,9 +10,11 @@ const MODERATION_TIMEOUT_MS =
 const MAX_MODERATION_INPUT_CHARS = 12000;
 // Security: generated lessons (max_tokens 6000) can exceed 12k characters,
 // and content in the tail must still be scanned — a lower cap left everything
-// past 12k unmoderated. 200k is far above any real lesson while still
-// bounding regex work against pathological inputs.
-const MAX_MODERATION_OUTPUT_CHARS = 200000;
+// past 12k unmoderated. 60k is still ~2x the largest possible lesson
+// (6000 tokens ≈ 24-30k chars) while bounding the regex work: several banned
+// patterns contain multiple `[^.!?]*` runs, which degrade quadratically on
+// punctuation-free text, so the cap is the effective ReDoS guard.
+const MAX_MODERATION_OUTPUT_CHARS = 60000;
 
 const DEFAULT_MODERATION_CACHE_TTL_MS = 15 * 60 * 1000;
 const configuredCacheTtlMs = Number(process.env.MODERATION_CACHE_TTL_MS);
