@@ -353,7 +353,7 @@ export default function SettingsPage() {
         </button>
 
         <span className="section-overline" style={{ marginBottom: 6 }}>
-          設定 — Settings
+          Make It Yours
         </span>
         <h1
           style={{

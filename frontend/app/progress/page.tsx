@@ -116,7 +116,7 @@ export default function ProgressPage() {
         {/* Page heading */}
         <div style={{ marginBottom: 20 }}>
           <span className="section-overline" style={{ marginBottom: 6 }}>
-            進捗 — Progress
+            Your Journey
           </span>
           <h1
             style={{

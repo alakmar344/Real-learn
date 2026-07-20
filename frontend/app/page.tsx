@@ -162,31 +162,44 @@ export default function HomePage() {
               }}
             />
 
-            {/* 学ぶ — "to learn". A faint vertical brush-script watermark, set
-                in authentic top-to-bottom Japanese writing, gives the hero a
-                quiet cultural signature without competing with the greeting. */}
-            <span
+            {/* Ensō — the hand-drawn zen circle of practice and open-ended
+                learning. A wordless brush watermark: it carries the cultural
+                signature without any glyphs, so nothing text-like can flash
+                in a fallback font before the webfonts load (no FOUC glare). */}
+            <svg
               aria-hidden="true"
+              viewBox="0 0 120 120"
               style={{
                 position: "absolute",
                 top: "50%",
                 right: "clamp(-8px, 2vw, 24px)",
-                transform: "translateY(-50%)",
-                writingMode: "vertical-rl",
-                fontFamily: "var(--font-display), serif",
-                fontWeight: 900,
-                fontSize: "clamp(64px, 14vw, 132px)",
-                lineHeight: 1,
-                letterSpacing: "0.08em",
+                transform: "translateY(-50%) rotate(-8deg)",
+                width: "clamp(140px, 22vw, 230px)",
+                height: "auto",
                 color: "var(--brand)",
-                opacity: 0.06,
+                opacity: 0.07,
                 zIndex: 0,
                 pointerEvents: "none",
                 userSelect: "none",
               }}
             >
-              学ぶ
-            </span>
+              {/* Two offset arcs mimic the swelling ink of a single brush pass,
+                  finishing with the ensō's characteristic open gap. */}
+              <path
+                d="M86 16 A48 48 0 1 0 104 52"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="9"
+                strokeLinecap="round"
+              />
+              <path
+                d="M84 20 A44 44 0 1 0 100 54"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="4"
+                strokeLinecap="round"
+              />
+            </svg>
 
             {/* The slim daily-spark / resume strip sits above the greeting */}
             <div style={{ position: "relative", zIndex: 1 }}>

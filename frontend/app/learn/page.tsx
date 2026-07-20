@@ -396,7 +396,7 @@ export default function LearnPage() {
 
           {showFollowUp ? (
             <Suspense fallback={<SuspenseFallback />}>
-              {/* Wa (和) divider — a balanced ichimatsu bead between the lesson
+              {/* Harmony divider — a balanced checker bead between the lesson
                   and the follow-up, marking a considered pause before going
                   deeper. */}
               <div className="wa-divider" aria-hidden="true">
