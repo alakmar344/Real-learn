@@ -1,6 +1,7 @@
 "use client";
 
 import type { PersistStorage, StorageValue } from "zustand/middleware";
+import { debounce } from "lodash-es";
 
 /**
  * Debounced localStorage adapter for zustand `persist`.
@@ -31,21 +32,8 @@ export function cancelPendingDebouncedWrites(): void {
 
 export function createDebouncedStorage<S>(delayMs = 800): PersistStorage<S> {
   let pending: { name: string; value: StorageValue<S> } | null = null;
-  let timer: ReturnType<typeof setTimeout> | null = null;
-
-  cancelCallbacks.add(() => {
-    pending = null;
-    if (timer) {
-      clearTimeout(timer);
-      timer = null;
-    }
-  });
 
   const flush = () => {
-    if (timer) {
-      clearTimeout(timer);
-      timer = null;
-    }
     if (!pending) return;
     const { name, value } = pending;
     pending = null;
@@ -57,10 +45,20 @@ export function createDebouncedStorage<S>(delayMs = 800): PersistStorage<S> {
     }
   };
 
+  const debouncedFlush = debounce(flush, delayMs, {
+    leading: false,
+    trailing: true,
+  });
+
+  cancelCallbacks.add(() => {
+    pending = null;
+    debouncedFlush.cancel();
+  });
+
   if (typeof window !== "undefined") {
-    window.addEventListener("pagehide", flush);
+    window.addEventListener("pagehide", () => debouncedFlush.flush());
     document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "hidden") flush();
+      if (document.visibilityState === "hidden") debouncedFlush.flush();
     });
   }
 
@@ -75,15 +73,11 @@ export function createDebouncedStorage<S>(delayMs = 800): PersistStorage<S> {
     },
     setItem: (name, value) => {
       pending = { name, value };
-      if (timer) clearTimeout(timer);
-      timer = setTimeout(flush, delayMs);
+      debouncedFlush();
     },
     removeItem: (name) => {
       pending = null;
-      if (timer) {
-        clearTimeout(timer);
-        timer = null;
-      }
+      debouncedFlush.cancel();
       try {
         window.localStorage.removeItem(name);
       } catch {
