@@ -870,6 +870,8 @@ vendors). All of these live between `2b239b5` (start) and now:
 | 2026-07-17 | `23779fa` | Optional anonymous feedback prompt (1–10 stars + notes) shown soon after first lesson; public /api/feedback stores only rating+text (no identifiers) |
 | 2026-07-17 | `f1a3398` | Privacy Policy v2.6 + Terms of Service v2.4 disclose the anonymous feedback feature |
 | 2026-07-17 | reconsent | Bump CURRENT_PRIVACY_VERSION 2.6 / CURRENT_TERMS_VERSION 2.4 (frontend + backend) so all users re-accept |
+| 2026-07-20 | docs | Add `docs/AGENT_MEMORY.md` + root `AGENT_INSTRUCTIONS.md` — single source of truth every AI agent reads before touching the repo; defines design-system usage, de-slop rules, UX/a11y principles, Git/PR workflow, and the mandatory Change Protocol. Pointers added to `README.md` and `llms.txt`. |
+| 2026-07-20 | deslop+ux | De-slop the homepage chrome: move hero/navbar/question-input/footer inline-style soup into real `globals.css` classes (`.hero__*`, `.navbar-*`, `.q-form__*`, `.mode-glider__*`, `.app-footer__*`); remove emoji-laden time-of-day greeting + saccharine footer copy; trim flowery AI-signature comments; drop the gradient-shimmer on the wordmark. UX: form now uses the design system consistently, footer hover is CSS not JS. `tsc`, `next lint`, and `next build` all pass (11 pages). |
 
 ---
 

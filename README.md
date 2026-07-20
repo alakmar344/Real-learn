@@ -2,6 +2,10 @@
 
 ### The World Is Your Textbook.
 
+> **Working on this repo with an AI agent?** Read [`docs/AGENT_MEMORY.md`](docs/AGENT_MEMORY.md)
+> first — it is the single source of truth for layout, build commands, Git/PR
+> workflow, the design system, de-slop rules, and the mandatory change protocol.
+
 **RealLearn transforms a single question into an unforgettable learning journey — not a forgettable one-line answer, but a structured, progressive, quiz-verified lesson that meets you exactly where you are and takes you exactly where you need to go.**
 
 Ask anything. In seconds, RealLearn engineers a complete educational experience — a three-stage progression from foundation to mechanism to real-world connection, checkpointed by comprehension gates you must pass before advancing. Every lesson is generated fresh by Google's Gemma 4, grounded in today's live news, delivered in your native language, and calibrated to your exact skill level. This is not search. This is not a chatbot. This is **teaching, reimagined for the AI era.**
