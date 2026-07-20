@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { BADGES, ProgressSnapshot, TIER_COLOR, BadgeTier } from "@/lib/achievements";
 
 interface Props {
@@ -33,13 +34,16 @@ interface PopoverPos {
  * (or hovering, on desktop) any badge opens a popover card that explains
  * exactly how to earn it and how close you are.
  *
- * The popover is rendered as a SINGLE `position: fixed` element at the
- * component root — NOT inside each badge tile. This is critical: the grid's
- * ancestor (`.progress-achievements`) uses `content-visibility: auto`, which
- * applies paint containment and would clip any absolutely-positioned tooltip
- * that extends beyond the grid's box. A fixed-position popover is positioned
- * relative to the viewport, so it can never be clipped by an overflowing or
- * paint-contained ancestor. */
+ * The popover is rendered through a PORTAL into `document.body`. This is
+ * critical: the grid's ancestor (`.progress-achievements`) uses
+ * `content-visibility: auto`, which applies paint containment — and a
+ * paint-contained ancestor becomes the CONTAINING BLOCK for
+ * `position: fixed` descendants. Rendering the popover inside the grid
+ * (even with `position: fixed`) made the viewport-space coordinates get
+ * resolved against the section's own box instead — the card appeared far
+ * away from the clicked badge and its text was clipped at the section
+ * boundary. A body-level portal escapes every ancestor's containment,
+ * transform, and overflow, so the card always hugs the badge it belongs to. */
 export default function AchievementsGrid({ unlocked, snapshot }: Props) {
   const earnedCount = BADGES.filter((b) => unlocked[b.id]).length;
   /** Badge id whose popover is pinned open by tap/click. */
@@ -48,6 +52,33 @@ export default function AchievementsGrid({ unlocked, snapshot }: Props) {
   const [popoverPos, setPopoverPos] = useState<PopoverPos | null>(null);
   const gridRef = useRef<HTMLDivElement | null>(null);
   const popoverRef = useRef<HTMLDivElement | null>(null);
+  /** True when the open popover was pinned by click/tap (hover won't close it). */
+  const pinnedRef = useRef(false);
+  /** Grace timer so the pointer can travel from tile → popover without it closing. */
+  const hoverCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** Portals need a client DOM — track mount so SSR markup stays identical. */
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const cancelHoverClose = useCallback(() => {
+    if (hoverCloseTimer.current !== null) {
+      clearTimeout(hoverCloseTimer.current);
+      hoverCloseTimer.current = null;
+    }
+  }, []);
+
+  const scheduleHoverClose = useCallback((badgeId: string) => {
+    cancelHoverClose();
+    hoverCloseTimer.current = setTimeout(() => {
+      hoverCloseTimer.current = null;
+      if (!pinnedRef.current) {
+        setOpenId((cur) => (cur === badgeId ? null : cur));
+      }
+    }, 140);
+  }, [cancelHoverClose]);
+
+  // Never leave a timer running past unmount.
+  useEffect(() => cancelHoverClose, [cancelHoverClose]);
 
   const openBadge = useCallback((badgeId: string) => {
     // Find the badge tile button in the DOM and measure it.
@@ -114,7 +145,10 @@ export default function AchievementsGrid({ unlocked, snapshot }: Props) {
   // at the wrong spot) and on viewport resize.
   useEffect(() => {
     if (!openId) return;
-    const close = () => setOpenId(null);
+    const close = () => {
+      pinnedRef.current = false;
+      setOpenId(null);
+    };
     window.addEventListener("scroll", close, { passive: true, capture: true });
     window.addEventListener("resize", close);
     return () => {
@@ -134,10 +168,14 @@ export default function AchievementsGrid({ unlocked, snapshot }: Props) {
       ) {
         return; // click inside the grid or popover — let onClick handle it
       }
+      pinnedRef.current = false;
       setOpenId(null);
     };
     const onEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpenId(null);
+      if (e.key === "Escape") {
+        pinnedRef.current = false;
+        setOpenId(null);
+      }
     };
     document.addEventListener("pointerdown", onPointerDown);
     document.addEventListener("keydown", onEscape);
@@ -184,10 +222,28 @@ export default function AchievementsGrid({ unlocked, snapshot }: Props) {
               type="button"
               data-badge-id={badge.id}
               className={`badge-tile${earned ? " badge-tile--earned" : ""}${isOpen ? " badge-tile--open" : ""}`}
-              aria-describedby={tooltipId}
+              aria-describedby={isOpen ? tooltipId : undefined}
               aria-expanded={isOpen}
-              onClick={() => (isOpen ? setOpenId(null) : openBadge(badge.id))}
-              onBlur={() => setOpenId((cur) => (cur === badge.id ? null : cur))}
+              onClick={() => {
+                if (isOpen && pinnedRef.current) {
+                  pinnedRef.current = false;
+                  setOpenId(null);
+                } else {
+                  pinnedRef.current = true;
+                  openBadge(badge.id);
+                }
+              }}
+              onMouseEnter={() => {
+                cancelHoverClose();
+                if (!pinnedRef.current) openBadge(badge.id);
+              }}
+              onMouseLeave={() => {
+                if (!pinnedRef.current) scheduleHoverClose(badge.id);
+              }}
+              onBlur={() => {
+                pinnedRef.current = false;
+                setOpenId((cur) => (cur === badge.id ? null : cur));
+              }}
               style={{
                 border: `1px solid ${earned ? TIER_COLOR[badge.tier] : "var(--border-subtle)"}`,
                 background: earned ? "var(--bg-card)" : "var(--bg-surface)",
@@ -236,15 +292,19 @@ export default function AchievementsGrid({ unlocked, snapshot }: Props) {
         })}
       </div>
 
-      {/* ── Floating popover ── rendered at the component root (outside the
-          grid), positioned fixed relative to the viewport so it can never be
-          clipped by an ancestor's paint containment or overflow. */}
-      {openBadgeData && (
+      {/* ── Floating popover ── portalled into <body> so no ancestor's paint
+          containment (`content-visibility`), transform, or overflow can
+          re-anchor or clip its fixed-position coordinates. */}
+      {mounted && openBadgeData && createPortal(
         <div
           ref={popoverRef}
           className="badge-popover"
           role="tooltip"
           id={openBadgeData ? `badge-tip-${openBadgeData.id}` : undefined}
+          onMouseEnter={cancelHoverClose}
+          onMouseLeave={() => {
+            if (!pinnedRef.current && openBadgeData) scheduleHoverClose(openBadgeData.id);
+          }}
           style={
             popoverPos
               ? {
@@ -307,7 +367,8 @@ export default function AchievementsGrid({ unlocked, snapshot }: Props) {
               <span>{Math.round(openBadgeData.progress(snapshot) * 100)}% there</span>
             </div>
           )}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
