@@ -1266,6 +1266,13 @@ a:active {
   100% { background: transparent; box-shadow: 0 0 0 transparent; }
 }
 
+@keyframes glowBurst {
+  0% { opacity: 0; transform: scale(0.6); }
+  30% { opacity: 0.45; transform: scale(1); }
+  60% { opacity: 0.2; transform: scale(1.1); }
+  100% { opacity: 0; transform: scale(1.2); }
+}
+
 @keyframes unlockPop {
    0% { transform: scale(0.7); }
    50% { transform: scale(1.08); box-shadow: 0 0 40px var(--accent-glow); }
@@ -1384,6 +1391,7 @@ a:active {
 .animate-fade-up { animation: fadeUp 600ms var(--ease-reveal) both; }
 .animate-slide-bottom { animation: slideFromBottom 500ms var(--ease-reveal) both; }
 .animate-accent-flash { animation: accentFlash 1000ms var(--ease-reveal) both; }
+.animate-glow-burst { animation: glowBurst 900ms var(--ease-reveal) both; }
 .animate-unlock-pop { animation: unlockPop 600ms var(--ease-spring) both; }
 .animate-shake { animation: shake 500ms var(--ease-reveal) both; }
 .animate-correct-pulse { animation: correctPulse 500ms var(--ease-spring) both; }
