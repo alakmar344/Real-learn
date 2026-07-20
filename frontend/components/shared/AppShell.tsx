@@ -33,14 +33,18 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isLoaded) return;
     if (!isSignedIn) return;
+    let timer: ReturnType<typeof setTimeout> | null = null;
     try {
       const done = localStorage.getItem("reallearn-preferences-onboarding");
       if (!done) {
-        setTimeout(() => setShowFirstPrefs(true), 0);
+        timer = setTimeout(() => setShowFirstPrefs(true), 0);
       }
     } catch {
       // ignore
     }
+    return () => {
+      if (timer !== null) clearTimeout(timer);
+    };
   }, [isLoaded, isSignedIn]);
 
   useEffect(() => {

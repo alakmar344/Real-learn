@@ -12,9 +12,9 @@ interface Props {
  *  small screens (the sidebar + ProgressHub cover wayfinding there), keeping
  *  the bar calm and focused on the brand + the growing-self widget. */
 const NAV_ITEMS = [
-  { href: "/", label: "Home", kanji: "家" },
-  { href: "/learn", label: "Learn", kanji: "学" },
-  { href: "/progress", label: "Progress", kanji: "進" },
+  { href: "/", label: "Home" },
+  { href: "/learn", label: "Learn" },
+  { href: "/progress", label: "Progress" },
 ];
 
 export default function Navbar({ compact = false }: Props) {
@@ -96,7 +96,7 @@ export default function Navbar({ compact = false }: Props) {
           </span>
         </Link>
 
-        {/* ── Wayfinding links — calm pills with a soft kanji overline.
+        {/* ── Wayfinding links — calm brush-accented pills.
             Hidden below 900px where the sidebar is the primary nav. ── */}
         <nav
           aria-label="Primary"
@@ -115,9 +115,6 @@ export default function Navbar({ compact = false }: Props) {
                 className={`nav-link${active ? " nav-link--active" : ""}`}
                 aria-current={active ? "page" : undefined}
               >
-                <span aria-hidden="true" style={{ fontSize: 11, opacity: 0.6, lineHeight: 1 }}>
-                  {item.kanji}
-                </span>
                 {item.label}
               </Link>
             );
