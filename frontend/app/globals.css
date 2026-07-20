@@ -16,7 +16,7 @@
      traditional Japanese calligraphy, lacquerware, and ink-wash painting. ── */
   --brand: #b8372b;
   --brand-strong: #942c22;
-  --brand-bright: #d4443a;
+  --brand-bright: #e04a38;
   --brand-soft: #e06b5a;
 
   /* Extended sumi/vermillion palette — layered depths for Japanese richness */
@@ -57,12 +57,14 @@
 
   --accent: var(--brand);
   --accent-hover: var(--brand-strong);
-  --accent-dim: rgba(184, 55, 43, 0.09);
-  --accent-glow: rgba(184, 55, 43, 0.2);
+  --accent-dim: rgba(184, 55, 43, 0.11);
+  --accent-glow: rgba(206, 62, 45, 0.26);
   --accent-companion: #1a5c6a;
-  --accent-gradient: linear-gradient(135deg, #b8372b 0%, #942c22 100%);
+  /* A livelier lacquer sweep: bright vermillion into deep urushi red. Text
+     stays on --brand (contrast-safe); the vibrancy lives in fills/glows. */
+  --accent-gradient: linear-gradient(135deg, #d0402e 0%, #8f2a1f 100%);
   --on-accent: #ffffff;
-  --shadow-glow-accent: 0 2px 20px rgba(184, 55, 43, 0.28);
+  --shadow-glow-accent: 0 2px 22px rgba(206, 62, 45, 0.34);
 
   /* Sumi ink tones: the deep, layered blacks and grays of Japanese
      calligraphy — a touch warmer than pure gray, like ink on washi. */
@@ -146,9 +148,9 @@
 
   /* The vermillion ember is a touch warmer and more present — the breathing
      layer now feels like lantern-light drifting under the washi. */
-  --aurora-1: rgba(184, 55, 43, 0.11);
-  --aurora-2: rgba(210, 130, 60, 0.09);
-  --aurora-3: rgba(148, 44, 34, 0.07);
+  --aurora-1: rgba(196, 58, 44, 0.14);
+  --aurora-2: rgba(214, 134, 58, 0.12);
+  --aurora-3: rgba(152, 46, 36, 0.09);
 }
 
 /* ── Dark theme — deep indigo night sky (ai-zome), lit by warm kinsaku
@@ -666,7 +668,7 @@ body::before {
   border-radius: inherit;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.04;
+  opacity: 0.07;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cpath d='M28 28c0-4.4-3.6-8-8-8-2.2 0-4.2.9-5.6 2.4C13.4 20.6 12 22.6 12 25c0 4.4 3.6 8 8 8 2.2 0 4.2-.9 5.6-2.4C27.4 29.4 28 27.4 28 25zM20 36c-4.4 0-8-3.6-8-8 0-2.2.9-4.2 2.4-5.6C13.4 20.6 15.4 19 18 19c4.4 0 8 3.6 8 8 0 2.2-.9 4.2-2.4 5.6C22.6 34.6 20.6 36 20 36zM36 20c-2.2 0-4.2.9-5.6 2.4C29.4 23.4 28 25.4 28 28c0 4.4 3.6 8 8 8 2.2 0 4.2-.9 5.6-2.4C42.6 32.6 44 30.6 44 28c0-4.4-3.6-8-8-8z' fill='%23b8372b' fill-opacity='0.3'/%3E%3C/svg%3E");
   background-size: 56px 56px;
   mix-blend-mode: multiply;
@@ -836,9 +838,10 @@ body::before {
   width: 10px;
   height: 10px;
   border-radius: 2px;
-  background: var(--brand);
-  opacity: 0.35;
+  background: var(--accent-gradient);
+  opacity: 0.55;
   transform: rotate(45deg);
+  box-shadow: 0 0 10px var(--accent-glow);
 }
 
 /* ── Seasonal accent — subtle color hints for Japanese seasons.
@@ -860,12 +863,30 @@ body::before {
   --seasonal-wash: rgba(96, 144, 192, 0.08);
 }
 
-/* Auto-seasonal: apply subtle seasonal washes based on data-season attribute
-   set by the layout init script. */
-html[data-season="spring"] body { background-image: radial-gradient(ellipse at 20% 10%, rgba(232, 160, 176, 0.04) 0%, transparent 50%); }
-html[data-season="summer"] body { background-image: radial-gradient(ellipse at 80% 10%, rgba(42, 138, 106, 0.04) 0%, transparent 50%); }
-html[data-season="autumn"] body { background-image: radial-gradient(ellipse at 20% 90%, rgba(200, 104, 48, 0.04) 0%, transparent 50%); }
-html[data-season="winter"] body { background-image: radial-gradient(ellipse at 80% 90%, rgba(96, 144, 192, 0.04) 0%, transparent 50%); }
+/* Auto-seasonal: paired corner washes based on the data-season attribute set
+   by the layout init script — vivid enough to actually feel the season turn
+   (sakura spring, matcha summer, momiji autumn, snow-shadow winter), while
+   staying a wash, never a tint over content. */
+html[data-season="spring"] body {
+  background-image:
+    radial-gradient(ellipse at 20% 8%, rgba(232, 150, 170, 0.09) 0%, transparent 52%),
+    radial-gradient(ellipse at 85% 85%, rgba(220, 120, 150, 0.05) 0%, transparent 45%);
+}
+html[data-season="summer"] body {
+  background-image:
+    radial-gradient(ellipse at 80% 8%, rgba(42, 138, 106, 0.09) 0%, transparent 52%),
+    radial-gradient(ellipse at 12% 88%, rgba(90, 160, 90, 0.05) 0%, transparent 45%);
+}
+html[data-season="autumn"] body {
+  background-image:
+    radial-gradient(ellipse at 20% 88%, rgba(206, 108, 44, 0.09) 0%, transparent 52%),
+    radial-gradient(ellipse at 85% 10%, rgba(190, 80, 40, 0.05) 0%, transparent 45%);
+}
+html[data-season="winter"] body {
+  background-image:
+    radial-gradient(ellipse at 80% 88%, rgba(96, 144, 192, 0.09) 0%, transparent 52%),
+    radial-gradient(ellipse at 12% 10%, rgba(140, 170, 210, 0.05) 0%, transparent 45%);
+}
 
 /* ── Engraved identity motif — a faint, repeating hairline weave
    (think fine book-cloth or a diploma border) baked into surfaces that opt in.
@@ -2500,9 +2521,22 @@ p {
   font-weight: 700;
   letter-spacing: 0.22em;
   color: var(--accent);
-  opacity: 0.75;
+  opacity: 0.85;
   text-transform: uppercase;
   margin-bottom: 2px;
+}
+/* A short lacquer brush-dash leads the overline in — the hanko-red stroke
+   that used to be carried by a kanji glyph, now purely graphic. */
+.section-overline::before {
+  content: "";
+  display: inline-block;
+  width: 18px;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--accent-gradient);
+  margin-right: 9px;
+  vertical-align: middle;
+  transform: translateY(-1px);
 }
 .section-header__kanji {
   font-family: var(--font-display), serif;

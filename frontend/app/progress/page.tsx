@@ -279,8 +279,9 @@ export default function ProgressPage() {
               </Card>
             </div>
 
-            {/* Achievements */}
-            <div style={{ marginTop: 14 }} className="progress-achievements">
+            {/* Achievements — carried on a quiet seigaiha (wave) ground:
+                good fortune gathering, wave over wave. */}
+            <div style={{ marginTop: 14 }} className="progress-achievements pattern-seigaiha">
               <Card span>
                 <AchievementsGrid unlocked={s.badges} snapshot={snapshot} />
               </Card>
