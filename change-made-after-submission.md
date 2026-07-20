@@ -90,45 +90,71 @@
 A short, human-readable digest of the most recent work. Full detail remains in
 the themed sections below and the chronological table at the end.
 
-### Today — July 19, 2026 (replace home-grown primitives with well-established libraries)
+### Today — July 19, 2026 (library cleanup, UI/UX hardening, performance, backend security)
 
-This pass swapped the project's hand-rolled utility code for small,
-battle-tested public libraries — no behavior change, only de-risked
-maintenance and removed bespoke edge-case handling.
+A heavy day of refinement: swapping hand-rolled utilities for public
+libraries, hardening the UI/UX after the Japanese redesign, and shoring
+up backend safety.
 
-- **In-memory caches → `lru-cache`.** The four home-grown
-  insertion-ordered-`Map` LRU implementations (lesson cache,
-  Serper news context, moderation verdicts, and the TTS audio blob
-  cache) are now `lru-cache` instances. The byte-budgeted TTS
-  caches use `lru-cache`'s `maxSize`/`sizeCalculation` so eviction
-  stays correct and the store can never grow unbounded. Both the
-  backend (`src/lib/lessonCache.js`, `src/lib/serper.js`,
-  `src/lib/moderation.js`, `src/server.js`) and the frontend
-  TTS blob cache (`hooks/useSpeech.ts`) were migrated.
-- **Request rate limiting → `express-rate-limit`.** The custom
-  sliding-window `Map` limiter in `src/server.js` is gone, replaced
-  by `express-rate-limit` middleware. All the original security
-  properties are preserved via its `keyGenerator` + `limit` hooks: a
-  per-token bucket (SHA-256 of the full JWT), an IP backstop with a
-  higher multiplier, a JWT-shape gate so random garbage creates no
-  bucket, and a token-spray guard (LRU-capped per-IP set).
-- **Model-JSON repair → `jsonrepair`.** `parseJSON` in
-  `src/lib/gemma.js` now runs **`jsonrepair`** (used widely for
-  repairing LLM output) as its primary repair stage, keeping the
-  original hand-rolled pipeline only as a final fallback for any shape
-  `jsonrepair` doesn't cover.
-- **IndexedDB wrapper → `idb`.** `lib/lessonArchive.ts` now uses
-  **`idb`** (Jake Archibald's tiny Promise wrapper) instead of
-  the bespoke `openDB` + `withStore` transaction boilerplate —
-  same best-effort, never-throws contract, simpler async calls.
-- **SSE stream parsing → `eventsource-parser`.** The custom
-  split-based SSE frame parser in `hooks/useLesson.ts` is replaced
-  by **`eventsource-parser`** (spec-compliant; the same library the
-  Vercel AI SDK and OpenAI SDK use), which correctly handles
-  `\r\n` line endings, multi-line `data:` fields, and frames split
-  across chunks. `parseJSON`, the lesson hook, and the lesson
-  archive all keep their public APIs, so every caller is unchanged.
-- Docs updated to name the libraries: `README.md` (Technology
+- **Replaced home-grown primitives with well-known libraries.**
+  - **In-memory caches → `lru-cache`.** The four home-grown
+    insertion-ordered-`Map` LRU implementations (lesson cache,
+    Serper news context, moderation verdicts, and the TTS audio blob
+    cache) are now `lru-cache` instances. The byte-budgeted TTS
+    caches use `lru-cache`'s `maxSize`/`sizeCalculation` so eviction
+    stays correct and the store can never grow unbounded. Both the
+    backend (`src/lib/lessonCache.js`, `src/lib/serper.js`,
+    `src/lib/moderation.js`, `src/server.js`) and the frontend
+    TTS blob cache (`hooks/useSpeech.ts`) were migrated.
+  - **Request rate limiting → `express-rate-limit`.** The custom
+    sliding-window `Map` limiter in `src/server.js` is gone, replaced
+    by `express-rate-limit` middleware. All the original security
+    properties are preserved via its `keyGenerator` + `limit` hooks: a
+    per-token bucket (SHA-256 of the full JWT), an IP backstop with a
+    higher multiplier, a JWT-shape gate so random garbage creates no
+    bucket, and a token-spray guard (LRU-capped per-IP set).
+  - **Model-JSON repair → `jsonrepair`.** `parseJSON` in
+    `src/lib/gemma.js` now runs **`jsonrepair`** (used widely for
+    repairing LLM output) as its primary repair stage, keeping the
+    original hand-rolled pipeline only as a final fallback for any shape
+    `jsonrepair` doesn't cover.
+  - **IndexedDB wrapper → `idb`.** `lib/lessonArchive.ts` now uses
+    **`idb`** (Jake Archibald's tiny Promise wrapper) instead of
+    the bespoke `openDB` + `withStore` transaction boilerplate —
+    same best-effort, never-throws contract, simpler async calls.
+  - **SSE stream parsing → `eventsource-parser`.** The custom
+    split-based SSE frame parser in `hooks/useLesson.ts` is replaced
+    by **`eventsource-parser`** (spec-compliant; the same library the
+    Vercel AI SDK and OpenAI SDK use), which correctly handles
+    `\r\n` line endings, multi-line `data:` fields, and frames split
+    across chunks. `parseJSON`, the lesson hook, and the lesson
+    archive all keep their public APIs, so every caller is unchanged.
+- **UI/UX hardening after the Japanese redesign.**
+  - Fixed FOUC by removing broken `/fonts/*.woff2` preloads and letting
+    `next/font` preload self-hosted fonts.
+  - Moved the mobile hamburger to the left, prevented horizontal scroll,
+    and removed the duplicate mobile sidebar so there is a single source
+    of truth.
+  - Restored reliable sidebar visibility and open/close behavior.
+  - Portal-ed achievement popovers to `body` so paint containment no
+    longer misplaces or clips them.
+  - Fixed the homepage layout to fit the viewport and reduce excessive
+    scroll.
+  - Added a world-class Japanese-inspired UI/UX redesign pass and a
+    follow-up revert/repair cycle to keep the sidebar behavior intact.
+- **Performance optimization.** Comprehensive speed pass that eliminated
+  frontend lag across interactions and rendering hot paths.
+- **Backend security hardening.**
+  - Sanitized AI source URLs before they reach the response.
+  - Fenced the user prompt so untrusted input cannot inject instructions
+    into the model.
+  - Strengthened multilingual and leet/obfuscation-aware moderation
+    patterns.
+  - Added per-user concurrency guards.
+  - Fixed a cache-hit crash guard.
+- **Voice fix.** Repaired TTS double-escaping of apostrophes that was
+  truncating speech.
+- **Docs updated** to name the libraries: `README.md` (Technology
   tables + Deep-Dive file rows), `reallearn-summarised.md` (tech
   stack), and `HEROIC_SAGA.md` (the JSON-repair + library notes).
   All 17 backend tests still pass; `tsc` + `next build` are clean.

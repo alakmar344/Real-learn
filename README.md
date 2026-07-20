@@ -28,6 +28,14 @@ Ask anything. In seconds, RealLearn engineers a complete educational experience 
 A running log of what's new in RealLearn. The full, exhaustive history from the
 gold redesign onward lives in [`change-made-after-submission.md`](./change-made-after-submission.md).
 
+**Today — July 19, 2026**
+- **Replaced home-grown primitives with well-known libraries.** In-memory caches moved to **`lru-cache`**, request rate limiting to **`express-rate-limit`**, JSON repair to **`jsonrepair`**, the IndexedDB wrapper to **`idb`**, and SSE stream parsing to **`eventsource-parser`**. The public APIs stayed unchanged; maintenance risk and bespoke edge-case handling dropped.
+- **Comprehensive UI/UX hardening.** Fixed FOUC/font preloads, moved the mobile hamburger left, removed duplicate sidebar state, portal-ed achievement popovers to avoid clipping, prevented horizontal scroll, restored reliable sidebar open/close, and tuned the homepage to fit the viewport without excessive scrolling.
+- **Performance optimization.** Eliminated frontend lag across interactions and rendering hot paths.
+- **Backend hardening.** Sanitized AI source URLs, fenced the user prompt against prompt injection, strengthened multilingual + leet/obfuscation moderation, added per-user concurrency guards, and fixed a cache-hit crash guard.
+- **Voice fix.** Repaired TTS double-escaping of apostrophes that truncated speech.
+- **Docs updated** to name the new libraries and reflect the latest state.
+
 **Today — July 18, 2026**
 - **Japanese culture-inspired design transformation.** Replaced the entire cobalt-blue editorial design system with a Japanese aesthetic palette rooted in traditional arts: sumi-e ink painting, vermillion hanko stamps, washi paper textures, and indigo (ai-zome) night skies. The three themes are now: **Shiro** (Paper) — warm washi ivory with sumi ink text and vermillion accents; **Yoru** (Night) — deep ai-zome indigo with warm golden-vermillion accents; **Tasogare** (Twilight) — deep murasaki purple with sakura-pink accents. All CSS custom properties, aurora ambient layers, crayon painting palettes, and texture overlays updated to the new palette.
 - **Updated all documentation.** Comprehensive updates across README.md, errors.md, DESIGN_AUDIT.md, IMPROVEMENT_PRIORITIES.md, change-made-after-submission.md, HEROIC_SAGA.md, and reallearn-summarised.md to reflect the current state of the project and the new Japanese design identity.

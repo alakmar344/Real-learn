@@ -493,16 +493,44 @@ The result was not just a color change. It was a **philosophical shift** — fro
 
 ---
 
-## Epilogue: The Living Legend (July 18, 2026)
+## Book XV: The Library Cleanup (July 19, 2026)
 
-From a single commit on May 6, 2026, to **532 commits** spanning 44 days, RealLearn transformed from a hackathon prototype into a **production-grade learning platform**.
+The product now looked and felt like RealLearn. But underneath the polished surface, it was still running on hand-forged primitives that had been forged in the early weeks: custom LRU caches, a sliding-window rate limiter, a manual IndexedDB wrapper, a split-based SSE parser, and a bespoke JSON-repair pipeline. They had worked — until they didn't.
+
+On July 19, the team swept them out and replaced them with battle-tested public libraries:
+
+- **In-memory caches → `lru-cache`.** Four hand-rolled insertion-ordered `Map` caches became properly bounded LRU instances.
+- **Rate limiting → `express-rate-limit`.** The custom sliding-window `Map` limiter became standard middleware, preserving the per-token, IP-backstop, and spray-guard behavior.
+- **JSON repair → `jsonrepair`.** The chaotic hand-rolled repair pipeline became a library-first stage, with the bespoke steps kept only as a fallback.
+- **IndexedDB wrapper → `idb`.** Jake Archibald's Promise wrapper replaced the verbose transaction boilerplate.
+- **SSE parsing → `eventsource-parser`.** The custom split-based parser was replaced by the same spec-compliant parser used by the Vercel AI SDK.
+
+The same day brought a wave of hardening: source URL sanitization, prompt fencing against injection, stronger multilingual moderation, per-user concurrency limits, a cache-hit crash guard, and a fix for TTS apostrophes that had been silently truncating speech. The UI/UX was also tightened — FOUC killed, font preloads fixed, sidebar duplication removed, achievement popovers portal-ed to `body`, and the homepage made to fit the viewport.
+
+The platform was now **built like a product**, not a prototype.
+
+| Metric | Value |
+|--------|-------|
+| Total commits | 586 |
+| Total span | May 6 → July 19, 2026 (75 days) |
+| AI providers migrated | 5 |
+| Languages supported | 12 Indian languages |
+| Legal policy versions | Privacy v2.6, Terms v2.4, Cookie v2.2 |
+| Design systems | 3 (gold editorial → cobalt editorial → Japanese sumi-e) |
+| Themes | 3 (Shiro, Yoru, Tasogare) |
+
+---
+
+## Epilogue: The Living Legend (July 19, 2026)
+
+From a single commit on May 6, 2026, to **586 commits** spanning 75 days, RealLearn transformed from a hackathon prototype into a **production-grade learning platform**.
 
 ### The Numbers
 
 | Metric | Value |
 |--------|-------|
-| Total commits | 532 |
-| Total span | May 6 → July 18, 2026 (44 days) |
+| Total commits | 586 |
+| Total span | May 6 → July 19, 2026 (75 days) |
 | AI providers migrated | 5 (Gemini → Vertex → Groq → Cloudflare → Cerebras + Cloudflare) |
 | Languages supported | 12 Indian languages |
 | Legal policy versions | Privacy v2.6, Terms v2.4, Cookie v2.2 |
@@ -537,6 +565,7 @@ This was not the work of one. It was the work of many sessions, many branches, m
 - **The Legal Scribes** who wrote Privacy Policy v2.6 and kept it in sync with every feature.
 - **The Accessibility Advocates** who targeted WCAG 2.1 AA and never stopped refining.
 - **The Bug Slayers** who fixed 21 bugs in one session and 24 in another.
+- **The Library Maintainers** who replaced the home-grown primitives with `lru-cache`, `express-rate-limit`, `jsonrepair`, `idb`, and `eventsource-parser` — and made the codebase safer by doing so.
 
 ---
 
@@ -547,6 +576,6 @@ This was not the work of one. It was the work of many sessions, many branches, m
 
 ---
 
-*This saga was forged from 532 commits, spanning May 6 to July 18, 2026. Every date, every commit hash, every struggle and triumph is recorded in the repository's history. The changelog lives in `change-made-after-submission.md`. The documentation lives in `README.md`. The engineering war stories live in `errors.md`. The design audit lives in `DESIGN_AUDIT.md`. The roadmap lives in `IMPROVEMENT_PRIORITIES.md`.*
+*This saga was forged from 586 commits, spanning May 6 to July 19, 2026. Every date, every commit hash, every struggle and triumph is recorded in the repository's history. The changelog lives in `change-made-after-submission.md`. The documentation lives in `README.md`. The engineering war stories live in `errors.md`. The design audit lives in `DESIGN_AUDIT.md`. The roadmap lives in `IMPROVEMENT_PRIORITIES.md`.*
 
 *This is not padding. This is the story of how a hackathon prototype became a platform.*
