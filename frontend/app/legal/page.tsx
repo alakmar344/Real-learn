@@ -2,8 +2,15 @@ import PrivacyPolicy from "../legal/privacy/page";
 import TermsOfService from "../legal/terms/page";
 import CookiePolicy from "../legal/cookies/page";
 import { Suspense } from "react";
+import { Metadata } from "next";
 
 type SearchParams = Promise<{ tab?: string }>;
+
+export const metadata: Metadata = {
+  title: "Legal — Privacy, Terms, and Cookie Policy",
+  description:
+    "Read RealLearn's privacy policy, terms of service, and cookie policy.",
+};
 
 export default async function LegalPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;

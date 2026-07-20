@@ -41,12 +41,89 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RealLearn — The World Is Your Textbook",
+  title: {
+    default: "RealLearn — AI-Powered Interactive Learning Platform",
+    template: "%s | RealLearn",
+  },
   description:
-    "Ask anything, learn everything. Unlock knowledge through progressive discovery."
+    "RealLearn is an AI-powered interactive learning platform that transforms any question into a structured 3-part lesson with quizzes, progress tracking, achievements, and text-to-speech. Ask anything, learn everything with adaptive AI tutoring.",
+  keywords: [
+    "AI learning platform",
+    "interactive education",
+    "personalized learning",
+    "AI tutor",
+    "adaptive learning",
+    "knowledge discovery",
+    "quiz generator",
+    "progress tracking",
+    "educational technology",
+    "online learning",
+    "AI-powered education",
+    "lifelong learning",
+    "skill development",
+    "real-time feedback",
+    "gamified learning",
+    "achievement system",
+    "text-to-speech learning",
+    "accessible education",
+    "AI lesson generator",
+    "study assistant",
+  ],
+  authors: [{ name: "RealLearn" }],
+  creator: "RealLearn",
+  publisher: "RealLearn",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL("https://reallearn.site"),
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://reallearn.site",
+    title: "RealLearn — AI-Powered Interactive Learning Platform",
+    description:
+      "Transform any question into a structured 3-part lesson with quizzes, progress tracking, achievements, and text-to-speech. Ask anything, learn everything.",
+    siteName: "RealLearn",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "RealLearn — AI-Powered Interactive Learning Platform",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "RealLearn — AI-Powered Interactive Learning Platform",
+    description:
+      "Transform any question into a structured 3-part lesson with quizzes, progress tracking, achievements, and text-to-speech. Ask anything, learn everything.",
+    images: ["/og-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  verification: {
+    google: "google-site-verification-code",
+  },
 };
 
 export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
   themeColor: "#f7f6f2",
 };
 
@@ -85,6 +162,48 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <script dangerouslySetInnerHTML={{ __html: perfInitScript }} />
         <script dangerouslySetInnerHTML={{ __html: seasonalInitScript }} />
+        {/* Structured data for AI crawlers and search engines */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebApplication",
+              name: "RealLearn",
+              description:
+                "AI-powered interactive learning platform that transforms any question into a structured 3-part lesson with quizzes, progress tracking, achievements, and text-to-speech.",
+              url: "https://reallearn.site",
+              applicationCategory: "EducationalApplication",
+              operatingSystem: "Web",
+              offers: {
+                "@type": "Offer",
+                price: "0",
+                priceCurrency: "USD",
+              },
+              featureList: [
+                "AI-powered lesson generation",
+                "Interactive quizzes and assessments",
+                "Progress tracking and achievements",
+                "Text-to-speech learning",
+                "Adaptive learning paths",
+                "Personalized study recommendations",
+                "Multi-language support",
+                "Accessible design with keyboard navigation",
+              ],
+              audience: {
+                "@type": "Audience",
+                audienceType: "Students, lifelong learners, professionals",
+              },
+              inLanguage: "en",
+              accessibilityFeature: [
+                "keyboardNavigation",
+                "screenReaderSupport",
+                "highContrastDisplay",
+                "textToSpeech",
+              ],
+            }),
+          }}
+        />
         {/* PERFORMANCE: preconnect to critical origins so lesson-generation requests,
             auth handshakes, and analytics avoid extra DNS+TCP round-trips. */}
         <link rel="preconnect" href={process.env.NEXT_PUBLIC_BACKEND_URL?.replace(/\/$/, "") || "https://real-learn.onrender.com"} crossOrigin="anonymous" />
