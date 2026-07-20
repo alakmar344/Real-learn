@@ -98,7 +98,13 @@ export default function HomePage() {
   return (
     <>
       <LiveRegion />
-      <main className="hero" style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <main
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
         <Navbar />
 
         <section className="hero">

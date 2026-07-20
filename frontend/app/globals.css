@@ -387,23 +387,19 @@ html {
 html,
 body {
   margin: 0;
-  min-height: 100%;
+  min-height: 100dvh;
+  min-height: 100vh;
   color: var(--text-primary);
   font-family: var(--font-inter), system-ui, sans-serif;
 }
 
-/* The theme color lives on the ROOT element only. If body also had an opaque
-   background it would paint ABOVE the fixed z-index:-1 crayon painting
-   (negative-z descendants render right after the canvas, before in-flow
-   block backgrounds) — hiding the painting behind a solid color. */
 html {
   background: var(--bg-primary);
-}
-body {
-  background: transparent;
+  overflow-x: hidden;
 }
 
 body {
+  background: transparent;
   overflow-x: hidden;
 }
 
@@ -550,7 +546,6 @@ html::before {
 .crayon-bg {
   position: fixed;
   inset: 0;
-  height: 100dvh;
   z-index: -1;
   pointer-events: none;
   opacity: 0.28;
@@ -1399,6 +1394,7 @@ a:active {
   width: 100%;
   max-width: 800px;
   position: relative;
+  overflow: hidden;
 }
 /* Soft vermillion/washi glow behind the greeting (was an inline div). */
 .hero__glow {
