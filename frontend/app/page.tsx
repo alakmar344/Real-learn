@@ -20,31 +20,20 @@ const FeedbackGate = dynamic(() => import("@/components/shared/FeedbackGate"), {
   ssr: false,
 });
 
-/** Warm, time-aware greeting — the app says hello like a friend would. */
+// time-of-day greeting
 function greetingForHour(h: number): string {
-  if (h < 4) return "Still awake?";
-  if (h < 7) return "Up with the sun";
+  if (h < 4) return "Still up?";
+  if (h < 7) return "Good morning";
   if (h < 12) return "Good morning";
   if (h < 17) return "Good afternoon";
   if (h < 21) return "Good evening";
-  return "A quiet night";
-}
-
-/** A small time-of-day companion emoji to make the hello feel alive. */
-function iconForHour(h: number): string {
-  if (h < 4) return "🌙";
-  if (h < 7) return "🌅";
-  if (h < 12) return "☀️";
-  if (h < 17) return "🌤️";
-  if (h < 21) return "🌆";
-  return "✨";
+  return "Good evening";
 }
 
 export default function HomePage() {
   const [question, setQuestion] = useState("");
   const [loadingQuestion, setLoadingQuestion] = useState<string | null>(null);
   const [greeting, setGreeting] = useState("");
-  const [greetingIcon, setGreetingIcon] = useState("");
   const { generateLesson } = useLesson();
   const { isSignedIn, getToken } = useAuth();
   const { user } = useUser();
@@ -53,12 +42,11 @@ export default function HomePage() {
   const firstName = user?.firstName || "";
 
   useEffect(() => {
-    const now = new Date();
-    const hour = now.getHours();
-    setGreeting(greetingForHour(hour));
-    setGreetingIcon(iconForHour(hour));
+    setGreeting(greetingForHour(new Date().getHours()));
   }, []);
 
+  // One-time sync of locally-stored legal consent to the backend once we know
+  // the Clerk user id (consent may have been recorded before sign-in).
   useEffect(() => {
     const syncLegalConsent = async () => {
       if (!isSignedIn || !user?.id) return;
@@ -74,9 +62,7 @@ export default function HomePage() {
         const headers: Record<string, string> = {
           "Content-Type": "application/json",
         };
-        if (token) {
-          headers["Authorization"] = `Bearer ${token}`;
-        }
+        if (token) headers["Authorization"] = `Bearer ${token}`;
 
         const res = await fetch(`${backendUrl}/api/legal-consent`, {
           method: "POST",
@@ -103,88 +89,28 @@ export default function HomePage() {
 
   const submit = async (override?: string) => {
     const normalized = (override ?? question).trim();
-    if (!normalized) {
-      console.log("[frontend][HomePage] submit skipped: empty question");
-      return;
-    }
-    console.log("[frontend][HomePage] submit started", {
-      questionLength: normalized.length,
-    });
+    if (!normalized) return;
     setLoadingQuestion(normalized);
     await generateLesson(normalized, true);
     setLoadingQuestion(null);
-    console.log("[frontend][HomePage] submit finished");
   };
 
   return (
     <>
       <LiveRegion />
-      <main
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
+      <main className="hero" style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
         <Navbar />
 
-        <section
-          style={{
-            flex: 1,
-            padding: "clamp(20px, 5vh, 48px) clamp(16px, 4vw, 32px)",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            textAlign: "center",
-            minHeight: 0,
-          }}
-        >
-          <div style={{ width: "100%", maxWidth: 800, position: "relative" }}>
-            {/* Soft decorative glow behind the greeting — vermillion/washi warmth
-                to match the Japanese palette (an old cobalt-blue tint used to
-                bleed through here, clashing with the theme). */}
-            <div
-              aria-hidden="true"
-              style={{
-                position: "absolute",
-                top: "45%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                width: "min(420px, 75vw)",
-                height: "min(220px, 40vw)",
-                borderRadius: "50%",
-                background:
-                  "radial-gradient(ellipse at center, var(--accent-glow) 0%, var(--sun-wash) 45%, transparent 70%)",
-                filter: "blur(50px)",
-                zIndex: 0,
-                pointerEvents: "none",
-              }}
-            />
+        <section className="hero">
+          <div className="hero__stage">
+            <div className="hero__glow" aria-hidden="true" />
 
-            {/* Ensō — the hand-drawn zen circle of practice and open-ended
-                learning. A wordless brush watermark: it carries the cultural
-                signature without any glyphs, so nothing text-like can flash
-                in a fallback font before the webfonts load (no FOUC glare). */}
+            {/* Enso brush watermark — cultural signature without glyphs (no FOUC). */}
             <svg
+              className="hero__enso"
               aria-hidden="true"
               viewBox="0 0 120 120"
-              style={{
-                position: "absolute",
-                top: "50%",
-                right: "clamp(-8px, 2vw, 24px)",
-                transform: "translateY(-50%) rotate(-8deg)",
-                width: "clamp(140px, 22vw, 230px)",
-                height: "auto",
-                color: "var(--brand)",
-                opacity: 0.07,
-                zIndex: 0,
-                pointerEvents: "none",
-                userSelect: "none",
-              }}
             >
-              {/* Two offset arcs mimic the swelling ink of a single brush pass,
-                  finishing with the ensō's characteristic open gap. */}
               <path
                 d="M86 16 A48 48 0 1 0 104 52"
                 fill="none"
@@ -201,63 +127,27 @@ export default function HomePage() {
               />
             </svg>
 
-            {/* The slim daily-spark / resume strip sits above the greeting */}
-            <div style={{ position: "relative", zIndex: 1 }}>
+            <div className="hero__content">
               <HomeStats onStartTopic={(topic) => submit(topic)} />
             </div>
 
-            {/* Personal, time-aware hello */}
-            <div
-              className="hero-greeting"
-              style={{
-                position: "relative",
-                zIndex: 1,
-                marginTop: 24,
-              }}
-            >
+            <div className="hero-greeting hero__greeting">
               {greeting ? (
-                <h1
-                  suppressHydrationWarning
-                  style={{
-                    margin: 0,
-                    fontFamily: "var(--font-display)",
-                    fontWeight: 900,
-                    lineHeight: 1.05,
-                    letterSpacing: "-0.03em",
-                    fontSize: "clamp(42px, 8vw, 76px)",
-                    color: "var(--text-primary)",
-                  }}
-                >
-                  <span
-                    className="hero-greeting-icon"
-                    aria-hidden="true"
-                    style={{ marginRight: 12 }}
-                  >
-                    {greetingIcon}
-                  </span>
+                <h1 className="hero__title" suppressHydrationWarning>
                   {greeting}
                   {firstName ? (
                     <>
                       ,{" "}
-                      <span
-                        style={{
-                          background: "var(--accent-gradient)",
-                          backgroundClip: "text",
-                          WebkitBackgroundClip: "text",
-                          color: "transparent",
-                        }}
-                      >
-                        {firstName}
-                      </span>
+                      <span className="hero__title-name">{firstName}</span>
                     </>
                   ) : null}
                 </h1>
               ) : (
-                <div style={{ height: 76 }} aria-hidden="true" />
+                <div className="hero__spacer" aria-hidden="true" />
               )}
             </div>
 
-            <div style={{ position: "relative", zIndex: 1, display: "flex", justifyContent: "center", marginTop: 20 }}>
+            <div className="hero__input-row">
               <QuestionInput question={question} setQuestion={setQuestion} onSubmit={submit} />
             </div>
           </div>
@@ -265,8 +155,7 @@ export default function HomePage() {
 
         <Footer className="app-footer" />
 
-        {/* Optional, anonymous review — shows the day after the first lesson
-            on any return visit, so it is never missed after a refresh. */}
+        {/* Optional anonymous review — appears the day after the first lesson. */}
         <FeedbackGate />
 
         {loadingQuestion ? (
