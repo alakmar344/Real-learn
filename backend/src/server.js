@@ -217,17 +217,43 @@ function isTokenSpray(ip, tokenKey) {
 }
 
 function createRateLimiter({ windowMs, max, ipMultiplier = 5 }) {
-  return expressRateLimit({
+  const tooMany = (_req, res) => {
+    res.setHeader("Retry-After", Math.ceil(windowMs / 1000));
+    res.status(429).json({ error: "Too many requests. Please slow down." });
+  };
+  const clientIp = (req) => req.ip || req.socket?.remoteAddress || "unknown";
+
+  // Gate 1 — the ALWAYS-ON IP backstop. Counts EVERY request from an IP,
+  // token or not, capped at `max * ipMultiplier`.
+  //
+  // SECURITY: this gate previously did not exist — the single limiter used a
+  // combined `ip|token` key, so each distinct (unverified!) JWT-shaped token
+  // opened a FRESH bucket and one IP could multiply its budget by
+  // MAX_TOKEN_KEYS_PER_IP × ipMultiplier (~1000×) before the spray gate
+  // tripped. A separate counter keyed purely on IP restores the documented
+  // hard per-IP ceiling no matter how many tokens are minted.
+  const ipBackstop = expressRateLimit({
     windowMs,
-    // Per-request limit: IP backstop gets a higher cap when a well-formed
-    // token is present (legitimate users behind shared NAT), else the base cap.
-    limit: (req) => (tokenFromRequest(req) ? max * ipMultiplier : max),
+    limit: max * ipMultiplier,
+    // Headers come from the per-key gate below (the budget a legitimate
+    // caller actually experiences); emitting them here too would clobber it.
+    standardHeaders: false,
+    legacyHeaders: false,
+    keyGenerator: (req) => `ipall:${clientIp(req)}`,
+    handler: tooMany,
+  });
+
+  // Gate 2 — the per-caller bucket: per verified-shape token (so NATed users
+  // don't share one bucket), or per IP for tokenless requests. Both are capped
+  // at the base `max`; only the aggregate IP backstop above gets the
+  // multiplier.
+  const perCaller = expressRateLimit({
+    windowMs,
+    limit: max,
     standardHeaders: true,
     legacyHeaders: false,
-    // Key combines the IP backstop with a per-token bucket. express-rate-limit
-    // counts each distinct key in its own window, so this yields both gates.
     keyGenerator: (req) => {
-      const ip = req.ip || req.socket?.remoteAddress || "unknown";
+      const ip = clientIp(req);
       const token = tokenFromRequest(req);
       if (!token) return `ip:${ip}`;
       const tokenKey = `user:${crypto
@@ -235,14 +261,17 @@ function createRateLimiter({ windowMs, max, ipMultiplier = 5 }) {
         .update(token)
         .digest("hex")
         .slice(0, 32)}`;
+      // Fail closed: an IP minting too many distinct token buckets collapses
+      // into one shared spray bucket instead of gaining fresh budget.
       if (isTokenSpray(ip, tokenKey)) return `spray:${ip}`;
       return `ip:${ip}|${tokenKey}`;
     },
-    handler: (_req, res) => {
-      res.setHeader("Retry-After", Math.ceil(windowMs / 1000));
-      res.status(429).json({ error: "Too many requests. Please slow down." });
-    },
+    handler: tooMany,
   });
+
+  // Express flattens middleware arrays, so callers keep using this as a
+  // single `rateLimit` argument in route definitions.
+  return [ipBackstop, perCaller];
 }
 
 const ttsRateLimiter = createRateLimiter({
@@ -678,10 +707,11 @@ app.use((req, res, next) => {
   next();
 });
 
-// Routes below register `rateLimit(req, res, next)` as middleware. With the
-// custom limiter gone, that is simply the express-rate-limit middleware
-// instance — it counts the request in its own window, sets RateLimit headers,
-// and short-circuits with 429 + Retry-After when the budget is exhausted.
+// Routes below register `rateLimit` as middleware. It is a two-gate chain
+// (Express flattens the array): an aggregate per-IP backstop followed by the
+// per-caller bucket — each counts the request in its own window, sets
+// RateLimit headers (per-caller gate only), and short-circuits with 429 +
+// Retry-After when either budget is exhausted.
 const rateLimit = apiRateLimiter;
 
 // SECURITY: /health is unauthenticated and pings MongoDB on every hit —
@@ -856,13 +886,23 @@ app.get("/api/agreement/status", rateLimit, requireAuth, async (req, res) => {
   }
 });
 
+// SECURITY: /api/feedback is the only UNAUTHENTICATED MongoDB writer, so it
+// gets its own much tighter budget than the general API limiter. A real user
+// submits at most one review; 5/min per caller (10/min per IP) caps junk-
+// insertion storage abuse while never touching legitimate use.
+const feedbackRateLimiter = createRateLimiter({
+  windowMs: 60_000,
+  max: 5,
+  ipMultiplier: 2,
+});
+
 // Store an OPTIONAL user review/feedback. This endpoint is intentionally
 // PUBLIC (no requireAuth) and stores NO identifiers: no Clerk ID, no email, and
 // no client IP. We only persist the anonymized review fields the user chose to
 // submit. This matches the product's privacy promise that feedback is stripped
 // of any identity before it is sent (see frontend/lib/feedback.ts and the
 // Privacy Policy's feedback disclosure).
-app.post("/api/feedback", rateLimit, async (req, res) => {
+app.post("/api/feedback", feedbackRateLimiter, async (req, res) => {
   try {
     const { rating, likes, improvements } = req.body ?? {};
 

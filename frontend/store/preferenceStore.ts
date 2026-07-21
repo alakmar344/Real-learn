@@ -6,6 +6,16 @@ import { Theme, Language, Level, LessonMode } from "@/types";
 import type { PerfMode } from "@/lib/performance";
 
 const VALID_THEMES: Theme[] = ["light", "dark", "twilight"];
+// SAFEGUARD: legacy localStorage values seed the store below, so every field
+// must be validated against its allowlist — `theme` always was, but
+// `language`/`level` were only checked to be strings, letting a corrupted or
+// tampered legacy value inject an invalid enum that no downstream code
+// expects (it is sent verbatim to the lesson API).
+const VALID_LANGUAGES: Language[] = [
+  "English", "Hindi", "Gujarati", "Tamil", "Bengali", "Marathi",
+  "Telugu", "Kannada", "Malayalam", "Punjabi", "Urdu", "Odia",
+];
+const VALID_LEVELS: Level[] = ["Class 6-8", "Class 9-10", "College / Advanced"];
 
 function readExistingPreferences(): { theme?: Theme; language?: Language; level?: Level } {
   const result: { theme?: Theme; language?: Language; level?: Level } = {};
@@ -25,8 +35,8 @@ function readExistingPreferences(): { theme?: Theme; language?: Language; level?
       try {
         const data = JSON.parse(journeyRaw);
         const state = data?.state ?? data;
-        if (typeof state?.language === "string") result.language = state.language;
-        if (typeof state?.level === "string") result.level = state.level;
+        if (VALID_LANGUAGES.includes(state?.language)) result.language = state.language;
+        if (VALID_LEVELS.includes(state?.level)) result.level = state.level;
       } catch {
         // ignore
       }

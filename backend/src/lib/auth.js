@@ -1,4 +1,5 @@
 import { createRemoteJWKSet, jwtVerify, decodeJwt, importSPKI } from "jose";
+import { LRUCache } from "lru-cache";
 
 // Clerk Frontend API URL — this is the token issuer. Override via env, defaults
 // to this app's production Clerk domain. When set, ONLY this issuer is trusted.
@@ -38,7 +39,18 @@ function getFallbackKey() {
 }
 
 // Cache one JWKS set per issuer so we don't re-fetch keys on every request.
-const jwksCache = new Map();
+//
+// SECURITY: the issuer comes from the token's UNVERIFIED `iss` claim, and the
+// trust check accepts any `*.reallearn.site` subdomain — so an attacker can
+// mint unlimited DISTINCT issuer strings that reach this cache before their
+// (invalid) signature is rejected. An unbounded Map keyed on that value is a
+// slow memory-growth DoS. Bound it with an LRU: legitimate deployments only
+// ever use a handful of issuers, so a small cap costs nothing, while spray
+// traffic just churns the tail. The TTL also picks up JWKS URL changes.
+const jwksCache = new LRUCache({
+  max: 32,
+  ttl: 60 * 60 * 1000, // 1h
+});
 
 function getJwksForIssuer(issuer, explicitJwksUrl) {
   const jwksUrl = explicitJwksUrl || `${issuer}/.well-known/jwks.json`;
@@ -236,9 +248,14 @@ export async function requireAuth(req, res, next) {
 
   const result = await verifyClerkToken(token);
   if (!result.valid) {
+    // PRIVACY: drop the pseudonymous user id (`sub`) before logging — failed
+    // verifications happen constantly (expired sessions, replays) and stdout
+    // logs are retained outside the app's data-deletion controls, so they must
+    // not accumulate per-user identifiers. Issuer/expiry are enough to debug.
+    const { sub: _sub, ...inspection } = inspectToken(token);
     console.warn("[auth] Token verification failed", {
       reason: result.error,
-      token: inspectToken(token),
+      token: inspection,
       configuredIssuer: CONFIGURED_FRONTEND_API,
     });
     return res.status(401).json({ error: "Invalid or expired token." });

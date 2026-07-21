@@ -9,8 +9,8 @@
 
 /**
  * XP required to advance FROM the given level TO the next one.
- * A gently rising curve: 100, 150, 200, 250 … keeps early wins fast while
- * making higher levels feel earned.
+ * A gently rising curve: 100, 175, 250, 325 … (+75 per level) keeps early
+ * wins fast while making higher levels feel earned.
  */
 export function xpToNextLevel(level: number): number {
   return 100 + (Math.max(1, level) - 1) * 75;
@@ -112,7 +112,8 @@ export interface StreakResolution {
  *
  * - Same day  → no change (already counted).
  * - Yesterday → +1.
- * - 1 day gap → consume a freeze if available (streak survives), else reset.
+ * - Exactly one missed day (gap of 2) → consume a freeze if available
+ *   (streak survives and advances), else reset.
  * - Bigger gap → reset to 1.
  */
 export function resolveStreak(
