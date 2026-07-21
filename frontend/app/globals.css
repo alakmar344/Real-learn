@@ -10,68 +10,67 @@
 :root {
   color-scheme: light;
 
-  /* ── RealLearn identity — Indian cultural aesthetic: handloom cotton,
-     peacock teal, lotus gold, and rosewood. Warm parchment, deep masala ink, and
-     religion-neutral accents use contrast, rhythm, ornament, and generous
-     breathing room as the core Indian design principles in the UI. ── */
-  --brand: #0f6f7d;
-  --brand-strong: #0a4f59;
-  --brand-bright: #2f9aa7;
-  --brand-soft: #8bbfc6;
+  /* ── RealLearn identity — India's tricolor: saffron, white, and green.
+     Warm saffron courage, deep green faith, and pure white truth — the palette
+     of a billion people, one nation, incredible diversity. ── */
+  --brand: #FF9933;
+  --brand-strong: #E67E22;
+  --brand-bright: #FFB347;
+  --brand-soft: #FFCC99;
 
-  /* Extended peacock/lotus palette — layered depths for Indian richness */
-  --cobalt-deep: #241127;
+  /* Tricolor diversity palette — saffron courage, green faith, white truth */
+  --cobalt-deep: #1a0f05;
   --cobalt-mid: #49306b;
-  --cobalt-vivid: #0f6f7d;
-  --cobalt-pale: #a8cfd4;
-  --cobalt-wash: rgba(15, 111, 125, 0.09);
-  --cobalt-ink: #160b18;
+  --cobalt-vivid: #FF9933;
+  --cobalt-pale: #FFD4B8;
+  --cobalt-wash: rgba(255, 153, 51, 0.09);
+  --cobalt-ink: #1a0f05;
 
   /* Handloom parchment: the warm, tactile feel of cotton rag paper —
-     sun-touched ivory with a faint turmeric warmth, like light crossing
+     sun-touched ivory with a saffron warmth, like light crossing
      woven khadi and carved stone. */
-  --bg-primary: #fbf0dc;
-  --bg-surface: rgba(255, 247, 229, 0.8);
-  --bg-card: rgba(255, 249, 235, 0.88);
+  --bg-primary: #FFFDF5;
+  --bg-surface: rgba(255, 252, 245, 0.8);
+  --bg-card: rgba(255, 250, 240, 0.88);
   --bg-card-hover: rgba(255, 252, 242, 0.97);
   --bg-glass: rgba(254, 244, 222, 0.78);
-  --bg-solid: #fff4dd;
+  --bg-solid: #FFF8E7;
   --bg-warm: rgba(252, 235, 202, 0.62);
   /* Warm ambient light — like diyas and marigolds, a gentle golden wash
-     layered under the peacock ambience. */
-  --sun-wash: rgba(233, 166, 56, 0.08);
-  --hearth-glow: rgba(15, 111, 125, 0.06);
+     layered under the tricolor ambience. */
+  --sun-wash: rgba(255, 153, 51, 0.08);
+  --hearth-glow: rgba(19, 136, 8, 0.06);
 
-  --border-subtle: rgba(36, 17, 39, 0.1);
-  --border-default: rgba(36, 17, 39, 0.16);
+  --border-subtle: rgba(26, 15, 5, 0.1);
+  --border-default: rgba(26, 15, 5, 0.16);
   --border-accent: var(--brand);
-  --border-glow: rgba(15, 111, 125, 0.32);
+  --border-glow: rgba(255, 153, 51, 0.32);
 
   --glass-blur: 28px;
   --glass-blur-strong: 44px;
   --glass-saturate: 180%;
   --glass-highlight: rgba(255, 241, 214, 0.92);
-  --glass-shadow: 0 4px 24px rgba(36, 17, 39, 0.08), 0 1px 3px rgba(36, 17, 39, 0.05);
-  --glass-edge: inset 0 1px 0 rgba(255, 241, 214, 0.9), inset 0 0 0 1px rgba(15, 111, 125, 0.13);
+  --glass-shadow: 0 4px 24px rgba(26, 15, 5, 0.08), 0 1px 3px rgba(26, 15, 5, 0.05);
+  --glass-edge: inset 0 1px 0 rgba(255, 241, 214, 0.9), inset 0 0 0 1px rgba(255, 153, 51, 0.13);
   --glass-sheen: linear-gradient(135deg, rgba(255,241,214,0.45) 0%, rgba(255,211,142,0.16) 38%, rgba(255,255,255,0) 62%);
 
   --accent: var(--brand);
   --accent-hover: var(--brand-strong);
-  --accent-dim: rgba(15, 111, 125, 0.12);
-  --accent-glow: rgba(47, 154, 167, 0.27);
-  --accent-companion: #0f6f7d;
-  /* A calm rangoli sweep: peacock teal into lotus gold and rosewood. Text
+  --accent-dim: rgba(255, 153, 51, 0.12);
+  --accent-glow: rgba(255, 153, 51, 0.27);
+  --accent-companion: #138808;
+  /* A calm tricolor sweep: saffron into green across pure white. Text
      stays on --brand (contrast-safe); the vibrancy lives in fills/glows. */
-  --accent-gradient: linear-gradient(135deg, #0f6f7d 0%, #b08d57 55%, #8b4a62 100%);
+  --accent-gradient: linear-gradient(135deg, #FF9933 0%, #FFCC33 50%, #138808 100%);
   --on-accent: #ffffff;
-  --shadow-glow-accent: 0 2px 22px rgba(15, 111, 125, 0.35);
+  --shadow-glow-accent: 0 2px 22px rgba(255, 153, 51, 0.35);
 
-  /* Masala ink tones: deep, layered browns and purples inspired by hand-drawn
+  /* Masala ink tones: deep, layered browns inspired by hand-drawn
      manuscript text — warmer than pure gray, like ink on handmade paper. */
   --text-primary: #1b1016;
   --text-secondary: #4b3941;
   --text-tertiary: #806f73;
-  --text-accent-strong: #0f6f7d;
+  --text-accent-strong: #FF9933;
 
   --correct: #2a7a50;
   --correct-bg: rgba(42, 122, 80, 0.1);
@@ -79,13 +78,15 @@
   --wrong-bg: rgba(196, 48, 48, 0.09);
   --locked: #a09898;
 
-  --subject-physics: #3a5ab0;
+  /* Subject colours — a vibrant palette inspired by India's diverse cultures,
+     spices, textiles, and festivals across every state. */
+  --subject-physics: #1a237e;
   --subject-chemistry: #2a7a50;
   --subject-economics: #b86a1a;
   --subject-biology: #a83060;
   --subject-cs: #0e7480;
   --subject-history: #8a5030;
-  --subject-general: #4a6090;
+  --subject-general: #5c6bc0;
 
   --radius-sm: 10px;
   --radius-md: 14px;
@@ -123,7 +124,7 @@
   --tracking-normal: 0;
   --tracking-wide: 0.04em;
 
-  /* Shadows warmed: masala ink mixed with umber, so depth reads as
+  /* Shadows warmed: saffron mixed with umber, so depth reads as
      soft shade on handloom paper rather than a cold drop-shadow. */
   --shadow-sm: 0 1px 3px rgba(42, 21, 32, 0.06), 0 1px 2px rgba(42, 21, 32, 0.04);
   --shadow-md: 0 4px 14px rgba(42, 21, 32, 0.08), 0 2px 4px rgba(42, 21, 32, 0.05);
@@ -146,69 +147,69 @@
   --focus-ring: 0 0 0 3px var(--accent-glow);
   --focus-ring-simple: 0 0 0 2px var(--accent);
 
-  /* The lotus-gold ember is a touch warmer and more present — the breathing
+  /* The saffron ember is a touch warmer and more present — the breathing
      layer now feels like diya-light drifting under the handloom paper. */
-  --aurora-1: rgba(196, 58, 44, 0.14);
-  --aurora-2: rgba(214, 134, 58, 0.12);
-  --aurora-3: rgba(152, 46, 36, 0.09);
+  --aurora-1: rgba(255, 153, 51, 0.14);
+  --aurora-2: rgba(19, 136, 8, 0.12);
+  --aurora-3: rgba(255, 204, 51, 0.09);
 }
 
-/* ── Dark theme — deep monsoon-indigo night, lit by brass and diya gold.
-   Luminous text on near-black, with lotus-gold accents that feel ceremonial
-   against the indigo. ── */
+/* ── Dark theme — deep emerald night, lit by brass and diya gold.
+   Luminous text on near-black, with saffron accents that feel warm
+   against the green. ── */
 html[data-theme="dark"] {
   color-scheme: dark;
 
-  --brand: #f0a84a;
-  --brand-strong: #ffc36d;
-  --brand-bright: #ffd995;
-  --brand-soft: #cf7624;
+  --brand: #138808;
+  --brand-strong: #0D6B06;
+  --brand-bright: #1DB92D;
+  --brand-soft: #4CAF50;
 
-  --cobalt-deep: #070814;
-  --cobalt-mid: #151b3b;
-  --cobalt-vivid: #f0a84a;
-  --cobalt-pale: #f4cf94;
-  --cobalt-wash: rgba(240, 168, 74, 0.11);
-  --cobalt-ink: #05050b;
+  --cobalt-deep: #0A0F0A;
+  --cobalt-mid: #1B3A1B;
+  --cobalt-vivid: #138808;
+  --cobalt-pale: #81C784;
+  --cobalt-wash: rgba(19, 136, 8, 0.11);
+  --cobalt-ink: #050805;
 
-  /* Night kept the indigo depth, but with a faint candle warmth so the dark
+  /* Night kept the green depth, but with a faint candle warmth so the dark
      feels like a diya-lit haveli rather than a server room. */
-  --sun-wash: rgba(220, 150, 80, 0.035);
-  --hearth-glow: rgba(230, 140, 70, 0.028);
+  --sun-wash: rgba(255, 153, 51, 0.035);
+  --hearth-glow: rgba(255, 204, 51, 0.028);
 
-  --bg-primary: #0a0810;
-  --bg-surface: rgba(22, 16, 30, 0.78);
-  --bg-card: rgba(26, 18, 36, 0.85);
-  --bg-card-hover: rgba(36, 26, 48, 0.95);
-  --bg-glass: rgba(16, 10, 24, 0.78);
-  --bg-solid: #100c18;
+  --bg-primary: #0A0F0A;
+  --bg-surface: rgba(16, 24, 16, 0.78);
+  --bg-card: rgba(20, 30, 20, 0.85);
+  --bg-card-hover: rgba(28, 40, 28, 0.95);
+  --bg-glass: rgba(12, 18, 12, 0.78);
+  --bg-solid: #101810;
 
-  --border-subtle: rgba(212, 132, 122, 0.1);
-  --border-default: rgba(212, 132, 122, 0.18);
+  --border-subtle: rgba(129, 199, 132, 0.1);
+  --border-default: rgba(129, 199, 132, 0.18);
   --border-accent: var(--brand);
-  --border-glow: rgba(212, 132, 122, 0.35);
+  --border-glow: rgba(129, 199, 132, 0.35);
 
   --glass-blur: 28px;
   --glass-blur-strong: 44px;
   --glass-saturate: 165%;
-  --glass-highlight: rgba(232, 180, 168, 0.14);
+  --glass-highlight: rgba(27, 94, 32, 0.14);
   --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.45), 0 1px 4px rgba(0, 0, 0, 0.28);
-  --glass-edge: inset 0 1px 0 rgba(212, 132, 122, 0.12), inset 0 0 0 1px rgba(212, 132, 122, 0.06);
-  --glass-sheen: linear-gradient(135deg, rgba(212,132,122,0.12) 0%, rgba(212,132,122,0.04) 38%, rgba(255,255,255,0) 62%);
+  --glass-edge: inset 0 1px 0 rgba(129, 199, 132, 0.12), inset 0 0 0 1px rgba(19, 136, 8, 0.06);
+  --glass-sheen: linear-gradient(135deg, rgba(129,199,132,0.12) 0%, rgba(19,136,8,0.04) 38%, rgba(255,255,255,0) 62%);
 
   --accent: var(--brand);
   --accent-hover: var(--brand-strong);
-  --accent-dim: rgba(212, 132, 122, 0.12);
-  --accent-glow: rgba(212, 132, 122, 0.28);
-  --accent-companion: #4fb5c4;
-  --accent-gradient: linear-gradient(135deg, #f0a84a 0%, #c65f17 100%);
-  --on-accent: #060408;
-  --shadow-glow-accent: 0 2px 20px rgba(212, 132, 122, 0.3);
+  --accent-dim: rgba(19, 136, 8, 0.12);
+  --accent-glow: rgba(19, 136, 8, 0.28);
+  --accent-companion: #FF9933;
+  --accent-gradient: linear-gradient(135deg, #138808 0%, #FF9933 100%);
+  --on-accent: #f0f0f0;
+  --shadow-glow-accent: 0 2px 20px rgba(19, 136, 8, 0.3);
 
   --text-primary: #f0e8e4;
   --text-secondary: #b8a8b0;
   --text-tertiary: #6a5868;
-  --text-accent-strong: #e8c0b8;
+  --text-accent-strong: #81C784;
 
   --correct: #5cb880;
   --correct-bg: rgba(92, 184, 128, 0.12);
@@ -216,73 +217,74 @@ html[data-theme="dark"] {
   --wrong-bg: rgba(232, 112, 104, 0.12);
   --locked: #403038;
 
-  --subject-physics: #d4847a;
+  /* Subject colours — India's diverse cultural palette under emerald night */
+  --subject-physics: #7986CB;
   --subject-chemistry: #5cb880;
-  --subject-economics: #d89a58;
-  --subject-biology: #d87088;
-  --subject-cs: #58b8c8;
-  --subject-history: #c08860;
-  --subject-general: #6898c8;
+  --subject-economics: #FFB74D;
+  --subject-biology: #F06292;
+  --subject-cs: #4DD0E1;
+  --subject-history: #A1887F;
+  --subject-general: #9575CD;
 
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.38), 0 2px 4px rgba(0, 0, 0, 0.28);
   --shadow-lg: 0 12px 34px rgba(0, 0, 0, 0.48), 0 4px 8px rgba(0, 0, 0, 0.32);
 
-  --aurora-1: rgba(212, 132, 122, 0.1);
-  --aurora-2: rgba(220, 140, 60, 0.075);
-  --aurora-3: rgba(92, 184, 128, 0.05);
+  --aurora-1: rgba(19, 136, 8, 0.1);
+  --aurora-2: rgba(255, 153, 51, 0.075);
+  --aurora-3: rgba(255, 204, 51, 0.05);
 }
 
-/* ── Twilight theme — royal jaipur purple, lotus rose, and a warm ember of
-   gold. The purple stays deep and saturated, like festival dusk over carved
-   stone and patterned textiles. ── */
+/* ── Twilight theme — tricolor dusk: saffron courage, pure white truth,
+   and deep green faith. The three stripes of India's flag unified under a
+   single sky — celebrating a billion voices, one nation. ── */
 html[data-theme="twilight"] {
   color-scheme: dark;
-  /* Dusk ember-light — the warm counterpoint to the royal purple sky. */
-  --sun-wash: rgba(230, 150, 70, 0.05);
-  --hearth-glow: rgba(220, 130, 80, 0.04);
+  /* Tricolor dusk-light — the warm counterpoint to the green night. */
+  --sun-wash: rgba(255, 153, 51, 0.05);
+  --hearth-glow: rgba(19, 136, 8, 0.04);
   --scrim: rgba(12, 6, 24, 0.52);
-  --bg-primary: #0c0820;
-  --bg-surface: rgba(40, 28, 72, 0.5);
-  --bg-card: rgba(44, 30, 80, 0.55);
-  --bg-card-hover: rgba(56, 40, 96, 0.68);
-  --bg-glass: rgba(24, 14, 48, 0.58);
-  --bg-solid: #181040;
+  --bg-primary: #1a0f0a;
+  --bg-surface: rgba(40, 28, 20, 0.5);
+  --bg-card: rgba(44, 30, 24, 0.55);
+  --bg-card-hover: rgba(56, 40, 32, 0.68);
+  --bg-glass: rgba(24, 14, 10, 0.58);
+  --bg-solid: #181010;
 
-  --cobalt-deep: #160827;
+  --cobalt-deep: #1a0f05;
   --cobalt-mid: #3a1764;
-  --cobalt-vivid: #9b5fd3;
-  --cobalt-pale: #d7a7ef;
-  --cobalt-wash: rgba(155, 95, 211, 0.11);
-  --cobalt-ink: #090314;
+  --cobalt-vivid: #FF9933;
+  --cobalt-pale: #FFD4B8;
+  --cobalt-wash: rgba(255, 153, 51, 0.11);
+  --cobalt-ink: #0f0805;
 
-  --border-subtle: rgba(184, 152, 232, 0.14);
-  --border-default: rgba(184, 152, 232, 0.22);
-  --border-accent: #8a60d0;
-  --border-glow: #8a60d0;
+  --border-subtle: rgba(255, 183, 77, 0.14);
+  --border-default: rgba(255, 183, 77, 0.22);
+  --border-accent: #FF9933;
+  --border-glow: #FF9933;
 
-  /* Liquid-glass system tokens — twilight, royal-purple tinted */
+  /* Liquid-glass system tokens — twilight, tricolor-tinted */
   --glass-blur: 24px;
   --glass-blur-strong: 38px;
   --glass-saturate: 160%;
-  --glass-highlight: rgba(184, 152, 232, 0.22);
+  --glass-highlight: rgba(255, 183, 77, 0.22);
   --glass-shadow: 0 8px 32px rgba(8, 4, 20, 0.55), 0 1px 4px rgba(8, 4, 20, 0.4);
-  --glass-edge: inset 0 1px 0 rgba(184, 152, 232, 0.18), inset 0 0 0 1px rgba(138, 96, 208, 0.08);
-  --glass-sheen: linear-gradient(135deg, rgba(184,152,232,0.14) 0%, rgba(138,96,208,0.04) 32%, rgba(255,255,255,0) 58%);
+  --glass-edge: inset 0 1px 0 rgba(255, 183, 77, 0.18), inset 0 0 0 1px rgba(255, 153, 51, 0.08);
+  --glass-sheen: linear-gradient(135deg, rgba(255,183,77,0.14) 0%, rgba(255,153,51,0.04) 32%, rgba(255,255,255,0) 58%);
 
-  --brand: #8a60d0;
-  --brand-strong: #a880e8;
-  --brand-bright: #c0a0f0;
-  --brand-soft: #7050c0;
+  --brand: #FF9933;
+  --brand-strong: #FFB74D;
+  --brand-bright: #FFCC80;
+  --brand-soft: #FFE0B2;
 
-  --accent: #8a60d0;
-  --accent-hover: #a880e8;
-  --accent-dim: rgba(138, 96, 208, 0.13);
-  --accent-glow: rgba(138, 96, 208, 0.24);
-  --accent-companion: #d8908a;
-  --accent-gradient: linear-gradient(135deg, #a880e8 0%, #7050c0 100%);
-  --on-accent: #100830;
-  --shadow-glow-accent: 0 2px 16px rgba(138, 96, 208, 0.22);
+  --accent: #FF9933;
+  --accent-hover: #FFB74D;
+  --accent-dim: rgba(255, 153, 51, 0.13);
+  --accent-glow: rgba(255, 153, 51, 0.24);
+  --accent-companion: #4CAF50;
+  --accent-gradient: linear-gradient(135deg, #FF9933 0%, #FFCC33 50%, #138808 100%);
+  --on-accent: #1a0f05;
+  --shadow-glow-accent: 0 2px 16px rgba(255, 153, 51, 0.22);
 
   --text-primary: #f0e8ff;
   --text-secondary: #c0b0d8;
@@ -295,36 +297,36 @@ html[data-theme="twilight"] {
   --wrong-bg: rgba(232, 144, 138, 0.14);
   --locked: #403068;
 
-  /* Subject colours — dusk palette, harmonious not clashing */
-  --subject-physics: #8a60d0;
-  --subject-chemistry: #60c890;
-  --subject-economics: #d8a058;
-  --subject-biology: #d888a0;
-  --subject-cs: #70c0d8;
-  --subject-history: #c89068;
-  --subject-general: #9888d0;
+  /* Subject colours — India's diverse cultural palette at dusk */
+  --subject-physics: #7986CB;
+  --subject-chemistry: #5cb880;
+  --subject-economics: #FFB74D;
+  --subject-biology: #F06292;
+  --subject-cs: #4DD0E1;
+  --subject-history: #A1887F;
+  --subject-general: #9575CD;
 
-  --shadow-sm: 0 2px 8px rgba(8, 4, 20, 0.5), inset 0 1px 0 rgba(184, 152, 232, 0.1);
-  --shadow-md: 0 6px 20px rgba(8, 4, 20, 0.55), inset 0 1px 0 rgba(184, 152, 232, 0.1);
-  --shadow-lg: 0 14px 40px rgba(8, 4, 20, 0.65), inset 0 1px 0 rgba(184, 152, 232, 0.12);
+  --shadow-sm: 0 2px 8px rgba(8, 4, 20, 0.5), inset 0 1px 0 rgba(255, 183, 77, 0.1);
+  --shadow-md: 0 6px 20px rgba(8, 4, 20, 0.55), inset 0 1px 0 rgba(255, 183, 77, 0.1);
+  --shadow-lg: 0 14px 40px rgba(8, 4, 20, 0.65), inset 0 1px 0 rgba(255, 183, 77, 0.12);
 
-  /* Ambient aurora — deep royal-purple dusk tones. */
-  --aurora-1: rgba(138, 96, 208, 0.2);
-  --aurora-2: rgba(112, 80, 192, 0.14);
-  --aurora-3: rgba(216, 144, 120, 0.12);
+  /* Ambient aurora — deep tricolor dusk tones. */
+  --aurora-1: rgba(255, 153, 51, 0.2);
+  --aurora-2: rgba(19, 136, 8, 0.14);
+  --aurora-3: rgba(255, 204, 51, 0.12);
 
-  /* ── Crayon painting — royal-purple twilight scene ── */
-  --crayon-sky-top: #1a0840;
-  --crayon-sky-bottom: #2d1868;
-  --crayon-sun: #e8a050;
-  --crayon-sun-glow: #d06830;
-  --crayon-cloud: #382068;
-  --crayon-hill-far: #281850;
-  --crayon-hill-mid: #201045;
-  --crayon-hill-near: #1a0c38;
-  --crayon-grass: #140c30;
-  --crayon-ground: #1c1040;
-  --crayon-grass-stroke: #281448;
+  /* ── Crayon painting — tricolor twilight scene ── */
+  --crayon-sky-top: #1a0f05;
+  --crayon-sky-bottom: #3d1a08;
+  --crayon-sun: #FF9933;
+  --crayon-sun-glow: #E67E22;
+  --crayon-cloud: #492010;
+  --crayon-hill-far: #281808;
+  --crayon-hill-mid: #201208;
+  --crayon-hill-near: #1a0c08;
+  --crayon-grass: #140c08;
+  --crayon-ground: #1c1008;
+  --crayon-grass-stroke: #281408;
   --crayon-trunk: #482818;
   --crayon-tree-dark: #281438;
   --crayon-tree-light: #382058;
@@ -463,8 +465,8 @@ body {
    backdrop-filter. These utilities + the reusable class package that together.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Ambient gradient — handloom-paper wash, crossed by a warm sunbeam from
-   the upper-right and a low diya glow at the foot of the page. The lotus-gold
+/* ── Ambient gradient — tricolor wash, crossed by a warm sunbeam from
+   the upper-right and a low diya glow at the foot of the page. The saffron
    hues remain the anchor; the warmth is a second light source layered over
    them, like late sun on carved sandstone. ── */
 html::before {
@@ -475,9 +477,9 @@ html::before {
   pointer-events: none;
   contain: layout style paint;
   background:
-    radial-gradient(ellipse at 82% -8%, var(--sun-wash, rgba(220, 160, 80, 0.07)) 0%, transparent 55%),
-    radial-gradient(ellipse at 0% 0%, rgba(198, 95, 23, 0.075) 0%, transparent 50%),
-    radial-gradient(ellipse at 30% 104%, var(--hearth-glow, rgba(200, 120, 60, 0.055)) 0%, transparent 52%);
+    radial-gradient(ellipse at 82% -8%, var(--sun-wash, rgba(255, 153, 51, 0.07)) 0%, transparent 55%),
+    radial-gradient(ellipse at 0% 0%, rgba(255, 153, 51, 0.075) 0%, transparent 50%),
+    radial-gradient(ellipse at 30% 104%, var(--hearth-glow, rgba(19, 136, 8, 0.055)) 0%, transparent 52%);
   opacity: 0.95;
 }
 
@@ -859,27 +861,27 @@ body::before {
 
 /* Auto-seasonal: paired corner washes based on the data-season attribute set
    by the layout init script — vivid enough to actually feel the season turn
-   (lotus spring, monsoon green summer, marigold autumn, cool moonlit winter), while
+   (saffron spring, emerald summer, harvest autumn, cool winter), while
    staying a wash, never a tint over content. */
 html[data-season="spring"] body {
   background-image:
-    radial-gradient(ellipse at 20% 8%, rgba(232, 150, 170, 0.09) 0%, transparent 52%),
-    radial-gradient(ellipse at 85% 85%, rgba(220, 120, 150, 0.05) 0%, transparent 45%);
+    radial-gradient(ellipse at 20% 8%, rgba(255, 153, 51, 0.09) 0%, transparent 52%),
+    radial-gradient(ellipse at 85% 85%, rgba(255, 183, 77, 0.05) 0%, transparent 45%);
 }
 html[data-season="summer"] body {
   background-image:
-    radial-gradient(ellipse at 80% 8%, rgba(42, 138, 106, 0.09) 0%, transparent 52%),
-    radial-gradient(ellipse at 12% 88%, rgba(90, 160, 90, 0.05) 0%, transparent 45%);
+    radial-gradient(ellipse at 80% 8%, rgba(19, 136, 8, 0.09) 0%, transparent 52%),
+    radial-gradient(ellipse at 12% 88%, rgba(76, 175, 80, 0.05) 0%, transparent 45%);
 }
 html[data-season="autumn"] body {
   background-image:
-    radial-gradient(ellipse at 20% 88%, rgba(206, 108, 44, 0.09) 0%, transparent 52%),
-    radial-gradient(ellipse at 85% 10%, rgba(190, 80, 40, 0.05) 0%, transparent 45%);
+    radial-gradient(ellipse at 20% 88%, rgba(255, 140, 0, 0.09) 0%, transparent 52%),
+    radial-gradient(ellipse at 85% 10%, rgba(230, 126, 34, 0.05) 0%, transparent 45%);
 }
 html[data-season="winter"] body {
   background-image:
-    radial-gradient(ellipse at 80% 88%, rgba(96, 144, 192, 0.09) 0%, transparent 52%),
-    radial-gradient(ellipse at 12% 10%, rgba(140, 170, 210, 0.05) 0%, transparent 45%);
+    radial-gradient(ellipse at 80% 88%, rgba(100, 181, 246, 0.09) 0%, transparent 52%),
+    radial-gradient(ellipse at 12% 10%, rgba(144, 202, 249, 0.05) 0%, transparent 45%);
 }
 
 /* ── Engraved identity motif — a faint, repeating hairline weave
@@ -921,7 +923,7 @@ html[data-season="winter"] body {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   Indian ink & lotus-gold texture system — masala ink, seal marks, handloom paper.
+   Indian ink & tricolor texture system — masala ink, seal marks, handloom paper.
    Layered ink-wash effects that give surfaces the depth and elegance of
    traditional manuscripts, block printing, and miniature-painting washes.
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -974,7 +976,7 @@ html[data-theme="twilight"] h4 {
 }
 
 /* ── Handloom texture — a dense, fine crosshatch that reads as traditional
-   Indian handmade paper and textile. Stronger than identity-texture. ── */
+   India's diverse handmade paper and textile traditions. Stronger than identity-texture. ── */
 .cobalt-texture {
   position: relative;
 }
@@ -1011,7 +1013,7 @@ html[data-theme="twilight"] h4 {
 }
 
 /* ── Ink border — a double-stroke border that evokes manuscript margins:
-   an outer ink line + an inner lotus-gold accent line, with subtle pigment bloom. ── */
+   an outer ink line + an inner tricolor accent line, with subtle pigment bloom. ── */
 .ink-border {
   border: 1.5px solid var(--border-default) !important;
   box-shadow:
@@ -1061,7 +1063,7 @@ html[data-theme="twilight"] h4 {
   text-shadow: 1px 1px 0 var(--accent-dim);
 }
 
-/* ── Pigment stain effect — a subtle, organic lotus-gold stain on card hover ── */
+/* ── Pigment stain effect — a subtle, organic tricolor stain on card hover ── */
 .ink-stain {
   position: relative;
   overflow: hidden;
@@ -1218,7 +1220,7 @@ a:active {
   contain: layout style;
 }
 
-/* ── Scrollbar — sleek, lotus-gold-tinted ── */
+/* ── Scrollbar — sleek, saffron-tinted ── */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -1426,40 +1428,6 @@ a:active {
   -webkit-mask-image: linear-gradient(to top, #000, transparent 88%);
   mask-image: linear-gradient(to top, #000, transparent 88%);
 }
-/* Soft lotus-gold/handloom paper glow behind the greeting (was an inline div). */
-.hero__glow {
-  position: absolute;
-  top: 45%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: min(420px, 75vw);
-  height: min(220px, 40vw);
-  border-radius: 50%;
-  background: radial-gradient(
-    ellipse at center,
-    var(--accent-glow) 0%,
-    var(--sun-wash) 45%,
-    transparent 70%
-  );
-  filter: blur(50px);
-  z-index: 0;
-  pointer-events: none;
-}
-/* Mandala-lotus watermark — a visible Indian learning motif, no font dependency. */
-.hero__mandala {
-  position: absolute;
-  top: 44%;
-  right: clamp(-28px, -2vw, 10px);
-  transform: translateY(-50%) rotate(-6deg);
-  width: clamp(180px, 28vw, 300px);
-  height: auto;
-  color: var(--brand);
-  opacity: 0.13;
-  z-index: 0;
-  pointer-events: none;
-  user-select: none;
-  filter: drop-shadow(0 0 28px var(--accent-glow));
-}
 .hero__content { position: relative; z-index: 1; }
 .hero__greeting { margin-top: 24px; }
 .hero__title {
@@ -1515,7 +1483,7 @@ a:active {
 
 /* ── Gen Z interaction utilities — springy, tactile, satisfying ── */
 
-/* Interactive lift — spring-based hover with deep lotus-gold glow */
+/* Interactive lift — spring-based hover with deep saffron glow */
 .interactive-lift {
   transition: transform 420ms var(--ease-spring), box-shadow 420ms var(--ease-spring), border-color 320ms var(--ease-color);
 }
@@ -1531,7 +1499,7 @@ a:active {
   transition: transform 120ms var(--ease-color) !important;
 }
 
-/* Glow accent hover — deep lotus-gold glow on interactive elements */
+/* Glow accent hover — deep saffron glow on interactive elements */
 .glow-accent {
   transition: box-shadow 400ms var(--ease-spring), border-color 400ms var(--ease-color), background 400ms var(--ease-color);
 }
@@ -2150,7 +2118,7 @@ html[data-perf="high"] {
    Indian typography & reading rhythm
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Indian-inspired heading treatment — a thin lotus-gold rule sits just
+/* Indian-inspired heading treatment — a thin tricolor rule sits just
    below the text like a chapter marker in a hand-bound book, with generous
    breathing room for a considered reading pace. */
 h1, h2, h3 {
@@ -2370,7 +2338,7 @@ p {
   opacity: 0.6;
 }
 
-/* ── Brush-underline — a hand-painted lotus-gold underline for links and
+/* ── Brush-underline — a hand-painted tricolor underline for links and
    interactive text, like a calligrapher's brush stroke. ── */
 .brush-underline {
   position: relative;
@@ -2393,7 +2361,7 @@ p {
   transform: scaleX(1);
 }
 
-/* ── Hanko-stamp — a circular lotus-gold seal effect for badges and
+/* ── Hanko-stamp — a circular saffron seal effect for badges and
    achievement markers, inspired by traditional Indian rangoli seals. ── */
 .rangoli-seal {
   display: inline-flex;
@@ -2420,13 +2388,13 @@ p {
    Refined component system — Indian-inspired, world-class.
    Reusable classes that replace brittle inline onMouseEnter/onMouseLeave style
    mutations. Every class has focus-visible parity with hover, respects
-   prefers-reduced-motion, and uses the lotus-gold/indigo/handloom paper tokens so it
+   prefers-reduced-motion, and uses the tricolor/green-saffron/handloom paper tokens so it
    stays correct in light, dark (monsoon indigo), and twilight (royal purple) themes.
    Design principles: rasa (emotional tone), tala (rhythmic spacing),
    alankara (purposeful ornament), and santulan (balance).
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Primary button ── the confident lotus-gold stamp of a rangoli seal.
+/* ── Primary button ── the confident saffron stamp of a rangoli seal.
    Springy, tactile, with a soft glow that blooms on hover/focus and a
    satisfying press. Used for the main CTA on every page. */
 .btn-primary {
@@ -2599,7 +2567,7 @@ p {
   transform: translateY(-1px);
 }
 .nav-link:active { transform: translateY(0) scale(0.97); }
-/* Active route — a soft lotus-gold wash with a confident left-brush mark. */
+/* Active route — a soft tricolor wash with a confident left-brush mark. */
 .nav-link--active {
   color: var(--accent);
   background: var(--accent-dim);
@@ -2724,7 +2692,7 @@ p {
   text-overflow: ellipsis;
 }
 
-/* ── Section header ── a refined heading with a vertical lotus-gold accent
+/* ── Section header ── a refined heading with a vertical tricolor accent
    bar (rangoli) and an optional decorative overline. */
 .section-header {
   display: flex;
@@ -2733,7 +2701,7 @@ p {
   margin-bottom: var(--space-md);
 }
 /* Standalone decorative overline — use above a page <h1> for a quiet cultural
-   signature. Renders as a small letter-spaced lotus-gold label. */
+   signature. Renders as a small letter-spaced tricolor label. */
 .section-overline {
   display: inline-block;
   font-family: var(--font-display), serif;
@@ -2850,7 +2818,7 @@ p {
   letter-spacing: 0.02em;
 }
 
-/* ── Scroll-to-top ── a floating lotus-gold seal that rises when the user
+/* ── Scroll-to-top ── a floating saffron seal that rises when the user
    scrolls deep, evoking a rangoli seal pressing back to the top. */
 .scroll-top {
   position: fixed;
@@ -2896,7 +2864,7 @@ p {
 }
 
 /* ── Kusari divider ── a delicate chain-like separator with a centered
-   lotus-gold diamond bead, representing the links between sections (rhythm). */
+   tricolor diamond bead, representing the links between sections (rhythm). */
 .kusari {
   display: flex;
   align-items: center;
@@ -2973,7 +2941,7 @@ p {
   box-shadow: var(--shadow-md), var(--glass-edge), 0 0 0 3px var(--accent-glow);
 }
 
-/* ── Part card quiz / action button ── full-width lotus-gold CTA inside a
+/* ── Part card quiz / action button ── full-width tricolor CTA inside a
    lesson part. Spring lift on hover, calm disabled-ish pre-state. */
 .part-cta {
   width: 100%;
@@ -3709,44 +3677,3 @@ p {
   }
 }
 
-/* Lotus spiral ornaments — religion-neutral Indian craft geometry for the homepage. */
-.hero__lotus-spirals {
-  position: absolute;
-  width: clamp(120px, 16vw, 220px);
-  height: clamp(120px, 16vw, 220px);
-  color: var(--accent-companion);
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2.2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  opacity: 0.18;
-  filter: drop-shadow(0 12px 28px rgba(15, 111, 125, 0.14));
-  pointer-events: none;
-}
-.hero__lotus-spirals path:first-child {
-  stroke-width: 2.8;
-}
-.hero__lotus-spirals--left {
-  left: max(18px, 4vw);
-  bottom: max(28px, 7vh);
-  transform: rotate(-12deg);
-}
-.hero__lotus-spirals--right {
-  right: max(18px, 4vw);
-  top: max(82px, 14vh);
-  transform: rotate(18deg) scaleX(-1);
-}
-@media (max-width: 760px) {
-  .hero__lotus-spirals {
-    opacity: 0.11;
-  }
-  .hero__lotus-spirals--left {
-    bottom: 18px;
-    left: -28px;
-  }
-  .hero__lotus-spirals--right {
-    top: 86px;
-    right: -38px;
-  }
-}

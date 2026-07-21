@@ -109,74 +109,6 @@ export default function HomePage() {
 
         <section className="hero">
           <div className="hero__stage">
-            <div className="hero__glow" aria-hidden="true" />
-
-            {/* Mandala-lotus watermark — visible Indian learning motif without font/glyph dependencies. */}
-            <svg
-              className="hero__mandala"
-              aria-hidden="true"
-              viewBox="0 0 120 120"
-            >
-              <circle cx="60" cy="60" r="42" fill="none" stroke="currentColor" strokeWidth="2" />
-              <circle cx="60" cy="60" r="24" fill="none" stroke="currentColor" strokeWidth="1.5" />
-              <path
-                d="M60 16 C70 34 70 46 60 60 C50 46 50 34 60 16Z"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="3"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M60 104 C50 86 50 74 60 60 C70 74 70 86 60 104Z"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="3"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M16 60 C34 50 46 50 60 60 C46 70 34 70 16 60Z"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="3"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M104 60 C86 70 74 70 60 60 C74 50 86 50 104 60Z"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="3"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M29 29 C48 35 56 43 60 60 C43 56 35 48 29 29Z"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M91 29 C85 48 77 56 60 60 C64 43 72 35 91 29Z"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M91 91 C72 85 64 77 60 60 C77 64 85 72 91 91Z"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M29 91 C35 72 43 64 60 60 C56 77 48 85 29 91Z"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinejoin="round"
-              />
-            </svg>
-
             <div className="hero__content">
               <HomeStats onStartTopic={(topic) => submit(topic)} />
             </div>
@@ -200,22 +132,6 @@ export default function HomePage() {
             <div className="hero__input-row">
               <QuestionInput question={question} setQuestion={setQuestion} onSubmit={submit} />
             </div>
-
-            <svg className="hero__lotus-spirals hero__lotus-spirals--left" aria-hidden="true" viewBox="0 0 220 220">
-              <path d="M110 110 m-6 0 c0-18 26-18 26 2 c0 30-48 36-70 12 c-29-31-5-82 43-88 c62-8 106 58 74 113 c-35 61-127 56-157-7" />
-              <path d="M110 110 C92 88 92 68 110 42 C128 68 128 88 110 110Z" />
-              <path d="M110 110 C132 92 152 92 178 110 C152 128 132 128 110 110Z" />
-              <path d="M110 110 C128 132 128 152 110 178 C92 152 92 132 110 110Z" />
-              <path d="M110 110 C88 128 68 128 42 110 C68 92 88 92 110 110Z" />
-            </svg>
-
-            <svg className="hero__lotus-spirals hero__lotus-spirals--right" aria-hidden="true" viewBox="0 0 220 220">
-              <path d="M110 110 m6 0 c0 18-26 18-26-2 c0-30 48-36 70-12 c29 31 5 82-43 88 c-62 8-106-58-74-113 c35-61 127-56 157 7" />
-              <path d="M110 110 C92 88 92 68 110 42 C128 68 128 88 110 110Z" />
-              <path d="M110 110 C132 92 152 92 178 110 C152 128 132 128 110 110Z" />
-              <path d="M110 110 C128 132 128 152 110 178 C92 152 92 132 110 110Z" />
-              <path d="M110 110 C88 128 68 128 42 110 C68 92 88 92 110 110Z" />
-            </svg>
           </div>
         </section>
 
