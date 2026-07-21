@@ -112,49 +112,19 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
       role="status"
       aria-live="polite"
       aria-label="Generating your lesson"
+      className={`loading-cinematic${isRevealing ? " is-revealing" : ""}`}
       style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 100,
-        background: "var(--bg-primary)",
-        display: "grid",
-        placeItems: "center",
         opacity: isRevealing ? 0 : 1,
         transform: isRevealing ? "scale(0.96)" : "scale(1)",
         transition: "opacity 500ms var(--ease-reveal), transform 500ms var(--ease-reveal)",
-        pointerEvents: isRevealing ? "none" : "auto",
       }}
     >
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background: "var(--bg-primary)",
-        }}
-      />
-      <div
-        style={{
-          position: "relative",
-          textAlign: "center",
-          padding: 32,
-          width: "100%",
-          maxWidth: 560,
-        }}
-      >
-        <p
-          style={{
-            color: "var(--text-primary)",
-            fontFamily: "var(--font-display)",
-            fontStyle: "italic",
-            fontWeight: 700,
-            fontSize: "clamp(22px, 5vw, 28px)",
-            lineHeight: 1.4,
-            marginBottom: 32,
-          }}
-        >
-          <span style={{ color: "var(--accent)" }}>&ldquo;</span>
+      <div className="loading-cinematic__bg" />
+      <div className="loading-cinematic__stage">
+        <p className="loading-cinematic__question">
+          <span className="loading-cinematic__quote">&ldquo;</span>
           {question}
-          <span style={{ color: "var(--accent)" }}>&rdquo;</span>
+          <span className="loading-cinematic__quote">&rdquo;</span>
         </p>
 
         {/* Progress bar */}
@@ -164,116 +134,38 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
           aria-valuemin={0}
           aria-valuemax={100}
           aria-label="Lesson generation progress"
-          style={{
-            width: "100%",
-            height: 12,
-            borderRadius: 999,
-            background: "var(--accent-dim)",
-            overflow: "hidden",
-            position: "relative",
-          }}
+          className="loading-cinematic__progress"
         >
           <div
             aria-hidden="true"
-            style={{
-              position: "absolute",
-              inset: -8,
-              borderRadius: 999,
-              background: "radial-gradient(ellipse at center, var(--accent) 0%, transparent 70%)",
-              opacity: 0.15 + (pct / 100) * 0.25,
-              filter: "blur(8px)",
-              transition: "opacity 200ms linear",
-            }}
+            className="loading-cinematic__progress-glow"
+            style={{ opacity: 0.15 + (pct / 100) * 0.25 }}
           />
           <div
-            style={{
-              width: `${pct}%`,
-              height: "100%",
-              borderRadius: 999,
-              background: "linear-gradient(90deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 80%, var(--correct)) 100%)",
-              transition: "width 200ms linear",
-              position: "relative",
-              zIndex: 1,
-            }}
+            className="loading-cinematic__progress-bar"
+            style={{ width: `${pct}%` }}
           />
         </div>
-        <p
-          style={{
-            marginTop: 12,
-            color: "var(--accent)",
-            fontSize: 16,
-            fontWeight: 700,
-            fontVariantNumeric: "tabular-nums",
-          }}
-        >
-          {pct}%
-        </p>
+        <p className="loading-cinematic__percent">{pct}%</p>
 
         {/* Step checklist */}
-        <ul
-          style={{
-            listStyle: "none",
-            padding: 0,
-            margin: "24px auto 0",
-            textAlign: "left",
-            maxWidth: 340,
-            display: "grid",
-            gap: 12,
-          }}
-        >
+        <ul className="loading-cinematic__steps">
           {steps.map((step) => {
             const done = displayProgress >= step.at;
             const active =
               !done &&
               displayProgress >= (steps[steps.indexOf(step) - 1]?.at ?? 0);
+            const stepState = done ? "is-done" : active ? "is-active" : "is-pending";
             return (
               <li
                 key={step.label}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  color: done
-                    ? "var(--text-primary)"
-                    : active
-                    ? "var(--accent)"
-                    : "var(--text-secondary)",
-                  opacity: done || active ? 1 : 0.4,
-                  fontSize: "var(--text-base)",
-                  fontFamily: "var(--font-lora)",
-                  fontWeight: done ? 600 : 400,
-                  transition: "all 300ms ease",
-                }}
+                className={`loading-cinematic__step ${stepState}`}
               >
-                <span
-                  aria-hidden="true"
-                  style={{
-                    display: "grid",
-                    placeItems: "center",
-                    width: 28,
-                    height: 28,
-                    borderRadius: "var(--radius-md)",
-                    flexShrink: 0,
-                    border: done
-                      ? "none"
-                      : "2px solid color-mix(in srgb, var(--accent) 30%, transparent)",
-                    background: done ? "var(--accent)" : "transparent",
-                    color: done ? "var(--on-accent)" : "inherit",
-                    fontSize: 14,
-                  }}
-                >
+                <span className={`loading-cinematic__step-marker ${stepState}`} aria-hidden="true">
                   {done ? (
                     <CheckIcon />
                   ) : active ? (
-                    <span
-                      className="accent-pulse-dot"
-                      style={{
-                        width: 10,
-                        height: 10,
-                        borderRadius: "50%",
-                        background: "var(--accent)",
-                      }}
-                    />
+                    <span className="accent-pulse-dot" style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--accent)" }} />
                   ) : null}
                 </span>
                 {step.label}
@@ -283,80 +175,22 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
         </ul>
 
         {/* Rotating fact */}
-        <div
-          key={factIndex}
-          style={{
-            marginTop: 32,
-            padding: "14px 20px",
-            borderRadius: "var(--radius-lg)",
-            border: "1px solid color-mix(in srgb, var(--accent) 12%, transparent)",
-            background: "color-mix(in srgb, var(--accent) 3%, transparent)",
-            animation: "fadeUp 500ms var(--ease-reveal)",
-          }}
-        >
-          <p
-            style={{
-              margin: 0,
-              color: "var(--text-secondary)",
-              fontSize: 14,
-              lineHeight: 1.6,
-              fontFamily: "var(--font-lora)",
-            }}
-          >
-            <span aria-hidden="true" style={{ color: "var(--accent)", marginRight: 8 }}>✦</span>
+        <div key={factIndex} className="loading-cinematic__fact">
+          <p className="loading-cinematic__fact-text">
+            <span aria-hidden="true" className="loading-cinematic__fact-star">✦</span>
             {facts[factIndex]}
           </p>
         </div>
 
         {takingLonger && (
-          <p
-            className="animate-fade-up"
-            role="status"
-            style={{
-              marginTop: 18,
-              color: "var(--accent)",
-              fontSize: 14,
-              lineHeight: 1.6,
-              fontWeight: 600,
-              fontStyle: "italic",
-              fontFamily: "var(--font-lora)",
-            }}
-          >
+          <p className="loading-cinematic__patience animate-fade-up" role="status">
             Taking a little longer than usual — we&apos;re double-checking your
             lesson so it&apos;s worth the wait.
           </p>
         )}
 
         {onCancel && (
-          <button
-            type="button"
-            onClick={onCancel}
-            style={{
-              marginTop: "var(--space-xl)",
-              padding: "14px 28px",
-              borderRadius: "var(--radius-lg)",
-              border: "1px solid var(--border-default)",
-              background: "transparent",
-              color: "var(--text-secondary)",
-              cursor: "pointer",
-              fontSize: 15,
-              fontWeight: 600,
-              minHeight: 50,
-              transition: "all 500ms var(--ease-spring)",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "var(--bg-card-hover)";
-              e.currentTarget.style.borderColor = "var(--accent)";
-              e.currentTarget.style.color = "var(--accent)";
-              e.currentTarget.style.transform = "scale(1.03)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "transparent";
-              e.currentTarget.style.borderColor = "var(--border-default)";
-              e.currentTarget.style.color = "var(--text-secondary)";
-              e.currentTarget.style.transform = "scale(1)";
-            }}
-          >
+          <button type="button" onClick={onCancel} className="loading-cinematic__cancel">
             Cancel
           </button>
         )}
