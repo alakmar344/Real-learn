@@ -148,9 +148,9 @@ const themeInitScript = `(function(){try{var t=null;var p=localStorage.getItem("
 // afterwards when the user changes the setting.
 const perfInitScript = `(function(){try{var mode=null;try{var p=localStorage.getItem("reallearn-preferences");if(p){var s=JSON.parse(p);mode=s&&s.state&&s.state.perfMode}}catch(e){}var tier;if(mode==="low"||mode==="high"){tier=mode}else{var mem=navigator.deviceMemory||8;var cores=navigator.hardwareConcurrency||8;var rm=false;try{rm=window.matchMedia("(prefers-reduced-motion: reduce)").matches}catch(e){}var sd=Boolean(navigator.connection&&navigator.connection.saveData);tier=(mem<=4||cores<=4||rm||sd)?"low":((mem>=8&&cores>=8)?"high":"mid")}document.documentElement.dataset.perf=tier;var ua=(navigator.userAgent||"").toLowerCase();if(ua.indexOf("firefox")>-1&&ua.indexOf("seamonkey")===-1){document.documentElement.dataset.browser="firefox"}}catch(e){}})();`;
 
-// Adds a seasonal Japanese accent class based on the current month so the UI
-// subtly shifts with the seasons (spring=sakura, summer=green, autumn=maple,
-// winter=snow). Runs once per page load.
+// Adds a seasonal Indian accent class based on the current month so the UI
+// subtly shifts with the seasons (spring=lotus, summer=monsoon green,
+// autumn=marigold, winter=moonlit cool). Runs once per page load.
 const seasonalInitScript = `(function(){try{var m=new Date().getMonth();var s="winter";if(m>=2&&m<=4)s="spring";else if(m>=5&&m<=7)s="summer";else if(m>=8&&m<=10)s="autumn";document.documentElement.dataset.season=s}catch(e){}})();`;
 
 export default function RootLayout({
