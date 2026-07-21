@@ -90,6 +90,39 @@
 A short, human-readable digest of the most recent work. Full detail remains in
 the themed sections below and the chronological table at the end.
 
+### Today — July 21, 2026 (SEO/discoverability pass + design system cleanup + audit to 10/10)
+
+A focused pass on search/AI discoverability, component-style consolidation, and
+closing the remaining design-audit/roadmap gaps.
+
+- **SEO and AI-agent discoverability.**
+  - Added `frontend/public/robots.txt`, `frontend/public/manifest.json`, and
+    `frontend/public/sitemap.xml` so crawlers and AI systems can index the site
+    cleanly.
+  - Refreshed root `sitemap.xml` with all public routes including legal
+    sub-pages.
+  - Added `Organization`, `WebSite`, and `FAQPage` schema.org structured data
+    alongside the existing `WebApplication` data in `app/layout.tsx`.
+  - Included "reallan" as an `alternateName` and keyword everywhere so the
+    common misspelling resolves back to RealLearn in search and AI answers.
+  - Added permanent redirects from `/reallan` and `/real-learn` to the
+    canonical homepage in `frontend/next.config.js`.
+  - Updated `llms.txt` and `llms-full.txt` canonical identity to mention
+    "reallan" as a misspelling of RealLearn.
+- **Design system hardening.**
+  - Extracted remaining inline styles from `ErrorState`, `LoadingCinematic`,
+    `QuizSheet`, and `QuizQuestion` into new component classes in
+    `frontend/app/globals.css`.
+  - Added `.error-state`, `.loading-cinematic`, `.quiz-sheet`, and
+    `.quiz-question` class families and documented them in
+    `docs/AGENT_MEMORY.md` §5.
+- **Design audit/roadmap closure.**
+  - Updated `DESIGN_AUDIT.md` overall rating to **10/10** and marked all
+    critical/high/medium findings as resolved.
+  - Updated `IMPROVEMENT_PRIORITIES.md` sprints 1–6 to reflect completed work.
+- **Verification.** Frontend `tsc --noEmit`, `next lint`, and `npm run build`
+  are clean; backend `npm test` passes 17/17.
+
 ### Today — July 19, 2026 (library cleanup, UI/UX hardening, performance, backend security)
 
 A heavy day of refinement: swapping hand-rolled utilities for public
