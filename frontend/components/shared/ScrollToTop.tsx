@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 /**
- * A floating hanko-stamp scroll-to-top button. Appears after the user scrolls
+ * A floating rangoli-seal scroll-to-top button. Appears after the user scrolls
  * one viewport down, fades out near the top, and respects reduced-motion
  * (the scroll is instant when the user has asked for less animation).
  */

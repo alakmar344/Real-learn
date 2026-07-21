@@ -10,68 +10,68 @@
 :root {
   color-scheme: light;
 
-  /* ── RealLearn identity — Japanese aesthetic: washi, sumi, vermillion.
-     Warm washi-paper white, near-black sumi ink, a confident vermillion
-     accent inspired by hanko stamps and torii gates. The palette evokes
-     traditional Japanese calligraphy, lacquerware, and ink-wash painting. ── */
-  --brand: #b8372b;
-  --brand-strong: #942c22;
-  --brand-bright: #e04a38;
-  --brand-soft: #e06b5a;
+  /* ── RealLearn identity — Indian cultural aesthetic: handloom cotton,
+     indigo dye, marigold, and saffron. Warm parchment, deep masala ink, and
+     ceremonial saffron accents use contrast, rhythm, ornament, and generous
+     breathing room as the core Indian design principles in the UI. ── */
+  --brand: #c65f17;
+  --brand-strong: #94420f;
+  --brand-bright: #e88922;
+  --brand-soft: #d99a4f;
 
-  /* Extended sumi/vermillion palette — layered depths for Japanese richness */
-  --cobalt-deep: #2a1520;
-  --cobalt-mid: #5c2030;
-  --cobalt-vivid: #b8372b;
-  --cobalt-pale: #d4847a;
-  --cobalt-wash: rgba(184, 55, 43, 0.08);
-  --cobalt-ink: #1a0a10;
+  /* Extended saffron/indigo palette — layered depths for Indian richness */
+  --cobalt-deep: #241127;
+  --cobalt-mid: #49306b;
+  --cobalt-vivid: #c65f17;
+  --cobalt-pale: #e6b56a;
+  --cobalt-wash: rgba(198, 95, 23, 0.09);
+  --cobalt-ink: #160b18;
 
-  /* Washi paper: the warm, handmade feel of traditional Japanese paper —
-     sun-touched ivory with a faint linen warmth, like a shoji screen
-     filtering afternoon light. */
-  --bg-primary: #f7f0e4;
-  --bg-surface: rgba(255, 250, 238, 0.8);
-  --bg-card: rgba(255, 251, 242, 0.86);
-  --bg-card-hover: rgba(255, 252, 246, 0.96);
-  --bg-glass: rgba(253, 248, 236, 0.76);
-  --bg-solid: #fbf5e8;
-  --bg-warm: rgba(250, 244, 230, 0.6);
-  /* Warm ambient light — like sunlight through shoji screens, a gentle
-     golden wash layered under the vermillion ambience. */
-  --sun-wash: rgba(220, 160, 80, 0.07);
-  --hearth-glow: rgba(200, 120, 60, 0.055);
+  /* Handloom parchment: the warm, tactile feel of cotton rag paper —
+     sun-touched ivory with a faint turmeric warmth, like light crossing
+     woven khadi and carved stone. */
+  --bg-primary: #fbf0dc;
+  --bg-surface: rgba(255, 247, 229, 0.8);
+  --bg-card: rgba(255, 249, 235, 0.88);
+  --bg-card-hover: rgba(255, 252, 242, 0.97);
+  --bg-glass: rgba(254, 244, 222, 0.78);
+  --bg-solid: #fff4dd;
+  --bg-warm: rgba(252, 235, 202, 0.62);
+  /* Warm ambient light — like diyas and marigolds, a gentle golden wash
+     layered under the saffron ambience. */
+  --sun-wash: rgba(233, 166, 56, 0.08);
+  --hearth-glow: rgba(196, 84, 28, 0.06);
 
-  --border-subtle: rgba(42, 21, 32, 0.1);
-  --border-default: rgba(42, 21, 32, 0.16);
+  --border-subtle: rgba(36, 17, 39, 0.1);
+  --border-default: rgba(36, 17, 39, 0.16);
   --border-accent: var(--brand);
-  --border-glow: rgba(184, 55, 43, 0.3);
+  --border-glow: rgba(198, 95, 23, 0.32);
 
   --glass-blur: 28px;
   --glass-blur-strong: 44px;
   --glass-saturate: 180%;
-  --glass-highlight: rgba(255, 245, 230, 0.92);
-  --glass-shadow: 0 4px 24px rgba(42, 21, 32, 0.08), 0 1px 3px rgba(42, 21, 32, 0.05);
-  --glass-edge: inset 0 1px 0 rgba(255, 245, 230, 0.9), inset 0 0 0 1px rgba(184, 55, 43, 0.12);
-  --glass-sheen: linear-gradient(135deg, rgba(255,245,230,0.42) 0%, rgba(255,220,200,0.14) 38%, rgba(255,255,255,0) 62%);
+  --glass-highlight: rgba(255, 241, 214, 0.92);
+  --glass-shadow: 0 4px 24px rgba(36, 17, 39, 0.08), 0 1px 3px rgba(36, 17, 39, 0.05);
+  --glass-edge: inset 0 1px 0 rgba(255, 241, 214, 0.9), inset 0 0 0 1px rgba(198, 95, 23, 0.13);
+  --glass-sheen: linear-gradient(135deg, rgba(255,241,214,0.45) 0%, rgba(255,211,142,0.16) 38%, rgba(255,255,255,0) 62%);
 
   --accent: var(--brand);
   --accent-hover: var(--brand-strong);
-  --accent-dim: rgba(184, 55, 43, 0.11);
-  --accent-glow: rgba(206, 62, 45, 0.26);
-  --accent-companion: #1a5c6a;
-  /* A livelier lacquer sweep: bright vermillion into deep urushi red. Text
+  --accent-dim: rgba(198, 95, 23, 0.12);
+  --accent-glow: rgba(232, 137, 34, 0.27);
+  --accent-companion: #0f6f7d;
+  /* A livelier rangoli sweep: bright saffron into deep kumkum red. Text
      stays on --brand (contrast-safe); the vibrancy lives in fills/glows. */
-  --accent-gradient: linear-gradient(135deg, #d0402e 0%, #8f2a1f 100%);
+  --accent-gradient: linear-gradient(135deg, #e88922 0%, #a13f16 100%);
   --on-accent: #ffffff;
-  --shadow-glow-accent: 0 2px 22px rgba(206, 62, 45, 0.34);
+  --shadow-glow-accent: 0 2px 22px rgba(232, 137, 34, 0.35);
 
-  /* Sumi ink tones: the deep, layered blacks and grays of Japanese
-     calligraphy — a touch warmer than pure gray, like ink on washi. */
-  --text-primary: #1a1018;
-  --text-secondary: #4a3a40;
-  --text-tertiary: #807078;
-  --text-accent-strong: #b8372b;
+  /* Masala ink tones: deep, layered browns and purples inspired by hand-drawn
+     manuscript text — warmer than pure gray, like ink on handmade paper. */
+  --text-primary: #1b1016;
+  --text-secondary: #4b3941;
+  --text-tertiary: #806f73;
+  --text-accent-strong: #c65f17;
 
   --correct: #2a7a50;
   --correct-bg: rgba(42, 122, 80, 0.1);
@@ -123,8 +123,8 @@
   --tracking-normal: 0;
   --tracking-wide: 0.04em;
 
-  /* Shadows warmed: sumi ink mixed with umber, so depth reads as
-     soft shade on washi paper rather than a cold drop-shadow. */
+  /* Shadows warmed: masala ink mixed with umber, so depth reads as
+     soft shade on handloom paper rather than a cold drop-shadow. */
   --shadow-sm: 0 1px 3px rgba(42, 21, 32, 0.06), 0 1px 2px rgba(42, 21, 32, 0.04);
   --shadow-md: 0 4px 14px rgba(42, 21, 32, 0.08), 0 2px 4px rgba(42, 21, 32, 0.05);
   --shadow-lg: 0 12px 34px rgba(42, 21, 32, 0.12), 0 4px 8px rgba(42, 21, 32, 0.06);
@@ -146,33 +146,33 @@
   --focus-ring: 0 0 0 3px var(--accent-glow);
   --focus-ring-simple: 0 0 0 2px var(--accent);
 
-  /* The vermillion ember is a touch warmer and more present — the breathing
-     layer now feels like lantern-light drifting under the washi. */
+  /* The saffron ember is a touch warmer and more present — the breathing
+     layer now feels like diya-light drifting under the handloom paper. */
   --aurora-1: rgba(196, 58, 44, 0.14);
   --aurora-2: rgba(214, 134, 58, 0.12);
   --aurora-3: rgba(152, 46, 36, 0.09);
 }
 
-/* ── Dark theme — deep indigo night sky (ai-zome), lit by warm kinsaku
-   gold accents. True Japanese night: luminous silver text on near-black,
-   accent is a rich vermillion-gold that feels alive against the indigo. ── */
+/* ── Dark theme — deep monsoon-indigo night, lit by brass and diya gold.
+   Luminous text on near-black, with saffron-gold accents that feel ceremonial
+   against the indigo. ── */
 html[data-theme="dark"] {
   color-scheme: dark;
 
-  --brand: #d4847a;
-  --brand-strong: #e8a89c;
-  --brand-bright: #f0c4b8;
-  --brand-soft: #c06050;
+  --brand: #f0a84a;
+  --brand-strong: #ffc36d;
+  --brand-bright: #ffd995;
+  --brand-soft: #cf7624;
 
-  --cobalt-deep: #0a0810;
-  --cobalt-mid: #1a1030;
-  --cobalt-vivid: #d4847a;
-  --cobalt-pale: #e8c0b8;
-  --cobalt-wash: rgba(212, 132, 122, 0.1);
-  --cobalt-ink: #060408;
+  --cobalt-deep: #070814;
+  --cobalt-mid: #151b3b;
+  --cobalt-vivid: #f0a84a;
+  --cobalt-pale: #f4cf94;
+  --cobalt-wash: rgba(240, 168, 74, 0.11);
+  --cobalt-ink: #05050b;
 
   /* Night kept the indigo depth, but with a faint candle warmth so the dark
-     feels like a lantern-lit teahouse rather than a server room. */
+     feels like a diya-lit haveli rather than a server room. */
   --sun-wash: rgba(220, 150, 80, 0.035);
   --hearth-glow: rgba(230, 140, 70, 0.028);
 
@@ -200,8 +200,8 @@ html[data-theme="dark"] {
   --accent-hover: var(--brand-strong);
   --accent-dim: rgba(212, 132, 122, 0.12);
   --accent-glow: rgba(212, 132, 122, 0.28);
-  --accent-companion: #5aadaa;
-  --accent-gradient: linear-gradient(135deg, #d4847a 0%, #c06050 100%);
+  --accent-companion: #4fb5c4;
+  --accent-gradient: linear-gradient(135deg, #f0a84a 0%, #c65f17 100%);
   --on-accent: #060408;
   --shadow-glow-accent: 0 2px 20px rgba(212, 132, 122, 0.3);
 
@@ -233,12 +233,12 @@ html[data-theme="dark"] {
   --aurora-3: rgba(92, 184, 128, 0.05);
 }
 
-/* ── Twilight theme — deep murasaki (purple) night sky, lit by sakura-pink
-   accents and a warm ember of gold. True Japanese twilight: the purple here
-   is deep and saturated, like wisteria draped over a moonlit garden. ── */
+/* ── Twilight theme — royal jaipur purple, lotus rose, and a warm ember of
+   gold. The purple stays deep and saturated, like festival dusk over carved
+   stone and patterned textiles. ── */
 html[data-theme="twilight"] {
   color-scheme: dark;
-  /* Dusk ember-light — the warm counterpoint to the murasaki sky. */
+  /* Dusk ember-light — the warm counterpoint to the royal purple sky. */
   --sun-wash: rgba(230, 150, 70, 0.05);
   --hearth-glow: rgba(220, 130, 80, 0.04);
   --scrim: rgba(12, 6, 24, 0.52);
@@ -249,19 +249,19 @@ html[data-theme="twilight"] {
   --bg-glass: rgba(24, 14, 48, 0.58);
   --bg-solid: #181040;
 
-  --cobalt-deep: #100830;
-  --cobalt-mid: #201060;
-  --cobalt-vivid: #8a60d0;
-  --cobalt-pale: #b898e8;
-  --cobalt-wash: rgba(138, 96, 208, 0.1);
-  --cobalt-ink: #080420;
+  --cobalt-deep: #160827;
+  --cobalt-mid: #3a1764;
+  --cobalt-vivid: #9b5fd3;
+  --cobalt-pale: #d7a7ef;
+  --cobalt-wash: rgba(155, 95, 211, 0.11);
+  --cobalt-ink: #090314;
 
   --border-subtle: rgba(184, 152, 232, 0.14);
   --border-default: rgba(184, 152, 232, 0.22);
   --border-accent: #8a60d0;
   --border-glow: #8a60d0;
 
-  /* Liquid-glass system tokens — twilight, murasaki-tinted */
+  /* Liquid-glass system tokens — twilight, royal-purple tinted */
   --glass-blur: 24px;
   --glass-blur-strong: 38px;
   --glass-saturate: 160%;
@@ -308,12 +308,12 @@ html[data-theme="twilight"] {
   --shadow-md: 0 6px 20px rgba(8, 4, 20, 0.55), inset 0 1px 0 rgba(184, 152, 232, 0.1);
   --shadow-lg: 0 14px 40px rgba(8, 4, 20, 0.65), inset 0 1px 0 rgba(184, 152, 232, 0.12);
 
-  /* Ambient aurora — deep murasaki dusk tones. */
+  /* Ambient aurora — deep royal-purple dusk tones. */
   --aurora-1: rgba(138, 96, 208, 0.2);
   --aurora-2: rgba(112, 80, 192, 0.14);
   --aurora-3: rgba(216, 144, 120, 0.12);
 
-  /* ── Crayon painting — twilight murasaki scene ── */
+  /* ── Crayon painting — royal-purple twilight scene ── */
   --crayon-sky-top: #1a0840;
   --crayon-sky-bottom: #2d1868;
   --crayon-sun: #e8a050;
@@ -463,10 +463,10 @@ body {
    backdrop-filter. These utilities + the reusable class package that together.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Ambient gradient — washi wash, now crossed by a warm
-   sunbeam from the upper-right and a low hearth-glow at the foot of the
-   page. The vermillion hues are unchanged; the warmth is a second light
-   source layered over them, like late sun through a shoji screen. ── */
+/* ── Ambient gradient — handloom-paper wash, crossed by a warm sunbeam from
+   the upper-right and a low diya glow at the foot of the page. The saffron
+   hues remain the anchor; the warmth is a second light source layered over
+   them, like late sun on carved sandstone. ── */
 html::before {
   content: "";
   position: fixed;
@@ -476,7 +476,7 @@ html::before {
   contain: layout style paint;
   background:
     radial-gradient(ellipse at 82% -8%, var(--sun-wash, rgba(220, 160, 80, 0.07)) 0%, transparent 55%),
-    radial-gradient(ellipse at 0% 0%, rgba(184, 55, 43, 0.07) 0%, transparent 50%),
+    radial-gradient(ellipse at 0% 0%, rgba(198, 95, 23, 0.075) 0%, transparent 50%),
     radial-gradient(ellipse at 30% 104%, var(--hearth-glow, rgba(200, 120, 60, 0.055)) 0%, transparent 52%);
   opacity: 0.95;
 }
@@ -593,9 +593,9 @@ html[data-theme="twilight"][data-perf="high"] .crayon-bg {
      • micro-noise (overlay, opt-in via .texture-noise) — Gen Z tactile grain
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Fine paper fiber. Stronger grain (0.07) with a hint of long-fiber washi
+/* Fine paper fiber. Stronger grain (0.07) with a hint of handloom cotton
    drag baked into the same composite layer, so the page reads as handmade
-   Japanese paper — texture, never "dust". */
+   Indian paper — texture, never "dust". */
 body::after {
   content: "";
   position: fixed;
@@ -647,12 +647,12 @@ body::before {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   Traditional Japanese geometric patterns — CSS-only, GPU-cheap.
+   Indian geometric and textile-inspired patterns — CSS-only, GPU-cheap.
    Used as subtle overlays on cards, dividers, and section headers.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Seigaiha (wave) — concentric overlapping circles evoking ocean waves.
-   A classic Japanese pattern symbolizing peace, tranquility, and good fortune. */
+/* Mandala waves — concentric overlapping circles inspired by rangoli and
+   mandala geometry, symbolizing focus, continuity, and good fortune. */
 .pattern-seigaiha {
   position: relative;
 }
@@ -664,7 +664,7 @@ body::before {
   pointer-events: none;
   z-index: 0;
   opacity: 0.07;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cpath d='M28 28c0-4.4-3.6-8-8-8-2.2 0-4.2.9-5.6 2.4C13.4 20.6 12 22.6 12 25c0 4.4 3.6 8 8 8 2.2 0 4.2-.9 5.6-2.4C27.4 29.4 28 27.4 28 25zM20 36c-4.4 0-8-3.6-8-8 0-2.2.9-4.2 2.4-5.6C13.4 20.6 15.4 19 18 19c4.4 0 8 3.6 8 8 0 2.2-.9 4.2-2.4 5.6C22.6 34.6 20.6 36 20 36zM36 20c-2.2 0-4.2.9-5.6 2.4C29.4 23.4 28 25.4 28 28c0 4.4 3.6 8 8 8 2.2 0 4.2-.9 5.6-2.4C42.6 32.6 44 30.6 44 28c0-4.4-3.6-8-8-8z' fill='%23b8372b' fill-opacity='0.3'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cpath d='M28 28c0-4.4-3.6-8-8-8-2.2 0-4.2.9-5.6 2.4C13.4 20.6 12 22.6 12 25c0 4.4 3.6 8 8 8 2.2 0 4.2-.9 5.6-2.4C27.4 29.4 28 27.4 28 25zM20 36c-4.4 0-8-3.6-8-8 0-2.2.9-4.2 2.4-5.6C13.4 20.6 15.4 19 18 19c4.4 0 8 3.6 8 8 0 2.2-.9 4.2-2.4 5.6C22.6 34.6 20.6 36 20 36zM36 20c-2.2 0-4.2.9-5.6 2.4C29.4 23.4 28 25.4 28 28c0 4.4 3.6 8 8 8 2.2 0 4.2-.9 5.6-2.4C42.6 32.6 44 30.6 44 28c0-4.4-3.6-8-8-8z' fill='%23c65f17' fill-opacity='0.3'/%3E%3C/svg%3E");
   background-size: 56px 56px;
   mix-blend-mode: multiply;
 }
@@ -673,8 +673,8 @@ body::before {
   z-index: 1;
 }
 
-/* Asanoha (hemp leaf) — a six-pointed star lattice symbolizing growth and
-   prosperity. Used on paper-textured surfaces and achievement cards. */
+/* Jaal lattice — a diamond/star lattice inspired by carved jaali screens,
+   symbolizing growth and ordered complexity. */
 .pattern-asanoha {
   position: relative;
 }
@@ -686,7 +686,7 @@ body::before {
   pointer-events: none;
   z-index: 0;
   opacity: 0.035;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cpath d='M30 0l30 30-30 30L0 30z' fill='none' stroke='%23b8372b' stroke-opacity='0.25' stroke-width='0.5'/%3E%3Cpath d='M30 10l20 20-20 20-20-20z' fill='none' stroke='%23b8372b' stroke-opacity='0.2' stroke-width='0.5'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cpath d='M30 0l30 30-30 30L0 30z' fill='none' stroke='%23c65f17' stroke-opacity='0.25' stroke-width='0.5'/%3E%3Cpath d='M30 10l20 20-20 20-20-20z' fill='none' stroke='%23c65f17' stroke-opacity='0.2' stroke-width='0.5'/%3E%3C/svg%3E");
   background-size: 60px 60px;
   mix-blend-mode: multiply;
 }
@@ -695,8 +695,8 @@ body::before {
   z-index: 1;
 }
 
-/* Shippo (seven treasures) — overlapping circles representing the seven
-   treasures of the Buddhist teachings. Used as a refined accent pattern. */
+/* Lotus circles — overlapping rings inspired by mandala petals and temple
+   medallions. Used as a refined accent pattern. */
 .pattern-shippo {
   position: relative;
 }
@@ -708,7 +708,7 @@ body::before {
   pointer-events: none;
   z-index: 0;
   opacity: 0.035;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Ccircle cx='24' cy='12' r='10' fill='none' stroke='%23b8372b' stroke-opacity='0.3' stroke-width='0.5'/%3E%3Ccircle cx='36' cy='30' r='10' fill='none' stroke='%23b8372b' stroke-opacity='0.3' stroke-width='0.5'/%3E%3Ccircle cx='12' cy='30' r='10' fill='none' stroke='%23b8372b' stroke-opacity='0.3' stroke-width='0.5'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Ccircle cx='24' cy='12' r='10' fill='none' stroke='%23c65f17' stroke-opacity='0.3' stroke-width='0.5'/%3E%3Ccircle cx='36' cy='30' r='10' fill='none' stroke='%23c65f17' stroke-opacity='0.3' stroke-width='0.5'/%3E%3Ccircle cx='12' cy='30' r='10' fill='none' stroke='%23c65f17' stroke-opacity='0.3' stroke-width='0.5'/%3E%3C/svg%3E");
   background-size: 48px 48px;
   mix-blend-mode: multiply;
 }
@@ -717,9 +717,8 @@ body::before {
   z-index: 1;
 }
 
-/* Ichimatsu (checkerboard) — a simple alternating grid used in Japanese
-   architecture, from temple floors to modern fashion. It represents balance
-   and quiet order. Applied as a very subtle overlay on section dividers. */
+/* Chowk grid — a simple rangoli-floor grid used as a subtle overlay on
+   section dividers. It represents balance, rhythm, and quiet order. */
 .pattern-ichimatsu {
   position: relative;
 }
@@ -731,7 +730,7 @@ body::before {
   pointer-events: none;
   z-index: 0;
   opacity: 0.03;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Crect width='12' height='12' fill='none' stroke='%23b8372b' stroke-opacity='0.35' stroke-width='0.5'/%3E%3Crect x='12' y='12' width='12' height='12' fill='none' stroke='%23b8372b' stroke-opacity='0.35' stroke-width='0.5'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Crect width='12' height='12' fill='none' stroke='%23c65f17' stroke-opacity='0.35' stroke-width='0.5'/%3E%3Crect x='12' y='12' width='12' height='12' fill='none' stroke='%23c65f17' stroke-opacity='0.35' stroke-width='0.5'/%3E%3C/svg%3E");
   background-size: 24px 24px;
   mix-blend-mode: multiply;
 }
@@ -740,8 +739,8 @@ body::before {
   z-index: 1;
 }
 
-/* Kikko (tortoise shell) — overlapping hexagons symbolizing longevity and
-   good fortune. Used sparingly as a refined texture on achievement cards. */
+/* Jaali hex — overlapping hexagons inspired by carved screenwork, symbolizing
+   continuity and resilience. Used sparingly on achievement cards. */
 .pattern-kikko {
   position: relative;
 }
@@ -753,7 +752,7 @@ body::before {
   pointer-events: none;
   z-index: 0;
   opacity: 0.03;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='32' viewBox='0 0 36 32'%3E%3Cpath d='M18 0l18 10v12L18 32 0 22V10z' fill='none' stroke='%23b8372b' stroke-opacity='0.3' stroke-width='0.5'/%3E%3Cpath d='M18 10l9 5v6l-9 5-9-5v-6z' fill='none' stroke='%23b8372b' stroke-opacity='0.2' stroke-width='0.5'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='32' viewBox='0 0 36 32'%3E%3Cpath d='M18 0l18 10v12L18 32 0 22V10z' fill='none' stroke='%23c65f17' stroke-opacity='0.3' stroke-width='0.5'/%3E%3Cpath d='M18 10l9 5v6l-9 5-9-5v-6z' fill='none' stroke='%23c65f17' stroke-opacity='0.2' stroke-width='0.5'/%3E%3C/svg%3E");
   background-size: 36px 32px;
   mix-blend-mode: multiply;
 }
@@ -762,9 +761,9 @@ body::before {
   z-index: 1;
 }
 
-/* Shoji-screen texture — a faint, elegant grid that evokes the rice-paper
-   sliding doors of traditional Japanese interiors. Applied to section
-   backgrounds for quiet architectural depth. */
+/* Jaali-screen texture — a faint, elegant grid that evokes carved stone
+   screens and woven room dividers. Applied to section backgrounds for quiet
+   architectural depth. */
 .shoji-screen {
   position: relative;
 }
@@ -798,8 +797,8 @@ body::before {
   z-index: 1;
 }
 
-/* ── Ma-breath — intentional negative space for sections that need to feel
-   considered and unhurried, like a pause between brush strokes. ── */
+/* ── Tala-breath — intentional negative space for sections that need to feel
+   considered and unhurried, like a pause in a rhythmic composition. ── */
 .ma-breath {
   margin-top: var(--space-3xl);
   margin-bottom: var(--space-3xl);
@@ -813,8 +812,8 @@ body::before {
   margin-bottom: var(--space-4xl);
 }
 
-/* ── Wa-divider — a refined section separator with an ichimatsu bead in the
-   center, representing the balance (wa) between content blocks. ── */
+/* ── Santulan-divider — a refined section separator with a rangoli-grid bead
+   in the center, representing balance between content blocks. ── */
 .wa-divider {
   display: flex;
   align-items: center;
@@ -839,7 +838,7 @@ body::before {
   box-shadow: 0 0 10px var(--accent-glow);
 }
 
-/* ── Seasonal accent — subtle color hints for Japanese seasons.
+/* ── Seasonal accent — subtle color hints for Indian seasonal moods.
    Applied via .seasonal-[spring|summer|autumn|winter] on sections. ── */
 .seasonal-spring {
   --seasonal-accent: #e8a0b0;
@@ -860,7 +859,7 @@ body::before {
 
 /* Auto-seasonal: paired corner washes based on the data-season attribute set
    by the layout init script — vivid enough to actually feel the season turn
-   (sakura spring, matcha summer, momiji autumn, snow-shadow winter), while
+   (lotus spring, monsoon green summer, marigold autumn, cool moonlit winter), while
    staying a wash, never a tint over content. */
 html[data-season="spring"] body {
   background-image:
@@ -922,13 +921,13 @@ html[data-season="winter"] body {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   Japanese ink & vermillion texture system — sumi, hanko, washi.
+   Indian ink & saffron texture system — masala ink, seal marks, handloom paper.
    Layered ink-wash effects that give surfaces the depth and elegance of
-   traditional Japanese calligraphy, lacquerware, and ink-wash painting.
+   traditional manuscripts, block printing, and miniature-painting washes.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Sumi-wash overlay — a deep ink wash that bleeds across surfaces,
-   creating the feel of aged washi with ink saturation. ── */
+/* ── Masala-ink wash overlay — a deep ink wash that bleeds across surfaces,
+   creating the feel of aged handmade paper with pigment saturation. ── */
 .ink-wash {
   position: relative;
 }
@@ -950,8 +949,8 @@ html[data-season="winter"] body {
   z-index: 1;
 }
 
-/* ── Editorial heading — sumi ink effect for h1–h4.
-   Deep ink with subtle text-shadow that evokes calligraphy on premium washi. */
+/* ── Editorial heading — manuscript-ink effect for h1–h4.
+   Deep ink with subtle text-shadow that evokes calligraphy on handmade paper. */
 h1, h2, h3, h4 {
   text-shadow:
     0 0.5px 0 rgba(42, 21, 32, 0.08),
@@ -974,8 +973,8 @@ html[data-theme="twilight"] h4 {
     0 1px 3px rgba(0, 0, 0, 0.35);
 }
 
-/* ── Washi texture — a dense, fine crosshatch that reads as traditional
-   Japanese handmade paper. Stronger than identity-texture. ── */
+/* ── Handloom texture — a dense, fine crosshatch that reads as traditional
+   Indian handmade paper and textile. Stronger than identity-texture. ── */
 .cobalt-texture {
   position: relative;
 }
@@ -1011,8 +1010,8 @@ html[data-theme="twilight"] h4 {
   z-index: 1;
 }
 
-/* ── Sumi border — a double-stroke border that evokes Japanese ink painting:
-   an outer sumi line + an inner vermillion accent line, with subtle bleeding. ── */
+/* ── Ink border — a double-stroke border that evokes manuscript margins:
+   an outer ink line + an inner saffron accent line, with subtle pigment bloom. ── */
 .ink-border {
   border: 1.5px solid var(--border-default) !important;
   box-shadow:
@@ -1031,8 +1030,8 @@ html[data-theme="twilight"] h4 {
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
-/* ── Vermillion accent line — a thick, confident left-border accent like a
-   hanko stamp mark or a chapter divider in a Japanese book. ── */
+/* ── Saffron accent line — a thick, confident left-border accent like a
+   rangoli stroke or a chapter divider in an illustrated manuscript. ── */
 .cobalt-rule {
   border-left: 4px solid var(--brand) !important;
   padding-left: var(--space-md);
@@ -1062,7 +1061,7 @@ html[data-theme="twilight"] h4 {
   text-shadow: 1px 1px 0 var(--accent-dim);
 }
 
-/* ── Sumi stain effect — a subtle, organic vermillion stain on card hover ── */
+/* ── Pigment stain effect — a subtle, organic saffron stain on card hover ── */
 .ink-stain {
   position: relative;
   overflow: hidden;
@@ -1089,7 +1088,7 @@ html[data-theme="twilight"] h4 {
   z-index: 1;
 }
 
-/* ── Vermillion shimmer — a slow, elegant brand-colored shimmer for loading states ── */
+/* ── Saffron shimmer — a slow, elegant brand-colored shimmer for loading states ── */
 .cobalt-shimmer {
   background: linear-gradient(
     110deg,
@@ -1219,7 +1218,7 @@ a:active {
   contain: layout style;
 }
 
-/* ── Scrollbar — sleek, vermillion-tinted ── */
+/* ── Scrollbar — sleek, saffron-tinted ── */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -1396,7 +1395,38 @@ a:active {
   position: relative;
   overflow: hidden;
 }
-/* Soft vermillion/washi glow behind the greeting (was an inline div). */
+.hero__stage::before,
+.hero__stage::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+}
+.hero__stage::before {
+  inset: 6px;
+  border-radius: var(--radius-2xl);
+  opacity: 0.08;
+  background-image:
+    radial-gradient(circle at 50% 50%, transparent 0 18px, var(--brand) 19px 20px, transparent 21px),
+    repeating-conic-gradient(from 45deg, var(--brand) 0deg 8deg, transparent 8deg 16deg);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 45%, #000 0%, transparent 66%);
+  mask-image: radial-gradient(ellipse at 50% 45%, #000 0%, transparent 66%);
+}
+.hero__stage::after {
+  left: 50%;
+  bottom: 0;
+  width: min(520px, 82vw);
+  height: 86px;
+  transform: translateX(-50%);
+  opacity: 0.16;
+  background:
+    linear-gradient(90deg, transparent, var(--accent), transparent),
+    repeating-linear-gradient(135deg, transparent 0 13px, var(--accent) 13px 14px, transparent 14px 28px),
+    repeating-linear-gradient(45deg, transparent 0 13px, var(--accent) 13px 14px, transparent 14px 28px);
+  -webkit-mask-image: linear-gradient(to top, #000, transparent 88%);
+  mask-image: linear-gradient(to top, #000, transparent 88%);
+}
+/* Soft saffron/handloom paper glow behind the greeting (was an inline div). */
 .hero__glow {
   position: absolute;
   top: 45%;
@@ -1415,19 +1445,20 @@ a:active {
   z-index: 0;
   pointer-events: none;
 }
-/* Enso brush watermark — the cultural signature, no glyphs (no FOUC). */
-.hero__enso {
+/* Mandala-lotus watermark — a visible Indian learning motif, no font dependency. */
+.hero__mandala {
   position: absolute;
-  top: 50%;
-  right: clamp(-8px, 2vw, 24px);
-  transform: translateY(-50%) rotate(-8deg);
-  width: clamp(140px, 22vw, 230px);
+  top: 44%;
+  right: clamp(-28px, -2vw, 10px);
+  transform: translateY(-50%) rotate(-6deg);
+  width: clamp(180px, 28vw, 300px);
   height: auto;
   color: var(--brand);
-  opacity: 0.07;
+  opacity: 0.13;
   z-index: 0;
   pointer-events: none;
   user-select: none;
+  filter: drop-shadow(0 0 28px var(--accent-glow));
 }
 .hero__content { position: relative; z-index: 1; }
 .hero__greeting { margin-top: 24px; }
@@ -1453,6 +1484,42 @@ a:active {
   display: flex;
   justify-content: center;
   margin-top: 20px;
+}
+.hero__learning-roots {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 18px auto 0;
+  max-width: 680px;
+}
+.hero__learning-roots span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 6px 11px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  background:
+    linear-gradient(135deg, var(--bg-card), var(--bg-surface)),
+    radial-gradient(circle at 20% 10%, var(--accent-dim), transparent 52%);
+  color: var(--text-secondary);
+  box-shadow: var(--glass-shadow);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.hero__learning-roots span::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-gradient);
+  box-shadow: 0 0 10px var(--accent-glow);
 }
 
 @keyframes iconFloat {
@@ -1485,7 +1552,7 @@ a:active {
 
 /* ── Gen Z interaction utilities — springy, tactile, satisfying ── */
 
-/* Interactive lift — spring-based hover with deep vermillion glow */
+/* Interactive lift — spring-based hover with deep saffron glow */
 .interactive-lift {
   transition: transform 420ms var(--ease-spring), box-shadow 420ms var(--ease-spring), border-color 320ms var(--ease-color);
 }
@@ -1501,7 +1568,7 @@ a:active {
   transition: transform 120ms var(--ease-color) !important;
 }
 
-/* Glow accent hover — deep vermillion glow on interactive elements */
+/* Glow accent hover — deep saffron glow on interactive elements */
 .glow-accent {
   transition: box-shadow 400ms var(--ease-spring), border-color 400ms var(--ease-color), background 400ms var(--ease-color);
 }
@@ -1628,7 +1695,7 @@ a:active {
   }
 }
 
-/* ── Markdown content — sumi ink on washi, generous breathing room ── */
+/* ── Markdown content — masala ink on handloom paper, generous breathing room ── */
 .markdown-content h2 {
   margin: var(--space-lg) 0 var(--space-base);
   font-family: var(--font-display), system-ui, sans-serif;
@@ -2117,10 +2184,10 @@ html[data-perf="high"] {
    to sit here were removed.) */
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   Japanese typography & reading rhythm
+   Indian typography & reading rhythm
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Japanese-inspired heading treatment — a thin vermillion rule sits just
+/* Indian-inspired heading treatment — a thin saffron rule sits just
    below the text like a chapter marker in a hand-bound book, with generous
    breathing room for a considered reading pace. */
 h1, h2, h3 {
@@ -2321,12 +2388,12 @@ p {
   transition: width 500ms var(--ease-reveal);
 }
 
-/* ── Washi-fold — a subtle corner fold effect on cards, evoking the folded
-   corner of a traditional book page or a carefully turned sheet of washi. ── */
-.washi-fold {
+/* ── Handloom-fold — a subtle corner fold effect on cards, evoking the folded
+   corner of a traditional book page or a carefully turned sheet of handloom paper. ── */
+.handloom-fold {
   position: relative;
 }
-.washi-fold::after {
+.handloom-fold::after {
   content: "";
   position: absolute;
   bottom: 0;
@@ -2340,7 +2407,7 @@ p {
   opacity: 0.6;
 }
 
-/* ── Brush-underline — a hand-painted vermillion underline for links and
+/* ── Brush-underline — a hand-painted saffron underline for links and
    interactive text, like a calligrapher's brush stroke. ── */
 .brush-underline {
   position: relative;
@@ -2363,9 +2430,9 @@ p {
   transform: scaleX(1);
 }
 
-/* ── Hanko-stamp — a circular vermillion seal effect for badges and
-   achievement markers, inspired by traditional Japanese hanko stamps. ── */
-.hanko-stamp {
+/* ── Hanko-stamp — a circular saffron seal effect for badges and
+   achievement markers, inspired by traditional Indian rangoli seals. ── */
+.rangoli-seal {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2377,7 +2444,7 @@ p {
   box-shadow: inset 0 0 0 1px var(--accent-dim);
   position: relative;
 }
-.hanko-stamp::before {
+.rangoli-seal::before {
   content: "";
   position: absolute;
   inset: 2px;
@@ -2387,16 +2454,16 @@ p {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   Refined component system — Japanese-inspired, world-class.
+   Refined component system — Indian-inspired, world-class.
    Reusable classes that replace brittle inline onMouseEnter/onMouseLeave style
    mutations. Every class has focus-visible parity with hover, respects
-   prefers-reduced-motion, and uses the vermillion/sumi/washi tokens so it
-   stays correct in light, dark (ai-zome), and twilight (murasaki) themes.
-   Design principles: Shibumi (effortless elegance), Ma (intentional space),
-   Wabi-Sabi (handcrafted warmth), Wa (harmony & balance).
+   prefers-reduced-motion, and uses the saffron/indigo/handloom paper tokens so it
+   stays correct in light, dark (monsoon indigo), and twilight (royal purple) themes.
+   Design principles: rasa (emotional tone), tala (rhythmic spacing),
+   alankara (purposeful ornament), and santulan (balance).
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Primary button ── the confident vermillion stamp of a hanko seal.
+/* ── Primary button ── the confident saffron stamp of a rangoli seal.
    Springy, tactile, with a soft glow that blooms on hover/focus and a
    satisfying press. Used for the main CTA on every page. */
 .btn-primary {
@@ -2425,7 +2492,7 @@ p {
   isolation: isolate;
 }
 /* Specular light catch — a slow sheen sweeps across on hover, like light on
-   lacquerware. */
+   block-printed textiles. */
 .btn-primary::after {
   content: "";
   position: absolute;
@@ -2451,7 +2518,7 @@ p {
   transform: translateY(0) scale(0.97);
   transition: transform 120ms var(--ease-color);
 }
-/* Disabled — a calm, faded sumi wash instead of a broken-looking gray box. */
+/* Disabled — a calm, faded pigment wash instead of a broken-looking gray box. */
 .btn-primary:disabled,
 .btn-primary[aria-disabled="true"] {
   background: var(--border-subtle);
@@ -2569,7 +2636,7 @@ p {
   transform: translateY(-1px);
 }
 .nav-link:active { transform: translateY(0) scale(0.97); }
-/* Active route — a soft vermillion wash with a confident left-brush mark. */
+/* Active route — a soft saffron wash with a confident left-brush mark. */
 .nav-link--active {
   color: var(--accent);
   background: var(--accent-dim);
@@ -2694,16 +2761,16 @@ p {
   text-overflow: ellipsis;
 }
 
-/* ── Section header ── a refined heading with a vertical vermillion accent
-   bar (kakigane) and an optional Japanese kanji overline. */
+/* ── Section header ── a refined heading with a vertical saffron accent
+   bar (rangoli) and an optional decorative overline. */
 .section-header {
   display: flex;
   flex-direction: column;
   gap: 6px;
   margin-bottom: var(--space-md);
 }
-/* Standalone kanji overline — use above a page <h1> for a quiet cultural
-   signature. Renders as a small letter-spaced vermillion label. */
+/* Standalone decorative overline — use above a page <h1> for a quiet cultural
+   signature. Renders as a small letter-spaced saffron label. */
 .section-overline {
   display: inline-block;
   font-family: var(--font-display), serif;
@@ -2715,8 +2782,8 @@ p {
   text-transform: uppercase;
   margin-bottom: 2px;
 }
-/* A short lacquer brush-dash leads the overline in — the hanko-red stroke
-   that used to be carried by a kanji glyph, now purely graphic. */
+/* A short rangoli brush-dash leads the overline in — the rangoli seal-red stroke
+   that used to be carried by an overline glyph, now purely graphic. */
 .section-overline::before {
   content: "";
   display: inline-block;
@@ -2728,7 +2795,7 @@ p {
   vertical-align: middle;
   transform: translateY(-1px);
 }
-.section-header__kanji {
+.section-header__symbol {
   font-family: var(--font-display), serif;
   font-size: 13px;
   font-weight: 700;
@@ -2820,8 +2887,8 @@ p {
   letter-spacing: 0.02em;
 }
 
-/* ── Scroll-to-top ── a floating vermillion seal that rises when the user
-   scrolls deep, evoking a hanko stamp pressing back to the top. */
+/* ── Scroll-to-top ── a floating saffron seal that rises when the user
+   scrolls deep, evoking a rangoli seal pressing back to the top. */
 .scroll-top {
   position: fixed;
   right: clamp(16px, 3vw, 32px);
@@ -2866,7 +2933,7 @@ p {
 }
 
 /* ── Kusari divider ── a delicate chain-like separator with a centered
-   vermillion diamond bead, representing the links between sections (wa). */
+   saffron diamond bead, representing the links between sections (rhythm). */
 .kusari {
   display: flex;
   align-items: center;
@@ -2943,7 +3010,7 @@ p {
   box-shadow: var(--shadow-md), var(--glass-edge), 0 0 0 3px var(--accent-glow);
 }
 
-/* ── Part card quiz / action button ── full-width vermillion CTA inside a
+/* ── Part card quiz / action button ── full-width saffron CTA inside a
    lesson part. Spring lift on hover, calm disabled-ish pre-state. */
 .part-cta {
   width: 100%;
@@ -3036,11 +3103,32 @@ p {
   box-shadow: var(--glass-shadow), var(--glass-edge);
   transition: all 500ms var(--ease-color);
 }
+.q-form {
+  background-image:
+    linear-gradient(135deg, var(--bg-card), var(--bg-card)),
+    repeating-linear-gradient(90deg, transparent 0 18px, var(--cobalt-wash) 18px 19px, transparent 19px 36px);
+  background-blend-mode: normal, multiply;
+}
+.q-form__body {
+  position: relative;
+}
+.q-form__body::before {
+  content: "Nalanda-inspired inquiry";
+  position: absolute;
+  top: 8px;
+  left: 32px;
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.72;
+}
 .q-form--focused {
   border-color: var(--border-accent);
   box-shadow: var(--shadow-lg), 0 0 0 6px var(--accent-glow), var(--glass-edge);
 }
-.q-form__body { padding: 28px 32px 18px; }
+.q-form__body { padding: 34px 32px 18px; }
 .q-form__textarea {
   width: 100%;
   min-height: 64px;

@@ -9,8 +9,8 @@ module.exports = {
     extend: {
       colors: {
         /* Mapped to the CSS variables in globals.css so utility classes stay
-           correct in EVERY theme — the Japanese-inspired palette (sumi/vermillion
-           light, ai-zome night, murasaki twilight) propagates through these tokens. */
+           correct in EVERY theme — the Indian-inspired palette (saffron/indigo
+           light, monsoon night, royal-purple twilight) propagates through these tokens. */
         background: "var(--bg-primary)",
         surface: "var(--bg-surface)",
         card: "var(--bg-card)",
@@ -30,7 +30,7 @@ module.exports = {
         "success-light": "var(--correct-bg)",
         danger: "var(--wrong)",
         "danger-light": "var(--wrong-bg)",
-        /* Extended vermillion/sumi palette — for Japanese-inspired UI */
+        /* Extended saffron/indigo palette — for Indian-inspired UI */
         "cobalt-deep": "var(--cobalt-deep)",
         "cobalt-mid": "var(--cobalt-mid)",
         "cobalt-vivid": "var(--cobalt-vivid)",
