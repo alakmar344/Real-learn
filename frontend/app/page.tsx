@@ -201,12 +201,21 @@ export default function HomePage() {
               <QuestionInput question={question} setQuestion={setQuestion} onSubmit={submit} />
             </div>
 
-            <div className="hero__learning-roots" aria-label="Indian learning heritage">
-              <span>विद्या</span>
-              <span>Gurukul</span>
-              <span>Nalanda</span>
-              <span>Takshashila</span>
-            </div>
+            <svg className="hero__lotus-spirals hero__lotus-spirals--left" aria-hidden="true" viewBox="0 0 220 220">
+              <path d="M110 110 m-6 0 c0-18 26-18 26 2 c0 30-48 36-70 12 c-29-31-5-82 43-88 c62-8 106 58 74 113 c-35 61-127 56-157-7" />
+              <path d="M110 110 C92 88 92 68 110 42 C128 68 128 88 110 110Z" />
+              <path d="M110 110 C132 92 152 92 178 110 C152 128 132 128 110 110Z" />
+              <path d="M110 110 C128 132 128 152 110 178 C92 152 92 132 110 110Z" />
+              <path d="M110 110 C88 128 68 128 42 110 C68 92 88 92 110 110Z" />
+            </svg>
+
+            <svg className="hero__lotus-spirals hero__lotus-spirals--right" aria-hidden="true" viewBox="0 0 220 220">
+              <path d="M110 110 m6 0 c0 18-26 18-26-2 c0-30 48-36 70-12 c29 31 5 82-43 88 c-62 8-106-58-74-113 c35-61 127-56 157 7" />
+              <path d="M110 110 C92 88 92 68 110 42 C128 68 128 88 110 110Z" />
+              <path d="M110 110 C132 92 152 92 178 110 C152 128 132 128 110 110Z" />
+              <path d="M110 110 C128 132 128 152 110 178 C92 152 92 132 110 110Z" />
+              <path d="M110 110 C88 128 68 128 42 110 C68 92 88 92 110 110Z" />
+            </svg>
           </div>
         </section>
 
