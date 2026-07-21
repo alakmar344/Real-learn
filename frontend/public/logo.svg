@@ -1,8 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40" fill="none">
-  <!-- Background rectangle -->
-  <rect width="120" height="40" rx="8" fill="#2b44e0"/>
-  <!-- RL text -->
-  <text x="10" y="27" font-family="Inter, sans-serif" font-weight="800" font-size="18" fill="#ffffff">RL</text>
-  <!-- RealLearn text -->
-  <text x="38" y="26" font-family="Inter, sans-serif" font-weight="700" font-size="14" fill="#ffffff">RealLearn</text>
+  <!-- Tricolor stripe: saffron, white, green -->
+  <rect x="0" y="0" width="40" height="40" fill="#FF9933"/>
+  <rect x="40" y="0" width="40" height="40" fill="#FFFFFF"/>
+  <rect x="80" y="0" width="40" height="40" fill="#138808"/>
+  <!-- RL text with dark contrast -->
+  <text x="28" y="26" font-family="Inter, sans-serif" font-weight="800" font-size="17" fill="#1a0f05" text-anchor="middle">R</text>
+  <text x="68" y="26" font-family="Inter, sans-serif" font-weight="800" font-size="17" fill="#1a0f05" text-anchor="middle">L</text>
+  <text x="108" y="26" font-family="Inter, sans-serif" font-weight="800" font-size="17" fill="#1a0f05" text-anchor="middle">earn</text>
 </svg>
