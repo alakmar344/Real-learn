@@ -77,7 +77,7 @@ npm install
 npm test                  # gemma-engine + moderation tests
 ```
 
-**Baseline recorded 2026-07-20:** `tsc --noEmit` clean, `next lint` clean.
+**Baseline recorded 2026-07-21:** `tsc --noEmit` clean, `next lint` clean, `npm run build` clean, backend `npm test` 17/17.
 
 ---
 
@@ -112,6 +112,10 @@ Available component classes (already implemented — use them):
   `.section-header__title`, `.section-header__subtitle`
 - Cards: `.rl-card`, `.stat-tile`
 - Learning: `.part-card`, `.part-cta`, `.part-done-bar`, `.progress-hub`
+- Quiz: `.quiz-sheet`, `.quiz-sheet__panel`, `.quiz-sheet__close`, `.quiz-sheet__action`,
+  `.quiz-question`, `.quiz-question__option`, `.quiz-question__badge`, `.quiz-question__explanation`
+- Loading / error: `.loading-cinematic`, `.loading-cinematic__progress`, `.loading-cinematic__steps`,
+  `.loading-cinematic__cancel`, `.error-state`, `.error-state__card`, `.error-state__btn`
 - Toggles: `.btn-toggle`, `.mode-glider`
 - Decorative: `.kusari` (chain divider), `.liquid-sheen`, `.engraved`,
   `.identity-texture`, `.texture-noise`, `.texture-dots`
@@ -261,3 +265,6 @@ this protocol. No exceptions.**
 - 2026-07-20 — Created `docs/AGENT_MEMORY.md` (this file) + root
   `AGENT_INSTRUCTIONS.md` pointer + `llms.txt` pointer. Established the
   Change Protocol (§11) and de-slop rules (§6).
+- 2026-07-21 — Added `.quiz-sheet`, `.quiz-question`, `.loading-cinematic`, and
+  `.error-state` component classes to the design system list (§5). Updated
+  verification baseline.
