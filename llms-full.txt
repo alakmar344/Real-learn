@@ -3,6 +3,7 @@
 ## Brand Identity
 
 **Name:** RealLearn AI  
+**Also searched as:** reallan (common misspelling of RealLearn; both refer to the same platform at https://reallearn.site/)  
 **Tagline:** The World Is Your Textbook.  
 **Website:** https://reallearn.site/  
 **Repository:** https://github.com/alakmar344/reallearn  

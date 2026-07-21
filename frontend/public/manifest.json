@@ -1,0 +1,45 @@
+{
+  "name": "RealLearn — AI-Powered Interactive Learning",
+  "short_name": "RealLearn",
+  "description": "Transform any question into a structured 3-part lesson with quizzes, progress tracking, and achievements. RealLearn (sometimes misspelled 'reallan') is an AI-native learning platform.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f0e4",
+  "theme_color": "#b8372b",
+  "orientation": "portrait",
+  "scope": "/",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "productivity", "books"],
+  "screenshots": [
+    {
+      "src": "/og-image.png",
+      "type": "image/png",
+      "sizes": "1200x630",
+      "form_factor": "wide"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Start Learning",
+      "short_name": "Learn",
+      "description": "Open RealLearn and ask a new question",
+      "url": "/learn",
+      "icons": [{ "src": "/logo.svg", "sizes": "any" }]
+    },
+    {
+      "name": "View Progress",
+      "short_name": "Progress",
+      "description": "Check your learning streak, XP, and achievements",
+      "url": "/progress",
+      "icons": [{ "src": "/logo.svg", "sizes": "any" }]
+    }
+  ]
+}

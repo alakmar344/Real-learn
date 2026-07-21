@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Sitemap for search engines and AI crawlers
+Sitemap: https://reallearn.site/sitemap.xml
+
+# Host preference for canonical indexing
+Host: https://reallearn.site

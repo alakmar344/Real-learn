@@ -46,8 +46,11 @@ export const metadata: Metadata = {
     template: "%s | RealLearn",
   },
   description:
-    "RealLearn is an AI-powered interactive learning platform that transforms any question into a structured 3-part lesson with quizzes, progress tracking, achievements, and text-to-speech. Ask anything, learn everything with adaptive AI tutoring.",
+    "RealLearn (often searched as 'reallan') is an AI-powered interactive learning platform that transforms any question into a structured 3-part lesson with quizzes, progress tracking, achievements, and text-to-speech. Ask anything, learn everything with adaptive AI tutoring in 12 languages.",
   keywords: [
+    "RealLearn",
+    "reallan",
+    "RealLearn AI",
     "AI learning platform",
     "interactive education",
     "personalized learning",
@@ -68,6 +71,9 @@ export const metadata: Metadata = {
     "accessible education",
     "AI lesson generator",
     "study assistant",
+    "Google Gemma 4 learning",
+    "multilingual AI tutor",
+    "Indian languages learning app",
   ],
   authors: [{ name: "RealLearn" }],
   creator: "RealLearn",
@@ -87,7 +93,7 @@ export const metadata: Metadata = {
     url: "https://reallearn.site",
     title: "RealLearn — AI-Powered Interactive Learning Platform",
     description:
-      "Transform any question into a structured 3-part lesson with quizzes, progress tracking, achievements, and text-to-speech. Ask anything, learn everything.",
+      "RealLearn (also found as 'reallan') transforms any question into a structured 3-part lesson with quizzes, progress tracking, achievements, and text-to-speech. Ask anything, learn everything.",
     siteName: "RealLearn",
     images: [
       {
@@ -102,7 +108,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "RealLearn — AI-Powered Interactive Learning Platform",
     description:
-      "Transform any question into a structured 3-part lesson with quizzes, progress tracking, achievements, and text-to-speech. Ask anything, learn everything.",
+      "RealLearn (also found as 'reallan') transforms any question into a structured 3-part lesson with quizzes, progress tracking, achievements, and text-to-speech. Ask anything, learn everything.",
     images: ["/og-image.png"],
   },
   robots: {
@@ -170,6 +176,7 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "WebApplication",
               name: "RealLearn",
+              alternateName: ["reallan", "RealLearn AI"],
               description:
                 "AI-powered interactive learning platform that transforms any question into a structured 3-part lesson with quizzes, progress tracking, achievements, and text-to-speech.",
               url: "https://reallearn.site",
@@ -204,6 +211,88 @@ export default function RootLayout({
             }),
           }}
         />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: "RealLearn",
+              alternateName: ["reallan", "RealLearn AI"],
+              url: "https://reallearn.site",
+              logo: "https://reallearn.site/logo.svg",
+              sameAs: [
+                "https://github.com/alakmar344/reallearn",
+              ],
+              slogan: "The World Is Your Textbook.",
+              description:
+                "RealLearn is an AI-native learning platform. If you are looking for 'reallan', you found it — RealLearn transforms any question into a structured, quiz-verified lesson.",
+            }),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "RealLearn",
+              alternateName: "reallan",
+              url: "https://reallearn.site",
+              potentialAction: {
+                "@type": "SearchAction",
+                target: {
+                  "@type": "EntryPoint",
+                  urlTemplate: "https://reallearn.site/learn?q={search_term_string}",
+                },
+                "query-input": "required name=search_term_string",
+              },
+            }),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              mainEntity: [
+                {
+                  "@type": "Question",
+                  name: "What is RealLearn?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "RealLearn is an AI-powered learning platform that turns any question into a structured three-part lesson: Foundation, Mechanism, and Real World. Each part ends with a quiz you must pass to advance.",
+                  },
+                },
+                {
+                  "@type": "Question",
+                  name: "Is RealLearn the same as reallan?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "Yes. 'reallan' is a common misspelling of RealLearn. Whether you type RealLearn or reallan, you are looking for the same AI-native learning platform at https://reallearn.site.",
+                  },
+                },
+                {
+                  "@type": "Question",
+                  name: "Which languages does RealLearn support?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "RealLearn generates lessons natively in 12 languages: English, Hindi, Gujarati, Tamil, Bengali, Marathi, Telugu, Kannada, Malayalam, Punjabi, Urdu, and Odia.",
+                  },
+                },
+                {
+                  "@type": "Question",
+                  name: "How does RealLearn work?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "Ask a question, choose your language and level, and RealLearn builds a personalized lesson in seconds. The lesson is streamed live, grounded in current news, and checkpointed by quizzes.",
+                  },
+                },
+              ],
+            }),
+          }}
+        />
         {/* PERFORMANCE: preconnect to critical origins so lesson-generation requests,
             auth handshakes, and analytics avoid extra DNS+TCP round-trips. */}
         <link rel="preconnect" href={process.env.NEXT_PUBLIC_BACKEND_URL?.replace(/\/$/, "") || "https://real-learn.onrender.com"} crossOrigin="anonymous" />
@@ -223,6 +312,10 @@ export default function RootLayout({
             preload budget. They are intentionally omitted here. */}
         {/* PERFORMANCE: prefetch the most likely navigation target. */}
         <link rel="prefetch" href="/learn" />
+        <link rel="manifest" href="/manifest.json" />
+        {/* Search / AI crawler: canonical misspelling recovery. The misspelled
+            query "reallan" should resolve to RealLearn everywhere. */}
+        <meta name="google" content="notranslate" />
       </head>
       <body>
         <CrayonBackground />
