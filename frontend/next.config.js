@@ -19,6 +19,26 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ["react-markdown", "remark-gfm"],
   },
+  async redirects() {
+    return [
+      {
+        source: "/reallan",
+        destination: "/",
+        permanent: true,
+      },
+      {
+        source: "/reallan/:path*",
+        destination: "/:path*",
+        permanent: true,
+      },
+      {
+        source: "/real-learn",
+        destination: "/",
+        permanent: true,
+      },
+    ];
+  },
+
   async headers() {
     const clerkDomain = process.env.NEXT_PUBLIC_CLERK_FRONTEND_API
       ? `https://${process.env.NEXT_PUBLIC_CLERK_FRONTEND_API}`
