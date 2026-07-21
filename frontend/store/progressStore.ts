@@ -167,6 +167,31 @@ const initialEngagement = {
 /** Cap the credited-keys ledger so localStorage never grows unbounded. */
 const MAX_CREDITED_KEYS = 1000;
 
+/**
+ * Cap the activity-history map the same way. Without a cap a daily user adds
+ * one key per day forever, and since the whole store is re-serialized on
+ * every part passed, an ever-growing map slowly reintroduces exactly the
+ * main-thread serialization cost debouncedStorage was built to avoid.
+ * 400 days comfortably covers the year-long activity heatmap.
+ */
+const MAX_HISTORY_DAYS = 400;
+
+function addHistoryEntry(
+  history: Record<string, number>,
+  today: string
+): Record<string, number> {
+  const next = { ...history, [today]: (history[today] ?? 0) + 1 };
+  const keys = Object.keys(next);
+  if (keys.length <= MAX_HISTORY_DAYS) return next;
+  // Day keys are "YYYY-MM-DD", so lexicographic order IS chronological —
+  // drop the oldest days beyond the cap.
+  keys.sort();
+  for (const key of keys.slice(0, keys.length - MAX_HISTORY_DAYS)) {
+    delete next[key];
+  }
+  return next;
+}
+
 function addCreditedKey(
   keys: Record<string, number>,
   creditKey: string
@@ -208,7 +233,7 @@ export const useProgressStore = create<ProgressState>()(
             lastActivityHour: hour,
             dailyCount: nextDailyCount,
             dailyCountDay: today,
-            history: { ...prev.history, [today]: (prev.history[today] ?? 0) + 1 },
+            history: addHistoryEntry(prev.history, today),
             languagesUsed: language && !prev.languagesUsed.includes(language)
               ? [...prev.languagesUsed, language]
               : prev.languagesUsed,
