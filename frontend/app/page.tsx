@@ -111,25 +111,69 @@ export default function HomePage() {
           <div className="hero__stage">
             <div className="hero__glow" aria-hidden="true" />
 
-            {/* Enso brush watermark — cultural signature without glyphs (no FOUC). */}
+            {/* Mandala-lotus watermark — visible Indian learning motif without font/glyph dependencies. */}
             <svg
-              className="hero__enso"
+              className="hero__mandala"
               aria-hidden="true"
               viewBox="0 0 120 120"
             >
+              <circle cx="60" cy="60" r="42" fill="none" stroke="currentColor" strokeWidth="2" />
+              <circle cx="60" cy="60" r="24" fill="none" stroke="currentColor" strokeWidth="1.5" />
               <path
-                d="M86 16 A48 48 0 1 0 104 52"
+                d="M60 16 C70 34 70 46 60 60 C50 46 50 34 60 16Z"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="9"
-                strokeLinecap="round"
+                strokeWidth="3"
+                strokeLinejoin="round"
               />
               <path
-                d="M84 20 A44 44 0 1 0 100 54"
+                d="M60 104 C50 86 50 74 60 60 C70 74 70 86 60 104Z"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="4"
-                strokeLinecap="round"
+                strokeWidth="3"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M16 60 C34 50 46 50 60 60 C46 70 34 70 16 60Z"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M104 60 C86 70 74 70 60 60 C74 50 86 50 104 60Z"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M29 29 C48 35 56 43 60 60 C43 56 35 48 29 29Z"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M91 29 C85 48 77 56 60 60 C64 43 72 35 91 29Z"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M91 91 C72 85 64 77 60 60 C77 64 85 72 91 91Z"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M29 91 C35 72 43 64 60 60 C56 77 48 85 29 91Z"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinejoin="round"
               />
             </svg>
 
@@ -155,6 +199,13 @@ export default function HomePage() {
 
             <div className="hero__input-row">
               <QuestionInput question={question} setQuestion={setQuestion} onSubmit={submit} />
+            </div>
+
+            <div className="hero__learning-roots" aria-label="Indian learning heritage">
+              <span>विद्या</span>
+              <span>Gurukul</span>
+              <span>Nalanda</span>
+              <span>Takshashila</span>
             </div>
           </div>
         </section>

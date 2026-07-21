@@ -1395,6 +1395,37 @@ a:active {
   position: relative;
   overflow: hidden;
 }
+.hero__stage::before,
+.hero__stage::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+}
+.hero__stage::before {
+  inset: 6px;
+  border-radius: var(--radius-2xl);
+  opacity: 0.08;
+  background-image:
+    radial-gradient(circle at 50% 50%, transparent 0 18px, var(--brand) 19px 20px, transparent 21px),
+    repeating-conic-gradient(from 45deg, var(--brand) 0deg 8deg, transparent 8deg 16deg);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 45%, #000 0%, transparent 66%);
+  mask-image: radial-gradient(ellipse at 50% 45%, #000 0%, transparent 66%);
+}
+.hero__stage::after {
+  left: 50%;
+  bottom: 0;
+  width: min(520px, 82vw);
+  height: 86px;
+  transform: translateX(-50%);
+  opacity: 0.16;
+  background:
+    linear-gradient(90deg, transparent, var(--accent), transparent),
+    repeating-linear-gradient(135deg, transparent 0 13px, var(--accent) 13px 14px, transparent 14px 28px),
+    repeating-linear-gradient(45deg, transparent 0 13px, var(--accent) 13px 14px, transparent 14px 28px);
+  -webkit-mask-image: linear-gradient(to top, #000, transparent 88%);
+  mask-image: linear-gradient(to top, #000, transparent 88%);
+}
 /* Soft saffron/handloom paper glow behind the greeting (was an inline div). */
 .hero__glow {
   position: absolute;
@@ -1414,19 +1445,20 @@ a:active {
   z-index: 0;
   pointer-events: none;
 }
-/* Enso brush watermark — the cultural signature, no glyphs (no FOUC). */
-.hero__enso {
+/* Mandala-lotus watermark — a visible Indian learning motif, no font dependency. */
+.hero__mandala {
   position: absolute;
-  top: 50%;
-  right: clamp(-8px, 2vw, 24px);
-  transform: translateY(-50%) rotate(-8deg);
-  width: clamp(140px, 22vw, 230px);
+  top: 44%;
+  right: clamp(-28px, -2vw, 10px);
+  transform: translateY(-50%) rotate(-6deg);
+  width: clamp(180px, 28vw, 300px);
   height: auto;
   color: var(--brand);
-  opacity: 0.07;
+  opacity: 0.13;
   z-index: 0;
   pointer-events: none;
   user-select: none;
+  filter: drop-shadow(0 0 28px var(--accent-glow));
 }
 .hero__content { position: relative; z-index: 1; }
 .hero__greeting { margin-top: 24px; }
@@ -1452,6 +1484,42 @@ a:active {
   display: flex;
   justify-content: center;
   margin-top: 20px;
+}
+.hero__learning-roots {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 18px auto 0;
+  max-width: 680px;
+}
+.hero__learning-roots span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 6px 11px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  background:
+    linear-gradient(135deg, var(--bg-card), var(--bg-surface)),
+    radial-gradient(circle at 20% 10%, var(--accent-dim), transparent 52%);
+  color: var(--text-secondary);
+  box-shadow: var(--glass-shadow);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.hero__learning-roots span::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-gradient);
+  box-shadow: 0 0 10px var(--accent-glow);
 }
 
 @keyframes iconFloat {
@@ -2727,7 +2795,7 @@ p {
   vertical-align: middle;
   transform: translateY(-1px);
 }
-.section-header__kanji {
+.section-header__symbol {
   font-family: var(--font-display), serif;
   font-size: 13px;
   font-weight: 700;
@@ -3035,11 +3103,32 @@ p {
   box-shadow: var(--glass-shadow), var(--glass-edge);
   transition: all 500ms var(--ease-color);
 }
+.q-form {
+  background-image:
+    linear-gradient(135deg, var(--bg-card), var(--bg-card)),
+    repeating-linear-gradient(90deg, transparent 0 18px, var(--cobalt-wash) 18px 19px, transparent 19px 36px);
+  background-blend-mode: normal, multiply;
+}
+.q-form__body {
+  position: relative;
+}
+.q-form__body::before {
+  content: "Nalanda-inspired inquiry";
+  position: absolute;
+  top: 8px;
+  left: 32px;
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.72;
+}
 .q-form--focused {
   border-color: var(--border-accent);
   box-shadow: var(--shadow-lg), 0 0 0 6px var(--accent-glow), var(--glass-edge);
 }
-.q-form__body { padding: 28px 32px 18px; }
+.q-form__body { padding: 34px 32px 18px; }
 .q-form__textarea {
   width: 100%;
   min-height: 64px;
