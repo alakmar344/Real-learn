@@ -120,6 +120,17 @@ closing the remaining design-audit/roadmap gaps.
   - Updated `DESIGN_AUDIT.md` overall rating to **10/10** and marked all
     critical/high/medium findings as resolved.
   - Updated `IMPROVEMENT_PRIORITIES.md` sprints 1–6 to reflect completed work.
+
+- **Religion-neutral Indian visual refresh.**
+  - Removed the homepage learning-roots strip that named Gurukul, Nalanda, and
+    Takshashila so the hero no longer leans on institutional/religious heritage
+    labels.
+  - Replaced the old saffron-led accent direction with a calmer, neutral Indian
+    palette: peacock teal, lotus gold, rosewood, parchment, and masala-ink text.
+  - Added CSS/SVG lotus spiral ornaments on the homepage for a more professional
+    Indian craft feel without using contested religious symbolism.
+  - Confirmed existing homepage helper components are wired into the UI,
+    including `HomeStats` and `ExampleQuestions` through `QuestionInput`.
 - **Verification.** Frontend `tsc --noEmit`, `next lint`, and `npm run build`
   are clean; backend `npm test` passes 17/17.
 

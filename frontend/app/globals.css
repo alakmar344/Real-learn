@@ -11,20 +11,20 @@
   color-scheme: light;
 
   /* ── RealLearn identity — Indian cultural aesthetic: handloom cotton,
-     indigo dye, marigold, and saffron. Warm parchment, deep masala ink, and
-     ceremonial saffron accents use contrast, rhythm, ornament, and generous
+     peacock teal, lotus gold, and rosewood. Warm parchment, deep masala ink, and
+     religion-neutral accents use contrast, rhythm, ornament, and generous
      breathing room as the core Indian design principles in the UI. ── */
-  --brand: #c65f17;
-  --brand-strong: #94420f;
-  --brand-bright: #e88922;
-  --brand-soft: #d99a4f;
+  --brand: #0f6f7d;
+  --brand-strong: #0a4f59;
+  --brand-bright: #2f9aa7;
+  --brand-soft: #8bbfc6;
 
-  /* Extended saffron/indigo palette — layered depths for Indian richness */
+  /* Extended peacock/lotus palette — layered depths for Indian richness */
   --cobalt-deep: #241127;
   --cobalt-mid: #49306b;
-  --cobalt-vivid: #c65f17;
-  --cobalt-pale: #e6b56a;
-  --cobalt-wash: rgba(198, 95, 23, 0.09);
+  --cobalt-vivid: #0f6f7d;
+  --cobalt-pale: #a8cfd4;
+  --cobalt-wash: rgba(15, 111, 125, 0.09);
   --cobalt-ink: #160b18;
 
   /* Handloom parchment: the warm, tactile feel of cotton rag paper —
@@ -38,40 +38,40 @@
   --bg-solid: #fff4dd;
   --bg-warm: rgba(252, 235, 202, 0.62);
   /* Warm ambient light — like diyas and marigolds, a gentle golden wash
-     layered under the saffron ambience. */
+     layered under the peacock ambience. */
   --sun-wash: rgba(233, 166, 56, 0.08);
-  --hearth-glow: rgba(196, 84, 28, 0.06);
+  --hearth-glow: rgba(15, 111, 125, 0.06);
 
   --border-subtle: rgba(36, 17, 39, 0.1);
   --border-default: rgba(36, 17, 39, 0.16);
   --border-accent: var(--brand);
-  --border-glow: rgba(198, 95, 23, 0.32);
+  --border-glow: rgba(15, 111, 125, 0.32);
 
   --glass-blur: 28px;
   --glass-blur-strong: 44px;
   --glass-saturate: 180%;
   --glass-highlight: rgba(255, 241, 214, 0.92);
   --glass-shadow: 0 4px 24px rgba(36, 17, 39, 0.08), 0 1px 3px rgba(36, 17, 39, 0.05);
-  --glass-edge: inset 0 1px 0 rgba(255, 241, 214, 0.9), inset 0 0 0 1px rgba(198, 95, 23, 0.13);
+  --glass-edge: inset 0 1px 0 rgba(255, 241, 214, 0.9), inset 0 0 0 1px rgba(15, 111, 125, 0.13);
   --glass-sheen: linear-gradient(135deg, rgba(255,241,214,0.45) 0%, rgba(255,211,142,0.16) 38%, rgba(255,255,255,0) 62%);
 
   --accent: var(--brand);
   --accent-hover: var(--brand-strong);
-  --accent-dim: rgba(198, 95, 23, 0.12);
-  --accent-glow: rgba(232, 137, 34, 0.27);
+  --accent-dim: rgba(15, 111, 125, 0.12);
+  --accent-glow: rgba(47, 154, 167, 0.27);
   --accent-companion: #0f6f7d;
-  /* A livelier rangoli sweep: bright saffron into deep kumkum red. Text
+  /* A calm rangoli sweep: peacock teal into lotus gold and rosewood. Text
      stays on --brand (contrast-safe); the vibrancy lives in fills/glows. */
-  --accent-gradient: linear-gradient(135deg, #e88922 0%, #a13f16 100%);
+  --accent-gradient: linear-gradient(135deg, #0f6f7d 0%, #b08d57 55%, #8b4a62 100%);
   --on-accent: #ffffff;
-  --shadow-glow-accent: 0 2px 22px rgba(232, 137, 34, 0.35);
+  --shadow-glow-accent: 0 2px 22px rgba(15, 111, 125, 0.35);
 
   /* Masala ink tones: deep, layered browns and purples inspired by hand-drawn
      manuscript text — warmer than pure gray, like ink on handmade paper. */
   --text-primary: #1b1016;
   --text-secondary: #4b3941;
   --text-tertiary: #806f73;
-  --text-accent-strong: #c65f17;
+  --text-accent-strong: #0f6f7d;
 
   --correct: #2a7a50;
   --correct-bg: rgba(42, 122, 80, 0.1);
@@ -146,7 +146,7 @@
   --focus-ring: 0 0 0 3px var(--accent-glow);
   --focus-ring-simple: 0 0 0 2px var(--accent);
 
-  /* The saffron ember is a touch warmer and more present — the breathing
+  /* The lotus-gold ember is a touch warmer and more present — the breathing
      layer now feels like diya-light drifting under the handloom paper. */
   --aurora-1: rgba(196, 58, 44, 0.14);
   --aurora-2: rgba(214, 134, 58, 0.12);
@@ -154,7 +154,7 @@
 }
 
 /* ── Dark theme — deep monsoon-indigo night, lit by brass and diya gold.
-   Luminous text on near-black, with saffron-gold accents that feel ceremonial
+   Luminous text on near-black, with lotus-gold accents that feel ceremonial
    against the indigo. ── */
 html[data-theme="dark"] {
   color-scheme: dark;
@@ -464,7 +464,7 @@ body {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* ── Ambient gradient — handloom-paper wash, crossed by a warm sunbeam from
-   the upper-right and a low diya glow at the foot of the page. The saffron
+   the upper-right and a low diya glow at the foot of the page. The lotus-gold
    hues remain the anchor; the warmth is a second light source layered over
    them, like late sun on carved sandstone. ── */
 html::before {
@@ -921,7 +921,7 @@ html[data-season="winter"] body {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   Indian ink & saffron texture system — masala ink, seal marks, handloom paper.
+   Indian ink & lotus-gold texture system — masala ink, seal marks, handloom paper.
    Layered ink-wash effects that give surfaces the depth and elegance of
    traditional manuscripts, block printing, and miniature-painting washes.
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -1011,7 +1011,7 @@ html[data-theme="twilight"] h4 {
 }
 
 /* ── Ink border — a double-stroke border that evokes manuscript margins:
-   an outer ink line + an inner saffron accent line, with subtle pigment bloom. ── */
+   an outer ink line + an inner lotus-gold accent line, with subtle pigment bloom. ── */
 .ink-border {
   border: 1.5px solid var(--border-default) !important;
   box-shadow:
@@ -1030,7 +1030,7 @@ html[data-theme="twilight"] h4 {
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
-/* ── Saffron accent line — a thick, confident left-border accent like a
+/* ── Lotus-gold accent line — a thick, confident left-border accent like a
    rangoli stroke or a chapter divider in an illustrated manuscript. ── */
 .cobalt-rule {
   border-left: 4px solid var(--brand) !important;
@@ -1061,7 +1061,7 @@ html[data-theme="twilight"] h4 {
   text-shadow: 1px 1px 0 var(--accent-dim);
 }
 
-/* ── Pigment stain effect — a subtle, organic saffron stain on card hover ── */
+/* ── Pigment stain effect — a subtle, organic lotus-gold stain on card hover ── */
 .ink-stain {
   position: relative;
   overflow: hidden;
@@ -1088,7 +1088,7 @@ html[data-theme="twilight"] h4 {
   z-index: 1;
 }
 
-/* ── Saffron shimmer — a slow, elegant brand-colored shimmer for loading states ── */
+/* ── Lotus-gold shimmer — a slow, elegant brand-colored shimmer for loading states ── */
 .cobalt-shimmer {
   background: linear-gradient(
     110deg,
@@ -1218,7 +1218,7 @@ a:active {
   contain: layout style;
 }
 
-/* ── Scrollbar — sleek, saffron-tinted ── */
+/* ── Scrollbar — sleek, lotus-gold-tinted ── */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -1426,7 +1426,7 @@ a:active {
   -webkit-mask-image: linear-gradient(to top, #000, transparent 88%);
   mask-image: linear-gradient(to top, #000, transparent 88%);
 }
-/* Soft saffron/handloom paper glow behind the greeting (was an inline div). */
+/* Soft lotus-gold/handloom paper glow behind the greeting (was an inline div). */
 .hero__glow {
   position: absolute;
   top: 45%;
@@ -1485,43 +1485,6 @@ a:active {
   justify-content: center;
   margin-top: 20px;
 }
-.hero__learning-roots {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  margin: 18px auto 0;
-  max-width: 680px;
-}
-.hero__learning-roots span {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 30px;
-  padding: 6px 11px;
-  border: 1px solid var(--border-subtle);
-  border-radius: 999px;
-  background:
-    linear-gradient(135deg, var(--bg-card), var(--bg-surface)),
-    radial-gradient(circle at 20% 10%, var(--accent-dim), transparent 52%);
-  color: var(--text-secondary);
-  box-shadow: var(--glass-shadow);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-.hero__learning-roots span::before {
-  content: "";
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent-gradient);
-  box-shadow: 0 0 10px var(--accent-glow);
-}
-
 @keyframes iconFloat {
   0%, 100% { transform: translateY(0) rotate(0deg); }
   50% { transform: translateY(-6px) rotate(4deg); }
@@ -1552,7 +1515,7 @@ a:active {
 
 /* ── Gen Z interaction utilities — springy, tactile, satisfying ── */
 
-/* Interactive lift — spring-based hover with deep saffron glow */
+/* Interactive lift — spring-based hover with deep lotus-gold glow */
 .interactive-lift {
   transition: transform 420ms var(--ease-spring), box-shadow 420ms var(--ease-spring), border-color 320ms var(--ease-color);
 }
@@ -1568,7 +1531,7 @@ a:active {
   transition: transform 120ms var(--ease-color) !important;
 }
 
-/* Glow accent hover — deep saffron glow on interactive elements */
+/* Glow accent hover — deep lotus-gold glow on interactive elements */
 .glow-accent {
   transition: box-shadow 400ms var(--ease-spring), border-color 400ms var(--ease-color), background 400ms var(--ease-color);
 }
@@ -2187,7 +2150,7 @@ html[data-perf="high"] {
    Indian typography & reading rhythm
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Indian-inspired heading treatment — a thin saffron rule sits just
+/* Indian-inspired heading treatment — a thin lotus-gold rule sits just
    below the text like a chapter marker in a hand-bound book, with generous
    breathing room for a considered reading pace. */
 h1, h2, h3 {
@@ -2407,7 +2370,7 @@ p {
   opacity: 0.6;
 }
 
-/* ── Brush-underline — a hand-painted saffron underline for links and
+/* ── Brush-underline — a hand-painted lotus-gold underline for links and
    interactive text, like a calligrapher's brush stroke. ── */
 .brush-underline {
   position: relative;
@@ -2430,7 +2393,7 @@ p {
   transform: scaleX(1);
 }
 
-/* ── Hanko-stamp — a circular saffron seal effect for badges and
+/* ── Hanko-stamp — a circular lotus-gold seal effect for badges and
    achievement markers, inspired by traditional Indian rangoli seals. ── */
 .rangoli-seal {
   display: inline-flex;
@@ -2457,13 +2420,13 @@ p {
    Refined component system — Indian-inspired, world-class.
    Reusable classes that replace brittle inline onMouseEnter/onMouseLeave style
    mutations. Every class has focus-visible parity with hover, respects
-   prefers-reduced-motion, and uses the saffron/indigo/handloom paper tokens so it
+   prefers-reduced-motion, and uses the lotus-gold/indigo/handloom paper tokens so it
    stays correct in light, dark (monsoon indigo), and twilight (royal purple) themes.
    Design principles: rasa (emotional tone), tala (rhythmic spacing),
    alankara (purposeful ornament), and santulan (balance).
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Primary button ── the confident saffron stamp of a rangoli seal.
+/* ── Primary button ── the confident lotus-gold stamp of a rangoli seal.
    Springy, tactile, with a soft glow that blooms on hover/focus and a
    satisfying press. Used for the main CTA on every page. */
 .btn-primary {
@@ -2636,7 +2599,7 @@ p {
   transform: translateY(-1px);
 }
 .nav-link:active { transform: translateY(0) scale(0.97); }
-/* Active route — a soft saffron wash with a confident left-brush mark. */
+/* Active route — a soft lotus-gold wash with a confident left-brush mark. */
 .nav-link--active {
   color: var(--accent);
   background: var(--accent-dim);
@@ -2761,7 +2724,7 @@ p {
   text-overflow: ellipsis;
 }
 
-/* ── Section header ── a refined heading with a vertical saffron accent
+/* ── Section header ── a refined heading with a vertical lotus-gold accent
    bar (rangoli) and an optional decorative overline. */
 .section-header {
   display: flex;
@@ -2770,7 +2733,7 @@ p {
   margin-bottom: var(--space-md);
 }
 /* Standalone decorative overline — use above a page <h1> for a quiet cultural
-   signature. Renders as a small letter-spaced saffron label. */
+   signature. Renders as a small letter-spaced lotus-gold label. */
 .section-overline {
   display: inline-block;
   font-family: var(--font-display), serif;
@@ -2887,7 +2850,7 @@ p {
   letter-spacing: 0.02em;
 }
 
-/* ── Scroll-to-top ── a floating saffron seal that rises when the user
+/* ── Scroll-to-top ── a floating lotus-gold seal that rises when the user
    scrolls deep, evoking a rangoli seal pressing back to the top. */
 .scroll-top {
   position: fixed;
@@ -2933,7 +2896,7 @@ p {
 }
 
 /* ── Kusari divider ── a delicate chain-like separator with a centered
-   saffron diamond bead, representing the links between sections (rhythm). */
+   lotus-gold diamond bead, representing the links between sections (rhythm). */
 .kusari {
   display: flex;
   align-items: center;
@@ -3010,7 +2973,7 @@ p {
   box-shadow: var(--shadow-md), var(--glass-edge), 0 0 0 3px var(--accent-glow);
 }
 
-/* ── Part card quiz / action button ── full-width saffron CTA inside a
+/* ── Part card quiz / action button ── full-width lotus-gold CTA inside a
    lesson part. Spring lift on hover, calm disabled-ish pre-state. */
 .part-cta {
   width: 100%;
@@ -3113,7 +3076,7 @@ p {
   position: relative;
 }
 .q-form__body::before {
-  content: "Nalanda-inspired inquiry";
+  content: "Ask with curiosity";
   position: absolute;
   top: 8px;
   left: 32px;
@@ -3743,5 +3706,47 @@ p {
   .rl-card:hover,
   .scroll-top:hover {
     transform: none !important;
+  }
+}
+
+/* Lotus spiral ornaments — religion-neutral Indian craft geometry for the homepage. */
+.hero__lotus-spirals {
+  position: absolute;
+  width: clamp(120px, 16vw, 220px);
+  height: clamp(120px, 16vw, 220px);
+  color: var(--accent-companion);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.18;
+  filter: drop-shadow(0 12px 28px rgba(15, 111, 125, 0.14));
+  pointer-events: none;
+}
+.hero__lotus-spirals path:first-child {
+  stroke-width: 2.8;
+}
+.hero__lotus-spirals--left {
+  left: max(18px, 4vw);
+  bottom: max(28px, 7vh);
+  transform: rotate(-12deg);
+}
+.hero__lotus-spirals--right {
+  right: max(18px, 4vw);
+  top: max(82px, 14vh);
+  transform: rotate(18deg) scaleX(-1);
+}
+@media (max-width: 760px) {
+  .hero__lotus-spirals {
+    opacity: 0.11;
+  }
+  .hero__lotus-spirals--left {
+    bottom: 18px;
+    left: -28px;
+  }
+  .hero__lotus-spirals--right {
+    top: 86px;
+    right: -38px;
   }
 }
