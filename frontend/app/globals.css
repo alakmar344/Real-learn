@@ -1426,40 +1426,6 @@ a:active {
   -webkit-mask-image: linear-gradient(to top, #000, transparent 88%);
   mask-image: linear-gradient(to top, #000, transparent 88%);
 }
-/* Soft lotus-gold/handloom paper glow behind the greeting (was an inline div). */
-.hero__glow {
-  position: absolute;
-  top: 45%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: min(420px, 75vw);
-  height: min(220px, 40vw);
-  border-radius: 50%;
-  background: radial-gradient(
-    ellipse at center,
-    var(--accent-glow) 0%,
-    var(--sun-wash) 45%,
-    transparent 70%
-  );
-  filter: blur(50px);
-  z-index: 0;
-  pointer-events: none;
-}
-/* Mandala-lotus watermark — a visible Indian learning motif, no font dependency. */
-.hero__mandala {
-  position: absolute;
-  top: 44%;
-  right: clamp(-28px, -2vw, 10px);
-  transform: translateY(-50%) rotate(-6deg);
-  width: clamp(180px, 28vw, 300px);
-  height: auto;
-  color: var(--brand);
-  opacity: 0.13;
-  z-index: 0;
-  pointer-events: none;
-  user-select: none;
-  filter: drop-shadow(0 0 28px var(--accent-glow));
-}
 .hero__content { position: relative; z-index: 1; }
 .hero__greeting { margin-top: 24px; }
 .hero__title {
@@ -3709,44 +3675,3 @@ p {
   }
 }
 
-/* Lotus spiral ornaments — religion-neutral Indian craft geometry for the homepage. */
-.hero__lotus-spirals {
-  position: absolute;
-  width: clamp(120px, 16vw, 220px);
-  height: clamp(120px, 16vw, 220px);
-  color: var(--accent-companion);
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2.2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  opacity: 0.18;
-  filter: drop-shadow(0 12px 28px rgba(15, 111, 125, 0.14));
-  pointer-events: none;
-}
-.hero__lotus-spirals path:first-child {
-  stroke-width: 2.8;
-}
-.hero__lotus-spirals--left {
-  left: max(18px, 4vw);
-  bottom: max(28px, 7vh);
-  transform: rotate(-12deg);
-}
-.hero__lotus-spirals--right {
-  right: max(18px, 4vw);
-  top: max(82px, 14vh);
-  transform: rotate(18deg) scaleX(-1);
-}
-@media (max-width: 760px) {
-  .hero__lotus-spirals {
-    opacity: 0.11;
-  }
-  .hero__lotus-spirals--left {
-    bottom: 18px;
-    left: -28px;
-  }
-  .hero__lotus-spirals--right {
-    top: 86px;
-    right: -38px;
-  }
-}
