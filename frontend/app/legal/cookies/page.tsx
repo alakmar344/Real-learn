@@ -20,7 +20,7 @@ export default function CookiePolicy() {
         Cookie Policy
       </h2>
       <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
-        Last updated: July 15, 2026 (version 2.2)
+        Last updated: July 22, 2026 (version 2.3)
       </p>
 
       <section style={{ marginBottom: 28 }}>
@@ -55,10 +55,12 @@ export default function CookiePolicy() {
             learning-progress and achievement data (experience points, level, daily streaks, daily
             goals, activity history, and badges), and your personalization data (the date you
             first used RealLearn on this device — shown as a &quot;learning together for N
-            days&quot; counter — and once-per-day markers that stop a seasonal or time-of-day
-            greeting from appearing twice in one day), and browser IndexedDB (not cookies) to
-            store the full content of your saved lessons. This data stays on your device and is
-            not sent to our servers.
+            days&quot; counter — once-per-day markers that stop a seasonal or time-of-day greeting
+            from appearing twice in one day, and optional learning-style preferences with free-text
+            notes capped at 500 characters). Your learning preferences are sent with each lesson-
+            generation request and then discarded; everything else in localStorage stays on your
+            device and is not sent to our servers. We also use browser IndexedDB (not cookies) to
+            store the full content of your saved lessons.
           </li>
           <li>
             <strong>Essential Cookies:</strong> We may use strictly necessary cookies for security
@@ -95,6 +97,13 @@ export default function CookiePolicy() {
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           We may update this Cookie Policy from time to time. We will notify you of any changes
           by posting the new policy on this page and updating the &quot;Last updated&quot; date.
+        </p>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+          <strong>Version 2.3 (effective July 22, 2026).</strong> Updated the Local Storage
+          disclosure to cover the new optional learning personalization data: learning-style
+          checklist choices and free-text notes (capped at 500 characters) stored in your browser.
+          These preferences are sent with each lesson-generation request and are not stored on our
+          servers. Because the disclosure changed, the consent banner will ask for your choice again.
         </p>
         <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
           <strong>Version 2.2 (effective July 15, 2026).</strong> Updated the Local Storage

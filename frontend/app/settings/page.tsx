@@ -24,6 +24,12 @@ import LanguageSelector from "@/components/shared/LanguageSelector";
 import LevelSelector from "@/components/shared/LevelSelector";
 import { THEME_OPTIONS } from "@/lib/themes";
 import { PERF_MODE_OPTIONS } from "@/lib/performance";
+import {
+  MAX_PERSONALIZATION_NOTES_CHARS,
+  PERSONALIZATION_CHECKLIST_OPTIONS,
+  sanitizeChecklist,
+  sanitizeNotes,
+} from "@/lib/personalization";
 
 const THEMES = THEME_OPTIONS;
 
@@ -63,6 +69,8 @@ export default function SettingsPage() {
   const setLevel = usePreferenceStore((s) => s.setLevel);
   const setMode = usePreferenceStore((s) => s.setMode);
   const setPerfMode = usePreferenceStore((s) => s.setPerfMode);
+  const personalization = usePreferenceStore((s) => s.personalization);
+  const setPersonalization = usePreferenceStore((s) => s.setPersonalization);
 
   const [deleting, setDeleting] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -155,6 +163,7 @@ export default function SettingsPage() {
           "reallearn-theme",
           "reallearn-preferences-onboarding",
           "reallearn-feedback",
+          "reallearn-personalization-skipped",
           // Privacy policy v2.6 promises "Delete My Data" removes the local
           // first-used date (Footer's "learning together" counter) too.
           "reallearn-first-visit",
@@ -277,6 +286,14 @@ export default function SettingsPage() {
         localData.feedback = (() => {
           try {
             return JSON.parse(localStorage.getItem("reallearn-feedback") || "null");
+          } catch {
+            return null;
+          }
+        })();
+
+        localData.personalizationSkipped = (() => {
+          try {
+            return JSON.parse(localStorage.getItem("reallearn-personalization-skipped") || "null");
           } catch {
             return null;
           }
@@ -596,6 +613,134 @@ export default function SettingsPage() {
                 })}
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* Learning Preferences Section */}
+        <section
+          className="settings-section"
+          style={{
+            border: "1px solid var(--border-default)",
+            borderRadius: "var(--radius-lg)",
+            padding: 24,
+            marginBottom: 24,
+            background: "var(--bg-card)",
+          }}
+        >
+          <h2
+            style={{
+              fontSize: 16,
+              fontWeight: 700,
+              marginBottom: 4,
+              color: "var(--text-primary)",
+            }}
+          >
+            Learning preferences
+          </h2>
+          <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 20 }}>
+            Optional: tell us how you learn best. This is stored on this device and sent with each
+            lesson request so explanations can be tailored to you.
+          </p>
+
+          <fieldset style={{ border: "none", padding: 0, margin: "0 0 16px" }}>
+            <legend
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: "var(--text-secondary)",
+                marginBottom: 8,
+              }}
+            >
+              Select any that apply
+            </legend>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {PERSONALIZATION_CHECKLIST_OPTIONS.map((option) => {
+                const active = personalization.checklist.includes(option);
+                return (
+                  <label
+                    key={option}
+                    style={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: 10,
+                      padding: "10px 12px",
+                      borderRadius: "var(--radius-md)",
+                      border: active ? "2px solid var(--accent)" : "1px solid var(--border-default)",
+                      background: active ? "var(--accent-dim)" : "var(--bg-surface)",
+                      cursor: "pointer",
+                      fontSize: 14,
+                      color: "var(--text-primary)",
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={active}
+                      onChange={() => {
+                        const next = active
+                          ? personalization.checklist.filter((item) => item !== option)
+                          : [...personalization.checklist, option];
+                        setPersonalization({
+                          ...personalization,
+                          checklist: sanitizeChecklist(next),
+                        });
+                      }}
+                      style={{ marginTop: 2, flexShrink: 0 }}
+                    />
+                    <span>{option}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </fieldset>
+
+          <div style={{ marginBottom: 8 }}>
+            <label
+              htmlFor="settings-personalization-notes"
+              style={{
+                display: "block",
+                fontSize: 13,
+                fontWeight: 600,
+                color: "var(--text-secondary)",
+                marginBottom: 8,
+              }}
+            >
+              Anything else you&apos;d like us to know?
+            </label>
+            <textarea
+              id="settings-personalization-notes"
+              value={personalization.notes}
+              onChange={(e) =>
+                setPersonalization({
+                  ...personalization,
+                  notes: sanitizeNotes(e.target.value),
+                })
+              }
+              placeholder="For example: I understand concepts better with pictures..."
+              rows={4}
+              style={{
+                width: "100%",
+                padding: 12,
+                borderRadius: "var(--radius-md)",
+                border: "1px solid var(--border-default)",
+                background: "var(--bg-surface)",
+                color: "var(--text-primary)",
+                fontSize: 14,
+                lineHeight: 1.6,
+                resize: "vertical",
+                minHeight: 100,
+              }}
+            />
+            <p
+              style={{
+                fontSize: 12,
+                color: "var(--text-tertiary)",
+                marginTop: 6,
+                textAlign: "right",
+              }}
+            >
+              {personalization.notes.length}/{MAX_PERSONALIZATION_NOTES_CHARS}
+            </p>
           </div>
         </section>
 

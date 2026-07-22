@@ -90,7 +90,7 @@ One complete visual overhaul every 5 active days.
 - **MongoDB Backend** — Rate limiting, moderation logging, consent records
 - **Cookie Consent** — DB-backed for signed-in users
 - **Privacy Compliance** — COPPA, CCPA, DPDP (India's data protection law)
-- **Legal Documents** — Privacy Policy v2.6, Terms v2.4, Cookie Policy
+- **Legal Documents** — Privacy Policy v2.7, Terms v2.5, Cookie Policy v2.3
 - **Shareable Cards** — Gen Z portrait-style result cards
 - **Feedback System** — Anonymous post-lesson feedback with reconsent
 - **Background Art** — Crayon paintings of schools, rivers, bridges

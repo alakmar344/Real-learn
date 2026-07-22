@@ -7,6 +7,7 @@ import { useAuth } from "@clerk/nextjs";
 import { useLessonStore } from "@/store/lessonStore";
 import { usePreferenceStore } from "@/store/preferenceStore";
 import { LessonJourney } from "@/types";
+import { type LearningPreferences } from "@/lib/personalization";
 
 const trimmedBackendUrl = (
   process.env.NEXT_PUBLIC_BACKEND_URL ||
@@ -226,6 +227,7 @@ export function useLesson() {
   const language = usePreferenceStore((s) => s.language);
   const level = usePreferenceStore((s) => s.level);
   const mode = usePreferenceStore((s) => s.mode);
+  const personalization = usePreferenceStore((s) => s.personalization);
 
   const generateLesson = useCallback(
     // Returns true when a lesson was successfully generated and applied,
@@ -291,6 +293,9 @@ export function useLesson() {
           if (token) {
             headers["Authorization"] = `Bearer ${token}`;
           }
+          const prefsPayload: LearningPreferences | null =
+            personalization.onboarded ? personalization : null;
+
           const response = await fetch(`${trimmedBackendUrl}/api/generate-lesson`, {
             method: "POST",
             headers,
@@ -300,6 +305,7 @@ export function useLesson() {
               language,
               level,
               mode,
+              personalization: prefsPayload,
             }),
             cache: "no-store",
           });
@@ -503,7 +509,7 @@ export function useLesson() {
       setError(humanizeErrorMessage(lastError));
       return false;
     },
-    [getToken, language, level, mode, router, setError, setLesson, setProgress, setQuestion, startLoading]
+    [getToken, language, level, mode, personalization, router, setError, setLesson, setProgress, setQuestion, startLoading]
   );
 
   const restart = useCallback(() => {

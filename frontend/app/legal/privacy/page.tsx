@@ -20,7 +20,7 @@ export default function PrivacyPolicy() {
         Privacy Policy
       </h2>
       <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
-        Last updated: July 17, 2026 (version 2.6)
+        Last updated: July 22, 2026 (version 2.7)
       </p>
 
       <section style={{ marginBottom: 28 }}>
@@ -77,7 +77,7 @@ export default function PrivacyPolicy() {
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Consent Records:</strong> Timestamps of when you accepted our Privacy Policy
-            (version 2.5), Terms of Service (version 2.3), and cookie/analytics consent, together
+            (version 2.7), Terms of Service (version 2.5), and cookie/analytics consent, together
             with the policy version, an <strong>anonymized (truncated) device IP</strong>, and a
             hashed User-Agent, kept as proof of consent.
           </li>
@@ -139,15 +139,22 @@ export default function PrivacyPolicy() {
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Personalization &amp; Delight Data (stored locally):</strong> To make the app
-            feel personal, we keep two small pieces of information in your browser&apos;s
+            feel personal, we keep a small amount of information in your browser&apos;s
             localStorage only: (1) the date you first used RealLearn on this device, used to show a
-            friendly &quot;learning together for N days&quot; counter, and (2) simple once-per-day
+            friendly &quot;learning together for N days&quot; counter; (2) simple once-per-day
             markers that record whether a seasonal or time-of-day greeting (a small
-            &quot;surprise&quot; message) has already been shown today, so we never show it twice.
-            If you are signed in, your first name (provided by Clerk) may be displayed in an
-            on-screen greeting — this happens entirely in your browser. None of this information is{" "}
-            <strong>transmitted to or stored on our servers</strong>, and clearing your browser data
-            or using &quot;Delete My Data&quot; removes it.
+            &quot;surprise&quot; message) has already been shown today, so we never show it twice;
+            and (3) optional learning preferences you can set after signing in — a checklist of
+            learning-style choices (for example, simple language, step-by-step explanations, or visual
+            analogies) plus free-text notes about how you learn best. These learning preferences are
+            stored only on your device, can be changed or cleared anytime in Settings, and are{" "}
+            <strong>not stored on our servers</strong>; they are simply included with each lesson-
+            generation request so the AI can tailor its response. We cap the free-text notes at 500
+            characters. If you are signed in, your first name (provided by Clerk) may be displayed in
+            an on-screen greeting — this happens entirely in your browser. None of this information is{" "}
+            <strong>transmitted to or stored on our servers</strong> (except the learning preferences,
+            which are sent only with the lesson request and then discarded), and clearing your browser
+            data or using &quot;Delete My Data&quot; removes it.
           </li>
           <li>
             <strong>Moderation Logs:</strong> When a question you submit or an AI response is
@@ -177,6 +184,11 @@ export default function PrivacyPolicy() {
             first name, rendered only in your browser), a local counter of how many days you have
             used RealLearn, and small once-per-day seasonal surprises — all computed and stored
             locally on your device.
+          </li>
+          <li style={{ marginBottom: 4 }}>
+            To tailor lesson generation using your optional, locally-stored learning preferences
+            (learning-style checklist and free-text notes), which are sent with each lesson request
+            and not retained on our servers.
           </li>
           <li style={{ marginBottom: 4 }}>To analyze usage patterns through Google Analytics and improve our service.</li>
           <li style={{ marginBottom: 4 }}>To comply with legal obligations and age-appropriate content rules.</li>
@@ -252,8 +264,9 @@ export default function PrivacyPolicy() {
           We use browser localStorage to store your consent preferences, theme settings, your
           saved-lesson history index, your learning-progress and achievement data (XP, level,
           streaks, daily goals, activity history, and badges), and your personalization data (the
-          date you first used RealLearn on this device and once-per-day markers for seasonal
-          greetings), and browser <strong>IndexedDB</strong>{" "}
+          date you first used RealLearn on this device, once-per-day markers for seasonal
+          greetings, and optional learning-style preferences with free-text notes capped at 500
+          characters), and browser <strong>IndexedDB</strong>{" "}
           to store the full content of your saved lessons (chats). We use Google Analytics cookies
           (loaded only after consent) for service improvement.
           We do not use tracking cookies for advertising. Clerk, our authentication provider,
@@ -366,8 +379,9 @@ export default function PrivacyPolicy() {
           </li>
           <li>
             <strong>Locally-stored data</strong> (saved lessons in IndexedDB; history index,
-            preferences, and learning progress in localStorage) — remains on your device until you
-            clear it or use &quot;Delete My Data&quot;, which removes both storage areas.
+            preferences, learning progress, and optional learning personalization in localStorage) —
+            remains on your device until you clear it or use &quot;Delete My Data&quot;, which removes
+            both storage areas.
           </li>
         </ul>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
@@ -397,6 +411,18 @@ export default function PrivacyPolicy() {
            by posting the new policy on this page and updating the &quot;Last updated&quot; date.
            Continued use of the service after changes constitutes acceptance of the updated policy.
          </p>
+          <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+            <strong>Version 2.7 (effective July 22, 2026).</strong> This update discloses the new
+            optional <strong>learning personalization</strong> feature: signed-in users can choose
+            learning-style preferences (for example, simple language, step-by-step explanations, or
+            visual analogies) and add free-text notes about how they learn best. These preferences
+            are stored only in your browser&apos;s localStorage and are included with each lesson-
+            generation request so the AI can tailor its response; they are <strong>not stored on our
+            servers</strong>. You can change or clear them anytime in Settings, and &quot;Delete My
+            Data&quot; removes them. The free-text notes are capped at 500 characters. Because this
+            changes our local-storage and data-processing disclosures, we are re-prompting all users
+            to review and re-accept this Privacy Policy before continuing.
+          </p>
           <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
             <strong>Version 2.6 (effective July 17, 2026).</strong> This update discloses the new
             optional, anonymous <strong>feedback</strong> feature: soon after a user completes

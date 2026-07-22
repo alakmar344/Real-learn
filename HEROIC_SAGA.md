@@ -459,6 +459,20 @@ The platform had learned to **listen**.
 
 ---
 
+### The Personalization Layer (July 22, 2026)
+
+RealLearn could now hear feedback, but it still taught every learner the same way. The next step was to let learners tell the platform how they learned best — without adding any server-side data.
+
+- Signed-in users see an optional onboarding modal after legal consent: a checklist of learning-style preferences (simple language, step-by-step explanations, visual analogies, and more) plus a free-text notes field capped at 500 characters.
+- The same controls live in Settings, so choices can be changed anytime.
+- The data is stored only in `reallearn-preferences` (localStorage) and sent with each `/api/generate-lesson` request. The backend validates it, injects it into the LLM prompt, and never stores it.
+- The lesson cache key includes the personalization payload, so two learners asking the same question with different preferences get distinct, tailored lessons.
+- Privacy Policy v2.7, Terms of Service v2.5, and Cookie Policy v2.3 disclose the feature and re-prompt all users for consent.
+
+The platform had learned to **adapt**.
+
+---
+
 ## Book XIV: The Japanese Transformation (July 18, 2026)
 
 The platform had function and a scholarly gold identity. Now it needed a **soul rooted in something deeper**.

@@ -160,6 +160,7 @@ This document breaks down design improvements into actionable sprints with estim
 - [x] Explain language selector impact
 - [x] Explain level selector impact
 - [x] Show example questions prominently
+- [x] Add optional learning-style personalization prompt after sign-in (`PersonalizationGate`)
 
 #### 5. Feedback Mechanism (3 hours)
 - [x] Create satisfaction survey component (`FeedbackPrompt`)

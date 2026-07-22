@@ -571,3 +571,44 @@ fails immediately with no retry.
   "Backend listening" with graceful shutdown.
 - Mocked-fetch retry matrix (above) passes.
 - Frontend `tsc --noEmit` passes.
+
+---
+
+## Session 2026-07-22: Optional learning personalization + reconsent
+
+### What changed
+
+- Added optional **learning personalization** for signed-in users.
+  - `frontend/lib/personalization.ts` defines the shape, validation helpers,
+    checklist options, 500-character cap, and prompt formatter.
+  - `frontend/store/preferenceStore.ts` persists `personalization` in
+    localStorage and migrates legacy stores.
+  - `frontend/components/shared/PersonalizationGate.tsx` shows a post-sign-in
+    onboarding modal with checklist + free-text notes; users can skip.
+  - `frontend/app/settings/page.tsx` adds a "Learning preferences" section so
+    choices remain editable.
+  - `frontend/hooks/useLesson.ts` sends `personalization` with every
+    `/api/generate-lesson` request when the user has onboarded.
+  - `backend/src/lib/personalization.js` mirrors validation/capping.
+  - `backend/src/server.js` accepts and injects personalization into the LLM
+    prompt; `backend/src/lib/lessonCache.js` includes it in the cache key so
+    distinct preferences don't share cached lessons.
+- Bumped legal versions and re-prompted consent:
+  - Privacy Policy v2.7, Terms of Service v2.5, Cookie Policy v2.3.
+  - `frontend/lib/legalConsent.ts`, `backend/src/server.js`,
+    `frontend/components/shared/PreSignInConsent.tsx`, and the three legal
+    pages (`privacy`, `terms`, `cookies`) updated.
+- Updated docs: `docs/AGENT_MEMORY.md`, `change-made-after-submission.md`,
+  `README.md`, `REALLEARN_BY_THE_NUMBERS.md`, `errors.md`.
+
+### Privacy posture
+
+- Learning preferences are stored **only** in the browser's localStorage.
+- They are sent with each lesson-generation request and used only to tailor
+  the prompt; the backend does **not** persist them.
+- "Delete My Data" clears the preference store and the skip flag.
+
+### Verification performed
+
+- Frontend: `npm install`, `npx tsc --noEmit`, `npx next lint`, `npm run build`.
+- Backend: `npm install`, `npm test`.
