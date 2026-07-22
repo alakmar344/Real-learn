@@ -62,17 +62,34 @@ function memorySet(key, lesson, expiresAt) {
   memoryCache.set(key, { lesson, expiresAt }, { ttl: expiresAt - Date.now() });
 }
 
+function normalizePersonalization(personalization) {
+  if (!personalization?.onboarded) return "";
+  const checklist = Array.isArray(personalization.checklist)
+    ? personalization.checklist.slice().sort().join(",")
+    : "";
+  const notes = String(personalization.notes ?? "").trim().toLowerCase().replace(/\s+/g, " ");
+  return `${checklist}|${notes}`;
+}
+
 /**
  * Deterministic cache key for a lesson request. Case and extra whitespace in
  * the question don't change the key, so trivially different phrasings of the
- * exact same question still hit the cache.
+ * exact same question still hit the cache. Personalization is included so that
+ * two learners asking the same question with different preferences get
+ * distinct, tailored lessons.
  */
-export function lessonCacheKey(question, language, level, mode = "explain") {
+export function lessonCacheKey(
+  question,
+  language,
+  level,
+  mode = "explain",
+  personalization = null
+) {
   const normalizedQuestion = String(question ?? "")
     .trim()
     .toLowerCase()
     .replace(/\s+/g, " ");
-  const material = `${normalizedQuestion}|${language ?? ""}|${level ?? ""}|${mode ?? "explain"}`;
+  const material = `${normalizedQuestion}|${language ?? ""}|${level ?? ""}|${mode ?? "explain"}|${normalizePersonalization(personalization)}`;
   return crypto.createHash("sha256").update(material).digest("hex");
 }
 
