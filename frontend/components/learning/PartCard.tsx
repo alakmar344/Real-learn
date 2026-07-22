@@ -9,6 +9,19 @@ import SourceTag from "@/components/shared/SourceTag";
 import ListenButton from "@/components/shared/ListenButton";
 import { useLessonStore } from "@/store/lessonStore";
 
+// Security: links inside AI-generated markdown are untrusted. react-markdown's
+// default urlTransform already strips javascript:/data: schemes; this override
+// additionally opens links in a new tab with an opener-safe rel so a linked
+// page can never reach back into the app via window.opener (and the learner
+// never loses their in-progress lesson to a same-tab navigation).
+const markdownComponents = {
+  a: ({ href, children }: { href?: string; children?: React.ReactNode }) => (
+    <a href={href} target="_blank" rel="noopener noreferrer">
+      {children}
+    </a>
+  ),
+};
+
 const subjectColors: Record<string, string> = {
   Physics: "var(--subject-physics)",
   Chemistry: "var(--subject-chemistry)",
@@ -145,7 +158,9 @@ const PartCardBase = ({
             fontFamily: "var(--font-lora)",
           }}
         >
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{part.content}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+            {part.content}
+          </ReactMarkdown>
         </div>
 
         <div style={{ marginTop: varSpaceBase, display: "flex", flexWrap: "wrap", gap: varSpaceSm }}>

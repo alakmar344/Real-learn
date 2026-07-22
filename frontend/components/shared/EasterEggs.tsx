@@ -39,7 +39,16 @@ function todayKey() {
 /** Show a toast at most once per day per moment-id. */
 function onceToday(id: string, fn: () => void) {
   try {
-    const key = `reallearn-egg-${id}-${todayKey()}`;
+    const today = todayKey();
+    // Prune markers from previous days — the dated keys were written daily
+    // and never removed, so localStorage grew without bound for daily users.
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const existing = localStorage.key(i);
+      if (existing?.startsWith("reallearn-egg-") && !existing.endsWith(`-${today}`)) {
+        localStorage.removeItem(existing);
+      }
+    }
+    const key = `reallearn-egg-${id}-${today}`;
     if (localStorage.getItem(key)) return;
     localStorage.setItem(key, "1");
     fn();

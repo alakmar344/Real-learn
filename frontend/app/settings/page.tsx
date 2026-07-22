@@ -155,10 +155,21 @@ export default function SettingsPage() {
           "reallearn-theme",
           "reallearn-preferences-onboarding",
           "reallearn-feedback",
+          // Privacy policy v2.6 promises "Delete My Data" removes the local
+          // first-used date (Footer's "learning together" counter) too.
+          "reallearn-first-visit",
         ];
         REALLEARN_KEYS.forEach((k) => {
           try { localStorage.removeItem(k); } catch { /* ignore */ }
         });
+        // Sweep the dated once-per-day markers (easter-egg / greeting keys,
+        // "reallearn-egg-*") — also covered by the policy's deletion promise.
+        try {
+          for (let i = localStorage.length - 1; i >= 0; i--) {
+            const key = localStorage.key(i);
+            if (key?.startsWith("reallearn-egg-")) localStorage.removeItem(key);
+          }
+        } catch { /* ignore */ }
         // Also wipe the IndexedDB lesson archive (full bodies of older
         // journeys live there, not in localStorage).
         await clearArchivedLessons().catch(() => { /* best-effort */ });

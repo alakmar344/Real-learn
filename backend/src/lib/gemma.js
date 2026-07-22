@@ -459,12 +459,14 @@ async function readErrorDetails(response, contentType) {
   try {
     if (contentType.includes("application/json")) {
       const errBody = await response.json();
-      return (
+      // Cap like the text branch below — an upstream error body can be huge
+      // and would otherwise land whole in error messages and every log line.
+      return String(
         errBody.errors?.[0]?.message ||
-        errBody.error?.message ||
-        (typeof errBody.error === "string" ? errBody.error : null) ||
-        JSON.stringify(errBody)
-      );
+          errBody.error?.message ||
+          (typeof errBody.error === "string" ? errBody.error : null) ||
+          JSON.stringify(errBody)
+      ).slice(0, 500);
     }
     return (await response.text()).slice(0, 500);
   } catch {

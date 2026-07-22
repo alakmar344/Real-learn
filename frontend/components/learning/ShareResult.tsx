@@ -288,8 +288,12 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
         showToast("Result card downloaded", "success");
       }
     } catch (err) {
-      console.log("[frontend][ShareResult] share failed", err);
-      showToast("Could not share right now.", "error");
+      // Dismissing the native share sheet rejects with AbortError — that's a
+      // deliberate user choice, not a failure; don't show an error toast.
+      if (!(err instanceof DOMException && err.name === "AbortError")) {
+        console.log("[frontend][ShareResult] share failed", err);
+        showToast("Could not share right now.", "error");
+      }
     }
     setBusy(false);
   }

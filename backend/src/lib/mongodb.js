@@ -17,7 +17,14 @@ async function getMongoClient() {
     throw new Error("MongoDB connection failed: MONGODB_URI is not configured");
   }
 
-  client = new MongoClient(MONGODB_URI);
+  // RELIABILITY: bound how long a request can hang on an unreachable/failing
+  // cluster. The driver's 30s default server-selection wait lets DB-backed
+  // endpoints (including the unauthenticated /health ping) pile up sockets
+  // for half a minute each during an outage instead of failing fast.
+  client = new MongoClient(MONGODB_URI, {
+    serverSelectionTimeoutMS: 10000,
+    connectTimeoutMS: 10000,
+  });
   clientPromise = client.connect().then((connectedClient) => {
     console.log("[MongoDB] Connected successfully");
     return connectedClient;
