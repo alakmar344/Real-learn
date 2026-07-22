@@ -17,16 +17,18 @@ import {
 const ALLOWED_PATHS_WHEN_DECLINED = ["/sign-in", "/sign-up", "/legal"];
 
 const POLICY_CHANGES = [
-  "Privacy Policy updated to version 2.6 — all users are re-prompted to re-accept.",
+  "Privacy Policy updated to version 2.7 — all users are re-prompted to re-accept.",
+  "Optional learning personalization: after signing in you can choose learning-style preferences (for example, simple language, step-by-step explanations, or visual analogies) and add free-text notes about how you learn best. This information is stored only in your browser's localStorage and is never stored on our servers; it is simply included with each lesson-generation request so the AI can tailor its response. You can change or clear it anytime in Settings, and \"Delete My Data\" removes it. We cap the free-text notes at 500 characters.",
   "Optional anonymous feedback: the day after you complete your first lesson, RealLearn may invite an optional 1–10 star rating plus free-text notes on what you liked and what to improve. The review is submitted with no account identity and we store only the rating and review text — never your IP address, Clerk ID, or email. The prompt is optional, never forced, and is suppressed once you respond (or decline) via a local-only flag in localStorage.",
-  "New locally-stored personalization data: the date you first used RealLearn on this device (shown as a \"learning together for N days\" counter), once-per-day markers so seasonal or time-of-day greetings never appear twice in a day, and an on-screen greeting that may display your first name. All of this stays in your browser only — nothing is sent to our servers — and \"Delete My Data\" or clearing your browser data removes it.",
+  "Locally-stored personalization data: the date you first used RealLearn on this device (shown as a \"learning together for N days\" counter), once-per-day markers so seasonal or time-of-day greetings never appear twice in a day, and an on-screen greeting that may display your first name. All of this stays in your browser only — nothing is sent to our servers — and \"Delete My Data\" or clearing your browser data removes it.",
   "Saved lessons live in IndexedDB (since v2.4): the full content of every saved lesson (chat) is stored in your browser's IndexedDB on your own device, with only a lightweight history index (question, scores, dates) in localStorage. Nothing is sent to our servers, and re-opening a saved lesson loads it locally.",
   "IP addresses are anonymized before storage (since v2.3): consent records keep only a truncated network prefix (e.g. 203.0.113.0), never your full IP address.",
 ];
 
 const TERMS_CHANGES = [
-  "Terms of Service updated to version 2.4: your saved lesson history lives only on your device (full lesson content in browser IndexedDB, lightweight index in localStorage). Clearing your browser's site data removes your saved lessons and we cannot restore them — re-opening such an entry generates the lesson again.",
-  "Optional feedback (new Section 22): the day after your first completed lesson, RealLearn may invite an optional 1–10 star rating plus free-text notes. The review is entirely optional and never required to use the Service; it is submitted anonymously (no account identity, no IP/Clerk ID/email stored), and a local flag prevents the prompt from reappearing once you respond or decline.",
+  "Terms of Service updated to version 2.5: added Section 23 describing optional learning personalization. Your learning-style preferences and free-text notes are stored only on your device, included with each lesson request for tailoring, and can be changed or removed anytime in Settings. We do not store this information on our servers.",
+  "Your saved lesson history lives only on your device (full lesson content in browser IndexedDB, lightweight index in localStorage). Clearing your browser's site data removes your saved lessons and we cannot restore them — re-opening such an entry generates the lesson again.",
+  "Optional feedback (Section 22): the day after your first completed lesson, RealLearn may invite an optional 1–10 star rating plus free-text notes. The review is entirely optional and never required to use the Service; it is submitted anonymously (no account identity, no IP/Clerk ID/email stored), and a local flag prevents the prompt from reappearing once you respond or decline.",
 ];
 
 // Build year/month options once

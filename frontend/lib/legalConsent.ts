@@ -10,10 +10,10 @@
 
 export const LEGAL_CONSENT_KEY = "reallearn-legal-consent";
 export const COOKIE_CONSENT_KEY = "reallearn-cookie-consent";
-export const CURRENT_PRIVACY_VERSION = "2.6";
-export const CURRENT_TERMS_VERSION = "2.4";
+export const CURRENT_PRIVACY_VERSION = "2.7";
+export const CURRENT_TERMS_VERSION = "2.5";
 /** Bumping this re-prompts everyone for cookie/analytics consent. */
-export const CURRENT_COOKIE_VERSION = "2.2";
+export const CURRENT_COOKIE_VERSION = "2.3";
 
 /** Events used to coordinate the consent UI, GA loader and settings page. */
 export const COOKIE_CONSENT_ACCEPTED_EVENT = "cookie-consent-accepted";
