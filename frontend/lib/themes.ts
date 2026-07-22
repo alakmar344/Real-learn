@@ -2,12 +2,17 @@ import { Theme } from "@/types";
 
 /**
  * Single source of truth for theme pickers (ThemeModal, PreferenceModal,
- * Settings). Swatches mirror each theme's --bg-primary / --accent pair.
+ * Settings) — the three moods of the Still Ink design language.
+ * `bg` mirrors each theme's --bg-primary (used for the browser theme-color);
+ * `swatch`/`accent` drive the picker preview.
  */
 export interface ThemeOption {
   value: Theme;
   label: string;
   hint: string;
+  /** The theme's page background (--bg-primary) — used for browser chrome. */
+  bg: string;
+  /** Picker preview color. */
   swatch: string;
   accent: string;
 }
@@ -15,23 +20,26 @@ export interface ThemeOption {
 export const THEME_OPTIONS: ThemeOption[] = [
   {
     value: "light",
-    label: "Saffron",
-    hint: "Tricolor saffron dawn — warm light celebrating India's diversity",
-    swatch: "#FF9933",
-    accent: "#138808",
+    label: "Paper",
+    hint: "Warm paper white with graphite ink — calm, bright, focused",
+    bg: "#FAFAF8",
+    swatch: "#FAFAF8",
+    accent: "#5B5BD6",
   },
   {
     value: "dark",
-    label: "Emerald",
-    hint: "Deep green night lit by diya gold — India's lush diversity",
-    swatch: "#1B5E20",
-    accent: "#FF9933",
+    label: "Ink",
+    hint: "Soft graphite night with a periwinkle accent — easy on the eyes",
+    bg: "#101113",
+    swatch: "#101113",
+    accent: "#7D7EE8",
   },
   {
     value: "twilight",
-    label: "Tricolor",
-    hint: "Saffron, white and green united — one India, many cultures",
-    swatch: "#FF9933",
-    accent: "#138808",
+    label: "Dusk",
+    hint: "Deep indigo evening with candle warmth — for reading at night",
+    bg: "#14151F",
+    swatch: "#14151F",
+    accent: "#8E90F0",
   },
 ];

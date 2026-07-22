@@ -322,7 +322,7 @@ export const BADGES: Badge[] = [
     emoji: "🏮",
     title: "Steady Flame",
     description: "Gather 500 lifetime XP.",
-    how: "Every quiz passed and journey finished adds XP. Keep going — the diya glows a little each day.",
+    how: "Every quiz passed and journey finished adds XP. Keep going — a little brighter every day.",
     tier: "silver",
     progress: (s) => ratio(s.xp, 500),
     earned: (s) => s.xp >= 500,
