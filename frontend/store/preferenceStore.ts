@@ -4,6 +4,11 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { Theme, Language, Level, LessonMode } from "@/types";
 import type { PerfMode } from "@/lib/performance";
+import {
+  DEFAULT_LEARNING_PREFERENCES,
+  type LearningPreferences,
+  sanitizeLearningPreferences,
+} from "@/lib/personalization";
 
 const VALID_THEMES: Theme[] = ["light", "dark", "twilight"];
 // SAFEGUARD: legacy localStorage values seed the store below, so every field
@@ -61,11 +66,19 @@ interface PreferenceStore {
    * full high-end visual experience.
    */
   perfMode: PerfMode;
+  /**
+   * Optional learner personalization: learning-style checklist and free-text
+   * notes. Stored only on the device, but sent with lesson-generation requests
+   * so the AI can tailor its explanations.
+   */
+  personalization: LearningPreferences;
   setTheme: (theme: Theme) => void;
   setLanguage: (language: Language) => void;
   setLevel: (level: Level) => void;
   setMode: (mode: LessonMode) => void;
   setPerfMode: (perfMode: PerfMode) => void;
+  setPersonalization: (personalization: LearningPreferences) => void;
+  markPersonalizationOnboarded: () => void;
 }
 
 function prefLog(action: string, details?: unknown) {
@@ -82,6 +95,7 @@ export const usePreferenceStore = create<PreferenceStore>()(
       level: existing.level ?? "Class 9-10",
       mode: "fast",
       perfMode: "auto",
+      personalization: DEFAULT_LEARNING_PREFERENCES,
       setTheme: (theme) => {
         prefLog("setTheme", { theme });
         set({ theme });
@@ -102,10 +116,34 @@ export const usePreferenceStore = create<PreferenceStore>()(
         prefLog("setLevel", { level });
         set({ level });
       },
+      setPersonalization: (personalization) => {
+        prefLog("setPersonalization", { personalization });
+        set({ personalization: sanitizeLearningPreferences(personalization) });
+      },
+      markPersonalizationOnboarded: () => {
+        prefLog("markPersonalizationOnboarded");
+        set((state) => ({
+          personalization: {
+            ...sanitizeLearningPreferences(state.personalization),
+            onboarded: true,
+          },
+        }));
+      },
     }),
     {
       name: "reallearn-preferences",
       storage: createJSONStorage(() => localStorage),
+      // Migration: legacy stores have no personalization field. Rehydration
+      // merges persisted state over the defaults, so provide a sane default
+      // without overwriting other fields.
+      onRehydrateStorage: () => (state) => {
+        if (!state) return;
+        if (!state.personalization) {
+          state.personalization = DEFAULT_LEARNING_PREFERENCES;
+        } else {
+          state.personalization = sanitizeLearningPreferences(state.personalization);
+        }
+      },
     }
   )
 );
