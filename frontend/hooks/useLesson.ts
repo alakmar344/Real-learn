@@ -380,45 +380,53 @@ export function useLesson() {
             return null;
           };
 
-          while (true) {
-            const { value, done } = await reader.read();
-            // Flush the decoder: a multi-byte UTF-8 character split across the
-            // final network chunk is otherwise silently dropped. `eventsource-
-            // parser` keeps its own cross-chunk frame state, so feeding the
-            // final decode and draining yields any trailing event.
-            const decoded = bufferOrFinalChunk(decoder, value, done);
-            if (done) {
-              logLessonDebug("stream reader done", { requestId, attempt, chunkCount, totalBytes });
-              sse.feed(decoded);
-              for (const entry of sse.drain()) {
-                const parsed = handleEvent(entry);
-                if (parsed) lesson = parsed;
+          try {
+            while (true) {
+              const { value, done } = await reader.read();
+              // Flush the decoder: a multi-byte UTF-8 character split across the
+              // final network chunk is otherwise silently dropped. `eventsource-
+              // parser` keeps its own cross-chunk frame state, so feeding the
+              // final decode and draining yields any trailing event.
+              const decoded = bufferOrFinalChunk(decoder, value, done);
+              if (done) {
+                logLessonDebug("stream reader done", { requestId, attempt, chunkCount, totalBytes });
+                sse.feed(decoded);
+                for (const entry of sse.drain()) {
+                  const parsed = handleEvent(entry);
+                  if (parsed) lesson = parsed;
+                }
+                break;
               }
-              break;
-            }
-            chunkCount += 1;
-            totalBytes += value?.byteLength ?? 0;
-            refreshIdleTimeout();
-            logLessonDebug("stream chunk decoded", {
-              requestId,
-              attempt,
-              chunkCount,
-              chunkBytes: value?.byteLength ?? 0,
-            });
-            sse.feed(decoded);
-            const events = sse.drain();
-            if (events.length > 0) {
-              logLessonDebug("parsed SSE events from chunk", {
+              chunkCount += 1;
+              totalBytes += value?.byteLength ?? 0;
+              refreshIdleTimeout();
+              logLessonDebug("stream chunk decoded", {
                 requestId,
                 attempt,
                 chunkCount,
-                events: events.map((entry) => entry.event),
+                chunkBytes: value?.byteLength ?? 0,
               });
+              sse.feed(decoded);
+              const events = sse.drain();
+              if (events.length > 0) {
+                logLessonDebug("parsed SSE events from chunk", {
+                  requestId,
+                  attempt,
+                  chunkCount,
+                  events: events.map((entry) => entry.event),
+                });
+              }
+              for (const entry of events) {
+                const parsed = handleEvent(entry);
+                if (parsed) lesson = parsed;
+              }
             }
-            for (const entry of events) {
-              const parsed = handleEvent(entry);
-              if (parsed) lesson = parsed;
-            }
+          } finally {
+            // Close the HTTP body on ALL exit paths: when handleEvent throws
+            // (server `error` event) the loop unwinds without releasing the
+            // stream, which otherwise keeps downloading during retry backoff.
+            // No-op when the stream already finished normally.
+            await reader.cancel().catch(() => {});
           }
 
           if (!lesson) {

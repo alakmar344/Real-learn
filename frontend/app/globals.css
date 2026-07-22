@@ -10,89 +10,91 @@
 :root {
   color-scheme: light;
 
-  /* ── RealLearn identity — India's tricolor: saffron, white, and green.
-     Warm saffron courage, deep green faith, and pure white truth — the palette
-     of a billion people, one nation, incredible diversity. ── */
-  --brand: #FF9933;
-  --brand-strong: #E67E22;
-  --brand-bright: #FFB347;
-  --brand-soft: #FFCC99;
+  /* ═══════════════════════════════════════════════════════════════════════
+     RealLearn "Soft Pastel" design language.
+     Disciplined bones, gentle color: cream paper washed with pastel sky,
+     peach, mint and rose. Deeper sky/teal anchors keep buttons and text
+     readable; the pastels live in light — washes, auroras, chips, glows.
+     No purple, no violet, no costume. Three moods of the same room:
+       Paper (cream day) · Ink (charcoal night) · Dusk (sunset evening)
+     Every surface, control and chart reads from these tokens; change the
+     room here, never in components.
+     ═══════════════════════════════════════════════════════════════════════ */
 
-  /* Tricolor diversity palette — saffron courage, green faith, white truth */
-  --cobalt-deep: #1a0f05;
-  --cobalt-mid: #49306b;
-  --cobalt-vivid: #FF9933;
-  --cobalt-pale: #FFD4B8;
-  --cobalt-wash: rgba(255, 153, 51, 0.09);
-  --cobalt-ink: #1a0f05;
+  /* Brand accent — clear sky blue. Fresh, friendly, readable. */
+  --brand: #0284C7;
+  --brand-strong: #0369A1;
+  --brand-bright: #7CC7EC;
+  --brand-soft: #C9E9FA;
 
-  /* Handloom parchment: the warm, tactile feel of cotton rag paper —
-     sun-touched ivory with a saffron warmth, like light crossing
-     woven khadi and carved stone. */
-  --bg-primary: #FFFDF5;
-  --bg-surface: rgba(255, 252, 245, 0.8);
-  --bg-card: rgba(255, 250, 240, 0.88);
-  --bg-card-hover: rgba(255, 252, 242, 0.97);
-  --bg-glass: rgba(254, 244, 222, 0.78);
-  --bg-solid: #FFF8E7;
-  --bg-warm: rgba(252, 235, 202, 0.62);
-  /* Warm ambient light — like diyas and marigolds, a gentle golden wash
-     layered under the tricolor ambience. */
-  --sun-wash: rgba(255, 153, 51, 0.08);
-  --hearth-glow: rgba(19, 136, 8, 0.06);
+  /* Ink scale (legacy `cobalt` names kept for the editorial classes). */
+  --cobalt-deep: #23303A;
+  --cobalt-mid: #3E5260;
+  --cobalt-vivid: #0284C7;
+  --cobalt-pale: #C9E9FA;
+  --cobalt-wash: rgba(2, 132, 199, 0.08);
+  --cobalt-ink: #1C2830;
 
-  --border-subtle: rgba(26, 15, 5, 0.1);
-  --border-default: rgba(26, 15, 5, 0.16);
+  /* Paper: soft warm cream — cozy, bright, never sterile. */
+  --bg-primary: #FDF9F3;
+  --bg-surface: rgba(255, 253, 248, 0.78);
+  --bg-card: rgba(255, 254, 250, 0.88);
+  --bg-card-hover: rgba(255, 255, 252, 0.97);
+  --bg-glass: rgba(253, 249, 243, 0.8);
+  --bg-solid: #F6F0E7;
+  --bg-warm: rgba(250, 240, 228, 0.65);
+  /* Ambient light — pastel sky from above, peach warmth at the foot. */
+  --ambient-a: rgba(125, 199, 236, 0.1);
+  --ambient-b: rgba(255, 171, 118, 0.09);
+
+  --border-subtle: rgba(44, 42, 38, 0.09);
+  --border-default: rgba(44, 42, 38, 0.15);
   --border-accent: var(--brand);
-  --border-glow: rgba(255, 153, 51, 0.32);
+  --border-glow: rgba(2, 132, 199, 0.3);
 
-  --glass-blur: 28px;
-  --glass-blur-strong: 44px;
-  --glass-saturate: 180%;
-  --glass-highlight: rgba(255, 241, 214, 0.92);
-  --glass-shadow: 0 4px 24px rgba(26, 15, 5, 0.08), 0 1px 3px rgba(26, 15, 5, 0.05);
-  --glass-edge: inset 0 1px 0 rgba(255, 241, 214, 0.9), inset 0 0 0 1px rgba(255, 153, 51, 0.13);
-  --glass-sheen: linear-gradient(135deg, rgba(255,241,214,0.45) 0%, rgba(255,211,142,0.16) 38%, rgba(255,255,255,0) 62%);
+  --glass-blur: 24px;
+  --glass-blur-strong: 40px;
+  --glass-saturate: 150%;
+  --glass-highlight: rgba(255, 255, 253, 0.92);
+  --glass-shadow: 0 4px 24px rgba(60, 48, 35, 0.08), 0 1px 3px rgba(60, 48, 35, 0.05);
+  --glass-edge: inset 0 1px 0 rgba(255, 255, 253, 0.88), inset 0 0 0 1px rgba(2, 132, 199, 0.05);
+  --glass-sheen: linear-gradient(135deg, rgba(255,255,253,0.55) 0%, rgba(201,233,250,0.16) 38%, rgba(255,255,255,0) 62%);
 
   --accent: var(--brand);
   --accent-hover: var(--brand-strong);
-  --accent-dim: rgba(255, 153, 51, 0.12);
-  --accent-glow: rgba(255, 153, 51, 0.27);
-  --accent-companion: #138808;
-  /* A calm tricolor sweep: saffron into green across pure white. Text
-     stays on --brand (contrast-safe); the vibrancy lives in fills/glows. */
-  --accent-gradient: linear-gradient(135deg, #FF9933 0%, #FFCC33 50%, #138808 100%);
+  --accent-dim: rgba(2, 132, 199, 0.09);
+  --accent-glow: rgba(2, 132, 199, 0.25);
+  --accent-companion: #F4845F;
+  --accent-gradient: linear-gradient(135deg, #0284C7 0%, #0D9488 100%);
   --on-accent: #ffffff;
-  --shadow-glow-accent: 0 2px 22px rgba(255, 153, 51, 0.35);
+  --shadow-glow-accent: 0 4px 22px rgba(2, 132, 199, 0.3);
 
-  /* Masala ink tones: deep, layered browns inspired by hand-drawn
-     manuscript text — warmer than pure gray, like ink on handmade paper. */
-  --text-primary: #1b1016;
-  --text-secondary: #4b3941;
-  --text-tertiary: #806f73;
-  --text-accent-strong: #FF9933;
+  /* Ink text — warm cocoa-gray, cozy against cream. */
+  --text-primary: #2D2A26;
+  --text-secondary: #5C574F;
+  --text-tertiary: #948D82;
+  --text-accent-strong: #075985;
 
-  --correct: #2a7a50;
-  --correct-bg: rgba(42, 122, 80, 0.1);
-  --wrong: #c43030;
-  --wrong-bg: rgba(196, 48, 48, 0.09);
-  --locked: #a09898;
+  --correct: #1F8A5B;
+  --correct-bg: rgba(31, 138, 91, 0.1);
+  --wrong: #DF4F45;
+  --wrong-bg: rgba(223, 79, 69, 0.09);
+  --locked: #ADA69C;
 
-  /* Subject colours — a vibrant palette inspired by India's diverse cultures,
-     spices, textiles, and festivals across every state. */
-  --subject-physics: #1a237e;
-  --subject-chemistry: #2a7a50;
-  --subject-economics: #b86a1a;
-  --subject-biology: #a83060;
-  --subject-cs: #0e7480;
-  --subject-history: #8a5030;
-  --subject-general: #5c6bc0;
+  /* Subject colours — sun-faded brights, all readable on cream. */
+  --subject-physics: #4A87D4;
+  --subject-chemistry: #35996B;
+  --subject-economics: #D08A2E;
+  --subject-biology: #DE7A9C;
+  --subject-cs: #2FA3B8;
+  --subject-history: #B58963;
+  --subject-general: #E8827A;
 
-  --radius-sm: 10px;
-  --radius-md: 14px;
-  --radius-lg: 18px;
-  --radius-xl: 22px;
-  --radius-2xl: 28px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 26px;
 
   --text-xs: 11px;
   --text-sm: 13px;
@@ -102,7 +104,7 @@
   --text-2xl: 32px;
   --text-3xl: 40px;
   --text-4xl: 52px;
-  --text-hero: 72px;
+  --text-hero: 68px;
 
   --space-xs: 6px;
   --space-sm: 10px;
@@ -124,12 +126,11 @@
   --tracking-normal: 0;
   --tracking-wide: 0.04em;
 
-  /* Shadows warmed: saffron mixed with umber, so depth reads as
-     soft shade on handloom paper rather than a cold drop-shadow. */
-  --shadow-sm: 0 1px 3px rgba(42, 21, 32, 0.06), 0 1px 2px rgba(42, 21, 32, 0.04);
-  --shadow-md: 0 4px 14px rgba(42, 21, 32, 0.08), 0 2px 4px rgba(42, 21, 32, 0.05);
-  --shadow-lg: 0 12px 34px rgba(42, 21, 32, 0.12), 0 4px 8px rgba(42, 21, 32, 0.06);
-  --shadow-glow-correct: 0 0 24px rgba(42, 122, 80, 0.16);
+  /* Warm shadows — depth reads as soft afternoon shade on cream. */
+  --shadow-sm: 0 1px 3px rgba(60, 48, 35, 0.07), 0 1px 2px rgba(60, 48, 35, 0.04);
+  --shadow-md: 0 4px 14px rgba(60, 48, 35, 0.09), 0 2px 4px rgba(60, 48, 35, 0.05);
+  --shadow-lg: 0 12px 34px rgba(60, 48, 35, 0.13), 0 4px 8px rgba(60, 48, 35, 0.06);
+  --shadow-glow-correct: 0 0 24px rgba(31, 138, 91, 0.16);
 
   --ease-reveal: cubic-bezier(0.22, 0.61, 0.36, 1);
   --ease-color: cubic-bezier(0.4, 0, 0.2, 1);
@@ -143,237 +144,170 @@
   --blur-sm: 6px;
   --blur-md: 16px;
 
-  --scrim: rgba(18, 18, 26, 0.24);
+  --scrim: rgba(30, 25, 20, 0.35);
   --focus-ring: 0 0 0 3px var(--accent-glow);
   --focus-ring-simple: 0 0 0 2px var(--accent);
 
-  /* The saffron ember is a touch warmer and more present — the breathing
-     layer now feels like diya-light drifting under the handloom paper. */
-  --aurora-1: rgba(255, 153, 51, 0.14);
-  --aurora-2: rgba(19, 136, 8, 0.12);
-  --aurora-3: rgba(255, 204, 51, 0.09);
+  /* Ambient aurora — pastel sky, peach and mint air, gently breathing. */
+  --aurora-1: rgba(125, 199, 236, 0.18);
+  --aurora-2: rgba(255, 171, 118, 0.14);
+  --aurora-3: rgba(134, 222, 183, 0.13);
 }
 
-/* ── Dark theme — deep emerald night, lit by brass and diya gold.
-   Luminous text on near-black, with saffron accents that feel warm
-   against the green. ── */
+/* ── Ink (dark) — warm charcoal night lit by pastel sky and peach.
+   Near-black without the void; accents are soft, luminous pastels with
+   dark text on filled controls. ── */
 html[data-theme="dark"] {
   color-scheme: dark;
 
-  --brand: #138808;
-  --brand-strong: #0D6B06;
-  --brand-bright: #1DB92D;
-  --brand-soft: #4CAF50;
+  --brand: #7FC5E8;
+  --brand-strong: #5FB4E0;
+  --brand-bright: #A5D8F2;
+  --brand-soft: #234759;
 
-  --cobalt-deep: #0A0F0A;
-  --cobalt-mid: #1B3A1B;
-  --cobalt-vivid: #138808;
-  --cobalt-pale: #81C784;
-  --cobalt-wash: rgba(19, 136, 8, 0.11);
-  --cobalt-ink: #050805;
+  --cobalt-deep: #0C1116;
+  --cobalt-mid: #2A3946;
+  --cobalt-vivid: #7FC5E8;
+  --cobalt-pale: #C9E9FA;
+  --cobalt-wash: rgba(127, 197, 232, 0.12);
+  --cobalt-ink: #090D11;
 
-  /* Night kept the green depth, but with a faint candle warmth so the dark
-     feels like a diya-lit haveli rather than a server room. */
-  --sun-wash: rgba(255, 153, 51, 0.035);
-  --hearth-glow: rgba(255, 204, 51, 0.028);
+  --ambient-a: rgba(127, 197, 232, 0.05);
+  --ambient-b: rgba(255, 190, 152, 0.04);
 
-  --bg-primary: #0A0F0A;
-  --bg-surface: rgba(16, 24, 16, 0.78);
-  --bg-card: rgba(20, 30, 20, 0.85);
-  --bg-card-hover: rgba(28, 40, 28, 0.95);
-  --bg-glass: rgba(12, 18, 12, 0.78);
-  --bg-solid: #101810;
+  --bg-primary: #12161C;
+  --bg-surface: rgba(26, 32, 41, 0.8);
+  --bg-card: rgba(31, 38, 48, 0.87);
+  --bg-card-hover: rgba(40, 49, 61, 0.95);
+  --bg-glass: rgba(20, 25, 32, 0.78);
+  --bg-solid: #1A2029;
 
-  --border-subtle: rgba(129, 199, 132, 0.1);
-  --border-default: rgba(129, 199, 132, 0.18);
+  --border-subtle: rgba(235, 242, 246, 0.09);
+  --border-default: rgba(235, 242, 246, 0.15);
   --border-accent: var(--brand);
-  --border-glow: rgba(129, 199, 132, 0.35);
+  --border-glow: rgba(127, 197, 232, 0.38);
 
-  --glass-blur: 28px;
-  --glass-blur-strong: 44px;
-  --glass-saturate: 165%;
-  --glass-highlight: rgba(27, 94, 32, 0.14);
+  --glass-blur: 24px;
+  --glass-blur-strong: 40px;
+  --glass-saturate: 140%;
+  --glass-highlight: rgba(235, 242, 246, 0.1);
   --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.45), 0 1px 4px rgba(0, 0, 0, 0.28);
-  --glass-edge: inset 0 1px 0 rgba(129, 199, 132, 0.12), inset 0 0 0 1px rgba(19, 136, 8, 0.06);
-  --glass-sheen: linear-gradient(135deg, rgba(129,199,132,0.12) 0%, rgba(19,136,8,0.04) 38%, rgba(255,255,255,0) 62%);
+  --glass-edge: inset 0 1px 0 rgba(235, 242, 246, 0.09), inset 0 0 0 1px rgba(127, 197, 232, 0.07);
+  --glass-sheen: linear-gradient(135deg, rgba(201,233,250,0.1) 0%, rgba(127,197,232,0.04) 38%, rgba(255,255,255,0) 62%);
 
   --accent: var(--brand);
-  --accent-hover: var(--brand-strong);
-  --accent-dim: rgba(19, 136, 8, 0.12);
-  --accent-glow: rgba(19, 136, 8, 0.28);
-  --accent-companion: #FF9933;
-  --accent-gradient: linear-gradient(135deg, #138808 0%, #FF9933 100%);
-  --on-accent: #f0f0f0;
-  --shadow-glow-accent: 0 2px 20px rgba(19, 136, 8, 0.3);
+  --accent-hover: var(--brand-bright);
+  --accent-dim: rgba(127, 197, 232, 0.13);
+  --accent-glow: rgba(127, 197, 232, 0.28);
+  --accent-companion: #FFBE98;
+  --accent-gradient: linear-gradient(135deg, #7FC5E8 0%, #9FE3C0 100%);
+  --on-accent: #0E2230;
+  --shadow-glow-accent: 0 4px 22px rgba(127, 197, 232, 0.32);
 
-  --text-primary: #f0e8e4;
-  --text-secondary: #b8a8b0;
-  --text-tertiary: #6a5868;
-  --text-accent-strong: #81C784;
+  --text-primary: #ECF1F4;
+  --text-secondary: #A9B4BC;
+  --text-tertiary: #71808C;
+  --text-accent-strong: #A5D8F2;
 
-  --correct: #5cb880;
-  --correct-bg: rgba(92, 184, 128, 0.12);
-  --wrong: #e87068;
-  --wrong-bg: rgba(232, 112, 104, 0.12);
-  --locked: #403038;
+  --correct: #58C795;
+  --correct-bg: rgba(88, 199, 149, 0.13);
+  --wrong: #F08A7E;
+  --wrong-bg: rgba(240, 138, 126, 0.13);
+  --locked: #3C4854;
 
-  /* Subject colours — India's diverse cultural palette under emerald night */
-  --subject-physics: #7986CB;
-  --subject-chemistry: #5cb880;
-  --subject-economics: #FFB74D;
-  --subject-biology: #F06292;
-  --subject-cs: #4DD0E1;
-  --subject-history: #A1887F;
-  --subject-general: #9575CD;
+  --subject-physics: #86ACE8;
+  --subject-chemistry: #58C795;
+  --subject-economics: #F3C46B;
+  --subject-biology: #F1A0BC;
+  --subject-cs: #5FD0E0;
+  --subject-history: #D8AE88;
+  --subject-general: #F3A08C;
 
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.38), 0 2px 4px rgba(0, 0, 0, 0.28);
   --shadow-lg: 0 12px 34px rgba(0, 0, 0, 0.48), 0 4px 8px rgba(0, 0, 0, 0.32);
 
-  --aurora-1: rgba(19, 136, 8, 0.1);
-  --aurora-2: rgba(255, 153, 51, 0.075);
-  --aurora-3: rgba(255, 204, 51, 0.05);
+  --aurora-1: rgba(127, 197, 232, 0.1);
+  --aurora-2: rgba(255, 171, 118, 0.07);
+  --aurora-3: rgba(134, 222, 183, 0.08);
 }
 
-/* ── Twilight theme — tricolor dusk: saffron courage, pure white truth,
-   and deep green faith. The three stripes of India's flag unified under a
-   single sky — celebrating a billion voices, one nation. ── */
+/* ── Dusk (twilight) — a sunset evening: deep teal night warmed by peach
+   and rose light. The most atmospheric room; still zero violet. ── */
 html[data-theme="twilight"] {
   color-scheme: dark;
-  /* Tricolor dusk-light — the warm counterpoint to the green night. */
-  --sun-wash: rgba(255, 153, 51, 0.05);
-  --hearth-glow: rgba(19, 136, 8, 0.04);
-  --scrim: rgba(12, 6, 24, 0.52);
-  --bg-primary: #1a0f0a;
-  --bg-surface: rgba(40, 28, 20, 0.5);
-  --bg-card: rgba(44, 30, 24, 0.55);
-  --bg-card-hover: rgba(56, 40, 32, 0.68);
-  --bg-glass: rgba(24, 14, 10, 0.58);
-  --bg-solid: #181010;
 
-  --cobalt-deep: #1a0f05;
-  --cobalt-mid: #3a1764;
-  --cobalt-vivid: #FF9933;
-  --cobalt-pale: #FFD4B8;
-  --cobalt-wash: rgba(255, 153, 51, 0.11);
-  --cobalt-ink: #0f0805;
+  --ambient-a: rgba(255, 176, 140, 0.07);
+  --ambient-b: rgba(127, 197, 232, 0.05);
+  --scrim: rgba(6, 12, 16, 0.55);
 
-  --border-subtle: rgba(255, 183, 77, 0.14);
-  --border-default: rgba(255, 183, 77, 0.22);
-  --border-accent: #FF9933;
-  --border-glow: #FF9933;
+  --bg-primary: #142028;
+  --bg-surface: rgba(32, 48, 58, 0.55);
+  --bg-card: rgba(36, 53, 64, 0.6);
+  --bg-card-hover: rgba(46, 66, 79, 0.72);
+  --bg-glass: rgba(22, 34, 42, 0.6);
+  --bg-solid: #192832;
 
-  /* Liquid-glass system tokens — twilight, tricolor-tinted */
-  --glass-blur: 24px;
-  --glass-blur-strong: 38px;
-  --glass-saturate: 160%;
-  --glass-highlight: rgba(255, 183, 77, 0.22);
-  --glass-shadow: 0 8px 32px rgba(8, 4, 20, 0.55), 0 1px 4px rgba(8, 4, 20, 0.4);
-  --glass-edge: inset 0 1px 0 rgba(255, 183, 77, 0.18), inset 0 0 0 1px rgba(255, 153, 51, 0.08);
-  --glass-sheen: linear-gradient(135deg, rgba(255,183,77,0.14) 0%, rgba(255,153,51,0.04) 32%, rgba(255,255,255,0) 58%);
+  --cobalt-deep: #101B22;
+  --cobalt-mid: #2E4854;
+  --cobalt-vivid: #FFB08C;
+  --cobalt-pale: #FFDCC9;
+  --cobalt-wash: rgba(255, 176, 140, 0.12);
+  --cobalt-ink: #0B1318;
 
-  --brand: #FF9933;
-  --brand-strong: #FFB74D;
-  --brand-bright: #FFCC80;
-  --brand-soft: #FFE0B2;
+  --border-subtle: rgba(255, 220, 201, 0.13);
+  --border-default: rgba(255, 220, 201, 0.2);
+  --border-accent: #FFB08C;
+  --border-glow: rgba(255, 176, 140, 0.38);
 
-  --accent: #FF9933;
-  --accent-hover: #FFB74D;
-  --accent-dim: rgba(255, 153, 51, 0.13);
-  --accent-glow: rgba(255, 153, 51, 0.24);
-  --accent-companion: #4CAF50;
-  --accent-gradient: linear-gradient(135deg, #FF9933 0%, #FFCC33 50%, #138808 100%);
-  --on-accent: #1a0f05;
-  --shadow-glow-accent: 0 2px 16px rgba(255, 153, 51, 0.22);
+  --glass-blur: 22px;
+  --glass-blur-strong: 36px;
+  --glass-saturate: 145%;
+  --glass-highlight: rgba(255, 220, 201, 0.14);
+  --glass-shadow: 0 8px 32px rgba(6, 12, 16, 0.55), 0 1px 4px rgba(6, 12, 16, 0.4);
+  --glass-edge: inset 0 1px 0 rgba(255, 220, 201, 0.12), inset 0 0 0 1px rgba(255, 176, 140, 0.07);
+  --glass-sheen: linear-gradient(135deg, rgba(255,220,201,0.12) 0%, rgba(255,176,140,0.04) 32%, rgba(255,255,255,0) 58%);
 
-  --text-primary: #f0e8ff;
-  --text-secondary: #c0b0d8;
-  --text-tertiary: #7a68a0;
-  --text-accent-strong: #c0a0f0;
+  --brand: #FFB08C;
+  --brand-strong: #FF9A6C;
+  --brand-bright: #FFC7AB;
+  --brand-soft: #5C3A28;
 
-  --correct: #60c890;
-  --correct-bg: rgba(96, 200, 144, 0.14);
-  --wrong: #e8908a;
-  --wrong-bg: rgba(232, 144, 138, 0.14);
-  --locked: #403068;
+  --accent: #FFB08C;
+  --accent-hover: #FFC7AB;
+  --accent-dim: rgba(255, 176, 140, 0.13);
+  --accent-glow: rgba(255, 176, 140, 0.26);
+  --accent-companion: #7FC5E8;
+  --accent-gradient: linear-gradient(135deg, #FFB08C 0%, #F4A6B8 100%);
+  --on-accent: #331507;
+  --shadow-glow-accent: 0 4px 22px rgba(255, 176, 140, 0.3);
 
-  /* Subject colours — India's diverse cultural palette at dusk */
-  --subject-physics: #7986CB;
-  --subject-chemistry: #5cb880;
-  --subject-economics: #FFB74D;
-  --subject-biology: #F06292;
-  --subject-cs: #4DD0E1;
-  --subject-history: #A1887F;
-  --subject-general: #9575CD;
+  --text-primary: #F3EEE8;
+  --text-secondary: #C6BDB2;
+  --text-tertiary: #8C8478;
+  --text-accent-strong: #FFC7AB;
 
-  --shadow-sm: 0 2px 8px rgba(8, 4, 20, 0.5), inset 0 1px 0 rgba(255, 183, 77, 0.1);
-  --shadow-md: 0 6px 20px rgba(8, 4, 20, 0.55), inset 0 1px 0 rgba(255, 183, 77, 0.1);
-  --shadow-lg: 0 14px 40px rgba(8, 4, 20, 0.65), inset 0 1px 0 rgba(255, 183, 77, 0.12);
+  --correct: #58C795;
+  --correct-bg: rgba(88, 199, 149, 0.14);
+  --wrong: #F08A7E;
+  --wrong-bg: rgba(240, 138, 126, 0.14);
+  --locked: #3E4E58;
 
-  /* Ambient aurora — deep tricolor dusk tones. */
-  --aurora-1: rgba(255, 153, 51, 0.2);
-  --aurora-2: rgba(19, 136, 8, 0.14);
-  --aurora-3: rgba(255, 204, 51, 0.12);
+  --subject-physics: #86ACE8;
+  --subject-chemistry: #58C795;
+  --subject-economics: #F3C46B;
+  --subject-biology: #F1A0BC;
+  --subject-cs: #5FD0E0;
+  --subject-history: #D8AE88;
+  --subject-general: #F3A08C;
 
-  /* ── Crayon painting — tricolor twilight scene ── */
-  --crayon-sky-top: #1a0f05;
-  --crayon-sky-bottom: #3d1a08;
-  --crayon-sun: #FF9933;
-  --crayon-sun-glow: #E67E22;
-  --crayon-cloud: #492010;
-  --crayon-hill-far: #281808;
-  --crayon-hill-mid: #201208;
-  --crayon-hill-near: #1a0c08;
-  --crayon-grass: #140c08;
-  --crayon-ground: #1c1008;
-  --crayon-grass-stroke: #281408;
-  --crayon-trunk: #482818;
-  --crayon-tree-dark: #281438;
-  --crayon-tree-light: #382058;
-  --crayon-bush: #2c1448;
-  --crayon-river: #382078;
-  --crayon-river-light: #503898;
-  --crayon-river-edge: #281468;
-  --crayon-river-sparkle: #a070d8;
-  --crayon-house-wall: #382050;
-  --crayon-house-roof: #681848;
-  --crayon-house-chimney: #381830;
-  --crayon-house-door: #281030;
-  --crayon-house-doorknob: #a870c8;
-  --crayon-house-window: #281860;
-  --crayon-house-outline: #281438;
-  --crayon-window-glow: #b870e0;
-  --crayon-smoke: #483068;
-  --crayon-library-wall: #301848;
-  --crayon-library-roof: #481850;
-  --crayon-library-column: #382050;
-  --crayon-library-door: #1c0830;
-  --crayon-library-window: #281860;
-  --crayon-library-outline: #1c0830;
-  --crayon-library-sign: #281438;
-  --crayon-library-sign-text: #a880c8;
-  --crayon-book-1: #881848;
-  --crayon-book-2: #3828a0;
-  --crayon-book-3: #a07828;
-  --crayon-path: #382048;
-  --crayon-fence: #382040;
-  --crayon-flower-1: #a02878;
-  --crayon-flower-2: #b05818;
-  --crayon-flower-3: #5828a0;
-  --crayon-bird: #382060;
-  /* School, bridge & RealLearn signpost (crayon scene) */
-  --crayon-school-wall: #402858;
-  --crayon-school-roof: #682048;
-  --crayon-school-door: #281030;
-  --crayon-school-outline: #281438;
-  --crayon-school-flag: #b84868;
-  --crayon-school-sign: #2c1a60;
-  --crayon-school-sign-text: #d0b8e8;
-  --crayon-school-bell: #a87028;
-  --crayon-bridge: #482860;
-  --crayon-bridge-dark: #381848;
-  --crayon-brand-board: #6848a8;
-  --crayon-brand-text: #f0e0ff;
+  --shadow-sm: 0 2px 8px rgba(6, 12, 16, 0.5), inset 0 1px 0 rgba(255, 220, 201, 0.08);
+  --shadow-md: 0 6px 20px rgba(6, 12, 16, 0.55), inset 0 1px 0 rgba(255, 220, 201, 0.08);
+  --shadow-lg: 0 14px 40px rgba(6, 12, 16, 0.65), inset 0 1px 0 rgba(255, 220, 201, 0.1);
+
+  --aurora-1: rgba(255, 176, 140, 0.14);
+  --aurora-2: rgba(244, 166, 184, 0.1);
+  --aurora-3: rgba(127, 197, 232, 0.08);
 }
 
 html {
@@ -405,7 +339,7 @@ body {
   overflow-x: hidden;
 }
 
-/* ── Ambient aurora — the "breathing" layer under the crayon painting.
+/* ── Ambient aurora — the page's quiet "breathing" layer.
    Two enormous radial-gradient blobs drift on 70–90s loops using ONLY
    transform (compositor-cheap, no blur filters, no repaints). The effect is
    subliminal: the page feels alive and warm without ever pulling focus. */
@@ -465,10 +399,9 @@ body {
    backdrop-filter. These utilities + the reusable class package that together.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Ambient gradient — tricolor wash, crossed by a warm sunbeam from
-   the upper-right and a low diya glow at the foot of the page. The saffron
-   hues remain the anchor; the warmth is a second light source layered over
-   them, like late sun on carved sandstone. ── */
+/* ── Ambient gradient — two whisper-quiet washes of the accent air: one
+   cool light from the upper-right, one soft pool at the foot of the page.
+   Depth without decoration. ── */
 html::before {
   content: "";
   position: fixed;
@@ -477,9 +410,8 @@ html::before {
   pointer-events: none;
   contain: layout style paint;
   background:
-    radial-gradient(ellipse at 82% -8%, var(--sun-wash, rgba(255, 153, 51, 0.07)) 0%, transparent 55%),
-    radial-gradient(ellipse at 0% 0%, rgba(255, 153, 51, 0.075) 0%, transparent 50%),
-    radial-gradient(ellipse at 30% 104%, var(--hearth-glow, rgba(19, 136, 8, 0.055)) 0%, transparent 52%);
+    radial-gradient(ellipse at 82% -8%, var(--ambient-a) 0%, transparent 55%),
+    radial-gradient(ellipse at 30% 104%, var(--ambient-b) 0%, transparent 52%);
   opacity: 0.95;
 }
 
@@ -542,50 +474,9 @@ html::before {
    expensive backdrop-filter blur to any match — a massive, hidden performance
    tax. Elements that need frosting now opt in via a class. */
 
-/* Crayon background — visible, beautiful, behind the glass.
-   A soft warm overlay lets the artwork breathe through while keeping text
-   readable. On high-perf devices we add a subtle blur for depth. */
-.crayon-bg {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  opacity: 0.28;
-  background-image: url("/crayon-bg-mobile.svg");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  will-change: transform;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  filter: saturate(0.85) brightness(1.02);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.4) 30%, rgba(0,0,0,0.75) 100%);
-  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.4) 30%, rgba(0,0,0,0.75) 100%);
-}
-
-/* Desktop: landscape SVG */
-@media (min-width: 769px) {
-  .crayon-bg {
-    background-image: url("/crayon-bg.svg");
-  }
-}
-
-html[data-theme="dark"] .crayon-bg,
-html[data-theme="twilight"] .crayon-bg {
-  opacity: 0.22;
-  filter: saturate(0.5) brightness(0.35);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.35) 30%, rgba(0,0,0,0.7) 100%);
-  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.35) 30%, rgba(0,0,0,0.7) 100%);
-}
-
-/* High tier: add subtle blur to crayon for depth */
-html[data-perf="high"] .crayon-bg {
-  filter: saturate(0.8) brightness(1.0) blur(0.5px);
-}
-html[data-theme="dark"][data-perf="high"] .crayon-bg,
-html[data-theme="twilight"][data-perf="high"] .crayon-bg {
-  filter: saturate(0.45) brightness(0.3) blur(0.5px);
-}
+/* The illustrated backdrop of previous design eras (crayon scene, lotus
+   fields, tricolor skies) is retired. The backdrop is now just paper, air
+   and light: --bg-primary + the ambient washes + the aurora breath. */
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Material textures — layered grain for a richer, tactile feel.
@@ -595,9 +486,8 @@ html[data-theme="twilight"][data-perf="high"] .crayon-bg {
      • micro-noise (overlay, opt-in via .texture-noise) — Gen Z tactile grain
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Fine paper fiber. Stronger grain (0.07) with a hint of handloom cotton
-   drag baked into the same composite layer, so the page reads as handmade
-   Indian paper — texture, never "dust". */
+/* Fine paper fiber. Subtle grain baked into one composite layer, so the
+   page reads as good paper stock — texture, never "dust". */
 body::after {
   content: "";
   position: fixed;
@@ -627,6 +517,12 @@ body::before {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='600' height='600' filter='url(%23m)' opacity='0.6'/%3E%3C/svg%3E");
   background-size: 720px 720px;
 }
+/* On the dark themes the mottle reads as cloudy patches rather than paper —
+   keep only a hint of it. */
+html[data-theme="dark"] body::before,
+html[data-theme="twilight"] body::before {
+  opacity: 0.18;
+}
 
 /* Micro-noise overlay — a finer, higher-frequency grain that gives interactive
    surfaces a "tactile" feel, like premium paper or a well-worn object.
@@ -649,151 +545,24 @@ body::before {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   Indian geometric and textile-inspired patterns — CSS-only, GPU-cheap.
-   Used as subtle overlays on cards, dividers, and section headers.
+   Pattern classes — retired ornament, kept as structural no-ops.
+   Earlier eras stamped cultural motifs (waves, lattices, medallions) onto
+   cards. Still Ink keeps surfaces quiet; these classes remain only so
+   existing markup keeps valid stacking contexts.
    ═══════════════════════════════════════════════════════════════════════════ */
-
-/* Mandala waves — concentric overlapping circles inspired by rangoli and
-   mandala geometry, symbolizing focus, continuity, and good fortune. */
-.pattern-seigaiha {
-  position: relative;
-}
-.pattern-seigaiha::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.07;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cpath d='M28 28c0-4.4-3.6-8-8-8-2.2 0-4.2.9-5.6 2.4C13.4 20.6 12 22.6 12 25c0 4.4 3.6 8 8 8 2.2 0 4.2-.9 5.6-2.4C27.4 29.4 28 27.4 28 25zM20 36c-4.4 0-8-3.6-8-8 0-2.2.9-4.2 2.4-5.6C13.4 20.6 15.4 19 18 19c4.4 0 8 3.6 8 8 0 2.2-.9 4.2-2.4 5.6C22.6 34.6 20.6 36 20 36zM36 20c-2.2 0-4.2.9-5.6 2.4C29.4 23.4 28 25.4 28 28c0 4.4 3.6 8 8 8 2.2 0 4.2-.9 5.6-2.4C42.6 32.6 44 30.6 44 28c0-4.4-3.6-8-8-8z' fill='%23c65f17' fill-opacity='0.3'/%3E%3C/svg%3E");
-  background-size: 56px 56px;
-  mix-blend-mode: multiply;
-}
-.pattern-seigaiha > * {
-  position: relative;
-  z-index: 1;
-}
-
-/* Jaal lattice — a diamond/star lattice inspired by carved jaali screens,
-   symbolizing growth and ordered complexity. */
-.pattern-asanoha {
-  position: relative;
-}
-.pattern-asanoha::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.035;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cpath d='M30 0l30 30-30 30L0 30z' fill='none' stroke='%23c65f17' stroke-opacity='0.25' stroke-width='0.5'/%3E%3Cpath d='M30 10l20 20-20 20-20-20z' fill='none' stroke='%23c65f17' stroke-opacity='0.2' stroke-width='0.5'/%3E%3C/svg%3E");
-  background-size: 60px 60px;
-  mix-blend-mode: multiply;
-}
-.pattern-asanoha > * {
-  position: relative;
-  z-index: 1;
-}
-
-/* Lotus circles — overlapping rings inspired by mandala petals and temple
-   medallions. Used as a refined accent pattern. */
-.pattern-shippo {
-  position: relative;
-}
-.pattern-shippo::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.035;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Ccircle cx='24' cy='12' r='10' fill='none' stroke='%23c65f17' stroke-opacity='0.3' stroke-width='0.5'/%3E%3Ccircle cx='36' cy='30' r='10' fill='none' stroke='%23c65f17' stroke-opacity='0.3' stroke-width='0.5'/%3E%3Ccircle cx='12' cy='30' r='10' fill='none' stroke='%23c65f17' stroke-opacity='0.3' stroke-width='0.5'/%3E%3C/svg%3E");
-  background-size: 48px 48px;
-  mix-blend-mode: multiply;
-}
-.pattern-shippo > * {
-  position: relative;
-  z-index: 1;
-}
-
-/* Chowk grid — a simple rangoli-floor grid used as a subtle overlay on
-   section dividers. It represents balance, rhythm, and quiet order. */
-.pattern-ichimatsu {
-  position: relative;
-}
-.pattern-ichimatsu::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.03;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Crect width='12' height='12' fill='none' stroke='%23c65f17' stroke-opacity='0.35' stroke-width='0.5'/%3E%3Crect x='12' y='12' width='12' height='12' fill='none' stroke='%23c65f17' stroke-opacity='0.35' stroke-width='0.5'/%3E%3C/svg%3E");
-  background-size: 24px 24px;
-  mix-blend-mode: multiply;
-}
-.pattern-ichimatsu > * {
-  position: relative;
-  z-index: 1;
-}
-
-/* Jaali hex — overlapping hexagons inspired by carved screenwork, symbolizing
-   continuity and resilience. Used sparingly on achievement cards. */
-.pattern-kikko {
-  position: relative;
-}
-.pattern-kikko::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.03;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='32' viewBox='0 0 36 32'%3E%3Cpath d='M18 0l18 10v12L18 32 0 22V10z' fill='none' stroke='%23c65f17' stroke-opacity='0.3' stroke-width='0.5'/%3E%3Cpath d='M18 10l9 5v6l-9 5-9-5v-6z' fill='none' stroke='%23c65f17' stroke-opacity='0.2' stroke-width='0.5'/%3E%3C/svg%3E");
-  background-size: 36px 32px;
-  mix-blend-mode: multiply;
-}
-.pattern-kikko > * {
-  position: relative;
-  z-index: 1;
-}
-
-/* Jaali-screen texture — a faint, elegant grid that evokes carved stone
-   screens and woven room dividers. Applied to section backgrounds for quiet
-   architectural depth. */
+.pattern-seigaiha,
+.pattern-asanoha,
+.pattern-shippo,
+.pattern-ichimatsu,
+.pattern-kikko,
 .shoji-screen {
   position: relative;
 }
-.shoji-screen::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.025;
-  background-image:
-    repeating-linear-gradient(
-      0deg,
-      var(--border-default) 0,
-      var(--border-default) 0.5px,
-      transparent 0.5px,
-      transparent 40px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      var(--border-default) 0,
-      var(--border-default) 0.5px,
-      transparent 0.5px,
-      transparent 40px
-    );
-  mix-blend-mode: multiply;
-}
+.pattern-seigaiha > *,
+.pattern-asanoha > *,
+.pattern-shippo > *,
+.pattern-ichimatsu > *,
+.pattern-kikko > *,
 .shoji-screen > * {
   position: relative;
   z-index: 1;
@@ -814,8 +583,8 @@ body::before {
   margin-bottom: var(--space-4xl);
 }
 
-/* ── Santulan-divider — a refined section separator with a rangoli-grid bead
-   in the center, representing balance between content blocks. ── */
+/* ── Divider — a refined section separator with a small accent bead
+   in the center, marking the pause between content blocks. ── */
 .wa-divider {
   display: flex;
   align-items: center;
@@ -838,50 +607,6 @@ body::before {
   opacity: 0.55;
   transform: rotate(45deg);
   box-shadow: 0 0 10px var(--accent-glow);
-}
-
-/* ── Seasonal accent — subtle color hints for Indian seasonal moods.
-   Applied via .seasonal-[spring|summer|autumn|winter] on sections. ── */
-.seasonal-spring {
-  --seasonal-accent: #e8a0b0;
-  --seasonal-wash: rgba(232, 160, 176, 0.08);
-}
-.seasonal-summer {
-  --seasonal-accent: #2a8a6a;
-  --seasonal-wash: rgba(42, 138, 106, 0.08);
-}
-.seasonal-autumn {
-  --seasonal-accent: #c86830;
-  --seasonal-wash: rgba(200, 104, 48, 0.08);
-}
-.seasonal-winter {
-  --seasonal-accent: #6090c0;
-  --seasonal-wash: rgba(96, 144, 192, 0.08);
-}
-
-/* Auto-seasonal: paired corner washes based on the data-season attribute set
-   by the layout init script — vivid enough to actually feel the season turn
-   (saffron spring, emerald summer, harvest autumn, cool winter), while
-   staying a wash, never a tint over content. */
-html[data-season="spring"] body {
-  background-image:
-    radial-gradient(ellipse at 20% 8%, rgba(255, 153, 51, 0.09) 0%, transparent 52%),
-    radial-gradient(ellipse at 85% 85%, rgba(255, 183, 77, 0.05) 0%, transparent 45%);
-}
-html[data-season="summer"] body {
-  background-image:
-    radial-gradient(ellipse at 80% 8%, rgba(19, 136, 8, 0.09) 0%, transparent 52%),
-    radial-gradient(ellipse at 12% 88%, rgba(76, 175, 80, 0.05) 0%, transparent 45%);
-}
-html[data-season="autumn"] body {
-  background-image:
-    radial-gradient(ellipse at 20% 88%, rgba(255, 140, 0, 0.09) 0%, transparent 52%),
-    radial-gradient(ellipse at 85% 10%, rgba(230, 126, 34, 0.05) 0%, transparent 45%);
-}
-html[data-season="winter"] body {
-  background-image:
-    radial-gradient(ellipse at 80% 88%, rgba(100, 181, 246, 0.09) 0%, transparent 52%),
-    radial-gradient(ellipse at 12% 10%, rgba(144, 202, 249, 0.05) 0%, transparent 45%);
 }
 
 /* ── Engraved identity motif — a faint, repeating hairline weave
@@ -923,13 +648,13 @@ html[data-season="winter"] body {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   Indian ink & tricolor texture system — masala ink, seal marks, handloom paper.
+   Still Ink texture system — ink washes, hairline weaves, letterpress depth.
    Layered ink-wash effects that give surfaces the depth and elegance of
    traditional manuscripts, block printing, and miniature-painting washes.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Masala-ink wash overlay — a deep ink wash that bleeds across surfaces,
-   creating the feel of aged handmade paper with pigment saturation. ── */
+/* ── Ink wash overlay — a barely-there tonal wash that keeps large
+   surfaces from reading flat. ── */
 .ink-wash {
   position: relative;
 }
@@ -951,32 +676,25 @@ html[data-season="winter"] body {
   z-index: 1;
 }
 
-/* ── Editorial heading — manuscript-ink effect for h1–h4.
-   Deep ink with subtle text-shadow that evokes calligraphy on handmade paper. */
+/* ── Editorial heading — a whisper of letterpress depth on h1–h4. */
 h1, h2, h3, h4 {
   text-shadow:
-    0 0.5px 0 rgba(42, 21, 32, 0.08),
-    0 1px 2px rgba(42, 21, 32, 0.04);
+    0 0.5px 0 rgba(20, 21, 26, 0.07),
+    0 1px 2px rgba(20, 21, 26, 0.04);
 }
 html[data-theme="dark"] h1,
 html[data-theme="dark"] h2,
 html[data-theme="dark"] h3,
-html[data-theme="dark"] h4 {
-  text-shadow:
-    0 0.5px 0 rgba(212, 132, 122, 0.15),
-    0 1px 3px rgba(0, 0, 0, 0.3);
-}
+html[data-theme="dark"] h4,
 html[data-theme="twilight"] h1,
 html[data-theme="twilight"] h2,
 html[data-theme="twilight"] h3,
 html[data-theme="twilight"] h4 {
-  text-shadow:
-    0 0.5px 0 rgba(138, 96, 208, 0.18),
-    0 1px 3px rgba(0, 0, 0, 0.35);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
-/* ── Handloom texture — a dense, fine crosshatch that reads as traditional
-   India's diverse handmade paper and textile traditions. Stronger than identity-texture. ── */
+/* ── Crosshatch texture — a dense, fine weave for surfaces that want a
+   little tooth. Stronger than identity-texture. ── */
 .cobalt-texture {
   position: relative;
 }
@@ -1012,8 +730,8 @@ html[data-theme="twilight"] h4 {
   z-index: 1;
 }
 
-/* ── Ink border — a double-stroke border that evokes manuscript margins:
-   an outer ink line + an inner tricolor accent line, with subtle pigment bloom. ── */
+/* ── Ink border — a double-stroke border like a well-set page margin:
+   an outer ink line + an inner accent line, with subtle bloom on hover. ── */
 .ink-border {
   border: 1.5px solid var(--border-default) !important;
   box-shadow:
@@ -1032,8 +750,8 @@ html[data-theme="twilight"] h4 {
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
-/* ── Lotus-gold accent line — a thick, confident left-border accent like a
-   rangoli stroke or a chapter divider in an illustrated manuscript. ── */
+/* ── Accent rule — a thick, confident left-border accent, like a chapter
+   divider in a well-set book. ── */
 .cobalt-rule {
   border-left: 4px solid var(--brand) !important;
   padding-left: var(--space-md);
@@ -1063,7 +781,7 @@ html[data-theme="twilight"] h4 {
   text-shadow: 1px 1px 0 var(--accent-dim);
 }
 
-/* ── Pigment stain effect — a subtle, organic tricolor stain on card hover ── */
+/* ── Pigment stain effect — a subtle, organic accent stain on card hover ── */
 .ink-stain {
   position: relative;
   overflow: hidden;
@@ -1220,7 +938,7 @@ a:active {
   contain: layout style;
 }
 
-/* ── Scrollbar — sleek, saffron-tinted ── */
+/* ── Scrollbar — sleek, neutral ── */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -1273,11 +991,6 @@ a:active {
    0% { transform: scale(0.7); }
    50% { transform: scale(1.08); box-shadow: 0 0 40px var(--accent-glow); }
    100% { transform: scale(1); }
- }
-
-@keyframes crayonReveal {
-   from { opacity: 0; transform: translateZ(0) scale(1.02); }
-   to { opacity: 1; transform: translateZ(0) scale(1); }
  }
 
 @keyframes shake {
@@ -1404,29 +1117,26 @@ a:active {
   pointer-events: none;
   z-index: 0;
 }
+/* Three overlapping pools of pastel light behind the hero — sky from the
+   center, peach from the upper right, mint low left — so the question box
+   sits in the warmest, brightest spot on the page. */
 .hero__stage::before {
   inset: 6px;
   border-radius: var(--radius-2xl);
-  opacity: 0.08;
-  background-image:
-    radial-gradient(circle at 50% 50%, transparent 0 18px, var(--brand) 19px 20px, transparent 21px),
-    repeating-conic-gradient(from 45deg, var(--brand) 0deg 8deg, transparent 8deg 16deg);
-  -webkit-mask-image: radial-gradient(ellipse at 50% 45%, #000 0%, transparent 66%);
-  mask-image: radial-gradient(ellipse at 50% 45%, #000 0%, transparent 66%);
+  opacity: 0.9;
+  background:
+    radial-gradient(ellipse at 46% 44%, var(--accent-dim) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 10%, var(--aurora-2) 0%, transparent 55%),
+    radial-gradient(ellipse at 12% 88%, var(--aurora-3) 0%, transparent 50%);
 }
 .hero__stage::after {
   left: 50%;
   bottom: 0;
   width: min(520px, 82vw);
-  height: 86px;
+  height: 1px;
   transform: translateX(-50%);
-  opacity: 0.16;
-  background:
-    linear-gradient(90deg, transparent, var(--accent), transparent),
-    repeating-linear-gradient(135deg, transparent 0 13px, var(--accent) 13px 14px, transparent 14px 28px),
-    repeating-linear-gradient(45deg, transparent 0 13px, var(--accent) 13px 14px, transparent 14px 28px);
-  -webkit-mask-image: linear-gradient(to top, #000, transparent 88%);
-  mask-image: linear-gradient(to top, #000, transparent 88%);
+  opacity: 0.5;
+  background: linear-gradient(90deg, transparent, var(--border-default), transparent);
 }
 .hero__content { position: relative; z-index: 1; }
 .hero__greeting { margin-top: 24px; }
@@ -1458,6 +1168,49 @@ a:active {
   50% { transform: translateY(-6px) rotate(4deg); }
 }
 
+/* ── How-it-works strip ── the newcomer's mental model in one quiet line:
+   ask → learn in three parts → pass each gate. Shown only until the first
+   activity; numbered beads keep it scannable without stealing the hero. */
+.how-strip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 22px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.how-strip__step {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  letter-spacing: 0.01em;
+}
+.how-strip__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-dim);
+  border: 1px solid var(--border-glow);
+}
+@media (max-width: 640px) {
+  .how-strip {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-inline: auto;
+    width: fit-content;
+  }
+}
+
 /* ── Animation utilities — Apple-style, smooth, springy ── */
 .animate-fade-up { animation: fadeUp 600ms var(--ease-reveal) both; }
 .animate-slide-bottom { animation: slideFromBottom 500ms var(--ease-reveal) both; }
@@ -1483,7 +1236,7 @@ a:active {
 
 /* ── Gen Z interaction utilities — springy, tactile, satisfying ── */
 
-/* Interactive lift — spring-based hover with deep saffron glow */
+/* Interactive lift — spring-based hover with a soft accent glow */
 .interactive-lift {
   transition: transform 420ms var(--ease-spring), box-shadow 420ms var(--ease-spring), border-color 320ms var(--ease-color);
 }
@@ -1499,7 +1252,7 @@ a:active {
   transition: transform 120ms var(--ease-color) !important;
 }
 
-/* Glow accent hover — deep saffron glow on interactive elements */
+/* Glow accent hover — soft accent glow on interactive elements */
 .glow-accent {
   transition: box-shadow 400ms var(--ease-spring), border-color 400ms var(--ease-color), background 400ms var(--ease-color);
 }
@@ -1626,7 +1379,7 @@ a:active {
   }
 }
 
-/* ── Markdown content — masala ink on handloom paper, generous breathing room ── */
+/* ── Markdown content — ink on paper, generous breathing room ── */
 .markdown-content h2 {
   margin: var(--space-lg) 0 var(--space-base);
   font-family: var(--font-display), system-ui, sans-serif;
@@ -1965,11 +1718,8 @@ html[data-perf="low"] *::after {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
-/* Background art + paper grain + mottle + aurora: skip entirely; the flat
+/* Paper grain + mottle + aurora: skip entirely; the flat
    theme color remains. */
-html[data-perf="low"] .crayon-bg {
-  display: none;
-}
 html[data-perf="low"] .aurora-bg {
   display: none;
 }
@@ -2015,10 +1765,6 @@ html[data-perf="low"] .part-locked-content {
        re-composites on every scroll frame and is a known Firefox lag source.
      • mix-blend-mode over a full-viewport layer forces a viewport readback on
        every intersecting paint — the paper-grain layer is the worst offender.
-     • will-change / CSS filter on a 100dvh, fixed, mask-faded SVG (.crayon-bg)
-       promotes a gigantic layer that overflows the GPU texture budget and
-       silently falls back to software compositing — that is what makes the
-       page feel like it "dies" and the cursor feels heavy in Firefox.
    We keep the same look but drop the bits Gecko can't composite cheaply. This
    mirrors the low-tier treatment but is applied ONLY to Firefox, so Chromium
    and Safari keep their glass/blur richness. */
@@ -2027,15 +1773,6 @@ html[data-browser="firefox"] *::before,
 html[data-browser="firefox"] *::after {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-}
-/* No filter / will-change / forced layer on the full-screen crayon painting.
-   The mask-image fade stays (it composites cheaply); we only remove the parts
-   that push Gecko into software rendering. */
-html[data-browser="firefox"] .crayon-bg {
-  filter: none;
-  will-change: auto;
-  transform: none;
-  backface-visibility: visible;
 }
 /* Don't pin enormous (72vmax) aurora blobs to their own GPU layer forever —
    let Gecko composite them on demand instead of overflowing texture memory. */
@@ -2050,16 +1787,7 @@ html[data-browser="firefox"] body::before {
   opacity: 0.035;
 }
 
-/* ── HIGH tier: richer experience for powerful devices ── */
-html[data-perf="high"] .crayon-bg {
-  opacity: 0.22;
-}
-html[data-theme="dark"][data-perf="high"] .crayon-bg,
-html[data-theme="twilight"][data-perf="high"] .crayon-bg {
-  opacity: 0.15;
-}
-
-/* High tier: refined depth */
+/* ── HIGH tier: refined depth for powerful devices ── */
 html[data-perf="high"] {
   --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
   --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.1), 0 6px 12px rgba(0, 0, 0, 0.06);
@@ -2115,10 +1843,10 @@ html[data-perf="high"] {
    to sit here were removed.) */
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   Indian typography & reading rhythm
+   Typography & reading rhythm
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Indian-inspired heading treatment — a thin tricolor rule sits just
+/* Editorial heading treatment — a thin accent rule sits just
    below the text like a chapter marker in a hand-bound book, with generous
    breathing room for a considered reading pace. */
 h1, h2, h3 {
@@ -2320,7 +2048,7 @@ p {
 }
 
 /* ── Handloom-fold — a subtle corner fold effect on cards, evoking the folded
-   corner of a traditional book page or a carefully turned sheet of handloom paper. ── */
+   corner of a carefully turned page. ── */
 .handloom-fold {
   position: relative;
 }
@@ -2338,7 +2066,7 @@ p {
   opacity: 0.6;
 }
 
-/* ── Brush-underline — a hand-painted tricolor underline for links and
+/* ── Brush-underline — a hand-set accent underline for links and
    interactive text, like a calligrapher's brush stroke. ── */
 .brush-underline {
   position: relative;
@@ -2361,8 +2089,8 @@ p {
   transform: scaleX(1);
 }
 
-/* ── Hanko-stamp — a circular saffron seal effect for badges and
-   achievement markers, inspired by traditional Indian rangoli seals. ── */
+/* ── Seal — a circular accent stamp effect for badges and
+   achievement markers. ── */
 .rangoli-seal {
   display: inline-flex;
   align-items: center;
@@ -2385,16 +2113,16 @@ p {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   Refined component system — Indian-inspired, world-class.
+   Refined component system — Still Ink, world-class.
    Reusable classes that replace brittle inline onMouseEnter/onMouseLeave style
    mutations. Every class has focus-visible parity with hover, respects
-   prefers-reduced-motion, and uses the tricolor/green-saffron/handloom paper tokens so it
+   prefers-reduced-motion, and uses the Still Ink tokens so it
    stays correct in light, dark (monsoon indigo), and twilight (royal purple) themes.
    Design principles: rasa (emotional tone), tala (rhythmic spacing),
    alankara (purposeful ornament), and santulan (balance).
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Primary button ── the confident saffron stamp of a rangoli seal.
+/* ── Primary button ── one confident press of the accent ink.
    Springy, tactile, with a soft glow that blooms on hover/focus and a
    satisfying press. Used for the main CTA on every page. */
 .btn-primary {
@@ -2567,7 +2295,7 @@ p {
   transform: translateY(-1px);
 }
 .nav-link:active { transform: translateY(0) scale(0.97); }
-/* Active route — a soft tricolor wash with a confident left-brush mark. */
+/* Active route — a soft accent wash with a confident left-brush mark. */
 .nav-link--active {
   color: var(--accent);
   background: var(--accent-dim);
@@ -2692,8 +2420,8 @@ p {
   text-overflow: ellipsis;
 }
 
-/* ── Section header ── a refined heading with a vertical tricolor accent
-   bar (rangoli) and an optional decorative overline. */
+/* ── Section header ── a refined heading with a vertical accent bar and
+   an optional decorative overline. */
 .section-header {
   display: flex;
   flex-direction: column;
@@ -2701,7 +2429,7 @@ p {
   margin-bottom: var(--space-md);
 }
 /* Standalone decorative overline — use above a page <h1> for a quiet cultural
-   signature. Renders as a small letter-spaced tricolor label. */
+   signature. Renders as a small letter-spaced accent label. */
 .section-overline {
   display: inline-block;
   font-family: var(--font-display), serif;
@@ -2713,7 +2441,7 @@ p {
   text-transform: uppercase;
   margin-bottom: 2px;
 }
-/* A short rangoli brush-dash leads the overline in — the rangoli seal-red stroke
+/* A short brush-dash leads the overline in — the accent stroke
    that used to be carried by an overline glyph, now purely graphic. */
 .section-overline::before {
   content: "";
@@ -2818,8 +2546,8 @@ p {
   letter-spacing: 0.02em;
 }
 
-/* ── Scroll-to-top ── a floating saffron seal that rises when the user
-   scrolls deep, evoking a rangoli seal pressing back to the top. */
+/* ── Scroll-to-top ── a floating accent seal that rises once the user
+   scrolls deep. */
 .scroll-top {
   position: fixed;
   right: clamp(16px, 3vw, 32px);
@@ -2864,7 +2592,7 @@ p {
 }
 
 /* ── Kusari divider ── a delicate chain-like separator with a centered
-   tricolor diamond bead, representing the links between sections (rhythm). */
+   small diamond bead, marking the links between sections (rhythm). */
 .kusari {
   display: flex;
   align-items: center;
@@ -2941,7 +2669,7 @@ p {
   box-shadow: var(--shadow-md), var(--glass-edge), 0 0 0 3px var(--accent-glow);
 }
 
-/* ── Part card quiz / action button ── full-width tricolor CTA inside a
+/* ── Part card quiz / action button ── full-width accent CTA inside a
    lesson part. Spring lift on hover, calm disabled-ish pre-state. */
 .part-cta {
   width: 100%;

@@ -18,7 +18,7 @@ import { useSavedJourneysStore, journeySignature } from "@/store/savedJourneysSt
 import { useLesson } from "@/hooks/useLesson";
 import { useMounted } from "@/hooks/useMounted";
 import { triggerHaptic } from "@/lib/haptics";
-import { LessonJourney } from "@/types";
+import { LessonJourney, LessonPart } from "@/types";
 import { useShallow } from "zustand/shallow";
 import confetti from "canvas-confetti";
 
@@ -299,6 +299,71 @@ export default function LearnPage() {
 
   const activePart = quizPart ? lesson.parts[quizPart - 1] : null;
 
+  // Shared pass path: invoked by QuizSheet on a successful quiz AND directly
+  // by the part CTA when a part arrives with an empty quiz — opening the
+  // sheet for zero questions rendered nothing and deadlocked the journey.
+  // `score` is the FIRST-ATTEMPT score (see QuizSheet), so perfect-part
+  // stats mean "aced on the first try".
+  const handlePartPass = (part: LessonPart, score: number) => {
+    console.log("[frontend][LearnPage] quiz passed", {
+      part: part.partNumber,
+      score,
+    });
+    triggerHaptic("success");
+    confetti({
+      particleCount: 70,
+      spread: 60,
+      origin: { y: 0.6 },
+      colors: ["#b8860b", "#e0b341", "#d4847a", "#ffffff"],
+      disableForReducedMotion: true,
+    });
+    passPart(part.partNumber, score);
+
+    // Include the per-instance lesson id: retaking a quiz on THIS
+    // lesson stays idempotent (no XP farming), but generating a NEW
+    // lesson for the same question tomorrow earns credit again —
+    // previously the content-only key silently blocked all XP,
+    // daily-goal and streak progress for repeat topics.
+    const lessonSignature = `${lesson.question ?? lesson.topic ?? ""}|${language}|${lesson.lessonId ?? ""}`;
+    const maxPerPart = part.quiz?.length ?? 2;
+    recordPartPassed({
+      score,
+      maxPerPart,
+      language,
+      subject: part.subject,
+      creditKey: `part|${lessonSignature}|${part.partNumber}`,
+    });
+    if (part.partNumber === totalParts) {
+      const finalTotal = lesson.parts.reduce(
+        (sum, p) =>
+          sum +
+          (p.partNumber === part.partNumber
+            ? score
+            : partScores[p.partNumber] ?? 0),
+        0
+      );
+      const maxScore = lesson.parts.reduce(
+        (sum, p) => sum + (p.quiz?.length ?? 2),
+        0
+      );
+      recordLessonCompleted({
+        totalScore: finalTotal,
+        maxScore,
+        language,
+        creditKey: `lesson|${lessonSignature}`,
+      });
+    }
+
+    setQuizPart(null);
+    setShowUnlockFx(true);
+    if (unlockTimeoutRef.current) clearTimeout(unlockTimeoutRef.current);
+    unlockTimeoutRef.current = window.setTimeout(() => setShowUnlockFx(false), 850);
+    showToast(
+      score >= 1 ? "Correct — well done." : "Part completed.",
+      score >= 1 ? "success" : "info"
+    );
+  };
+
   return (
     <>
       <LiveRegion />
@@ -374,7 +439,16 @@ export default function LearnPage() {
               isCompleted={completedParts.includes(part.partNumber)}
               isCollapsed={collapsedParts.includes(part.partNumber)}
               score={partScores[part.partNumber]}
-              onStartQuiz={() => setQuizPart(part.partNumber)}
+              onStartQuiz={() => {
+                // Empty-quiz guard: a part with zero questions can't be
+                // "passed" through the sheet (it would render nothing), so
+                // advance directly with score = max (0 for an empty quiz).
+                if ((part.quiz?.length ?? 0) === 0) {
+                  handlePartPass(part, 0);
+                  return;
+                }
+                setQuizPart(part.partNumber);
+              }}
               onToggleCollapse={() => togglePartCollapse(part.partNumber)}
             />
           ))}
@@ -451,65 +525,7 @@ export default function LearnPage() {
             open={quizPart !== null}
             questions={activePart.quiz ?? []}
             onClose={() => setQuizPart(null)}
-            onPass={(score) => {
-              console.log("[frontend][LearnPage] quiz passed", {
-                part: activePart.partNumber,
-                score,
-              });
-              triggerHaptic("success");
-              confetti({
-                particleCount: 70,
-                spread: 60,
-                origin: { y: 0.6 },
-                colors: ["#b8860b", "#e0b341", "#d4847a", "#ffffff"],
-                disableForReducedMotion: true,
-              });
-              passPart(activePart.partNumber, score);
-
-              // Include the per-instance lesson id: retaking a quiz on THIS
-              // lesson stays idempotent (no XP farming), but generating a NEW
-              // lesson for the same question tomorrow earns credit again —
-              // previously the content-only key silently blocked all XP,
-              // daily-goal and streak progress for repeat topics.
-              const lessonSignature = `${lesson.question ?? lesson.topic ?? ""}|${language}|${lesson.lessonId ?? ""}`;
-              const maxPerPart = activePart.quiz?.length ?? 2;
-              recordPartPassed({
-                score,
-                maxPerPart,
-                language,
-                subject: activePart.subject,
-                creditKey: `part|${lessonSignature}|${activePart.partNumber}`,
-              });
-              if (activePart.partNumber === totalParts) {
-                const finalTotal = lesson.parts.reduce(
-                  (sum, p) =>
-                    sum +
-                    (p.partNumber === activePart.partNumber
-                      ? score
-                      : partScores[p.partNumber] ?? 0),
-                  0
-                );
-                const maxScore = lesson.parts.reduce(
-                  (sum, p) => sum + (p.quiz?.length ?? 2),
-                  0
-                );
-                recordLessonCompleted({
-                  totalScore: finalTotal,
-                  maxScore,
-                  language,
-                  creditKey: `lesson|${lessonSignature}`,
-                });
-              }
-
-              setQuizPart(null);
-              setShowUnlockFx(true);
-              if (unlockTimeoutRef.current) clearTimeout(unlockTimeoutRef.current);
-              unlockTimeoutRef.current = window.setTimeout(() => setShowUnlockFx(false), 850);
-              showToast(
-                score >= 1 ? "Correct — well done." : "Part completed.",
-                score >= 1 ? "success" : "info"
-              );
-            }}
+            onPass={(score) => handlePartPass(activePart, score)}
           />
         ) : null}
 

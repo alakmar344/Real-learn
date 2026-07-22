@@ -42,8 +42,10 @@ export default function ToastContainer() {
     return () => window.clearTimeout(timer);
   }, [headToastId]);
 
-  if (toasts.length === 0) return null;
-
+  // A11y: the aria-live wrapper must stay permanently mounted — unmounting it
+  // when the queue empties means screen readers never announce the first toast
+  // after idle (live regions only announce changes to an EXISTING region).
+  // Only the toast items themselves come and go.
   const accentFor = (type: Toast["type"]) =>
     type === "success"
       ? "var(--correct)"

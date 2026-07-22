@@ -14,7 +14,7 @@ const DURATION: Record<Celebration["kind"], number> = {
   "daily-goal": 3000,
 };
 
-const BURST_COLORS = ["#3b5bff", "#7b90ff", "#e0532f", "#f0764f", "var(--correct)", "var(--accent)"];
+const BURST_COLORS = ["#7FC5E8", "#9FE3C0", "#FFB08C", "#F4A6B8", "var(--correct)", "var(--accent)"];
 
 function Burst() {
   const [pieces] = useState(() =>

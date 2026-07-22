@@ -30,6 +30,11 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
   // correct answer again.
   const [quizQuestions, setQuizQuestions] = useState<Question[]>(questions ?? []);
   const [shuffledHint, setShuffledHint] = useState(false);
+  // First-attempt score: passing requires a perfect run, so the score at the
+  // moment of passing is ALWAYS perfect. "Perfect" stats/achievements only
+  // mean something if they track whether the learner aced the quiz on the
+  // FIRST try — capture that here and report it through onPass.
+  const [firstAttemptScore, setFirstAttemptScore] = useState<number | null>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
 
@@ -40,6 +45,7 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
     setCurrent(0);
     setAnswers(Array.from({ length: Math.max(questions?.length ?? 0, 1) }, () => null));
     setShuffledHint(false);
+    setFirstAttemptScore(null);
   }, [questions, open]);
 
   const currentQuestion = quizQuestions?.[current];
@@ -132,11 +138,18 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
       return;
     }
 
+    // Record the very first completed attempt's score (later attempts don't
+    // overwrite it) — this is what onPass reports so "perfect" means "aced
+    // on the first try", not "eventually got everything right".
+    const reportedScore = firstAttemptScore ?? score;
+    if (firstAttemptScore === null) setFirstAttemptScore(score);
+
     if (score === perfectScore) {
-      onPass(score);
+      onPass(reportedScore);
       setCurrent(0);
       setAnswers(Array.from({ length: totalQuestions }, () => null));
       setShuffledHint(false);
+      setFirstAttemptScore(null);
       return;
     }
 

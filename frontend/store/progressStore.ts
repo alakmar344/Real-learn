@@ -220,6 +220,10 @@ export const useProgressStore = create<ProgressState>()(
           const today = dayKey(now);
           const hour = now.getHours();
           const gained = xpForPart(score);
+          // `score` is the FIRST-ATTEMPT quiz score (see QuizSheet): passing
+          // always ends with a perfect run, so without first-attempt tracking
+          // this flag would be unconditionally true and the "perfect" badges
+          // meaningless. Perfect = aced on the first try.
           const isPerfect = score >= maxPerPart;
 
           const { dailyCount: baseDaily } = normalizeDaily(prev, today);

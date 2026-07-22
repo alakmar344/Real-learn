@@ -7,6 +7,7 @@ import FeedbackGate from "@/components/shared/FeedbackGate";
 
 interface Props {
   lesson: LessonJourney;
+  /** Sum of FIRST-ATTEMPT part scores (passing itself always ends perfect). */
   totalScore: number;
   onRestart?: () => void;
   onRetake?: () => void;
@@ -14,13 +15,13 @@ interface Props {
 
 /* ── Confetti particles — brand palette, restrained not rainbow ── */
 const CONFETTI_COLORS = [
-  "#3b5bff",
-  "#2b44e0",
-  "#7b90ff",
-  "#e0532f",
-  "#f0764f",
-  "#1a8a5c",
-  "#17171f",
+  "#7FC5E8",
+  "#0284C7",
+  "#9FE3C0",
+  "#FFB08C",
+  "#F4A6B8",
+  "#FFD98E",
+  "#58C795",
 ];
 
 function Confetti() {
@@ -80,7 +81,7 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
   /* Announce to screen readers */
   useEffect(() => {
     const el = document.getElementById("sr-live-region");
-    if (el) el.textContent = "Journey complete. Your score is " + totalScore + " out of " + maxScore + ".";
+    if (el) el.textContent = "Journey complete. Your first-try score is " + totalScore + " out of " + maxScore + ".";
   }, [totalScore, maxScore]);
   const pct = Math.round((totalScore / maxScore) * 100);
   const circumference = 2 * Math.PI * 42;
@@ -112,8 +113,8 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
           <svg width="100" height="100" viewBox="0 0 100 100">
             <defs>
               <linearGradient id="score-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#3b5bff" />
-                <stop offset="100%" stopColor="#2236b8" />
+                <stop offset="0%" stopColor="#7FC5E8" />
+                <stop offset="100%" stopColor="#0284C7" />
               </linearGradient>
             </defs>
             <circle cx="50" cy="50" r="42" fill="none" stroke="var(--border-subtle)" strokeWidth="6" />
@@ -161,7 +162,9 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
             {(lesson.parts?.length ?? 3) === 1 ? "Quick Answer Mastered" : "Journey Complete"}
           </h3>
           <p style={{ marginTop: 6, color: "var(--text-secondary)", fontSize: 15 }}>
-            You scored <strong style={{ color: "var(--correct)" }}>{totalScore}/{maxScore}</strong> — {pct >= 80 ? "excellent work." : pct >= 50 ? "a solid effort." : "a tough one, worth another pass."}
+            {/* First-try score: quizzes must be perfected to advance, so the
+                meaningful number is how you did before any retries. */}
+            You scored <strong style={{ color: "var(--correct)" }}>{totalScore}/{maxScore}</strong> on the first try — {pct >= 80 ? "excellent work." : pct >= 50 ? "a solid effort." : "a tough one, worth another pass."}
           </p>
         </div>
       </div>

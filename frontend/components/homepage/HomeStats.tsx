@@ -151,6 +151,25 @@ export default function HomeStats({ onStartTopic }: Props) {
         </button>
       )}
 
+      {/* First visit: a quiet mental model of the product — ask, learn in
+          three parts, pass each gate. Disappears once there's any activity. */}
+      {!hasActivity && (
+        <ol className="how-strip" aria-label="How RealLearn works">
+          <li className="how-strip__step">
+            <span className="how-strip__num" aria-hidden="true">1</span>
+            Ask any question
+          </li>
+          <li className="how-strip__step">
+            <span className="how-strip__num" aria-hidden="true">2</span>
+            Learn it in three parts
+          </li>
+          <li className="how-strip__step">
+            <span className="how-strip__num" aria-hidden="true">3</span>
+            Pass each quiz to advance
+          </li>
+        </ol>
+      )}
+
       {/* Light-touch link to the full dashboard */}
       {hasActivity && (
         <Link

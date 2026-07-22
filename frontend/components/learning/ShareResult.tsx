@@ -58,10 +58,10 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
 
       // Rich dark gradient — purple core to teal edges
       const bgGrad = ctx.createRadialGradient(W / 2, H * 0.35, 80, W / 2, H / 2, H);
-      bgGrad.addColorStop(0, "#2b2f6e");
-      bgGrad.addColorStop(0.45, "#181c4a");
-      bgGrad.addColorStop(0.85, "#101229");
-      bgGrad.addColorStop(1, "#0a0b18");
+      bgGrad.addColorStop(0, "#1E3A4C");
+      bgGrad.addColorStop(0.45, "#152B3A");
+      bgGrad.addColorStop(0.85, "#0F2029");
+      bgGrad.addColorStop(1, "#0A161D");
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, W, H);
 
@@ -100,7 +100,7 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
       ctx.font = "900 92px Inter, sans-serif";
       ctx.fillStyle = "#ffffff";
       ctx.fillText("Real", W / 2 + 10, 180);
-      ctx.fillStyle = "#9fb0ff";
+      ctx.fillStyle = "#A5D8F2";
       ctx.fillText("Learn", W / 2 + 10, 280);
       ctx.font = "600 36px Inter, sans-serif";
       ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
@@ -134,7 +134,7 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
       const dot = (dx: number, dy: number) => {
         ctx.beginPath();
         ctx.arc(72 + dx, boxY + dy, 6, 0, Math.PI * 2);
-        ctx.fillStyle = "#9fb0ff";
+        ctx.fillStyle = "#A5D8F2";
         ctx.fill();
       };
       dot(0, 0);
@@ -143,7 +143,7 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
       dot(W - 72 - 72, 480);
 
       ctx.textAlign = "center";
-      ctx.fillStyle = "#9fb0ff";
+      ctx.fillStyle = "#A5D8F2";
       ctx.font = "600 42px Inter, sans-serif";
       ctx.fillText("QUESTION", W / 2, boxY + 70);
 
@@ -156,9 +156,9 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
 
       // Stats row — clean bordered glass pills
       const pills = [
-        { text: `⭐ Level ${info.level} · ${levelTitle(info.level)}`, color: "#3b5bff" },
-        { text: `🔥 ${streak}-day streak`, color: "#f0764f" },
-        totalScore >= maxScore ? { text: "🏆 Perfect run", color: "#9fb0ff" } : { text: "✅ Completed", color: "#9fb0ff" },
+        { text: `⭐ Level ${info.level} · ${levelTitle(info.level)}`, color: "#7FC5E8" },
+        { text: `🔥 ${streak}-day streak`, color: "#FFB08C" },
+        totalScore >= maxScore ? { text: "🏆 Perfect run", color: "#A5D8F2" } : { text: "✅ Completed", color: "#A5D8F2" },
       ];
       ctx.font = "700 34px Inter, sans-serif";
       let px = 72;
@@ -201,8 +201,8 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
 
       // Progress arc
       const arcGrad = ctx.createLinearGradient(cx - r, cy, cx + r, cy);
-      arcGrad.addColorStop(0, "#9fb0ff");
-      arcGrad.addColorStop(1, "#3b5bff");
+      arcGrad.addColorStop(0, "#A5D8F2");
+      arcGrad.addColorStop(1, "#7FC5E8");
       ctx.strokeStyle = arcGrad;
       ctx.lineWidth = 18;
       ctx.lineCap = "round";
@@ -236,14 +236,14 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
 
       ctx.textAlign = "center";
       ctx.font = "700 32px Inter, sans-serif";
-      ctx.fillStyle = "#9fb0ff";
+      ctx.fillStyle = "#A5D8F2";
       ctx.fillText(totalScore >= maxScore ? "PERFECT" : "COMPLETED", cx, cy + 80);
 
       ctx.textAlign = "left";
 
       // CTA band — prominent but structured
       const ctaY = H - 130;
-      ctx.fillStyle = "#9fb0ff";
+      ctx.fillStyle = "#A5D8F2";
       ctx.shadowColor = "rgba(0, 224, 198, 0.35)";
       ctx.shadowBlur = 35;
       ctx.beginPath();
@@ -258,7 +258,7 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
       ctx.fill();
 
       ctx.textAlign = "center";
-      ctx.fillStyle = "#0a0b18";
+      ctx.fillStyle = "#0A161D";
       ctx.font = "900 46px Inter, sans-serif";
       ctx.fillText("👉  REALLEARN.SITE  👈", W / 2, ctaY + 65);
 

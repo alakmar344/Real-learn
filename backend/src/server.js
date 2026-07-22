@@ -121,6 +121,18 @@ function anonymizeIp(ip) {
   return "unknown";
 }
 
+// Security: consent endpoints fall back to a body-supplied email (Clerk JWTs
+// carry no email claim). That value is attacker-controlled, so accept it only
+// when it looks like a real address (single @, no whitespace, dotted domain,
+// RFC 3696 max of 320 chars) — anything else is stored as "".
+const CLIENT_EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+function sanitizeClientEmail(raw) {
+  if (typeof raw !== "string") return "";
+  const email = raw.trim();
+  if (email.length === 0 || email.length > 320) return "";
+  return CLIENT_EMAIL_PATTERN.test(email) ? email : "";
+}
+
 // One-time cleanup (policy v2.3): earlier releases stored the RAW client IP
 // in consent records. Retroactively anonymize every stored deviceIp so no
 // full IP address remains anywhere in the agreements collection. Runs in the
@@ -731,9 +743,16 @@ app.get("/health", healthRateLimiter, async (_req, res) => {
     health.dependencies.mongodb = "ok";
   } catch {
     health.ok = false;
-    health.dependencies.mongodb = "error";
+    health.dependencies.mongodb = "down";
   }
-  health.dependencies.ai = getProviderHealthSnapshot();
+  // Security: this endpoint is unauthenticated — expose only a coarse status.
+  // The full provider snapshot (circuit state, failure counts, latencies,
+  // error names) is internal reconnaissance material and stays server-side.
+  const aiSnapshot = getProviderHealthSnapshot();
+  const aiDegraded = Object.values(aiSnapshot).some(
+    (provider) => provider.circuitOpen || provider.consecutiveFailures > 0
+  );
+  health.dependencies.ai = aiDegraded ? "degraded" : "ok";
   const status = health.ok ? 200 : 503;
   // PERFORMANCE: health checks are polled by load balancers and UptimeRobot.
   // A short max-age lets them cache the 200/503 without serving stale state.
@@ -804,9 +823,9 @@ app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
     // sid, iss, exp, azp. So we fall back to the request body email, which
     // is safe because the user is already authenticated (JWT verified).
     const emailFromToken = req.auth?.email || req.auth?.email_address || "";
-    const email =
-      emailFromToken ||
-      (typeof req.body?.email === "string" ? req.body.email.trim().slice(0, 320) : "");
+    // Security: the body fallback is strictly validated (shape + 320-char
+    // max) and recorded as client-provided/unverified via emailSource below.
+    const email = emailFromToken || sanitizeClientEmail(req.body?.email);
 
   const db = await getDb();
   const collection = db.collection("agreements");
@@ -820,6 +839,7 @@ app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
       // so downstream consumers (data-subject requests, notifications) never
       // treat it as a verified address — clerkId is the identity key.
       emailVerified: Boolean(emailFromToken),
+      emailSource: emailFromToken ? "token" : email ? "client-unverified" : "none",
       clerkId,
         // Privacy (policy v2.3): store only the anonymized network prefix,
         // never the full client IP (see anonymizeIp above).
@@ -1066,9 +1086,9 @@ app.post("/api/legal-consent", rateLimit, requireAuth, async (req, res) => {
     // sid, iss, exp, azp. So we fall back to the request body email, which
     // is safe because the user is already authenticated (JWT verified).
     const emailFromToken = req.auth?.email || req.auth?.email_address || "";
-    const email =
-      emailFromToken ||
-      (typeof req.body?.email === "string" ? req.body.email.trim().slice(0, 320) : "");
+    // Security: the body fallback is strictly validated (shape + 320-char
+    // max) and recorded as client-provided/unverified via emailSource below.
+    const email = emailFromToken || sanitizeClientEmail(req.body?.email);
 
     const filter = { clerkId, type: "legal-consent" };
     const update = {
@@ -1077,6 +1097,7 @@ app.post("/api/legal-consent", rateLimit, requireAuth, async (req, res) => {
         email,
         // Security: a body-supplied email is self-asserted (see above).
         emailVerified: Boolean(emailFromToken),
+        emailSource: emailFromToken ? "token" : email ? "client-unverified" : "none",
         clerkId,
         ageBracket: sanitizedAgeBracket,
         // Privacy (policy v2.3): store only the anonymized network prefix,
