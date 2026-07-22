@@ -1736,6 +1736,17 @@ html[data-perf="low"][data-theme="light"] {
   --bg-glass: #FFFFFF;
 }
 
+/* Dark themes drop transparency when blur is stripped in lite mode, so cards stay solid and readable. */
+html[data-perf="low"][data-theme="dark"] {
+  --bg-card: #1A2029;
+  --bg-glass: #1A2029;
+}
+
+html[data-perf="low"][data-theme="twilight"] {
+  --bg-card: #192832;
+  --bg-glass: #192832;
+}
+
 /* MID tier: keep the aurora blobs but freeze their animation (the infinite
    transform loop keeps a compositor layer alive and burns battery on
    mid-range mobile GPUs). The static gradient wash still gives warmth. */
