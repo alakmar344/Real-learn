@@ -533,7 +533,7 @@ export default function LearnPage() {
           <UnlockAnimation show={showUnlockFx} />
         </Suspense>
 
-        <Footer />
+        <Footer className="app-footer" />
       </main>
     </>
   );

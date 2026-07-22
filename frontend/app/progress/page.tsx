@@ -311,7 +311,7 @@ export default function ProgressPage() {
         )}
       </div>
 
-      <Footer />
+      <Footer className="app-footer" />
     </main>
   );
 }

@@ -66,7 +66,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
     <form
       onSubmit={handleSubmit}
       aria-label="Ask a question"
-      className={`q-form liquid-sheen engraved identity-texture texture-noise${focused ? " q-form--focused" : ""}`}
+      className={`q-form engraved${focused ? " q-form--focused" : ""}`}
     >
       <div className="q-form__body">
         <label htmlFor="question-input" style={{ display: "none" }}>

@@ -354,8 +354,8 @@ body {
 
 .aurora-blob {
   position: absolute;
-  width: 72vmax;
-  height: 72vmax;
+  width: 52vmax;
+  height: 52vmax;
   border-radius: 50%;
   will-change: transform;
 }
@@ -1630,8 +1630,9 @@ a:active {
   color: var(--text-tertiary);
   line-height: 1.7;
   background: var(--bg-glass);
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  max-width: 880px;
+  margin-left: auto;
+  margin-right: auto;
 }
 .app-footer__row {
   margin: 0;
@@ -2764,8 +2765,6 @@ p {
   border-radius: var(--radius-2xl);
   border: 1.5px solid var(--border-subtle);
   background: var(--bg-card);
-  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
-  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
   box-shadow:
     0 22px 60px -18px var(--aurora-1),
     0 12px 40px -14px var(--aurora-2),
