@@ -1730,6 +1730,12 @@ html[data-perf="low"] body::before {
   content: none;
 }
 
+/* Override background colors for light theme in low performance mode to ensure brightness */
+html[data-perf="low"][data-theme="light"] {
+  --bg-card: #FFFFFF;
+  --bg-glass: #FFFFFF;
+}
+
 /* MID tier: keep the aurora blobs but freeze their animation (the infinite
    transform loop keeps a compositor layer alive and burns battery on
    mid-range mobile GPUs). The static gradient wash still gives warmth. */
