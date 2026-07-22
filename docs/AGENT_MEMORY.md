@@ -46,7 +46,7 @@ Real-learn/
 │   │   └── shared/    Navbar, Sidebar, Footer, AppShell, ProgressHub, LoadingCinematic, ...
 │   ├── lib/           quizShuffle, themes, achievements, haptics, feedback, legalConsent, ...
 │   ├── hooks/         useLesson, useSpeech, useFocusTrap, useReadingTimer, useMounted
-│   ├── store/         lessonStore, progressStore, preferenceStore, savedJourneysStore (Zustand + persist)
+│   ├── store/         lessonStore, progressStore, preferenceStore (incl. learning personalization), savedJourneysStore (Zustand + persist)
 │   ├── public/        logo.svg, manifest.json, robots.txt
 │   └── app/globals.css   ⭐ the design system (tokens + component classes)
 ├── backend/           Express API  (deploy: Render)
@@ -298,3 +298,11 @@ this protocol. No exceptions.**
   anchoring, >4 quiz options, first-attempt scoring; backend: dev-issuer
   gating, azp production default, /health minimization, moderation regex
   bounds, consent-email validation.
+- 2026-07-22 — **Optional learning personalization.** Signed-in users can now
+  set learning-style preferences (checklist) and free-text notes (500-character
+  cap) in a post-sign-in onboarding modal and in Settings. The data is stored
+  only in `preferenceStore`/`localStorage`, sent with each `/api/generate-lesson`
+  request, and injected into the LLM prompt; the backend validates and caps it
+  but never stores it. The lesson cache key includes personalization so distinct
+  preferences get distinct lessons. Privacy Policy bumped to 2.7, Terms to 2.5,
+  Cookie Policy to 2.3, triggering a re-consent prompt for all users.

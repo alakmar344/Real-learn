@@ -29,9 +29,9 @@
 >   and multi-layer content moderation (regex + LLM).
 >
 > - **Legal Compliance:** Built a complete legal framework from scratch —
->   Privacy Policy (now v2.5), Terms of Service (v2.3), Cookie Policy (v2.2) — with
->   COPPA/CCPA/DPDP compliance, versioned consent, IP anonymization, and
->   automatic reconsent flows.
+>   Privacy Policy (now v2.7), Terms of Service (v2.5), Cookie Policy (v2.3) — with
+>   COPPA/CCPA/DPDP compliance, versioned consent, IP anonymization, optional
+>   learning personalization disclosure, and automatic reconsent flows.
 >
 > - **Accessibility:** Went from zero accessibility to targeting WCAG 2.1 Level
 >   AA — ARIA labels, keyboard navigation, focus trapping, skip-to-content,
@@ -915,7 +915,8 @@ vendors). All of these live between `2b239b5` (start) and now:
 | 2026-07-13 | `722f53e` | **Current: Cerebras primary (gemma-4-31b), Cloudflare fallback** |
 | 2026-07-14 | lang + storage | 12 languages, all-chats IndexedDB split, legal v2.4/ToS v2.3 |
 | 2026-07-15 | `f944320` | Aurora background, softened crayon scene, easter eggs, attachment features |
-| 2026-07-15 | legal docs | **Current: Privacy Policy v2.5, Cookie Policy v2.2 (reconsent), ToS v2.3** |
+| 2026-07-15 | legal docs | Privacy Policy v2.5, Cookie Policy v2.2 (reconsent), ToS v2.3 |
+| 2026-07-22 | legal docs | **Current: Privacy Policy v2.7, Cookie Policy v2.3 (reconsent), ToS v2.5** |
 | 2026-07-16 | `f57b9ed` | Restore ReaLearn's scholarly gold identity (gold/amber accent, replace generic iOS-blue) |
 | 2026-07-16 | `f4c2d9c` | Material texture + identity-by-shape (paper/mottle grain, engraved border, gold corner) |
 | 2026-07-17 | `23779fa` | Optional anonymous feedback prompt (1–10 stars + notes) shown soon after first lesson; public /api/feedback stores only rating+text (no identifiers) |
@@ -923,6 +924,7 @@ vendors). All of these live between `2b239b5` (start) and now:
 | 2026-07-17 | reconsent | Bump CURRENT_PRIVACY_VERSION 2.6 / CURRENT_TERMS_VERSION 2.4 (frontend + backend) so all users re-accept |
 | 2026-07-20 | docs | Add `docs/AGENT_MEMORY.md` + root `AGENT_INSTRUCTIONS.md` — single source of truth every AI agent reads before touching the repo; defines design-system usage, de-slop rules, UX/a11y principles, Git/PR workflow, and the mandatory Change Protocol. Pointers added to `README.md` and `llms.txt`. |
 | 2026-07-20 | deslop+ux | De-slop the homepage chrome: move hero/navbar/question-input/footer inline-style soup into real `globals.css` classes (`.hero__*`, `.navbar-*`, `.q-form__*`, `.mode-glider__*`, `.app-footer__*`); remove emoji-laden time-of-day greeting + saccharine footer copy; trim flowery AI-signature comments; drop the gradient-shimmer on the wordmark. UX: form now uses the design system consistently, footer hover is CSS not JS. `tsc`, `next lint`, and `next build` all pass (11 pages). |
+| 2026-07-22 | personalization | Optional learning personalization: `preferenceStore` gains `personalization` (learning-style checklist + 500-char free-text notes); `PersonalizationGate` prompts signed-in users after legal consent; Settings page adds a "Learning preferences" section; `useLesson` sends preferences with every `/api/generate-lesson` request; backend validates/caps them and injects them into the LLM prompt; `lessonCacheKey` includes personalization so tailored lessons don't collide. Privacy Policy v2.7, Terms v2.5, Cookie Policy v2.3 with re-consent prompt. Docs updated (`AGENT_MEMORY.md`, `change-made-after-submission.md`). |
 
 ---
 

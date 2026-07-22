@@ -14,9 +14,10 @@ Key facts:
 - Adaptive difficulty: Class 6-8, Class 9-10, College/Advanced.
 - Real-world grounding via live news context (Serper API).
 - Production-grade reliability: SSE streaming, circuit breaker, two-tier caching (in-memory LRU + MongoDB), concurrency control, rate limiting.
-- Full security and privacy: Clerk auth, content moderation, IDOR prevention, GDPR-minded consent, data export and permanent deletion.
+- Full security and privacy: Clerk auth, content moderation, IDOR prevention, GDPR-minded consent, data export and permanent deletion, locally-stored learning personalization.
 - Accessibility: WCAG 2.1 AA targeting with keyboard navigation, ARIA live regions, reduced-motion support.
 - Gamification: XP, levels, streaks, 17 achievements, activity heatmap, shareable result cards.
+- Learning personalization: optional checklist + free-text notes stored on-device and sent with each lesson request to tailor AI explanations (500-character cap).
 - Frontend: Next.js 15 + React 19 + TypeScript on Vercel.
 - Backend: Node.js + Express on Render.
 - Repository: https://github.com/alakmar344/reallearn
