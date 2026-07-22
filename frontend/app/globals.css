@@ -177,13 +177,13 @@ html[data-theme="dark"] {
 
   --bg-primary: #12161C;
   --bg-surface: rgba(26, 32, 41, 0.8);
-  --bg-card: rgba(31, 38, 48, 0.87);
-  --bg-card-hover: rgba(40, 49, 61, 0.95);
+  --bg-card: rgba(40, 50, 64, 0.95);
+  --bg-card-hover: rgba(50, 62, 78, 0.97);
   --bg-glass: rgba(20, 25, 32, 0.78);
   --bg-solid: #1A2029;
 
-  --border-subtle: rgba(235, 242, 246, 0.09);
-  --border-default: rgba(235, 242, 246, 0.15);
+  --border-subtle: rgba(235, 242, 246, 0.12);
+  --border-default: rgba(235, 242, 246, 0.18);
   --border-accent: var(--brand);
   --border-glow: rgba(127, 197, 232, 0.38);
 
@@ -243,8 +243,8 @@ html[data-theme="twilight"] {
 
   --bg-primary: #142028;
   --bg-surface: rgba(32, 48, 58, 0.55);
-  --bg-card: rgba(36, 53, 64, 0.6);
-  --bg-card-hover: rgba(46, 66, 79, 0.72);
+  --bg-card: rgba(45, 65, 80, 0.85);
+  --bg-card-hover: rgba(55, 78, 95, 0.9);
   --bg-glass: rgba(22, 34, 42, 0.6);
   --bg-solid: #192832;
 
@@ -255,8 +255,8 @@ html[data-theme="twilight"] {
   --cobalt-wash: rgba(255, 176, 140, 0.12);
   --cobalt-ink: #0B1318;
 
-  --border-subtle: rgba(255, 220, 201, 0.13);
-  --border-default: rgba(255, 220, 201, 0.2);
+  --border-subtle: rgba(255, 220, 201, 0.16);
+  --border-default: rgba(255, 220, 201, 0.24);
   --border-accent: #FFB08C;
   --border-glow: rgba(255, 176, 140, 0.38);
 
