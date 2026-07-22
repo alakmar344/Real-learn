@@ -87,6 +87,13 @@
 
 ## What's Changed (latest)
 
+**Today — July 22, 2026**
+- **The Still Ink design language.** After nine theme-driven redesigns (gold, liquid glass, Japanese, Indian tricolor), the UI now has a design meant to be kept, not changed: ink-on-paper neutrals, one deep iris-indigo accent, neutral shadows, and zero cultural or seasonal ornament. Three moods of the same room — **Paper** (light), **Ink** (dark), **Dusk** (twilight). The crayon-scene backdrop, tricolor washes, pattern overlays, and seasonal accents are retired; the backdrop is now just paper, air, and a barely-there aurora breath.
+- **Newcomer onboarding.** First-time visitors see a quiet three-step "How it works" strip (ask → learn in three parts → pass each quiz); it disappears after the first activity.
+- **Bug fixes.** Empty-quiz parts no longer deadlock a journey; toasts are announced to screen readers reliably; SSE streams are cancelled on every error path; the activity heatmap now shows true calendar weeks; quizzes render any number of options correctly; "perfect" achievements now track first-attempt scores (they previously always fired). The browser address-bar color now follows the page background instead of flashing flag-orange.
+- **Security hardening.** Dev Clerk issuers require an explicit opt-in flag (was a full auth bypass if NODE_ENV was misconfigured); authorized parties default to production origins; `/health` no longer leaks provider internals; moderation regexes are bounded against ReDoS (20k-char scan: 18.5s → 8ms); consent emails are validated and provenance-flagged.
+
+
 A short, human-readable digest of the most recent work. Full detail remains in
 the themed sections below and the chronological table at the end.
 
