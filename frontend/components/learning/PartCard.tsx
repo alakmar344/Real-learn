@@ -81,7 +81,6 @@ const PartCardBase = ({
         borderRadius: "var(--radius-2xl)",
         border: "1px solid var(--border-subtle)",
         background: "var(--bg-card)",
-        boxShadow: "var(--glass-shadow), var(--glass-edge)",
         padding: "clamp(28px, 6vw, 48px)",
         position: "relative",
         overflow: "hidden",
