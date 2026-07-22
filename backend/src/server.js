@@ -163,6 +163,25 @@ async function scrubStoredConsentIps() {
   }
 }
 
+// PERFORMANCE/SECURITY (DoS hardening): every consent lookup/upsert, data
+// export, and account deletion filters on clerkId (+ type). Without indexes
+// those are full collection scans, which get slower — and cheaper to
+// weaponize via the authenticated status endpoints — as the collections grow.
+// Runs in the background at startup; failures are non-fatal (queries still
+// work, just unindexed until the next boot retries).
+async function ensureUserDataIndexes() {
+  try {
+    const db = await getDb();
+    await Promise.all([
+      db.collection("agreements").createIndex({ clerkId: 1, type: 1 }),
+      db.collection("moderationLogs").createIndex({ clerkId: 1 }),
+    ]);
+    console.log("[startup] User-data indexes ensured");
+  } catch (error) {
+    console.error("[startup] Failed to ensure user-data indexes", error?.message);
+  }
+}
+
 let EdgeTTS = null;
 try {
   const mod = await import("node-edge-tts");
@@ -178,6 +197,13 @@ if (!fs.existsSync(TTS_TEMP_DIR)) {
 
 const TTS_RATE_LIMIT_WINDOW_MS = 60000;
 const TTS_RATE_LIMIT_MAX = 30;
+// SECURITY: each synthesis holds a WebSocket to the Edge TTS service, a temp
+// file on disk, and the full MP3 in memory — per-caller rate limits alone
+// don't bound the AGGREGATE across many callers. Cap simultaneous synthesis
+// jobs so a burst degrades to fast 503s instead of exhausting sockets/disk;
+// cache hits and 304 revalidations are unaffected.
+const MAX_CONCURRENT_TTS_SYNTHESES = 8;
+let activeTtsSyntheses = 0;
 
 // ── Shared rate limiter ──
 // SECURITY: bearer tokens are NOT verified at this layer, so a limiter keyed
@@ -228,12 +254,32 @@ function isTokenSpray(ip, tokenKey) {
   return buckets.size > MAX_TOKEN_KEYS_PER_IP;
 }
 
+// SECURITY: keying IPv6 callers on the full 128-bit address hands an attacker
+// with an ordinary residential /64 allocation 2^64 distinct addresses — i.e.
+// unlimited fresh rate-limit buckets for every limiter below. Collapse IPv6 to
+// its /64 network prefix; IPv4 (incl. v4-mapped IPv6) keeps the exact address.
+function rateLimitIpKey(ip) {
+  if (typeof ip !== "string" || !ip) return "unknown";
+  const stripped = ip.split("%")[0].trim();
+  const v4Mapped = stripped.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/i);
+  if (v4Mapped) return v4Mapped[1];
+  if (!stripped.includes(":")) return stripped;
+  // Expand "::" compression so the first 4 hextets (the /64) are reliable.
+  const [headRaw, tailRaw = ""] = stripped.split("::");
+  const headParts = headRaw ? headRaw.split(":") : [];
+  const tailParts = tailRaw ? tailRaw.split(":") : [];
+  const missing = Math.max(0, 8 - headParts.length - tailParts.length);
+  const groups = [...headParts, ...Array(missing).fill("0"), ...tailParts];
+  return `${groups.slice(0, 4).join(":")}::/64`;
+}
+
 function createRateLimiter({ windowMs, max, ipMultiplier = 5 }) {
   const tooMany = (_req, res) => {
     res.setHeader("Retry-After", Math.ceil(windowMs / 1000));
     res.status(429).json({ error: "Too many requests. Please slow down." });
   };
-  const clientIp = (req) => req.ip || req.socket?.remoteAddress || "unknown";
+  const clientIp = (req) =>
+    rateLimitIpKey(req.ip || req.socket?.remoteAddress || "unknown");
 
   // Gate 1 — the ALWAYS-ON IP backstop. Counts EVERY request from an IP,
   // token or not, capped at `max * ipMultiplier`.
@@ -1193,7 +1239,11 @@ app.get("/api/export-data", rateLimit, requireAuth, async (req, res) => {
     ]);
 
     res.setHeader("Content-Type", "application/json");
-    res.setHeader("Content-Disposition", `attachment; filename="reallearn-data-${userId}.json"`);
+    // Security: `sub` is only Clerk-shaped for OUR issuer — a token minted on
+    // an allowlisted dev issuer controls it fully, so keep header-safe chars
+    // only (quotes/control bytes must never reach Content-Disposition).
+    const safeFilenameId = String(userId).replace(/[^\w.-]/g, "_").slice(0, 64);
+    res.setHeader("Content-Disposition", `attachment; filename="reallearn-data-${safeFilenameId}.json"`);
     res.json({
       exportedAt: new Date().toISOString(),
       user: {
@@ -1275,6 +1325,14 @@ app.post("/api/tts", ttsRateLimiter, requireAuth, async (req, res) => {
       return sendAudio(cached);
     }
 
+    // Concurrency gate: only cache-missing requests reach actual synthesis.
+    if (activeTtsSyntheses >= MAX_CONCURRENT_TTS_SYNTHESES) {
+      res.setHeader("Retry-After", 2);
+      return res
+        .status(503)
+        .json({ error: "Speech service is busy. Please retry in a moment." });
+    }
+
     const tts = new EdgeTTS({
       voice,
       lang,
@@ -1293,11 +1351,14 @@ app.post("/api/tts", ttsRateLimiter, requireAuth, async (req, res) => {
       `${cacheKey.slice(0, 16)}-${crypto.randomUUID()}.mp3`
     );
     let fileBuffer;
+    activeTtsSyntheses += 1;
     try {
       await tts.ttsPromise(text, outFile);
       fileBuffer = await fs.promises.readFile(outFile);
     } finally {
-      // Always remove the temp file, even when synthesis/read fails.
+      // Always release the synthesis slot and remove the temp file, even when
+      // synthesis/read fails.
+      activeTtsSyntheses -= 1;
       fs.unlink(outFile, () => {});
     }
 
@@ -2101,6 +2162,8 @@ try {
     // Privacy (policy v2.3): retroactively anonymize raw IPs stored by
     // earlier releases. Fire-and-forget; errors are logged, not fatal.
     void scrubStoredConsentIps();
+    // DoS hardening: index the per-user query paths. Fire-and-forget.
+    void ensureUserDataIndexes();
   });
 
   // SECURITY (Slowloris): bound how long a client may take to send its

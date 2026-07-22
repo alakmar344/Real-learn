@@ -10,7 +10,13 @@ import {
   hasAnalyticsConsent,
 } from "@/lib/legalConsent";
 
-const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID;
+// Security: the measurement id is interpolated into an inline <script> body
+// and a script src URL below. Restrict it to the GA id character set so a
+// malformed/tampered env value (e.g. one containing quotes) can never become
+// script injection in the app origin.
+const RAW_GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+const GA_MEASUREMENT_ID =
+  RAW_GA_ID && /^[A-Za-z0-9_-]+$/.test(RAW_GA_ID) ? RAW_GA_ID : undefined;
 
 function loadGtag() {
   if (typeof window === "undefined") return;
