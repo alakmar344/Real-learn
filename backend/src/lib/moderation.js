@@ -12,9 +12,10 @@ const MAX_MODERATION_INPUT_CHARS = 12000;
 // Security: generated lessons (max_tokens 6000) can exceed 12k characters,
 // and content in the tail must still be scanned — a lower cap left everything
 // past 12k unmoderated. 60k is still ~2x the largest possible lesson
-// (6000 tokens ≈ 24-30k chars) while bounding the regex work: several banned
-// patterns contain multiple `[^.!?]*` runs, which degrade quadratically on
-// punctuation-free text, so the cap is the effective ReDoS guard.
+// (6000 tokens ≈ 24-30k chars). Note the 60k cap is NOT the ReDoS guard: the
+// multi-gap INSTRUCTIONAL_PATTERNS run only against user questions, which
+// server.js caps at 1000 chars (MAX_QUESTION_LENGTH) — that input bound plus
+// the bounded `[^.!?]{0,120}` gaps keep the regex work linear.
 const MAX_MODERATION_OUTPUT_CHARS = 60000;
 
 const DEFAULT_MODERATION_CACHE_TTL_MS = 15 * 60 * 1000;
@@ -151,50 +152,54 @@ const ALWAYS_ILLEGAL_PATTERNS = [
 // chemistry lesson explains reactions, and re-blocking those on output would
 // make the sensitive-but-educational topics the app is designed to teach
 // unanswerable. Harmful requests are already stopped at the input gate.
+// Security (ReDoS): every sentence-scoped gap is bounded (`[^.!?]{0,120}`) —
+// several patterns chain multiple gaps, and unbounded `[^.!?]*` runs were
+// super-linear on long punctuation-free input. 120 chars comfortably spans
+// any real intra-sentence gap in a ≤1000-char question.
 const INSTRUCTIONAL_PATTERNS = [
   // ── Weapons / explosives / drugs: block instructional intent, not mentions ──
-  /\bhow\b[^.!?]*\b(make|build|construct|create|assemble|manufacture|3d\s*print)\b[^.!?]*\b(bomb|explosive|ied|grenade|pipe\s*bomb|molotov|landmine)\b/i,
-  /\b(bomb|explosive|ied)\b[^.!?]*\b(making|building|recipe|instruction|tutorial|blueprint)\b/i,
-  /\bhow\b[^.!?]*\b(make|build|3d\s*print|manufacture|obtain|get)\b[^.!?]*\b(gun|firearm|silencer|ghost\s*gun|untraceable\s*weapon)\b/i,
-  /\bhow\b[^.!?]*\b(make|synthesize|cook|manufacture|produce|grow)\b[^.!?]*\b(meth|methamphetamine|cocaine|crack|heroin|fentanyl|mdma|ecstasy|lsd|illegal\s*drugs)\b/i,
+  /\bhow\b[^.!?]{0,120}\b(make|build|construct|create|assemble|manufacture|3d\s*print)\b[^.!?]{0,120}\b(bomb|explosive|ied|grenade|pipe\s*bomb|molotov|landmine)\b/i,
+  /\b(bomb|explosive|ied)\b[^.!?]{0,120}\b(making|building|recipe|instruction|tutorial|blueprint)\b/i,
+  /\bhow\b[^.!?]{0,120}\b(make|build|3d\s*print|manufacture|obtain|get)\b[^.!?]{0,120}\b(gun|firearm|silencer|ghost\s*gun|untraceable\s*weapon)\b/i,
+  /\bhow\b[^.!?]{0,120}\b(make|synthesize|cook|manufacture|produce|grow)\b[^.!?]{0,120}\b(meth|methamphetamine|cocaine|crack|heroin|fentanyl|mdma|ecstasy|lsd|illegal\s*drugs)\b/i,
 
   // ── Violence / kidnapping against a person (instructional intent) ──
-  /\bhow\b[^.!?]*\b(kill|murder|poison|stab|strangle|assault|kidnap)\b[^.!?]*\b(someone|somebody|a\s*person|people|him|her|them|my|a\s*child|children)\b/i,
-  /\bhow\b[^.!?]*\b(kidnap|abduct)\b[^.!?]*\b(someone|somebody|a\s*person|people|him|her|them|my|a\s*child|children|hostage|ransom)\b/i,
-  /\b(kidnap|abduct|abduction|kidnapping)\b[^.!?]*\b(guide|tutorial|steps?|instructions?|recipe|tips?|plan|planning|carry\s*out|execute|hostage|ransom|captive)\b/i,
-  /\bhow\b[^.!?]*\b(get\s*away\s*with|commit)\b[^.!?]*\b(murder|killing|crime|kidnapping|abduction)\b/i,
-  /\b(plan|planning|carry\s*out|execute)\b[^.!?]*\b(terror|terrorist|mass|school)\b[^.!?]*\b(attack|shooting|bombing|kidnapping)\b/i,
-  /\b(hold\s*someone|take\s*someone|keep\s*someone)\b[^.!?]*\b(hostage|captive|captivity|ransom)\b/i,
+  /\bhow\b[^.!?]{0,120}\b(kill|murder|poison|stab|strangle|assault|kidnap)\b[^.!?]{0,120}\b(someone|somebody|a\s*person|people|him|her|them|my|a\s*child|children)\b/i,
+  /\bhow\b[^.!?]{0,120}\b(kidnap|abduct)\b[^.!?]{0,120}\b(someone|somebody|a\s*person|people|him|her|them|my|a\s*child|children|hostage|ransom)\b/i,
+  /\b(kidnap|abduct|abduction|kidnapping)\b[^.!?]{0,120}\b(guide|tutorial|steps?|instructions?|recipe|tips?|plan|planning|carry\s*out|execute|hostage|ransom|captive)\b/i,
+  /\bhow\b[^.!?]{0,120}\b(get\s*away\s*with|commit)\b[^.!?]{0,120}\b(murder|killing|crime|kidnapping|abduction)\b/i,
+  /\b(plan|planning|carry\s*out|execute)\b[^.!?]{0,120}\b(terror|terrorist|mass|school)\b[^.!?]{0,120}\b(attack|shooting|bombing|kidnapping)\b/i,
+  /\b(hold\s*someone|take\s*someone|keep\s*someone)\b[^.!?]{0,120}\b(hostage|captive|captivity|ransom)\b/i,
 
   // ── Self-harm / suicide encouragement or methods ──
-  /\bhow\b[^.!?]*\b(commit\s*)?(suicide|kill\s*myself|end\s*my\s*life)\b/i,
-  /\b(best|fastest|painless|easiest|most\s*effective)\b[^.!?]*\bway\b[^.!?]*\b(die|kill\s*myself|commit\s*suicide)\b/i,
-  /\bhow\b[^.!?]*\b(cut|harm|hurt|injure)\b[^.!?]*\bmyself\b/i,
-  /\bsuicide\b[^.!?]*\b(method|technique|pact)\b/i,
+  /\bhow\b[^.!?]{0,120}\b(commit\s*)?(suicide|kill\s*myself|end\s*my\s*life)\b/i,
+  /\b(best|fastest|painless|easiest|most\s*effective)\b[^.!?]{0,120}\bway\b[^.!?]{0,120}\b(die|kill\s*myself|commit\s*suicide)\b/i,
+  /\bhow\b[^.!?]{0,120}\b(cut|harm|hurt|injure)\b[^.!?]{0,120}\bmyself\b/i,
+  /\bsuicide\b[^.!?]{0,120}\b(method|technique|pact)\b/i,
 
   // ── Hate content generation (intent to produce slurs/hate, not the topic) ──
-  /\b(generate|write|give\s*me|create|tell\s*me\s*a)\b[^.!?]*\b(hate\s*speech|racist\s*(joke|slur)|ethnic\s*slur|slurs?)\b/i,
+  /\b(generate|write|give\s*me|create|tell\s*me\s*a)\b[^.!?]{0,120}\b(hate\s*speech|racist\s*(joke|slur)|ethnic\s*slur|slurs?)\b/i,
 
   // ── Cybercrime / fraud (instructional intent) ──
-  /\bhow\b[^.!?]*\b(hack|breach|break\s*into)\b[^.!?]*\b(bank|account|wifi|wi-fi|password|email|phone|government|system|network|server)\b/i,
-  /\bhow\b[^.!?]*\b(steal|launder|counterfeit)\b[^.!?]*\b(money|cash|cards?|identit|funds)\b/i,
-  /\b(credit\s*card|identity)\b[^.!?]*\b(theft|fraud)\b[^.!?]*\b(how|guide|tutorial|step|tips)\b/i,
+  /\bhow\b[^.!?]{0,120}\b(hack|breach|break\s*into)\b[^.!?]{0,120}\b(bank|account|wifi|wi-fi|password|email|phone|government|system|network|server)\b/i,
+  /\bhow\b[^.!?]{0,120}\b(steal|launder|counterfeit)\b[^.!?]{0,120}\b(money|cash|cards?|identit|funds)\b/i,
+  /\b(credit\s*card|identity)\b[^.!?]{0,120}\b(theft|fraud)\b[^.!?]{0,120}\b(how|guide|tutorial|step|tips)\b/i,
 
   // ── Trafficking / smuggling (instructional intent) ──
-  /\bhow\b[^.!?]*\b(traffic|smuggle)\b[^.!?]*\b(people|humans|a\s*person|drugs|weapons)\b/i,
+  /\bhow\b[^.!?]{0,120}\b(traffic|smuggle)\b[^.!?]{0,120}\b(people|humans|a\s*person|drugs|weapons)\b/i,
 
   // ── Paraphrased instructional intent (no "how") ──
   // "steps/instructions/recipe to make a bomb", "teach me to build an IED".
   // The indefinite article ("a bomb", "an explosive") is deliberate: it
   // distinguishes wanting to MAKE one from historical questions about "the
   // atomic bomb", which must remain answerable.
-  /\b(steps?|instructions?|guide|tutorial|recipe|blueprint)\b[^.!?]*\b(to|for)\b[^.!?]*\b(make|making|build|building|create|creating|assemble|assembling)\b[^.!?]*\b(a|an|my\s+own)\s+(bomb|explosive|ied|grenade|pipe\s*bomb|molotov|landmine|gun|firearm|silencer)\b/i,
-  /\b(teach|show|tell|help)\b[^.!?]*\bme\b[^.!?]*\b(make|build|create|assemble|synthesize|cook)\b[^.!?]*\b(a|an|my\s+own)\s+(bomb|explosive|ied|grenade|pipe\s*bomb|molotov|landmine|gun|firearm|silencer)\b/i,
+  /\b(steps?|instructions?|guide|tutorial|recipe|blueprint)\b[^.!?]{0,120}\b(to|for)\b[^.!?]{0,120}\b(make|making|build|building|create|creating|assemble|assembling)\b[^.!?]{0,120}\b(a|an|my\s+own)\s+(bomb|explosive|ied|grenade|pipe\s*bomb|molotov|landmine|gun|firearm|silencer)\b/i,
+  /\b(teach|show|tell|help)\b[^.!?]{0,120}\bme\b[^.!?]{0,120}\b(make|build|create|assemble|synthesize|cook)\b[^.!?]{0,120}\b(a|an|my\s+own)\s+(bomb|explosive|ied|grenade|pipe\s*bomb|molotov|landmine|gun|firearm|silencer)\b/i,
   // Drug synthesis has no legitimate at-home framing at all.
-  /\b(steps?|instructions?|guide|tutorial|recipe|formula|blueprint|teach\s+me|show\s+me)\b[^.!?]*\b(make|making|synthesize|synthesizing|cook|cooking|produce|producing|manufacture|manufacturing)\b[^.!?]*\b(meth|methamphetamine|cocaine|crack|heroin|fentanyl|mdma|ecstasy|lsd)\b/i,
-  /\b(recipe|formula)\b[^.!?]*\b(for|of)\b[^.!?]*\b(meth|methamphetamine|cocaine|crack|heroin|fentanyl|mdma|ecstasy|lsd)\b/i,
+  /\b(steps?|instructions?|guide|tutorial|recipe|formula|blueprint|teach\s+me|show\s+me)\b[^.!?]{0,120}\b(make|making|synthesize|synthesizing|cook|cooking|produce|producing|manufacture|manufacturing)\b[^.!?]{0,120}\b(meth|methamphetamine|cocaine|crack|heroin|fentanyl|mdma|ecstasy|lsd)\b/i,
+  /\b(recipe|formula)\b[^.!?]{0,120}\b(for|of)\b[^.!?]{0,120}\b(meth|methamphetamine|cocaine|crack|heroin|fentanyl|mdma|ecstasy|lsd)\b/i,
   // Self-harm paraphrases: "ways to end my life", "methods to kill myself".
-  /\b(ways?|methods?|ideas?|tips?)\b[^.!?]*\b(kill\s+myself|end\s+my\s+life|commit\s+suicide|hurt\s+myself|harm\s+myself)\b/i,
+  /\b(ways?|methods?|ideas?|tips?)\b[^.!?]{0,120}\b(kill\s+myself|end\s+my\s+life|commit\s+suicide|hurt\s+myself|harm\s+myself)\b/i,
 
   // ── Multilingual coverage (the product serves 12 languages; the patterns
   // above are English-only, which previously let the same harmful requests
@@ -202,27 +207,27 @@ const INSTRUCTIONAL_PATTERNS = [
   // the highest-severity intents. `।` (danda) is the Devanagari sentence
   // terminator and joins the sentence-scoping exclusion set. ──
   // Bomb-making (Devanagari): "बम कैसे बनाएं", "बम बनाने का तरीका"
-  /बम[^.!?।]*(कैसे|बनान|बनाना|बनाने|बनाऊ|बनाए|तरीक)/,
-  /(कैसे|तरीक)[^.!?।]*बम[^.!?।]*बना/,
+  /बम[^.!?।]{0,120}(कैसे|बनान|बनाना|बनाने|बनाऊ|बनाए|तरीक)/,
+  /(कैसे|तरीक)[^.!?।]{0,120}बम[^.!?।]{0,120}बना/,
   // Bomb-making (romanized): "bomb kaise banaye", "bam banane ka tarika"
-  /\b(bomb|bam)\b[^.!?]*\b(kaise|banane|banana|banau|banaye|tarika|tareeka)\b/i,
-  /\b(kaise|tarika|tareeka)\b[^.!?]*\b(bomb|bam)\b[^.!?]*\bbana/i,
+  /\b(bomb|bam)\b[^.!?]{0,120}\b(kaise|banane|banana|banau|banaye|tarika|tareeka)\b/i,
+  /\b(kaise|tarika|tareeka)\b[^.!?]{0,120}\b(bomb|bam)\b[^.!?]{0,120}\bbana/i,
   // Suicide (Devanagari): "आत्महत्या कैसे करें", "खुदकुशी का तरीका"
-  /(आत्महत्या|खुदकुशी|ख़ुदकुशी)[^.!?।]*(कैसे|तरीक|करू|करें|करने)/,
-  /(कैसे|तरीक)[^.!?।]*(आत्महत्या|खुदकुशी|ख़ुदकुशी)/,
+  /(आत्महत्या|खुदकुशी|ख़ुदकुशी)[^.!?।]{0,120}(कैसे|तरीक|करू|करें|करने)/,
+  /(कैसे|तरीक)[^.!?।]{0,120}(आत्महत्या|खुदकुशी|ख़ुदकुशी)/,
   // Suicide (romanized): "khudkushi kaise kare", "atmahatya karne ka tarika"
-  /\b(khudkushi|khudkhushi|atmahatya|aatmahatya)\b[^.!?]*\b(kaise|kare|karu|karne|tarika|tareeka)\b/i,
-  /\b(kaise|tarika|tareeka)\b[^.!?]*\b(khudkushi|khudkhushi|atmahatya|aatmahatya)\b/i,
+  /\b(khudkushi|khudkhushi|atmahatya|aatmahatya)\b[^.!?]{0,120}\b(kaise|kare|karu|karne|tarika|tareeka)\b/i,
+  /\b(kaise|tarika|tareeka)\b[^.!?]{0,120}\b(khudkushi|khudkhushi|atmahatya|aatmahatya)\b/i,
   // Killing someone (Devanagari): "किसी को कैसे मारें"
-  /(किसी\s*को|उसे|उन्हें)[^.!?।]*(कैसे)[^.!?।]*(मार|जान\s*से)/,
+  /(किसी\s*को|उसे|उन्हें)[^.!?।]{0,120}(कैसे)[^.!?।]{0,120}(मार|जान\s*से)/,
   // Kidnapping / abduction (Devanagari): "अपहरण कैसे करें", "किडनैप का तरीका"
-  /(अपहरण|किडनैप|किडनैपिंग)[^.!?।]*(कैसे|तरीक|करू|करें|करने|प्लान|योजना)/,
-  /(कैसे|तरीक)[^.!?।]*(अपहरण|किडनैप|किडनैपिंग)[^.!?।]*(करें|करू|करने|करो)/,
-  /(किसी\s*को|बच्चे\s*को|उसे|उन्हें)[^.!?।]*(किडनैप|अपहरण|उठा)[^.!?।]*(कैसे|करें|करो|ले\s*जा)/,
+  /(अपहरण|किडनैप|किडनैपिंग)[^.!?।]{0,120}(कैसे|तरीक|करू|करें|करने|प्लान|योजना)/,
+  /(कैसे|तरीक)[^.!?।]{0,120}(अपहरण|किडनैप|किडनैपिंग)[^.!?।]{0,120}(करें|करू|करने|करो)/,
+  /(किसी\s*को|बच्चे\s*को|उसे|उन्हें)[^.!?।]{0,120}(किडनैप|अपहरण|उठा)[^.!?।]{0,120}(कैसे|करें|करो|ले\s*जा)/,
   // Kidnapping (romanized Hindi): "kidnap kaise kare", "apharan ka tarika"
-  /\b(kidnap|apharan|apaharan|udha)\b[^.!?]*\b(kaise|banane|kare|karu|karne|tarika|tareeka|plan|tarike)\b/i,
-  /\b(kaise|tarika|tareeka|plan|tarike)\b[^.!?]*\b(kidnap|apharan|apaharan|udha)\b[^.!?]*\b(kare|karu|karne|karo|banaye)\b/i,
-  /\b(kisi\s*ko|bachhe\s*ko|use|unhe)\b[^.!?]*\b(kidnap|apharan|apaharan|udha)\b[^.!?]*\b(kaise|kare|karu|le\s*ja)\b/i,
+  /\b(kidnap|apharan|apaharan|udha)\b[^.!?]{0,120}\b(kaise|banane|kare|karu|karne|tarika|tareeka|plan|tarike)\b/i,
+  /\b(kaise|tarika|tareeka|plan|tarike)\b[^.!?]{0,120}\b(kidnap|apharan|apaharan|udha)\b[^.!?]{0,120}\b(kare|karu|karne|karo|banaye)\b/i,
+  /\b(kisi\s*ko|bachhe\s*ko|use|unhe)\b[^.!?]{0,120}\b(kidnap|apharan|apaharan|udha)\b[^.!?]{0,120}\b(kaise|kare|karu|le\s*ja)\b/i,
 ];
 
 // Full input guardrail = always-illegal content + harmful instructional intent.

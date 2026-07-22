@@ -18,18 +18,28 @@ function intensityColor(count: number): string {
 /** GitHub-style contribution grid over the last N weeks (local dates). */
 export default function ActivityHeatmap({ history, weeks = 14 }: Props) {
   const today = new Date();
-  // Anchor to the most recent Saturday so columns are clean weeks.
   const end = new Date(today);
   end.setHours(0, 0, 0, 0);
+  // Anchor the grid to the Saturday that ENDS the current week so every
+  // column is one real Sun–Sat calendar week (GitHub-style) — previously the
+  // grid ended on "today", so each column mixed days from two weeks. Days
+  // after today render as invisible placeholders to keep weekday rows fixed.
+  const anchor = new Date(end);
+  anchor.setDate(end.getDate() + (6 - end.getDay()));
   const totalDays = weeks * 7;
 
-  const cells: { key: string; count: number; label: string }[] = [];
+  const cells: { key: string; count: number; label: string; future: boolean }[] = [];
   for (let i = totalDays - 1; i >= 0; i--) {
-    const d = new Date(end);
-    d.setDate(end.getDate() - i);
+    const d = new Date(anchor);
+    d.setDate(anchor.getDate() - i);
     const key = dayKey(d);
     const count = history[key] ?? 0;
-    cells.push({ key, count, label: `${key}: ${count} part${count === 1 ? "" : "s"}` });
+    cells.push({
+      key,
+      count,
+      label: `${key}: ${count} part${count === 1 ? "" : "s"}`,
+      future: d > end,
+    });
   }
 
   // Column-major grid (each column = one week).
@@ -46,13 +56,14 @@ export default function ActivityHeatmap({ history, weeks = 14 }: Props) {
             {col.map((cell) => (
               <div
                 key={cell.key}
-                title={cell.label}
+                title={cell.future ? undefined : cell.label}
                 style={{
                   width: 12,
                   height: 12,
                   borderRadius: 3,
-                  background: intensityColor(cell.count),
-                  border: "1px solid var(--border-subtle)",
+                  // Future days in the current week are blank spacers.
+                  background: cell.future ? "transparent" : intensityColor(cell.count),
+                  border: `1px solid ${cell.future ? "transparent" : "var(--border-subtle)"}`,
                 }}
               />
             ))}

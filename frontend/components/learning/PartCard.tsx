@@ -179,11 +179,19 @@ const PartCardBase = ({
               <button
                 type="button"
                 onClick={onStartQuiz}
-                aria-label={`Take quiz for Part ${part.partNumber}`}
+                // Empty-quiz parts advance directly (see learn/page.tsx), so
+                // don't promise a quiz that will never open.
+                aria-label={
+                  (part.quiz?.length ?? 0) === 0
+                    ? `Continue past Part ${part.partNumber}`
+                    : `Take quiz for Part ${part.partNumber}`
+                }
                 className="part-cta animate-fade-up"
                 style={{ marginTop: 4 }}
               >
-                I&apos;ve Read This → Take Quiz
+                {(part.quiz?.length ?? 0) === 0
+                  ? "I've Read This → Continue"
+                  : "I've Read This → Take Quiz"}
               </button>
             )}
           </div>

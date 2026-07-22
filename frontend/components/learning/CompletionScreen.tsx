@@ -7,6 +7,7 @@ import FeedbackGate from "@/components/shared/FeedbackGate";
 
 interface Props {
   lesson: LessonJourney;
+  /** Sum of FIRST-ATTEMPT part scores (passing itself always ends perfect). */
   totalScore: number;
   onRestart?: () => void;
   onRetake?: () => void;
@@ -80,7 +81,7 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
   /* Announce to screen readers */
   useEffect(() => {
     const el = document.getElementById("sr-live-region");
-    if (el) el.textContent = "Journey complete. Your score is " + totalScore + " out of " + maxScore + ".";
+    if (el) el.textContent = "Journey complete. Your first-try score is " + totalScore + " out of " + maxScore + ".";
   }, [totalScore, maxScore]);
   const pct = Math.round((totalScore / maxScore) * 100);
   const circumference = 2 * Math.PI * 42;
@@ -161,7 +162,9 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
             {(lesson.parts?.length ?? 3) === 1 ? "Quick Answer Mastered" : "Journey Complete"}
           </h3>
           <p style={{ marginTop: 6, color: "var(--text-secondary)", fontSize: 15 }}>
-            You scored <strong style={{ color: "var(--correct)" }}>{totalScore}/{maxScore}</strong> — {pct >= 80 ? "excellent work." : pct >= 50 ? "a solid effort." : "a tough one, worth another pass."}
+            {/* First-try score: quizzes must be perfected to advance, so the
+                meaningful number is how you did before any retries. */}
+            You scored <strong style={{ color: "var(--correct)" }}>{totalScore}/{maxScore}</strong> on the first try — {pct >= 80 ? "excellent work." : pct >= 50 ? "a solid effort." : "a tough one, worth another pass."}
           </p>
         </div>
       </div>

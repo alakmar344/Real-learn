@@ -12,7 +12,10 @@ interface Props {
   onSelect: (index: number) => void;
 }
 
-const letters = ["A", "B", "C", "D"];
+// Derive the badge letter instead of indexing a fixed A–D table: model-
+// generated questions can have more than four options, which produced an
+// empty badge and an "Option undefined" accessible name for the extras.
+const letterFor = (index: number) => String.fromCharCode(65 + index);
 
 const QuizQuestionBase = ({
   question,
@@ -85,13 +88,13 @@ const QuizQuestionBase = ({
               type="button"
               role="radio"
               aria-checked={isSelected ?? false}
-              aria-label={`Option ${letters[optionIndex]}: ${option}${answered && isCorrect ? " – Correct answer" : ""}${answered && isWrongSelected ? " – Incorrect" : ""}`}
+              aria-label={`Option ${letterFor(optionIndex)}: ${option}${answered && isCorrect ? " – Correct answer" : ""}${answered && isWrongSelected ? " – Incorrect" : ""}`}
               disabled={answered}
               onClick={() => onSelect(optionIndex)}
               onKeyDown={(e) => handleKeyDown(e, optionIndex)}
               className={optionClass}
             >
-              <span className={badgeClass}>{letters[optionIndex]}</span>
+              <span className={badgeClass}>{letterFor(optionIndex)}</span>
               {option}
             </button>
           );

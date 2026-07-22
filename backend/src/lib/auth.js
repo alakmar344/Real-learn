@@ -89,13 +89,11 @@ function isTrustedIssuer(issuer) {
     }
     // Shared multi-tenant Clerk dev domains (*.clerk.accounts.dev): anyone can
     // spin up a free instance there and mint valid tokens, so trusting them is
-    // an authentication bypass. This must FAIL SAFE — gating on
-    // `NODE_ENV !== "production"` trusted them whenever NODE_ENV was simply
-    // unset (a common PaaS default), leaving the door open in production. Only
-    // trust them when a developer has EXPLICITLY opted in.
-    const allowDevIssuers =
-      process.env.CLERK_ALLOW_DEV_ISSUERS === "true" ||
-      process.env.NODE_ENV === "development";
+    // an authentication bypass. This must FAIL SAFE — any NODE_ENV-based gate
+    // (including NODE_ENV === "development") is one misconfigured host away
+    // from a full auth bypass in production. Trust dev issuers ONLY on the
+    // explicit opt-in flag; local devs set CLERK_ALLOW_DEV_ISSUERS=true.
+    const allowDevIssuers = process.env.CLERK_ALLOW_DEV_ISSUERS === "true";
     if (allowDevIssuers) {
       return (
         hostname.endsWith(".clerk.accounts.dev") ||
@@ -113,10 +111,19 @@ function isTrustedIssuer(issuer) {
 // valid token from the same Clerk instance — even one issued to a different
 // app sharing the issuer — is accepted. Opt-in via env so existing deploys
 // aren't broken: CLERK_AUTHORIZED_PARTIES=https://reallearn.site,https://www.reallearn.site
-const AUTHORIZED_PARTIES = (process.env.CLERK_AUTHORIZED_PARTIES || "")
+const CONFIGURED_AUTHORIZED_PARTIES = (process.env.CLERK_AUTHORIZED_PARTIES || "")
   .split(",")
   .map((party) => party.trim().replace(/\/$/, ""))
   .filter(Boolean);
+// Security: in production, an unset CLERK_AUTHORIZED_PARTIES must not mean
+// "accept any azp" — default to the known frontend origins. The env var,
+// when set, still wins; non-production keeps the permissive behavior.
+const AUTHORIZED_PARTIES =
+  CONFIGURED_AUTHORIZED_PARTIES.length > 0
+    ? CONFIGURED_AUTHORIZED_PARTIES
+    : process.env.NODE_ENV === "production"
+      ? ["https://reallearn.site", "https://www.reallearn.site"]
+      : [];
 
 function isAuthorizedParty(azp) {
   if (AUTHORIZED_PARTIES.length === 0) return true; // not configured → skip
