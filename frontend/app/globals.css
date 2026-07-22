@@ -11,85 +11,84 @@
   color-scheme: light;
 
   /* ═══════════════════════════════════════════════════════════════════════
-     RealLearn "Still Ink" design language.
-     One idea, held for good: ink on paper, lit by a single indigo accent.
-     No cultural costume, no seasonal gimmick — just contrast, warmth and
-     restraint. Three moods of the same room:
-       Paper (light) · Ink (dark) · Dusk (twilight)
+     RealLearn "Soft Pastel" design language.
+     Disciplined bones, gentle color: cream paper washed with pastel sky,
+     peach, mint and rose. Deeper sky/teal anchors keep buttons and text
+     readable; the pastels live in light — washes, auroras, chips, glows.
+     No purple, no violet, no costume. Three moods of the same room:
+       Paper (cream day) · Ink (charcoal night) · Dusk (sunset evening)
      Every surface, control and chart reads from these tokens; change the
      room here, never in components.
      ═══════════════════════════════════════════════════════════════════════ */
 
-  /* Brand accent — deep iris indigo. Calm, trustworthy, timeless. */
-  --brand: #5B5BD6;
-  --brand-strong: #4F4FC4;
-  --brand-bright: #7D7EE8;
-  --brand-soft: #CDCDF7;
+  /* Brand accent — clear sky blue. Fresh, friendly, readable. */
+  --brand: #0284C7;
+  --brand-strong: #0369A1;
+  --brand-bright: #7CC7EC;
+  --brand-soft: #C9E9FA;
 
   /* Ink scale (legacy `cobalt` names kept for the editorial classes). */
-  --cobalt-deep: #23252E;
-  --cobalt-mid: #3E4150;
-  --cobalt-vivid: #5B5BD6;
-  --cobalt-pale: #C9CBF2;
-  --cobalt-wash: rgba(91, 91, 214, 0.07);
-  --cobalt-ink: #1B1C22;
+  --cobalt-deep: #23303A;
+  --cobalt-mid: #3E5260;
+  --cobalt-vivid: #0284C7;
+  --cobalt-pale: #C9E9FA;
+  --cobalt-wash: rgba(2, 132, 199, 0.08);
+  --cobalt-ink: #1C2830;
 
-  /* Paper: a warm near-white with real material presence — never sterile,
-     never tinted enough to fight the ink. */
-  --bg-primary: #FAFAF8;
-  --bg-surface: rgba(255, 255, 255, 0.72);
-  --bg-card: rgba(255, 255, 255, 0.82);
-  --bg-card-hover: rgba(255, 255, 255, 0.96);
-  --bg-glass: rgba(250, 250, 248, 0.8);
-  --bg-solid: #F2F2EF;
-  --bg-warm: rgba(240, 240, 236, 0.6);
-  /* Ambient light — two whisper-quiet washes, one cool from above, one
-     soft at the foot of the page. Felt, not seen. */
-  --ambient-a: rgba(91, 91, 214, 0.045);
-  --ambient-b: rgba(70, 110, 180, 0.035);
+  /* Paper: soft warm cream — cozy, bright, never sterile. */
+  --bg-primary: #FDF9F3;
+  --bg-surface: rgba(255, 253, 248, 0.78);
+  --bg-card: rgba(255, 254, 250, 0.88);
+  --bg-card-hover: rgba(255, 255, 252, 0.97);
+  --bg-glass: rgba(253, 249, 243, 0.8);
+  --bg-solid: #F6F0E7;
+  --bg-warm: rgba(250, 240, 228, 0.65);
+  /* Ambient light — pastel sky from above, peach warmth at the foot. */
+  --ambient-a: rgba(125, 199, 236, 0.1);
+  --ambient-b: rgba(255, 171, 118, 0.09);
 
-  --border-subtle: rgba(27, 28, 34, 0.08);
-  --border-default: rgba(27, 28, 34, 0.14);
+  --border-subtle: rgba(44, 42, 38, 0.09);
+  --border-default: rgba(44, 42, 38, 0.15);
   --border-accent: var(--brand);
-  --border-glow: rgba(91, 91, 214, 0.3);
+  --border-glow: rgba(2, 132, 199, 0.3);
 
   --glass-blur: 24px;
   --glass-blur-strong: 40px;
-  --glass-saturate: 140%;
-  --glass-highlight: rgba(255, 255, 255, 0.9);
-  --glass-shadow: 0 4px 24px rgba(20, 21, 26, 0.07), 0 1px 3px rgba(20, 21, 26, 0.05);
-  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.85), inset 0 0 0 1px rgba(27, 28, 34, 0.03);
-  --glass-sheen: linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.12) 38%, rgba(255,255,255,0) 62%);
+  --glass-saturate: 150%;
+  --glass-highlight: rgba(255, 255, 253, 0.92);
+  --glass-shadow: 0 4px 24px rgba(60, 48, 35, 0.08), 0 1px 3px rgba(60, 48, 35, 0.05);
+  --glass-edge: inset 0 1px 0 rgba(255, 255, 253, 0.88), inset 0 0 0 1px rgba(2, 132, 199, 0.05);
+  --glass-sheen: linear-gradient(135deg, rgba(255,255,253,0.55) 0%, rgba(201,233,250,0.16) 38%, rgba(255,255,255,0) 62%);
 
   --accent: var(--brand);
   --accent-hover: var(--brand-strong);
-  --accent-dim: rgba(91, 91, 214, 0.09);
-  --accent-glow: rgba(91, 91, 214, 0.22);
-  --accent-companion: #A9702C;
-  --accent-gradient: linear-gradient(135deg, #5B5BD6 0%, #7D7EE8 100%);
+  --accent-dim: rgba(2, 132, 199, 0.09);
+  --accent-glow: rgba(2, 132, 199, 0.25);
+  --accent-companion: #F4845F;
+  --accent-gradient: linear-gradient(135deg, #0284C7 0%, #0D9488 100%);
   --on-accent: #ffffff;
-  --shadow-glow-accent: 0 2px 18px rgba(91, 91, 214, 0.28);
+  --shadow-glow-accent: 0 4px 22px rgba(2, 132, 199, 0.3);
 
-  /* Ink text — warm graphite, three deliberate steps. */
-  --text-primary: #1B1C22;
-  --text-secondary: #4A4C56;
-  --text-tertiary: #85878F;
-  --text-accent-strong: #4547B8;
+  /* Ink text — warm cocoa-gray, cozy against cream. */
+  --text-primary: #2D2A26;
+  --text-secondary: #5C574F;
+  --text-tertiary: #948D82;
+  --text-accent-strong: #075985;
 
-  --correct: #1D8A52;
-  --correct-bg: rgba(29, 138, 82, 0.09);
-  --wrong: #C93F3F;
-  --wrong-bg: rgba(201, 63, 63, 0.08);
-  --locked: #A3A5AC;
+  --correct: #1F8A5B;
+  --correct-bg: rgba(31, 138, 91, 0.1);
+  --wrong: #DF4F45;
+  --wrong-bg: rgba(223, 79, 69, 0.09);
+  --locked: #ADA69C;
 
-  /* Subject colours — muted, bookish, all readable on Paper. */
-  --subject-physics: #4A5FC1;
-  --subject-chemistry: #1D8A52;
-  --subject-economics: #A8721F;
-  --subject-biology: #B44E7E;
-  --subject-cs: #0E7490;
-  --subject-history: #82603F;
-  --subject-general: #6E56CF;
+  /* Subject colours — sun-faded brights, all readable on cream. */
+  --subject-physics: #4A87D4;
+  --subject-chemistry: #35996B;
+  --subject-economics: #D08A2E;
+  --subject-biology: #DE7A9C;
+  --subject-cs: #2FA3B8;
+  --subject-history: #B58963;
+  --subject-general: #E8827A;
 
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -127,11 +126,11 @@
   --tracking-normal: 0;
   --tracking-wide: 0.04em;
 
-  /* Neutral graphite shadows — depth reads as soft daylight shade. */
-  --shadow-sm: 0 1px 3px rgba(20, 21, 26, 0.06), 0 1px 2px rgba(20, 21, 26, 0.04);
-  --shadow-md: 0 4px 14px rgba(20, 21, 26, 0.08), 0 2px 4px rgba(20, 21, 26, 0.05);
-  --shadow-lg: 0 12px 34px rgba(20, 21, 26, 0.11), 0 4px 8px rgba(20, 21, 26, 0.06);
-  --shadow-glow-correct: 0 0 24px rgba(29, 138, 82, 0.15);
+  /* Warm shadows — depth reads as soft afternoon shade on cream. */
+  --shadow-sm: 0 1px 3px rgba(60, 48, 35, 0.07), 0 1px 2px rgba(60, 48, 35, 0.04);
+  --shadow-md: 0 4px 14px rgba(60, 48, 35, 0.09), 0 2px 4px rgba(60, 48, 35, 0.05);
+  --shadow-lg: 0 12px 34px rgba(60, 48, 35, 0.13), 0 4px 8px rgba(60, 48, 35, 0.06);
+  --shadow-glow-correct: 0 0 24px rgba(31, 138, 91, 0.16);
 
   --ease-reveal: cubic-bezier(0.22, 0.61, 0.36, 1);
   --ease-color: cubic-bezier(0.4, 0, 0.2, 1);
@@ -145,169 +144,170 @@
   --blur-sm: 6px;
   --blur-md: 16px;
 
-  --scrim: rgba(15, 16, 20, 0.32);
+  --scrim: rgba(30, 25, 20, 0.35);
   --focus-ring: 0 0 0 3px var(--accent-glow);
   --focus-ring-simple: 0 0 0 2px var(--accent);
 
-  /* Ambient aurora — barely-there indigo air. Subliminal by design. */
-  --aurora-1: rgba(91, 91, 214, 0.07);
-  --aurora-2: rgba(70, 110, 180, 0.05);
-  --aurora-3: rgba(125, 126, 232, 0.045);
+  /* Ambient aurora — pastel sky, peach and mint air, gently breathing. */
+  --aurora-1: rgba(125, 199, 236, 0.18);
+  --aurora-2: rgba(255, 171, 118, 0.14);
+  --aurora-3: rgba(134, 222, 183, 0.13);
 }
 
-/* ── Ink (dark) — soft graphite night. Near-black without the void; the
-   accent lifts to periwinkle so it stays legible and warm. ── */
+/* ── Ink (dark) — warm charcoal night lit by pastel sky and peach.
+   Near-black without the void; accents are soft, luminous pastels with
+   dark text on filled controls. ── */
 html[data-theme="dark"] {
   color-scheme: dark;
 
-  --brand: #7D7EE8;
-  --brand-strong: #6B6CDC;
-  --brand-bright: #9698F0;
-  --brand-soft: #33355C;
+  --brand: #7FC5E8;
+  --brand-strong: #5FB4E0;
+  --brand-bright: #A5D8F2;
+  --brand-soft: #234759;
 
-  --cobalt-deep: #0E0F13;
-  --cobalt-mid: #2A2C38;
-  --cobalt-vivid: #7D7EE8;
-  --cobalt-pale: #C9CBF2;
-  --cobalt-wash: rgba(125, 126, 232, 0.1);
-  --cobalt-ink: #0B0C10;
+  --cobalt-deep: #0C1116;
+  --cobalt-mid: #2A3946;
+  --cobalt-vivid: #7FC5E8;
+  --cobalt-pale: #C9E9FA;
+  --cobalt-wash: rgba(127, 197, 232, 0.12);
+  --cobalt-ink: #090D11;
 
-  --ambient-a: rgba(125, 126, 232, 0.035);
-  --ambient-b: rgba(70, 110, 180, 0.03);
+  --ambient-a: rgba(127, 197, 232, 0.05);
+  --ambient-b: rgba(255, 190, 152, 0.04);
 
-  --bg-primary: #101113;
-  --bg-surface: rgba(24, 25, 29, 0.78);
-  --bg-card: rgba(28, 29, 34, 0.85);
-  --bg-card-hover: rgba(36, 37, 43, 0.95);
-  --bg-glass: rgba(18, 19, 23, 0.78);
-  --bg-solid: #17181C;
+  --bg-primary: #12161C;
+  --bg-surface: rgba(26, 32, 41, 0.8);
+  --bg-card: rgba(31, 38, 48, 0.87);
+  --bg-card-hover: rgba(40, 49, 61, 0.95);
+  --bg-glass: rgba(20, 25, 32, 0.78);
+  --bg-solid: #1A2029;
 
-  --border-subtle: rgba(237, 238, 242, 0.08);
-  --border-default: rgba(237, 238, 242, 0.14);
+  --border-subtle: rgba(235, 242, 246, 0.09);
+  --border-default: rgba(235, 242, 246, 0.15);
   --border-accent: var(--brand);
-  --border-glow: rgba(125, 126, 232, 0.35);
+  --border-glow: rgba(127, 197, 232, 0.38);
 
   --glass-blur: 24px;
   --glass-blur-strong: 40px;
-  --glass-saturate: 130%;
-  --glass-highlight: rgba(237, 238, 242, 0.1);
+  --glass-saturate: 140%;
+  --glass-highlight: rgba(235, 242, 246, 0.1);
   --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.45), 0 1px 4px rgba(0, 0, 0, 0.28);
-  --glass-edge: inset 0 1px 0 rgba(237, 238, 242, 0.08), inset 0 0 0 1px rgba(125, 126, 232, 0.05);
-  --glass-sheen: linear-gradient(135deg, rgba(237,238,242,0.09) 0%, rgba(237,238,242,0.03) 38%, rgba(255,255,255,0) 62%);
+  --glass-edge: inset 0 1px 0 rgba(235, 242, 246, 0.09), inset 0 0 0 1px rgba(127, 197, 232, 0.07);
+  --glass-sheen: linear-gradient(135deg, rgba(201,233,250,0.1) 0%, rgba(127,197,232,0.04) 38%, rgba(255,255,255,0) 62%);
 
   --accent: var(--brand);
   --accent-hover: var(--brand-bright);
-  --accent-dim: rgba(125, 126, 232, 0.12);
-  --accent-glow: rgba(125, 126, 232, 0.25);
-  --accent-companion: #D9A05A;
-  --accent-gradient: linear-gradient(135deg, #6B6CDC 0%, #9698F0 100%);
-  --on-accent: #14151A;
-  --shadow-glow-accent: 0 2px 20px rgba(125, 126, 232, 0.28);
+  --accent-dim: rgba(127, 197, 232, 0.13);
+  --accent-glow: rgba(127, 197, 232, 0.28);
+  --accent-companion: #FFBE98;
+  --accent-gradient: linear-gradient(135deg, #7FC5E8 0%, #9FE3C0 100%);
+  --on-accent: #0E2230;
+  --shadow-glow-accent: 0 4px 22px rgba(127, 197, 232, 0.32);
 
-  --text-primary: #ECEDF2;
-  --text-secondary: #A6A8B3;
-  --text-tertiary: #6F717C;
-  --text-accent-strong: #A5A7F2;
+  --text-primary: #ECF1F4;
+  --text-secondary: #A9B4BC;
+  --text-tertiary: #71808C;
+  --text-accent-strong: #A5D8F2;
 
-  --correct: #4CC38A;
-  --correct-bg: rgba(76, 195, 138, 0.12);
-  --wrong: #E5726B;
-  --wrong-bg: rgba(229, 114, 107, 0.12);
-  --locked: #3F414C;
+  --correct: #58C795;
+  --correct-bg: rgba(88, 199, 149, 0.13);
+  --wrong: #F08A7E;
+  --wrong-bg: rgba(240, 138, 126, 0.13);
+  --locked: #3C4854;
 
-  --subject-physics: #7B8CDB;
-  --subject-chemistry: #4CC38A;
-  --subject-economics: #E2B058;
-  --subject-biology: #E378A8;
-  --subject-cs: #4DD0E1;
-  --subject-history: #B0906E;
-  --subject-general: #9E8CFC;
+  --subject-physics: #86ACE8;
+  --subject-chemistry: #58C795;
+  --subject-economics: #F3C46B;
+  --subject-biology: #F1A0BC;
+  --subject-cs: #5FD0E0;
+  --subject-history: #D8AE88;
+  --subject-general: #F3A08C;
 
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.38), 0 2px 4px rgba(0, 0, 0, 0.28);
   --shadow-lg: 0 12px 34px rgba(0, 0, 0, 0.48), 0 4px 8px rgba(0, 0, 0, 0.32);
 
-  --aurora-1: rgba(125, 126, 232, 0.06);
-  --aurora-2: rgba(70, 110, 180, 0.05);
-  --aurora-3: rgba(91, 91, 214, 0.04);
+  --aurora-1: rgba(127, 197, 232, 0.1);
+  --aurora-2: rgba(255, 171, 118, 0.07);
+  --aurora-3: rgba(134, 222, 183, 0.08);
 }
 
-/* ── Dusk (twilight) — a deep indigo-navy evening with a hint of candle
-   warmth. The reading-at-dusk mode: darker than Paper, softer than Ink. ── */
+/* ── Dusk (twilight) — a sunset evening: deep teal night warmed by peach
+   and rose light. The most atmospheric room; still zero violet. ── */
 html[data-theme="twilight"] {
   color-scheme: dark;
 
-  --ambient-a: rgba(142, 144, 240, 0.05);
-  --ambient-b: rgba(217, 160, 90, 0.03);
-  --scrim: rgba(8, 9, 16, 0.55);
+  --ambient-a: rgba(255, 176, 140, 0.07);
+  --ambient-b: rgba(127, 197, 232, 0.05);
+  --scrim: rgba(6, 12, 16, 0.55);
 
-  --bg-primary: #14151F;
-  --bg-surface: rgba(30, 31, 46, 0.55);
-  --bg-card: rgba(33, 34, 50, 0.6);
-  --bg-card-hover: rgba(42, 43, 62, 0.72);
-  --bg-glass: rgba(20, 21, 32, 0.6);
-  --bg-solid: #191A26;
+  --bg-primary: #142028;
+  --bg-surface: rgba(32, 48, 58, 0.55);
+  --bg-card: rgba(36, 53, 64, 0.6);
+  --bg-card-hover: rgba(46, 66, 79, 0.72);
+  --bg-glass: rgba(22, 34, 42, 0.6);
+  --bg-solid: #192832;
 
-  --cobalt-deep: #101120;
-  --cobalt-mid: #2E3050;
-  --cobalt-vivid: #8E90F0;
-  --cobalt-pale: #CDCFF6;
-  --cobalt-wash: rgba(142, 144, 240, 0.1);
-  --cobalt-ink: #0C0D18;
+  --cobalt-deep: #101B22;
+  --cobalt-mid: #2E4854;
+  --cobalt-vivid: #FFB08C;
+  --cobalt-pale: #FFDCC9;
+  --cobalt-wash: rgba(255, 176, 140, 0.12);
+  --cobalt-ink: #0B1318;
 
-  --border-subtle: rgba(190, 195, 240, 0.12);
-  --border-default: rgba(190, 195, 240, 0.2);
-  --border-accent: #8E90F0;
-  --border-glow: rgba(142, 144, 240, 0.35);
+  --border-subtle: rgba(255, 220, 201, 0.13);
+  --border-default: rgba(255, 220, 201, 0.2);
+  --border-accent: #FFB08C;
+  --border-glow: rgba(255, 176, 140, 0.38);
 
   --glass-blur: 22px;
   --glass-blur-strong: 36px;
-  --glass-saturate: 135%;
-  --glass-highlight: rgba(190, 195, 240, 0.14);
-  --glass-shadow: 0 8px 32px rgba(6, 7, 14, 0.55), 0 1px 4px rgba(6, 7, 14, 0.4);
-  --glass-edge: inset 0 1px 0 rgba(190, 195, 240, 0.12), inset 0 0 0 1px rgba(142, 144, 240, 0.06);
-  --glass-sheen: linear-gradient(135deg, rgba(190,195,240,0.1) 0%, rgba(142,144,240,0.03) 32%, rgba(255,255,255,0) 58%);
+  --glass-saturate: 145%;
+  --glass-highlight: rgba(255, 220, 201, 0.14);
+  --glass-shadow: 0 8px 32px rgba(6, 12, 16, 0.55), 0 1px 4px rgba(6, 12, 16, 0.4);
+  --glass-edge: inset 0 1px 0 rgba(255, 220, 201, 0.12), inset 0 0 0 1px rgba(255, 176, 140, 0.07);
+  --glass-sheen: linear-gradient(135deg, rgba(255,220,201,0.12) 0%, rgba(255,176,140,0.04) 32%, rgba(255,255,255,0) 58%);
 
-  --brand: #8E90F0;
-  --brand-strong: #7B7DE8;
-  --brand-bright: #A6A8F5;
-  --brand-soft: #3A3C68;
+  --brand: #FFB08C;
+  --brand-strong: #FF9A6C;
+  --brand-bright: #FFC7AB;
+  --brand-soft: #5C3A28;
 
-  --accent: #8E90F0;
-  --accent-hover: #A6A8F5;
-  --accent-dim: rgba(142, 144, 240, 0.12);
-  --accent-glow: rgba(142, 144, 240, 0.24);
-  --accent-companion: #D9A05A;
-  --accent-gradient: linear-gradient(135deg, #7B7DE8 0%, #A6A8F5 100%);
-  --on-accent: #14151F;
-  --shadow-glow-accent: 0 2px 16px rgba(142, 144, 240, 0.22);
+  --accent: #FFB08C;
+  --accent-hover: #FFC7AB;
+  --accent-dim: rgba(255, 176, 140, 0.13);
+  --accent-glow: rgba(255, 176, 140, 0.26);
+  --accent-companion: #7FC5E8;
+  --accent-gradient: linear-gradient(135deg, #FFB08C 0%, #F4A6B8 100%);
+  --on-accent: #331507;
+  --shadow-glow-accent: 0 4px 22px rgba(255, 176, 140, 0.3);
 
-  --text-primary: #E9EAF6;
-  --text-secondary: #B3B5CC;
-  --text-tertiary: #767898;
-  --text-accent-strong: #B6B8F8;
+  --text-primary: #F3EEE8;
+  --text-secondary: #C6BDB2;
+  --text-tertiary: #8C8478;
+  --text-accent-strong: #FFC7AB;
 
-  --correct: #57C68F;
-  --correct-bg: rgba(87, 198, 143, 0.14);
-  --wrong: #E8837D;
-  --wrong-bg: rgba(232, 131, 125, 0.14);
-  --locked: #43455F;
+  --correct: #58C795;
+  --correct-bg: rgba(88, 199, 149, 0.14);
+  --wrong: #F08A7E;
+  --wrong-bg: rgba(240, 138, 126, 0.14);
+  --locked: #3E4E58;
 
-  --subject-physics: #7B8CDB;
-  --subject-chemistry: #57C68F;
-  --subject-economics: #E2B058;
-  --subject-biology: #E378A8;
-  --subject-cs: #4DD0E1;
-  --subject-history: #B0906E;
-  --subject-general: #9E8CFC;
+  --subject-physics: #86ACE8;
+  --subject-chemistry: #58C795;
+  --subject-economics: #F3C46B;
+  --subject-biology: #F1A0BC;
+  --subject-cs: #5FD0E0;
+  --subject-history: #D8AE88;
+  --subject-general: #F3A08C;
 
-  --shadow-sm: 0 2px 8px rgba(6, 7, 14, 0.5), inset 0 1px 0 rgba(190, 195, 240, 0.08);
-  --shadow-md: 0 6px 20px rgba(6, 7, 14, 0.55), inset 0 1px 0 rgba(190, 195, 240, 0.08);
-  --shadow-lg: 0 14px 40px rgba(6, 7, 14, 0.65), inset 0 1px 0 rgba(190, 195, 240, 0.1);
+  --shadow-sm: 0 2px 8px rgba(6, 12, 16, 0.5), inset 0 1px 0 rgba(255, 220, 201, 0.08);
+  --shadow-md: 0 6px 20px rgba(6, 12, 16, 0.55), inset 0 1px 0 rgba(255, 220, 201, 0.08);
+  --shadow-lg: 0 14px 40px rgba(6, 12, 16, 0.65), inset 0 1px 0 rgba(255, 220, 201, 0.1);
 
-  --aurora-1: rgba(142, 144, 240, 0.09);
-  --aurora-2: rgba(91, 91, 214, 0.07);
-  --aurora-3: rgba(217, 160, 90, 0.04);
+  --aurora-1: rgba(255, 176, 140, 0.14);
+  --aurora-2: rgba(244, 166, 184, 0.1);
+  --aurora-3: rgba(127, 197, 232, 0.08);
 }
 
 html {
@@ -1117,13 +1117,17 @@ a:active {
   pointer-events: none;
   z-index: 0;
 }
-/* One quiet pool of accent light behind the hero — no rays, no weave,
-   just the sense that the question box sits in the brightest spot. */
+/* Three overlapping pools of pastel light behind the hero — sky from the
+   center, peach from the upper right, mint low left — so the question box
+   sits in the warmest, brightest spot on the page. */
 .hero__stage::before {
   inset: 6px;
   border-radius: var(--radius-2xl);
-  opacity: 0.5;
-  background: radial-gradient(ellipse at 50% 42%, var(--accent-dim) 0%, transparent 62%);
+  opacity: 0.9;
+  background:
+    radial-gradient(ellipse at 46% 44%, var(--accent-dim) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 10%, var(--aurora-2) 0%, transparent 55%),
+    radial-gradient(ellipse at 12% 88%, var(--aurora-3) 0%, transparent 50%);
 }
 .hero__stage::after {
   left: 50%;
