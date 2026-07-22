@@ -21,7 +21,6 @@ import {
   callCloudflareAI,
   isFallbackConfigured,
   extractTextFromResult,
-  getProviderHealthSnapshot,
   GEMMA_MODEL,
 } from "./lib/gemma.js";
 import {
@@ -771,40 +770,6 @@ app.use((req, res, next) => {
 // RateLimit headers (per-caller gate only), and short-circuits with 429 +
 // Retry-After when either budget is exhausted.
 const rateLimit = apiRateLimiter;
-
-// SECURITY: /health is unauthenticated and pings MongoDB on every hit —
-// without its own limiter it is a free amplification vector onto the
-// database. 120/min per IP is far above any legitimate load-balancer or
-// uptime-monitor cadence while capping a flood.
-const healthRateLimiter = createRateLimiter({
-  windowMs: 60_000,
-  max: 120,
-});
-
-app.get("/health", healthRateLimiter, async (_req, res) => {
-  const health = { ok: true, dependencies: {} };
-  try {
-    const db = await getDb();
-    await db.command({ ping: 1 });
-    health.dependencies.mongodb = "ok";
-  } catch {
-    health.ok = false;
-    health.dependencies.mongodb = "down";
-  }
-  // Security: this endpoint is unauthenticated — expose only a coarse status.
-  // The full provider snapshot (circuit state, failure counts, latencies,
-  // error names) is internal reconnaissance material and stays server-side.
-  const aiSnapshot = getProviderHealthSnapshot();
-  const aiDegraded = Object.values(aiSnapshot).some(
-    (provider) => provider.circuitOpen || provider.consecutiveFailures > 0
-  );
-  health.dependencies.ai = aiDegraded ? "degraded" : "ok";
-  const status = health.ok ? 200 : 503;
-  // PERFORMANCE: health checks are polled by load balancers and UptimeRobot.
-  // A short max-age lets them cache the 200/503 without serving stale state.
-  res.setHeader("Cache-Control", "public, max-age=10, stale-while-revalidate=30");
-  res.status(status).json(health);
-});
 
 // Diagnostic endpoint: send the Clerk token as a Bearer header and it reports
 // exactly why verification passes/fails (issuer, expiry, trust). No secrets
