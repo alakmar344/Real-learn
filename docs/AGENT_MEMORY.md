@@ -279,7 +279,17 @@ this protocol. No exceptions.**
   rejected for violet). Final palette: cream paper + pastel sky/peach/mint/
   rose washes, sky-blue anchor accent, warm cocoa ink text, across
   Paper/Ink/Dusk. **Owner's standing rule: no purple/violet anywhere; keep
-  the time-of-day greeting + first-name connection on the homepage.** Retired the crayon backdrop (`CrayonBackground` →
+  the time-of-day greeting + first-name connection on the homepage.**
+- 2026-07-22 (later) — **Pastel presence boost + third security pass.** The
+  owner found the pastels too faint: auroras/ambient washes strengthened,
+  the ask card now wears a sky→peach surface tint and colored soft glow,
+  chips are pastel-filled pills, the wordmark "Learn" is gradient text, and
+  the hero sits in three full-strength pastel pools. Security round 3 fixed:
+  IPv6 /64 rate-limit keying, global TTS synthesis cap, missing Mongo
+  indexes, Mongo timeouts, export filename header injection, capped upstream
+  error bodies; frontend: markdown links hardened (noopener new-tab), GA id
+  validated against script injection, Delete-My-Data now clears first-visit
+  + easter-egg keys, share-cancel no longer toasts an error. Retired the crayon backdrop (`CrayonBackground` →
   `AmbientBackground`, crayon SVGs deleted), cultural pattern overlays (now
   structural no-ops), and the seasonal accent system. Theme picker labels are
   now Paper/Ink/Dusk; browser theme-color follows `--bg-primary`. Added the

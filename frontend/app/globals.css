@@ -44,8 +44,8 @@
   --bg-solid: #F6F0E7;
   --bg-warm: rgba(250, 240, 228, 0.65);
   /* Ambient light — pastel sky from above, peach warmth at the foot. */
-  --ambient-a: rgba(125, 199, 236, 0.1);
-  --ambient-b: rgba(255, 171, 118, 0.09);
+  --ambient-a: rgba(125, 199, 236, 0.16);
+  --ambient-b: rgba(255, 171, 118, 0.13);
 
   --border-subtle: rgba(44, 42, 38, 0.09);
   --border-default: rgba(44, 42, 38, 0.15);
@@ -62,7 +62,7 @@
 
   --accent: var(--brand);
   --accent-hover: var(--brand-strong);
-  --accent-dim: rgba(2, 132, 199, 0.09);
+  --accent-dim: rgba(2, 132, 199, 0.12);
   --accent-glow: rgba(2, 132, 199, 0.25);
   --accent-companion: #F4845F;
   --accent-gradient: linear-gradient(135deg, #0284C7 0%, #0D9488 100%);
@@ -149,9 +149,9 @@
   --focus-ring-simple: 0 0 0 2px var(--accent);
 
   /* Ambient aurora — pastel sky, peach and mint air, gently breathing. */
-  --aurora-1: rgba(125, 199, 236, 0.18);
-  --aurora-2: rgba(255, 171, 118, 0.14);
-  --aurora-3: rgba(134, 222, 183, 0.13);
+  --aurora-1: rgba(125, 199, 236, 0.3);
+  --aurora-2: rgba(255, 171, 118, 0.22);
+  --aurora-3: rgba(134, 222, 183, 0.2);
 }
 
 /* ── Ink (dark) — warm charcoal night lit by pastel sky and peach.
@@ -172,8 +172,8 @@ html[data-theme="dark"] {
   --cobalt-wash: rgba(127, 197, 232, 0.12);
   --cobalt-ink: #090D11;
 
-  --ambient-a: rgba(127, 197, 232, 0.05);
-  --ambient-b: rgba(255, 190, 152, 0.04);
+  --ambient-a: rgba(127, 197, 232, 0.08);
+  --ambient-b: rgba(255, 190, 152, 0.06);
 
   --bg-primary: #12161C;
   --bg-surface: rgba(26, 32, 41, 0.8);
@@ -227,9 +227,9 @@ html[data-theme="dark"] {
   --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.38), 0 2px 4px rgba(0, 0, 0, 0.28);
   --shadow-lg: 0 12px 34px rgba(0, 0, 0, 0.48), 0 4px 8px rgba(0, 0, 0, 0.32);
 
-  --aurora-1: rgba(127, 197, 232, 0.1);
-  --aurora-2: rgba(255, 171, 118, 0.07);
-  --aurora-3: rgba(134, 222, 183, 0.08);
+  --aurora-1: rgba(127, 197, 232, 0.16);
+  --aurora-2: rgba(255, 171, 118, 0.11);
+  --aurora-3: rgba(134, 222, 183, 0.12);
 }
 
 /* ── Dusk (twilight) — a sunset evening: deep teal night warmed by peach
@@ -237,8 +237,8 @@ html[data-theme="dark"] {
 html[data-theme="twilight"] {
   color-scheme: dark;
 
-  --ambient-a: rgba(255, 176, 140, 0.07);
-  --ambient-b: rgba(127, 197, 232, 0.05);
+  --ambient-a: rgba(255, 176, 140, 0.1);
+  --ambient-b: rgba(127, 197, 232, 0.08);
   --scrim: rgba(6, 12, 16, 0.55);
 
   --bg-primary: #142028;
@@ -305,9 +305,9 @@ html[data-theme="twilight"] {
   --shadow-md: 0 6px 20px rgba(6, 12, 16, 0.55), inset 0 1px 0 rgba(255, 220, 201, 0.08);
   --shadow-lg: 0 14px 40px rgba(6, 12, 16, 0.65), inset 0 1px 0 rgba(255, 220, 201, 0.1);
 
-  --aurora-1: rgba(255, 176, 140, 0.14);
-  --aurora-2: rgba(244, 166, 184, 0.1);
-  --aurora-3: rgba(127, 197, 232, 0.08);
+  --aurora-1: rgba(255, 176, 140, 0.2);
+  --aurora-2: rgba(244, 166, 184, 0.15);
+  --aurora-3: rgba(127, 197, 232, 0.12);
 }
 
 html {
@@ -411,7 +411,8 @@ html::before {
   contain: layout style paint;
   background:
     radial-gradient(ellipse at 82% -8%, var(--ambient-a) 0%, transparent 55%),
-    radial-gradient(ellipse at 30% 104%, var(--ambient-b) 0%, transparent 52%);
+    radial-gradient(ellipse at 30% 104%, var(--ambient-b) 0%, transparent 52%),
+    radial-gradient(ellipse at -6% 40%, var(--aurora-3) 0%, transparent 42%);
   opacity: 0.95;
 }
 
@@ -462,7 +463,7 @@ html::before {
 }
 .glass-card:hover,
 .glass-panel:hover {
-  border-color: var(--border-default);
+  border-color: var(--border-glow);
   box-shadow: var(--shadow-lg), var(--glass-edge);
   transform: translateY(-2px);
 }
@@ -1123,11 +1124,11 @@ a:active {
 .hero__stage::before {
   inset: 6px;
   border-radius: var(--radius-2xl);
-  opacity: 0.9;
+  opacity: 1;
   background:
-    radial-gradient(ellipse at 46% 44%, var(--accent-dim) 0%, transparent 60%),
-    radial-gradient(ellipse at 80% 10%, var(--aurora-2) 0%, transparent 55%),
-    radial-gradient(ellipse at 12% 88%, var(--aurora-3) 0%, transparent 50%);
+    radial-gradient(ellipse at 46% 44%, var(--accent-dim) 0%, transparent 62%),
+    radial-gradient(ellipse at 82% 8%, var(--aurora-2) 0%, transparent 56%),
+    radial-gradient(ellipse at 10% 90%, var(--aurora-3) 0%, transparent 52%);
 }
 .hero__stage::after {
   left: 50%;
@@ -2375,7 +2376,13 @@ p {
   letter-spacing: -0.5px;
 }
 .navbar-wordmark__real { color: var(--text-primary); }
-.navbar-wordmark__learn { color: var(--accent); }
+.navbar-wordmark__learn {
+  color: var(--accent);
+  background: var(--accent-gradient);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
 
 /* ── Chip / pill ── for the "Today's spark", example questions, tags. */
 .chip {
@@ -2385,8 +2392,8 @@ p {
   max-width: 100%;
   padding: 9px 18px;
   border-radius: 999px;
-  border: 1px dashed var(--border-default);
-  background: transparent;
+  border: 1px solid var(--border-glow);
+  background: var(--accent-dim);
   color: var(--text-secondary);
   font-size: 13px;
   font-weight: 500;
@@ -2759,14 +2766,19 @@ p {
   background: var(--bg-card);
   backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
   -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
-  box-shadow: var(--glass-shadow), var(--glass-edge);
+  box-shadow:
+    0 22px 60px -18px var(--aurora-1),
+    0 12px 40px -14px var(--aurora-2),
+    var(--glass-shadow), var(--glass-edge);
   transition: all 500ms var(--ease-color);
 }
+/* The ask card wears the pastels: a sky wash from the top-left melting into
+   peach at the bottom-right, over the card base — soft, airy, unmistakably
+   pastel without hurting readability. */
 .q-form {
   background-image:
-    linear-gradient(135deg, var(--bg-card), var(--bg-card)),
-    repeating-linear-gradient(90deg, transparent 0 18px, var(--cobalt-wash) 18px 19px, transparent 19px 36px);
-  background-blend-mode: normal, multiply;
+    linear-gradient(125deg, var(--aurora-1) 0%, transparent 42%, transparent 58%, var(--aurora-2) 100%),
+    linear-gradient(var(--bg-card), var(--bg-card));
 }
 .q-form__body {
   position: relative;
@@ -2785,7 +2797,10 @@ p {
 }
 .q-form--focused {
   border-color: var(--border-accent);
-  box-shadow: var(--shadow-lg), 0 0 0 6px var(--accent-glow), var(--glass-edge);
+  box-shadow:
+    0 26px 70px -18px var(--aurora-1),
+    0 14px 44px -14px var(--aurora-2),
+    var(--shadow-lg), 0 0 0 6px var(--accent-glow), var(--glass-edge);
 }
 .q-form__body { padding: 34px 32px 18px; }
 .q-form__textarea {
