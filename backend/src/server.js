@@ -49,6 +49,7 @@ import {
   getCachedLesson,
   setCachedLesson,
 } from "./lib/lessonCache.js";
+import { searchCachedLessons, ensureLessonSearchIndexes, sanitizeSearchQuery } from "./lib/searchIndex.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -179,6 +180,8 @@ async function ensureUserDataIndexes() {
     await Promise.all([
       db.collection("agreements").createIndex({ clerkId: 1, type: 1 }),
       db.collection("moderationLogs").createIndex({ clerkId: 1 }),
+      db.collection("feedback").createIndex({ createdAt: -1 }),
+      ensureLessonSearchIndexes(db),
     ]);
     console.log("[startup] User-data indexes ensured");
   } catch (error) {
@@ -1255,6 +1258,27 @@ app.get("/api/export-data", rateLimit, requireAuth, async (req, res) => {
   } catch (error) {
     console.error("[api/export-data] Failed to export data", error);
     res.status(500).json({ error: "Failed to export data" });
+  }
+});
+
+
+// Search over already-validated cached lessons stored in MongoDB. Results are
+// intentionally summaries, not full lessons, so this endpoint is cheap, safe
+// to cache briefly, and useful for discovery without regenerating AI content.
+app.get("/api/search-lessons", rateLimit, requireAuth, async (req, res) => {
+  try {
+    const query = sanitizeSearchQuery(req.query?.q);
+    if (!query || query.length < 2) {
+      return res.status(400).json({ error: "Search query must be at least 2 characters." });
+    }
+
+    const limit = req.query?.limit;
+    const result = await searchCachedLessons(query, { limit });
+    res.setHeader("Cache-Control", "private, max-age=60, stale-while-revalidate=300");
+    res.json(result);
+  } catch (error) {
+    console.error("[api/search-lessons] Search failed", error);
+    res.status(500).json({ error: "Failed to search lessons" });
   }
 });
 
