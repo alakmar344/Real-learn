@@ -1412,39 +1412,6 @@ export function startPeriodicWarmUp(intervalMs) {
 
 import { jsonrepair } from "jsonrepair";
 
-function closeTruncatedJSON(text) {
-  const stack = [];
-  let inString = false;
-  let escaped = false;
-
-  for (let i = 0; i < text.length; i++) {
-    const ch = text[i];
-    if (escaped) {
-      escaped = false;
-      continue;
-    }
-    if (ch === "\\" && inString) {
-      escaped = true;
-      continue;
-    }
-    if (ch === '"') {
-      inString = !inString;
-      continue;
-    }
-    if (inString) continue;
-    if (ch === "{") stack.push("}");
-    else if (ch === "[") stack.push("]");
-    else if (ch === "}" || ch === "]") {
-      if (stack.length > 0 && stack[stack.length - 1] === ch) stack.pop();
-    }
-  }
-
-  let result = text.replace(/[,:\s]+$/, "");
-  if (inString) result += '"';
-  while (stack.length > 0) result += stack.pop();
-  return result;
-}
-
 export function parseJSON(text) {
   let cleaned = text
     .replace(/<think(?:ing)?>[\s\S]*?<\/think(?:ing)?>/gi, "")
@@ -1469,58 +1436,14 @@ export function parseJSON(text) {
     return null;
   }
 
-  // Primary repair: `jsonrepair` is the well-established, battle-tested library
-  // for repairing broken/truncated JSON from LLMs — it handles trailing
-  // commas, unterminated strings/arrays/objects, and fence artifacts far more
-  // robustly than a hand-rolled pipeline. We run it first; the bespoke pipeline
-  // below stays as a final fallback for any shape jsonrepair doesn't cover.
   try {
     return JSON.parse(jsonrepair(cleaned));
-  } catch {}
-
-  const stripTrailingCommas = (s) => s.replace(/,\s*([}\]])/g, "$1");
-
-  try {
-    return JSON.parse(cleaned);
-  } catch {}
-
-  const noCommas = stripTrailingCommas(cleaned);
-  try {
-    return JSON.parse(noCommas);
-  } catch {}
-
-  const closed = closeTruncatedJSON(cleaned);
-  try {
-    return JSON.parse(closed);
-  } catch {}
-  try {
-    return JSON.parse(stripTrailingCommas(closed));
-  } catch {}
-
-  const lastBrace = cleaned.lastIndexOf("}");
-  const lastBracket = cleaned.lastIndexOf("]");
-  const endIndex = Math.max(lastBrace, lastBracket);
-  if (endIndex > 0) {
-    const chopped = cleaned.slice(0, endIndex + 1);
-    try {
-      return JSON.parse(chopped);
-    } catch {}
-    try {
-      return JSON.parse(stripTrailingCommas(chopped));
-    } catch {}
-
-    const closedChopped = closeTruncatedJSON(chopped);
-    try {
-      return JSON.parse(closedChopped);
-    } catch {}
-    try {
-      return JSON.parse(stripTrailingCommas(closedChopped));
-    } catch {}
+  } catch (error) {
+    console.error("[parseJSON] Repair failed", {
+      preview: text.slice(0, PARSE_JSON_LOG_PREVIEW_CHARS),
+      rawLength: text.length,
+      error: error?.message,
+    });
+    return null;
   }
-
-  console.error("[parseJSON] All repair stages failed", {
-    preview: text.slice(0, PARSE_JSON_LOG_PREVIEW_CHARS),
-    rawLength: text.length,
-  });
-  return null;
 }

@@ -9,6 +9,7 @@ import {
   fetchCookieConsentStatus,
   hasAnalyticsConsent,
 } from "@/lib/legalConsent";
+import { parseCookie, stringifySetCookie } from "cookie";
 
 // Security: the measurement id is interpolated into an inline <script> body
 // and a script src URL below. Restrict it to the GA id character set so a
@@ -53,13 +54,18 @@ function disableGtag() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (window as any)[`ga-disable-${GA_MEASUREMENT_ID}`] = true;
   try {
-    const cookies = document.cookie.split(";");
-    for (const cookie of cookies) {
-      const name = cookie.split("=")[0]?.trim() ?? "";
+    const items = parseCookie(document.cookie);
+    for (const name of Object.keys(items)) {
       if (name === "_ga" || name.startsWith("_ga_") || name === "_gid") {
-        const domains = ["", `; domain=${window.location.hostname}`, `; domain=.${window.location.hostname}`];
+        const domains = [undefined, window.location.hostname, `.${window.location.hostname}`];
         for (const domain of domains) {
-          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/${domain}`;
+          document.cookie = stringifySetCookie({
+            name,
+            value: "",
+            expires: new Date(0),
+            path: "/",
+            ...(domain ? { domain } : {}),
+          });
         }
       }
     }

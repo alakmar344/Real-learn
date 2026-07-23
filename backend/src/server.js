@@ -1,4 +1,6 @@
 import crypto from "node:crypto";
+import { Address4, Address6 } from "ip-address";
+import isEmail from "validator/lib/isEmail.js";
 import compression from "compression";
 import cors from "cors";
 import express from "express";
@@ -105,37 +107,41 @@ function hashUserAgent(ua) {
 // network-level signal without identifying a specific device.
 function anonymizeIp(ip) {
   if (typeof ip !== "string" || !ip) return "unknown";
-  // Strip an IPv6 zone index (fe80::1%eth0) and normalize IPv4-mapped IPv6
-  // (::ffff:1.2.3.4) to plain IPv4 first.
-  const stripped = ip.split("%")[0].trim();
-  const v4Mapped = stripped.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/i);
-  const candidate = v4Mapped ? v4Mapped[1] : stripped;
-  const v4 = candidate.match(/^(\d+)\.(\d+)\.(\d+)\.\d+$/);
-  if (v4) return `${v4[1]}.${v4[2]}.${v4[3]}.0`;
-  if (candidate.includes(":")) {
-    // IPv6: expand the "::" compression so we reliably keep only the first
-    // 3 hextets (the /48 network) — a naive split on a compressed address
-    // like "fe80::1" would otherwise leak the interface-identifier bits.
-    const [headRaw, tailRaw = ""] = candidate.split("::");
-    const headParts = headRaw ? headRaw.split(":") : [];
-    const tailParts = tailRaw ? tailRaw.split(":") : [];
-    const missing = Math.max(0, 8 - headParts.length - tailParts.length);
-    const groups = [...headParts, ...Array(missing).fill("0"), ...tailParts];
-    return `${groups.slice(0, 3).join(":")}::`;
+  const candidate = ip.trim();
+
+  if (candidate.includes("::ffff:")) {
+    const v4Part = candidate.split("%")[0].replace(/^::ffff:/, "");
+    try {
+      const addr = new Address4(v4Part);
+      return addr.parsedAddress.slice(0, 3).concat(["0"]).join(".");
+    } catch {
+      return "unknown";
+    }
   }
-  return "unknown";
+
+  try {
+    const addr6 = new Address6(candidate);
+    const groups = addr6.parsedAddress;
+    return `${groups.slice(0, 3).join(":")}::`;
+  } catch {
+    try {
+      const addr = new Address4(candidate);
+      return addr.parsedAddress.slice(0, 3).concat(["0"]).join(".");
+    } catch {
+      return "unknown";
+    }
+  }
 }
 
 // Security: consent endpoints fall back to a body-supplied email (Clerk JWTs
 // carry no email claim). That value is attacker-controlled, so accept it only
 // when it looks like a real address (single @, no whitespace, dotted domain,
 // RFC 3696 max of 320 chars) — anything else is stored as "".
-const CLIENT_EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 function sanitizeClientEmail(raw) {
   if (typeof raw !== "string") return "";
   const email = raw.trim();
   if (email.length === 0 || email.length > 320) return "";
-  return CLIENT_EMAIL_PATTERN.test(email) ? email : "";
+  return isEmail(email) ? email : "";
 }
 
 // One-time cleanup (policy v2.3): earlier releases stored the RAW client IP

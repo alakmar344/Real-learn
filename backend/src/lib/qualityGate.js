@@ -8,30 +8,13 @@
 // 4. Level-appropriate difficulty matching
 // 5. Automatic language simplification when content is too advanced
 
-// ── Syllable counting ──────────────────────────────────────────────────────
-
-const VOWELS = new Set(["a", "e", "i", "o", "u", "y"]);
+import readability from "text-readability";
+import { syllable } from "syllable";
 
 function countSyllables(word) {
   if (!word || typeof word !== "string") return 0;
-  const w = word.toLowerCase().replace(/[^a-z]/g, "");
-  if (w.length <= 2) return 1;
-  if (w.length <= 3) return w.split("").some((c) => VOWELS.has(c)) ? 1 : 0;
-
-  let count = 0;
-  let prevVowel = false;
-  for (let i = 0; i < w.length; i++) {
-    const isVowel = VOWELS.has(w[i]);
-    if (isVowel && !prevVowel) count++;
-    prevVowel = isVowel;
-  }
-  // Silent-e adjustment
-  if (w.endsWith("e") && !w.endsWith("le") && count > 1) count--;
-  // Ensure at least 1
-  return Math.max(1, count);
+  return Math.max(1, syllable(word.toLowerCase()) || 0);
 }
-
-// ── Text metrics ───────────────────────────────────────────────────────────
 
 function getWords(text) {
   if (!text || typeof text !== "string") return [];
@@ -44,45 +27,33 @@ function getWords(text) {
     .filter((w) => w.length > 0);
 }
 
-function getSentenceCount(text) {
-  if (!text || typeof text !== "string") return 1;
-  const cleaned = text.replace(/[#*_`\[\](){}<>]/g, "");
-  const matches = cleaned.match(/[.!?]+|\n+/g);
-  return Math.max(1, matches ? matches.length : 1);
-}
-
 /**
  * Flesch-Kincaid Grade Level.
  * Formula: 0.39 * (words/sentences) + 11.8 * (syllables/words) - 15.59
  * Returns a grade level (e.g., 6.0 = 6th grade, 10.0 = 10th grade).
  */
 function fleschKincaidGrade(text) {
-  const words = getWords(text);
-  if (words.length === 0) return 0;
-  const sentences = getSentenceCount(text);
-  const totalSyllables = words.reduce((sum, w) => sum + countSyllables(w), 0);
-  const grade =
-    0.39 * (words.length / sentences) + 11.8 * (totalSyllables / words.length) - 15.59;
-  return Math.max(0, Math.round(grade * 10) / 10);
+  if (!text || typeof text !== "string" || !text.trim()) return 0;
+  return Math.max(0, readability.fleschKincaidGrade(text));
 }
 
 /**
  * Average words per sentence — simpler readability proxy.
  */
 function avgWordsPerSentence(text) {
-  const words = getWords(text);
-  const sentences = getSentenceCount(text);
-  return Math.round((words.length / sentences) * 10) / 10;
+  if (!text || typeof text !== "string" || !text.trim()) return 0;
+  return readability.averageSentenceLength(text);
 }
 
 /**
  * Percentage of words with 3+ syllables — "hard word" density.
  */
 function hardWordPercentage(text) {
-  const words = getWords(text);
-  if (words.length === 0) return 0;
-  const hard = words.filter((w) => countSyllables(w) >= 3).length;
-  return Math.round((hard / words.length) * 1000) / 10;
+  if (!text || typeof text !== "string" || !text.trim()) return 0;
+  const words = readability.lexiconCount(text);
+  if (words === 0) return 0;
+  const hard = readability.polySyllableCount(text);
+  return Math.round((hard / words) * 1000) / 10;
 }
 
 // ── Level thresholds ───────────────────────────────────────────────────────
