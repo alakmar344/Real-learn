@@ -68,19 +68,12 @@ Real-learn/
 ## 3. Build / verify commands (always run before committing)
 
 ```bash
-# Frontend (from /frontend)
-npm install
-npx tsc --noEmit          # typecheck  — MUST be clean
-npx next lint             # lint       — MUST be clean (next lint is deprecated but still works)
-npm run build             # production build — MUST succeed before a PR
-npm run verify:quiz       # Fisher-Yates shuffle sanity check
-
 # Backend (from /backend)
 npm install
-npm test                  # gemma-engine + moderation tests
+npm test                  # gemma-engine, moderation, personalization, search tests
 ```
 
-**Baseline recorded 2026-07-21:** `tsc --noEmit` clean, `next lint` clean, `npm run build` clean, backend `npm test` 17/17.
+**Baseline recorded 2026-07-23:** `tsc --noEmit` clean, `next lint` clean, `npm run build` clean, backend `npm test` 27/27 (with search + personalization tests).
 
 ---
 
@@ -218,6 +211,9 @@ Target: WCAG 2.1 AA. Non-negotiables:
 | Stats / numbers | `REALLEARN_BY_THE_NUMBERS.md` |
 | Narrative history | `HEROIC_SAGA.md` |
 | **How to work on this repo (you are here)** | **`docs/AGENT_MEMORY.md`** |
+| Backend API surface | `backend/src/server.js` |
+| Lesson cache / search indexes | `backend/src/lib/lessonCache.js` |
+| Load / stress test runner | `backend/loadtest.js` |
 
 ---
 
