@@ -366,7 +366,11 @@ RealLearn employs a sophisticated two-tier caching architecture that makes repea
 
 - **Tier 2 — MongoDB with TTL Index:** Survives restarts and is shared across instances, so any server in the fleet benefits from any other's work. A TTL index automatically expires stale entries.
 
-A cached lesson was already moderated (regex + LLM) and schema-validated the first time it was generated, so a cache hit legitimately skips Serper, the Gemma generation call, AND both moderation passes — turning a ~20-60s pipeline into a single lookup. Cache keys are deterministic SHA-256 hashes of (normalized question + language + level + mode), so trivially different phrasings of the same question still hit the cache.
+A cached lesson was already moderated (regex + LLM) and schema-validated the first time it was generated, so a cache hit legitimately skips Serper, the Gemma generation call, AND both moderation passes — turning a ~20-60s pipeline into a single lookup. Cache keys are deterministic SHA-256 hashes of (normalized question + language + level + mode + sanitized personalization), so trivially different phrasings of the same question still hit the cache.
+
+### Indexed Lesson Search
+
+The MongoDB lesson cache is also indexed for discovery. On startup, the backend creates a weighted text index over cached lesson titles, part titles, key takeaways, and part content, plus a recent-active index for expiring documents. Authenticated clients can call `GET /api/search-lessons?q=<topic>&limit=<n>` to search already-validated cached lessons without making a new AI call. The endpoint returns compact summaries only, filters out expired cache entries, sanitizes control characters and angle brackets from the query, rate-limits like other API routes, and sends a short private cache header (`max-age=60`, `stale-while-revalidate=300`) so repeated searches are cheap.
 
 ### Safety & Content Moderation
 
@@ -479,6 +483,7 @@ The frontend talks to the backend over a small, focused surface:
 | `/api/legal-consent` | POST | Record legal (Privacy + Terms) acceptance *(authenticated)* |
 | `/api/legal-consent/status` | GET | Check current legal consent status *(authenticated)* |
 | `/api/export-data` | GET | Export all of a user's stored data as JSON *(authenticated)* |
+| `/api/search-lessons` | GET | Search MongoDB-indexed cached lessons and return compact summaries *(authenticated, rate-limited, privately cached)* |
 | `/api/account` | DELETE | Permanently delete a user's data and Clerk account *(authenticated)* |
 | `/api/auth-debug` | GET | Diagnostic token inspection — production-gated *(rate-limited)* |
 | `/health` | GET | Operational health check |
@@ -487,7 +492,9 @@ The frontend talks to the backend over a small, focused surface:
 
 ## API Behavior & SSE Streaming
 
-`POST /api/generate-lesson` streams a sequence of events to the frontend:
+`POST /api/generate-lesson` streams a sequence of events to the frontend. `GET /api/search-lessons?q=<topic>&limit=<n>` searches the MongoDB-backed lesson cache and returns private-cacheable lesson summaries for authenticated users.
+
+`POST /api/generate-lesson` emits:
 
 | Event | Meaning |
 |---|---|
@@ -518,7 +525,8 @@ This section documents every file in the repository and what it does — so you 
 | `src/lib/auth.js` | Clerk JWT verification. Remote JWKS (rotating keys) as primary, offline PEM public key as fallback. Issuer trust: configured Frontend API, explicit allowlist, `*.reallearn.site` — wildcard dev domains only in non-production. `extractBearerToken()`, `inspectToken()` (diagnostic), `requireAuth()` middleware. |
 | `src/lib/contentGuard.js` | Regex-based content safety filter. Targets genuinely harmful *intent* (CSAM, weapons manufacturing, violence instructions, self-harm methods, hate speech generation, cybercrime tutorials) while preserving educational content about sensitive topics. Separate patterns for user input and AI output. |
 | `src/lib/moderation.js` | LLM-powered content classifier. Runs Gemma as a safety judge with a dedicated prompt, 8-second timeout, temperature 0 for deterministic output, 15-minute verdict cache (**`lru-cache`**, 500 entries). **Fails open** — a moderation timeout allows content through rather than blocking the user. |
-| `src/lib/lessonCache.js` | Two-tier lesson cache. Tier 1: in-memory LRU (**`lru-cache`**, 200 entries, 6-hour TTL per entry). Tier 2: MongoDB with TTL index (6-hour default). Deterministic cache keys (SHA-256 of normalized question + language + level + mode). Fire-and-forget writes. Cache hits bypass Serper, Gemma, and both moderation passes. |
+| `src/lib/lessonCache.js` | Two-tier lesson cache. Tier 1: in-memory LRU (**`lru-cache`**, 200 entries, 6-hour TTL per entry). Tier 2: MongoDB with TTL index (6-hour default). Deterministic cache keys (SHA-256 of normalized question + language + level + mode + sanitized personalization). Fire-and-forget writes. Cache hits bypass Serper, Gemma, and both moderation passes. |
+| `src/lib/searchIndex.js` | MongoDB text-search helper for cached lessons. Ensures weighted text/recent-active indexes, sanitizes search queries, clamps limits, excludes expired cache documents, and returns compact lesson summaries for `/api/search-lessons`. |
 | `src/lib/mongodb.js` | MongoDB connection helper. Singleton client with lazy connection. Reads `MONGODB_URI` (or `MONGODB_URL`) and `MONGODB_DB` from environment. |
 
 ### Frontend (`frontend/`)
