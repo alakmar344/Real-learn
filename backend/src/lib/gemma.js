@@ -6,10 +6,7 @@ import Cerebras from "@cerebras/cerebras_cloud_sdk";
 // Providers:
 //   • "cerebras"   — Cerebras Cloud SDK (Gemma 4 31B), the primary.
 //   • "cloudflare" — Cloudflare Workers AI (Gemma), the fallback.
-//   • "openrouter" — OpenRouter (OpenAI-compatible), the LAST RESORT. It only
-//     runs when Cerebras and Cloudflare have both failed (or gone silent past
-//     the hedge window) — free-tier OpenRouter limits are precious, so it is
-//     pinned to the back of the provider order regardless of observed latency.
+
 //
 // The providers are individually unreliable, so the engine is built around
 // three ideas that together give the fastest answer that actually succeeds:
@@ -321,7 +318,6 @@ function newProviderHealth() {
 const providerHealth = {
   cerebras: newProviderHealth(),
   cloudflare: newProviderHealth(),
-  openrouter: newProviderHealth(),
 };
 
 function recordProviderSuccess(providerKey, latencyMs, modelIndex) {
@@ -379,7 +375,6 @@ export function getProviderHealthSnapshot() {
 export function resetProviderHealth() {
   providerHealth.cerebras = newProviderHealth();
   providerHealth.cloudflare = newProviderHealth();
-  providerHealth.openrouter = newProviderHealth();
 }
 
 // ── Provider registry ────────────────────────────────────────────────────────
@@ -393,10 +388,6 @@ function isCloudflareConfigured() {
     process.env.CLOUDFLARE_API_TOKEN?.trim() &&
       process.env.CLOUDFLARE_ACCOUNT_ID?.trim()
   );
-}
-
-export function isOpenRouterConfigured() {
-  return Boolean(process.env.OPENROUTER_API_KEY?.trim());
 }
 
 /** @deprecated Use isCloudflareConfigured() directly. Kept for server.js compatibility. */
@@ -415,21 +406,6 @@ function getCloudflareModels() {
     ...parseModelList(process.env.CLOUDFLARE_AI_MODELS),
   ];
   if (models.length === 0) models.push("@cf/google/gemma-4-26b-a4b-it");
-  return [...new Set(models)];
-}
-
-function getOpenRouterModels() {
-  const models = [
-    ...parseModelList(process.env.OPENROUTER_MODEL),
-    ...parseModelList(process.env.OPENROUTER_MODELS),
-  ];
-  if (models.length === 0) {
-    // Free-tier defaults; rotation handles delisting/throttling.
-    models.push(
-      "google/gemma-3-27b-it:free",
-      "meta-llama/llama-3.3-70b-instruct:free"
-    );
-  }
   return [...new Set(models)];
 }
 
@@ -454,20 +430,6 @@ function getProviders(allowFallback) {
       models: getCloudflareModels(),
       call: (model, body, signal, opts) =>
         callWorkersAI(process.env.CLOUDFLARE_ACCOUNT_ID.trim(), model, body, signal, opts),
-    });
-  }
-  if (allowFallback && isOpenRouterConfigured()) {
-    providers.push({
-      key: "openrouter",
-      label: "OpenRouter",
-      // tier 1 = LAST RESORT: only reached when every tier-0 provider has
-      // failed or gone silent past the hedge window. Pinned behind tier 0 no
-      // matter how fast it has been — its free-tier budget is a rescue fund,
-      // not a racing budget.
-      tier: 1,
-      models: getOpenRouterModels(),
-      call: (model, body, signal, opts) =>
-        callOpenRouter(model, body, signal, opts),
     });
   }
   return providers;
@@ -632,7 +594,7 @@ async function fetchChatCompletion(url, headers, payload, signal, opts = {}) {
 // false }` to turn that off, roughly halving wall-clock generation for
 // structured-output workloads like ours. Because not every host tolerates
 // the extra field, it is opt-in per provider:
-//   AI_DISABLE_THINKING = off (default) | cerebras | cloudflare | openrouter
+//   AI_DISABLE_THINKING = off (default) | cerebras | cloudflare | both/all
 //                         | both/all (every provider)
 function thinkingDisabledFor(providerKey) {
   const mode = (process.env.AI_DISABLE_THINKING || "off").trim().toLowerCase();
@@ -661,42 +623,6 @@ async function callWorkersAI(accountId, model, body, signal, opts) {
   return fetchChatCompletion(
     url,
     { Authorization: `Bearer ${apiToken}` },
-    payload,
-    signal,
-    opts
-  );
-}
-
-async function callOpenRouter(model, body, signal, opts) {
-  const apiKey = process.env.OPENROUTER_API_KEY?.trim();
-  if (!apiKey) {
-    throw new Error("OPENROUTER_API_KEY is not configured");
-  }
-  const baseUrl = (process.env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1")
-    .trim()
-    .replace(/\/$/, "");
-  const url = `${baseUrl}/chat/completions`;
-  const payload = {
-    model,
-    messages: body.messages,
-    temperature: body.temperature,
-    max_tokens: body.max_tokens,
-    // Streaming enables the same silence-watchdog kill switch the other
-    // providers get: a hung request dies by silence, not by full timeout.
-    stream: true,
-  };
-  if (thinkingDisabledFor("openrouter")) {
-    payload.chat_template_kwargs = { enable_thinking: false };
-  }
-  return fetchChatCompletion(
-    url,
-    {
-      Authorization: `Bearer ${apiKey}`,
-      // Optional attribution headers OpenRouter uses for app rankings and
-      // free-tier accounting. Harmless when left as defaults.
-      "HTTP-Referer": process.env.OPENROUTER_SITE_URL?.trim() || "https://reallearn.site",
-      "X-Title": process.env.OPENROUTER_APP_NAME?.trim() || "RealLearn",
-    },
     payload,
     signal,
     opts
@@ -854,19 +780,6 @@ export async function callCloudflareAI(model, body, signal) {
   const models = getCloudflareModels();
   const preferred = models[providerHealth.cloudflare.modelIndex % models.length];
   return callWorkersAI(accountId, preferred || model, body, signal, {});
-}
-
-/**
- * Direct call to the OpenRouter last-resort provider.
- * Like callCloudflareAI, this is circuit-independent: server.js uses it as the
- * FINAL rung of the reliability ladder so that a working provider is still
- * reachable even when both the Cerebras and Cloudflare circuits are open.
- * Returns the raw completion payload — pass through extractTextFromResult().
- */
-export async function callOpenRouterAI(model, body, signal) {
-  const models = getOpenRouterModels();
-  const preferred = models[providerHealth.openrouter.modelIndex % models.length];
-  return callOpenRouter(preferred || model, body, signal, {});
 }
 
 /** @deprecated Renamed to callCloudflareAI. Kept for compatibility. */
@@ -1249,7 +1162,7 @@ export async function callGemma(
 
   if (providers.length === 0) {
     throw new Error(
-      "No AI provider is configured: set CEREBRAS_API_KEY, CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID, or OPENROUTER_API_KEY"
+      "No AI provider is configured: set CEREBRAS_API_KEY or CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID"
     );
   }
   if (enableSearch) {
