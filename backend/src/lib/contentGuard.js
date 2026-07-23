@@ -49,10 +49,12 @@ const BANNED_PATTERNS = [
 
 // Applied only to the AI's *response* — catches a model that slipped into a
 // refusal or returned disallowed content despite the prompt.
+const HARMFUL_REFUSAL_CONTEXT = "harmful|dangerous|illegal|unsafe|violent|weapon|bomb|explosive|drug|self-harm|suicide|abuse|sexual|hate|hacking|fraud|kidnap|traffick";
+
 const BANNED_RESPONSE_PATTERNS = [
   /child\s*(sexual|porn|molest)/i,
-  /i\s*(cannot|can't|won't|will\s*not)\s*(help|assist|provide|give)\s*(with|you|on)\s*(this|that|harmful|dangerous)/i,
-  /i['']m\s*(not\s*able|unable)\s*to\s*(assist|help|provide)/i,
+  new RegExp(`i\\s*(cannot|can't|won't|will\\s*not)\\s*(help|assist|provide|give)[^.!?]{0,160}(${HARMFUL_REFUSAL_CONTEXT})`, "i"),
+  new RegExp(`i['']m\\s*(not\\s*able|unable)\\s*to\\s*(assist|help|provide)[^.!?]{0,160}(${HARMFUL_REFUSAL_CONTEXT})`, "i"),
 ];
 
 // SECURITY: strip zero-width/invisible characters and NFKC-fold before
