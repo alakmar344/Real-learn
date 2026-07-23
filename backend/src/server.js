@@ -1655,30 +1655,21 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
   try {
     // Run LLM input moderation concurrently with the real-world context fetch
     // so the safety check adds no latency in the common (allowed) case.
-    // SPEED TACTIC: fast mode skips the Serper fetch entirely — a quick answer
-    // doesn't need a current-events Part 3, so we save that whole round trip.
-    // SECURITY: fast mode used to skip LLM input moderation entirely, which
-    // made the whole content policy bypassable by simply choosing mode:"fast"
-    // (the regex guard alone is easily dodged by paraphrase). The moderation
-    // call is now ALWAYS started; fast mode just doesn't block on it here —
-    // it runs concurrently with the (much slower) generation call and the
-    // verdict is enforced below before the lesson is streamed. Net added
-    // latency in fast mode: ~0.
+    // The Serper fetch runs in both fast and explain modes so even quick
+    // answers can benefit from current-events context when available.
     sendEvent("progress", { stage: "starting", percent: 5 });
     const inputModerationPromise = moderateText(question, "input");
     console.log("[Serper] Context fetch start", { requestId, mode });
     sendEvent("progress", { stage: "searching", percent: 15 });
     const [inputModeration, newsContextResult] = await Promise.all([
       inputModerationPromise,
-      mode === "fast"
-        ? Promise.resolve(null)
-        : fetchRealWorldContext(question, language).catch((error) => {
-            console.warn("[Serper] Context fetch failed, continuing without context", {
-              requestId,
-              error,
-            });
-            return null;
-          }),
+      fetchRealWorldContext(question, language).catch((error) => {
+        console.warn("[Serper] Context fetch failed, continuing without context", {
+          requestId,
+          error,
+        });
+        return null;
+      }),
     ]);
     const newsContext = newsContextResult;
     const trimmedNewsContext =
