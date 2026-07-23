@@ -109,6 +109,41 @@ async function ensureTtlIndex(db) {
   }
 }
 
+let searchIndexPromise = null;
+
+/**
+ * Ensure a compound text index over the embedded lesson fields so users can
+ * search previously generated lessons by title, key takeaway, or content. The
+ * index is idempotent and non-fatal — creation failures are logged and retried
+ * on the next call.
+ */
+export async function ensureSearchIndex(db) {
+  if (searchIndexPromise) return searchIndexPromise;
+  searchIndexPromise = (async () => {
+    await db.collection(CACHE_COLLECTION).createIndex(
+      {
+        "lesson.title": "text",
+        "lesson.keyTakeaways": "text",
+        "lesson.content": "text",
+      },
+      {
+        name: "lessonSearchText",
+        default_language: "none",
+        weights: {
+          "lesson.title": 10,
+          "lesson.keyTakeaways": 8,
+          "lesson.content": 5,
+        },
+      }
+    );
+    console.log("[lessonCache] Text search index ensured");
+  })().catch((error) => {
+    searchIndexPromise = null;
+    console.warn("[lessonCache] Failed to ensure search index", error?.message);
+  });
+  return searchIndexPromise;
+}
+
 /**
  * Look up a cached lesson. Never throws — any storage error degrades to a
  * cache miss so the normal generation path takes over.

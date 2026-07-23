@@ -48,6 +48,7 @@ import {
   lessonCacheKey,
   getCachedLesson,
   setCachedLesson,
+  ensureSearchIndex,
 } from "./lib/lessonCache.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -762,6 +763,14 @@ function securityHeaders(req, res, next) {
 
 app.use(securityHeaders);
 
+// CACHING: ensure compressed responses key correctly in shared caches.
+app.use((req, res, next) => {
+  if (!res.getHeader("Vary")) {
+    res.setHeader("Vary", "Accept-Encoding");
+  }
+  next();
+});
+
 // PERFORMANCE: expose Server-Timing so devtools can break down where time
 // is spent (DB, AI, Serper). Harmless in production.
 app.use((req, res, next) => {
@@ -828,6 +837,7 @@ app.get("/api/auth-debug", rateLimit, requireAuth, async (req, res) => {
   }
   const inspection = inspectToken(token);
   const verification = await verifyClerkToken(token);
+  res.setHeader("Cache-Control", "private, max-age=60");
   res.json({
     token: inspection,
     verified: verification.valid,
@@ -1209,6 +1219,50 @@ app.get("/api/legal-consent/status", rateLimit, requireAuth, async (req, res) =>
   }
 });
 
+// Search previously generated lessons by content/title/key takeaway.
+// Useful for "resume" flows and discovery. Results are sanitized to avoid
+// leaking cache keys or raw lesson structure.
+app.get("/api/search-lessons", rateLimit, requireAuth, async (req, res) => {
+  try {
+    const q = typeof req.query.q === "string" ? req.query.q.trim().slice(0, 200) : "";
+    if (!q) {
+      return res.status(400).json({ error: "q is required" });
+    }
+
+    const db = await getDb();
+    await ensureSearchIndex(db);
+
+    const results = await db
+      .collection("lessonCache")
+      .find(
+        { $text: { $search: q } },
+        {
+          projection: {
+            key: 1,
+            lesson: 1,
+            score: { $meta: "textScore" },
+          },
+        }
+      )
+      .sort({ score: { $meta: "textScore" } })
+      .limit(20)
+      .toArray();
+
+    const sanitized = results.map((r) => ({
+      key: r.key?.slice(0, 16),
+      title: r.lesson?.parts?.[0]?.title || "",
+      question: r.lesson?.question || "",
+      partsCount: Array.isArray(r.lesson?.parts) ? r.lesson.parts.length : 0,
+    }));
+
+    res.setHeader("Cache-Control", "private, max-age=120");
+    res.json({ results: sanitized });
+  } catch (error) {
+    console.error("[api/search-lessons] Failed", error);
+    res.status(500).json({ error: "Search failed" });
+  }
+});
+
 // Export all user data from MongoDB as JSON.
 app.get("/api/export-data", rateLimit, requireAuth, async (req, res) => {
   try {
@@ -1238,6 +1292,7 @@ app.get("/api/export-data", rateLimit, requireAuth, async (req, res) => {
     ]);
 
     res.setHeader("Content-Type", "application/json");
+    res.setHeader("Cache-Control", "private, no-store");
     // Security: `sub` is only Clerk-shaped for OUR issuer — a token minted on
     // an allowlisted dev issuer controls it fully, so keep header-safe chars
     // only (quotes/control bytes must never reach Content-Disposition).
@@ -2188,47 +2243,51 @@ app.use((err, req, res, next) => {
   res.status(status).json({ error: message });
 });
 
-try {
-  validateStartupConfig();
-  const server = app.listen(port, () => {
-    console.log(`Backend listening on port ${port}`);
-    if (process.env.CLOUDFLARE_API_TOKEN?.trim() && process.env.CLOUDFLARE_ACCOUNT_ID?.trim()) {
-      startPeriodicWarmUp();
-    }
-    // Privacy (policy v2.3): retroactively anonymize raw IPs stored by
-    // earlier releases. Fire-and-forget; errors are logged, not fatal.
-    void scrubStoredConsentIps();
-    // DoS hardening: index the per-user query paths. Fire-and-forget.
-    void ensureUserDataIndexes();
-  });
+export { app };
 
-  // SECURITY (Slowloris): bound how long a client may take to send its
-  // headers and its whole request. These apply to request RECEPTION only, so
-  // long-lived SSE responses (lesson streams) are unaffected. Node's
-  // defaults (60s/300s) leave sockets hostage far longer than any legitimate
-  // client needs to upload a <100kb JSON body.
-  server.headersTimeout = 15_000;
-  server.requestTimeout = 30_000;
-  // Keep idle keep-alive sockets on a short leash as well.
-  server.keepAliveTimeout = 10_000;
-
-  // Graceful shutdown: stop accepting new connections, wait for in-flight
-  // requests to finish (up to 30s), then close MongoDB and exit.
-  const shutdown = (signal) => {
-    console.log(`[shutdown] ${signal} received, starting graceful shutdown`);
-    server.close(() => {
-      console.log("[shutdown] All connections closed");
-      process.exit(0);
+if (process.env.SKIP_SERVER_START !== "true") {
+  try {
+    validateStartupConfig();
+    const server = app.listen(port, () => {
+      console.log(`Backend listening on port ${port}`);
+      if (process.env.CLOUDFLARE_API_TOKEN?.trim() && process.env.CLOUDFLARE_ACCOUNT_ID?.trim()) {
+        startPeriodicWarmUp();
+      }
+      // Privacy (policy v2.3): retroactively anonymize raw IPs stored by
+      // earlier releases. Fire-and-forget; errors are logged, not fatal.
+      void scrubStoredConsentIps();
+      // DoS hardening: index the per-user query paths. Fire-and-forget.
+      void ensureUserDataIndexes();
     });
-    // Force-kill after 30 seconds if connections won't drain.
-    setTimeout(() => {
-      console.error("[shutdown] Forced exit after 30s timeout");
-      process.exit(1);
-    }, 30000).unref();
-  };
-  process.on("SIGTERM", () => shutdown("SIGTERM"));
-  process.on("SIGINT", () => shutdown("SIGINT"));
-} catch (error) {
-  console.error("[startup] Backend configuration error:", error);
-  process.exit(1);
+
+    // SECURITY (Slowloris): bound how long a client may take to send its
+    // headers and its whole request. These apply to request RECEPTION only, so
+    // long-lived SSE responses (lesson streams) are unaffected. Node's
+    // defaults (60s/300s) leave sockets hostage far longer than any legitimate
+    // client needs to upload a <100kb JSON body.
+    server.headersTimeout = 15_000;
+    server.requestTimeout = 30_000;
+    // Keep idle keep-alive sockets on a short leash as well.
+    server.keepAliveTimeout = 10_000;
+
+    // Graceful shutdown: stop accepting new connections, wait for in-flight
+    // requests to finish (up to 30s), then close MongoDB and exit.
+    const shutdown = (signal) => {
+      console.log(`[shutdown] ${signal} received, starting graceful shutdown`);
+      server.close(() => {
+        console.log("[shutdown] All connections closed");
+        process.exit(0);
+      });
+      // Force-kill after 30 seconds if connections won't drain.
+      setTimeout(() => {
+        console.error("[shutdown] Forced exit after 30s timeout");
+        process.exit(1);
+      }, 30000).unref();
+    };
+    process.on("SIGTERM", () => shutdown("SIGTERM"));
+    process.on("SIGINT", () => shutdown("SIGINT"));
+  } catch (error) {
+    console.error("[startup] Backend configuration error:", error);
+    process.exit(1);
+  }
 }
