@@ -24,6 +24,7 @@
   "dependencies": {
     "@clerk/nextjs": "^7.5.9",
     "canvas-confetti": "^1.9.4",
+    "cookie": "^1.0.6",
     "eventsource-parser": "^3.1.0",
     "idb": "^8.0.3",
     "lodash-es": "^4.18.1",
@@ -32,6 +33,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-markdown": "^9.0.1",
+    "remove-markdown": "^0.6.3",
     "remark-gfm": "^4.0.0",
     "zustand": "^5.0.13"
   },
