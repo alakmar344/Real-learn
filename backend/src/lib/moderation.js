@@ -51,6 +51,12 @@ function isModerationEnabled() {
 // before this check so leet-speak and invisible characters cannot trivially
 // bypass it.
 const profanityFilter = new Filter();
+// The upstream profanity list treats common educational/religious terms such
+// as "god" as profanity. That is too broad for RealLearn: a learner asking
+// "What does Islam teach?" must not be blocked merely because a safe answer
+// mentions belief in God. Keep genuinely abusive words, but remove terms that
+// are legitimate in religion, literature, biology, or sports lessons.
+profanityFilter.removeWords("god");
 profanityFilter.addWords(
   "kidnap",
   "kidnapping",
@@ -234,17 +240,18 @@ const INSTRUCTIONAL_PATTERNS = [
 const BANNED_PATTERNS = [...ALWAYS_ILLEGAL_PATTERNS, ...INSTRUCTIONAL_PATTERNS];
 
 // Applied to the AI's *response*. These must match a genuine, CONTIGUOUS
-// assistant refusal (e.g. "I cannot help you with this") — never scattered
-// words spread across a long lesson. The old greedy `.*` version flagged
-// ordinary teaching sentences ("...vaccines cannot give you ... this...") as
-// unsafe, which is exactly the false-positive we are fixing here.
+// assistant refusal about harmful/safety content — never generic inability
+// phrasing. Benign topics like religion or cricket can produce cautious model
+// language ("I cannot cover every tradition...") that should be treated as a
+// quality issue, not as unsafe content. The old generic refusal detector turned
+// those harmless lessons into false-positive moderation blocks.
+const HARMFUL_REFUSAL_CONTEXT = "harmful|dangerous|illegal|unsafe|violent|weapon|bomb|explosive|drug|self-harm|suicide|abuse|sexual|hate|hacking|fraud|kidnap|traffick";
+
 const BANNED_RESPONSE_PATTERNS = [
   /\bchild\b[^.!?]*\b(sexual|porn|molest)\b/i,
-  /\bi\s+(?:cannot|can'?t|can\s?not|won'?t|will\s?not)\s+(?:help|assist)\b(?:\s+you)?\s+(?:with|on)\b/i,
-  /\bi\s+(?:cannot|can'?t|can\s?not|won'?t|will\s?not)\s+(?:help|assist|comply)\s+with\s+(?:that|this|your)\b/i,
-  /\bi\s+(?:cannot|can'?t|can\s?not|won'?t|will\s?not)\s+(?:provide|give|generate|create|write|produce)\s+(?:you\s+)?(?:that|this|such|any|the)?\s*(?:information|assistance|help|content|instructions?)\b/i,
-  /\bi(?:'m|\s+am)\s+(?:not\s+able|unable)\s+to\s+(?:assist|help|provide|answer|comply)\b/i,
-  /\bi'?m\s+sorry[, ]+but\s+i\s+(?:cannot|can'?t|can\s?not|won'?t|will\s?not)\b/i,
+  new RegExp(`\\bi\\s+(?:cannot|can'?t|can\\s?not|won'?t|will\\s?not)\\s+(?:help|assist|comply|provide|give|generate|create|write|produce)[^.!?]{0,160}\\b(?:${HARMFUL_REFUSAL_CONTEXT})\\b`, "i"),
+  new RegExp(`\\bi(?:'m|\\s+am)\\s+(?:not\\s+able|unable)\\s+to\\s+(?:assist|help|provide|answer|comply)[^.!?]{0,160}\\b(?:${HARMFUL_REFUSAL_CONTEXT})\\b`, "i"),
+  new RegExp(`\\bi'?m\\s+sorry[, ]+but\\s+i\\s+(?:cannot|can'?t|can\\s?not|won'?t|will\\s?not)[^.!?]{0,160}\\b(?:${HARMFUL_REFUSAL_CONTEXT})\\b`, "i"),
 ];
 
 function matchesBannedPattern(text, patterns) {
