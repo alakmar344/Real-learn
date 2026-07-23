@@ -19,6 +19,7 @@
   "dependencies": {
     "@cerebras/cerebras_cloud_sdk": "^1.64.1",
     "bad-words": "^4.1.5",
+    "better-profane-words": "^1.0.7",
     "compression": "^1.8.1",
     "cors": "^2.8.5",
     "express": "^4.21.2",
