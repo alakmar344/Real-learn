@@ -177,7 +177,7 @@ Everything you do is **persisted automatically**, so you can close the tab and p
 
 RealLearn runs on **Gemma 4** — and we didn't just call the model and hope for the best. We engineered a sophisticated prompting and reliability layer around it to guarantee educational quality and structural consistency on every single request.
 
-**Inference providers.** Generation is served by a hedged, multi-provider engine. Our **primary** provider is **Cerebras Cloud** (running **Gemma 4 31B**, `gemma-4-31b`), chosen for its very low time-to-first-token. If Cerebras is briefly slow or unavailable, the request automatically **falls back** to **Cloudflare Workers AI** (Gemma, `@cf/google/gemma-4-26b-a4b-it`), so lessons are generated reliably even during provider hiccups. The same "no training on your data" guarantee applies to both.
+**Inference providers.** Generation is served by a hedged, multi-provider engine. Our **primary** provider is **Cerebras Cloud** (running **Gemma 4 31B**, `gemma-4-31b`), chosen for its very low time-to-first-token. If Cerebras is briefly slow or unavailable, the request automatically **falls back** to **Cloudflare Workers AI** (Gemma, `@cf/google/gemma-4-26b-a4b-it`). If **both** Cerebras and Cloudflare fail, a third **last-resort** provider — **OpenRouter** (`OPENROUTER_API_KEY`, default `google/gemma-3-27b-it:free` with model rotation) — rescues the request, so lessons are generated reliably even during multi-provider hiccups. The same "no training on your data" guarantee applies to all providers.
 
 ### Key Technical Highlights
 

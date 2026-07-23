@@ -84,6 +84,10 @@ function isCloudflareUrl(url) {
   return String(url).includes("cloudflare.com");
 }
 
+function isOpenRouterUrl(url) {
+  return String(url).includes("openrouter.ai");
+}
+
 beforeEach(() => {
   resetProviderHealth();
   globalThis.fetch = async (url, opts) => {
@@ -91,7 +95,7 @@ beforeEach(() => {
     if (urlStr.includes("/tcp_warming")) {
       return new Response(null, { status: 204 });
     }
-    return scenario(isCerebrasUrl(urlStr), isCloudflareUrl(urlStr), opts);
+    return scenario(isCerebrasUrl(urlStr), isCloudflareUrl(urlStr), opts, urlStr);
   };
 });
 
@@ -288,4 +292,88 @@ test("extractTextFromResult rejects empty payloads", () => {
 test("parseJSON repairs fenced and truncated model output", () => {
   assert.deepEqual(parseJSON('```json\n{"a": 1}\n```'), { a: 1 });
   assert.deepEqual(parseJSON('{"a": [1, 2'), { a: [1, 2] });
+});
+
+// ── OpenRouter (last-resort provider) ───────────────────────────────────────
+
+test("openrouter rescues the request when cerebras AND cloudflare fail", async () => {
+  process.env.OPENROUTER_API_KEY = "test-openrouter-key";
+  try {
+    const calls = { cerebras: 0, cloudflare: 0, openrouter: 0 };
+    scenario = async (isCerebras, isCloudflare, opts, url) => {
+      if (isOpenRouterUrl(url)) {
+        calls.openrouter += 1;
+        assert.equal(opts.headers.Authorization, "Bearer test-openrouter-key");
+        const body = JSON.parse(opts.body);
+        assert.equal(body.model, "google/gemma-3-27b-it:free");
+        return okResponse("openrouter-rescue");
+      }
+      if (isCerebras) calls.cerebras += 1;
+      else calls.cloudflare += 1;
+      return jsonResponse({ errors: [{ message: "down" }] }, 500);
+    };
+    const text = await callGemma("sys", "user", false, 0.5, 5000);
+    assert.equal(text, "openrouter-rescue");
+    assert.ok(calls.cerebras > 0, "cerebras should have been tried first");
+    assert.ok(calls.cloudflare > 0, "cloudflare should have been tried second");
+    assert.equal(calls.openrouter, 1);
+  } finally {
+    delete process.env.OPENROUTER_API_KEY;
+  }
+});
+
+test("openrouter is NOT touched while the primary is healthy", async () => {
+  process.env.OPENROUTER_API_KEY = "test-openrouter-key";
+  try {
+    let openRouterCalls = 0;
+    scenario = async (isCerebras, isCloudflare, opts, url) => {
+      if (isOpenRouterUrl(url)) {
+        openRouterCalls += 1;
+        return okResponse("should-never-run");
+      }
+      if (isCerebras) {
+        return sseResponse(null, [{ at: 0, data: sseChunk("primary-answer") }]);
+      }
+      return okResponse("cloudflare-answer");
+    };
+    const text = await callGemma("sys", "user", false, 0.5, 5000);
+    assert.equal(text, "primary-answer");
+    assert.equal(openRouterCalls, 0);
+  } finally {
+    delete process.env.OPENROUTER_API_KEY;
+  }
+});
+
+test("openrouter rotates to its next model on 429", async () => {
+  process.env.OPENROUTER_API_KEY = "test-openrouter-key";
+  process.env.OPENROUTER_MODEL = "model-a";
+  process.env.OPENROUTER_MODELS = "model-b";
+  try {
+    const seenModels = [];
+    scenario = async (isCerebras, isCloudflare, opts, url) => {
+      if (!isOpenRouterUrl(url)) {
+        return jsonResponse({ errors: [{ message: "down" }] }, 500);
+      }
+      const body = JSON.parse(opts.body);
+      seenModels.push(body.model);
+      if (body.model === "model-a") {
+        return jsonResponse({ error: { message: "rate limited" } }, 429);
+      }
+      return okResponse("rotated");
+    };
+    const text = await callGemma("sys", "user", false, 0.5, 5000);
+    assert.equal(text, "rotated");
+    assert.deepEqual(seenModels, ["model-a", "model-b"]);
+    assert.equal(getProviderHealthSnapshot().openrouter.preferredModelIndex, 1);
+  } finally {
+    delete process.env.OPENROUTER_API_KEY;
+    delete process.env.OPENROUTER_MODEL;
+    delete process.env.OPENROUTER_MODELS;
+  }
+});
+
+test("health snapshot includes the openrouter provider", () => {
+  const snapshot = getProviderHealthSnapshot();
+  assert.ok(snapshot.openrouter, "openrouter missing from health snapshot");
+  assert.equal(snapshot.openrouter.circuitOpen, false);
 });
