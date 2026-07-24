@@ -715,12 +715,7 @@ This section documents every file in the repository and what it does — so you 
 1. Create a new **Web Service** pointing at this repo's `backend/` directory.
 2. Set the required env vars: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `MONGODB_URI`, `CLERK_SECRET_KEY`, `CLERK_FRONTEND_API`, etc.
 3. Set **Start Command**: `node src/server.js`
-4. Set **Post Deploy Command** (runs automatically after each deploy, logs only):
-   ```
-   cd backend && npm run ping:google-ai-studio
-   ```
-   This pings Google AI Studio with `gemma-4-26b-a4b-it` and logs the result in Render's deploy logs. It exits non-zero on failure so the deploy status shows red if the ping fails.
-5. Optional: set `GOOGLE_AI_STUDIO_API_KEY` in Render env. If unset, the script skips silently.
+4. Optional: set `GOOGLE_AI_STUDIO_API_KEY` in Render env. If set, the backend automatically pings Google AI Studio with `gemma-4-26b-a4b-it` on startup and logs the result to Render's log stream. If unset, it skips silently.
 
 ---
 

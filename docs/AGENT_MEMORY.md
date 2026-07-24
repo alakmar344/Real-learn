@@ -79,7 +79,8 @@ npm run verify:quiz       # Fisher-Yates shuffle sanity check
 # Backend (from /backend)
 npm install
 npm test                  # gemma-engine + moderation tests
-npm run ping:google-ai-studio # optional one-off Google AI Studio connectivity check (logs only)
+# Google AI Studio diagnostic ping runs automatically on server startup
+# if GOOGLE_AI_STUDIO_API_KEY is set (logs only, never imported by routes).
 ```
 
 **Baseline recorded 2026-07-21:** `tsc --noEmit` clean, `next lint` clean, `npm run build` clean, backend `npm test` 17/17.
