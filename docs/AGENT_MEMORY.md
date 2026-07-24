@@ -58,7 +58,8 @@ Real-learn/
 │       ├── lib/moderation.js  regex + LLM moderation
 │       ├── lib/lessonCache.js + lruCache.js   two-tier caching
 │       ├── lib/auth.js        Clerk JWT verify (jose)
-│       └── lib/mongodb.js
+│       ├── lib/mongodb.js
+│       └── scripts/           one-off deploy utilities (non-production diagnostics)
 └── docs/, *.md         this file + README, DESIGN_AUDIT, IMPROVEMENT_PRIORITIES,
                         llms.txt, llms-full.txt, change-made-after-submission.md, errors.md
 ```
@@ -78,6 +79,7 @@ npm run verify:quiz       # Fisher-Yates shuffle sanity check
 # Backend (from /backend)
 npm install
 npm test                  # gemma-engine + moderation tests
+npm run ping:google       # optional one-off Google AI Studio connectivity check (logs only)
 ```
 
 **Baseline recorded 2026-07-21:** `tsc --noEmit` clean, `next lint` clean, `npm run build` clean, backend `npm test` 17/17.
