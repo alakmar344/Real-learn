@@ -5,7 +5,7 @@ if (!API_KEY) {
   process.exit(0);
 }
 
-const MODEL = "gemini-2.0-flash";
+const MODEL = "gemma-4-26b-a4b-it";
 const URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${encodeURIComponent(API_KEY)}`;
 
 async function run() {
