@@ -58,8 +58,7 @@ Real-learn/
 │       ├── lib/moderation.js  regex + LLM moderation
 │       ├── lib/lessonCache.js + lruCache.js   two-tier caching
 │       ├── lib/auth.js        Clerk JWT verify (jose)
-│       ├── lib/mongodb.js
-│       └── scripts/           one-off deploy utilities (non-production diagnostics)
+│       └── lib/mongodb.js
 └── docs/, *.md         this file + README, DESIGN_AUDIT, IMPROVEMENT_PRIORITIES,
                         llms.txt, llms-full.txt, change-made-after-submission.md, errors.md
 ```
@@ -79,8 +78,10 @@ npm run verify:quiz       # Fisher-Yates shuffle sanity check
 # Backend (from /backend)
 npm install
 npm test                  # gemma-engine + moderation tests
-# Google AI Studio diagnostic ping runs automatically on server startup
-# if GOOGLE_AI_STUDIO_API_KEY is set (logs only, never imported by routes).
+# Note: A one-off Google AI Studio diagnostic ping was tested on Render
+# and returned "User location is not supported for the API use."
+# (FAILED_PRECONDITION). Google therefore restricts API access from Render's
+# region, so no automatic Google AI Studio ping is wired into production.
 ```
 
 **Baseline recorded 2026-07-21:** `tsc --noEmit` clean, `next lint` clean, `npm run build` clean, backend `npm test` 17/17.

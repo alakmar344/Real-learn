@@ -14,8 +14,7 @@
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
-    "test": "node --test",
-    "ping:google-ai-studio": "node src/scripts/ping-google-ai-studio.js"
+    "test": "node --test"
   },
   "dependencies": {
     "@cerebras/cerebras_cloud_sdk": "^1.64.1",

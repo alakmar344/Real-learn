@@ -704,7 +704,6 @@ This section documents every file in the repository and what it does — so you 
 - `MODERATION_CACHE_TTL_MS=900000` *(optional; moderation verdict cache TTL, default 15 min)*
 - `PORT=10000` *(optional on Render)*
 - `AI_DISABLE_THINKING=cerebras` *(optional; disable "thinking" tokens on the primary Cerebras provider to cut token spend by ~30-50%. Set to `off`, `cerebras`, `cloudflare`, or `both`.)*
-- `GOOGLE_AI_STUDIO_API_KEY=...` *(optional; enables post-deploy Google AI Studio diagnostic ping)*
 
 ---
 
@@ -715,7 +714,8 @@ This section documents every file in the repository and what it does — so you 
 1. Create a new **Web Service** pointing at this repo's `backend/` directory.
 2. Set the required env vars: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `MONGODB_URI`, `CLERK_SECRET_KEY`, `CLERK_FRONTEND_API`, etc.
 3. Set **Start Command**: `node src/server.js`
-4. Optional: set `GOOGLE_AI_STUDIO_API_KEY` in Render env. If set, the backend automatically pings Google AI Studio with `gemma-4-26b-a4b-it` on startup and logs the result to Render's log stream. If unset, it skips silently.
+
+> **Note:** A Google AI Studio connectivity test was attempted from Render and returned `FAILED_PRECONDITION / "User location is not supported for the API use."`. Google's API rejects requests from Render's region, so no Google AI Studio diagnostic is wired into the backend.
 
 ---
 
