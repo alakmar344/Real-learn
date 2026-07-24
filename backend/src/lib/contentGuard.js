@@ -28,6 +28,12 @@ const BANNED_PATTERNS = [
   /how\s*(to|do\s*i|can\s*i|can\s*you)\s*(kill|murder|poison|stab|strangle|assault|kidnap)\s*(someone|somebody|a\s*person|people|him|her|them|my\b)/i,
   /how\s*(to|do\s*i|can\s*i|can\s*you)\s*(get\s*away\s*with|commit)\s*(a\s*)?(murder|killing|crime)/i,
   /(plan|planning|carry\s*out|execute)\s*(a\s*)?(terror|terrorist|mass|school)\s*(attack|shooting|bombing)/i,
+  // First-person / instructional THREAT against a specific human or place —
+  // catches "I want to bomb my school", "how do I shoot up the class". A
+  // concrete target is REQUIRED so historical/scientific mentions ("the atomic
+  // bomb", "how do white blood cells kill bacteria", "how to shoot a
+  // basketball") are never matched.
+  /(going\s*to|want\s*to|wanna|plan(ning)?\s*to|how\s*(do\s*i|can\s*i))\s*(bomb|blow\s*up|shoot\s*up|stab|kill|murder|poison|behead|massacre|attack)\s+(everyone|someone|somebody|people|him|her|them|myself|kids|children|a\s*(child|kid|person|classmate|teacher|student)|my\s*(mom|dad|mother|father|sister|brother|teacher|classmate|friend|family|neighbou?r|wife|husband|ex|boss|parents?)|(my|our|the|a)\s*(school|class|classroom|mosque|temple|church|synagogue|office|mall|building|city|teacher|principal|students?))/i,
 
   // ── Self-harm / suicide encouragement or methods ──
   /how\s*(to|do\s*i|can\s*i)\s*(commit\s*)?(suicide|kill\s*myself|end\s*my\s*life)/i,
@@ -39,7 +45,7 @@ const BANNED_PATTERNS = [
   /(generate|write|give\s*me|create|tell\s*me\s*a)\s*[\w\s]*(hate\s*speech|racist\s*(joke|slur)|ethnic\s*slur|slurs?)/i,
 
   // ── Cybercrime / fraud (instructional intent) ──
-  /how\s*(to|do\s*i|can\s*i|can\s*you)\s*(hack|breach|break\s*into)\s*(a|an|my|someone|some\s*one|the)?\s*(bank|account|wifi|wi-fi|password|email|phone|government|system|network|server)/i,
+  /how\s*(to|do\s*i|can\s*i|can\s*you)\s*(hack|breach|break\s*into)\b[\w\s'’.-]{0,40}?\b(bank|account|wi-?fi|password|email|phone|government|system|network|server|database)/i,
   /how\s*(to|do\s*i|can\s*i|can\s*you)\s*(steal|launder|counterfeit)\s*(money|cash|cards?|identit|funds)/i,
   /(credit\s*card|identity)\s*(theft|fraud)\s*(how|guide|tutorial|step|tips)/i,
 
@@ -77,6 +83,17 @@ function containsBannedUserInput(text) {
 }
 
 function containsBannedAIResponse(text) {
+  return matchesBannedPattern(text, [...BANNED_PATTERNS, ...BANNED_RESPONSE_PATTERNS]);
+}
+
+// Shared, INTENT-BASED harmful-content check (the union of the input + response
+// pattern sets). Exposed so the moderation layer can reuse the same carefully
+// scoped patterns instead of maintaining a parallel list of blanket keyword
+// bans — the exact anti-pattern this module was written to avoid. See the
+// header comment: sensitive TOPICS (the atomic bomb, terrorism, the Holocaust,
+// how the immune system kills bacteria) must stay answerable; only harmful
+// INTENT is blocked.
+export function containsHarmfulContent(text) {
   return matchesBannedPattern(text, [...BANNED_PATTERNS, ...BANNED_RESPONSE_PATTERNS]);
 }
 
