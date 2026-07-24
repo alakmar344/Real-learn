@@ -8,6 +8,7 @@ import QuizSheet from "@/components/learning/QuizSheet";
 import LoadingCinematic from "@/components/shared/LoadingCinematic";
 import ErrorState from "@/components/shared/ErrorState";
 import LiveRegion from "@/components/shared/LiveRegion";
+import ReadingProgressBar from "@/components/shared/ReadingProgressBar";
 import Footer from "@/components/shared/Footer";
 import FeedbackGate from "@/components/shared/FeedbackGate";
 import { showToast } from "@/components/shared/ToastContainer";
@@ -367,6 +368,7 @@ export default function LearnPage() {
   return (
     <>
       <LiveRegion />
+      <ReadingProgressBar />
       <main
         style={{
           minHeight: "100vh",
