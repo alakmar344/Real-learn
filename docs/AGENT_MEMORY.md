@@ -79,7 +79,7 @@ npm run verify:quiz       # Fisher-Yates shuffle sanity check
 # Backend (from /backend)
 npm install
 npm test                  # gemma-engine + moderation tests
-npm run ping:google       # optional one-off Google AI Studio connectivity check (logs only)
+npm run ping:gemma        # optional one-off Cloudflare Workers AI connectivity check (logs only)
 ```
 
 **Baseline recorded 2026-07-21:** `tsc --noEmit` clean, `next lint` clean, `npm run build` clean, backend `npm test` 17/17.

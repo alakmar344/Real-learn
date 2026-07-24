@@ -1,31 +1,43 @@
-const API_KEY = process.env.GOOGLE_AI_STUDIO_API_KEY?.trim();
+const TOKEN = process.env.CLOUDFLARE_API_TOKEN?.trim();
+const ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID?.trim();
+const MODEL = "@cf/google/gemma-4-26b-a4b-it";
+const URL = `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(ACCOUNT_ID || "")}/ai/v1/chat/completions`;
 
-if (!API_KEY) {
-  console.log("[google-ai-studio-ping] GOOGLE_AI_STUDIO_API_KEY not set. Skipping.");
+if (!TOKEN || !ACCOUNT_ID) {
+  console.log("[gemma-ping] CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID not set. Skipping.");
   process.exit(0);
 }
 
-const MODEL = "gemma-4-26b-a4b-it";
-const URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${encodeURIComponent(API_KEY)}`;
-
 async function run() {
+  console.log("[gemma-ping] starting non-streaming hi to Cloudflare Workers AI");
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 30000);
+  const timeout = setTimeout(() => controller.abort(), 60000);
 
   try {
     const res = await fetch(URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ contents: [{ parts: [{ text: "hi" }] }] }),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${TOKEN}`,
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        messages: [{ role: "user", content: "hi" }],
+        temperature: 0,
+        max_tokens: 64,
+        stream: false,
+      }),
       signal: controller.signal,
     });
     clearTimeout(timeout);
     const text = await res.text();
-    console.log(`[google-ai-studio-ping] status=${res.status}`);
-    console.log(`[google-ai-studio-ping] response=${text}`);
+    console.log(`[gemma-ping] status=${res.status}`);
+    console.log(`[gemma-ping] response=${text}`);
+    process.exit(res.ok ? 0 : 1);
   } catch (err) {
     clearTimeout(timeout);
-    console.log(`[google-ai-studio-ping] error=${err.message}`);
+    console.log(`[gemma-ping] error=${err.message}`);
+    process.exit(1);
   }
 }
 
