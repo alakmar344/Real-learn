@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import { LRUCache } from "lru-cache";
 import { Filter } from "bad-words";
 import { filterText, containsProfanity } from "better-profane-words";
+import { containsHarmfulContent } from "./contentGuard.js";
 
 const DEFAULT_MODERATION_TIMEOUT_MS = 8000;
 const configuredTimeoutMs = Number(process.env.MODERATION_TIMEOUT_MS);
@@ -40,71 +41,43 @@ function isModerationEnabled() {
 
 const profanityFilter = new Filter({ placeHolder: "*" });
 profanityFilter.removeWords("god");
-profanityFilter.addWords(
-  "kidnap",
-  "kidnapping",
-  "kidnapper",
-  "kidnapped",
-  "abduct",
-  "abduction",
-  "abductor",
-  "abducted",
-  "abducting",
-  "hostage",
-  "hostages",
-  "ransom",
-  "ransoms",
-  "captivity",
-  "captive",
-  "captives",
-  "trafficking",
-  "humantrafficking",
-  "sextrafficking",
-  "childtrafficking",
-  "torture",
-  "torturing",
-  "tortured",
-  "groom",
-  "grooming",
-  "groomed",
-  "bomb",
-  "bomber",
-  "bombing",
-  "explosive",
-  "gun",
-  "firearm",
-  "kill",
-  "murder",
-  "murderer",
-  "hack",
-  "hacking",
-  "hacker",
-  "weapon",
-  "knife",
-  "stab",
-  "poison",
-  "poisoning",
-  "terrorist",
-  "terrorism",
-  "shoot",
-  "shooting",
-  "abuse",
-  "selfharm",
-  "self-harm",
-  "suicide",
-  "rap",
-  "raping",
-  "rapist",
-  "molest"
-);
+
+// IMPORTANT — do NOT re-add blanket topic keywords here (e.g. "bomb", "gun",
+// "kill", "terrorism", "suicide", "hack", "rap", "grooming"). Whole-word bans
+// on sensitive TOPICS block a huge amount of legitimate educational content on
+// this platform: "how the atomic bomb ended World War 2", "how white blood
+// cells kill bacteria", "the history of terrorism", "suicide prevention", "the
+// history of rap music", "how do I groom my dog", "ethical hacking". Harmful
+// INTENT ("how to build a bomb", "I want to shoot up my school", "best way to
+// kill myself") is caught by the shared, intent-scoped patterns in
+// contentGuard.js via containsHarmfulContent() below. This layer only adds
+// profanity/slur detection on top of that.
 
 const TEEN_MIN_INTENSITY = 2;
 
+// better-profane-words tags each match with categories. "violence" and "drug"
+// are TOPIC categories ("how to kill", "torture", "cocaine") that flag ordinary
+// educational content (history, biology, first-aid, health/drug awareness). The
+// genuinely harmful INTENT behind those topics is already caught, intent-scoped,
+// by containsHarmfulContent(). So a match is only treated as unsafe here if it
+// carries at least one NON-topic category (profanity, slur, sexual, insult).
+const TOPIC_ONLY_CATEGORIES = new Set(["violence", "drug"]);
+
+function isNonTopicMatch(match) {
+  const cats = match?.categories;
+  if (!Array.isArray(cats) || cats.length === 0) return true;
+  return cats.some((category) => !TOPIC_ONLY_CATEGORIES.has(category));
+}
+
 function containsUnsafeContent(text) {
   if (!text || typeof text !== "string") return false;
+  // Intent-based harmful-content check (shared with the input/response guard) —
+  // topic mentions pass, harmful requests are blocked.
+  if (containsHarmfulContent(text)) return true;
+  // Profanity / slurs (two independent dictionaries).
   if (profanityFilter.isProfane(text)) return true;
   const result = filterText(text, { minIntensity: TEEN_MIN_INTENSITY });
-  return result.matched.length > 0;
+  return result.matched.some(isNonTopicMatch);
 }
 
 function sanitizeContent(text) {

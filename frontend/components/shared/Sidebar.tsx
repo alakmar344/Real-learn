@@ -44,6 +44,22 @@ export default function Sidebar({ open, onClose }: Props) {
 
   const [themeOpen, setThemeOpen] = useState(false);
   const [journeyToRemove, setJourneyToRemove] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+
+  // Filter saved lessons by their question text. With up to 100 saved lessons,
+  // scrolling to find one is slow — a quick client-side filter (case- and
+  // accent-insensitive) makes returning to any past lesson instant.
+  const normalize = (value: string) =>
+    value
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+  const trimmedSearch = search.trim();
+  const filteredJourneys = trimmedSearch
+    ? journeys.filter((journey) =>
+        normalize(journey.question).includes(normalize(trimmedSearch))
+      )
+    : journeys;
 
   const handleNewLesson = () => {
     onClose();
@@ -141,18 +157,100 @@ export default function Sidebar({ open, onClose }: Props) {
         </div>
 
         <div style={{ flex: 1, overflowY: "auto", padding: "14px 14px 10px" }}>
-          <p
+          <div
             style={{
+              display: "flex",
+              alignItems: "baseline",
+              justifyContent: "space-between",
+              gap: 8,
               margin: "0 6px 10px",
-              fontSize: 11,
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              color: "var(--text-tertiary)",
-              fontWeight: 600,
             }}
           >
-            Saved lessons
-          </p>
+            <p
+              style={{
+                margin: 0,
+                fontSize: 11,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: "var(--text-tertiary)",
+                fontWeight: 600,
+              }}
+            >
+              Saved lessons
+            </p>
+            {mounted && journeys.length > 0 ? (
+              <span style={{ fontSize: 11, color: "var(--text-tertiary)", fontWeight: 600 }}>
+                {trimmedSearch ? `${filteredJourneys.length}/${journeys.length}` : journeys.length}
+              </span>
+            ) : null}
+          </div>
+
+          {/* Search / filter — appears once there are enough lessons to be worth
+              filtering. Instant, local, no network. */}
+          {mounted && journeys.length > 4 ? (
+            <div style={{ position: "relative", margin: "0 6px 12px" }}>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 16 16"
+                fill="none"
+                aria-hidden="true"
+                style={{
+                  position: "absolute",
+                  left: 10,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  color: "var(--text-tertiary)",
+                  pointerEvents: "none",
+                }}
+              >
+                <circle cx="7" cy="7" r="4.5" stroke="currentColor" strokeWidth="1.5" />
+                <path d="M10.5 10.5L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+              <input
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search saved lessons"
+                aria-label="Search saved lessons"
+                style={{
+                  width: "100%",
+                  boxSizing: "border-box",
+                  padding: "8px 30px 8px 30px",
+                  fontSize: 13,
+                  color: "var(--text-primary)",
+                  background: "var(--bg-surface)",
+                  border: "1px solid var(--border-subtle)",
+                  borderRadius: "var(--radius-md)",
+                  outline: "none",
+                }}
+                onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent)")}
+                onBlur={(e) => (e.currentTarget.style.borderColor = "var(--border-subtle)")}
+              />
+              {trimmedSearch ? (
+                <button
+                  type="button"
+                  aria-label="Clear search"
+                  onClick={() => setSearch("")}
+                  style={{
+                    position: "absolute",
+                    right: 6,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    border: "none",
+                    background: "transparent",
+                    color: "var(--text-tertiary)",
+                    cursor: "pointer",
+                    fontSize: 13,
+                    lineHeight: 1,
+                    padding: 4,
+                  }}
+                >
+                  ✕
+                </button>
+              ) : null}
+            </div>
+          ) : null}
 
           {(!mounted || journeys.length === 0) ? (
             <p
@@ -167,9 +265,21 @@ export default function Sidebar({ open, onClose }: Props) {
               Ask a question and your lesson will be saved here automatically. You can
               return anytime to continue where you left off.
             </p>
+          ) : filteredJourneys.length === 0 ? (
+            <p
+              style={{
+                margin: "10px 6px",
+                fontSize: 13,
+                color: "var(--text-tertiary)",
+                fontStyle: "italic",
+                lineHeight: 1.7,
+              }}
+            >
+              No saved lessons match “{trimmedSearch}”.
+            </p>
           ) : (
             <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 6 }}>
-              {journeys.map((journey) => (
+              {filteredJourneys.map((journey) => (
                 <li key={journey.id} style={{ position: "relative" }}>
                   <button
                     type="button"
