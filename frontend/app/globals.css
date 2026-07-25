@@ -3422,6 +3422,73 @@ p {
   border-left-color: var(--wrong);
 }
 
+/* ── Gen Z & Gen Alpha Kinetic UI Utilities ── */
+.tldr-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--accent-dim);
+  border: 1px solid var(--border-glow);
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--text-primary);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.tldr-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.visual-waveform {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 16px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.visual-waveform__bar {
+  width: 3px;
+  background: var(--accent);
+  border-radius: 2px;
+  animation: waveformPulse 1s ease-in-out infinite alternate;
+}
+.visual-waveform__bar:nth-child(1) { height: 40%; animation-delay: 0s; }
+.visual-waveform__bar:nth-child(2) { height: 90%; animation-delay: 0.2s; }
+.visual-waveform__bar:nth-child(3) { height: 60%; animation-delay: 0.4s; }
+.visual-waveform__bar:nth-child(4) { height: 100%; animation-delay: 0.1s; }
+
+@keyframes waveformPulse {
+  0% { transform: scaleY(0.3); }
+  100% { transform: scaleY(1); }
+}
+
+.kinetic-card {
+  transition: transform 180ms var(--ease-spring), box-shadow 180ms var(--ease-color);
+}
+.kinetic-card:hover {
+  transform: translateY(-2px) scale(1.008);
+  box-shadow: var(--shadow-md);
+}
+.kinetic-card:active {
+  transform: translateY(0) scale(0.985);
+}
+
 /* ── Visually-hidden helper ── for screen-reader-only text. */
 .sr-only {
   position: absolute;

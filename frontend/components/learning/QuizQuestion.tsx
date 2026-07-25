@@ -82,7 +82,7 @@ const QuizQuestionBase = ({
           const showCorrectAnswer = answered && isCorrect;
           const isWrongSelected = answered && isSelected && !isCorrect;
 
-          let optionClass = "quiz-question__option";
+          let optionClass = "quiz-question__option kinetic-card";
           if (showCorrectAnswer) optionClass += " is-correct";
           if (isWrongSelected) optionClass += " is-wrong";
           if (isWrongSelected) optionClass += " animate-shake";
