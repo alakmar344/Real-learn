@@ -2,12 +2,17 @@
 
 import { useEffect, useState } from "react";
 
-const EXAMPLES = [
-  "Why does the sky turn red at sunset?",
-  "How does inflation destroy economies?",
-  "What actually happens inside a black hole?",
+const RECOMMENDATIONS = [
+  "How does artificial intelligence actually learn?",
+  "Why do we dream when we sleep?",
+  "How does compound interest build wealth?",
+  "What causes earthquakes and tsunamis?",
   "Why did the Roman Empire collapse?",
-  "How do vaccines teach the immune system?",
+  "How do airplanes stay up in the air?",
+  "What is quantum computing in simple terms?",
+  "How does the human immune system fight viruses?",
+  "Why is the ocean salty?",
+  "How do black holes bend time and space?",
 ];
 
 interface Props {
@@ -19,28 +24,32 @@ export default function ExampleQuestions({ onPick }: Props) {
 
   useEffect(() => {
     const id = window.setInterval(() => {
-      setIndex((prev) => (prev + 1) % EXAMPLES.length);
-    }, 3000);
+      setIndex((prev) => (prev + 1) % RECOMMENDATIONS.length);
+    }, 3500);
     return () => window.clearInterval(id);
   }, []);
 
   return (
     <button
       type="button"
-      aria-label="Use an example question"
-      title="Click to use this example"
-      onClick={() => onPick?.(EXAMPLES[index])}
+      aria-label="Use a recommended question"
+      title="Click to try this question"
+      onClick={() => onPick?.(RECOMMENDATIONS[index])}
       disabled={!onPick}
       className="chip"
       style={{
         fontSize: 12,
         color: "var(--accent)",
         margin: 0,
-        animation: "fadeUp 200ms var(--ease-reveal)",
+        maxWidth: "100%",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap",
+        textAlign: "left",
       }}
     >
-      <span style={{ color: "var(--text-tertiary)", fontWeight: 400 }}>Try:</span>{" "}
-      {EXAMPLES[index]}
+      <span style={{ color: "var(--text-tertiary)", fontWeight: 500, marginRight: 4 }}>💡 Try:</span>{" "}
+      <span>{RECOMMENDATIONS[index]}</span>
     </button>
   );
 }
