@@ -16,6 +16,10 @@ const EngagementLayer = dynamic(() => import("@/components/shared/EngagementLaye
   ssr: false,
   loading: () => null,
 });
+const KeyboardShortcuts = dynamic(() => import("@/components/shared/KeyboardShortcuts"), {
+  ssr: false,
+  loading: () => null,
+});
 
 const HIDE_SIDEBAR_PREFIXES = ["/sign-in", "/sign-up"];
 
@@ -91,6 +95,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       </div>
       <ScrollToTop />
       <EngagementLayer />
+      <KeyboardShortcuts />
       <PreferenceModal open={showFirstPrefs} onClose={() => setShowFirstPrefs(false)} />
     </div>
   );

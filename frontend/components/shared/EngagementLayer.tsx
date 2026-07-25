@@ -89,9 +89,6 @@ function CenterCard({
 }) {
   const dismissRef = useRef<HTMLButtonElement | null>(null);
 
-  // A11y: the celebration is a full-screen overlay, so keyboard users must be
-  // able to dismiss it too — Escape closes it and focus moves to the real
-  // "Continue" button while it is shown, then returns where it was.
   useEffect(() => {
     const previouslyFocused = document.activeElement as HTMLElement | null;
     dismissRef.current?.focus();
@@ -134,7 +131,7 @@ function CenterCard({
           boxShadow: "var(--shadow-lg)",
           padding: "28px 32px",
           textAlign: "center",
-          maxWidth: 340,
+          maxWidth: 380,
           width: "100%",
         }}
       >
@@ -161,28 +158,277 @@ function CenterCard({
   );
 }
 
+/* ── Batched celebration summary card ── */
+
+/** Priority order: higher = more important, shown as the hero. */
+const CELEBRATION_PRIORITY: Record<Celebration["kind"], number> = {
+  "level-up": 5,
+  badge: 4,
+  "daily-goal": 3,
+  streak: 2,
+  xp: 1,
+};
+
+interface BatchSummary {
+  /** The single most important celebration — drives the hero icon/title. */
+  hero: Celebration;
+  /** All celebrations in the batch, deduplicated. */
+  all: Celebration[];
+  /** Total XP earned across all xp-type celebrations. */
+  totalXp: number;
+  /** Number of badges unlocked. */
+  badgeCount: number;
+  /** Whether a level-up happened. */
+  leveledUp: boolean;
+  /** Whether a streak was extended. */
+  streakExtended: boolean;
+  /** Whether daily goal was met. */
+  dailyGoalMet: boolean;
+}
+
+function summarizeBatch(queue: Celebration[]): BatchSummary | null {
+  if (queue.length === 0) return null;
+
+  // Find the hero (highest priority)
+  let hero = queue[0];
+  for (const item of queue) {
+    if ((CELEBRATION_PRIORITY[item.kind] ?? 0) > (CELEBRATION_PRIORITY[hero.kind] ?? 0)) {
+      hero = item;
+    }
+  }
+
+  const totalXp = queue
+    .filter((c): c is Extract<Celebration, { kind: "xp" }> => c.kind === "xp")
+    .reduce((sum, c) => sum + c.amount, 0);
+
+  const badgeCount = queue.filter((c) => c.kind === "badge").length;
+  const leveledUp = queue.some((c) => c.kind === "level-up");
+  const streakExtended = queue.some((c) => c.kind === "streak");
+  const dailyGoalMet = queue.some((c) => c.kind === "daily-goal");
+
+  return { hero, all: queue, totalXp, badgeCount, leveledUp, streakExtended, dailyGoalMet };
+}
+
+function BatchCelebrationCard({
+  summary,
+  onDismiss,
+}: {
+  summary: BatchSummary;
+  onDismiss: () => void;
+}) {
+  const { hero, totalXp, badgeCount, leveledUp, streakExtended, dailyGoalMet } = summary;
+
+  // Build the hero icon based on the most important event
+  let heroIcon = "✨";
+  let heroTitle = "Great work!";
+  let heroSub = "";
+
+  if (hero.kind === "level-up") {
+    heroIcon = "⭐";
+    heroTitle = `Level ${hero.level}!`;
+    heroSub = `You're now a ${levelTitle(hero.level)}.`;
+  } else if (hero.kind === "badge") {
+    const badge = BADGE_BY_ID[hero.badgeId];
+    heroIcon = badge?.emoji ?? "🏆";
+    heroTitle = badge?.title ?? "Achievement unlocked!";
+    heroSub = badge?.description ?? "";
+  } else if (hero.kind === "daily-goal") {
+    heroIcon = "🎯";
+    heroTitle = "Daily goal complete!";
+    heroSub = `${hero.goal} parts studied today.`;
+  } else if (hero.kind === "streak") {
+    heroIcon = "🔥";
+    heroTitle = `${hero.streak}-day streak!`;
+    heroSub = "Come back tomorrow to keep it alive.";
+  } else {
+    heroIcon = "✨";
+    heroTitle = "Nice work!";
+    heroSub = "";
+  }
+
+  // Build summary lines for secondary events
+  const summaryLines: string[] = [];
+  if (totalXp > 0) summaryLines.push(`+${totalXp} XP earned`);
+  if (badgeCount > 1) summaryLines.push(`${badgeCount} achievements unlocked`);
+  else if (badgeCount === 1 && hero.kind !== "badge") summaryLines.push("Achievement unlocked");
+  if (leveledUp && hero.kind !== "level-up") summaryLines.push("Level up!");
+  if (streakExtended && hero.kind !== "streak") summaryLines.push("Streak extended");
+  if (dailyGoalMet && hero.kind !== "daily-goal") summaryLines.push("Daily goal reached");
+
+  return (
+    <CenterCard onDismiss={onDismiss}>
+      <div className="animate-badge-pop" style={{ fontSize: 56, lineHeight: 1 }}>
+        {heroIcon}
+      </div>
+      <h3
+        style={{
+          margin: "12px 0 4px",
+          fontSize: 24,
+          fontWeight: 800,
+          color: "var(--text-primary)",
+        }}
+      >
+        {heroTitle}
+      </h3>
+      {heroSub && (
+        <p style={{ margin: 0, fontSize: 14, color: "var(--text-secondary)" }}>
+          {hero.kind === "level-up" ? (
+            <>
+              You&apos;re now a{" "}
+              <strong style={{ color: "var(--accent)" }}>
+                {levelTitle(hero.level)}
+              </strong>
+              . Keep going.
+            </>
+          ) : hero.kind === "badge" ? (
+            <span style={{ color: TIER_COLOR[BADGE_BY_ID[hero.badgeId]?.tier ?? "bronze"] }}>
+              {heroSub}
+            </span>
+          ) : (
+            heroSub
+          )}
+        </p>
+      )}
+
+      {/* Secondary event summary */}
+      {summaryLines.length > 0 && (
+        <div
+          style={{
+            marginTop: 16,
+            padding: "10px 14px",
+            borderRadius: "var(--radius-md)",
+            background: "color-mix(in srgb, var(--accent) 5%, transparent)",
+            border: "1px solid color-mix(in srgb, var(--accent) 15%, transparent)",
+            textAlign: "left",
+          }}
+        >
+          {summaryLines.map((line, i) => (
+            <div
+              key={i}
+              style={{
+                fontSize: 13,
+                color: "var(--text-secondary)",
+                padding: "3px 0",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+              }}
+            >
+              <span style={{ color: "var(--accent)", fontWeight: 700 }}>+</span>
+              {line}
+            </div>
+          ))}
+        </div>
+      )}
+    </CenterCard>
+  );
+}
+
 export default function EngagementLayer() {
   const mounted = useMounted();
   const celebrations = useProgressStore((s) => s.celebrations);
   const dequeue = useProgressStore((s) => s.dequeueCelebration);
   const current = celebrations[0] ?? null;
 
+  // Batch mode: when multiple celebrations are queued, show a summary card
+  // instead of sequential overlays. Only dequeue the entire batch at once.
+  const [batchMode, setBatchMode] = useState(false);
+  const batchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
-    if (!current) return;
+    if (!current) {
+      setBatchMode(false);
+      return;
+    }
+
+    // If there are 2+ celebrations queued, switch to batch mode
+    if (celebrations.length >= 2 && !batchMode) {
+      // Give a short delay for any additional celebrations to arrive
+      if (batchTimerRef.current) clearTimeout(batchTimerRef.current);
+      batchTimerRef.current = setTimeout(() => {
+        setBatchMode(true);
+      }, 300);
+      return () => {
+        if (batchTimerRef.current) clearTimeout(batchTimerRef.current);
+      };
+    }
+
+    // In batch mode, show the summary card for a longer duration
+    if (batchMode) {
+      const ms = 4000; // 4 seconds for batch summary
+      const id = window.setTimeout(() => {
+        // Dequeue all celebrations at once
+        const count = celebrations.length;
+        for (let i = 0; i < count; i++) {
+          dequeue();
+        }
+        setBatchMode(false);
+      }, ms);
+      return () => window.clearTimeout(id);
+    }
+
+    // Single celebration: normal behavior
     const ms = DURATION[current.kind] ?? 2500;
     const id = window.setTimeout(() => dequeue(), ms);
     return () => window.clearTimeout(id);
-    // Re-arm ONLY when the queue head changes — keying on queue length
-    // restarted the head's countdown every time a new celebration was
-    // enqueued behind it, so a steady stream kept the head up indefinitely.
-  }, [current, dequeue]);
+  }, [current, celebrations, batchMode, dequeue]);
 
   if (!mounted || !current) return null;
 
+  // XP-only batches: show as a floating chip (no overlay needed)
+  if (batchMode && celebrations.every((c) => c.kind === "xp")) {
+    const totalXp = celebrations.reduce(
+      (sum, c) => (c.kind === "xp" ? sum + c.amount : sum),
+      0
+    );
+    return (
+      <div
+        style={{
+          position: "fixed",
+          top: 70,
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 95,
+          pointerEvents: "none",
+        }}
+      >
+        <div
+          className="animate-xp-pop"
+          style={{
+            background: "var(--accent)",
+            color: "var(--on-accent)",
+            borderRadius: 999,
+            padding: "7px 16px",
+            fontWeight: 800,
+            fontSize: 14,
+            boxShadow: "var(--shadow-sm)",
+            whiteSpace: "nowrap",
+          }}
+        >
+          +{totalXp} XP earned
+        </div>
+      </div>
+    );
+  }
+
+  // Batch mode with mixed celebrations: show summary card
+  if (batchMode && celebrations.length >= 2) {
+    const summary = summarizeBatch(celebrations);
+    if (summary) {
+      return <BatchCelebrationCard summary={summary} onDismiss={() => {
+        const count = celebrations.length;
+        for (let i = 0; i < count; i++) dequeue();
+        setBatchMode(false);
+      }} />;
+    }
+  }
+
+  // Single XP celebration: floating chip
   if (current.kind === "xp") {
     return <XpChip item={current} />;
   }
 
+  // Single non-XP celebration: normal center card
   if (current.kind === "level-up") {
     return (
       <CenterCard onDismiss={dequeue}>

@@ -194,9 +194,36 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
         <div className="quiz-sheet__divider" />
 
         {shuffledHint ? (
-          <div className="quiz-sheet__status animate-fade-up" role="status">
-            Answers reshuffled — the correct one has moved. Find it again.
-          </div>
+          <>
+            <div className="quiz-sheet__status animate-fade-up" role="status">
+              Answers reshuffled — the correct one has moved. Find it again.
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                // Scroll to the relevant part card after a short delay
+                setTimeout(() => {
+                  const el = document.querySelector(".part-card");
+                  el?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }, 300);
+              }}
+              style={{
+                display: "block",
+                margin: "8px auto 0",
+                fontSize: 13,
+                color: "var(--accent)",
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                textDecoration: "underline",
+                textDecorationStyle: "dotted",
+                textUnderlineOffset: 3,
+              }}
+            >
+              Re-read the section before retrying
+            </button>
+          </>
         ) : null}
 
         <QuizQuestion

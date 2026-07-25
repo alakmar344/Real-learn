@@ -172,22 +172,44 @@ const PartCardBase = ({
         {isUnlocked && !isCompleted ? (
           <div style={{ marginTop: 28 }}>
             {!timer.isComplete ? (
-              <div
-                role="progressbar"
-                aria-valuenow={Math.round(timer.progress)}
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-label="Reading progress – please read the content before taking the quiz"
-                style={{ height: 3, width: "100%", borderRadius: 999, background: "var(--border-subtle)", overflow: "hidden" }}
-              >
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 <div
+                  role="progressbar"
+                  aria-valuenow={Math.round(timer.progress)}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label="Reading progress"
+                  style={{ height: 3, width: "100%", borderRadius: 999, background: "var(--border-subtle)", overflow: "hidden" }}
+                >
+                  <div
+                    style={{
+                      width: `${timer.progress}%`,
+                      height: "100%",
+                      background: "var(--accent)",
+                      transition: "width 100ms linear",
+                    }}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={onStartQuiz}
                   style={{
-                    width: `${timer.progress}%`,
-                    height: "100%",
-                    background: "var(--accent)",
-                    transition: "width 100ms linear",
+                    alignSelf: "flex-end",
+                    fontSize: 13,
+                    color: "var(--text-tertiary)",
+                    background: "transparent",
+                    border: "none",
+                    cursor: "pointer",
+                    padding: "4px 8px",
+                    opacity: 0.7,
+                    transition: "opacity 200ms",
                   }}
-                />
+                  onMouseEnter={(e) => { e.currentTarget.style.opacity = "1"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.opacity = "0.7"; }}
+                  aria-label={`Skip reading and take quiz for Part ${part.partNumber}`}
+                >
+                  I already know this → Skip to quiz
+                </button>
               </div>
             ) : (
               <button

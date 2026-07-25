@@ -24,6 +24,29 @@ const CONFETTI_COLORS = [
   "#58C795",
 ];
 
+/** Generate contextual follow-up suggestions based on the lesson topic and takeaways. */
+function generateFollowUpSuggestions(lesson: LessonJourney): string[] {
+  const topic = lesson.question ?? lesson.topic ?? "";
+  const takeaways = lesson.keyTakeaways ?? [];
+  const suggestions: string[] = [];
+
+  // Derive follow-ups from the topic itself
+  if (topic.length > 0) {
+    suggestions.push(`What are the real-world applications of ${topic.slice(0, 60)}?`);
+  }
+
+  // Derive from the first takeaway
+  if (takeaways[0]) {
+    const short = takeaways[0].slice(0, 80).replace(/\.$/, "");
+    suggestions.push(`Can you explain ${short.toLowerCase()} in simpler terms?`);
+  }
+
+  // Add a comparison/contrast question
+  suggestions.push(`How does this compare to similar concepts?`);
+
+  return suggestions.slice(0, 3);
+}
+
 function Confetti() {
   const [particles] = useState(() =>
     Array.from({ length: 50 }, (_, i) => ({
@@ -61,6 +84,7 @@ function Confetti() {
 
 export default function CompletionScreen({ lesson, totalScore, onRestart, onRetake }: Props) {
   const [showConfetti, setShowConfetti] = useState(true);
+  const [takeawaysExpanded, setTakeawaysExpanded] = useState(true);
   const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -169,41 +193,126 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
         </div>
       </div>
 
-      {/* Key takeaways */}
+      {/* Key takeaways — collapsible to reduce completion screen overload */}
       <div style={{ marginTop: varSpaceLg }}>
-        <h4 style={{ margin: "0 0 var(--space-md)", fontSize: 18, fontWeight: 700, color: "var(--text-primary)" }}>
-          Key takeaways
-        </h4>
-        {(lesson.keyTakeaways ?? []).map((takeaway, index) => (
-          <div
-            key={`${index}-${takeaway}`}
+        <button
+          type="button"
+          onClick={() => setTakeawaysExpanded(!takeawaysExpanded)}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            margin: 0,
+            padding: 0,
+            background: "transparent",
+            border: "none",
+            cursor: "pointer",
+            fontSize: 18,
+            fontWeight: 700,
+            color: "var(--text-primary)",
+          }}
+          aria-expanded={takeawaysExpanded}
+        >
+          <span
             style={{
-              marginBottom: varSpaceSm,
-              color: "var(--text-primary)",
-              fontSize: 14,
-              display: "flex",
-              gap: varSpaceSm,
-              padding: "10px 14px",
-              borderRadius: "var(--radius-md)",
-              background: "color-mix(in srgb, var(--accent) 5%, transparent)",
-              border: "1px solid color-mix(in srgb, var(--accent) 15%, transparent)",
+              display: "inline-block",
+              transform: takeawaysExpanded ? "rotate(90deg)" : "rotate(0deg)",
+              transition: "transform 200ms",
+              fontSize: 12,
+              color: "var(--text-tertiary)",
             }}
+            aria-hidden="true"
           >
-            <span
-              style={{
-                color: "var(--accent)",
-                fontWeight: 800,
-                flexShrink: 0,
-                width: 24,
-                textAlign: "center",
-              }}
-            >
-              {index + 1}.
-            </span>
-            <span style={{ fontWeight: 500 }}>{takeaway}</span>
+            ▶
+          </span>
+          Key takeaways
+        </button>
+        {takeawaysExpanded && (
+          <div style={{ marginTop: "var(--space-md)" }}>
+            {(lesson.keyTakeaways ?? []).map((takeaway, index) => (
+              <div
+                key={`${index}-${takeaway}`}
+                style={{
+                  marginBottom: varSpaceSm,
+                  color: "var(--text-primary)",
+                  fontSize: 14,
+                  display: "flex",
+                  gap: varSpaceSm,
+                  padding: "10px 14px",
+                  borderRadius: "var(--radius-md)",
+                  background: "color-mix(in srgb, var(--accent) 5%, transparent)",
+                  border: "1px solid color-mix(in srgb, var(--accent) 15%, transparent)",
+                }}
+              >
+                <span
+                  style={{
+                    color: "var(--accent)",
+                    fontWeight: 800,
+                    flexShrink: 0,
+                    width: 24,
+                    textAlign: "center",
+                  }}
+                >
+                  {index + 1}.
+                </span>
+                <span style={{ fontWeight: 500 }}>{takeaway}</span>
+              </div>
+            ))}
           </div>
-        ))}
+        )}
       </div>
+
+      {/* Suggested follow-up questions — zero cognitive load: just tap */}
+      {lesson.keyTakeaways && lesson.keyTakeaways.length > 0 && (
+        <div style={{ marginTop: varSpaceLg }}>
+          <p style={{ margin: "0 0 10px", fontSize: 13, color: "var(--text-tertiary)", fontWeight: 500 }}>
+            Go deeper
+          </p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {generateFollowUpSuggestions(lesson).map((suggestion, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => {
+                  // Scroll to the follow-up textarea and pre-fill it
+                  const followUpInput = document.getElementById("followup-input");
+                  if (followUpInput) {
+                    followUpInput.scrollIntoView({ behavior: "smooth", block: "center" });
+                    // Focus and set value via native setter to trigger React state
+                    const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+                      window.HTMLTextAreaElement.prototype, "value"
+                    )?.set;
+                    nativeInputValueSetter?.call(followUpInput, suggestion);
+                    followUpInput.dispatchEvent(new Event("input", { bubbles: true }));
+                    setTimeout(() => followUpInput.focus(), 500);
+                  }
+                }}
+                style={{
+                  padding: "8px 14px",
+                  borderRadius: "var(--radius-lg)",
+                  border: "1px solid var(--border-subtle)",
+                  background: "var(--bg-card)",
+                  color: "var(--text-primary)",
+                  fontSize: 13,
+                  cursor: "pointer",
+                  transition: "all 200ms var(--ease-spring)",
+                  textAlign: "left",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = "var(--border-accent)";
+                  e.currentTarget.style.transform = "scale(1.02)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = "var(--border-subtle)";
+                  e.currentTarget.style.transform = "scale(1)";
+                }}
+              >
+                {suggestion}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Share your result */}
       <ShareResult question={lesson.question ?? lesson.topic ?? ""} totalScore={totalScore} maxScore={maxScore} />
