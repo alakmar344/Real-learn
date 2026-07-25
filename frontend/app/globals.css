@@ -2928,6 +2928,32 @@ p {
 }
 .q-form__actions-right { display: flex; align-items: center; gap: 10px; }
 
+@media (max-width: 640px) {
+  .q-form__body {
+    padding: 24px 16px 12px;
+  }
+  .q-form__body::before {
+    left: 16px;
+  }
+  .q-form__modes {
+    padding: 0 16px 14px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .q-form__actions {
+    padding: 14px 16px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .q-form__actions-right {
+    justify-content: flex-end;
+    width: 100%;
+  }
+}
+
+
 /* ── Part card hover lift ── the lesson part article gently rises and gains
    an accent halo on hover/focus-within. Kept separate from the performance
    .part-card containment rule so both apply cleanly. */
