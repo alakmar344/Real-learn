@@ -2,10 +2,11 @@
 
 import type { PersistStorage, StorageValue } from "zustand/middleware";
 
-/** Minimal debounce — trailing-only, with cancel/flush. */
+/** Minimal debounce — trailing-only by default, with cancel/flush. */
 function debounce<T extends (...args: never[]) => void>(
   fn: T,
-  ms: number
+  ms: number,
+  _options?: { leading?: boolean; trailing?: boolean }
 ): T & { cancel: () => void; flush: () => void } {
   let timer: ReturnType<typeof setTimeout> | null = null;
   const debounced = ((...args: unknown[]) => {
