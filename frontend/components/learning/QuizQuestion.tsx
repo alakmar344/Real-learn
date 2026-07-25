@@ -38,6 +38,20 @@ const QuizQuestionBase = ({
         onSelect(optionIndex);
         return;
       }
+      // Invisible UX: Quick key selection via numbers (1-9) or letters (A-Z)
+      const num = parseInt(e.key, 10);
+      if (!isNaN(num) && num >= 1 && num <= optionCount) {
+        e.preventDefault();
+        onSelect(num - 1);
+        return;
+      }
+      const charCode = e.key.toUpperCase().charCodeAt(0);
+      if (e.key.length === 1 && charCode >= 65 && charCode < 65 + optionCount) {
+        e.preventDefault();
+        onSelect(charCode - 65);
+        return;
+      }
+
       let next = -1;
       if (e.key === "ArrowDown" || e.key === "ArrowRight") {
         e.preventDefault();

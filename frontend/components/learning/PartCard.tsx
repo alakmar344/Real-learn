@@ -51,9 +51,21 @@ const PartCardBase = ({
   onStartQuiz,
   onToggleCollapse,
 }: Props) => {
+  const [copied, setCopied] = useState(false);
   const timer = useReadingTimer(isUnlocked && !isCompleted);
   const contentId = `part-${part.partNumber}-content`;
   const lessonLanguage = useLessonStore((s) => s.lesson?.language);
+
+  const handleCopyText = async () => {
+    try {
+      const textToCopy = `${part.title}\n\n${part.content}`;
+      await navigator.clipboard.writeText(textToCopy);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Best-effort copy
+    }
+  };
 
   /* ── Collapsed completed state ── */
   if (isCompleted && isCollapsed) {
@@ -133,11 +145,36 @@ const PartCardBase = ({
               {part.subject}
             </span>
             {isUnlocked ? (
-              <ListenButton
-                text={`${part.title}. ${part.content}`}
-                language={lessonLanguage}
-                label={`Listen to Part ${part.partNumber}`}
-              />
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                <button
+                  type="button"
+                  onClick={handleCopyText}
+                  title="Copy section text"
+                  aria-label="Copy section text"
+                  style={{
+                    borderRadius: "var(--radius-sm)",
+                    border: "1px solid var(--border-default)",
+                    background: "var(--bg-surface)",
+                    color: copied ? "var(--accent)" : "var(--text-secondary)",
+                    padding: "4px 10px",
+                    fontSize: 11,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 4,
+                    minHeight: 28,
+                    transition: "all 200ms var(--ease-color)",
+                  }}
+                >
+                  {copied ? "Copied ✓" : "📋 Copy"}
+                </button>
+                <ListenButton
+                  text={`${part.title}. ${part.content}`}
+                  language={lessonLanguage}
+                  label={`Listen to Part ${part.partNumber}`}
+                />
+              </div>
             ) : null}
           </div>
         </div>

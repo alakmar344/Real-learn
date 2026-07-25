@@ -46,9 +46,45 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
     textarea.style.height = `${Math.min(textarea.scrollHeight, 160)}px`;
   }, [question]);
 
+  // Invisible UX: Restore draft question from sessionStorage on mount if empty
+  useEffect(() => {
+    if (!mounted) return;
+    try {
+      const savedDraft = sessionStorage.getItem("reallearn_draft_question");
+      if (savedDraft && !question) {
+        setQuestion(savedDraft);
+      }
+      // Smart desktop auto-focus: on non-mobile screens, focus input automatically
+      if (window.innerWidth >= 768 && textareaRef.current) {
+        textareaRef.current.focus();
+      }
+    } catch {
+      // Best-effort storage
+    }
+  }, [mounted]);
+
+  // Invisible UX: Persist typed question as draft in sessionStorage
+  useEffect(() => {
+    if (!mounted) return;
+    try {
+      if (question.trim()) {
+        sessionStorage.setItem("reallearn_draft_question", question);
+      } else {
+        sessionStorage.removeItem("reallearn_draft_question");
+      }
+    } catch {
+      // Best-effort storage
+    }
+  }, [question, mounted]);
+
   const handleSubmit = (e?: FormEvent) => {
     e?.preventDefault();
     if (!isSignedIn) return;
+    try {
+      sessionStorage.removeItem("reallearn_draft_question");
+    } catch {
+      // ignore
+    }
     onSubmit();
   };
 

@@ -46,13 +46,25 @@ export default function FollowUpBox({ onSubmit }: Props) {
       <p style={{ marginTop: 0, marginBottom: 10, color: "var(--text-secondary)", fontSize: 13 }}>
         Ask a follow-up and unlock a new 3-part journey.
       </p>
-      <label htmlFor="followup-input" style={{ display: "none" }}>
+      <label htmlFor="followup-input" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}>
         Follow-up question
       </label>
       <textarea
         id="followup-input"
         value={value}
         onChange={(e) => setValue(e.target.value.slice(0, MAX_QUESTION_LENGTH))}
+        onKeyDown={(e) => {
+          if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+            e.preventDefault();
+            if (value.trim() && !loading) {
+              setLoading(true);
+              onSubmit(value.trim()).then(() => {
+                setValue("");
+                setLoading(false);
+              });
+            }
+          }
+        }}
         placeholder="Go deeper..."
         aria-label="Follow-up question"
         maxLength={MAX_QUESTION_LENGTH}
