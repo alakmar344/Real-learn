@@ -5,13 +5,15 @@ import { useProgressStore, Celebration } from "@/store/progressStore";
 import { BADGE_BY_ID, TIER_COLOR, levelTitle } from "@/lib/achievements";
 import { useMounted } from "@/hooks/useMounted";
 
-/* Duration each celebration type stays on screen. */
+/* Duration each celebration type stays on screen.
+   Reduced from original values to minimize user interruption — celebrations
+   should feel like quick, delightful feedback, not blocking overlays. */
 const DURATION: Record<Celebration["kind"], number> = {
-  xp: 1400,
-  "level-up": 3600,
-  badge: 3600,
-  streak: 3000,
-  "daily-goal": 3000,
+  xp: 800,
+  "level-up": 2500,
+  badge: 2500,
+  streak: 2000,
+  "daily-goal": 2000,
 };
 
 const BURST_COLORS = ["#7FC5E8", "#9FE3C0", "#FFB08C", "#F4A6B8", "var(--correct)", "var(--accent)"];
@@ -328,6 +330,7 @@ export default function EngagementLayer() {
   const mounted = useMounted();
   const celebrations = useProgressStore((s) => s.celebrations);
   const dequeue = useProgressStore((s) => s.dequeueCelebration);
+  const clearAll = useProgressStore((s) => s.clearCelebrations);
   const current = celebrations[0] ?? null;
 
   // Batch mode: when multiple celebrations are queued, show a summary card
@@ -355,13 +358,10 @@ export default function EngagementLayer() {
 
     // In batch mode, show the summary card for a longer duration
     if (batchMode) {
-      const ms = 4000; // 4 seconds for batch summary
+      const ms = 3000; // 3 seconds for batch summary
       const id = window.setTimeout(() => {
-        // Dequeue all celebrations at once
-        const count = celebrations.length;
-        for (let i = 0; i < count; i++) {
-          dequeue();
-        }
+        // Dequeue all celebrations at once — single state update
+        clearAll();
         setBatchMode(false);
       }, ms);
       return () => window.clearTimeout(id);
@@ -416,8 +416,7 @@ export default function EngagementLayer() {
     const summary = summarizeBatch(celebrations);
     if (summary) {
       return <BatchCelebrationCard summary={summary} onDismiss={() => {
-        const count = celebrations.length;
-        for (let i = 0; i < count; i++) dequeue();
+        clearAll();
         setBatchMode(false);
       }} />;
     }

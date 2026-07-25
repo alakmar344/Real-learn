@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useProgressStore } from "@/store/progressStore";
+import { useMounted } from "@/hooks/useMounted";
 
 /**
  * Smart question suggestions — context-aware starter grid that eliminates
@@ -47,7 +48,9 @@ export default function SmartSuggestions({ onSelect }: Props) {
   const subjectsSeen = useProgressStore((s) => s.subjectsSeen);
   const lessonsCompleted = useProgressStore((s) => s.lessonsCompleted);
 
-  const suggestions = useMemo(() => {
+  const isMounted = useMounted();
+
+  const deterministicSuggestions = useMemo(() => {
     const picked: typeof TRENDING_TOPICS = [];
 
     // 1. Prioritize subjects the user hasn't explored yet (diversity)
@@ -69,16 +72,37 @@ export default function SmartSuggestions({ onSelect }: Props) {
       picked.push(topic);
     }
 
-    // 3. Fill remaining slots with random trending topics
+    return picked;
+  }, [subjectsSeen]);
+
+  const [suggestions, setSuggestions] = useState<typeof TRENDING_TOPICS>(() => {
+    const picked = [...deterministicSuggestions];
     const remaining = TRENDING_TOPICS.filter((t) => !picked.includes(t));
-    const shuffled = remaining.sort(() => Math.random() - 0.5);
-    for (const topic of shuffled) {
+    for (const topic of remaining) {
       if (picked.length >= 6) break;
       picked.push(topic);
     }
-
     return picked;
-  }, [subjectsSeen]);
+  });
+
+  useEffect(() => {
+    if (!isMounted) return;
+    const picked = [...deterministicSuggestions];
+    const remaining = TRENDING_TOPICS.filter((t) => !picked.includes(t));
+    
+    // Fisher-Yates shuffle remaining
+    for (let i = remaining.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [remaining[i], remaining[j]] = [remaining[j], remaining[i]];
+    }
+
+    for (const topic of remaining) {
+      if (picked.length >= 6) break;
+      picked.push(topic);
+    }
+    
+    setSuggestions(picked);
+  }, [deterministicSuggestions, isMounted]);
 
   // For returning users, show a personalized "Continue learning" header
   const isNewUser = lessonsCompleted === 0;

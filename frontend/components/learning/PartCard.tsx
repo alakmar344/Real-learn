@@ -92,7 +92,7 @@ const PartCardBase = ({
           height: 3,
           background: "var(--accent)",
           borderRadius: "var(--radius-xl) var(--radius-xl) 0 0",
-          margin: "calc(-1 * clamp(20px, 5vw, 36px)) calc(-1 * clamp(20px, 5vw, 36px)) 0",
+          margin: "calc(-1 * clamp(28px, 6vw, 48px)) calc(-1 * clamp(28px, 6vw, 48px)) 0",
         }}
       />
       {/* Locked-state obfuscation lives in globals.css (.part-locked-content)

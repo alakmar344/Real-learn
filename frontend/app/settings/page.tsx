@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { UserButton, useAuth, useClerk } from "@clerk/nextjs";
 import { LessonMode } from "@/types";
@@ -75,6 +75,7 @@ export default function SettingsPage() {
   const [deleting, setDeleting] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [cookieChoiceLabel, setCookieChoiceLabel] = useState("Not set");
+  const lastHiddenRef = useRef<number>(0);
 
   // Reflect the current cookie/analytics choice, live — including when it is
   // changed via the banner this page can re-open. For signed-in users the
@@ -96,16 +97,24 @@ export default function SettingsPage() {
         consent == null ? "Not set" : consent.accepted ? "Analytics allowed" : "Analytics off"
       );
     };
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "hidden") lastHiddenRef.current = Date.now();
+    };
+    const onFocus = () => {
+      if (Date.now() - lastHiddenRef.current > 30000) refresh();
+    };
     refresh();
     window.addEventListener(COOKIE_CONSENT_ACCEPTED_EVENT, refresh);
     window.addEventListener(COOKIE_CONSENT_REVOKED_EVENT, refresh);
     // The banner also saves "decline" without a revoke event when there was no
     // prior acceptance; poll cheaply on focus to stay accurate.
-    window.addEventListener("focus", refresh);
+    window.addEventListener("focus", onFocus);
+    window.addEventListener("visibilitychange", onVisibilityChange);
     return () => {
       window.removeEventListener(COOKIE_CONSENT_ACCEPTED_EVENT, refresh);
       window.removeEventListener(COOKIE_CONSENT_REVOKED_EVENT, refresh);
-      window.removeEventListener("focus", refresh);
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, [isSignedIn, getToken]);
 
@@ -153,30 +162,12 @@ export default function SettingsPage() {
           useSavedJourneysStore.setState({ journeys: [] });
         } catch { /* ignore */ }
         cancelPendingDebouncedWrites();
-        const REALLEARN_KEYS = [
-          "reallearn-preferences",
-          "reallearn-journey",
-          "reallearn-progress",
-          "reallearn-saved-journeys",
-          "reallearn-legal-consent",
-          "reallearn-cookie-consent",
-          "reallearn-theme",
-          "reallearn-preferences-onboarding",
-          "reallearn-feedback",
-          "reallearn-personalization-skipped",
-          // Privacy policy v2.6 promises "Delete My Data" removes the local
-          // first-used date (Footer's "learning together" counter) too.
-          "reallearn-first-visit",
-        ];
-        REALLEARN_KEYS.forEach((k) => {
-          try { localStorage.removeItem(k); } catch { /* ignore */ }
-        });
-        // Sweep the dated once-per-day markers (easter-egg / greeting keys,
-        // "reallearn-egg-*") — also covered by the policy's deletion promise.
         try {
-          for (let i = localStorage.length - 1; i >= 0; i--) {
-            const key = localStorage.key(i);
-            if (key?.startsWith("reallearn-egg-")) localStorage.removeItem(key);
+          const allKeys = Object.keys(localStorage);
+          for (const key of allKeys) {
+            if (key.startsWith("reallearn-") || key.startsWith("reallearn_")) {
+              localStorage.removeItem(key);
+            }
           }
         } catch { /* ignore */ }
         // Also wipe the IndexedDB lesson archive (full bodies of older
@@ -186,10 +177,9 @@ export default function SettingsPage() {
         // ignore storage errors
       }
 
-      await signOut(() => {
-        showToast("Account deleted successfully", "success");
-        router.push("/");
-      });
+      await signOut();
+      showToast("Account deleted successfully", "success");
+      router.push("/");
     } catch (err) {
       console.error("[frontend][Settings] delete data failed", err);
       showToast(
@@ -424,18 +414,20 @@ export default function SettingsPage() {
 
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div>
-              <label
+              <h3
+                id="theme-heading"
                 style={{
                   display: "block",
                   fontSize: 13,
                   fontWeight: 600,
                   color: "var(--text-secondary)",
                   marginBottom: 8,
+                  margin: "0 0 8px 0"
                 }}
               >
                 Theme
-              </label>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              </h3>
+              <div role="group" aria-labelledby="theme-heading" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {THEMES.map((opt) => {
                   const active = theme === opt.value;
                   return (
@@ -485,18 +477,20 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label
+              <h3
+                id="answer-mode-heading"
                 style={{
                   display: "block",
                   fontSize: 13,
                   fontWeight: 600,
                   color: "var(--text-secondary)",
                   marginBottom: 8,
+                  margin: "0 0 8px 0"
                 }}
               >
                 Answer mode
-              </label>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              </h3>
+              <div role="group" aria-labelledby="answer-mode-heading" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {MODES.map((opt) => {
                   const active = mode === opt.value;
                   return (
@@ -565,18 +559,20 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label
+              <h3
+                id="perf-mode-heading"
                 style={{
                   display: "block",
                   fontSize: 13,
                   fontWeight: 600,
                   color: "var(--text-secondary)",
                   marginBottom: 8,
+                  margin: "0 0 8px 0"
                 }}
               >
                 Visual performance
-              </label>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              </h3>
+              <div role="group" aria-labelledby="perf-mode-heading" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {PERF_MODE_OPTIONS.map((opt) => {
                   const active = perfMode === opt.value;
                   return (

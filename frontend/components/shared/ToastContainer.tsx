@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface Toast {
   id: number;
@@ -8,25 +8,29 @@ interface Toast {
   type: "success" | "error" | "info";
 }
 
-let toastId = 0;
-let setToastsGlobal: React.Dispatch<React.SetStateAction<Toast[]>> | null = null;
-
 export function showToast(message: string, type: Toast["type"] = "info") {
-  if (!setToastsGlobal) return;
-  setToastsGlobal((prev) => [...prev, { id: ++toastId, message, type }]);
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(
+    new CustomEvent("reallearn:toast", { detail: { message, type } })
+  );
 }
 
 export default function ToastContainer() {
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const toastIdRef = useRef(0);
 
-  // Bind the global setter in an effect (not as a render-phase side effect,
-  // which breaks under StrictMode/concurrent re-renders) and unbind on
-  // unmount so showToast()'s null-guard sees a dead container instead of
-  // silently calling a stale setter.
   useEffect(() => {
-    setToastsGlobal = setToasts;
+    const handler = (e: CustomEvent) => {
+      const { message, type } = e.detail;
+      toastIdRef.current += 1;
+      setToasts((prev) => [
+        ...prev,
+        { id: toastIdRef.current, message, type },
+      ]);
+    };
+    window.addEventListener("reallearn:toast", handler as EventListener);
     return () => {
-      if (setToastsGlobal === setToasts) setToastsGlobal = null;
+      window.removeEventListener("reallearn:toast", handler as EventListener);
     };
   }, []);
 
@@ -58,7 +62,7 @@ export default function ToastContainer() {
       aria-live="polite"
       style={{
         position: "fixed",
-        bottom: 16,
+        bottom: "max(16px, env(safe-area-inset-bottom, 16px))",
         right: 16,
         // Above modal scrims (which sit at 200) so feedback stays visible.
         zIndex: 300,

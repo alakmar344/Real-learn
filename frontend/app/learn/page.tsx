@@ -215,7 +215,9 @@ export default function LearnPage() {
     return (
       <>
         <LiveRegion />
-        <main style={{ minHeight: "100vh" }} />
+        <main style={{ minHeight: "100vh" }}>
+          <Navbar />
+        </main>
       </>
     );
   }

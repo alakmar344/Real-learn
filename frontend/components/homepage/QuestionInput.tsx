@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState, useLayoutEffect } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { SignInButton } from "@clerk/nextjs";
 import ExampleQuestions from "@/components/homepage/ExampleQuestions";
@@ -40,7 +40,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
   const nearLimit = charCount >= MAX_QUESTION_LENGTH * 0.9;
   const hintShow = showHint || focused;
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const textarea = textareaRef.current;
     if (!textarea) return;
     textarea.style.height = "auto";
@@ -71,7 +71,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
       className={`q-form engraved${focused ? " q-form--focused" : ""}`}
     >
       <div className="q-form__body">
-        <label htmlFor="question-input" style={{ display: "none" }}>
+        <label htmlFor="question-input" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}>
           What do you want to understand today?
         </label>
         <textarea
