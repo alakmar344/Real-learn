@@ -88,8 +88,19 @@ export default function ListenButton({ text, language, label = "Listen to this s
           transition: "all 200ms var(--ease-color)",
         }}
       >
-        <span aria-hidden="true" style={{ fontSize: 13, lineHeight: 1 }}>
-          {speaking ? "◼" : showError ? "!" : <SpeakerIcon />}
+        <span aria-hidden="true" style={{ fontSize: 13, lineHeight: 1, display: "inline-flex", alignItems: "center" }}>
+          {speaking ? (
+            <span className="visual-waveform" aria-hidden="true">
+              <span className="visual-waveform__bar" />
+              <span className="visual-waveform__bar" />
+              <span className="visual-waveform__bar" />
+              <span className="visual-waveform__bar" />
+            </span>
+          ) : showError ? (
+            "!"
+          ) : (
+            <SpeakerIcon />
+          )}
         </span>
         {loading ? "Generating..." : speaking ? "Stop" : showError ? "Retry" : "Listen"}
       </button>

@@ -183,6 +183,18 @@ const PartCardBase = ({
           {part.title}
         </h2>
 
+        {/* Gen Z / Gen Alpha TL;DR Concept Banner */}
+        <div className="tldr-banner" style={{ marginTop: 16 }}>
+          <span className="tldr-pill">⚡ TL;DR</span>
+          <span>
+            {part.partNumber === 1
+              ? "Key concepts & core fundamentals explained simply."
+              : part.partNumber === 2
+              ? "Step-by-step mechanism & how it works under the hood."
+              : "Real-world news grounding & practical applications."}
+          </span>
+        </div>
+
         <div
           className="markdown-content editorial-dropcap"
           style={{
