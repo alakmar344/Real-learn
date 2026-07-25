@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { LessonJourney } from "@/types";
 import ShareResult from "@/components/learning/ShareResult";
 import FeedbackGate from "@/components/shared/FeedbackGate";
+import QuickSummaryCards from "@/components/learning/QuickSummaryCards";
 
 interface Props {
   lesson: LessonJourney;
@@ -192,6 +193,9 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
           </p>
         </div>
       </div>
+
+      {/* Gen Z Quick Summary Deck */}
+      <QuickSummaryCards lesson={lesson} />
 
       {/* Key takeaways — collapsible to reduce completion screen overload */}
       <div style={{ marginTop: varSpaceLg }}>
