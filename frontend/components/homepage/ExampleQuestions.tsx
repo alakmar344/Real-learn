@@ -3,16 +3,14 @@
 import { useEffect, useState } from "react";
 
 const RECOMMENDATIONS = [
-  "How does artificial intelligence actually learn?",
-  "Why do we dream when we sleep?",
-  "How does compound interest build wealth?",
-  "What causes earthquakes and tsunamis?",
-  "Why did the Roman Empire collapse?",
-  "How do airplanes stay up in the air?",
-  "What is quantum computing in simple terms?",
-  "How does the human immune system fight viruses?",
-  "Why is the ocean salty?",
-  "How do black holes bend time and space?",
+  "Explain quantum physics like I'm 5 🧠",
+  "Why is inflation hurting my wallet? 💸",
+  "Is AI going to take my job? 🤖",
+  "How do black holes bend time and space? 🌌",
+  "Why do we dream when we sleep? 🌙",
+  "How do airplanes stay up in the air? ✈️",
+  "What actually caused the Roman Empire to collapse? 🏛️",
+  "How does the human immune system fight viruses? 🦠",
 ];
 
 interface Props {
