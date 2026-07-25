@@ -9,11 +9,11 @@ function debounce<T extends (...args: never[]) => void>(
   _options?: { leading?: boolean; trailing?: boolean }
 ): T & { cancel: () => void; flush: () => void } {
   let timer: ReturnType<typeof setTimeout> | null = null;
-  const debounced = ((...args: unknown[]) => {
+  const debounced = ((...args: Parameters<T>) => {
     if (timer !== null) clearTimeout(timer);
     timer = setTimeout(() => {
       timer = null;
-      fn(...(args as Parameters<T>));
+      fn(...args);
     }, ms);
   }) as T & { cancel: () => void; flush: () => void };
   debounced.cancel = () => {

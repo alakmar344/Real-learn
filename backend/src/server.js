@@ -208,7 +208,7 @@ if (!fs.existsSync(TTS_TEMP_DIR)) {
   fs.mkdirSync(TTS_TEMP_DIR, { recursive: true });
 }
 // Clean up orphaned temp files from previous crashes (fire-and-forget).
-fs.readdir(TTS_TEMP_DIR).then((files) => {
+fs.promises.readdir(TTS_TEMP_DIR).then((files) => {
   for (const file of files) {
     fs.unlink(path.join(TTS_TEMP_DIR, file), () => {});
   }
