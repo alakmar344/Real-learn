@@ -194,77 +194,8 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
         </div>
       </div>
 
-      {/* Gen Z Quick Summary Deck */}
+      {/* Stylized Gen Z & Gen Alpha Quick Summary Deck */}
       <QuickSummaryCards lesson={lesson} />
-
-      {/* Key takeaways — collapsible to reduce completion screen overload */}
-      <div style={{ marginTop: varSpaceLg }}>
-        <button
-          type="button"
-          onClick={() => setTakeawaysExpanded(!takeawaysExpanded)}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            margin: 0,
-            padding: 0,
-            background: "transparent",
-            border: "none",
-            cursor: "pointer",
-            fontSize: 18,
-            fontWeight: 700,
-            color: "var(--text-primary)",
-          }}
-          aria-expanded={takeawaysExpanded}
-        >
-          <span
-            style={{
-              display: "inline-block",
-              transform: takeawaysExpanded ? "rotate(90deg)" : "rotate(0deg)",
-              transition: "transform 200ms",
-              fontSize: 12,
-              color: "var(--text-tertiary)",
-            }}
-            aria-hidden="true"
-          >
-            ▶
-          </span>
-          Key takeaways
-        </button>
-        {takeawaysExpanded && (
-          <div style={{ marginTop: "var(--space-md)" }}>
-            {(lesson.keyTakeaways ?? []).map((takeaway, index) => (
-              <div
-                key={`${index}-${takeaway}`}
-                style={{
-                  marginBottom: varSpaceSm,
-                  color: "var(--text-primary)",
-                  fontSize: 14,
-                  display: "flex",
-                  gap: varSpaceSm,
-                  padding: "10px 14px",
-                  borderRadius: "var(--radius-md)",
-                  background: "color-mix(in srgb, var(--accent) 5%, transparent)",
-                  border: "1px solid color-mix(in srgb, var(--accent) 15%, transparent)",
-                }}
-              >
-                <span
-                  style={{
-                    color: "var(--accent)",
-                    fontWeight: 800,
-                    flexShrink: 0,
-                    width: 24,
-                    textAlign: "center",
-                  }}
-                >
-                  {index + 1}.
-                </span>
-                <span style={{ fontWeight: 500 }}>{takeaway}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
 
       {/* Suggested follow-up questions — zero cognitive load: just tap */}
       {lesson.keyTakeaways && lesson.keyTakeaways.length > 0 && (

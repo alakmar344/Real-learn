@@ -114,25 +114,6 @@ export default function HomePage() {
             </div>
 
             <div className="hero-greeting hero__greeting">
-              <div style={{ marginBottom: 8, display: "flex", justifyContent: "center" }}>
-                <span
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 6,
-                    fontSize: 12,
-                    fontWeight: 700,
-                    color: "var(--text-accent-strong)",
-                    background: "var(--accent-dim)",
-                    border: "1px solid var(--border-glow)",
-                    padding: "4px 12px",
-                    borderRadius: 20,
-                    letterSpacing: "0.02em",
-                  }}
-                >
-                  ⚡ Built for Gen Z & Gen Alpha • Zero Boring Lectures
-                </span>
-              </div>
               {greeting ? (
                 <h1 className="hero__title" suppressHydrationWarning>
                   {greeting}
