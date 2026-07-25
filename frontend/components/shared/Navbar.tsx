@@ -2,7 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import ProgressHub from "@/components/shared/ProgressHub";
+import dynamic from "next/dynamic";
+
+const ProgressHub = dynamic(() => import("@/components/shared/ProgressHub"), {
+  ssr: false,
+  loading: () => null,
+});
 
 interface Props {
   compact?: boolean;

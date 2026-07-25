@@ -158,7 +158,7 @@ export default function CookieConsent() {
 
   return (
     <div
-      role="dialog"
+      role="region"
       aria-label="Cookie preferences"
       style={{
         position: "fixed",

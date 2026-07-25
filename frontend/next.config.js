@@ -100,6 +100,7 @@ const nextConfig = {
       "frame-ancestors 'self'",
       "base-uri 'self'",
       "form-action 'self'",
+      "upgrade-insecure-requests",
     ].join("; ");
 
     return [

@@ -1363,8 +1363,8 @@ export async function warmUpModel() {
 // the first visitors are covered). After an idle stretch the first request
 // pays a cold start once — the silence watchdog + fallback rescue keep even
 // that case bounded — and warm-up resumes automatically with the traffic.
-const DEFAULT_WARM_UP_INTERVAL_MS = 90 * 1000;
-const DEFAULT_WARM_UP_IDLE_WINDOW_MS = 15 * 60 * 1000;
+const DEFAULT_WARM_UP_INTERVAL_MS = 120 * 1000;
+const DEFAULT_WARM_UP_IDLE_WINDOW_MS = 10 * 60 * 1000;
 
 // Updated on every callGemma invocation; initialized to "now" at boot.
 let lastUserRequestAt = Date.now();

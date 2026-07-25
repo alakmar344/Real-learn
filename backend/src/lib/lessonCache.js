@@ -17,7 +17,7 @@ import { LRUCache } from "lru-cache";
 import { getDb } from "./mongodb.js";
 
 const DEFAULT_LESSON_CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
-const DEFAULT_LESSON_CACHE_MAX_MEMORY_ENTRIES = 200;
+const DEFAULT_LESSON_CACHE_MAX_MEMORY_ENTRIES = 100;
 const CACHE_COLLECTION = "lessonCache";
 
 function parsePositiveInt(value, fallbackValue) {
@@ -57,6 +57,8 @@ function memoryGet(key) {
 }
 
 function memorySet(key, lesson, expiresAt) {
+  // Guard: don't cache entries that are already expired (clock skew, etc.)
+  if (expiresAt <= Date.now()) return;
   // ttls are keyed per-entry so each lesson expires exactly at its own
   // expiresAt, independent of when it was written.
   memoryCache.set(key, { lesson, expiresAt }, { ttl: expiresAt - Date.now() });

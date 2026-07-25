@@ -1,7 +1,35 @@
 "use client";
 
 import type { PersistStorage, StorageValue } from "zustand/middleware";
-import { debounce } from "lodash-es";
+
+/** Minimal debounce — trailing-only, with cancel/flush. */
+function debounce<T extends (...args: never[]) => void>(
+  fn: T,
+  ms: number
+): T & { cancel: () => void; flush: () => void } {
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  const debounced = ((...args: unknown[]) => {
+    if (timer !== null) clearTimeout(timer);
+    timer = setTimeout(() => {
+      timer = null;
+      fn(...(args as Parameters<T>));
+    }, ms);
+  }) as T & { cancel: () => void; flush: () => void };
+  debounced.cancel = () => {
+    if (timer !== null) {
+      clearTimeout(timer);
+      timer = null;
+    }
+  };
+  debounced.flush = () => {
+    if (timer !== null) {
+      clearTimeout(timer);
+      timer = null;
+      fn();
+    }
+  };
+  return debounced;
+}
 
 /**
  * Debounced localStorage adapter for zustand `persist`.

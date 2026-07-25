@@ -1,5 +1,14 @@
-import { shuffle } from "lodash-es";
 import type { QuizQuestion } from "../types";
+
+/** Fisher-Yates shuffle — returns a new array. */
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 /**
  * Return a copy of the question with its options re-ordered. The correct answer
@@ -12,8 +21,6 @@ export function reshuffleQuestion(question: QuizQuestion): QuizQuestion {
   if (options.length <= 1) return question;
 
   const currentCorrect = question.correctIndex;
-  // lodash's shuffle is a Fisher-Yates implementation; using it removes a
-  // small custom primitive in favor of a battle-tested public library.
   const order = shuffle(options.map((_, i) => i));
 
   // Guarantee the correct answer moves: if the shuffle happened to leave it in
