@@ -85,9 +85,13 @@
 
 ---
 
-## What's Changed (latest)
+**Today — July 25, 2026**
+- **Full Codebase Audit & 56 Issues Resolved:** Fixed 3 critical CSS rendering regressions from PR #238 (`min-height` ordering, `overflow-x: hidden` breaking sticky headers, and compact navbar logo collision on mobile). Flush-fitted `PartCard` accent bar margins. Gated heavy backdrop-filter blurs under `[data-perf="low"]`. Completely removed the "Explore something" (`SmartSuggestions`) section and restored clean mobile responsive layout for `.q-form`. Updated `ExampleQuestions` with curated recommendation questions.
+- **Performance & State Fixes:** Upgraded `useReadingTimer` from a 10fps `setInterval` loop to `requestAnimationFrame` with 2% progress threshold updates (~50 renders total). Replaced sequential `dequeue()` loops in `EngagementLayer` with a single `clearCelebrations()` call. Fixed `SmartSuggestions` SSR hydration errors. Added skeleton layout to `learn/page.tsx` hydration gate.
+- **Security & Accessibility:** Upgraded Clerk `signOut()` to async promise awaiting. Added a 30s background threshold to window `focus` handler (Focus DoS protection). Dynamically match `localStorage` keys on deletion. Fixed `<label style={{ display: "none" }}>` visually-hidden accessibility pattern. Updated `legal` page navigation semantics (`<nav>` + `aria-current`). Added `aria-describedby` to `ConfirmModal`.
+- **Invisible UX Comfort Features:** Added real-time `sessionStorage` draft question recovery in `QuestionInput`, smart desktop auto-focus on initial mount, `Ctrl+Enter` / `Cmd+Enter` follow-up submit shortcut in `FollowUpBox`, instant `1-4` / `A-D` keyboard option selection in `QuizQuestion`, and a one-tap `📋 Copy` section text button in `PartCard` with 2s `Copied ✓` feedback state.
 
-**Today — July 22, 2026**
+**July 22, 2026**
 - **The Soft Pastel design language.** After nine theme-driven redesigns (gold, liquid glass, Japanese, Indian tricolor), the UI landed on a keeper: soft cream paper washed with pastel sky, peach, mint and rose, anchored by a clear sky-blue accent (no purple/violet, ever). Three moods of the same room — **Paper** (cream day), **Ink** (charcoal night lit by pastel sky), **Dusk** (teal sunset evening warmed by peach and rose). The crayon-scene backdrop, tricolor washes, pattern overlays, and seasonal accents are retired; the backdrop is pastel air and light. The time-of-day greeting with your first name stays front and center on the homepage.
 - **Newcomer onboarding.** First-time visitors see a quiet three-step "How it works" strip (ask → learn in three parts → pass each quiz); it disappears after the first activity.
 - **Bug fixes.** Empty-quiz parts no longer deadlock a journey; toasts are announced to screen readers reliably; SSE streams are cancelled on every error path; the activity heatmap now shows true calendar weeks; quizzes render any number of options correctly; "perfect" achievements now track first-attempt scores (they previously always fired). The browser address-bar color now follows the page background instead of flashing flag-orange.
