@@ -488,11 +488,13 @@ export function useLesson() {
             );
             return false;
           }
-          console.error("[frontend][useLesson] generateLesson failed", {
-            requestId,
-            attempt,
-            error,
-          });
+          if (process.env.NODE_ENV !== "production") {
+            console.error("[frontend][useLesson] generateLesson failed", {
+              requestId,
+              attempt,
+              error,
+            });
+          }
           setError(humanizeErrorMessage(error));
           return false;
         } finally {

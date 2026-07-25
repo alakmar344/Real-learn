@@ -207,6 +207,12 @@ const TTS_TEMP_DIR = path.join("/tmp", "reallearn-tts");
 if (!fs.existsSync(TTS_TEMP_DIR)) {
   fs.mkdirSync(TTS_TEMP_DIR, { recursive: true });
 }
+// Clean up orphaned temp files from previous crashes (fire-and-forget).
+fs.readdir(TTS_TEMP_DIR).then((files) => {
+  for (const file of files) {
+    fs.unlink(path.join(TTS_TEMP_DIR, file), () => {});
+  }
+}).catch(() => {});
 
 const TTS_RATE_LIMIT_WINDOW_MS = 60000;
 const TTS_RATE_LIMIT_MAX = 30;
@@ -355,7 +361,7 @@ const ttsRateLimiter = createRateLimiter({
 // emits (~6 KB per second of speech). Cache generated MP3s by content hash so
 // replays of the same text are served from memory, and expose an ETag so the
 // browser can revalidate to a 9-byte 304 instead of re-downloading megabytes.
-const TTS_CACHE_MAX_BYTES = 24 * 1024 * 1024; // 24 MB in-memory LRU
+const TTS_CACHE_MAX_BYTES = 16 * 1024 * 1024; // 16 MB in-memory LRU
 const TTS_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 // `lru-cache` with `maxSize`/`sizeCalculation` enforces a byte budget and
 // evicts least-recently-used entries automatically — replacing the hand-rolled
@@ -726,7 +732,7 @@ app.use(
     },
     // Compress even small JSON bodies (error payloads, health checks) —
     // every byte counts against the bandwidth budget.
-    threshold: 256,
+    threshold: 128,
     // gzip effort 6 = best ratio/CPU trade-off for dynamic responses.
     level: 6,
     // Brotli quality 5 beats gzip-9 ratios at a fraction of the CPU of the

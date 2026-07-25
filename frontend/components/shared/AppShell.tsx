@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import Sidebar from "@/components/shared/Sidebar";
 import ScrollToTop from "@/components/shared/ScrollToTop";
+import ErrorBoundary from "@/components/shared/ErrorBoundary";
 import dynamic from "next/dynamic";
 
 const PreferenceModal = dynamic(() => import("@/components/shared/PreferenceModal"), {
@@ -66,7 +67,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <>
         {/* A11y: the skip link targets #main-content, which must exist on
             EVERY page — including the auth pages — or it jumps nowhere. */}
-        <div id="main-content">{children}</div>
+        <div id="main-content">
+          <ErrorBoundary>{children}</ErrorBoundary>
+        </div>
         <PreferenceModal open={showFirstPrefs} onClose={() => setShowFirstPrefs(false)} />
       </>
     );
@@ -83,7 +86,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         ☰
       </button>
       <Sidebar open={open} onClose={() => setOpen(false)} />
-      <div id="main-content" className="app-main">{children}</div>
+      <div id="main-content" className="app-main">
+        <ErrorBoundary>{children}</ErrorBoundary>
+      </div>
       <ScrollToTop />
       <EngagementLayer />
       <PreferenceModal open={showFirstPrefs} onClose={() => setShowFirstPrefs(false)} />

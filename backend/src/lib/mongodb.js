@@ -24,6 +24,8 @@ async function getMongoClient() {
   client = new MongoClient(MONGODB_URI, {
     serverSelectionTimeoutMS: 10000,
     connectTimeoutMS: 10000,
+    maxPoolSize: 10,
+    minPoolSize: 2,
   });
   clientPromise = client.connect().then((connectedClient) => {
     console.log("[MongoDB] Connected successfully");
