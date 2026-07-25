@@ -39,8 +39,7 @@ export default async function LegalPage({ searchParams }: { searchParams: Search
           Please review our policies before using RealLearn.
         </p>
 
-        <div
-          role="tablist"
+        <nav
           aria-label="Legal documents"
           style={{
             display: "flex",
@@ -54,9 +53,7 @@ export default async function LegalPage({ searchParams }: { searchParams: Search
           <a
             id="legal-tab-privacy"
             href="/legal?tab=privacy"
-            role="tab"
-            aria-selected={tab === "privacy"}
-            aria-controls="legal-panel-privacy"
+            aria-current={tab === "privacy" ? "page" : undefined}
             style={{
               padding: "12px 20px",
               textDecoration: "none",
@@ -72,9 +69,7 @@ export default async function LegalPage({ searchParams }: { searchParams: Search
           <a
             id="legal-tab-terms"
             href="/legal?tab=terms"
-            role="tab"
-            aria-selected={tab === "terms"}
-            aria-controls="legal-panel-terms"
+            aria-current={tab === "terms" ? "page" : undefined}
             style={{
               padding: "12px 20px",
               textDecoration: "none",
@@ -90,9 +85,7 @@ export default async function LegalPage({ searchParams }: { searchParams: Search
           <a
             id="legal-tab-cookies"
             href="/legal?tab=cookies"
-            role="tab"
-            aria-selected={tab === "cookies"}
-            aria-controls="legal-panel-cookies"
+            aria-current={tab === "cookies" ? "page" : undefined}
             style={{
               padding: "12px 20px",
               textDecoration: "none",
@@ -105,14 +98,12 @@ export default async function LegalPage({ searchParams }: { searchParams: Search
           >
             Cookie Policy
           </a>
-        </div>
+        </nav>
 
         <Suspense fallback={<p style={{ color: "var(--text-secondary)" }}>Loading...</p>}>
           <div
             id={`legal-panel-${tab}`}
-            role="tabpanel"
-            aria-labelledby={`legal-tab-${tab}`}
-            tabIndex={0}
+            aria-label={tab === "cookies" ? "Cookie Policy" : tab === "terms" ? "Terms of Service" : "Privacy Policy"}
           >
             {tab === "cookies" ? <CookiePolicy /> : tab === "terms" ? <TermsOfService /> : <PrivacyPolicy />}
           </div>

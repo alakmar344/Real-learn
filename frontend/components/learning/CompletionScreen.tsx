@@ -274,16 +274,12 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
                 key={i}
                 type="button"
                 onClick={() => {
-                  // Scroll to the follow-up textarea and pre-fill it
                   const followUpInput = document.getElementById("followup-input");
                   if (followUpInput) {
                     followUpInput.scrollIntoView({ behavior: "smooth", block: "center" });
-                    // Focus and set value via native setter to trigger React state
-                    const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-                      window.HTMLTextAreaElement.prototype, "value"
-                    )?.set;
-                    nativeInputValueSetter?.call(followUpInput, suggestion);
-                    followUpInput.dispatchEvent(new Event("input", { bubbles: true }));
+                    // Dispatch a custom event with the suggestion text
+                    const event = new CustomEvent("reallearn:fillFollowUp", { detail: suggestion });
+                    window.dispatchEvent(event);
                     setTimeout(() => followUpInput.focus(), 500);
                   }
                 }}

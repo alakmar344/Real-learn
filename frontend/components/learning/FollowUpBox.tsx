@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MicButton from "@/components/shared/MicButton";
 import { usePreferenceStore } from "@/store/preferenceStore";
 
@@ -19,6 +19,17 @@ export default function FollowUpBox({ onSubmit }: Props) {
   const [loading, setLoading] = useState(false);
   const [interimSpeech, setInterimSpeech] = useState("");
   const language = usePreferenceStore((s) => s.language);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const customEvent = e as CustomEvent<string>;
+      if (customEvent.detail) {
+        setValue(customEvent.detail.slice(0, MAX_QUESTION_LENGTH));
+      }
+    };
+    window.addEventListener("reallearn:fillFollowUp", handler);
+    return () => window.removeEventListener("reallearn:fillFollowUp", handler);
+  }, []);
 
   return (
     <section

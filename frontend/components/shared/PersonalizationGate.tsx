@@ -52,9 +52,14 @@ export default function PersonalizationGate() {
     return () => clearTimeout(timer);
   }, [isSignedIn, personalization.onboarded]);
 
+  // Sync store → draft only when the modal OPENS, not on every personalization
+  // change. The old effect overwrote user edits while the modal was open.
   useEffect(() => {
-    setDraft(personalization);
-  }, [personalization]);
+    if (open) {
+      setDraft(personalization);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   const toggleChecklist = (option: string) => {
     setDraft((prev) => {

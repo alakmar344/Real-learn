@@ -48,9 +48,12 @@ export default function ConfirmModal({
       // this confirm shortcut (destructive action despite choosing cancel).
       if (e.key === "Enter") {
         const target = e.target as HTMLElement | null;
-        if (target && ["BUTTON", "A", "INPUT", "TEXTAREA"].includes(target.tagName)) {
+        if (target && ["BUTTON", "A", "INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)) {
           return;
         }
+        // Only handle Enter when focus is inside the modal
+        const dialog = trapRef.current;
+        if (!dialog || !dialog.contains(target)) return;
         e.preventDefault();
         onConfirm();
       }
@@ -67,6 +70,7 @@ export default function ConfirmModal({
       role="dialog"
       aria-modal="true"
       aria-label={title}
+      aria-describedby="confirm-modal-description"
       onClick={onClose}
       style={{
         position: "fixed",
@@ -104,6 +108,7 @@ export default function ConfirmModal({
           {title}
         </h3>
         <p
+          id="confirm-modal-description"
           style={{
             margin: "0 0 20px",
             fontSize: 14,
