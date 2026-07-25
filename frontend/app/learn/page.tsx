@@ -40,6 +40,16 @@ function scrollToTop() {
   window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
 }
 
+function scrollToPart(partNumber: number) {
+  const reduce =
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const el = document.getElementById(`part-${partNumber}`);
+  if (el) {
+    el.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+  }
+}
+
 export default function LearnPage() {
   const [quizPart, setQuizPart] = useState<number | null>(null);
   const [showUnlockFx, setShowUnlockFx] = useState(false);
@@ -365,6 +375,11 @@ export default function LearnPage() {
       score >= 1 ? "Correct — well done." : "Part completed.",
       score >= 1 ? "success" : "info"
     );
+
+    const nextPartNumber = part.partNumber + 1;
+    if (nextPartNumber <= totalParts) {
+      setTimeout(() => scrollToPart(nextPartNumber), 50);
+    }
   };
 
   return (
@@ -453,7 +468,20 @@ export default function LearnPage() {
                 }
                 setQuizPart(part.partNumber);
               }}
-              onToggleCollapse={() => togglePartCollapse(part.partNumber)}
+              onToggleCollapse={() => {
+                const isCollapsed = collapsedParts.includes(part.partNumber);
+                togglePartCollapse(part.partNumber);
+                setTimeout(() => {
+                  if (isCollapsed) {
+                    scrollToPart(part.partNumber);
+                  } else {
+                    const nextPartNumber = part.partNumber + 1;
+                    if (nextPartNumber <= totalParts) {
+                      scrollToPart(nextPartNumber);
+                    }
+                  }
+                }, 50);
+              }}
             />
           ))}
 
