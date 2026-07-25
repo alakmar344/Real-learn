@@ -4,7 +4,6 @@ import { FormEvent, useEffect, useRef, useState, useLayoutEffect } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { SignInButton } from "@clerk/nextjs";
 import ExampleQuestions from "@/components/homepage/ExampleQuestions";
-import SmartSuggestions from "@/components/homepage/SmartSuggestions";
 import MicButton from "@/components/shared/MicButton";
 import { usePreferenceStore } from "@/store/preferenceStore";
 import { useMounted } from "@/hooks/useMounted";
@@ -64,7 +63,6 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
   const activeIndex = MODES.findIndex((m) => m.value === mode);
 
   return (
-    <>
     <form
       onSubmit={handleSubmit}
       aria-label="Ask a question"
@@ -186,14 +184,6 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
         </div>
       </div>
     </form>
-
-    {/* Smart suggestions grid — shown when input is empty to eliminate blank-input paralysis */}
-    {!question.trim() && (
-      <SmartSuggestions onSelect={(q) => {
-        setQuestion(q);
-        textareaRef.current?.focus();
-      }} />
-    )}
-  </>
   );
 }
+
