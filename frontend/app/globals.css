@@ -1123,6 +1123,11 @@ a:active {
   position: relative;
   overflow: hidden;
 }
+@media (min-width: 1024px) {
+  .hero__stage {
+    max-width: 1200px;
+  }
+}
 .hero__stage::before,
 .hero__stage::after {
   content: "";
@@ -1161,6 +1166,13 @@ a:active {
   letter-spacing: -0.045em;
   font-size: clamp(46px, 9vw, 88px);
   color: var(--text-primary);
+}
+@media (min-width: 1024px) {
+  .hero__title {
+    font-size: clamp(88px, 11vw, 140px);
+    line-height: 0.95;
+    letter-spacing: -0.05em;
+  }
 }
 .hero__title-name {
   background: var(--accent-gradient);
@@ -2790,6 +2802,13 @@ p {
     var(--glass-shadow), var(--glass-edge);
   transition: all 500ms var(--ease-color);
 }
+@media (min-width: 1024px) {
+  .q-form {
+    max-width: 900px;
+    margin-top: 40px;
+    border-radius: 36px;
+  }
+}
 /* The ask card wears the pastels: a sky wash from the top-left melting into
    peach at the bottom-right, over the card base — soft, airy, unmistakably
    pastel without hurting readability. */
@@ -2813,6 +2832,13 @@ p {
   text-transform: uppercase;
   opacity: 0.72;
 }
+@media (min-width: 1024px) {
+  .q-form__body::before {
+    top: 14px;
+    left: 48px;
+    font-size: 12px;
+  }
+}
 .q-form--focused {
   border-color: var(--border-accent);
   box-shadow:
@@ -2821,6 +2847,9 @@ p {
     var(--shadow-lg), 0 0 0 6px var(--accent-glow), var(--glass-edge);
 }
 .q-form__body { padding: 34px 32px 18px; }
+@media (min-width: 1024px) {
+  .q-form__body { padding: 48px 48px 24px; }
+}
 .q-form__textarea {
   width: 100%;
   min-height: 64px;
@@ -2833,6 +2862,14 @@ p {
   font-size: 17px;
   line-height: 1.6;
   font-family: var(--font-lora);
+}
+@media (min-width: 1024px) {
+  .q-form__textarea {
+    font-size: 24px;
+    line-height: 1.5;
+    min-height: 80px;
+    max-height: 240px;
+  }
 }
 .q-form__listening {
   margin: 6px 0 0;
@@ -2877,6 +2914,11 @@ p {
   align-items: center;
   gap: 14px;
   flex-wrap: wrap;
+}
+@media (min-width: 1024px) {
+  .q-form__modes {
+    padding: 0 48px 24px;
+  }
 }
 .q-form__mode-hint {
   font-size: 13px;
@@ -2930,6 +2972,11 @@ p {
   align-items: center;
   justify-content: space-between;
   gap: 14px;
+}
+@media (min-width: 1024px) {
+  .q-form__actions {
+    padding: 24px 48px;
+  }
 }
 .q-form__actions-right { display: flex; align-items: center; gap: 10px; }
 
