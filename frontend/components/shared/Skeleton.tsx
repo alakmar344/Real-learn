@@ -28,7 +28,7 @@ export function Skeleton({
     width: width ?? "100%",
     height: height ?? "100%",
     borderRadius: borderRadius,
-    background: "var(--bg-surface, #F4F0E8)",
+    background: "var(--border-default, #E5DFC9)",
     border: "1px solid var(--border-subtle, #EBE6DC)",
     ...style,
   };

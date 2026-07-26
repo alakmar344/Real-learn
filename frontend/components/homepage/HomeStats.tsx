@@ -9,6 +9,7 @@ import { useLessonStore } from "@/store/lessonStore";
 import { getArchivedLesson } from "@/lib/lessonArchive";
 import { levelInfo } from "@/lib/achievements";
 import { useMounted } from "@/hooks/useMounted";
+import { Skeleton } from "@/components/shared/Skeleton";
 
 /** Curated "spark" topics — a stable one per calendar day removes the
  * blank-input friction that keeps people from re-engaging. */
@@ -61,7 +62,13 @@ export default function HomeStats({ onStartTopic }: Props) {
   const journeys = useSavedJourneysStore((s) => s.journeys);
   const loadJourney = useLessonStore((s) => s.loadJourney);
 
-  if (!mounted) return <div style={{ height: 8 }} aria-hidden="true" />;
+  if (!mounted) {
+    return (
+      <div style={{ marginTop: 18, display: "flex", justifyContent: "center" }}>
+        <Skeleton height={34} width={280} borderRadius={999} />
+      </div>
+    );
+  }
 
   const info = levelInfo(xp);
   const topic = DAILY_TOPICS[dayOfYear(new Date()) % DAILY_TOPICS.length];
