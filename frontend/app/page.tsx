@@ -110,10 +110,6 @@ export default function HomePage() {
 
         <section className="hero">
           <div className="hero__stage">
-            <div className="hero__content">
-              <HomeStats onStartTopic={(topic) => submit(topic)} />
-            </div>
-
             <div className="hero-greeting hero__greeting">
               {greeting ? (
                 <h1 className="hero__title" suppressHydrationWarning>
@@ -132,6 +128,10 @@ export default function HomePage() {
 
             <div className="hero__input-row">
               <QuestionInput question={question} setQuestion={setQuestion} onSubmit={submit} />
+            </div>
+
+            <div className="hero__content" style={{ marginTop: 24 }}>
+              <HomeStats onStartTopic={(topic) => submit(topic)} />
             </div>
           </div>
         </section>

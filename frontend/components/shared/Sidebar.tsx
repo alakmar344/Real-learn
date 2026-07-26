@@ -357,22 +357,9 @@ export default function Sidebar({ open, onClose }: Props) {
             padding: 16,
             display: "flex",
             flexDirection: "column",
-            gap: 12,
+            gap: 10,
           }}
         >
-          <button
-            type="button"
-            onClick={() => {
-              onClose();
-              window.dispatchEvent(new Event("reallearn:open-things-coming"));
-            }}
-            className="btn-ghost"
-            style={{ width: "100%", justifyContent: "space-between", fontSize: 13 }}
-          >
-            <span>🚀 App Tour</span>
-            <span style={{ color: "var(--accent)", fontSize: 12 }}>Things Coming</span>
-          </button>
-
           <button
             type="button"
             onClick={() => setThemeOpen(true)}

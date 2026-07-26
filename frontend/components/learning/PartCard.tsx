@@ -203,7 +203,7 @@ const PartCardBase = ({
             fontSize: "var(--text-base)",
             color: "var(--text-secondary)",
             lineHeight: "var(--leading-loose)",
-            maxWidth: 640,
+            maxWidth: "100%",
             fontFamily: "var(--font-lora)",
           }}
         >
