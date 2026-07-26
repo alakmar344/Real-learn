@@ -11,308 +11,217 @@
   color-scheme: light;
 
   /* ═══════════════════════════════════════════════════════════════════════
-     RealLearn "Soft Pastel" design language — bold, minimal, Gen Z native.
-     A warm cream paper base washed with pastel sky, peach and mint; a clear
-     sky-blue accent anchors buttons and links. NO purple/violet — owner's
-     standing rule. Effects are intentional: less blur, less grain, more
-     breath. High signal, generous whitespace, chunky tactile shapes, snappy
-     springy motion. Three rooms, same warmth:
-       Paper (cream day) · Ink (charcoal night) · Dusk (sunset evening)
-     Every surface, control and chart reads from these tokens; change the
-     room here, never in components.
+     RealLearn Apple-Inspired Soft Pastel Minimalist System.
+     Pure solid white / pitch black canvas with soft solid pastel accents.
+     Zero background gradient noise or multi-color 3-gradient mixtures.
      ═══════════════════════════════════════════════════════════════════════ */
 
-  /* Brand accent — sky blue. Warm, confident, zero violet. */
+  /* Brand accent — solid sky blue. */
   --brand: #0284C7;
   --brand-strong: #0369A1;
   --brand-bright: #38BDF8;
   --brand-soft: #E0F2FE;
 
-  /* Ink scale (legacy `cobalt` names kept for the editorial classes). */
-  --cobalt-deep: #1E1A14;
-  --cobalt-mid: #4A4237;
+  --cobalt-deep: #0F172A;
+  --cobalt-mid: #475569;
   --cobalt-vivid: #0284C7;
   --cobalt-pale: #E0F2FE;
-  --cobalt-wash: rgba(2, 132, 199, 0.08);
-  --cobalt-ink: #120F0A;
+  --cobalt-wash: rgba(2, 132, 199, 0.06);
+  --cobalt-ink: #0F172A;
 
-  /* Canvas: warm cream paper — cozy, inviting, never sterile. */
-  --bg-primary: #FFFDF8;
-  --bg-surface: rgba(255, 253, 248, 0.82);
-  --bg-card: rgba(255, 253, 248, 0.9);
-  --bg-card-hover: #FFFEF5;
-  --bg-glass: rgba(255, 252, 244, 0.82);
-  --bg-solid: #F5F0E8;
-  --bg-warm: rgba(255, 253, 245, 0.7);
-  /* Ambient light — sky blue from above, peach warmth at the foot. */
-  --ambient-a: rgba(2, 132, 199, 0.1);
-  --ambient-b: rgba(254, 202, 180, 0.1);
+  /* Canvas: pure solid white — ultra clean Apple style. */
+  --bg-primary: #FFFFFF;
+  --bg-surface: #F8FAFC;
+  --bg-card: #F8FAFC;
+  --bg-card-hover: #F1F5F9;
+  --bg-glass: rgba(255, 255, 255, 0.88);
+  --bg-solid: #F1F5F9;
+  --bg-warm: #F8FAFC;
+  /* Ambient canvas — pure solid clean backdrop. */
+  --ambient-a: transparent;
+  --ambient-b: transparent;
 
-  --border-subtle: rgba(60, 48, 35, 0.08);
-  --border-default: rgba(60, 48, 35, 0.14);
+  --border-subtle: #E2E8F0;
+  --border-default: #CBD5E1;
   --border-accent: var(--brand);
-  --border-glow: rgba(2, 132, 199, 0.32);
+  --border-glow: rgba(2, 132, 199, 0.2);
 
-  /* De-slopped glass: less blur, tighter sheen. Depth, not haze. */
   --glass-blur: 16px;
-  --glass-blur-strong: 26px;
-  --glass-saturate: 128%;
-  --glass-highlight: rgba(255, 255, 255, 0.95);
-  --glass-shadow: 0 6px 22px rgba(60, 48, 35, 0.08), 0 1px 3px rgba(60, 48, 35, 0.05);
-  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 0 0 1px rgba(2, 132, 199, 0.05);
-  --glass-sheen: linear-gradient(135deg, rgba(255,255,253,0.55) 0%, rgba(201,233,250,0.16) 38%, rgba(255,255,255,0) 62%);
+  --glass-blur-strong: 24px;
+  --glass-saturate: 120%;
+  --glass-highlight: rgba(255, 255, 255, 0.9);
+  --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.02);
+  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 0 0 1px rgba(0, 0, 0, 0.04);
+  --glass-sheen: none;
 
   --accent: var(--brand);
   --accent-hover: var(--brand-strong);
-  --accent-dim: rgba(2, 132, 199, 0.12);
-  --accent-glow: rgba(2, 132, 199, 0.28);
-  --accent-companion: #0D9488;
-  --accent-gradient: linear-gradient(135deg, #0284C7 0%, #0D9488 100%);
+  --accent-dim: #E0F2FE;
+  --accent-glow: rgba(2, 132, 199, 0.16);
+  --accent-companion: #0284C7;
+  --accent-gradient: #0284C7;
   --on-accent: #ffffff;
-  --shadow-glow-accent: 0 6px 24px rgba(2, 132, 199, 0.32);
+  --shadow-glow-accent: 0 4px 16px rgba(2, 132, 199, 0.2);
 
-  /* Ink text — warm cocoa, confident on cream. */
-  --text-primary: #3C3022;
-  --text-secondary: #6B5E4F;
-  --text-tertiary: #9C9080;
-  --text-accent-strong: #0369A1;
+  /* Ink text — uniform slate hierarchy. */
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-tertiary: #94A3B8;
+  --text-accent-strong: #0284C7;
 
-  --correct: #128A5B;
-  --correct-bg: rgba(18, 138, 91, 0.11);
-  --wrong: #E23244;
-  --wrong-bg: rgba(226, 50, 68, 0.1);
-  --locked: #AEB2BE;
+  --correct: #16A34A;
+  --correct-bg: #DCFCE7;
+  --wrong: #DC2626;
+  --wrong-bg: #FEE2E2;
+  --locked: #94A3B8;
 
-  /* Subject colours — vivid and confident, all readable on the canvas. */
   --subject-physics: #0284C7;
-  --subject-chemistry: #12A15E;
-  --subject-economics: #E08600;
-  --subject-biology: #E5487F;
-  --subject-cs: #0F9BB5;
-  --subject-history: #B5722E;
-  --subject-general: #0D9488;
+  --subject-chemistry: #16A34A;
+  --subject-economics: #EA580C;
+  --subject-biology: #DB2777;
+  --subject-cs: #0284C7;
+  --subject-history: #D97706;
+  --subject-general: #0284C7;
 
-  /* Chunky, tactile radii — rounded and confident, thumb-friendly. */
-  --radius-sm: 10px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
-  --radius-xl: 26px;
-  --radius-2xl: 32px;
+  /* Sleek Apple squircle radii */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
 
   --text-xs: 11px;
   --text-sm: 13px;
-  --text-base: 16px;
-  --text-lg: 19px;
-  --text-xl: 24px;
-  --text-2xl: 32px;
-  --text-3xl: 40px;
-  --text-4xl: 52px;
-  --text-hero: 68px;
+  --text-base: 15px;
+  --text-lg: 18px;
+  --text-xl: 22px;
+  --text-2xl: 28px;
+  --text-3xl: 36px;
+  --text-4xl: 48px;
+  --text-hero: 56px;
 
   --space-xs: 6px;
   --space-sm: 10px;
-  --space-md: 18px;
+  --space-md: 16px;
   --space-base: 24px;
   --space-breath: 32px;
   --space-lg: 48px;
-  --space-xl: 72px;
-  --space-2xl: 96px;
-  --space-3xl: 140px;
-  --space-4xl: 200px;
+  --space-xl: 64px;
+  --space-2xl: 80px;
 
-  --leading-tight: 1.25;
-  --leading-snug: 1.45;
-  --leading-normal: 1.65;
-  --leading-relaxed: 1.85;
-  --leading-loose: 2.05;
+  --leading-tight: 1.2;
+  --leading-snug: 1.4;
+  --leading-normal: 1.6;
+  --leading-relaxed: 1.8;
 
-  --tracking-tight: -0.02em;
+  --tracking-tight: -0.025em;
   --tracking-normal: 0;
-  --tracking-wide: 0.04em;
+  --tracking-wide: 0.03em;
 
-  /* Warm shadows — depth reads as soft afternoon shade on cream. */
-  --shadow-sm: 0 1px 3px rgba(60, 48, 35, 0.07), 0 1px 2px rgba(60, 48, 35, 0.04);
-  --shadow-md: 0 4px 14px rgba(60, 48, 35, 0.09), 0 2px 4px rgba(60, 48, 35, 0.05);
-  --shadow-lg: 0 12px 34px rgba(60, 48, 35, 0.13), 0 4px 8px rgba(60, 48, 35, 0.06);
-  --shadow-glow-correct: 0 0 24px rgba(31, 138, 91, 0.16);
+  /* Crisp, airy low-opacity shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.04);
+  --shadow-glow-correct: 0 0 16px rgba(22, 163, 74, 0.12);
 
-  --ease-reveal: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-reveal: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-color: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
 
-  /* Snappier motion — reactions land fast, no waiting on the UI. */
   --dur-fast: 120ms;
   --dur-base: 200ms;
-  --dur-slow: 320ms;
+  --dur-slow: 300ms;
 
-  --blur-sm: 6px;
-  --blur-md: 16px;
+  --blur-sm: 4px;
+  --blur-md: 12px;
 
-  --scrim: rgba(30, 25, 20, 0.35);
+  --scrim: rgba(0, 0, 0, 0.4);
   --focus-ring: 0 0 0 3px var(--accent-glow);
   --focus-ring-simple: 0 0 0 2px var(--accent);
 
-  /* Ambient aurora — restrained pastel wash. Warmth, not a light show. */
-  --aurora-1: rgba(186, 230, 253, 0.4);
-  --aurora-2: rgba(254, 202, 180, 0.32);
-  --aurora-3: rgba(167, 243, 208, 0.28);
+  /* Solid soft pastel tokens */
+  --aurora-1: #E0F2FE;
+  --aurora-2: #FEE2E2;
+  --aurora-3: #DCFCE7;
 }
 
-/* ── Ink (dark) — warm charcoal night with a bright sky-blue
-   accent. High-contrast, cozy, made for phones in the dark. Filled
-   controls glow bright with dark ink text. ── */
-html[data-theme="dark"] {
-  color-scheme: dark;
-
-  --brand: #7FC5E8;
-  --brand-strong: #92D3F0;
-  --brand-bright: #B8E4F8;
-  --brand-soft: #1E2A30;
-
-  --cobalt-deep: #0A0908;
-  --cobalt-mid: #3A3428;
-  --cobalt-vivid: #7FC5E8;
-  --cobalt-pale: #E0F2FE;
-  --cobalt-wash: rgba(127, 197, 232, 0.14);
-  --cobalt-ink: #050404;
-
-  --ambient-a: rgba(127, 197, 232, 0.1);
-  --ambient-b: rgba(254, 202, 180, 0.07);
-
-  --bg-primary: #1A1814;
-  --bg-surface: rgba(30, 26, 22, 0.82);
-  --bg-card: rgba(38, 34, 28, 0.95);
-  --bg-card-hover: rgba(48, 42, 35, 0.98);
-  --bg-glass: rgba(22, 18, 14, 0.8);
-  --bg-solid: #1E1A14;
-
-  --border-subtle: rgba(245, 235, 220, 0.1);
-  --border-default: rgba(245, 235, 220, 0.16);
-  --border-accent: var(--brand);
-  --border-glow: rgba(127, 197, 232, 0.42);
-
-  --glass-blur: 16px;
-  --glass-blur-strong: 26px;
-  --glass-saturate: 130%;
-  --glass-highlight: rgba(245, 235, 220, 0.1);
-  --glass-shadow: 0 6px 24px rgba(0, 0, 0, 0.5), 0 1px 4px rgba(0, 0, 0, 0.32);
-  --glass-edge: inset 0 1px 0 rgba(245, 235, 220, 0.08), inset 0 0 0 1px rgba(127, 197, 232, 0.08);
-  --glass-sheen: linear-gradient(135deg, rgba(201,233,250,0.1) 0%, rgba(127,197,232,0.04) 38%, rgba(255,255,255,0) 62%);
-
-  --accent: var(--brand);
-  --accent-hover: var(--brand-bright);
-  --accent-dim: rgba(127, 197, 232, 0.15);
-  --accent-glow: rgba(127, 197, 232, 0.32);
-  --accent-companion: #9FE3C0;
-  --accent-gradient: linear-gradient(135deg, #7FC5E8 0%, #9FE3C0 100%);
-  --on-accent: #120F0A;
-  --shadow-glow-accent: 0 6px 26px rgba(127, 197, 232, 0.4);
-
-  --text-primary: #F0EAE0;
-  --text-secondary: #B5AA98;
-  --text-tertiary: #7A7060;
-  --text-accent-strong: #B8E4F8;
-
-  --correct: #3DDC97;
-  --correct-bg: rgba(61, 220, 151, 0.14);
-  --wrong: #FF6B6B;
-  --wrong-bg: rgba(255, 107, 107, 0.14);
-  --locked: #333A4A;
-
-  --subject-physics: #7FC5E8;
-  --subject-chemistry: #3DDC97;
-  --subject-economics: #FFC24B;
-  --subject-biology: #FF7FB0;
-  --subject-cs: #4FD6EA;
-  --subject-history: #E0A96D;
-  --subject-general: #9FE3C0;
-
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.25);
-  --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.45), 0 2px 4px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 14px 38px rgba(0, 0, 0, 0.55), 0 4px 8px rgba(0, 0, 0, 0.35);
-
-  --aurora-1: rgba(186, 230, 253, 0.18);
-  --aurora-2: rgba(254, 202, 180, 0.12);
-  --aurora-3: rgba(167, 243, 208, 0.14);
-}
-
-/* ── Dusk (twilight) — a sunset evening: deep teal night warmed by peach
-   and rose light. The most atmospheric room; still zero violet. ── */
+/* ── Ink (dark) — pitch black canvas with sky-blue accent. ── */
+html[data-theme="dark"],
 html[data-theme="twilight"] {
   color-scheme: dark;
 
-  --ambient-a: rgba(255, 176, 140, 0.1);
-  --ambient-b: rgba(127, 197, 232, 0.08);
-  --scrim: rgba(6, 12, 16, 0.55);
+  --brand: #38BDF8;
+  --brand-strong: #7DD3FC;
+  --brand-bright: #BAE6FD;
+  --brand-soft: rgba(56, 189, 248, 0.12);
 
-  --bg-primary: #142028;
-  --bg-surface: rgba(32, 48, 58, 0.55);
-  --bg-card: rgba(45, 65, 80, 0.85);
-  --bg-card-hover: rgba(55, 78, 95, 0.9);
-  --bg-glass: rgba(22, 34, 42, 0.6);
-  --bg-solid: #192832;
+  --cobalt-deep: #000000;
+  --cobalt-mid: #27272A;
+  --cobalt-vivid: #38BDF8;
+  --cobalt-pale: #38BDF8;
+  --cobalt-wash: rgba(56, 189, 248, 0.1);
+  --cobalt-ink: #000000;
 
-  --cobalt-deep: #101B22;
-  --cobalt-mid: #2E4854;
-  --cobalt-vivid: #FFB08C;
-  --cobalt-pale: #FFDCC9;
-  --cobalt-wash: rgba(255, 176, 140, 0.12);
-  --cobalt-ink: #0B1318;
+  --ambient-a: transparent;
+  --ambient-b: transparent;
 
-  --border-subtle: rgba(255, 220, 201, 0.16);
-  --border-default: rgba(255, 220, 201, 0.24);
-  --border-accent: #FFB08C;
-  --border-glow: rgba(255, 176, 140, 0.38);
+  /* Canvas: PITCH BLACK */
+  --bg-primary: #000000;
+  --bg-surface: #121212;
+  --bg-card: #18181B;
+  --bg-card-hover: #27272A;
+  --bg-glass: rgba(0, 0, 0, 0.88);
+  --bg-solid: #18181B;
+
+  --border-subtle: #27272A;
+  --border-default: #3F3F46;
+  --border-accent: var(--brand);
+  --border-glow: rgba(56, 189, 248, 0.25);
 
   --glass-blur: 16px;
-  --glass-blur-strong: 26px;
-  --glass-saturate: 130%;
-  --glass-highlight: rgba(255, 220, 201, 0.14);
-  --glass-shadow: 0 8px 32px rgba(6, 12, 16, 0.55), 0 1px 4px rgba(6, 12, 16, 0.4);
-  --glass-edge: inset 0 1px 0 rgba(255, 220, 201, 0.12), inset 0 0 0 1px rgba(255, 176, 140, 0.07);
-  --glass-sheen: linear-gradient(135deg, rgba(255,220,201,0.12) 0%, rgba(255,176,140,0.04) 32%, rgba(255,255,255,0) 58%);
+  --glass-blur-strong: 24px;
+  --glass-saturate: 120%;
+  --glass-highlight: rgba(255, 255, 255, 0.05);
+  --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.05), inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+  --glass-sheen: none;
 
-  --brand: #FF9E7A;
-  --brand-strong: #FF854F;
-  --brand-bright: #FFC7AB;
-  --brand-soft: #5C3A28;
+  --accent: var(--brand);
+  --accent-hover: var(--brand-bright);
+  --accent-dim: rgba(56, 189, 248, 0.14);
+  --accent-glow: rgba(56, 189, 248, 0.25);
+  --accent-companion: #38BDF8;
+  --accent-gradient: #38BDF8;
+  --on-accent: #000000;
+  --shadow-glow-accent: 0 4px 20px rgba(56, 189, 248, 0.3);
 
-  --accent: #FF9E7A;
-  --accent-hover: #FFC7AB;
-  --accent-dim: rgba(255, 158, 122, 0.14);
-  --accent-glow: rgba(255, 158, 122, 0.3);
-  --accent-companion: #7FC5E8;
-  --accent-gradient: linear-gradient(135deg, #FFB08C 0%, #F4A6B8 100%);
-  --on-accent: #331507;
-  --shadow-glow-accent: 0 4px 22px rgba(255, 176, 140, 0.3);
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-tertiary: #64748B;
+  --text-accent-strong: #38BDF8;
 
-  --text-primary: #F3EEE8;
-  --text-secondary: #C6BDB2;
-  --text-tertiary: #8C8478;
-  --text-accent-strong: #FFC7AB;
+  --correct: #4ADE80;
+  --correct-bg: rgba(74, 222, 128, 0.12);
+  --wrong: #F87171;
+  --wrong-bg: rgba(248, 113, 113, 0.12);
+  --locked: #3F3F46;
 
-  --correct: #58C795;
-  --correct-bg: rgba(88, 199, 149, 0.14);
-  --wrong: #F08A7E;
-  --wrong-bg: rgba(240, 138, 126, 0.14);
-  --locked: #3E4E58;
+  --subject-physics: #38BDF8;
+  --subject-chemistry: #4ADE80;
+  --subject-economics: #FBBF24;
+  --subject-biology: #F472B6;
+  --subject-cs: #38BDF8;
+  --subject-history: #F59E0B;
+  --subject-general: #38BDF8;
 
-  --subject-physics: #86ACE8;
-  --subject-chemistry: #58C795;
-  --subject-economics: #F3C46B;
-  --subject-biology: #F1A0BC;
-  --subject-cs: #5FD0E0;
-  --subject-history: #D8AE88;
-  --subject-general: #F3A08C;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.6);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.7);
 
-  --shadow-sm: 0 2px 8px rgba(6, 12, 16, 0.5), inset 0 1px 0 rgba(255, 220, 201, 0.08);
-  --shadow-md: 0 6px 20px rgba(6, 12, 16, 0.55), inset 0 1px 0 rgba(255, 220, 201, 0.08);
-  --shadow-lg: 0 14px 40px rgba(6, 12, 16, 0.65), inset 0 1px 0 rgba(255, 220, 201, 0.1);
-
-  --aurora-1: rgba(255, 176, 140, 0.2);
-  --aurora-2: rgba(244, 166, 184, 0.15);
-  --aurora-3: rgba(127, 197, 232, 0.12);
+  --aurora-1: rgba(56, 189, 248, 0.12);
+  --aurora-2: rgba(248, 113, 113, 0.12);
+  --aurora-3: rgba(74, 222, 128, 0.12);
 }
 
 html {
@@ -357,68 +266,17 @@ body {
   contain: layout style paint;
 }
 
-.aurora-blob {
-  position: absolute;
-  width: 52vmax;
-  height: 52vmax;
-  border-radius: 50%;
-  will-change: transform;
-}
-
-.aurora-blob.aurora-a {
-  top: -28vmax;
-  left: -18vmax;
-  background: radial-gradient(circle at center, var(--aurora-1) 0%, transparent 68%);
-  animation: auroraDriftA 90s ease-in-out infinite;
-}
-
-.aurora-blob.aurora-b {
-  bottom: -30vmax;
-  right: -20vmax;
-  background: radial-gradient(circle at center, var(--aurora-2) 0%, transparent 68%);
-  animation: auroraDriftB 72s ease-in-out infinite;
-}
-
-.aurora-blob.aurora-c {
-  top: 20%;
-  left: 30%;
-  width: 54vmax;
-  height: 54vmax;
-  background: radial-gradient(circle at center, var(--aurora-3) 0%, transparent 68%);
-  animation: auroraDriftA 110s ease-in-out -35s infinite reverse;
-}
-
-@keyframes auroraDriftA {
-  0%, 100% { transform: translate3d(-4%, -3%, 0) scale(1); }
-  50% { transform: translate3d(5%, 4%, 0) scale(1.12); }
-}
-
-@keyframes auroraDriftB {
-  0%, 100% { transform: translate3d(3%, 4%, 0) scale(1.08); }
-  50% { transform: translate3d(-5%, -3%, 0) scale(0.96); }
+.aurora-bg {
+  display: none !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Liquid glass system — Apple-style frosted, translucent, specular surfaces.
-   Any element carrying a translucent --bg-* token becomes "glass" once it has
-   backdrop-filter. These utilities + the reusable class package that together.
+   Pure solid background canvas; elements opt-in to glass styling.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Ambient gradient — two whisper-quiet washes of the accent air: one
-   cool light from the upper-right, one soft pool at the foot of the page.
-   Depth without decoration. ── */
 html::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -2;
-  pointer-events: none;
-  contain: layout style paint;
-  background:
-    radial-gradient(ellipse at 82% -8%, var(--ambient-a) 0%, transparent 55%),
-    radial-gradient(ellipse at 30% 104%, var(--ambient-b) 0%, transparent 52%),
-    radial-gradient(ellipse at -6% 40%, var(--aurora-3) 0%, transparent 42%);
-  opacity: 0.95;
+  display: none !important;
 }
 
 /* The reusable glass surface. Ultra-frosted, luminous, Apple-style. */
@@ -501,40 +359,9 @@ html::before {
 
 /* Fine grain — a whisper only. The Bold Canvas reads as a crisp digital
    surface, not paper stock; the grain just kills banding on the washes. */
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  contain: layout style paint;
-  opacity: 0.025;
-  mix-blend-mode: multiply;
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E"),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.004 0.09' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='420' height='420' filter='url(%23w)' opacity='0.32'/%3E%3C/svg%3E");
-  background-size: 180px 180px, 420px 420px;
-}
-
-/* Soft mottle — large, low-frequency organic blotches that break up the flat
-   field so no two regions of a surface look identical. Composite once. */
+body::after,
 body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  contain: layout style paint;
-  opacity: 0.2;
-  mix-blend-mode: soft-light;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='600' height='600' filter='url(%23m)' opacity='0.6'/%3E%3C/svg%3E");
-  background-size: 720px 720px;
-}
-/* On the dark themes the mottle reads as cloudy patches rather than paper —
-   keep only a hint of it. */
-html[data-theme="dark"] body::before,
-html[data-theme="twilight"] body::before {
-  opacity: 0.18;
+  display: none !important;
 }
 
 /* Micro-noise overlay — a finer, higher-frequency grain that gives interactive
@@ -1119,66 +946,35 @@ a:active {
 }
 .hero__stage {
   width: 100%;
-  max-width: 800px;
+  max-width: 768px;
   position: relative;
-  overflow: hidden;
 }
-@media (min-width: 1024px) {
-  .hero__stage {
-    max-width: 1200px;
-  }
-}
-.hero__stage::before,
-.hero__stage::after {
-  content: "";
-  position: absolute;
-  pointer-events: none;
-  z-index: 0;
-}
-/* Three overlapping pools of pastel light behind the hero — sky from the
-   center, peach from the upper right, mint low left — so the question box
-   sits in the warmest, brightest spot on the page. */
 .hero__stage::before {
-  inset: 6px;
-  border-radius: var(--radius-2xl);
-  opacity: 1;
-  background:
-    radial-gradient(ellipse at 46% 44%, var(--accent-dim) 0%, transparent 62%),
-    radial-gradient(ellipse at 82% 8%, var(--aurora-2) 0%, transparent 56%),
-    radial-gradient(ellipse at 10% 90%, var(--aurora-3) 0%, transparent 52%);
+  display: none !important;
 }
 .hero__stage::after {
-  left: 50%;
-  bottom: 0;
-  width: min(520px, 82vw);
-  height: 1px;
-  transform: translateX(-50%);
-  opacity: 0.5;
-  background: linear-gradient(90deg, transparent, var(--border-default), transparent);
+  display: none !important;
 }
 .hero__content { position: relative; z-index: 1; }
-.hero__greeting { margin-top: 24px; }
+.hero__greeting { margin-top: 16px; }
 .hero__title {
   margin: 0;
   font-family: var(--font-display);
   font-weight: 700;
-  line-height: 0.98;
-  letter-spacing: -0.045em;
-  font-size: clamp(46px, 9vw, 88px);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  font-size: clamp(32px, 6vw, 48px);
   color: var(--text-primary);
 }
 @media (min-width: 1024px) {
   .hero__title {
-    font-size: clamp(88px, 11vw, 140px);
-    line-height: 0.95;
-    letter-spacing: -0.05em;
+    font-size: clamp(44px, 4vw, 56px);
+    line-height: 1.1;
+    letter-spacing: -0.035em;
   }
 }
 .hero__title-name {
-  background: var(--accent-gradient);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
+  color: var(--accent);
 }
 .hero__spacer { height: 76px; }
 .hero__input-row {
@@ -2793,82 +2589,68 @@ p {
   max-width: 680px;
   width: 100%;
   position: relative;
-  border-radius: var(--radius-2xl);
-  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-subtle);
   background: var(--bg-card);
-  box-shadow:
-    0 22px 60px -18px var(--aurora-1),
-    0 12px 40px -14px var(--aurora-2),
-    var(--glass-shadow), var(--glass-edge);
-  transition: all 500ms var(--ease-color);
+  box-shadow: var(--shadow-md);
+  transition: all 200ms var(--ease-color);
 }
 @media (min-width: 1024px) {
   .q-form {
-    max-width: 900px;
-    margin-top: 40px;
-    border-radius: 36px;
+    max-width: 720px;
+    margin-top: 28px;
+    border-radius: var(--radius-xl);
   }
-}
-/* The ask card wears the pastels: a sky wash from the top-left melting into
-   peach at the bottom-right, over the card base — soft, airy, unmistakably
-   pastel without hurting readability. */
-.q-form {
-  background-image:
-    linear-gradient(125deg, var(--aurora-1) 0%, transparent 42%, transparent 58%, var(--aurora-2) 100%),
-    linear-gradient(var(--bg-card), var(--bg-card));
 }
 .q-form__body {
   position: relative;
 }
 .q-form__body::before {
-  content: "Ask with curiosity";
+  content: "Ask anything";
   position: absolute;
-  top: 8px;
-  left: 32px;
+  top: 12px;
+  left: 20px;
   color: var(--accent);
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 0.18em;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  opacity: 0.72;
+  opacity: 0.8;
 }
 @media (min-width: 1024px) {
   .q-form__body::before {
     top: 14px;
-    left: 48px;
-    font-size: 12px;
+    left: 24px;
+    font-size: 11px;
   }
 }
 .q-form--focused {
   border-color: var(--border-accent);
-  box-shadow:
-    0 26px 70px -18px var(--aurora-1),
-    0 14px 44px -14px var(--aurora-2),
-    var(--shadow-lg), 0 0 0 6px var(--accent-glow), var(--glass-edge);
+  box-shadow: var(--shadow-lg), 0 0 0 3px var(--accent-glow);
 }
-.q-form__body { padding: 34px 32px 18px; }
+.q-form__body { padding: 32px 20px 14px; }
 @media (min-width: 1024px) {
-  .q-form__body { padding: 48px 48px 24px; }
+  .q-form__body { padding: 36px 24px 16px; }
 }
 .q-form__textarea {
   width: 100%;
-  min-height: 64px;
-  max-height: 180px;
+  min-height: 56px;
+  max-height: 160px;
   resize: none;
   border: none;
   outline: none;
   background: transparent;
   color: var(--text-primary);
-  font-size: 17px;
-  line-height: 1.6;
-  font-family: var(--font-lora);
+  font-size: 16px;
+  line-height: 1.5;
+  font-family: var(--font-inter), sans-serif;
 }
 @media (min-width: 1024px) {
   .q-form__textarea {
-    font-size: 24px;
+    font-size: 18px;
     line-height: 1.5;
-    min-height: 80px;
-    max-height: 240px;
+    min-height: 64px;
+    max-height: 200px;
   }
 }
 .q-form__listening {
@@ -2881,7 +2663,7 @@ p {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 12px;
+  margin-top: 10px;
   min-height: 24px;
 }
 .q-form__hint {
@@ -2909,15 +2691,15 @@ p {
   color: var(--text-secondary);
 }
 .q-form__modes {
-  padding: 0 24px 20px;
+  padding: 0 20px 16px;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 @media (min-width: 1024px) {
   .q-form__modes {
-    padding: 0 48px 24px;
+    padding: 0 24px 18px;
   }
 }
 .q-form__mode-hint {
@@ -2926,25 +2708,25 @@ p {
   font-weight: 500;
 }
 
-/* Answer-mode toggle: a sliding pill that glides between Fast / Explain. */
+/* Answer-mode toggle: a solid sliding pill that glides between Fast / Explain. */
 .mode-glider {
   position: relative;
   display: inline-flex;
-  padding: 5px;
+  padding: 3px;
   gap: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-subtle);
   background: var(--bg-surface);
 }
 .mode-glider__pill {
   position: absolute;
-  top: 5px;
-  bottom: 5px;
-  left: 5px;
-  border-radius: 999px;
-  background: var(--accent-gradient);
-  box-shadow: var(--shadow-glow-accent);
-  transition: transform 420ms var(--ease-spring);
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  box-shadow: var(--shadow-sm);
+  transition: transform 300ms var(--ease-spring);
   will-change: transform;
 }
 .mode-glider__option {
