@@ -330,6 +330,8 @@ this protocol. No exceptions.**
   Refined profanity/slur moderation filtering in `backend/src/lib/moderation.js` to exclude non-profane educational terms (`balls`, `homo`, `screw`, `butt`, `tit`, `dick`, `cock`, `penetrate`, `penetration`). Resolves false-positive moderation blocks on legitimate learner questions and AI-generated lessons covering cricket (power hitter, bowling 6 balls in an over, wrist movement), social media recommendation algorithms (for-you-page / FYP), game theory (tit for tat), history/sports (Dick Fosbury), biology (Homo sapiens, cell membrane penetration), and marketing/physics (market / radar penetration). Harmful intent detection remains 100% active via `containsHarmfulContent()`. Expanded `backend/test/moderation.test.js` regression suite.
 - 2026-07-26 — **Gen Z / Gen Alpha Voice & Slang Prompt Refresh.**
   Updated system prompts in `backend/src/lib/prompts.js` (`GENERATE_FAST_ANSWER_PROMPT` and `GENERATE_LESSON_PROMPT`) to actively and naturally incorporate modern Gen Z and Gen Alpha slang ("cooked", "lowkey", "main character", "rent free", "aura", "massive W", "buffed/nerfed", "real ones know", "glitch", "fr fr", "no cap", "brainrot") and digital culture analogies into explanations, titles, and key takeaways, while maintaining high educational clarity and accuracy.
+- 2026-07-26 — **Locked Gen Z Dark Design System.**
+  Applied locked Gen Z aesthetic to `frontend/app/globals.css`: Space Grotesk bold headings (700-800 weight), Inter ultra-bold body (700-800 weight), locked dark palette (`#0B0E14` background, `#00FF66` dominant green, `#FF3E00` action accent), and educational AI soft rounded corner radii (12px–24px, no neo-brutalism).
 
 
 
