@@ -39,8 +39,23 @@ function isModerationEnabled() {
   return !["false", "0", "off", "no"].includes(raw);
 }
 
+const EDUCATIONAL_EXCLUDED_WORDS = [
+  "god",
+  "balls",
+  "homo",
+  "screw",
+  "butt",
+  "tit",
+  "dick",
+  "cock",
+  "penetrate",
+  "penetration",
+];
+
 const profanityFilter = new Filter({ placeHolder: "*" });
-profanityFilter.removeWords("god");
+profanityFilter.removeWords(...EDUCATIONAL_EXCLUDED_WORDS);
+
+const EDUCATIONAL_EXCLUDED_SET = new Set(EDUCATIONAL_EXCLUDED_WORDS);
 
 // IMPORTANT — do NOT re-add blanket topic keywords here (e.g. "bomb", "gun",
 // "kill", "terrorism", "suicide", "hack", "rap", "grooming"). Whole-word bans
@@ -64,6 +79,8 @@ const TEEN_MIN_INTENSITY = 2;
 const TOPIC_ONLY_CATEGORIES = new Set(["violence", "drug"]);
 
 function isNonTopicMatch(match) {
+  if (!match || !match.word) return true;
+  if (EDUCATIONAL_EXCLUDED_SET.has(match.word.toLowerCase())) return false;
   const cats = match?.categories;
   if (!Array.isArray(cats) || cats.length === 0) return true;
   return cats.some((category) => !TOPIC_ONLY_CATEGORIES.has(category));
