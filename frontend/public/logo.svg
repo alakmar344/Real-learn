@@ -1,10 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40" fill="none">
-  <!-- Tricolor stripe: saffron, white, green -->
-  <rect x="0" y="0" width="40" height="40" fill="#FF9933"/>
-  <rect x="40" y="0" width="40" height="40" fill="#FFFFFF"/>
-  <rect x="80" y="0" width="40" height="40" fill="#138808"/>
-  <!-- RL text with dark contrast -->
-  <text x="28" y="26" font-family="Inter, sans-serif" font-weight="800" font-size="17" fill="#1a0f05" text-anchor="middle">R</text>
-  <text x="68" y="26" font-family="Inter, sans-serif" font-weight="800" font-size="17" fill="#1a0f05" text-anchor="middle">L</text>
-  <text x="108" y="26" font-family="Inter, sans-serif" font-weight="800" font-size="17" fill="#1a0f05" text-anchor="middle">earn</text>
+  <defs>
+    <linearGradient id="rl" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3D5AFE"/>
+      <stop offset="0.55" stop-color="#7C4DFF"/>
+      <stop offset="1" stop-color="#FF4D6D"/>
+    </linearGradient>
+  </defs>
+  <!-- Electric brand badge -->
+  <rect x="0" y="0" width="40" height="40" rx="12" fill="url(#rl)"/>
+  <text x="20" y="27" font-family="Inter, system-ui, sans-serif" font-weight="800" font-size="18" fill="#FFFFFF" text-anchor="middle">RL</text>
+  <!-- Wordmark -->
+  <text x="50" y="27" font-family="Inter, system-ui, sans-serif" font-weight="800" font-size="18" fill="#14161F">earn</text>
 </svg>

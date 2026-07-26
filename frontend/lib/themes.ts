@@ -2,7 +2,7 @@ import { Theme } from "@/types";
 
 /**
  * Single source of truth for theme pickers (ThemeModal, PreferenceModal,
- * Settings) — the three moods of the Still Ink design language.
+ * Settings) — the three rooms of the Bold Canvas design language.
  * `bg` mirrors each theme's --bg-primary (used for the browser theme-color);
  * `swatch`/`accent` drive the picker preview.
  */
@@ -20,26 +20,26 @@ export interface ThemeOption {
 export const THEME_OPTIONS: ThemeOption[] = [
   {
     value: "light",
-    label: "Paper",
-    hint: "Soft cream washed with pastel sky and peach — warm daylight",
-    bg: "#FDF9F3",
-    swatch: "#FDF9F3",
-    accent: "#0284C7",
+    label: "Canvas",
+    hint: "Crisp cool-white daylight with an electric-blue charge",
+    bg: "#F6F7FB",
+    swatch: "#F6F7FB",
+    accent: "#3D5AFE",
   },
   {
     value: "dark",
-    label: "Ink",
-    hint: "Warm charcoal night lit by pastel sky and peach",
-    bg: "#12161C",
-    swatch: "#12161C",
-    accent: "#7FC5E8",
+    label: "Void",
+    hint: "Deep OLED night with a bright electric-blue accent",
+    bg: "#0B0D14",
+    swatch: "#0B0D14",
+    accent: "#6C8BFF",
   },
   {
     value: "twilight",
     label: "Dusk",
-    hint: "Teal evening warmed by peach and rose — sunset calm",
+    hint: "Teal evening warmed by coral and rose — sunset energy",
     bg: "#142028",
     swatch: "#142028",
-    accent: "#FFB08C",
+    accent: "#FF9E7A",
   },
 ];

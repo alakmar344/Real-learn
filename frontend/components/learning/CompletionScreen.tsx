@@ -14,15 +14,15 @@ interface Props {
   onRetake?: () => void;
 }
 
-/* ── Confetti particles — brand palette, restrained not rainbow ── */
+/* ── Confetti particles — electric brand palette, punchy not rainbow ── */
 const CONFETTI_COLORS = [
-  "#7FC5E8",
-  "#0284C7",
-  "#9FE3C0",
-  "#FFB08C",
-  "#F4A6B8",
-  "#FFD98E",
-  "#58C795",
+  "#3D5AFE",
+  "#6C8BFF",
+  "#7C4DFF",
+  "#FF4D6D",
+  "#FF6B85",
+  "#3DDC97",
+  "#FFC24B",
 ];
 
 /** Generate contextual follow-up suggestions based on the lesson topic and takeaways. */
@@ -138,8 +138,8 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
           <svg width="100" height="100" viewBox="0 0 100 100">
             <defs>
               <linearGradient id="score-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#7FC5E8" />
-                <stop offset="100%" stopColor="#0284C7" />
+                <stop offset="0%" stopColor="#3D5AFE" />
+                <stop offset="100%" stopColor="#7C4DFF" />
               </linearGradient>
             </defs>
             <circle cx="50" cy="50" r="42" fill="none" stroke="var(--border-subtle)" strokeWidth="6" />
