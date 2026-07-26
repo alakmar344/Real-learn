@@ -56,28 +56,9 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
       const ctx = canvas.getContext("2d");
       if (!ctx) return resolve(null);
 
-      // Rich dark gradient — warm charcoal with depth
-      const bgGrad = ctx.createRadialGradient(W / 2, H * 0.35, 80, W / 2, H / 2, H);
-      bgGrad.addColorStop(0, "#2A2218");
-      bgGrad.addColorStop(0.45, "#1E1A14");
-      bgGrad.addColorStop(0.85, "#140F0A");
-      bgGrad.addColorStop(1, "#0E0A06");
-      ctx.fillStyle = bgGrad;
+      // Solid electric dark canvas
+      ctx.fillStyle = "#121620";
       ctx.fillRect(0, 0, W, H);
-
-      // Soft glowing orbs for depth
-      const orb = (ox: number, oy: number, r: number, color: string) => {
-        const g = ctx.createRadialGradient(ox, oy, r * 0.1, ox, oy, r);
-        g.addColorStop(0, color);
-        g.addColorStop(1, "rgba(0,0,0,0)");
-        ctx.fillStyle = g;
-        ctx.beginPath();
-        ctx.arc(ox, oy, r, 0, Math.PI * 2);
-        ctx.fill();
-      };
-      orb(W * 0.15, H * 0.12, 340, "rgba(186, 230, 253, 0.35)");
-      orb(W * 0.85, H * 0.22, 280, "rgba(254, 202, 180, 0.22)");
-      orb(W * 0.5, H * 0.75, 420, "rgba(2, 132, 199, 0.18)");
 
       // Subtle grid texture
       ctx.strokeStyle = "rgba(255, 255, 255, 0.04)";

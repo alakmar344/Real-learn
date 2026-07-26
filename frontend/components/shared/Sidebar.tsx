@@ -114,13 +114,7 @@ export default function Sidebar({ open, onClose }: Props) {
             }}
           >
             <svg viewBox="0 0 120 40" fill="none" aria-hidden="true" style={{ width: 38, height: 38, flexShrink: 0 }}>
-              <defs>
-                <linearGradient id="sidebar-logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#0284C7" />
-                  <stop offset="100%" stopColor="#0D9488" />
-                </linearGradient>
-              </defs>
-              <rect width="40" height="40" rx="12" fill="url(#sidebar-logo-gradient)" />
+              <rect width="40" height="40" rx="12" fill="var(--accent)" />
               <text x="9" y="27" fontFamily="Inter, sans-serif" fontWeight="900" fontSize="17" fill="white">
                 RL
               </text>

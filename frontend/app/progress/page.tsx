@@ -194,7 +194,7 @@ export default function ProgressPage() {
                         position: "relative",
                         width: `${Math.round(info.progress * 100)}%`,
                         height: "100%",
-                        background: "linear-gradient(90deg, var(--accent), var(--accent-hover))",
+                        background: "var(--accent)",
                         borderRadius: 999,
                         transition: "width 700ms var(--ease-reveal)",
                         overflow: "hidden",
