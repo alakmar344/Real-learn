@@ -332,8 +332,15 @@ this protocol. No exceptions.**
   Updated system prompts in `backend/src/lib/prompts.js` (`GENERATE_FAST_ANSWER_PROMPT` and `GENERATE_LESSON_PROMPT`) to actively and naturally incorporate modern Gen Z and Gen Alpha slang ("cooked", "lowkey", "main character", "rent free", "aura", "massive W", "buffed/nerfed", "real ones know", "glitch", "fr fr", "no cap", "brainrot") and digital culture analogies into explanations, titles, and key takeaways, while maintaining high educational clarity and accuracy.
 - 2026-07-26 — **Locked Gen Z Dark Design System.**
   Applied locked Gen Z aesthetic to `frontend/app/globals.css`: Space Grotesk bold headings (700-800 weight), Inter ultra-bold body (700-800 weight), locked dark palette (`#0B0E14` background, `#00FF66` dominant green, `#FF3E00` action accent), and educational AI soft rounded corner radii (12px–24px, no neo-brutalism).
+ fix/lite-mode-ai-response-readability
+- 2026-07-26 — **Curated Light (Paper) & Dark (Ink) Themes + Twilight Removal.**
+  Fixed text contrast issues (white-on-white) by curating two fully distinct themes. Light (Paper): bright off-white canvas (`#F8FAF9`), deep slate text (`#0F172A`), vivid green accent (`#00CC52`), white-on-green CTA buttons. Dark (Ink): locked off-black (`#0B0E14`), pure white text (`#FFFFFF`), electric green (`#00FF66`), dark-on-green CTA buttons. Removed `twilight` theme entirely from `types/index.ts`, `lib/themes.ts`, `store/preferenceStore.ts`, `layout.tsx` themeInitScript, `globals.css` selectors, and `ThingsComingModal.tsx` copy. Amplified `.btn-primary` to `font-weight: 800` and `letter-spacing: 0.02em`.
+- 2026-07-26 — **Lite Mode AI Response Readability & High-Contrast Typography Overhaul.**
+  Resolved low-contrast text issue where AI response text blocks appeared dim/dark in Light / Lite Mode (Paper theme). Updated `.markdown-content` typography, paragraphs, blockquotes, lists, and code blocks in `globals.css` and `PartCard.tsx` to strictly consume `--text-primary` (`#0F172A` in light mode, `#FFFFFF` in dark mode). Added explicit `.markdown-content pre` and `.markdown-content table` rules with `var(--bg-solid)` and `var(--border-default)` borders, ensuring 100% crisp readability across all lesson parts, fast mode answers, summary cards, and completion screens.
+
 - 2026-07-26 — **Solid-Color Bold Electric Design System Overhaul.**
   Transformed the entire UI to be bolder, electric, and strictly powered by solid colors. Purged all linear, radial, repeating, and text-clip gradients across `globals.css` and core components (`CompletionScreen`, `Sidebar`, `ShareResult`, `UnlockAnimation`, `ReadingProgressBar`, `ThemeModal`, `PreferenceModal`, `settings`). Reinforced typography to weights 700–800, strengthened card/button/chip borders to 2px solid outlines, and used vibrant solid electric accents (`#00CC52` in Paper daylight, `#00FF66` in Ink dark, `#FF3E00` action accent). Verified clean `tsc` build and strict Rule 4 compliance (zero purple/violet).
+ main
 
 
 

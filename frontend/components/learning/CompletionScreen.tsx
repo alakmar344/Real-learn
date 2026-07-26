@@ -172,10 +172,7 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
               margin: 0,
               fontSize: 30,
               fontWeight: 800,
-              background: "var(--accent)",
-              backgroundClip: "text",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
+              color: "var(--accent)",
             }}
           >
             {(lesson.parts?.length ?? 3) === 1 ? "Quick W" : "Run Complete"}
