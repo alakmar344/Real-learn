@@ -20,14 +20,13 @@ export default function UnlockAnimation({ show }: { show: boolean }) {
           inset: 0,
         }}
       />
-      {/* Radial glow burst from the center */}
+      {/* Solid glow flash from the center */}
       <div
         className="animate-glow-burst"
         style={{
           position: "absolute",
           inset: 0,
-          background:
-            "radial-gradient(circle at 50% 60%, var(--accent-glow) 0%, transparent 55%)",
+          background: "var(--accent)",
           opacity: 0,
         }}
       />

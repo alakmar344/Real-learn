@@ -62,7 +62,7 @@ export default function ReadingProgressBar() {
         style={{
           height: "100%",
           width: `${progress * 100}%`,
-          background: "var(--accent-gradient)",
+          background: "var(--accent)",
           boxShadow: "0 0 8px var(--accent-glow)",
           borderRadius: "0 3px 3px 0",
           transformOrigin: "left center",

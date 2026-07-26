@@ -136,19 +136,13 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
       <div style={{ display: "flex", alignItems: "center", gap: varSpaceLg, flexWrap: "wrap" }}>
         <div style={{ position: "relative", width: 100, height: 100, flexShrink: 0 }} aria-hidden="true">
           <svg width="100" height="100" viewBox="0 0 100 100">
-            <defs>
-              <linearGradient id="score-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#0284C7" />
-                <stop offset="100%" stopColor="#0D9488" />
-              </linearGradient>
-            </defs>
             <circle cx="50" cy="50" r="42" fill="none" stroke="var(--border-subtle)" strokeWidth="6" />
             <circle
               cx="50"
               cy="50"
               r="42"
               fill="none"
-              stroke="url(#score-gradient)"
+              stroke="var(--accent)"
               strokeWidth="6"
               strokeDasharray={circumference}
               strokeDashoffset={offset}
