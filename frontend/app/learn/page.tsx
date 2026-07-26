@@ -18,6 +18,7 @@ import { useProgressStore } from "@/store/progressStore";
 import { useSavedJourneysStore, journeySignature } from "@/store/savedJourneysStore";
 import { useLesson } from "@/hooks/useLesson";
 import { useMounted } from "@/hooks/useMounted";
+import { Skeleton, SkeletonCard } from "@/components/shared/Skeleton";
 import { triggerHaptic } from "@/lib/haptics";
 import { LessonJourney, LessonPart } from "@/types";
 import { useShallow } from "zustand/shallow";
@@ -225,8 +226,15 @@ export default function LearnPage() {
     return (
       <>
         <LiveRegion />
-        <main style={{ minHeight: "100vh" }}>
+        <main style={{ minHeight: "100vh", color: "var(--text-primary)" }}>
           <Navbar />
+          <div style={{ maxWidth: 920, margin: "0 auto", padding: "20px clamp(16px, 4vw, 48px) 80px", display: "flex", flexDirection: "column", gap: 16 }} aria-label="Loading lesson...">
+            <Skeleton height={40} width="60%" borderRadius="8px" />
+            <Skeleton height={24} width="100%" borderRadius="12px" />
+            <SkeletonCard height={180} />
+            <SkeletonCard height={180} />
+            <SkeletonCard height={180} />
+          </div>
         </main>
       </>
     );

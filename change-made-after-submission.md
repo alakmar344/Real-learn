@@ -941,6 +941,8 @@ vendors). All of these live between `2b239b5` (start) and now:
 | 2026-07-24 | docs | Add Render Post Deploy Command instructions (`cd backend && npm run ping:google-ai-studio`) to README so the Google AI Studio ping runs automatically after each backend deploy and logs to Render. Documented `GOOGLE_AI_STUDIO_API_KEY` as optional env var. |
 | 2026-07-26 | `desktop-overhaul` | Desktop UI Overhaul & Responsive Refinement: expanded hero stage (920px) and question input (880px), restored logical hero hierarchy (greeting → input → sparks), deduplicated brand header on desktop, removed redundant sidebar App Tour button, and fixed PartCard text container to 100% width on desktop. |
 | 2026-07-26 | `hero-responsive-order` | Hero Spark Responsive Ordering: CSS flexbox order rule to render Today's Spark on top on mobile screens, and under the question input on desktop monitors. |
+| 2026-07-26 | `solid-skeleton-system` | Solid-Color Skeleton Loaders & Snappy Performance Pass: created reusable `Skeleton.tsx` component with pure CSS opacity pulse and solid Soft-Pastel background tokens (`var(--bg-surface)`). Replaced layout-shift blank empty spacer `div`s across Progress, Settings, Learn, and Home pages. Strict compliance with Rule 4 (zero GPU layer forcing, zero purple/violet, zero overlapping translucent gradients). |
+
 
 ---
 

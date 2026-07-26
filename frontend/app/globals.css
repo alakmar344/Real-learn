@@ -662,6 +662,12 @@ html[data-theme="twilight"] h4 {
   animation: shimmer 3s linear infinite;
 }
 
+/* ── Solid-color Skeleton Pulse (No GPU acceleration, no color overlaps) ── */
+.skeleton-pulse {
+  animation: skeletonPulse 1.8s ease-in-out infinite;
+}
+
+
 /* ── Double hairline border — an outer neutral line + an accent-tinted inner
    line, which reads as "engraved" / letterpress rather than a single flat
    stroke. Apply to cards/panels that should feel considered. ── */
@@ -855,6 +861,11 @@ a:active {
 @keyframes shimmer {
   from { background-position: -200% 0; }
   to { background-position: 200% 0; }
+}
+
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
 }
 
 @keyframes spin {
