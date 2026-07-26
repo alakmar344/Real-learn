@@ -32,6 +32,16 @@ const ALLOWED_QUESTIONS = [
   "What were the torture methods used during the Inquisition?",
   "What is cocaine and why is it addictive?",
   "How do I shoot a basketball with better form?",
+  "how can be a power hitter in cricket",
+  "how is for you page know me so well",
+  "bowling 6 balls in an over",
+  "tit for tat strategy in game theory",
+  "Dick Fosbury flop in high jump",
+  "evolution of Homo sapiens",
+  "how to cock the wrist when hitting a cricket ball",
+  "market penetration strategy in business",
+  "how viruses penetrate host cell membrane",
+  "light penetration in oceanography",
 ];
 
 const ALLOWED_RESPONSES = [
