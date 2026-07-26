@@ -2,7 +2,7 @@ import { Theme } from "@/types";
 
 /**
  * Single source of truth for theme pickers (ThemeModal, PreferenceModal,
- * Settings) — the three rooms of the Bold Canvas design language.
+ * Settings) — the three rooms of the Soft Pastel design language.
  * `bg` mirrors each theme's --bg-primary (used for the browser theme-color);
  * `swatch`/`accent` drive the picker preview.
  */
@@ -20,24 +20,24 @@ export interface ThemeOption {
 export const THEME_OPTIONS: ThemeOption[] = [
   {
     value: "light",
-    label: "Canvas",
-    hint: "Crisp cool-white daylight with an electric-blue charge",
-    bg: "#F6F7FB",
-    swatch: "#F6F7FB",
-    accent: "#3D5AFE",
+    label: "Paper",
+    hint: "Warm cream daylight with a sky-blue accent",
+    bg: "#FFFDF8",
+    swatch: "#FFFDF8",
+    accent: "#0284C7",
   },
   {
     value: "dark",
-    label: "Void",
-    hint: "Deep OLED night with a bright electric-blue accent",
-    bg: "#0B0D14",
-    swatch: "#0B0D14",
-    accent: "#6C8BFF",
+    label: "Ink",
+    hint: "Warm charcoal night with a soft sky-blue accent",
+    bg: "#1A1814",
+    swatch: "#1A1814",
+    accent: "#7FC5E8",
   },
   {
     value: "twilight",
     label: "Dusk",
-    hint: "Teal evening warmed by coral and rose — sunset energy",
+    hint: "Teal evening warmed by peach and rose — sunset warmth",
     bg: "#142028",
     swatch: "#142028",
     accent: "#FF9E7A",

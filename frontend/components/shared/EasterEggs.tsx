@@ -28,7 +28,7 @@ const SECRET_WORDS: Record<string, string> = {
   love: "💛 We love that you're here. Truly.",
 };
 
-const CONFETTI_COLORS = ["#3D5AFE", "#6C8BFF", "#7C4DFF", "#FF4D6D", "#FF6B85", "#3DDC97", "#FFC24B"];
+const CONFETTI_COLORS = ["#0284C7", "#38BDF8", "#0D9488", "#FECAB4", "#F4A6B8", "#3DDC97", "#FFC24B"];
 const HEARTS = ["💛", "💜", "💙", "💚", "🧡", "❤️", "💖"];
 
 function todayKey() {

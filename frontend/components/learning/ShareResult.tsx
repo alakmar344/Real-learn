@@ -56,12 +56,12 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
       const ctx = canvas.getContext("2d");
       if (!ctx) return resolve(null);
 
-      // Rich dark gradient — purple core to teal edges
+      // Rich dark gradient — warm charcoal with depth
       const bgGrad = ctx.createRadialGradient(W / 2, H * 0.35, 80, W / 2, H / 2, H);
-      bgGrad.addColorStop(0, "#20244A");
-      bgGrad.addColorStop(0.45, "#161936");
-      bgGrad.addColorStop(0.85, "#0D0F22");
-      bgGrad.addColorStop(1, "#080914");
+      bgGrad.addColorStop(0, "#2A2218");
+      bgGrad.addColorStop(0.45, "#1E1A14");
+      bgGrad.addColorStop(0.85, "#140F0A");
+      bgGrad.addColorStop(1, "#0E0A06");
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, W, H);
 
@@ -75,9 +75,9 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
         ctx.arc(ox, oy, r, 0, Math.PI * 2);
         ctx.fill();
       };
-      orb(W * 0.15, H * 0.12, 340, "rgba(124, 77, 255, 0.35)");
-      orb(W * 0.85, H * 0.22, 280, "rgba(255, 77, 109, 0.22)");
-      orb(W * 0.5, H * 0.75, 420, "rgba(61, 90, 254, 0.18)");
+      orb(W * 0.15, H * 0.12, 340, "rgba(186, 230, 253, 0.35)");
+      orb(W * 0.85, H * 0.22, 280, "rgba(254, 202, 180, 0.22)");
+      orb(W * 0.5, H * 0.75, 420, "rgba(2, 132, 199, 0.18)");
 
       // Subtle grid texture
       ctx.strokeStyle = "rgba(255, 255, 255, 0.04)";
@@ -100,7 +100,7 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
       ctx.font = "900 92px Inter, sans-serif";
       ctx.fillStyle = "#ffffff";
       ctx.fillText("Real", W / 2 + 10, 180);
-      ctx.fillStyle = "#A9BAFF";
+      ctx.fillStyle = "#7FC5E8";
       ctx.fillText("Learn", W / 2 + 10, 280);
       ctx.font = "600 36px Inter, sans-serif";
       ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
@@ -134,7 +134,7 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
       const dot = (dx: number, dy: number) => {
         ctx.beginPath();
         ctx.arc(72 + dx, boxY + dy, 6, 0, Math.PI * 2);
-        ctx.fillStyle = "#A9BAFF";
+        ctx.fillStyle = "#0284C7";
         ctx.fill();
       };
       dot(0, 0);
@@ -143,7 +143,7 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
       dot(W - 72 - 72, 480);
 
       ctx.textAlign = "center";
-      ctx.fillStyle = "#A9BAFF";
+      ctx.fillStyle = "#7FC5E8";
       ctx.font = "600 42px Inter, sans-serif";
       ctx.fillText("QUESTION", W / 2, boxY + 70);
 
@@ -156,9 +156,9 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
 
       // Stats row — clean bordered glass pills
       const pills = [
-        { text: `⭐ Level ${info.level} · ${levelTitle(info.level)}`, color: "#6C8BFF" },
-        { text: `🔥 ${streak}-day streak`, color: "#FF6B85" },
-        totalScore >= maxScore ? { text: "🏆 Perfect run", color: "#A9BAFF" } : { text: "✅ Completed", color: "#A9BAFF" },
+        { text: `⭐ Level ${info.level} · ${levelTitle(info.level)}`, color: "#7FC5E8" },
+        { text: `🔥 ${streak}-day streak`, color: "#FF9E7A" },
+        totalScore >= maxScore ? { text: "🏆 Perfect run", color: "#9FE3C0" } : { text: "✅ Completed", color: "#9FE3C0" },
       ];
       ctx.font = "700 34px Inter, sans-serif";
       let px = 72;
@@ -201,8 +201,8 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
 
       // Progress arc
       const arcGrad = ctx.createLinearGradient(cx - r, cy, cx + r, cy);
-      arcGrad.addColorStop(0, "#A9BAFF");
-      arcGrad.addColorStop(1, "#7C4DFF");
+      arcGrad.addColorStop(0, "#7FC5E8");
+      arcGrad.addColorStop(1, "#0D9488");
       ctx.strokeStyle = arcGrad;
       ctx.lineWidth = 18;
       ctx.lineCap = "round";
@@ -236,14 +236,14 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
 
       ctx.textAlign = "center";
       ctx.font = "700 32px Inter, sans-serif";
-      ctx.fillStyle = "#A9BAFF";
+      ctx.fillStyle = "#7FC5E8";
       ctx.fillText(totalScore >= maxScore ? "PERFECT" : "COMPLETED", cx, cy + 80);
 
       ctx.textAlign = "left";
 
       // CTA band — prominent but structured
       const ctaY = H - 130;
-      ctx.fillStyle = "#A9BAFF";
+      ctx.fillStyle = "#0284C7";
       ctx.shadowColor = "rgba(0, 224, 198, 0.35)";
       ctx.shadowBlur = 35;
       ctx.beginPath();
@@ -258,7 +258,7 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
       ctx.fill();
 
       ctx.textAlign = "center";
-      ctx.fillStyle = "#080914";
+      ctx.fillStyle = "#0E0A06";
       ctx.font = "900 46px Inter, sans-serif";
       ctx.fillText("👉  REALLEARN.SITE  👈", W / 2, ctaY + 65);
 
