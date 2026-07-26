@@ -445,175 +445,58 @@ body::before {
 .wa-divider::after {
   content: "";
   flex: 1;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--border-default), transparent);
+  height: 2px;
+  background: var(--border-default);
 }
 .wa-divider__bead {
   width: 10px;
   height: 10px;
   border-radius: 2px;
-  background: var(--accent-gradient);
-  opacity: 0.55;
+  background: var(--accent);
   transform: rotate(45deg);
-  box-shadow: 0 0 10px var(--accent-glow);
 }
 
-/* ── Engraved identity motif — a faint, repeating hairline weave
-   (think fine book-cloth or a diploma border) baked into surfaces that opt in.
-   Pure CSS gradient lines, so it costs nothing to paint. ── */
 .identity-texture {
   position: relative;
 }
-.identity-texture::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.5;
-  background-image:
-    repeating-linear-gradient(
-      45deg,
-      var(--border-glow) 0,
-      var(--border-glow) 0.5px,
-      transparent 0.5px,
-      transparent 6px
-    ),
-    repeating-linear-gradient(
-      -45deg,
-      var(--border-glow) 0,
-      var(--border-glow) 0.5px,
-      transparent 0.5px,
-      transparent 6px
-    );
-  -webkit-mask-image: radial-gradient(ellipse at 50% 0%, #000 0%, transparent 72%);
-  mask-image: radial-gradient(ellipse at 50% 0%, #000 0%, transparent 72%);
-  mix-blend-mode: soft-light;
-}
-.identity-texture > * {
-  position: relative;
-  z-index: 1;
-}
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   Still Ink texture system — ink washes, hairline weaves, letterpress depth.
-   Layered ink-wash effects that give surfaces the depth and elegance of
-   traditional manuscripts, block printing, and miniature-painting washes.
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-/* ── Ink wash overlay — a barely-there tonal wash that keeps large
-   surfaces from reading flat. ── */
 .ink-wash {
   position: relative;
 }
-.ink-wash::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.03;
-  background:
-    radial-gradient(ellipse at 20% 20%, var(--cobalt-vivid, var(--brand)) 0%, transparent 60%),
-    radial-gradient(ellipse at 80% 80%, var(--cobalt-deep, var(--brand-strong)) 0%, transparent 60%);
-  mix-blend-mode: multiply;
-}
-.ink-wash > * {
-  position: relative;
-  z-index: 1;
-}
 
-/* ── Editorial heading — a whisper of letterpress depth on h1–h4. */
+/* ── Editorial heading — clean, sharp text on h1–h4. */
 h1, h2, h3, h4 {
-  text-shadow:
-    0 0.5px 0 rgba(20, 21, 26, 0.07),
-    0 1px 2px rgba(20, 21, 26, 0.04);
+  text-shadow: none;
 }
 html[data-theme="dark"] h1,
 html[data-theme="dark"] h2,
 html[data-theme="dark"] h3,
 html[data-theme="dark"] h4 {
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  text-shadow: none;
 }
 
-/* ── Crosshatch texture — a dense, fine weave for surfaces that want a
-   little tooth. Stronger than identity-texture. ── */
 .cobalt-texture {
   position: relative;
 }
-.cobalt-texture::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.6;
-  background-image:
-    repeating-linear-gradient(
-      0deg,
-      var(--cobalt-wash) 0,
-      var(--cobalt-wash) 0.5px,
-      transparent 0.5px,
-      transparent 4px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      var(--cobalt-wash) 0,
-      var(--cobalt-wash) 0.5px,
-      transparent 0.5px,
-      transparent 4px
-    );
-  -webkit-mask-image: radial-gradient(ellipse at 50% 50%, #000 0%, transparent 80%);
-  mask-image: radial-gradient(ellipse at 50% 50%, #000 0%, transparent 80%);
-  mix-blend-mode: multiply;
-}
-.cobalt-texture > * {
-  position: relative;
-  z-index: 1;
-}
 
-/* ── Ink border — a double-stroke border like a well-set page margin:
-   an outer ink line + an inner accent line, with subtle bloom on hover. ── */
+/* ── Ink border — solid bold border ── */
 .ink-border {
-  border: 1.5px solid var(--border-default) !important;
-  box-shadow:
-    var(--glass-shadow),
-    inset 0 0 0 1px var(--border-glow),
-    inset 0 0 0 2.5px transparent,
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  transition: box-shadow 320ms var(--ease-color), border-color 320ms var(--ease-color);
+  border: 2px solid var(--border-default) !important;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 200ms var(--ease-color);
 }
 .ink-border:hover {
   border-color: var(--border-accent) !important;
-  box-shadow:
-    var(--shadow-lg),
-    inset 0 0 0 1px var(--accent-glow),
-    inset 0 0 0 2.5px var(--accent-dim),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
-/* ── Accent rule — a thick, confident left-border accent, like a chapter
-   divider in a well-set book. ── */
+/* ── Accent rule — a thick solid left-border accent ── */
 .cobalt-rule {
   border-left: 4px solid var(--brand) !important;
   padding-left: var(--space-md);
   position: relative;
 }
-.cobalt-rule::before {
-  content: "";
-  position: absolute;
-  left: -4px;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: var(--accent-gradient);
-  border-radius: 2px;
-}
 
-/* ── Editorial drop-cap effect — for the first letter of lesson content. ── */
+/* ── Editorial drop-cap effect ── */
 .editorial-dropcap::first-letter {
   float: left;
   font-family: var(--font-display), Georgia, serif;
@@ -623,48 +506,16 @@ html[data-theme="dark"] h4 {
   padding-top: 4px;
   color: var(--brand);
   font-weight: 800;
-  text-shadow: 1px 1px 0 var(--accent-dim);
 }
 
-/* ── Pigment stain effect — a subtle, organic accent stain on card hover ── */
 .ink-stain {
   position: relative;
   overflow: hidden;
 }
-.ink-stain::after {
-  content: "";
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--cobalt-wash) 0%, transparent 60%);
-  opacity: 0;
-  transition: opacity 400ms var(--ease-color);
-  pointer-events: none;
-  z-index: 0;
-}
-.ink-stain:hover::after {
-  opacity: 1;
-}
-.ink-stain > * {
-  position: relative;
-  z-index: 1;
-}
 
-/* ── Lotus-gold shimmer — a slow, elegant brand-colored shimmer for loading states ── */
 .cobalt-shimmer {
-  background: linear-gradient(
-    110deg,
-    var(--bg-card) 0%,
-    var(--bg-card) 30%,
-    var(--cobalt-wash) 50%,
-    var(--bg-card) 70%,
-    var(--bg-card) 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 3s linear infinite;
+  background: var(--bg-card);
+  animation: skeletonPulse 1.8s ease-in-out infinite;
 }
 
 /* ── Solid-color Skeleton Pulse (No GPU acceleration, no color overlaps) ── */
@@ -672,21 +523,11 @@ html[data-theme="dark"] h4 {
   animation: skeletonPulse 1.8s ease-in-out infinite;
 }
 
-
-/* ── Double hairline border — an outer neutral line + an accent-tinted inner
-   line, which reads as "engraved" / letterpress rather than a single flat
-   stroke. Apply to cards/panels that should feel considered. ── */
 .engraved {
-  border: 1px solid var(--border-default) !important;
-  box-shadow:
-    var(--glass-shadow),
-    inset 0 0 0 1px var(--border-glow),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  border: 2px solid var(--border-default) !important;
+  box-shadow: var(--shadow-sm);
 }
 
-/* ── Corner identity mark — a small, consistent accent notch in the top-right
-   corner of primary cards so the *shape* itself carries the brand, the way a
-   publisher's blind-emboss sits on a book cover. ── */
 .identity-corner::before {
   content: "";
   position: absolute;
@@ -695,14 +536,11 @@ html[data-theme="dark"] h4 {
   width: 26px;
   height: 26px;
   border-radius: 0 var(--radius-xl) 0 var(--radius-xl);
-  background:
-    linear-gradient(135deg, transparent 50%, var(--accent-dim) 50%) top right / 26px 26px no-repeat;
+  background: var(--accent-dim);
   pointer-events: none;
   z-index: 1;
 }
 
-/* ── Section-divider rule — a refined centered hairline with an accent bead, used
-   to separate content blocks with quiet intentionality. ── */
 .rule-accent {
   display: flex;
   align-items: center;
@@ -713,8 +551,8 @@ html[data-theme="dark"] h4 {
 .rule-accent::after {
   content: "";
   flex: 1;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--border-default), transparent);
+  height: 2px;
+  background: var(--border-default);
 }
 
 /* Hover: the engraved inner line warms to the accent — a deliberate, premium cue. */
@@ -1092,13 +930,11 @@ a:active {
 .animate-glow-pulse { animation: glowPulse 3s ease-in-out infinite; }
 .animate-slide-in { animation: slideIn 500ms var(--ease-reveal) both; }
 .animate-gradient-shift {
-  background-size: 200% 200%;
-  animation: gradientShift 4s ease infinite;
+  background: var(--bg-card);
 }
 .animate-shimmer {
-  background-image: linear-gradient(90deg, var(--bg-surface), var(--bg-card), var(--bg-surface));
-  background-size: 200% 100%;
-  animation: shimmer 3s linear infinite;
+  background: var(--bg-card);
+  animation: skeletonPulse 1.8s ease-in-out infinite;
 }
 .animate-spin { animation: spin 1.5s linear infinite; }
 
@@ -1138,41 +974,10 @@ a:active {
 
 /* Texture dots — subtle dot grid pattern for tactile feel */
 .texture-dots::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.025;
-  background-image: radial-gradient(circle, var(--text-tertiary) 0.5px, transparent 0.5px);
-  background-size: 12px 12px;
+  display: none;
 }
-.texture-dots > * {
-  position: relative;
-  z-index: 1;
-}
-
-/* Texture lines — subtle lined-paper pattern */
 .texture-lines::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.02;
-  background-image: repeating-linear-gradient(
-    0deg,
-    var(--border-subtle) 0,
-    var(--border-subtle) 1px,
-    transparent 1px,
-    transparent 24px
-  );
-}
-.texture-lines > * {
-  position: relative;
-  z-index: 1;
+  display: none;
 }
 
 /* ── Engagement animations — refined, Apple-style ── */
@@ -1221,18 +1026,8 @@ a:active {
 }
 .animate-overlay-fade { animation: overlayFade 300ms var(--ease-color) both; }
 
-@keyframes sheen {
-  0% { transform: translateX(-120%); }
-  100% { transform: translateX(220%); }
-}
 .animate-sheen::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
-  transform: translateX(-120%);
-  animation: sheen 2s var(--ease-reveal) 300ms both;
-  pointer-events: none;
+  display: none;
 }
 
 /* ── Respect reduced motion ── */
@@ -1738,10 +1533,9 @@ h1::after, h2::after {
   display: block;
   width: 40px;
   height: 3px;
-  background: var(--accent-gradient);
+  background: var(--accent);
   border-radius: 2px;
   margin-top: 10px;
-  opacity: 0.7;
 }
 h1::after { width: 56px; margin-top: 12px; opacity: 0.85; }
 h3::after { display: none; }
@@ -1924,12 +1718,11 @@ p {
 .badge-popover__bar > div {
   height: 100%;
   border-radius: inherit;
-  background: var(--accent-gradient);
+  background: var(--accent);
   transition: width 500ms var(--ease-reveal);
 }
 
-/* ── Handloom-fold — a subtle corner fold effect on cards, evoking the folded
-   corner of a carefully turned page. ── */
+/* ── Handloom-fold — a subtle corner fold effect on cards. ── */
 .handloom-fold {
   position: relative;
 }
@@ -1940,15 +1733,14 @@ p {
   right: 0;
   width: 32px;
   height: 32px;
-  background: linear-gradient(135deg, transparent 50%, var(--border-subtle) 50%);
+  background: var(--border-subtle);
   border-radius: 0 0 var(--radius-xl) 0;
   pointer-events: none;
   z-index: 1;
   opacity: 0.6;
 }
 
-/* ── Brush-underline — a hand-set accent underline for links and
-   interactive text, like a calligrapher's brush stroke. ── */
+/* ── Brush-underline ── */
 .brush-underline {
   position: relative;
   text-decoration: none;
@@ -1960,7 +1752,7 @@ p {
   bottom: -2px;
   width: 100%;
   height: 3px;
-  background: var(--accent-gradient);
+  background: var(--accent);
   border-radius: 2px;
   transform: scaleX(0);
   transform-origin: left;
@@ -2021,7 +1813,8 @@ p {
   font-weight: 800;
   letter-spacing: 0.02em;
   color: var(--on-accent);
-  background: var(--accent-gradient);
+  background: var(--accent);
+  border: 2px solid var(--accent);
   cursor: pointer;
   box-shadow: var(--shadow-glow-accent);
   overflow: hidden;
@@ -2031,23 +1824,14 @@ p {
     filter 320ms var(--ease-color);
   isolation: isolate;
 }
-/* Specular light catch — a slow sheen sweeps across on hover, like light on
-   block-printed textiles. */
 .btn-primary::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(115deg, transparent 36%, rgba(255, 255, 255, 0.28) 50%, transparent 64%);
-  transform: translateX(-130%);
-  transition: transform 700ms var(--ease-reveal);
-  pointer-events: none;
-  z-index: 1;
+  display: none;
 }
 .btn-primary > * { position: relative; z-index: 2; }
 .btn-primary:hover,
 .btn-primary:focus-visible {
   transform: translateY(-2px) scale(1.02);
-  box-shadow: var(--shadow-lg), var(--glass-edge), 0 0 28px var(--accent-glow);
+  box-shadow: var(--shadow-lg), 0 0 28px var(--accent-glow);
   filter: brightness(1.06);
 }
 .btn-primary:hover::after,
@@ -2240,13 +2024,13 @@ p {
   width: 42px;
   height: 42px;
   border-radius: var(--radius-md);
-  background: var(--accent-gradient);
+  background: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--on-accent);
   font-weight: 900;
-  box-shadow: var(--shadow-glow-accent);
+  border: 2px solid var(--accent);
   overflow: hidden;
   position: relative;
 }
@@ -2259,10 +2043,6 @@ p {
 .navbar-wordmark__real { color: var(--text-primary); }
 .navbar-wordmark__learn {
   color: var(--accent);
-  background: var(--accent-gradient);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 
 /* ── Chip / pill ── for the "Today's spark", example questions, tags. */
@@ -2273,35 +2053,32 @@ p {
   max-width: 100%;
   padding: 9px 18px;
   border-radius: 999px;
-  border: 1px solid var(--border-glow);
-  background: var(--accent-dim);
-  color: var(--text-secondary);
+  border: 2px solid var(--border-default);
+  background: var(--bg-surface);
+  color: var(--text-primary);
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 700;
   cursor: pointer;
   text-decoration: none;
   transition:
     border-color 320ms var(--ease-color),
     background 320ms var(--ease-color),
     color 320ms var(--ease-color),
-    transform 320ms var(--ease-spring),
-    box-shadow 320ms var(--ease-color);
+    transform 320ms var(--ease-spring);
 }
 .chip:hover,
 .chip:focus-visible {
-  border-style: solid;
   border-color: var(--border-accent);
   background: var(--accent-dim);
   color: var(--accent);
   transform: translateY(-2px);
-  box-shadow: 0 0 18px var(--accent-glow);
 }
 .chip:active { transform: translateY(0) scale(0.97); }
-.chip__label { color: var(--text-tertiary); }
+.chip__label { color: var(--text-secondary); }
 .chip:hover .chip__label,
 .chip:focus-visible .chip__label { color: var(--accent); }
 .chip__value {
-  font-weight: 600;
+  font-weight: 700;
   color: var(--accent);
   white-space: nowrap;
   overflow: hidden;
@@ -2322,10 +2099,9 @@ p {
   display: inline-block;
   font-family: var(--font-display), serif;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.22em;
   color: var(--accent);
-  opacity: 0.85;
   text-transform: uppercase;
   margin-bottom: 2px;
 }
@@ -2337,7 +2113,7 @@ p {
   width: 18px;
   height: 3px;
   border-radius: 3px;
-  background: var(--accent-gradient);
+  background: var(--accent);
   margin-right: 9px;
   vertical-align: middle;
   transform: translateY(-1px);
@@ -2368,7 +2144,7 @@ p {
   bottom: 4px;
   width: 4px;
   border-radius: 2px;
-  background: var(--accent-gradient);
+  background: var(--accent);
 }
 .section-header__subtitle {
   margin: 0;
@@ -2378,15 +2154,13 @@ p {
   font-weight: 500;
 }
 
-/* ── Card ── the base glass surface with hover lift, used broadly. */
+/* ── Card ── the base surface with hover lift, used broadly. */
 .rl-card {
   position: relative;
   border-radius: var(--radius-xl);
-  border: 1px solid var(--border-subtle);
+  border: 2px solid var(--border-subtle);
   background: var(--bg-card);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-  box-shadow: var(--glass-shadow), var(--glass-edge);
+  box-shadow: var(--shadow-sm);
   transition:
     transform 380ms var(--ease-spring),
     box-shadow 380ms var(--ease-color),
@@ -2446,8 +2220,8 @@ p {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  border: 1px solid var(--border-glow);
-  background: var(--accent-gradient);
+  border: 2px solid var(--border-glow);
+  background: var(--accent);
   color: var(--on-accent);
   cursor: pointer;
   box-shadow: var(--shadow-lg), var(--shadow-glow-accent);
@@ -2479,8 +2253,7 @@ p {
   transition: transform 120ms var(--ease-color);
 }
 
-/* ── Kusari divider ── a delicate chain-like separator with a centered
-   small diamond bead, marking the links between sections (rhythm). */
+/* ── Kusari divider ── */
 .kusari {
   display: flex;
   align-items: center;
@@ -2496,17 +2269,15 @@ p {
 .kusari::after {
   content: "";
   flex: 1;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--border-default) 40%, transparent);
+  height: 2px;
+  background: var(--border-default);
 }
 .kusari__bead {
   width: 8px;
   height: 8px;
   border-radius: 2px;
-  background: var(--accent-gradient);
+  background: var(--accent);
   transform: rotate(45deg);
-  opacity: 0.55;
-  box-shadow: 0 0 8px var(--accent-glow);
 }
 
 /* ── Focus ring parity ── ensure keyboard focus is always visible and
@@ -2967,17 +2738,12 @@ p {
   position: relative;
 }
 .loading-cinematic__progress-glow {
-  position: absolute;
-  inset: -8px;
-  border-radius: 999px;
-  background: radial-gradient(ellipse at center, var(--accent) 0%, transparent 70%);
-  filter: blur(8px);
-  transition: opacity 200ms linear;
+  display: none;
 }
 .loading-cinematic__progress-bar {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 80%, var(--correct)) 100%);
+  background: var(--accent);
   transition: width 200ms linear;
   position: relative;
   z-index: 1;

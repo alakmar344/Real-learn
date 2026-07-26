@@ -116,8 +116,8 @@ export default function ThemeModal({ open, onClose }: Props) {
                     width: 32,
                     height: 32,
                     borderRadius: "50%",
-                    background: `linear-gradient(135deg, ${opt.swatch} 55%, ${opt.accent} 55%)`,
-                    border: "1px solid var(--border-default)",
+                    background: opt.swatch,
+                    border: `3px solid ${opt.accent}`,
                     flexShrink: 0,
                   }}
                 />
