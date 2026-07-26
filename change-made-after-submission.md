@@ -946,10 +946,12 @@ vendors). All of these live between `2b239b5` (start) and now:
 | 2026-07-26 | `fix-moderation-false-positives` | Fix Moderation False-Positives on Educational Questions: unregistered non-profane educational terms (`balls`, `homo`, `screw`, `butt`, `tit`, `dick`, `cock`, `penetrate`, `penetration`) in `backend/src/lib/moderation.js` to resolve false-positive moderation blocks on cricket (power hitter, bowling 6 balls in an over), recommendation feeds (for-you-page / FYP), game theory (tit for tat), history/sports (Dick Fosbury), biology (Homo sapiens, cell membrane penetration), and marketing/physics (market / radar penetration). Expanded `backend/test/moderation.test.js` regression suite. |
 | 2026-07-26 | `genz-locked-design-system` | Locked High-Impact Gen Z Design System: Space Grotesk bold headings (700-800), Inter ultra-bold body (700-800), locked dark-mode palette (#0B0E14 background, #00FF66 hyper electric green dominant, #FF3E00 action accent), and educational AI soft rounded corner radii (12px-24px, no neo-brutalism). |
 | 2026-07-26 | `curate-light-dark-themes` | Curated Light (Paper) & Dark (Ink) themes with full text contrast fixes. Light: bright paper (#F8FAF9) with deep slate text (#0F172A) and vivid green accent (#00CC52). Dark: locked off-black (#0B0E14) with pure white text (#FFFFFF) and electric green (#00FF66). Removed twilight/Dusk theme entirely from CSS, types, store, layout script, theme options, and modal copy. Amplified .btn-primary to font-weight: 800 and letter-spacing: 0.02em. |
+| 2026-07-26 | `set-dark-theme-default` | Set Dark (Ink) theme as default room for new visitors in preferenceStore.ts, layout.tsx viewport, and themeInitScript. |
 
 
 ---
 
 *This changelog is maintained as the project's running history. New changes are
 appended under the relevant section (and the chronological table) as they land.*
+
 
