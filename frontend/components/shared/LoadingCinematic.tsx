@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useLessonStore } from "@/store/lessonStore";
+import { Skeleton } from "@/components/shared/Skeleton";
 
 // Each step "completes" once the real progress passes its threshold. The
 // thresholds are spread across the whole 0–100 range (no two steps share a
@@ -173,6 +174,43 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
             );
           })}
         </ul>
+
+        {/* 3-Part Lesson Skeleton Deck Preview */}
+        <div style={{ marginTop: 24, display: "flex", flexDirection: "column", gap: 12, width: "100%", maxWidth: 520, margin: "24px auto 0" }}>
+          {[
+            { num: 1, title: "Part 1: Foundation", at: 5 },
+            { num: 2, title: "Part 2: Mechanism", at: 40 },
+            { num: 3, title: "Part 3: Real World", at: 75 },
+          ].map((part) => {
+            const active = displayProgress >= part.at;
+            return (
+              <div
+                key={part.num}
+                style={{
+                  background: "var(--bg-card, #FFFDF8)",
+                  border: `1px solid ${active ? "var(--accent)" : "var(--border-subtle)"}`,
+                  borderRadius: "var(--radius-xl, 16px)",
+                  padding: "14px 18px",
+                  opacity: active ? 1 : 0.6,
+                  transition: "opacity 300ms ease, border-color 300ms ease",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: active ? "var(--accent)" : "var(--text-tertiary)" }}>
+                    {part.title}
+                  </span>
+                  <span style={{ fontSize: 11, color: "var(--text-tertiary)" }}>
+                    {displayProgress >= part.at + 30 ? "Ready" : active ? "Building..." : "Queued"}
+                  </span>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <Skeleton height={12} width="85%" borderRadius="4px" />
+                  <Skeleton height={12} width="60%" borderRadius="4px" />
+                </div>
+              </div>
+            );
+          })}
+        </div>
 
         {/* Rotating fact */}
         <div key={factIndex} className="loading-cinematic__fact">

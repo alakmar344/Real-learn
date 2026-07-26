@@ -324,8 +324,9 @@ this protocol. No exceptions.**
   Overhauled desktop UI layout, brand header deduplication, and visual spacing. Restored natural hero visual hierarchy (greeting H1 → question input → spark recommendations/cards below). Expanded desktop container max-widths (`hero__stage` 920px, `q-form` 880px, learn page containers 920px). Removed redundant navbar brand logo on desktop (leaving the fixed left sidebar brand), removed the unnecessary App Tour button from sidebar footer, removed the double "Ask anything" pseudo-label overlay on the question input, and fixed `PartCard` text container to 100% width on desktop to eliminate asymmetric right-hand margins.
 - 2026-07-26 — **Hero Spark Responsive Ordering.**
   Added CSS flexbox order rules for `.hero__stage`: Today's Spark and activity cards appear at the top (`order: 1`) on mobile screens (`< 1024px`), and under the question input (`order: 3`) on desktop monitors (`≥ 1024px`).
-- 2026-07-26 — **Solid-Color Skeleton Loaders System & Snappy Fast Performance Pass.**
-  Created reusable `Skeleton` UI component (`Skeleton.tsx`) with pure CSS opacity pulse and solid Soft-Pastel background tokens (`var(--bg-surface)`). Replaced all blank empty layout-shift spacer `div`s across Progress, Settings, Learn, and Home pages (`progress/page.tsx`, `settings/page.tsx`, `learn/page.tsx`, `page.tsx`) with structured skeleton cards, tiles, and text lines. Strict compliance with Rule 4: zero GPU layer forcing, zero purple/violet, zero overlapping translucent gradients.
+- 2026-07-26 — **Solid-Color Skeleton Loaders System & High-Visibility Lesson Generation Deck.**
+  Created reusable `Skeleton` UI component (`Skeleton.tsx`) with pure CSS opacity pulse and solid Soft-Pastel background tokens (`var(--border-default)`). Integrated an active 3-part Skeleton Card Deck directly into `LoadingCinematic.tsx` during lesson generation, giving learners immediate visual feedback while their 3-part lesson builds. Replaced blank empty layout-shift spacer `div`s across Progress, Settings, Learn, and Home pages (`progress/page.tsx`, `settings/page.tsx`, `learn/page.tsx`, `page.tsx`, `HomeStats.tsx`) with structured skeleton cards, tiles, chips, and text lines. Strict compliance with Rule 4: zero GPU layer forcing, zero purple/violet, high-contrast solid backgrounds.
+
 
 
 
