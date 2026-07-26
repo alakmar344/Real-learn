@@ -334,6 +334,8 @@ this protocol. No exceptions.**
   Applied locked Gen Z aesthetic to `frontend/app/globals.css`: Space Grotesk bold headings (700-800 weight), Inter ultra-bold body (700-800 weight), locked dark palette (`#0B0E14` background, `#00FF66` dominant green, `#FF3E00` action accent), and educational AI soft rounded corner radii (12px–24px, no neo-brutalism).
 - 2026-07-26 — **Curated Light (Paper) & Dark (Ink) Themes + Twilight Removal.**
   Fixed text contrast issues (white-on-white) by curating two fully distinct themes. Light (Paper): bright off-white canvas (`#F8FAF9`), deep slate text (`#0F172A`), vivid green accent (`#00CC52`), white-on-green CTA buttons. Dark (Ink): locked off-black (`#0B0E14`), pure white text (`#FFFFFF`), electric green (`#00FF66`), dark-on-green CTA buttons. Removed `twilight` theme entirely from `types/index.ts`, `lib/themes.ts`, `store/preferenceStore.ts`, `layout.tsx` themeInitScript, `globals.css` selectors, and `ThingsComingModal.tsx` copy. Amplified `.btn-primary` to `font-weight: 800` and `letter-spacing: 0.02em`.
+- 2026-07-26 — **Lite Mode AI Response Readability & High-Contrast Typography Overhaul.**
+  Resolved low-contrast text issue where AI response text blocks appeared dim/dark in Light / Lite Mode (Paper theme). Updated `.markdown-content` typography, paragraphs, blockquotes, lists, and code blocks in `globals.css` and `PartCard.tsx` to strictly consume `--text-primary` (`#0F172A` in light mode, `#FFFFFF` in dark mode). Added explicit `.markdown-content pre` and `.markdown-content table` rules with `var(--bg-solid)` and `var(--border-default)` borders, ensuring 100% crisp readability across all lesson parts, fast mode answers, summary cards, and completion screens.
 
 
 

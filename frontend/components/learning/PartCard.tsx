@@ -201,7 +201,7 @@ const PartCardBase = ({
           style={{
             marginTop: 24,
             fontSize: "var(--text-base)",
-            color: "var(--text-secondary)",
+            color: "var(--text-primary)",
             lineHeight: "var(--leading-loose)",
             maxWidth: "100%",
             fontFamily: "var(--font-lora)",
