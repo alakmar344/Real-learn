@@ -322,6 +322,8 @@ this protocol. No exceptions.**
   Enhanced the desktop (`min-width: 1024px`) layout for a premium, world-class large screen experience. Increased hero max-widths, scaled up `clamp()` typography, expanded `QuestionInput` form dimensions and paddings, and enlarged base text sizes in `globals.css`. Ensures the desktop view commands the screen gracefully without impacting the optimized mobile design.
 - 2026-07-26 — **Desktop UI Overhaul & Responsive Refinement.**
   Overhauled desktop UI layout, brand header deduplication, and visual spacing. Restored natural hero visual hierarchy (greeting H1 → question input → spark recommendations/cards below). Expanded desktop container max-widths (`hero__stage` 920px, `q-form` 880px, learn page containers 920px). Removed redundant navbar brand logo on desktop (leaving the fixed left sidebar brand), removed the unnecessary App Tour button from sidebar footer, removed the double "Ask anything" pseudo-label overlay on the question input, and fixed `PartCard` text container to 100% width on desktop to eliminate asymmetric right-hand margins.
+- 2026-07-26 — **Hero Spark Responsive Ordering.**
+  Added CSS flexbox order rules for `.hero__stage`: Today's Spark and activity cards appear at the top (`order: 1`) on mobile screens (`< 1024px`), and under the question input (`order: 3`) on desktop monitors (`≥ 1024px`).
 
 
 

@@ -948,6 +948,8 @@ a:active {
   width: 100%;
   max-width: 768px;
   position: relative;
+  display: flex;
+  flex-direction: column;
 }
 @media (min-width: 1024px) {
   .hero__stage {
@@ -960,8 +962,17 @@ a:active {
 .hero__stage::after {
   display: none !important;
 }
-.hero__content { position: relative; z-index: 1; }
-.hero__greeting { margin-top: 16px; }
+/* Mobile default: Today's spark & stats on top (order: 1), greeting (order: 2), input (order: 3) */
+.hero__content {
+  position: relative;
+  z-index: 1;
+  order: 1;
+  margin-bottom: 12px;
+}
+.hero__greeting {
+  margin-top: 16px;
+  order: 2;
+}
 .hero__title {
   margin: 0;
   font-family: var(--font-display);
@@ -977,6 +988,19 @@ a:active {
     line-height: 1.1;
     letter-spacing: -0.035em;
   }
+  /* Desktop: Greeting H1 (order: 1), question input (order: 2), HomeStats spark below (order: 3) */
+  .hero__greeting {
+    order: 1;
+    margin-top: 0;
+  }
+  .hero__input-row {
+    order: 2;
+  }
+  .hero__content {
+    order: 3;
+    margin-top: 24px;
+    margin-bottom: 0;
+  }
 }
 .hero__title-name {
   color: var(--accent);
@@ -988,6 +1012,7 @@ a:active {
   display: flex;
   justify-content: center;
   margin-top: 20px;
+  order: 3;
 }
 @keyframes iconFloat {
   0%, 100% { transform: translateY(0) rotate(0deg); }
