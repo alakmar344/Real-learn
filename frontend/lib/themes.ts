@@ -1,8 +1,8 @@
 import { Theme } from "@/types";
 
 /**
- * Single source of truth for theme pickers (ThemeModal, PreferenceModal,
- * Settings) — the three rooms of the Soft Pastel design language.
+ * Single source of truth for theme pickers (ThemeModal, Settings).
+ * Two themes: Paper (bright day) and Ink (dark night).
  * `bg` mirrors each theme's --bg-primary (used for the browser theme-color);
  * `swatch`/`accent` drive the picker preview.
  */
@@ -21,25 +21,17 @@ export const THEME_OPTIONS: ThemeOption[] = [
   {
     value: "light",
     label: "Paper",
-    hint: "Clean daylight with solid sky-blue accent",
-    bg: "#FFFFFF",
-    swatch: "#FFFFFF",
-    accent: "#0284C7",
+    hint: "Bright daylight with vivid green accent",
+    bg: "#F8FAF9",
+    swatch: "#F8FAF9",
+    accent: "#00CC52",
   },
   {
     value: "dark",
     label: "Ink",
-    hint: "Pitch black night with solid sky-blue accent",
-    bg: "#000000",
-    swatch: "#000000",
-    accent: "#38BDF8",
-  },
-  {
-    value: "twilight",
-    label: "Dusk",
-    hint: "Pitch black evening with solid sky-blue accent",
-    bg: "#000000",
-    swatch: "#000000",
-    accent: "#38BDF8",
+    hint: "Deep dark night with electric green accent",
+    bg: "#0B0E14",
+    swatch: "#0B0E14",
+    accent: "#00FF66",
   },
 ];

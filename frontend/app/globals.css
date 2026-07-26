@@ -8,83 +8,83 @@
    CSS) AND blocked by our CSP — so remote fonts never actually loaded. */
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
   /* ═══════════════════════════════════════════════════════════════════════
-     RealLearn Locked Gen Z Dark-Mode Design System.
-     Dominant: #00FF66 | Accent: #FF3E00 | Background: #0B0E14
-     Space Grotesk (Headings: 700-800) + Inter (Body/UI: 700-800)
+     RealLearn Gen Z Design System — Light Theme (Paper)
+     Background: #F8FAF9 | Dominant: #00CC52 | Accent: #FF3E00
+     Space Grotesk (Headings: 700-800) + Inter (Body/UI: 700)
      ═══════════════════════════════════════════════════════════════════════ */
 
-  /* Brand accent — Hyper Electric Green */
-  --brand: #00FF66;
-  --brand-strong: #00E65C;
-  --brand-bright: #33FF85;
-  --brand-soft: rgba(0, 255, 102, 0.12);
+  /* Brand accent — Vivid Green (accessible on light surfaces) */
+  --brand: #00CC52;
+  --brand-strong: #00A844;
+  --brand-bright: #00FF66;
+  --brand-soft: rgba(0, 204, 82, 0.10);
 
-  --cobalt-deep: #0B0E14;
-  --cobalt-mid: #1A202C;
-  --cobalt-vivid: #00FF66;
-  --cobalt-pale: #00FF66;
-  --cobalt-wash: rgba(0, 255, 102, 0.08);
-  --cobalt-ink: #0B0E14;
+  --cobalt-deep: #0F172A;
+  --cobalt-mid: #334155;
+  --cobalt-vivid: #00CC52;
+  --cobalt-pale: rgba(0, 204, 82, 0.08);
+  --cobalt-wash: rgba(0, 204, 82, 0.05);
+  --cobalt-ink: #0F172A;
 
-  /* Canvas: Locked Off-Black */
-  --bg-primary: #0B0E14;
-  --bg-surface: #121620;
-  --bg-card: #141A26;
-  --bg-card-hover: #1E2638;
-  --bg-glass: rgba(11, 14, 20, 0.92);
-  --bg-solid: #141A26;
-  --bg-warm: #121620;
+  /* Canvas: Clean Bright Paper */
+  --bg-primary: #F8FAF9;
+  --bg-surface: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #F1F5F2;
+  --bg-glass: rgba(248, 250, 249, 0.92);
+  --bg-solid: #F1F5F2;
+  --bg-warm: #FFFFFF;
 
   --ambient-a: transparent;
   --ambient-b: transparent;
 
-  --border-subtle: #1E2430;
-  --border-default: #2A3245;
-  --border-accent: #00FF66;
-  --border-glow: rgba(0, 255, 102, 0.25);
+  --border-subtle: #E2E8F0;
+  --border-default: #CBD5E1;
+  --border-accent: #00CC52;
+  --border-glow: rgba(0, 204, 82, 0.18);
 
   --glass-blur: 16px;
   --glass-blur-strong: 24px;
   --glass-saturate: 120%;
-  --glass-highlight: rgba(255, 255, 255, 0.05);
-  --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
-  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 0 0 1px rgba(0, 255, 102, 0.15);
+  --glass-highlight: rgba(255, 255, 255, 0.9);
+  --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.03);
+  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 0 0 1px rgba(0, 0, 0, 0.04);
   --glass-sheen: none;
 
-  --accent: #00FF66;
+  --accent: #00CC52;
   --accent-action: #FF3E00;
-  --accent-hover: #00E65C;
-  --accent-dim: rgba(0, 255, 102, 0.14);
-  --accent-glow: rgba(0, 255, 102, 0.25);
+  --accent-hover: #00A844;
+  --accent-dim: rgba(0, 204, 82, 0.10);
+  --accent-glow: rgba(0, 204, 82, 0.18);
   --accent-companion: #FF3E00;
-  --accent-gradient: #00FF66;
-  --on-accent: #0B0E14;
-  --shadow-glow-accent: 0 4px 20px rgba(0, 255, 102, 0.3);
+  --accent-gradient: #00CC52;
+  --on-accent: #FFFFFF;
+  --shadow-glow-accent: 0 4px 16px rgba(0, 204, 82, 0.20);
 
-  /* Ink text — High-Contrast Dark Mode Hierarchy */
-  --text-primary: #FFFFFF;
-  --text-secondary: #94A3B8;
+  /* Ink text — Deep slate on bright paper = maximum readability */
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
   --text-tertiary: #64748B;
-  --text-accent-strong: #00FF66;
+  --text-accent-strong: #00A844;
 
-  --correct: #00FF66;
-  --correct-bg: rgba(0, 255, 102, 0.15);
-  --wrong: #FF3E00;
-  --wrong-bg: rgba(255, 62, 0, 0.15);
-  --locked: #3F3F46;
+  --correct: #16A34A;
+  --correct-bg: #DCFCE7;
+  --wrong: #DC2626;
+  --wrong-bg: #FEE2E2;
+  --locked: #94A3B8;
 
-  --subject-physics: #00FF66;
-  --subject-chemistry: #33FF85;
+  --subject-physics: #00CC52;
+  --subject-chemistry: #16A34A;
   --subject-economics: #FF3E00;
-  --subject-biology: #00FF66;
-  --subject-cs: #00FF66;
+  --subject-biology: #00CC52;
+  --subject-cs: #00CC52;
   --subject-history: #FF3E00;
-  --subject-general: #00FF66;
+  --subject-general: #00CC52;
 
-  /* Educational AI Soft Rounded Corner Radii (No Neo-Brutalism) */
+  /* Educational AI Soft Rounded Corner Radii */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
@@ -120,10 +120,10 @@
   --tracking-normal: 0;
   --tracking-wide: 0.04em;
 
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6);
-  --shadow-glow-correct: 0 0 20px rgba(0, 255, 102, 0.25);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.08);
+  --shadow-glow-correct: 0 0 16px rgba(22, 163, 74, 0.15);
 
   --ease-reveal: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-color: cubic-bezier(0.4, 0, 0.2, 1);
@@ -137,91 +137,99 @@
   --blur-sm: 4px;
   --blur-md: 12px;
 
-  --scrim: rgba(0, 0, 0, 0.6);
-  --focus-ring: 0 0 0 3px rgba(0, 255, 102, 0.3);
-  --focus-ring-simple: 0 0 0 2px #00FF66;
+  --scrim: rgba(0, 0, 0, 0.4);
+  --focus-ring: 0 0 0 3px rgba(0, 204, 82, 0.25);
+  --focus-ring-simple: 0 0 0 2px #00CC52;
 
-  --aurora-1: rgba(0, 255, 102, 0.08);
-  --aurora-2: rgba(255, 62, 0, 0.08);
-  --aurora-3: rgba(0, 255, 102, 0.05);
+  --aurora-1: rgba(0, 204, 82, 0.06);
+  --aurora-2: rgba(255, 62, 0, 0.06);
+  --aurora-3: rgba(0, 204, 82, 0.04);
 }
 
-/* ── Ink (dark) — pitch black canvas with sky-blue accent. ── */
-html[data-theme="dark"],
-html[data-theme="twilight"] {
+/* ── Ink (Dark) — Locked Gen Z dark canvas with electric green. ── */
+html[data-theme="dark"] {
   color-scheme: dark;
 
-  --brand: #38BDF8;
-  --brand-strong: #7DD3FC;
-  --brand-bright: #BAE6FD;
-  --brand-soft: rgba(56, 189, 248, 0.12);
+  --brand: #00FF66;
+  --brand-strong: #00E65C;
+  --brand-bright: #33FF85;
+  --brand-soft: rgba(0, 255, 102, 0.12);
 
-  --cobalt-deep: #000000;
-  --cobalt-mid: #27272A;
-  --cobalt-vivid: #38BDF8;
-  --cobalt-pale: #38BDF8;
-  --cobalt-wash: rgba(56, 189, 248, 0.1);
-  --cobalt-ink: #000000;
+  --cobalt-deep: #0B0E14;
+  --cobalt-mid: #1A202C;
+  --cobalt-vivid: #00FF66;
+  --cobalt-pale: #00FF66;
+  --cobalt-wash: rgba(0, 255, 102, 0.08);
+  --cobalt-ink: #0B0E14;
 
   --ambient-a: transparent;
   --ambient-b: transparent;
 
-  /* Canvas: PITCH BLACK */
-  --bg-primary: #000000;
-  --bg-surface: #121212;
-  --bg-card: #18181B;
-  --bg-card-hover: #27272A;
-  --bg-glass: rgba(0, 0, 0, 0.88);
-  --bg-solid: #18181B;
+  /* Canvas: Locked Off-Black */
+  --bg-primary: #0B0E14;
+  --bg-surface: #121620;
+  --bg-card: #141A26;
+  --bg-card-hover: #1E2638;
+  --bg-glass: rgba(11, 14, 20, 0.92);
+  --bg-solid: #141A26;
+  --bg-warm: #121620;
 
-  --border-subtle: #27272A;
-  --border-default: #3F3F46;
-  --border-accent: var(--brand);
-  --border-glow: rgba(56, 189, 248, 0.25);
+  --border-subtle: #1E2430;
+  --border-default: #2A3245;
+  --border-accent: #00FF66;
+  --border-glow: rgba(0, 255, 102, 0.25);
 
   --glass-blur: 16px;
   --glass-blur-strong: 24px;
   --glass-saturate: 120%;
   --glass-highlight: rgba(255, 255, 255, 0.05);
   --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
-  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.05), inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 0 0 1px rgba(0, 255, 102, 0.12);
   --glass-sheen: none;
 
-  --accent: var(--brand);
-  --accent-hover: var(--brand-bright);
-  --accent-dim: rgba(56, 189, 248, 0.14);
-  --accent-glow: rgba(56, 189, 248, 0.25);
-  --accent-companion: #38BDF8;
-  --accent-gradient: #38BDF8;
-  --on-accent: #000000;
-  --shadow-glow-accent: 0 4px 20px rgba(56, 189, 248, 0.3);
+  --accent: #00FF66;
+  --accent-action: #FF3E00;
+  --accent-hover: #00E65C;
+  --accent-dim: rgba(0, 255, 102, 0.14);
+  --accent-glow: rgba(0, 255, 102, 0.25);
+  --accent-companion: #FF3E00;
+  --accent-gradient: #00FF66;
+  --on-accent: #0B0E14;
+  --shadow-glow-accent: 0 4px 20px rgba(0, 255, 102, 0.3);
 
-  --text-primary: #F8FAFC;
+  /* Text — Pure white on deep dark = maximum contrast */
+  --text-primary: #FFFFFF;
   --text-secondary: #94A3B8;
   --text-tertiary: #64748B;
-  --text-accent-strong: #38BDF8;
+  --text-accent-strong: #00FF66;
 
-  --correct: #4ADE80;
-  --correct-bg: rgba(74, 222, 128, 0.12);
-  --wrong: #F87171;
-  --wrong-bg: rgba(248, 113, 113, 0.12);
+  --correct: #00FF66;
+  --correct-bg: rgba(0, 255, 102, 0.15);
+  --wrong: #FF3E00;
+  --wrong-bg: rgba(255, 62, 0, 0.15);
   --locked: #3F3F46;
 
-  --subject-physics: #38BDF8;
-  --subject-chemistry: #4ADE80;
-  --subject-economics: #FBBF24;
-  --subject-biology: #F472B6;
-  --subject-cs: #38BDF8;
-  --subject-history: #F59E0B;
-  --subject-general: #38BDF8;
+  --subject-physics: #00FF66;
+  --subject-chemistry: #33FF85;
+  --subject-economics: #FF3E00;
+  --subject-biology: #00FF66;
+  --subject-cs: #00FF66;
+  --subject-history: #FF3E00;
+  --subject-general: #00FF66;
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.6);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.6);
-  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.7);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6);
+  --shadow-glow-correct: 0 0 20px rgba(0, 255, 102, 0.25);
 
-  --aurora-1: rgba(56, 189, 248, 0.12);
-  --aurora-2: rgba(248, 113, 113, 0.12);
-  --aurora-3: rgba(74, 222, 128, 0.12);
+  --focus-ring: 0 0 0 3px rgba(0, 255, 102, 0.3);
+  --focus-ring-simple: 0 0 0 2px #00FF66;
+
+  --scrim: rgba(0, 0, 0, 0.6);
+
+  --aurora-1: rgba(0, 255, 102, 0.08);
+  --aurora-2: rgba(255, 62, 0, 0.08);
+  --aurora-3: rgba(0, 255, 102, 0.05);
 }
 
 html {
@@ -526,12 +534,8 @@ h1, h2, h3, h4 {
 html[data-theme="dark"] h1,
 html[data-theme="dark"] h2,
 html[data-theme="dark"] h3,
-html[data-theme="dark"] h4,
-html[data-theme="twilight"] h1,
-html[data-theme="twilight"] h2,
-html[data-theme="twilight"] h3,
-html[data-theme="twilight"] h4 {
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+html[data-theme="dark"] h4 {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 /* ── Crosshatch texture — a dense, fine weave for surfaces that want a
@@ -1994,7 +1998,7 @@ p {
    Reusable classes that replace brittle inline onMouseEnter/onMouseLeave style
    mutations. Every class has focus-visible parity with hover, respects
    prefers-reduced-motion, and uses the Still Ink tokens so it
-   stays correct in light, dark (monsoon indigo), and twilight (royal purple) themes.
+   stays correct in light and dark themes.
    Design principles: rasa (emotional tone), tala (rhythmic spacing),
    alankara (purposeful ornament), and santulan (balance).
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -2013,9 +2017,9 @@ p {
   padding: 13px 26px;
   min-height: 52px;
   font-family: var(--font-display), system-ui, sans-serif;
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
   color: var(--on-accent);
   background: var(--accent-gradient);
   cursor: pointer;

@@ -71,7 +71,7 @@ export interface LessonJourney {
   keyTakeaways: string[];
 }
 
-export type Theme = "light" | "dark" | "twilight";
+export type Theme = "light" | "dark";
 
 export interface SavedJourney {
   id: string;
