@@ -13,26 +13,26 @@ import { useMounted } from "@/hooks/useMounted";
 /** Curated "spark" topics — a stable one per calendar day removes the
  * blank-input friction that keeps people from re-engaging. */
 const DAILY_TOPICS = [
-  "Why is the sky blue?",
+  "How does my For You page decide what I see?",
   "How do black holes bend time?",
-  "What causes inflation in an economy?",
-  "How does mRNA vaccine technology work?",
+  "Why is everything so expensive right now?",
+  "What does caffeine actually do to my brain?",
   "Why do we dream?",
-  "How did the pyramids get built?",
+  "How do game engines fake realistic physics?",
   "What is quantum entanglement?",
   "How does the stock market actually work?",
-  "Why do earthquakes happen?",
-  "How do neural networks learn?",
   "What makes something go viral?",
-  "How does the immune system fight disease?",
-  "Why is the ocean salty?",
-  "How do vaccines create herd immunity?",
+  "How do neural networks learn?",
+  "Why can't we just print more money?",
+  "What happens in my brain when I doomscroll?",
+  "Why is the ocean still mostly unexplored?",
+  "How do vaccines train your immune system?",
   "What is dark matter?",
-  "How does photosynthesis power life?",
+  "How do speedrunners break games with math?",
   "Why do civilizations collapse?",
   "How do airplanes stay in the air?",
-  "What is compound interest?",
-  "How does the brain form memories?",
+  "Why does compound interest make early money huge?",
+  "How does your brain save memories while you sleep?",
 ];
 
 function dayOfYear(d: Date): number {

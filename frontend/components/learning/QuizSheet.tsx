@@ -252,7 +252,7 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
               ? "Next Question →"
               : success
                 ? "Unlock Next Part →"
-                : "Read Again"}
+                : "Run It Back"}
           </button>
         ) : null}
       </div>

@@ -184,12 +184,12 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
               WebkitTextFillColor: "transparent",
             }}
           >
-            {(lesson.parts?.length ?? 3) === 1 ? "Quick Answer Mastered" : "Journey Complete"}
+            {(lesson.parts?.length ?? 3) === 1 ? "Quick W" : "Run Complete"}
           </h3>
           <p style={{ marginTop: 6, color: "var(--text-secondary)", fontSize: 15 }}>
             {/* First-try score: quizzes must be perfected to advance, so the
                 meaningful number is how you did before any retries. */}
-            You scored <strong style={{ color: "var(--correct)" }}>{totalScore}/{maxScore}</strong> on the first try — {pct >= 80 ? "excellent work." : pct >= 50 ? "a solid effort." : "a tough one, worth another pass."}
+            You scored <strong style={{ color: "var(--correct)" }}>{totalScore}/{maxScore}</strong> on the first try — {pct >= 80 ? "clean run." : pct >= 50 ? "solid. The retries locked it in." : "tough one. A rematch would hit different."}
           </p>
         </div>
       </div>

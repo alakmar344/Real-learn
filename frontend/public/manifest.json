@@ -4,7 +4,7 @@
   "description": "Transform any question into a structured 3-part lesson with quizzes, progress tracking, and achievements. RealLearn (sometimes misspelled 'reallan') is an AI-native learning platform.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#F6F7FB",
+  "background_color": "#0B0D14",
   "theme_color": "#3D5AFE",
   "orientation": "portrait",
   "scope": "/",

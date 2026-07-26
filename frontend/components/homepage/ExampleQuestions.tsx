@@ -2,15 +2,19 @@
 
 import { useEffect, useState } from "react";
 
+/* Questions from THEIR world — algorithms, games, money, brains, internet
+   culture — each one a real lesson in disguise (CS, econ, bio, physics…). */
 const RECOMMENDATIONS = [
-  "Explain quantum physics like I'm 5 🧠",
-  "Why is inflation hurting my wallet? 💸",
-  "Is AI going to take my job? 🤖",
-  "How do black holes bend time and space? 🌌",
-  "Why do we dream when we sleep? 🌙",
-  "How do airplanes stay up in the air? ✈️",
-  "What actually caused the Roman Empire to collapse? 🏛️",
-  "How does the human immune system fight viruses? 🦠",
+  "How does my For You page know me so well? 🧠",
+  "Why is everything so expensive right now? 💸",
+  "How does AI actually learn — and can it think? 🤖",
+  "What does doomscrolling do to my brain? 📱",
+  "How do black holes bend time itself? 🌌",
+  "How do speedrunners break games with physics? 🎮",
+  "Why do memes spread exactly like viruses? 🦠",
+  "What actually happens in my brain at 3am? 🌙",
+  "How do sneaker resellers make money from hype? 👟",
+  "Why can't we just print more money? 🏦",
 ];
 
 interface Props {
