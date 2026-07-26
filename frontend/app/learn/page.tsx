@@ -404,7 +404,7 @@ export default function LearnPage() {
           }}
         >
           <Navbar compact />
-          <div style={{ maxWidth: 800, margin: "0 auto", padding: "0 clamp(16px, 4vw, 48px) 16px" }}>
+          <div style={{ maxWidth: 920, margin: "0 auto", padding: "0 clamp(16px, 4vw, 48px) 16px" }}>
             <span
               style={{
                 display: "inline-block",
@@ -447,7 +447,7 @@ export default function LearnPage() {
           </div>
         </div>
 
-        <div style={{ maxWidth: 800, margin: "0 auto", padding: "0 clamp(16px, 4vw, 48px) 80px" }}>
+        <div style={{ maxWidth: 920, margin: "0 auto", padding: "0 clamp(16px, 4vw, 48px) 80px" }}>
           <ProgressRail unlockedPart={unlockedPart} completedParts={completedParts} totalParts={totalParts} />
 
           {lesson.parts.map((part) => (
