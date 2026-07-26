@@ -12,8 +12,8 @@ import { LessonMode } from "@/types";
 const MAX_QUESTION_LENGTH = 1000;
 
 const MODES: { value: LessonMode; label: string; hint: string }[] = [
-  { value: "fast", label: "Fast", hint: "A quick, simple answer to get started" },
-  { value: "explain", label: "Explain", hint: "A guided 3-part lesson with real-world context" },
+  { value: "fast", label: "Fast", hint: "Straight answer, zero fluff" },
+  { value: "explain", label: "Explain", hint: "Full 3-part deep dive — quizzes included" },
 ];
 
 interface Props {
@@ -117,7 +117,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           onBlur={() => { setFocused(false); window.setTimeout(() => setShowHint(false), 2000); }}
           onKeyDown={handleKeyDown}
           maxLength={MAX_QUESTION_LENGTH}
-          placeholder="Start with any question — even a basic one"
+          placeholder="Ask literally anything — no dumb questions here"
           aria-label="Your question"
           className="q-form__textarea"
         />

@@ -17,13 +17,13 @@ const steps = [
 ];
 
 const facts = [
-  "Spacing study sessions out beats cramming for long-term memory.",
-  "Teaching a concept to someone else is one of the fastest ways to master it.",
-  "Your brain consolidates new learning while you sleep.",
-  "Active recall — quizzing yourself — sticks far better than re-reading.",
-  "Connecting ideas to real-world examples makes them easier to remember.",
-  "Short breaks between focused study sessions boost how much you retain.",
-  "Curiosity primes your brain to absorb information.",
+  "Short spaced sessions beat one giant cram — your brain saves in checkpoints, not one big file.",
+  "Explaining a concept to a friend is the fastest way to lock it in. Group chat counts.",
+  "Your brain literally rewires while you sleep — tonight it saves what you learn right now.",
+  "Quizzing yourself beats re-reading every time. That's why the quizzes here aren't optional.",
+  "Attention is trainable in both directions — feeds train it one way, this trains it back.",
+  "Ideas stick when they connect to something you already care about. That's the whole trick.",
+  "Asking the question already primed your brain to remember the answer. You're ahead.",
 ];
 
 // Clean vector check — a small, deliberate mark instead of an emoji.
@@ -184,8 +184,8 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
 
         {takingLonger && (
           <p className="loading-cinematic__patience animate-fade-up" role="status">
-            Taking a little longer than usual — we&apos;re double-checking your
-            lesson so it&apos;s worth the wait.
+            Okay, this one&apos;s taking a second — we&apos;re fact-checking your
+            lesson instead of making things up. Worth it.
           </p>
         )}
 

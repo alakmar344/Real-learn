@@ -52,11 +52,11 @@ module.exports = {
         mono: ["var(--font-mono)", "monospace"],
       },
       borderRadius: {
-        sm: "4px",
-        md: "6px",
-        lg: "8px",
-        xl: "12px",
-        "2xl": "16px",
+        sm: "6px",
+        md: "10px",
+        lg: "14px",
+        xl: "18px",
+        "2xl": "24px",
       },
       animation: {
         "fade-in": "fadeIn 0.3s ease-in-out",

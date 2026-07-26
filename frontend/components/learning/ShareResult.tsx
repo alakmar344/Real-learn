@@ -58,10 +58,10 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
 
       // Rich dark gradient — purple core to teal edges
       const bgGrad = ctx.createRadialGradient(W / 2, H * 0.35, 80, W / 2, H / 2, H);
-      bgGrad.addColorStop(0, "#1E3A4C");
-      bgGrad.addColorStop(0.45, "#152B3A");
-      bgGrad.addColorStop(0.85, "#0F2029");
-      bgGrad.addColorStop(1, "#0A161D");
+      bgGrad.addColorStop(0, "#20244A");
+      bgGrad.addColorStop(0.45, "#161936");
+      bgGrad.addColorStop(0.85, "#0D0F22");
+      bgGrad.addColorStop(1, "#080914");
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, W, H);
 
@@ -75,9 +75,9 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
         ctx.arc(ox, oy, r, 0, Math.PI * 2);
         ctx.fill();
       };
-      orb(W * 0.15, H * 0.12, 340, "rgba(120, 60, 200, 0.35)");
-      orb(W * 0.85, H * 0.22, 280, "rgba(0, 180, 220, 0.25)");
-      orb(W * 0.5, H * 0.75, 420, "rgba(0, 140, 180, 0.15)");
+      orb(W * 0.15, H * 0.12, 340, "rgba(124, 77, 255, 0.35)");
+      orb(W * 0.85, H * 0.22, 280, "rgba(255, 77, 109, 0.22)");
+      orb(W * 0.5, H * 0.75, 420, "rgba(61, 90, 254, 0.18)");
 
       // Subtle grid texture
       ctx.strokeStyle = "rgba(255, 255, 255, 0.04)";
@@ -100,7 +100,7 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
       ctx.font = "900 92px Inter, sans-serif";
       ctx.fillStyle = "#ffffff";
       ctx.fillText("Real", W / 2 + 10, 180);
-      ctx.fillStyle = "#A5D8F2";
+      ctx.fillStyle = "#A9BAFF";
       ctx.fillText("Learn", W / 2 + 10, 280);
       ctx.font = "600 36px Inter, sans-serif";
       ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
@@ -134,7 +134,7 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
       const dot = (dx: number, dy: number) => {
         ctx.beginPath();
         ctx.arc(72 + dx, boxY + dy, 6, 0, Math.PI * 2);
-        ctx.fillStyle = "#A5D8F2";
+        ctx.fillStyle = "#A9BAFF";
         ctx.fill();
       };
       dot(0, 0);
@@ -143,7 +143,7 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
       dot(W - 72 - 72, 480);
 
       ctx.textAlign = "center";
-      ctx.fillStyle = "#A5D8F2";
+      ctx.fillStyle = "#A9BAFF";
       ctx.font = "600 42px Inter, sans-serif";
       ctx.fillText("QUESTION", W / 2, boxY + 70);
 
@@ -156,9 +156,9 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
 
       // Stats row — clean bordered glass pills
       const pills = [
-        { text: `⭐ Level ${info.level} · ${levelTitle(info.level)}`, color: "#7FC5E8" },
-        { text: `🔥 ${streak}-day streak`, color: "#FFB08C" },
-        totalScore >= maxScore ? { text: "🏆 Perfect run", color: "#A5D8F2" } : { text: "✅ Completed", color: "#A5D8F2" },
+        { text: `⭐ Level ${info.level} · ${levelTitle(info.level)}`, color: "#6C8BFF" },
+        { text: `🔥 ${streak}-day streak`, color: "#FF6B85" },
+        totalScore >= maxScore ? { text: "🏆 Perfect run", color: "#A9BAFF" } : { text: "✅ Completed", color: "#A9BAFF" },
       ];
       ctx.font = "700 34px Inter, sans-serif";
       let px = 72;
@@ -201,8 +201,8 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
 
       // Progress arc
       const arcGrad = ctx.createLinearGradient(cx - r, cy, cx + r, cy);
-      arcGrad.addColorStop(0, "#A5D8F2");
-      arcGrad.addColorStop(1, "#7FC5E8");
+      arcGrad.addColorStop(0, "#A9BAFF");
+      arcGrad.addColorStop(1, "#7C4DFF");
       ctx.strokeStyle = arcGrad;
       ctx.lineWidth = 18;
       ctx.lineCap = "round";
@@ -236,14 +236,14 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
 
       ctx.textAlign = "center";
       ctx.font = "700 32px Inter, sans-serif";
-      ctx.fillStyle = "#A5D8F2";
+      ctx.fillStyle = "#A9BAFF";
       ctx.fillText(totalScore >= maxScore ? "PERFECT" : "COMPLETED", cx, cy + 80);
 
       ctx.textAlign = "left";
 
       // CTA band — prominent but structured
       const ctaY = H - 130;
-      ctx.fillStyle = "#A5D8F2";
+      ctx.fillStyle = "#A9BAFF";
       ctx.shadowColor = "rgba(0, 224, 198, 0.35)";
       ctx.shadowBlur = 35;
       ctx.beginPath();
@@ -258,7 +258,7 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
       ctx.fill();
 
       ctx.textAlign = "center";
-      ctx.fillStyle = "#0A161D";
+      ctx.fillStyle = "#080914";
       ctx.font = "900 46px Inter, sans-serif";
       ctx.fillText("👉  REALLEARN.SITE  👈", W / 2, ctaY + 65);
 

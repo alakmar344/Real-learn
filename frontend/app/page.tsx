@@ -20,14 +20,15 @@ const FeedbackGate = dynamic(() => import("@/components/shared/FeedbackGate"), {
   ssr: false,
 });
 
-// time-of-day greeting
+// Time-of-day greeting — casual and direct, like a friend, not a formal
+// "Good morning" email. Short so the hero type stays huge.
 function greetingForHour(h: number): string {
   if (h < 4) return "Still up?";
-  if (h < 7) return "Good morning";
-  if (h < 12) return "Good morning";
-  if (h < 17) return "Good afternoon";
-  if (h < 21) return "Good evening";
-  return "Good evening";
+  if (h < 7) return "Up early";
+  if (h < 12) return "Morning";
+  if (h < 17) return "Hey";
+  if (h < 21) return "Evening";
+  return "Late night mode";
 }
 
 export default function HomePage() {

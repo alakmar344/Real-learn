@@ -48,15 +48,17 @@ export function levelInfo(totalXp: number): LevelInfo {
   };
 }
 
-/** A friendly title for a level band — pure flavour, drives pride. */
+/** A friendly title for a level band — pure flavour, drives pride.
+ * Gaming-native ranks: an identity ladder you'd actually flex on a share
+ * card, not a dusty RPG guild ("Apprentice… Sage"). */
 export function levelTitle(level: number): string {
-  if (level >= 30) return "Sage";
-  if (level >= 20) return "Scholar";
-  if (level >= 14) return "Polymath";
-  if (level >= 9) return "Thinker";
-  if (level >= 5) return "Apprentice";
+  if (level >= 30) return "Final Boss";
+  if (level >= 20) return "Main Character";
+  if (level >= 14) return "Big Brain";
+  if (level >= 9) return "Locked In";
+  if (level >= 5) return "On the Grind";
   if (level >= 3) return "Explorer";
-  return "Curious";
+  return "Fresh Spawn";
 }
 
 /* ─────────────────────────── XP awards ─────────────────────────── */
@@ -188,7 +190,7 @@ export const BADGES: Badge[] = [
   {
     id: "first_spark",
     emoji: "🌱",
-    title: "First Spark",
+    title: "First W",
     description: "Pass your very first quiz part.",
     how: "Ask any question you're curious about, read Part 1, and pass its little quiz. That's it — your journey begins.",
     tier: "bronze",
@@ -198,7 +200,7 @@ export const BADGES: Badge[] = [
   {
     id: "first_lesson",
     emoji: "🎓",
-    title: "First Steps",
+    title: "Tutorial Complete",
     description: "Complete your very first learning journey.",
     how: "Finish all the parts of one lesson — read each part and pass its quiz to unlock the next.",
     tier: "bronze",
@@ -208,7 +210,7 @@ export const BADGES: Badge[] = [
   {
     id: "first_wonder",
     emoji: "💭",
-    title: "First Wonder",
+    title: "Rabbit Hole Opened",
     description: "Ask your first follow-up question.",
     how: "After finishing a lesson, tap the follow-up box and ask anything the lesson made you wonder about.",
     tier: "bronze",
@@ -228,7 +230,7 @@ export const BADGES: Badge[] = [
   {
     id: "level_2",
     emoji: "✨",
-    title: "Getting Brighter",
+    title: "Level Up",
     description: "Reach Level 2.",
     how: "Earn 100 XP by passing quizzes and completing journeys — one or two lessons will get you there.",
     tier: "bronze",
@@ -238,9 +240,9 @@ export const BADGES: Badge[] = [
   {
     id: "streak_2",
     emoji: "🕯️",
-    title: "Two Candles",
+    title: "Back-to-Back",
     description: "Learn on 2 days in a row.",
-    how: "Meet your daily goal today, then come back tomorrow and do it again. Two days, one little flame.",
+    how: "Meet your daily goal today, then pull up again tomorrow. Two days back-to-back starts the run.",
     tier: "bronze",
     progress: (s) => ratio(s.longestStreak, 2),
     earned: (s) => s.longestStreak >= 2,
@@ -248,7 +250,7 @@ export const BADGES: Badge[] = [
   {
     id: "branching_out",
     emoji: "🌿",
-    title: "Branching Out",
+    title: "Side Quest",
     description: "Explore 2 different subjects.",
     how: "Ask questions from two different worlds — maybe one about physics, then one about history.",
     tier: "bronze",
@@ -270,7 +272,7 @@ export const BADGES: Badge[] = [
     emoji: "🦉",
     title: "Night Owl",
     description: "Learn something after midnight.",
-    how: "Pass a quiz part between midnight and 5am — for the quiet hours when curiosity won't sleep.",
+    how: "Pass a quiz part between midnight and 5am — for the 3am search-history hours.",
     tier: "bronze",
     progress: (s) => (s.lastActivityHour !== null && s.lastActivityHour < 5 ? 1 : 0),
     earned: (s) => s.lastActivityHour !== null && s.lastActivityHour >= 0 && s.lastActivityHour < 5,
@@ -288,7 +290,7 @@ export const BADGES: Badge[] = [
   {
     id: "streak_3",
     emoji: "🔥",
-    title: "Warming Up",
+    title: "It's a Streak Now",
     description: "Keep a 3-day learning streak.",
     how: "Meet your daily goal three days in a row. A streak freeze will protect you if you miss one day.",
     tier: "bronze",
@@ -300,7 +302,7 @@ export const BADGES: Badge[] = [
   {
     id: "ten_parts",
     emoji: "🧩",
-    title: "Quiz Whiz",
+    title: "Quiz Boss",
     description: "Pass 10 quiz parts.",
     how: "Keep passing part quizzes across any lessons — every part counts toward the ten.",
     tier: "silver",
@@ -310,9 +312,9 @@ export const BADGES: Badge[] = [
   {
     id: "five_lessons",
     emoji: "📚",
-    title: "Bookworm",
+    title: "Binge Learner",
     description: "Complete 5 learning journeys.",
-    how: "Finish five full lessons, on any topics you like — the shelf fills faster than you think.",
+    how: "Finish five full lessons on anything you like — one more episode, but it's knowledge.",
     tier: "silver",
     progress: (s) => ratio(s.lessonsCompleted, 5),
     earned: (s) => s.lessonsCompleted >= 5,
@@ -320,9 +322,9 @@ export const BADGES: Badge[] = [
   {
     id: "xp_500",
     emoji: "🏮",
-    title: "Steady Flame",
+    title: "XP Farmer",
     description: "Gather 500 lifetime XP.",
-    how: "Every quiz passed and journey finished adds XP. Keep going — a little brighter every day.",
+    how: "Every quiz passed and journey finished drops XP. Farm it honestly — 500 lifetime and it's yours.",
     tier: "silver",
     progress: (s) => ratio(s.xp, 500),
     earned: (s) => s.xp >= 500,
@@ -350,7 +352,7 @@ export const BADGES: Badge[] = [
   {
     id: "level_5",
     emoji: "⭐",
-    title: "Rising Star",
+    title: "Built Different",
     description: "Reach Level 5.",
     how: "Keep earning XP from quizzes, perfect parts and finished journeys until Level 5 lights up.",
     tier: "silver",
@@ -360,9 +362,9 @@ export const BADGES: Badge[] = [
   {
     id: "curious_cat",
     emoji: "🐈",
-    title: "Curious Cat",
+    title: "Terminally Curious",
     description: "Ask 5 follow-up questions.",
-    how: "After lessons, use the follow-up box whenever something tugs at you. Five wonders make a whisker.",
+    how: "After lessons, hit the follow-up box whenever something bugs you. Five follow-ups and it's official.",
     tier: "silver",
     progress: (s) => ratio(s.followUps, 5),
     earned: (s) => s.followUps >= 5,
@@ -412,9 +414,9 @@ export const BADGES: Badge[] = [
   {
     id: "twenty_lessons",
     emoji: "🧠",
-    title: "Knowledge Seeker",
+    title: "Walking Wikipedia",
     description: "Complete 20 learning journeys.",
-    how: "Twenty finished journeys. By now the questions come to you — follow them.",
+    how: "Twenty finished journeys. At this point the questions come to you — keep following them.",
     tier: "gold",
     progress: (s) => ratio(s.lessonsCompleted, 20),
     earned: (s) => s.lessonsCompleted >= 20,
@@ -422,7 +424,7 @@ export const BADGES: Badge[] = [
   {
     id: "streak_14",
     emoji: "🌙",
-    title: "Fortnight of Focus",
+    title: "Two Weeks, No Misses",
     description: "Keep a 14-day learning streak.",
     how: "Meet your daily goal every day for two weeks straight. Small steps, every single day.",
     tier: "gold",
@@ -442,7 +444,7 @@ export const BADGES: Badge[] = [
   {
     id: "level_10",
     emoji: "🚀",
-    title: "Ascendant",
+    title: "Cracked",
     description: "Reach Level 10.",
     how: "Keep the XP flowing — daily goals, perfect parts and finished journeys all push you upward.",
     tier: "gold",
@@ -452,7 +454,7 @@ export const BADGES: Badge[] = [
   {
     id: "renaissance",
     emoji: "🎭",
-    title: "Renaissance Mind",
+    title: "Genre Hopper",
     description: "Explore 5 different subjects.",
     how: "Wander widely: ask questions across five subjects — science, history, economics, anything.",
     tier: "gold",
@@ -464,7 +466,7 @@ export const BADGES: Badge[] = [
     emoji: "🧱",
     title: "Habit Builder",
     description: "Hit your daily goal 20 times.",
-    how: "Twenty days of met goals, in any pattern. Brick by brick, a habit becomes a home.",
+    how: "Twenty days of met goals, in any pattern. That's not motivation anymore, that's a system.",
     tier: "gold",
     progress: (s) => ratio(s.dailyGoalsMet, 20),
     earned: (s) => s.dailyGoalsMet >= 20,
@@ -472,9 +474,9 @@ export const BADGES: Badge[] = [
   {
     id: "endless_wonder",
     emoji: "🎐",
-    title: "Endless Wonder",
+    title: "Thread Puller",
     description: "Ask 15 follow-up questions.",
-    how: "Keep pulling the thread after each lesson — fifteen follow-ups and the wondering never stops.",
+    how: "Keep pulling the thread after each lesson — fifteen follow-ups deep is a proper rabbit hole.",
     tier: "gold",
     progress: (s) => ratio(s.followUps, 15),
     earned: (s) => s.followUps >= 15,
@@ -486,7 +488,7 @@ export const BADGES: Badge[] = [
     emoji: "🌟",
     title: "Unstoppable",
     description: "Keep a 30-day learning streak.",
-    how: "A whole month of met daily goals. Guard your streak freezes — you'll earn a legend.",
+    how: "A whole month of met daily goals. Guard your streak freezes with your life.",
     tier: "legendary",
     progress: (s) => ratio(s.longestStreak, 30),
     earned: (s) => s.longestStreak >= 30,
@@ -494,9 +496,9 @@ export const BADGES: Badge[] = [
   {
     id: "grand_library",
     emoji: "🏛️",
-    title: "Grand Library",
+    title: "Lore Master",
     description: "Complete 50 learning journeys.",
-    how: "Fifty finished journeys — a library of your own making. One lesson at a time.",
+    how: "Fifty finished journeys. At this point you ARE the group chat's fact-checker.",
     tier: "legendary",
     progress: (s) => ratio(s.lessonsCompleted, 50),
     earned: (s) => s.lessonsCompleted >= 50,
@@ -504,9 +506,9 @@ export const BADGES: Badge[] = [
   {
     id: "level_20",
     emoji: "🌌",
-    title: "Luminary",
+    title: "Final Form",
     description: "Reach Level 20.",
-    how: "The long road: keep learning daily and let the XP gather. Scholars are made of patient days.",
+    how: "The long road: keep showing up daily and let the XP stack. Level 20 is earned, never given.",
     tier: "legendary",
     progress: (s) => ratio(s.level, 20),
     earned: (s) => s.level >= 20,

@@ -65,7 +65,7 @@ export default function FollowUpBox({ onSubmit }: Props) {
             }
           }
         }}
-        placeholder="Go deeper..."
+        placeholder="Still curious? Pull the thread…"
         aria-label="Follow-up question"
         maxLength={MAX_QUESTION_LENGTH}
         style={{

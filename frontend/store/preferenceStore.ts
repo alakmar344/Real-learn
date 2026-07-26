@@ -90,7 +90,8 @@ function prefLog(action: string, details?: unknown) {
 export const usePreferenceStore = create<PreferenceStore>()(
   persist(
     (set) => ({
-      theme: existing.theme ?? "light",
+      // Void (dark) is the default room — the audience is dark-mode-first.
+      theme: existing.theme ?? "dark",
       language: existing.language ?? "English",
       level: existing.level ?? "Class 9-10",
       mode: "fast",
