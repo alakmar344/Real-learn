@@ -50,7 +50,7 @@ const STEPS = [
     bullets: [
       "Listen aloud to any lesson section with native Web Speech TTS.",
       "Use quick keyboard shortcuts (1–4 / A–D for quizzes, Ctrl+Enter to submit).",
-      "Switch room moods anytime: Paper (cream day), Ink (night), or Dusk (twilight)."
+      "Switch between Paper (bright day) and Ink (dark night) anytime."
     ]
   }
 ];

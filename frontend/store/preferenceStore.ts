@@ -10,7 +10,7 @@ import {
   sanitizeLearningPreferences,
 } from "@/lib/personalization";
 
-const VALID_THEMES: Theme[] = ["light", "dark", "twilight"];
+const VALID_THEMES: Theme[] = ["light", "dark"];
 // SAFEGUARD: legacy localStorage values seed the store below, so every field
 // must be validated against its allowlist — `theme` always was, but
 // `language`/`level` were only checked to be strings, letting a corrupted or
