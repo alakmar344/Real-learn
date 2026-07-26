@@ -10,9 +10,10 @@ import dynamic from "next/dynamic";
 import { useLesson } from "@/hooks/useLesson";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { isConsentCurrent, readLegalConsent, writeLegalConsent } from "@/lib/legalConsent";
+import { Skeleton } from "@/components/shared/Skeleton";
 
 const Footer = dynamic(() => import("@/components/shared/Footer"), {
-  loading: () => <div style={{ height: 120 }} aria-hidden="true" />,
+  loading: () => <Skeleton height={120} borderRadius={0} />,
   ssr: true,
 });
 const FeedbackGate = dynamic(() => import("@/components/shared/FeedbackGate"), {

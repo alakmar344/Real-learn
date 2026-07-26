@@ -13,6 +13,7 @@ import { useSavedJourneysStore } from "@/store/savedJourneysStore";
 import { cancelPendingDebouncedWrites } from "@/lib/debouncedStorage";
 import { clearArchivedLessons } from "@/lib/lessonArchive";
 import { useMounted } from "@/hooks/useMounted";
+import { Skeleton, SkeletonCard } from "@/components/shared/Skeleton";
 import {
   COOKIE_CONSENT_ACCEPTED_EVENT,
   COOKIE_CONSENT_REVOKED_EVENT,
@@ -327,12 +328,19 @@ export default function SettingsPage() {
         style={{
           minHeight: "100vh",
           color: "var(--text-primary)",
+          maxWidth: 680,
+          margin: "0 auto",
+          padding: "32px 20px 60px",
           display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          flexDirection: "column",
+          gap: 20,
         }}
+        aria-label="Loading settings..."
       >
-        <p style={{ color: "var(--text-secondary)" }}>Loading…</p>
+        <Skeleton height={32} width="40%" borderRadius="6px" />
+        <SkeletonCard height={140} />
+        <SkeletonCard height={180} />
+        <SkeletonCard height={160} />
       </main>
     );
   }

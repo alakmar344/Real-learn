@@ -9,13 +9,20 @@ import { useProgressStore } from "@/store/progressStore";
 import { levelInfo, levelTitle, dayKey, daysBetween, ProgressSnapshot } from "@/lib/achievements";
 import { useMounted } from "@/hooks/useMounted";
 import { useShallow } from "zustand/shallow";
+import { Skeleton, SkeletonCard, SkeletonTile } from "@/components/shared/Skeleton";
 
 const ActivityHeatmap = dynamic(() => import("@/components/shared/ActivityHeatmap"), {
-  loading: () => <div style={{ height: 140 }} aria-hidden="true" />,
+  loading: () => <Skeleton height={140} borderRadius="var(--radius-xl)" />,
   ssr: true,
 });
 const AchievementsGrid = dynamic(() => import("@/components/shared/AchievementsGrid"), {
-  loading: () => <div style={{ height: 300 }} aria-hidden="true" />,
+  loading: () => (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: 12 }}>
+      {Array.from({ length: 6 }).map((_, i) => (
+        <SkeletonTile key={i} />
+      ))}
+    </div>
+  ),
   ssr: true,
 });
 
@@ -138,7 +145,18 @@ export default function ProgressPage() {
         </div>
 
         {!mounted ? (
-          <div style={{ height: 320 }} aria-hidden="true" />
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }} aria-label="Loading progress...">
+            <SkeletonCard height={120} />
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 14 }}>
+              <SkeletonCard height={150} />
+              <SkeletonCard height={150} />
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(96px, 1fr))", gap: 10 }}>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <SkeletonTile key={i} />
+              ))}
+            </div>
+          </div>
         ) : (
           <>
             {/* Level hero */}
