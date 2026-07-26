@@ -11,71 +11,71 @@
   color-scheme: light;
 
   /* ═══════════════════════════════════════════════════════════════════════
-     RealLearn "Bold Canvas" design language — built for Gen Z & Gen Alpha.
-     Not cozy-editorial: confident. A crisp, near-white canvas (no sepia
-     hygge), crisp near-black ink, and ONE electric accent used decisively —
-     electric blue with a hot-coral companion. Effects are intentional, not
-     hazy: less blur, less aurora, less grain. High signal, high contrast,
-     chunky tactile shapes, snappy springy motion. Three rooms, same energy:
-       Canvas (clean day) · Void (deep OLED night) · Dusk (sunset evening)
+     RealLearn "Soft Pastel" design language — bold, minimal, Gen Z native.
+     A warm cream paper base washed with pastel sky, peach and mint; a clear
+     sky-blue accent anchors buttons and links. NO purple/violet — owner's
+     standing rule. Effects are intentional: less blur, less grain, more
+     breath. High signal, generous whitespace, chunky tactile shapes, snappy
+     springy motion. Three rooms, same warmth:
+       Paper (cream day) · Ink (charcoal night) · Dusk (sunset evening)
      Every surface, control and chart reads from these tokens; change the
      room here, never in components.
      ═══════════════════════════════════════════════════════════════════════ */
 
-  /* Brand accent — electric blue. Vivid, confident, unmistakably now. */
-  --brand: #3D5AFE;
-  --brand-strong: #2438D8;
-  --brand-bright: #7C8CFF;
-  --brand-soft: #DEE3FF;
+  /* Brand accent — sky blue. Warm, confident, zero violet. */
+  --brand: #0284C7;
+  --brand-strong: #0369A1;
+  --brand-bright: #38BDF8;
+  --brand-soft: #E0F2FE;
 
   /* Ink scale (legacy `cobalt` names kept for the editorial classes). */
-  --cobalt-deep: #14161F;
-  --cobalt-mid: #3A3F52;
-  --cobalt-vivid: #3D5AFE;
-  --cobalt-pale: #DEE3FF;
-  --cobalt-wash: rgba(61, 90, 254, 0.08);
-  --cobalt-ink: #0E0F16;
+  --cobalt-deep: #1E1A14;
+  --cobalt-mid: #4A4237;
+  --cobalt-vivid: #0284C7;
+  --cobalt-pale: #E0F2FE;
+  --cobalt-wash: rgba(2, 132, 199, 0.08);
+  --cobalt-ink: #120F0A;
 
-  /* Canvas: crisp cool-neutral white — clean, bright, never sterile. */
-  --bg-primary: #F6F7FB;
-  --bg-surface: rgba(255, 255, 255, 0.82);
-  --bg-card: rgba(255, 255, 255, 0.9);
-  --bg-card-hover: #FFFFFF;
-  --bg-glass: rgba(248, 249, 253, 0.82);
-  --bg-solid: #EEF0F7;
-  --bg-warm: rgba(245, 246, 251, 0.7);
-  /* Ambient light — electric blue from above, hot coral at the foot. */
-  --ambient-a: rgba(61, 90, 254, 0.1);
-  --ambient-b: rgba(255, 77, 109, 0.07);
+  /* Canvas: warm cream paper — cozy, inviting, never sterile. */
+  --bg-primary: #FFFDF8;
+  --bg-surface: rgba(255, 253, 248, 0.82);
+  --bg-card: rgba(255, 253, 248, 0.9);
+  --bg-card-hover: #FFFEF5;
+  --bg-glass: rgba(255, 252, 244, 0.82);
+  --bg-solid: #F5F0E8;
+  --bg-warm: rgba(255, 253, 245, 0.7);
+  /* Ambient light — sky blue from above, peach warmth at the foot. */
+  --ambient-a: rgba(2, 132, 199, 0.1);
+  --ambient-b: rgba(254, 202, 180, 0.1);
 
-  --border-subtle: rgba(20, 22, 31, 0.08);
-  --border-default: rgba(20, 22, 31, 0.14);
+  --border-subtle: rgba(60, 48, 35, 0.08);
+  --border-default: rgba(60, 48, 35, 0.14);
   --border-accent: var(--brand);
-  --border-glow: rgba(61, 90, 254, 0.32);
+  --border-glow: rgba(2, 132, 199, 0.32);
 
   /* De-slopped glass: less blur, tighter sheen. Depth, not haze. */
   --glass-blur: 16px;
   --glass-blur-strong: 26px;
   --glass-saturate: 128%;
   --glass-highlight: rgba(255, 255, 255, 0.95);
-  --glass-shadow: 0 6px 22px rgba(20, 22, 40, 0.08), 0 1px 3px rgba(20, 22, 40, 0.05);
-  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 0 0 1px rgba(61, 90, 254, 0.05);
-  --glass-sheen: linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(222,227,255,0.12) 40%, rgba(255,255,255,0) 64%);
+  --glass-shadow: 0 6px 22px rgba(60, 48, 35, 0.08), 0 1px 3px rgba(60, 48, 35, 0.05);
+  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 0 0 1px rgba(2, 132, 199, 0.05);
+  --glass-sheen: linear-gradient(135deg, rgba(255,255,253,0.55) 0%, rgba(201,233,250,0.16) 38%, rgba(255,255,255,0) 62%);
 
   --accent: var(--brand);
   --accent-hover: var(--brand-strong);
-  --accent-dim: rgba(61, 90, 254, 0.12);
-  --accent-glow: rgba(61, 90, 254, 0.28);
-  --accent-companion: #FF4D6D;
-  --accent-gradient: linear-gradient(120deg, #3D5AFE 0%, #7C4DFF 55%, #FF4D6D 100%);
+  --accent-dim: rgba(2, 132, 199, 0.12);
+  --accent-glow: rgba(2, 132, 199, 0.28);
+  --accent-companion: #0D9488;
+  --accent-gradient: linear-gradient(135deg, #0284C7 0%, #0D9488 100%);
   --on-accent: #ffffff;
-  --shadow-glow-accent: 0 6px 24px rgba(61, 90, 254, 0.32);
+  --shadow-glow-accent: 0 6px 24px rgba(2, 132, 199, 0.32);
 
-  /* Ink text — crisp near-black, confident on the canvas. */
-  --text-primary: #14161F;
-  --text-secondary: #4A4E5C;
-  --text-tertiary: #868B99;
-  --text-accent-strong: #2438D8;
+  /* Ink text — warm cocoa, confident on cream. */
+  --text-primary: #3C3022;
+  --text-secondary: #6B5E4F;
+  --text-tertiary: #9C9080;
+  --text-accent-strong: #0369A1;
 
   --correct: #128A5B;
   --correct-bg: rgba(18, 138, 91, 0.11);
@@ -84,13 +84,13 @@
   --locked: #AEB2BE;
 
   /* Subject colours — vivid and confident, all readable on the canvas. */
-  --subject-physics: #3D5AFE;
+  --subject-physics: #0284C7;
   --subject-chemistry: #12A15E;
   --subject-economics: #E08600;
   --subject-biology: #E5487F;
   --subject-cs: #0F9BB5;
   --subject-history: #B5722E;
-  --subject-general: #7C4DFF;
+  --subject-general: #0D9488;
 
   /* Chunky, tactile radii — rounded and confident, thumb-friendly. */
   --radius-sm: 10px;
@@ -113,8 +113,9 @@
   --space-sm: 10px;
   --space-md: 18px;
   --space-base: 24px;
-  --space-lg: 40px;
-  --space-xl: 64px;
+  --space-breath: 32px;
+  --space-lg: 48px;
+  --space-xl: 72px;
   --space-2xl: 96px;
   --space-3xl: 140px;
   --space-4xl: 200px;
@@ -152,66 +153,66 @@
   --focus-ring: 0 0 0 3px var(--accent-glow);
   --focus-ring-simple: 0 0 0 2px var(--accent);
 
-  /* Ambient aurora — restrained electric wash. Presence, not a light show. */
-  --aurora-1: rgba(61, 90, 254, 0.14);
-  --aurora-2: rgba(255, 77, 109, 0.1);
-  --aurora-3: rgba(124, 77, 255, 0.1);
+  /* Ambient aurora — restrained pastel wash. Warmth, not a light show. */
+  --aurora-1: rgba(186, 230, 253, 0.4);
+  --aurora-2: rgba(254, 202, 180, 0.32);
+  --aurora-3: rgba(167, 243, 208, 0.28);
 }
 
-/* ── Void (dark) — deep, near-black OLED night with a bright electric
-   accent. High-contrast, punchy, made for phones in the dark. Filled
+/* ── Ink (dark) — warm charcoal night with a bright sky-blue
+   accent. High-contrast, cozy, made for phones in the dark. Filled
    controls glow bright with dark ink text. ── */
 html[data-theme="dark"] {
   color-scheme: dark;
 
-  --brand: #6C8BFF;
-  --brand-strong: #8AA2FF;
-  --brand-bright: #A9BAFF;
-  --brand-soft: #1B2036;
+  --brand: #7FC5E8;
+  --brand-strong: #92D3F0;
+  --brand-bright: #B8E4F8;
+  --brand-soft: #1E2A30;
 
-  --cobalt-deep: #05070C;
-  --cobalt-mid: #2A3150;
-  --cobalt-vivid: #6C8BFF;
-  --cobalt-pale: #DEE3FF;
-  --cobalt-wash: rgba(108, 139, 255, 0.14);
-  --cobalt-ink: #04050A;
+  --cobalt-deep: #0A0908;
+  --cobalt-mid: #3A3428;
+  --cobalt-vivid: #7FC5E8;
+  --cobalt-pale: #E0F2FE;
+  --cobalt-wash: rgba(127, 197, 232, 0.14);
+  --cobalt-ink: #050404;
 
-  --ambient-a: rgba(108, 139, 255, 0.1);
-  --ambient-b: rgba(255, 77, 109, 0.07);
+  --ambient-a: rgba(127, 197, 232, 0.1);
+  --ambient-b: rgba(254, 202, 180, 0.07);
 
-  --bg-primary: #0B0D14;
-  --bg-surface: rgba(20, 23, 33, 0.82);
-  --bg-card: rgba(26, 30, 43, 0.95);
-  --bg-card-hover: rgba(34, 39, 56, 0.98);
-  --bg-glass: rgba(12, 14, 21, 0.8);
-  --bg-solid: #14171F;
+  --bg-primary: #1A1814;
+  --bg-surface: rgba(30, 26, 22, 0.82);
+  --bg-card: rgba(38, 34, 28, 0.95);
+  --bg-card-hover: rgba(48, 42, 35, 0.98);
+  --bg-glass: rgba(22, 18, 14, 0.8);
+  --bg-solid: #1E1A14;
 
-  --border-subtle: rgba(226, 230, 245, 0.1);
-  --border-default: rgba(226, 230, 245, 0.16);
+  --border-subtle: rgba(245, 235, 220, 0.1);
+  --border-default: rgba(245, 235, 220, 0.16);
   --border-accent: var(--brand);
-  --border-glow: rgba(108, 139, 255, 0.42);
+  --border-glow: rgba(127, 197, 232, 0.42);
 
   --glass-blur: 16px;
   --glass-blur-strong: 26px;
   --glass-saturate: 130%;
-  --glass-highlight: rgba(226, 230, 245, 0.1);
+  --glass-highlight: rgba(245, 235, 220, 0.1);
   --glass-shadow: 0 6px 24px rgba(0, 0, 0, 0.5), 0 1px 4px rgba(0, 0, 0, 0.32);
-  --glass-edge: inset 0 1px 0 rgba(226, 230, 245, 0.08), inset 0 0 0 1px rgba(108, 139, 255, 0.08);
-  --glass-sheen: linear-gradient(135deg, rgba(170,186,255,0.08) 0%, rgba(108,139,255,0.03) 40%, rgba(255,255,255,0) 64%);
+  --glass-edge: inset 0 1px 0 rgba(245, 235, 220, 0.08), inset 0 0 0 1px rgba(127, 197, 232, 0.08);
+  --glass-sheen: linear-gradient(135deg, rgba(201,233,250,0.1) 0%, rgba(127,197,232,0.04) 38%, rgba(255,255,255,0) 62%);
 
   --accent: var(--brand);
   --accent-hover: var(--brand-bright);
-  --accent-dim: rgba(108, 139, 255, 0.15);
-  --accent-glow: rgba(108, 139, 255, 0.32);
-  --accent-companion: #FF6B85;
-  --accent-gradient: linear-gradient(120deg, #6C8BFF 0%, #9B6BFF 55%, #FF6B85 100%);
-  --on-accent: #060814;
-  --shadow-glow-accent: 0 6px 26px rgba(108, 139, 255, 0.4);
+  --accent-dim: rgba(127, 197, 232, 0.15);
+  --accent-glow: rgba(127, 197, 232, 0.32);
+  --accent-companion: #9FE3C0;
+  --accent-gradient: linear-gradient(135deg, #7FC5E8 0%, #9FE3C0 100%);
+  --on-accent: #120F0A;
+  --shadow-glow-accent: 0 6px 26px rgba(127, 197, 232, 0.4);
 
-  --text-primary: #EEF1F8;
-  --text-secondary: #A6ADBE;
-  --text-tertiary: #6E7688;
-  --text-accent-strong: #A9BAFF;
+  --text-primary: #F0EAE0;
+  --text-secondary: #B5AA98;
+  --text-tertiary: #7A7060;
+  --text-accent-strong: #B8E4F8;
 
   --correct: #3DDC97;
   --correct-bg: rgba(61, 220, 151, 0.14);
@@ -219,21 +220,21 @@ html[data-theme="dark"] {
   --wrong-bg: rgba(255, 107, 107, 0.14);
   --locked: #333A4A;
 
-  --subject-physics: #8AA2FF;
+  --subject-physics: #7FC5E8;
   --subject-chemistry: #3DDC97;
   --subject-economics: #FFC24B;
   --subject-biology: #FF7FB0;
   --subject-cs: #4FD6EA;
   --subject-history: #E0A96D;
-  --subject-general: #B08CFF;
+  --subject-general: #9FE3C0;
 
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.25);
   --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.45), 0 2px 4px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 14px 38px rgba(0, 0, 0, 0.55), 0 4px 8px rgba(0, 0, 0, 0.35);
 
-  --aurora-1: rgba(108, 139, 255, 0.14);
-  --aurora-2: rgba(255, 77, 109, 0.1);
-  --aurora-3: rgba(124, 77, 255, 0.11);
+  --aurora-1: rgba(186, 230, 253, 0.18);
+  --aurora-2: rgba(254, 202, 180, 0.12);
+  --aurora-3: rgba(167, 243, 208, 0.14);
 }
 
 /* ── Dusk (twilight) — a sunset evening: deep teal night warmed by peach
@@ -281,8 +282,8 @@ html[data-theme="twilight"] {
   --accent-hover: #FFC7AB;
   --accent-dim: rgba(255, 158, 122, 0.14);
   --accent-glow: rgba(255, 158, 122, 0.3);
-  --accent-companion: #7C9BFF;
-  --accent-gradient: linear-gradient(120deg, #FF9E7A 0%, #FF6B85 55%, #7C9BFF 100%);
+  --accent-companion: #7FC5E8;
+  --accent-gradient: linear-gradient(135deg, #FFB08C 0%, #F4A6B8 100%);
   --on-accent: #331507;
   --shadow-glow-accent: 0 4px 22px rgba(255, 176, 140, 0.3);
 
