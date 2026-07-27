@@ -87,7 +87,7 @@ export function alignQuizCorrectIndex(q) {
   // 4. Token overlap fallback matching against `explanation`
   const explanation = typeof q.explanation === "string" ? q.explanation.toLowerCase() : "";
 
-  if (explanation && (correctIndex < 0 || correctIndex >= options.length || true)) {
+  if (explanation && (correctIndex < 0 || correctIndex >= options.length || (typeof q.correctAnswer !== "string" && correctIndex > 0))) {
     const stopWords = new Set([
       "the", "a", "an", "is", "are", "was", "were", "be", "been", "being",
       "have", "has", "had", "do", "does", "did", "to", "from", "in", "out",

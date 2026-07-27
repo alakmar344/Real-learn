@@ -52,7 +52,7 @@ export function sanitizeQuestion(question: QuizQuestion): QuizQuestion {
   }
 
   const explanation = typeof question.explanation === "string" ? question.explanation.toLowerCase() : "";
-  if (explanation) {
+  if (explanation && (correctIndex < 0 || correctIndex >= options.length || (typeof rawAnswer !== "string" && correctIndex > 0))) {
     const stopWords = new Set([
       "the", "a", "an", "is", "are", "was", "were", "be", "been", "being",
       "have", "has", "had", "do", "does", "did", "to", "from", "in", "out",
