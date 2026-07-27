@@ -64,7 +64,7 @@ One topic, three depths. Pick the level that fits you and the entire lesson adap
 RealLearn quietly searches recent news in the background and threads what's happening right now into your final lesson part. Economics ties to this quarter's headlines; physics ties to the latest discovery; history ties to current parallels.
 
 ### 6. A Cinematic, Calm Experience
-Japanese-inspired aesthetic — not a noisy app. Cinematic loading screen, progress rail, full-screen unlock animation, completion screen with confetti, toast notifications. Typography: Playfair Display for headlines, Inter for the interface, Lora for reading content, JetBrains Mono for code.
+Soft Pastel base + Solid Gen Z Dark aesthetic — clean, non-distracting visual hierarchy. Cinematic loading screen, progress rail, full-screen unlock animation, completion screen with confetti, toast notifications. Typography: Space Grotesk for bold headers, Inter for interface & reading content, JetBrains Mono for code.
 
 ### 7. Your Personal Learning Library
 Every completed journey is automatically saved to a sidebar library. Reopen any past lesson to review or retake it. Journeys are intelligently de-duplicated by a stable signature (question + first part title).
@@ -75,11 +75,11 @@ Curiosity doesn't stop at one question. When you finish a journey, a Follow-Up b
 ### 9. Designed for Everyone — Accessibility First
 WCAG 2.1 Level AA targeting. Skip-to-content link, ARIA live regions, full keyboard navigation in quizzes (arrow keys, Enter/Space), focus trapping in modals, prefers-reduced-motion support, high-contrast WCAG-AA-tuned color tokens, visible focus outlines, mobile-first responsive typography, 44px minimum touch targets.
 
-### 10. Three Beautiful Themes
-Switch between three hand-tuned, Japanese culture-inspired themes:
-- **Shiro (Paper)** — warm washi-paper ivory light mode with sumi ink text and vermillion accents
-- **Yoru (Night)** — deep ai-zome indigo dark mode warmed by golden-vermillion accents
-- **Tasogare (Twilight)** — deep murasaki purple mode with sakura-pink accents
+### 10. Modern Soft Pastel & Dark Themes
+Switch between clean, curated theme modes:
+- **Paper (Daylight)** — soft cream paper light mode with warm cocoa text and sky-blue accents
+- **Ink (Night)** — charcoal dark mode lit by pastel sky and solid electric green (`#00FF66`) accents
+- **Dusk (Sunset)** — teal evening mode warmed by soft peach and rose washes
 
 ### 11. Voice-Powered Learning
 Voice Input (Mic Button): Ask questions by speaking using the Web Speech API (`SpeechRecognition`). Supports all 12 app languages with proper BCP-47 speech codes. Read Aloud (Listen Button): Every lesson part has a "Listen" button using `speechSynthesis` with intelligent voice selection by language match, provider quality, and voice type.
@@ -142,7 +142,7 @@ Signed-in learners can set learning-style preferences (checklist) and free-text 
 - **Auth:** Clerk (`@clerk/nextjs`)
 - **State:** Zustand (5 stores with `persist` middleware for localStorage backing)
 - **Content:** React Markdown + `remark-gfm`
-- **Styling:** Tailwind CSS + custom CSS variables for 3 Japanese-inspired themes
+- **Styling:** Tailwind CSS + custom CSS variables for Soft Pastel (Paper/Ink/Dusk) design system
 - **Speech:** Web Speech API (SpeechRecognition for input, speechSynthesis for read-aloud)
 - **Sharing:** Canvas API + Web Share API (1080x1920 result cards)
 
