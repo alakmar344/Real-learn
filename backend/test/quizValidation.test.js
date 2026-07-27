@@ -40,6 +40,34 @@ test("alignQuizCorrectIndex: handles out-of-bounds 1-based index (4 for 4 option
   assert.equal(result.correctIndex, 3);
 });
 
+test("alignQuizCorrectIndex: matches exact correctAnswer text string", () => {
+  const q = {
+    question: "Why is 'stochastic compilation' controversial?",
+    options: [
+      "It removes the human-readable source code for auditing.",
+      "It makes computers hot",
+      "It requires internet",
+      "It is illegal",
+    ],
+    correctAnswer: "It removes the human-readable source code for auditing.",
+    correctIndex: 1, // Wrong index supplied by model, but text matches index 0
+    explanation: "Auditing is impossible without source code.",
+  };
+  const result = alignQuizCorrectIndex(q);
+  assert.equal(result.correctIndex, 0);
+});
+
+test("alignQuizCorrectIndex: matches option letter in correctAnswer or correctIndex", () => {
+  const q = {
+    question: "Which gas do plants absorb?",
+    options: ["Oxygen", "Carbon dioxide", "Nitrogen", "Hydrogen"],
+    correctAnswer: "B",
+    explanation: "CO2 is absorbed.",
+  };
+  const result = alignQuizCorrectIndex(q);
+  assert.equal(result.correctIndex, 1);
+});
+
 test("normalizeJourney: normalizes and aligns quiz questions in journey parts", () => {
   const journeyData = {
     topic: "Stochastic Compilation",
@@ -58,6 +86,7 @@ test("normalizeJourney: normalizes and aligns quiz questions in journey parts", 
               "It requires internet",
               "It is illegal",
             ],
+            correctAnswer: "It removes the human-readable source code for auditing.",
             correctIndex: 1,
             explanation: "Stochastic compilation removes human-readable source code, preventing security auditing.",
           },

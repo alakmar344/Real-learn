@@ -29,8 +29,8 @@ JSON schema (return ONLY this, no markdown fences, no extra text):
     "content": "<130-200 word direct answer>",
     "sources": ["<real public URL>"],
     "quiz": [
-      {"question":"<text>","options":["A","B","C","D"],"correctIndex":0,"explanation":"<2-3 sentences>"},
-      {"question":"<text>","options":["A","B","C","D"],"correctIndex":2,"explanation":"<2-3 sentences>"}
+      {"question":"<text>","options":["Option A","Option B","Option C","Option D"],"correctAnswer":"<exact text of correct option>","correctIndex":0,"explanation":"<2-3 sentences>"},
+      {"question":"<text>","options":["Option A","Option B","Option C","Option D"],"correctAnswer":"<exact text of correct option>","correctIndex":2,"explanation":"<2-3 sentences>"}
     ]
   }],
   "keyTakeaways": ["<insight 1>", "<insight 2>"]
@@ -39,7 +39,7 @@ JSON schema (return ONLY this, no markdown fences, no extra text):
 RULES:
 1. Exactly 1 part, partNumber 1.
 2. Exactly 2 quiz questions, 4 options each.
-3. correctIndex MUST be a 0-indexed integer (0 for 1st option, 1 for 2nd option, 2 for 3rd option, 3 for 4th option). NEVER use 1-based indexing.
+3. correctAnswer MUST be the exact text string of the correct option from options array (and correctIndex integer 0-3).
 4. Exactly 2 keyTakeaways strings.
 5. Sources must be real public URLs.
 6. Content in the student's language. Match complexity to level.`;
@@ -70,9 +70,9 @@ JSON schema (return ONLY this, no markdown fences, no extra text):
   "language": "<language used>",
   "level": "<level used>",
   "parts": [
-    {"partNumber":1,"title":"<short title>","subject":"<subject>","content":"<150-180 words>","sources":["<real public URL>"],"quiz":[{"question":"<text>","options":["A","B","C","D"],"correctIndex":0,"explanation":"<1-2 sentences>"},{"question":"<text>","options":["A","B","C","D"],"correctIndex":2,"explanation":"<1-2 sentences>"}]},
-    {"partNumber":2,"title":"<short title>","subject":"<subject>","content":"<150-180 words>","sources":["<real public URL>"],"quiz":[{"question":"<text>","options":["A","B","C","D"],"correctIndex":1,"explanation":"<1-2 sentences>"},{"question":"<text>","options":["A","B","C","D"],"correctIndex":3,"explanation":"<1-2 sentences>"}]},
-    {"partNumber":3,"title":"<short title>","subject":"<subject>","content":"<150-180 words with real-world event>","sources":["<real public URL>"],"quiz":[{"question":"<text>","options":["A","B","C","D"],"correctIndex":0,"explanation":"<1-2 sentences>"},{"question":"<text>","options":["A","B","C","D"],"correctIndex":2,"explanation":"<1-2 sentences>"}]}
+    {"partNumber":1,"title":"<short title>","subject":"<subject>","content":"<150-180 words>","sources":["<real public URL>"],"quiz":[{"question":"<text>","options":["Option A","Option B","Option C","Option D"],"correctAnswer":"<exact text of correct option>","correctIndex":0,"explanation":"<1-2 sentences>"},{"question":"<text>","options":["Option A","Option B","Option C","Option D"],"correctAnswer":"<exact text of correct option>","correctIndex":2,"explanation":"<1-2 sentences>"}]},
+    {"partNumber":2,"title":"<short title>","subject":"<subject>","content":"<150-180 words>","sources":["<real public URL>"],"quiz":[{"question":"<text>","options":["Option A","Option B","Option C","Option D"],"correctAnswer":"<exact text of correct option>","correctIndex":1,"explanation":"<1-2 sentences>"},{"question":"<text>","options":["Option A","Option B","Option C","Option D"],"correctAnswer":"<exact text of correct option>","correctIndex":3,"explanation":"<1-2 sentences>"}]},
+    {"partNumber":3,"title":"<short title>","subject":"<subject>","content":"<150-180 words with real-world event>","sources":["<real public URL>"],"quiz":[{"question":"<text>","options":["Option A","Option B","Option C","Option D"],"correctAnswer":"<exact text of correct option>","correctIndex":0,"explanation":"<1-2 sentences>"},{"question":"<text>","options":["Option A","Option B","Option C","Option D"],"correctAnswer":"<exact text of correct option>","correctIndex":2,"explanation":"<1-2 sentences>"}]}
   ],
   "keyTakeaways": ["<insight 1>", "<insight 2>", "<insight 3>"]
 }
@@ -80,7 +80,7 @@ JSON schema (return ONLY this, no markdown fences, no extra text):
 Hard rules:
 1. Exactly 3 parts, partNumber 1→2→3 in order.
 2. Exactly 2 quiz questions per part, 4 options each.
-3. correctIndex MUST be a 0-indexed integer (0 for 1st option, 1 for 2nd option, 2 for 3rd option, 3 for 4th option). NEVER use 1-based indexing.
+3. correctAnswer MUST be the exact text string of the correct option from options array (and correctIndex integer 0-3).
 4. Exactly 3 keyTakeaways strings.
 5. Sources must be real public URLs.
 6. Return ONLY the JSON object. Start with { and nothing else.`;
