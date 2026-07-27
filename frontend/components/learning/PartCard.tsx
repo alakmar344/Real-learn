@@ -86,13 +86,13 @@ const PartCardBase = ({
 
   return (
     <article
-      className="part-card electric-card animate-fade-up engraved identity-texture identity-corner texture-noise"
+      className="part-card animate-fade-up engraved identity-texture identity-corner texture-noise"
       aria-label={`Part ${part.partNumber}: ${part.title}`}
       id={`part-${part.partNumber}`}
       style={{
         marginTop: varSpaceXl,
         borderRadius: "var(--radius-2xl)",
-        border: "1px solid var(--border-accent)",
+        border: "1px solid var(--border-subtle)",
         background: "var(--bg-card)",
         padding: "clamp(28px, 6vw, 48px)",
         position: "relative",
@@ -102,11 +102,10 @@ const PartCardBase = ({
       <div
         aria-hidden="true"
         style={{
-          height: 4,
-          background: "var(--accent-gradient)",
+          height: 3,
+          background: "var(--accent)",
           borderRadius: "var(--radius-xl) var(--radius-xl) 0 0",
           margin: "calc(-1 * clamp(28px, 6vw, 48px)) calc(-1 * clamp(28px, 6vw, 48px)) 0",
-          boxShadow: "0 0 12px var(--accent-glow)",
         }}
       />
       {/* Locked-state obfuscation lives in globals.css (.part-locked-content)
@@ -119,20 +118,18 @@ const PartCardBase = ({
         {/* Part badge + subject */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
           <span
-            className="cyber-badge"
             style={{
-              borderRadius: "var(--radius-pill)",
-              border: "1px solid var(--border-neon)",
-              background: "var(--brand-soft)",
-              color: "var(--text-accent-strong)",
-              padding: "4px 12px",
+              borderRadius: "var(--radius-sm)",
+              border: "1px solid var(--border-accent)",
+              background: "var(--accent-dim)",
+              color: "var(--accent)",
+              padding: "4px 10px",
               fontSize: 11,
               letterSpacing: "0.12em",
-              fontWeight: 700,
-              boxShadow: "0 0 12px var(--accent-glow)",
+              fontWeight: 600,
             }}
           >
-            ⚡ PART {part.partNumber}
+            PART {part.partNumber}
           </span>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <span
