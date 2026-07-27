@@ -39,7 +39,7 @@ JSON schema (return ONLY this, no markdown fences, no extra text):
 RULES:
 1. Exactly 1 part, partNumber 1.
 2. Exactly 2 quiz questions, 4 options each.
-3. correctIndex integer 0-3.
+3. correctIndex MUST be a 0-indexed integer (0 for 1st option, 1 for 2nd option, 2 for 3rd option, 3 for 4th option). NEVER use 1-based indexing.
 4. Exactly 2 keyTakeaways strings.
 5. Sources must be real public URLs.
 6. Content in the student's language. Match complexity to level.`;
@@ -80,7 +80,7 @@ JSON schema (return ONLY this, no markdown fences, no extra text):
 Hard rules:
 1. Exactly 3 parts, partNumber 1→2→3 in order.
 2. Exactly 2 quiz questions per part, 4 options each.
-3. correctIndex integer 0-3.
+3. correctIndex MUST be a 0-indexed integer (0 for 1st option, 1 for 2nd option, 2 for 3rd option, 3 for 4th option). NEVER use 1-based indexing.
 4. Exactly 3 keyTakeaways strings.
 5. Sources must be real public URLs.
 6. Return ONLY the JSON object. Start with { and nothing else.`;

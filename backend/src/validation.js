@@ -38,6 +38,102 @@ export function getModeRules(mode) {
   return MODE_RULES[mode] ?? MODE_RULES.explain;
 }
 
+/**
+ * Ensures a quiz question's `correctIndex` is 0-indexed and points to the
+ * option that best matches the explanation text.
+ */
+export function alignQuizCorrectIndex(q) {
+  if (!q || typeof q !== "object" || !Array.isArray(q.options) || q.options.length === 0) {
+    return q;
+  }
+
+  const options = q.options;
+  let correctIndex = Number.isInteger(q.correctIndex) ? q.correctIndex : 0;
+
+  // Detect 1-based index out of bounds (e.g. correctIndex === options.length, e.g. 4 for 4 options)
+  if (correctIndex >= options.length && correctIndex === options.length) {
+    correctIndex = options.length - 1;
+  } else if (correctIndex < 0) {
+    correctIndex = 0;
+  }
+
+  const explanation = typeof q.explanation === "string" ? q.explanation.toLowerCase() : "";
+
+  if (explanation) {
+    const stopWords = new Set([
+      "the", "a", "an", "is", "are", "was", "were", "be", "been", "being",
+      "have", "has", "had", "do", "does", "did", "to", "from", "in", "out",
+      "on", "off", "over", "under", "again", "further", "then", "once", "here",
+      "there", "when", "where", "why", "how", "all", "any", "both", "each",
+      "few", "more", "most", "other", "some", "such", "no", "nor", "not",
+      "only", "own", "same", "so", "than", "too", "very", "can", "will",
+      "just", "should", "now", "it", "its", "this", "that", "these", "those",
+      "and", "but", "or", "if", "because", "as", "until", "while", "of", "at",
+      "by", "for", "with", "about", "against", "between", "into", "through"
+    ]);
+
+    const getSignificantTokens = (text) => {
+      return text
+        .toLowerCase()
+        .replace(/[^\w\s]/g, " ")
+        .split(/\s+/)
+        .filter((w) => w.length > 2 && !stopWords.has(w));
+    };
+
+    const expTokens = getSignificantTokens(explanation);
+
+    const scores = options.map((opt) => {
+      if (typeof opt !== "string") return 0;
+      const cleanOpt = opt.toLowerCase().trim();
+      if (!cleanOpt) return 0;
+
+      if (explanation.includes(cleanOpt) || cleanOpt.includes(explanation)) {
+        return 100;
+      }
+
+      const optTokens = getSignificantTokens(cleanOpt);
+      if (optTokens.length === 0) return 0;
+
+      let tokenMatches = 0;
+      for (const t of optTokens) {
+        if (expTokens.includes(t) || explanation.includes(t)) {
+          tokenMatches += 1;
+        }
+      }
+
+      let phraseScore = 0;
+      if (cleanOpt.length >= 8 && explanation.includes(cleanOpt.slice(0, Math.min(20, cleanOpt.length)))) {
+        phraseScore = 50;
+      }
+
+      return (tokenMatches / optTokens.length) * 10 + phraseScore;
+    });
+
+    const bestScore = Math.max(...scores);
+    const bestIndex = scores.indexOf(bestScore);
+
+    // If correctIndex is 1-based (1..options.length) and options[correctIndex - 1] matches significantly better
+    if (
+      correctIndex >= 1 &&
+      correctIndex <= options.length &&
+      scores[correctIndex - 1] > scores[correctIndex] &&
+      scores[correctIndex - 1] > 0
+    ) {
+      correctIndex = correctIndex - 1;
+    } else if (bestScore > 0 && scores[correctIndex] === 0 && bestIndex !== correctIndex) {
+      correctIndex = bestIndex;
+    }
+  }
+
+  if (correctIndex < 0) correctIndex = 0;
+  if (correctIndex >= options.length) correctIndex = options.length - 1;
+
+  return {
+    ...q,
+    correctIndex,
+  };
+}
+
 // A quiz question is usable only when fully formed. Truncated output can
 // leave a trailing half-question; we salvage the complete ones instead of
 // rejecting the whole lesson.
@@ -52,7 +148,7 @@ function isValidQuizQuestion(q) {
     q.options.every((opt) => typeof opt === "string") &&
     Number.isInteger(q.correctIndex) &&
     q.correctIndex >= 0 &&
-    q.correctIndex < q.options.length &&
+    q.correctIndex <= q.options.length &&
     typeof q.explanation === "string"
   );
 }
@@ -86,7 +182,10 @@ export function normalizeJourney(data, mode = "explain") {
       .map((part) => ({
         ...part,
         quiz: Array.isArray(part.quiz)
-          ? part.quiz.filter(isValidQuizQuestion).slice(0, 2)
+          ? part.quiz
+              .filter(isValidQuizQuestion)
+              .map(alignQuizCorrectIndex)
+              .slice(0, 2)
           : [],
       }))
       // A part is only usable with a title, content, and at least one
