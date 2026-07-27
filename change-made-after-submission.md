@@ -952,7 +952,6 @@ vendors). All of these live between `2b239b5` (start) and now:
 | 2026-07-26 | `genz-locked-design-system` | Locked High-Impact Gen Z Design System: Space Grotesk bold headings (700-800), Inter ultra-bold body (700-800), locked dark-mode palette (#0B0E14 background, #00FF66 hyper electric green dominant, #FF3E00 action accent), and educational AI soft rounded corner radii (12px-24px, no neo-brutalism). |
 | 2026-07-26 | `curate-light-dark-themes` | Curated Light (Paper) & Dark (Ink) themes with full text contrast fixes. Light: bright paper (#F8FAF9) with deep slate text (#0F172A) and vivid green accent (#00CC52). Dark: locked off-black (#0B0E14) with pure white text (#FFFFFF) and electric green (#00FF66). Removed twilight/Dusk theme entirely from CSS, types, store, layout script, theme options, and modal copy. Amplified .btn-primary to font-weight: 800 and letter-spacing: 0.02em. |
 | 2026-07-26 | `set-dark-theme-default` | Set Dark (Ink) theme as default room for new visitors in preferenceStore.ts, layout.tsx viewport, and themeInitScript. |
-| 2026-07-27 | `fix-completionscreen-unused-state` | Removed unused `takeawaysExpanded`/`setTakeawaysExpanded` state from `CompletionScreen.tsx` (dead variable causing ESLint `@typescript-eslint/no-unused-vars` warning). |
 
 
 ---
