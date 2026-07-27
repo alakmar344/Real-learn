@@ -1,0 +1,103 @@
+<section class="chapter" id="ch-22">
+  <div class="chapter-opener">
+    <div class="chapter-kicker">Part IV · Engineering Process</div>
+    <h1><span class="ch-num">22</span>Three Months, 724 Commits — The Git History</h1>
+    <p class="chapter-lede">The commit log tells the real story of RealLearn: a hackathon sprint, a month of silence, and then a sustained, agent-driven crescendo that produced two thirds of the entire history in its final month.</p>
+  </div>
+
+  <h2>The shape of the history</h2>
+  <p>Between the first commit on <strong>2026-05-06</strong> and the most recent merge on <strong>2026-07-26</strong> — a span of 82 calendar days — the <code>main</code> branch accumulated <strong>724 commits</strong>, <strong>239 merged pull requests</strong> (the highest numbered being PR #263), and contributions from <strong>9 distinct author identities</strong>. Work happened on only 41 of those 82 days, which means the effective pace on active days was roughly 17–18 commits per day. This is not a slow-burn open-source project; it is a burst-mode product effort, driven by one owner orchestrating a rotating cast of AI coding agents.</p>
+
+  <div class="stat-row">
+    <div class="stat"><div class="stat-value">724</div><div class="stat-label">commits on main</div></div>
+    <div class="stat"><div class="stat-value">239</div><div class="stat-label">merged pull requests</div></div>
+    <div class="stat"><div class="stat-value">82</div><div class="stat-label">calendar days</div></div>
+    <div class="stat"><div class="stat-value">41</div><div class="stat-label">active commit days</div></div>
+    <div class="stat"><div class="stat-value">9</div><div class="stat-label">author identities</div></div>
+  </div>
+
+  <p>The monthly distribution is strikingly uneven. May contributed 163 commits across just 10 active days, June only 100 commits across 5 active days, and July delivered <strong>461 commits</strong> — 64 percent of the total — across 26 active days. July was not merely busier; it was a different operating mode, in which nearly every day saw multiple pull requests opened, reviewed, and merged.</p>
+
+  <table class="data">
+    <thead>
+      <tr><th>Month</th><th>Commits</th><th>Active days</th><th>Share of total</th><th>Character of the work</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>2026-05</td><td>163</td><td>10</td><td>22.5%</td><td>Hackathon build and submission hardening</td></tr>
+      <tr><td>2026-06</td><td>100</td><td>5</td><td>13.8%</td><td>Post-submission return: auth, legal, gamification</td></tr>
+      <tr><td>2026-07</td><td>461</td><td>26</td><td>63.7%</td><td>Production hardening, security sweeps, design churn</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Four eras of work</h2>
+  <h3>Era 1 — The hackathon sprint (May 6–13)</h3>
+  <p>The repository opens with <code>346944f Initial commit</code> followed the same day by <code>bbe3032 Initial plan</code> and <code>de09e6b Build complete RealLearn web application</code> — both authored by <strong>copilot-swe-agent[bot]</strong>. The very first pull requests (#1 <em>create-reallearn-web-app</em>, #2 <em>make-ui-world-class</em>, #3 <em>fix-critical-mobile-rendering-bugs</em>) were all agent branches. May 7 was the single busiest day in the entire history at 58 commits, and May 11 (42 commits) closed the sprint with <strong>google-labs-jules[bot]</strong> landing <code>f5c6d8f Migrate to Gemma 4 and implement progressive unlock logic</code> and the telling subject line <code>e4e1a2b Finalize hackathon project: Gemma 4 migration, progressive unlock, and exhaustive quiz explanations</code>. The product's two defining mechanics — Gemma-generated lessons and the quiz-gated progressive unlock — were in place within the first week.</p>
+
+  <h3>Era 2 — The silence (May 18 – June 20)</h3>
+  <p>After a trickle of fixes through May 18, the log goes completely quiet for 32 days. This gap matters for interpreting everything that follows: the project's own changelog (<code>change-made-after-submission.md</code>) frames the hackathon deliverable as "a working prototype with a single AI provider, no authentication, no legal framework," and the post-gap history is explicitly a campaign to close that distance.</p>
+
+  <h3>Era 3 — The return (June 20–30)</h3>
+  <p>The comeback begins with a design pivot — <code>e55b098 Redesign: dark gold-noir → classic printed-textbook aesthetic</code> (June 20) — and then compresses 100 commits into the last three days of June. June 28–30 alone (95 commits) delivered chat persistence and the sidebar, Clerk account integration, consent records in MongoDB, the toast system, skip-to-content accessibility work, the gamification system (XP, streaks, achievements), the fail-open LLM moderation layer, and the quiz-shuffle verification harness. This era also contains the first revert pair in the log (<code>Revert "Agent/Rapid Spark 5nqx"</code>, June 30) — an early sign of the agent-supervision pattern discussed below.</p>
+
+  <h3>Era 4 — The July crescendo (July 1–26)</h3>
+  <p>July's 461 commits contain the provider-migration endgame (Cerebras primary with Cloudflare fallback, July 13), three major security sweeps (July 5, 6, and 22), the legal-version ratchet (Privacy Policy v1.2 through v2.7), the creation of the agent-governance layer (<code>docs/AGENT_MEMORY.md</code>, July 20), and an extraordinary sequence of full UI redesigns — liquid glass, Japanese, Indian tricolor, Still Ink, Soft Pastel, Gen Z — covered in Chapter 23. The final day, July 26, saw 33 commits and ten merged PRs (#254–#263), ending with <code>6ebd48a fix(theme): enhance AI response text contrast and readability in lite mode</code>.</p>
+
+  <h2>Who wrote the code</h2>
+  <p>The author table makes the repository's nature explicit: this is an AI-agent-driven codebase with a single human orchestrator. "AL-Aqmar tinwala" and "Alakmar Teenwala" are two identities of the same owner (636 commits combined, 87.8 percent), and at least 85 commits were authored directly by named coding agents.</p>
+
+  <table class="data">
+    <thead>
+      <tr><th>Author</th><th>Commits</th><th>Role in the history</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>AL-Aqmar tinwala</td><td>609</td><td>Owner: PR merges, direct commits, orchestration</td></tr>
+      <tr><td>copilot-swe-agent[bot]</td><td>76</td><td>Built the original application and early bug-fix PRs</td></tr>
+      <tr><td>Alakmar Teenwala</td><td>27</td><td>Owner's second identity; late-July feature branches</td></tr>
+      <tr><td>google-labs-jules[bot]</td><td>5</td><td>Gemma 4 migration, SSE closure fixes, progressive unlock</td></tr>
+      <tr><td>root / Claude / SuperNinja (4 identities)</td><td>7</td><td>Occasional agent sessions (audits, design passes)</td></tr>
+    </tbody>
+  </table>
+
+  <p>The agent-driven character shows up beyond authorship. Branch names follow agent conventions (<code>copilot/fix-critical-mobile-rendering-bugs</code>, <code>agent/rapid-spark-5nqx</code>, machine-suffixed Jules branches like <code>fix-sse-gemma-4-9795824865899472855</code>). The repo carries a formal agent constitution — <code>docs/AGENT_MEMORY.md</code>, which declares itself "Single Source of Truth for Any AI Agent on This Repo" and mandates a Change Protocol for every modification. And the documentation itself bears agent fingerprints: both <code>AGENT_MEMORY.md</code> and <code>change-made-after-submission.md</code> currently contain leftover merge-conflict residue (stray <code>fix/lite-mode-ai-response-readability</code> and <code>main</code> branch-label lines from a July 26 conflict resolution) — a small but honest artifact of high-velocity, multi-agent editing.</p>
+
+  <h2>Commit hygiene and the conventional-commit mix</h2>
+  <p>Of the 467 non-merge commits, a majority carry a conventional-commit prefix, with a distribution that says a lot about where the effort went: fixes outnumber features two to one.</p>
+
+  <table class="data">
+    <thead>
+      <tr><th>Prefix</th><th>Count</th><th>Prefix</th><th>Count</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>fix</code></td><td>102</td><td><code>design</code></td><td>10</td></tr>
+      <tr><td><code>feat</code></td><td>52</td><td><code>chore</code></td><td>10</td></tr>
+      <tr><td><code>docs</code></td><td>24</td><td><code>frontend</code> / <code>backend</code></td><td>11</td></tr>
+      <tr><td><code>style</code></td><td>11</td><td><code>security</code> / <code>legal</code></td><td>6</td></tr>
+      <tr><td><code>refactor</code></td><td>11</td><td><code>test</code> / <code>revert</code></td><td>4</td></tr>
+      <tr><td><code>perf</code></td><td>11</td><td>one-offs (<code>ux</code>, <code>polish</code>, <code>debug</code>, …)</td><td>5</td></tr>
+    </tbody>
+  </table>
+
+  <p>The remainder are unprefixed sentence-style subjects, concentrated in two places: the owner's quick hand edits in May (<code>Update page.tsx</code>, <code>Update gemma.js</code> — the classic GitHub-web-editor tell) and the late-June feature burst (<code>Add chat persistence, left sidebar, theme modal, and account deletion</code>). Hygiene visibly improves after AGENT_MEMORY.md formalized commit-message rules on July 20; the late-July log is almost uniformly conventional and specific. The presence of niche prefixes like <code>security:</code>, <code>legal:</code>, and <code>design:</code> reflects the project's unusually broad definition of engineering work — legal-document versioning is treated as a first-class, committed deliverable.</p>
+
+  <h2>The rhythm of the busiest days</h2>
+  <p>The ten heaviest commit days account for 360 commits — half the entire history — and each maps cleanly to a named campaign. May 7 (58 commits) was raw scaffolding, the day after the initial agent build. May 11 (42) was hackathon finalization. June 28 and 29 (37 and 39) carried the legal-and-consent framework, the footer and accessibility passes, and the domain move to <code>reallearn.site</code>. July 4 (29) was the truncation-validation incident and its fixes. July 13 (32) was the Cerebras migration and performance overhaul. July 19 (35) was the Japanese redesign. July 25 (27) and July 26 (33) were the Gen Z pivot and the five-redesign finale. The pattern is consistent: this history does not accrete gradually — it advances in named, single-theme offensives, usually one agent session long, each closed out with documentation updates the same day. Between offensives the log drops to zero, not to a trickle; there is no background hum of maintenance commits, because there is no team to hum. The two <code>revert</code> commits and the lone <code>debug:</code> commit cluster exactly where one would predict — at the end of June, when an agent branch (<code>agent/rapid-spark-5nqx</code>) had to be rolled back wholesale, the clearest single data point on the supervision costs of the model.</p>
+
+  <h2>PR cadence and milestones</h2>
+  <p>All 239 merged PRs belong to a single-owner review model: agents (or the owner's second identity) open branches, and "AL-Aqmar tinwala" merges them. The cadence accelerated sharply — PRs #1–#3 on day one, #25 by May 11, then a long plateau, and finally a run to #263 with roughly 65 PRs merged in the last week of July alone. Merge commits total 257 (239 PR merges plus 18 back-merges of <code>main</code> into feature branches), so about one in three commits on <code>main</code> is process overhead — the cost of routing every change, however small, through a branch-and-PR loop as the Change Protocol requires.</p>
+
+  <ul>
+    <li><strong>2026-05-06</strong> — Initial commit; complete application scaffolded by copilot-swe-agent the same day.</li>
+    <li><strong>2026-05-11</strong> — Hackathon finalization: Gemma 4 migration and progressive unlock (google-labs-jules).</li>
+    <li><strong>2026-06-20</strong> — Return from the 32-day gap; first major design pivot and design audit.</li>
+    <li><strong>2026-06-30</strong> — Gamification, moderation layer, and quiz-shuffle verification land in one day.</li>
+    <li><strong>2026-07-13</strong> — Cerebras becomes the primary AI provider; performance overhaul.</li>
+    <li><strong>2026-07-20</strong> — <code>docs/AGENT_MEMORY.md</code> created; agent Change Protocol formalized.</li>
+    <li><strong>2026-07-22</strong> — Soft Pastel design language declared; third security pass.</li>
+    <li><strong>2026-07-25/26</strong> — Gen Z pivot: 60 commits and 17 merged PRs in 48 hours, ending at PR #263.</li>
+  </ul>
+
+  <div class="callout">
+    <div class="callout-title">Reading the log honestly</div>
+    <p>The 2:1 ratio of <code>fix</code> to <code>feat</code> commits, three full-codebase bug sweeps, and 18 documented redesign passes are the signature of an agent-velocity codebase: features arrive fast and cheaply, and a disproportionate share of subsequent effort goes to correcting, hardening, and re-styling what the agents produced. The project's own governance response — the AGENT_MEMORY.md protocol, "de-slop" rules, and mandatory verification commands — is itself one of the most interesting artifacts in the history: process written <em>for</em> machines, by their operator, in response to observed failure modes.</p>
+  </div>
+</section>

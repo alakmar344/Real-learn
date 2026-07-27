@@ -1,0 +1,61 @@
+<section class="chapter" id="ch-02">
+  <div class="chapter-opener">
+    <div class="chapter-kicker">Part I · The Product</div>
+    <h1><span class="ch-num">02</span>What RealLearn Is</h1>
+    <p class="chapter-lede">A precise definition of the product: the problem it targets, the three-part journey it builds, the gate that makes it a teaching system rather than an answer machine, and where each of those claims is enforced in code.</p>
+  </div>
+
+  <h2>Not a chatbot, not a search engine</h2>
+  <p>The README states the position directly: RealLearn "is not a chatbot or search engine — it is a teaching system that generates complete lessons with progressive difficulty, quiz-gated comprehension checks, and real-world grounding in current events." The distinction matters because the product's entire interaction model follows from it. A chatbot optimizes for the fastest plausible reply; RealLearn optimizes for whether the learner can answer two questions about what they just read. The interface has no free-form conversation thread. It has one question box, one generated lesson, and a sequence of locked cards that open only when comprehension is demonstrated.</p>
+
+  <p>The problem statement, as documented in the README and summarized in <code>reallearn-summarised.md</code>, is that conventional Q&amp;A produces answers that fail learners in four ways: too shallow to build real understanding, pitched at the wrong level for the reader, disconnected from the world the reader lives in, and instantly forgettable because the reader never engaged with the material. RealLearn's response is structural rather than cosmetic. Instead of a better answer, it generates a staged lesson: Foundation, then Mechanism, then Real World, each stage checkpointed by a quiz that must be passed perfectly before the next stage unlocks.</p>
+
+  <h2>The three-part journey</h2>
+  <p>The journey's shape is fixed in the system prompt. <code>backend/src/lib/prompts.js</code> exports <code>GENERATE_LESSON_PROMPT</code>, which opens "Three-part lesson generator for Gen Z / Gen Alpha learners" and ends with hard rules: "Exactly 3 parts, partNumber 1→2→3 in order," "Exactly 2 quiz questions per part, 4 options each," "Exactly 3 keyTakeaways strings," and "Sources must be real public URLs." Each part's content is bounded at 150 to 180 words, so a full Explain-mode lesson is roughly 500 words of reading split into three sittings, plus six quiz questions with explanations.</p>
+
+  <table class="data">
+    <thead>
+      <tr><th>Part</th><th>Role</th><th>In-app TL;DR banner (verbatim from <code>PartCard.tsx</code>)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1 · Foundation</td><td>Beginner-friendly framing of the concept at the chosen level</td><td>"Key concepts &amp; core fundamentals explained simply."</td></tr>
+      <tr><td>2 · Mechanism</td><td>The deeper "how and why" layer</td><td>"Step-by-step mechanism &amp; how it works under the hood."</td></tr>
+      <tr><td>3 · Real World</td><td>Connection to current events via live Serper news context</td><td>"Real-world news grounding &amp; practical applications."</td></tr>
+    </tbody>
+  </table>
+
+  <p>Part 3 is the part that ages. The backend fetches up to three recent news items about the question from the Serper API before generation, injects them into the prompt as fenced reference data, and instructs the model to land Part 3 "on something the learner sees in their actual daily life or current events — not a generic 'in the real world...' paragraph" (verbatim from the prompt). This is also why the lesson cache expires: the comment at the top of <code>backend/src/lib/lessonCache.js</code> explains that the "TTL is deliberately modest (default 6 hours) because Part 3 of every lesson is grounded in 'what's happening in the real world right now.'"</p>
+
+  <h2>The gate</h2>
+  <p>Every part in Explain mode ends in a two-question, four-option quiz rendered by <code>frontend/components/learning/QuizSheet.tsx</code> as a slide-up sheet titled "Quick Check." Passing requires a perfect score. On a failed attempt the sheet does not simply show the answers; it reshuffles every question's options using the Fisher-Yates implementation in <code>frontend/lib/quizShuffle.ts</code>, whose <code>reshuffleQuestion</code> function guarantees the correct answer lands in a different position, then shows the status line "Answers reshuffled — the correct one has moved. Find it again." and offers a dotted-underline link to "Re-read the section before retrying." The retry button is labeled "Run It Back"; the success button is "Unlock Next Part →".</p>
+
+  <p>Locked parts are visible but unreadable. <code>PartCard.tsx</code> renders the next part's card blurred behind a glass overlay with a padlock icon, the heading "Part N Locked," and the instruction "Complete Part N-1 quiz to unlock." The blur is a deliberate motivator (the learner can see there is more) and is swapped for a cheap fade on low-end devices via a performance tier attribute. Unlocked parts carry a reading timer rendered as a thin progress bar; when it completes, the call-to-action "I've Read This → Take Quiz" appears, though an escape hatch, "I already know this → Skip to quiz," is always available for learners who genuinely do know it.</p>
+
+  <div class="callout">
+    <div class="callout-title">The gate is the product</div>
+    <p>The no-go list in <code>docs/AGENT_MEMORY.md</code> instructs every maintainer, human or AI: "Don't bypass the quiz gate — 100% pass to unlock the next part is the product." The gate has also been defended in the bug log: a 2026-07-22 fix removed an "empty-quiz deadlock" in which a salvaged lesson with a missing quiz could trap the learner, and <code>QuizSheet.tsx</code> now derives quiz length from the actual questions so a truncated single-question quiz remains passable.</p>
+  </div>
+
+  <h2>Two modes, one input</h2>
+  <p>Not every question deserves a journey. The homepage mode toggle in <code>frontend/components/homepage/QuestionInput.tsx</code> offers exactly two options, described in the UI with the hints "Straight answer, zero fluff" (Fast) and "Full 3-part deep dive — quizzes included" (Explain). Fast mode uses a separate system prompt, <code>GENERATE_FAST_ANSWER_PROMPT</code>, that produces a single 130-to-200-word part that must "lead with the answer" ("FIRST sentence = the hook: the answer itself"), still with two quiz questions and two key takeaways, still with real source URLs. The submit button's label changes with the mode: "Get a Quick Answer →" or "Start Guided Lesson →". Signed-out visitors instead see "Sign in to Learn →", because lesson generation is an authenticated, rate-limited endpoint.</p>
+
+  <h2>The surfaces</h2>
+  <p>The frontend is 10 pages and 50 components. The homepage (<code>frontend/app/page.tsx</code>) is deliberately sparse: a time-of-day greeting ("Morning", "Late night mode", "Still up?") personalized with the Clerk first name, the question form, and a <code>HomeStats</code> strip. The question form itself carries most of the product's front door: an auto-resizing textarea with the placeholder "Ask literally anything — no dumb questions here," a 1,000-character counter, a rotating "💡 Try:" chip from <code>ExampleQuestions.tsx</code> that cycles through ten curated questions every 3.5 seconds ("How does my For You page know me so well?", "Why can't we just print more money?"), a microphone button for speech input in the selected language, and the mode toggle. Drafts persist to <code>sessionStorage</code> so an accidental refresh does not eat a half-typed question.</p>
+
+  <p>The learn page hosts the journey: <code>PartCard</code>, <code>QuizSheet</code>, <code>ProgressRail</code>, <code>UnlockAnimation</code>, a <code>FollowUpBox</code> for spinning up a new lesson from a deeper question, and a <code>CompletionScreen</code> with a score ring, confetti, an interactive <code>QuickSummaryCards</code> deck of key takeaways, and a <code>ShareResult</code> component that draws a 1080×1920 portrait result card on a canvas for the Web Share API. A progress page renders XP, levels, daily streaks, 17 achievements, and an activity heatmap; a settings page manages language, level, theme, learning-style personalization, data export, and full account deletion; a legal page hosts the versioned Privacy Policy, Terms of Service, and Cookie Policy.</p>
+
+  <div class="stat-row">
+    <div class="stat"><div class="stat-value">50</div><div class="stat-label">React components</div></div>
+    <div class="stat"><div class="stat-value">10</div><div class="stat-label">pages</div></div>
+    <div class="stat"><div class="stat-value">4</div><div class="stat-label">Zustand stores</div></div>
+    <div class="stat"><div class="stat-value">108</div><div class="stat-label">CSS design tokens</div></div>
+  </div>
+
+  <h2>Voice and identity</h2>
+  <p>RealLearn addresses a specific audience and says so in its prompts. Both system prompts open by declaring a "Gen Z / Gen Alpha native, energetic &amp; relatable" voice: "Talk like a sharp friend who actually knows this," explain "with analogies from the learner's world: gaming mechanics &amp; patch notes, FYP algorithms, creators/streamers, group chats, sports, money and prices," and never open with a definition. The prompts also police the voice's failure modes: "No AI/bot/model/assistant mentions. No filler ('Certainly!', 'As an AI', 'Let's dive in!')." For non-English lessons the instruction is to "adapt with natural regional youth slang rather than forcing English words," which is the prompt-level expression of the repository rule that lessons are generated natively in each language, never machine-translated.</p>
+
+  <p>The visual identity went through at least seven documented overhauls and, as of the last commits of 2026-07-26, is a solid-color "Bold Electric" system: two themes (Paper, a bright off-white daylight theme, and Ink, an off-black dark theme), electric green accents, an orange action accent, heavy 700-to-800 font weights, and a total purge of gradients. All of it is expressed as 108 design tokens and component classes in the 3,189-line <code>frontend/app/globals.css</code>, and the repository's agent manual forbids inline style soup in components in favor of those classes.</p>
+
+  <h2>Honest about being AI</h2>
+  <p>The product treats its own fallibility as a feature requirement. Every lesson is AI-generated and the UI says so; <code>docs/AGENT_MEMORY.md</code> lists "Honest about AI. Keep the 'AI-generated, may be inaccurate' disclaimers" among its UX principles and forbids their removal. Every part cites source URLs rendered as <code>SourceTag</code> chips, and links inside AI-generated markdown are hardened in <code>PartCard.tsx</code> to open in a new tab with an opener-safe <code>rel</code> because model-emitted links are untrusted. Input and output both pass moderation, a post-hoc moderation verdict can evict an already-cached lesson from both cache tiers so no other user is served it, and an algorithmic quality gate (<code>backend/src/lib/qualityGate.js</code>) checks generated lessons before they ship. What RealLearn is, finally, is a wager: that an AI tutor earns trust not by sounding confident but by citing sources, checking comprehension, and admitting what it is.</p>
+</section>

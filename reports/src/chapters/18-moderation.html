@@ -1,0 +1,80 @@
+<section class="chapter" id="ch-18">
+  <div class="chapter-opener">
+    <div class="chapter-kicker">Part III · The Backend</div>
+    <h1><span class="ch-num">18</span>The Moderation Pipeline</h1>
+    <p class="chapter-lede">A learning platform for schoolchildren cannot ship unfiltered LLM output. RealLearn's answer is a layered, intent-scoped moderation pipeline that blocks "how do I build a bomb" while still answering "how did the atomic bomb end World War 2."</p>
+  </div>
+
+  <h2>Two modules, one philosophy</h2>
+  <p>Moderation lives in two backend modules with a deliberate division of labor. <code>backend/src/lib/contentGuard.js</code> holds the intent-scoped regex patterns — the hard safety floor. <code>backend/src/lib/moderation.js</code> layers profanity and slur detection on top, using two independent dictionary libraries, and wraps the whole thing in a verdict cache. The orchestration — when each check runs, what happens on a block, what gets logged — sits in <code>backend/src/server.js</code>.</p>
+  <p>The philosophy is stated in the header comment of <code>contentGuard.js</code> and enforced throughout: block harmful <em>intent</em>, never sensitive <em>topics</em>. This distinction is existential for an education product. A blanket keyword ban on "bomb," "kill," or "suicide" would make it impossible to teach World War 2, immunology ("how do white blood cells kill bacteria?"), or suicide prevention. The codebase learned this the hard way — earlier keyword-based passes produced a stream of false positives on legitimate student questions, and the repository's own comments now carry an explicit warning: <em>"do NOT re-add blanket topic keywords here."</em></p>
+
+  <h2>Layer one: intent-scoped patterns in contentGuard.js</h2>
+  <p>The <code>BANNED_PATTERNS</code> array groups its regexes into commented categories. Each is written to require instructional or targeted intent, not a bare mention:</p>
+  <table class="data">
+    <thead>
+      <tr><th>Category</th><th>Blocks</th><th>Deliberately allows</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Child sexual abuse / exploitation</td><td>Any match — always blocked, no intent qualifier</td><td>—</td></tr>
+      <tr><td>Sexual violence</td><td><code>rape</code>, sexual assault, revenge porn, bestiality</td><td>—</td></tr>
+      <tr><td>Weapons / explosives / drugs</td><td>"how to make/build/3d print a bomb/gun/meth…"</td><td>"how does a nuclear power plant work"</td></tr>
+      <tr><td>Violence against a person</td><td>"how to kill someone", threats with a <em>concrete target</em> ("my school", "my teacher")</td><td>"how to kill weeds in my garden"</td></tr>
+      <tr><td>Self-harm / suicide</td><td>Methods and encouragement ("painless way to die")</td><td>"what is suicide prevention"</td></tr>
+      <tr><td>Hate content generation</td><td>"write me a racist joke / ethnic slur"</td><td>History of discrimination as a topic</td></tr>
+      <tr><td>Cybercrime / fraud</td><td>"how to hack a bank account / steal identities"</td><td>"how does ethical hacking help companies"</td></tr>
+      <tr><td>Trafficking / smuggling</td><td>"how to traffic/smuggle people or drugs"</td><td>"what is human trafficking and how is it prevented"</td></tr>
+    </tbody>
+  </table>
+  <p>The threat pattern is the most carefully engineered regex in the file: a first-person or instructional verb phrase ("going to", "want to", "how do I") must be followed by a violent verb <em>and</em> a concrete human or place target ("my school", "my teacher", "everyone"). The comment above it spells out why: without a required target, "how do white blood cells kill bacteria" and "how to shoot a basketball" would match.</p>
+  <p>Before any pattern runs, input is normalized against evasion. <code>matchesBannedPattern()</code> applies Unicode NFKC folding and strips zero-width characters, so "b&#8203;omb" written with an invisible zero-width space, or fullwidth "ｂｏｍｂ", cannot slip past word boundaries:</p>
+  <pre class="code-block">const INVISIBLE_CHARS_PATTERN = /[...zero-width and bidi controls...]/g;
+
+function matchesBannedPattern(text, patterns) {
+  if (!text || typeof text !== "string") return false;
+  const normalized = text
+    .normalize("NFKC")
+    .replace(INVISIBLE_CHARS_PATTERN, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  return patterns.some((pattern) =&gt; pattern.test(normalized));
+}</pre>
+  <p>A second array, <code>BANNED_RESPONSE_PATTERNS</code>, applies only to AI output. It catches a model that has slipped into refusal mode — "I cannot help with…" followed within 160 characters by a word from the <code>HARMFUL_REFUSAL_CONTEXT</code> alternation (<code>harmful|dangerous|illegal|…|traffick</code>). A refusal leaking through as lesson content is treated as a moderation failure, not a lesson. The module exports <code>containsHarmfulContent()</code> — the union of both pattern sets — precisely so the profanity layer can reuse these scoped patterns instead of maintaining a parallel keyword list.</p>
+
+  <h2>Layer two: profanity dictionaries in moderation.js</h2>
+  <p><code>moderation.js</code> adds language-hygiene checks appropriate for a teen audience, using two independent dictionaries: the <code>bad-words</code> <code>Filter</code> and <code>better-profane-words</code>' <code>filterText</code>/<code>containsProfanity</code>. The core check, <code>containsUnsafeContent()</code>, runs three gates in order: <code>containsHarmfulContent()</code> from the shared guard, then <code>profanityFilter.isProfane()</code>, then <code>filterText()</code> with <code>minIntensity: TEEN_MIN_INTENSITY</code> (a constant set to <code>2</code>).</p>
+  <p>Two refinements keep the dictionaries from re-creating the topic-ban problem:</p>
+  <ul>
+    <li><strong>Category filtering.</strong> <code>better-profane-words</code> tags each match with categories. The set <code>TOPIC_ONLY_CATEGORIES = {"violence", "drug"}</code> is treated as informational: a match counts as unsafe only if it carries at least one <em>non-topic</em> category (profanity, slur, sexual, insult). "Cocaine" in a health-awareness question no longer trips the filter; the harmful intent behind drug synthesis is already caught upstream by the regex layer.</li>
+    <li><strong>An educational exclusion list.</strong> <code>EDUCATIONAL_EXCLUDED_WORDS</code> removes ten words from the dictionaries — <code>god</code>, <code>balls</code>, <code>homo</code>, <code>screw</code>, <code>butt</code>, <code>tit</code>, <code>dick</code>, <code>cock</code>, <code>penetrate</code>, <code>penetration</code> — because each one blocked a real student question: cricket coaching ("bowling 6 balls in an over," "how to cock the wrist"), game theory ("tit for tat"), high-jump history ("Dick Fosbury"), biology ("Homo sapiens," "how viruses penetrate host cell membranes"), and business ("market penetration strategy"). This fix landed on 2026-07-26 after false positives were observed in production.</li>
+  </ul>
+
+  <h2>The verdict cache and the moderateText contract</h2>
+  <p>The public entry point is <code>moderateText(text, kind)</code>, where <code>kind</code> is <code>"input"</code> or <code>"output"</code>. It first truncates the text to a scan window — <code>MAX_MODERATION_INPUT_CHARS = 12000</code> for questions, <code>MAX_MODERATION_OUTPUT_CHARS = 60000</code> for generated lessons — then consults an in-process verdict cache: an <code>lru-cache</code> instance capped at <code>MODERATION_CACHE_MAX_ENTRIES = 500</code>, keyed by a SHA-256 hash of <code>`${kind}|${snippet}`</code>, with a per-entry TTL of 15 minutes (<code>MODERATION_CACHE_TTL_MS</code>, overridable via env). Repeat verdicts on identical text — common when the same cached-adjacent question is asked twice in quick succession — cost one hash instead of two dictionary scans.</p>
+  <div class="stat-row">
+    <div class="stat"><div class="stat-value">12,000</div><div class="stat-label">input scan chars</div></div>
+    <div class="stat"><div class="stat-value">60,000</div><div class="stat-label">output scan chars</div></div>
+    <div class="stat"><div class="stat-value">500</div><div class="stat-label">verdict cache entries</div></div>
+    <div class="stat"><div class="stat-value">15 min</div><div class="stat-label">verdict TTL</div></div>
+  </div>
+  <p>The error-handling asymmetry is the most consequential design decision in the module. If the check itself throws, input moderation <em>fails open</em> (the question proceeds — a filter bug should not take the product down), but output moderation <em>fails closed</em> with the message "Safety review could not be completed. Please try again." The reasoning: an unmoderated question still faces output moderation downstream, but unmoderated AI output would go straight to a child's screen. The changelog records that output moderation once failed open and was explicitly flipped. A global kill switch, <code>MODERATION_ENABLED</code>, exists for emergencies and accepts <code>false/0/off/no</code>.</p>
+
+  <h2>Orchestration: where the checks run in the request</h2>
+  <p><code>POST /api/generate-lesson</code> runs moderation at three points:</p>
+  <ol>
+    <li><strong>Synchronous pre-gate.</strong> Before anything expensive, <code>filterUserInput(question)</code> (regex layer only) returns a plain 400 on a match. The same gate is applied to free-text personalization notes, which are also interpolated into the prompt.</li>
+    <li><strong>Concurrent input verdict.</strong> The full <code>moderateText(question, "input")</code> runs in a <code>Promise.all</code> alongside the Serper real-world-context fetch, so the safety check adds no latency in the common allowed case. A block emits an SSE <code>error</code> event before any generation begins.</li>
+    <li><strong>Output verdict on the final bytes.</strong> After schema validation and quality-gate mutation, the server moderates <code>JSON.stringify(normalized)</code> — the exact object that will be cached and streamed. A code comment explains the fix behind this: moderating the raw pre-mutation text left a gap where "the served bytes were never the moderated bytes." The verdict is enforced <em>before</em> streaming; an earlier version only deleted the cache entry after the fact, by which point the requesting user had already received the content.</li>
+  </ol>
+
+  <h2>The audit trail</h2>
+  <p>Every block writes a record to the <code>moderationLogs</code> MongoDB collection via <code>logModerationEvent()</code>. The record is intentionally minimal: request ID, pseudonymous Clerk ID (no email, IP, or user agent), event type (<code>user-input-moderated</code> or <code>ai-response-moderated</code>), the user-facing <code>flaggedReason</code>, and the triggering question capped at <code>MODERATION_LOG_QUESTION_MAX_CHARS = 500</code>. A TTL index expires records after <code>MODERATION_LOG_TTL_DAYS</code> (default 90), and a backfill migration converts legacy string timestamps to BSON dates so old records age out too. Before anything reaches stdout, <code>redactModerationEvent()</code> strips the question — process logs on a PaaS are retained outside the app's data-deletion controls, so per-user content must never land there.</p>
+
+  <h2>Where the LLM went — and what the tests pin down</h2>
+  <p>Documentation in this repository, including <code>AGENT_MEMORY.md</code> and a comment in <code>lessonCache.js</code>, describes moderation as "regex + LLM." That was true historically: an LLM-based verdict stage existed, but commit <code>9beaa75</code> ("switch moderation to library-based badwords filtering") replaced it with the dictionary layer described above. On main today, the entire pipeline is rule-based — the server's own enforcement comments say so ("the check is rule-based (no network call)"), and that property is what makes awaiting the output verdict before streaming essentially free. A few stale comments ("Run LLM input moderation concurrently…") and the <code>MODERATION_TIMEOUT_MS</code> constant (default 8,000 ms, a relic of the network-call era) still reference the old design.</p>
+  <div class="callout">
+    <div class="callout-title">Doc drift as a security artifact</div>
+    <p>SECURITY.md advertises "multi-layer content moderation (regex + LLM)." The regex and dictionary layers are real and tested; the LLM layer is not on main. This is worth correcting in the docs — overclaiming in a security policy erodes exactly the trust it is meant to build. The rule-based system's coverage is honest and measurable; it should be described as such.</p>
+  </div>
+  <p>The regression suite in <code>backend/test/moderation.test.js</code> encodes the philosophy directly: an <code>ALLOWED_QUESTIONS</code> list of thirty-plus real student questions (the atomic bomb, torture methods of the Inquisition, cocaine addiction, cricket power hitting, "tit for tat strategy in game theory") that must always pass, and a <code>BLOCKED_QUESTIONS</code> list ("How to synthesize cocaine step by step," "What is the best way to kill myself?") that must always fail. Moderation accounts for 5 of the backend's 28 tests across 4 files, and every false-positive incident so far has been converted into a permanent regression case. That habit — turning each production miss into a test — is the pipeline's real quality mechanism.</p>
+</section>

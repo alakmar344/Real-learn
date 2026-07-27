@@ -1,0 +1,80 @@
+<section class="chapter" id="ch-20">
+  <div class="chapter-opener">
+    <div class="chapter-kicker">Part III · The Backend</div>
+    <h1><span class="ch-num">20</span>Authentication — Clerk, JWTs and jose</h1>
+    <p class="chapter-lede">RealLearn outsources identity to Clerk but refuses to outsource trust: every API request re-verifies the session JWT with the <code>jose</code> library, against an issuer allowlist that was tightened after a genuine authentication bypass was found and fixed.</p>
+  </div>
+
+  <h2>Two layers: route gating and token verification</h2>
+  <p>Authentication happens twice, in different places, for different reasons. On the frontend, <code>frontend/middleware.ts</code> wraps every route in Clerk's <code>clerkMiddleware</code>. A <code>createRouteMatcher</code> allowlist defines the public surface — <code>/</code>, <code>/sign-in(.*)</code>, <code>/sign-up(.*)</code>, <code>/api/webhooks(.*)</code>, and <code>/legal(.*)</code> — and any other route without a <code>userId</code> is redirected to sign-in with a <code>redirect_url</code> back-reference. Signed-in users who visit an auth route are bounced home. This layer is user experience, not security: it decides what a browser can navigate to.</p>
+  <p>The real perimeter is the backend. Ten of the twelve Express endpoints are wrapped in <code>requireAuth</code> from <code>backend/src/lib/auth.js</code>, which extracts the bearer token, cryptographically verifies it, and only then attaches an identity to the request. The backend never trusts the frontend's session state — it re-derives everything from the token, because the API on <code>real-learn.onrender.com</code> is reachable by anyone with curl.</p>
+
+  <h2>Issuer trust: the bypass that shaped the design</h2>
+  <p>The most instructive part of <code>auth.js</code> is <code>isTrustedIssuer()</code>, and the comment block above it records why it exists in its current form. Earlier code trusted any token whose issuer hostname ended in <code>.clerk.accounts.dev</code> or <code>.accounts.dev</code>. Those are shared multi-tenant Clerk domains — anyone can create a free dev instance there and mint perfectly valid, correctly signed tokens from <em>their own</em> Clerk application. Such tokens passed <code>requireAuth</code>. The repository's <code>errors.md</code> classifies this as a high-severity finding, and the fix is layered:</p>
+  <ul>
+    <li>The configured issuer — <code>CLERK_FRONTEND_API</code>, defaulting to <code>https://clerk.reallearn.site</code> — is always trusted.</li>
+    <li>Explicit extra issuers can be allowlisted via the comma-separated <code>CLERK_ADDITIONAL_ISSUERS</code> env var.</li>
+    <li>Any <code>https:</code> issuer on <code>reallearn.site</code> or a subdomain is trusted (the app's own domain).</li>
+    <li>Wildcard dev domains are honored <em>only</em> when <code>CLERK_ALLOW_DEV_ISSUERS=true</code> is set explicitly. The code deliberately refuses to gate this on <code>NODE_ENV</code>: as the comment puts it, any <code>NODE_ENV</code>-based gate "is one misconfigured host away from a full auth bypass in production." Fail-safe means the dangerous behavior requires opt-in, not the safe behavior.</li>
+  </ul>
+
+  <h2>Verification mechanics: jose, per-issuer JWKS, RS256</h2>
+  <p><code>verifyClerkToken()</code> follows the design captured in commit <code>dd0100b</code>, "Verify Clerk tokens against the token's own issuer": it first decodes the token <em>without</em> verification (<code>decodeJwt</code>), reads the <code>iss</code> claim, checks it against the trust list above, and only then verifies the signature against that issuer's keys. This lets one backend serve both the production Clerk domain and an allowlisted dev instance without hardcoding a single issuer — the trust list, not the token, decides what is acceptable.</p>
+  <pre class="code-block">const claims = decodeJwt(token);
+const issuer = (claims.iss || "").replace(/\/$/, "");
+
+if (!isTrustedIssuer(issuer)) {
+  return { valid: false, error: `Untrusted token issuer: ${issuer || "none"}` };
+}
+
+const verifyOptions = { issuer, algorithms: ["RS256"] };
+const jwks = getJwksForIssuer(issuer, jwksUrl);
+const { payload } = await jwtVerify(token, jwks, verifyOptions);</pre>
+  <p>Key material comes from <code>createRemoteJWKSet</code>, pointed at the issuer's <code>/.well-known/jwks.json</code> (or an explicit <code>CLERK_JWKS_URL</code>, used only when the token's issuer matches the configured one). Remote JWKS handles Clerk's key rotation automatically. The algorithm is pinned to <code>RS256</code> as defense in depth — <code>jose</code> already rejects <code>alg: none</code>, but pinning forecloses algorithm-confusion bugs elsewhere in the stack.</p>
+  <p>The JWKS sets are cached in an LRU capped at <code>max: 32</code> with a one-hour TTL, and the cap is itself a security control. The cache key derives from the token's <em>unverified</em> <code>iss</code> claim, and the trust check accepts any <code>*.reallearn.site</code> subdomain — so an attacker can mint unlimited distinct issuer strings that reach the cache before their invalid signatures are rejected. An unbounded map keyed on attacker-controlled input is a slow memory-growth denial of service; a 32-entry LRU costs legitimate deployments nothing (they use a handful of issuers) while spray traffic merely churns the tail.</p>
+
+  <h2>The offline fallback key — and what does not trigger it</h2>
+  <p>If the JWKS endpoint is unreachable, verification falls back to a PEM public key imported via <code>importSPKI</code> — either <code>CLERK_JWT_PUBLIC_KEY</code> from the environment or a default RSA public key baked into the source. The fallback applies only when the token's issuer equals the configured Frontend API, so it cannot widen trust to arbitrary issuers.</p>
+  <p>The subtlety is in <code>isJwksFetchError()</code>, which decides whether a <code>jtwVerify</code> failure was connectivity (retry against the fallback key) or cryptographic (reject outright). One case is called out explicitly: <code>ERR_JWKS_NO_MATCHING_KEY</code> means the live key set <em>was fetched successfully</em> and simply does not contain the token's <code>kid</code> — a rotated-out or forged token. Treating that as a connectivity failure "would retry the token against the static baked-in fallback key and silently expand the trusted-key surface." So <code>ERR_JWKS_NO_MATCHING_KEY</code> and the message variant "no applicable key" are hard failures; <code>ERR_JWKS_TIMEOUT</code>, DNS errors (<code>getaddrinfo</code>, <code>enotfound</code>), and fetch/network message patterns qualify for the fallback.</p>
+  <div class="callout">
+    <div class="callout-title">A trust anchor in the repository</div>
+    <p>The default fallback PEM is a public key, so committing it leaks nothing — but it is still a hardcoded trust anchor. If Clerk rotated the corresponding signing key, the fallback would quietly stop working until a deploy; if the private key were ever compromised, revoking trust would also require a deploy. The env override (<code>CLERK_JWT_PUBLIC_KEY</code>) exists precisely so operators can rotate without a code change, and the fallback only activates when the primary JWKS path is down. Chapter 21 weighs this as a residual risk.</p>
+  </div>
+
+  <h2>Authorized parties: pinning the azp claim</h2>
+  <p>Issuer verification proves the token came from the right Clerk instance; it does not prove it was minted for <em>this application</em>. Clerk stamps the frontend origin into the <code>azp</code> (authorized party) claim, and <code>auth.js</code> checks it against <code>AUTHORIZED_PARTIES</code>. The configuration logic is deliberately asymmetric: if <code>CLERK_AUTHORIZED_PARTIES</code> is set, it wins; if unset in production, the check defaults to <code>["https://reallearn.site", "https://www.reallearn.site"]</code> rather than "accept any azp"; only non-production keeps the permissive empty list. An unset variable in production must not silently disable a control — the same fail-safe reasoning as the dev-issuer flag.</p>
+
+  <h2>requireAuth: identity pinning and privacy in the logs</h2>
+  <p>The Express middleware itself is short, but two details carry weight. First, the order in which the verified payload becomes <code>req.auth</code>:</p>
+  <pre class="code-block">// SECURITY: spread the raw claims FIRST and pin the identity fields LAST.
+req.auth = {
+  ...result.payload,
+  userId: result.payload.sub,
+  sessionId: result.payload.sid,
+};</pre>
+  <p>The previous order — <code>userId</code> first, spread after — meant a token carrying a custom claim literally named <code>userId</code> would override the server-derived identity. Every endpoint keys account deletion, data export, and consent records off <code>req.auth.userId</code>, so a crafted claim "would have been a full IDOR." <code>sub</code> is the only trusted identity source, and it now wins unconditionally.</p>
+  <p>Second, failed verifications are logged for debugging via <code>inspectToken()</code> — a non-verifying peek returning <code>iss</code>, <code>azp</code>, <code>exp</code>, expiry status, and issuer trust — but the pseudonymous <code>sub</code> is explicitly destructured out before logging. Failed verifications happen constantly (expired sessions, replays), and stdout logs are retained outside the app's data-deletion controls, so they must not accumulate per-user identifiers. There is also a diagnostic endpoint, <code>GET /api/auth-debug</code>, which reports why a presented token passes or fails; it sits behind <code>requireAuth</code> and the rate limiter, and is disabled in production unless <code>AUTH_DEBUG_ENABLED=true</code>, because an open version of it is a token-verification oracle.</p>
+
+  <h2>Configuration surface</h2>
+  <table class="data">
+    <thead>
+      <tr><th>Env var</th><th>Default</th><th>Effect</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>CLERK_FRONTEND_API</code></td><td><code>https://clerk.reallearn.site</code></td><td>The primary trusted issuer</td></tr>
+      <tr><td><code>CLERK_JWKS_URL</code></td><td>issuer's <code>/.well-known/jwks.json</code></td><td>Explicit key-set URL (configured issuer only)</td></tr>
+      <tr><td><code>CLERK_ADDITIONAL_ISSUERS</code></td><td>empty</td><td>Comma-separated extra issuer allowlist</td></tr>
+      <tr><td><code>CLERK_ALLOW_DEV_ISSUERS</code></td><td>unset (off)</td><td>Opt-in trust for <code>*.clerk.accounts.dev</code></td></tr>
+      <tr><td><code>CLERK_AUTHORIZED_PARTIES</code></td><td>prod: reallearn.site origins</td><td><code>azp</code> pinning list</td></tr>
+      <tr><td><code>CLERK_JWT_PUBLIC_KEY</code></td><td>baked-in PEM</td><td>Offline verification fallback</td></tr>
+      <tr><td><code>AUTH_DEBUG_ENABLED</code></td><td>unset (off)</td><td>Enables <code>/api/auth-debug</code> in production</td></tr>
+    </tbody>
+  </table>
+  <div class="stat-row">
+    <div class="stat"><div class="stat-value">10 / 12</div><div class="stat-label">endpoints behind requireAuth</div></div>
+    <div class="stat"><div class="stat-value">RS256</div><div class="stat-label">pinned algorithm</div></div>
+    <div class="stat"><div class="stat-value">32</div><div class="stat-label">JWKS cache entries max</div></div>
+    <div class="stat"><div class="stat-value">1 h</div><div class="stat-label">JWKS cache TTL</div></div>
+  </div>
+  <p>The overall shape is worth stating plainly: this is a hand-built verification layer on top of <code>jose</code> rather than Clerk's own backend SDK. That choice keeps the dependency surface small and every trust decision visible in one 285-line file — but it also means the team owns every subtlety Clerk's SDK would otherwise own, from JWKS error taxonomy to azp semantics. The commit history shows that ownership being exercised: each of the three significant auth vulnerabilities found to date (wildcard dev issuers, the claim-ordering IDOR, the fallback-key retry) was fixed with a comment explaining the failure mode, which is how a hand-built layer stays trustworthy.</p>
+</section>

@@ -1,0 +1,70 @@
+<section class="chapter" id="ch-21">
+  <div class="chapter-opener">
+    <div class="chapter-kicker">Part III · The Backend</div>
+    <h1><span class="ch-num">21</span>Security Posture</h1>
+    <p class="chapter-lede">An honest audit of what this backend actually defends — verified auth, layered rate limiting, fenced prompts, minimized data — and the residual risks that remain in the code as it ships on main today.</p>
+  </div>
+
+  <h2>The perimeter: twelve endpoints, three trust levels</h2>
+  <p>The attack surface is small and legible. <code>backend/src/server.js</code> registers exactly twelve HTTP endpoints, and each one declares its own protection inline in the route definition:</p>
+  <table class="data">
+    <thead>
+      <tr><th>Endpoint</th><th>Auth</th><th>Rate limiter</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>GET /health</code></td><td>none</td><td>dedicated, 120/min per IP</td></tr>
+      <tr><td><code>POST /api/feedback</code></td><td>none</td><td>dedicated <code>feedbackRateLimiter</code></td></tr>
+      <tr><td><code>GET /api/auth-debug</code></td><td><code>requireAuth</code> + prod gate</td><td>shared API limiter</td></tr>
+      <tr><td><code>POST /api/generate-lesson</code></td><td><code>requireAuth</code></td><td>shared + concurrency gates</td></tr>
+      <tr><td><code>POST /api/tts</code></td><td><code>requireAuth</code></td><td>dedicated, 30/min + global cap of 8 concurrent syntheses</td></tr>
+      <tr><td><code>POST/GET /api/agreement(/status)</code>, <code>POST/GET /api/legal-consent(/status)</code>, <code>DELETE /api/account</code>, <code>GET /api/export-data</code>, <code>GET /api/search-lessons</code></td><td><code>requireAuth</code></td><td>shared API limiter (20/min default)</td></tr>
+    </tbody>
+  </table>
+  <p>Unauthenticated surface is limited to a health check and a feedback form, both with their own budgets — <code>/health</code> pings MongoDB on every hit, so without its own limiter it "is a free amplification vector onto the database." Everything that touches user data flows through the verified-token identity described in Chapter 20, and after the IDOR fixes recorded in <code>errors.md</code>, writes are keyed exclusively off <code>req.auth.userId</code>, never off client-supplied IDs.</p>
+
+  <h2>What is genuinely defended</h2>
+  <h3>Rate limiting that assumed an adversary</h3>
+  <p>The limiter design in <code>server.js</code> is the strongest piece of engineering in the security story, because it was rebuilt around actual bypasses rather than defaults. Bearer tokens are <em>not verified</em> at the limiting layer (verification is expensive), so a naive per-token limiter could be reset forever by rotating random tokens. The current design, built on <code>express-rate-limit</code> with custom key logic, stacks four countermeasures:</p>
+  <ul>
+    <li><strong>A token-shape gate.</strong> Only strings matching <code>JWT_SHAPE_PATTERN</code> (three base64url segments, bounded length) count as tokens at all; garbage neither opens a bucket nor lifts any cap.</li>
+    <li><strong>A spray gate that fails closed.</strong> Each IP may open at most <code>MAX_TOKEN_KEYS_PER_IP = 200</code> distinct token buckets per window — generous for a school NAT — after which all of that IP's token traffic collapses into one shared <code>spray:</code> bucket.</li>
+    <li><strong>An always-on IP backstop.</strong> A second gate counts <em>every</em> request from an IP, token or not, at <code>max × 5</code>. An earlier single-gate design let one IP multiply its budget roughly 1,000× via distinct tokens before the spray gate tripped; the separate pure-IP counter restores a hard ceiling.</li>
+    <li><strong>IPv6 /64 collapsing.</strong> <code>rateLimitIpKey()</code> reduces IPv6 callers to their /64 network prefix, because a residential IPv6 allocation offers 2<sup>64</sup> addresses — unlimited fresh buckets under naive per-address keying.</li>
+  </ul>
+  <p>Per-caller keys are SHA-256 hashes of the full token (an earlier bug keyed on <code>token.slice(0, 16)</code> — the base64 JWT <em>header</em>, identical for every user, which collapsed all signed-in users into one shared bucket). Every limiter store is LRU-bounded, so no traffic shape can grow memory without bound. Beyond request rates, the expensive paths have concurrency gates: a global in-flight lesson cap, a per-user cap so one user cannot occupy every generation slot with 60-second requests, and a hard ceiling of 8 simultaneous TTS syntheses so a burst degrades to fast 503s instead of exhausting sockets and disk.</p>
+
+  <h3>Input validation and prompt fencing</h3>
+  <p>The LLM boundary is treated as an injection surface, which is still unusual in production code. Questions are capped at <code>MAX_QUESTION_LENGTH = 1000</code> characters; <code>language</code> and <code>level</code> are validated against exact allowlists (<code>ALLOWED_LANGUAGES</code>, <code>ALLOWED_LEVELS</code>) rather than interpolated as free strings; JSON bodies are limited to 100 KB. Inside the prompt, both untrusted inputs are fenced with explicit delimiters — the student's question between <code>&lt;&lt;&lt;STUDENT_QUESTION … END_STUDENT_QUESTION&gt;&gt;&gt;</code> markers that declare it "NEVER instructions," and Serper-derived news context between <code>&lt;&lt;&lt;EXTERNAL_CONTEXT … END_EXTERNAL_CONTEXT&gt;&gt;&gt;</code> markers, since SEO'd third-party pages are attacker-influenceable text. Server-controlled fields come first so nothing inside a fence can shadow them. The TTS endpoint applies the same discipline to SSML: prosody parameters must match strict patterns like <code>TTS_RATE_VOLUME_PATTERN = /^[+-]?\d{1,3}(\.\d{1,2})?%$/</code>, so markup cannot be smuggled through rate/pitch/volume.</p>
+
+  <h3>Headers, CORS, and transport</h3>
+  <p>There is no <code>helmet</code>; the <code>securityHeaders</code> middleware sets headers by hand: <code>X-Frame-Options: SAMEORIGIN</code>, <code>X-Content-Type-Options: nosniff</code>, <code>Referrer-Policy: strict-origin-when-cross-origin</code>, <code>X-XSS-Protection: 0</code>, <code>Cross-Origin-Opener-Policy: same-origin</code>, a locked-down <code>Permissions-Policy</code>, and — unless <code>NODE_ENV === "development"</code> — <code>Strict-Transport-Security: max-age=63072000; includeSubDomains; preload</code> plus a minimal API-appropriate CSP of <code>default-src 'none'; base-uri 'self'; form-action 'self'</code>. The gating direction is deliberate: an earlier version enabled HSTS only when <code>NODE_ENV === "production"</code>, which silently dropped it whenever the host forgot the variable; now the hardened path is the default. CORS is a strict allowlist (<code>reallearn.site</code> and the Render origin by default, overridable via <code>FRONTEND_ORIGIN</code>) after a fix removed literal <code>"null"</code>/<code>"undefined"</code> origins — <code>Origin: null</code> is what sandboxed iframes and <code>file://</code> pages send. <code>x-powered-by</code> is disabled and <code>trust proxy</code> is set to 1 so <code>req.ip</code> reflects the real client behind Render's proxy.</p>
+
+  <h3>Data minimization as a running theme</h3>
+  <p>Several small decisions add up to a coherent privacy stance: moderation logs store a pseudonymous Clerk ID only (no email, IP, or user agent), cap the question at 500 characters, and expire after 90 days via TTL index; the question is stripped before anything reaches stdout; failed-auth logs drop the <code>sub</code> claim; the UA hash salt no longer derives from database credentials; <code>/health</code> was slimmed to stop leaking provider internals; and <code>DELETE /api/account</code> erases Clerk, MongoDB, and client-side state. Secrets exist only as environment variables — 63 are referenced across the repository — with <code>.env*</code> gitignored and a template in <code>.env.local.example</code>.</p>
+  <div class="stat-row">
+    <div class="stat"><div class="stat-value">12</div><div class="stat-label">HTTP endpoints</div></div>
+    <div class="stat"><div class="stat-value">63</div><div class="stat-label">env vars referenced</div></div>
+    <div class="stat"><div class="stat-value">200</div><div class="stat-label">token buckets per IP, max</div></div>
+    <div class="stat"><div class="stat-value">90 days</div><div class="stat-label">moderation log retention</div></div>
+  </div>
+
+  <h2>Residual risks — the honest column</h2>
+  <p>Grounding this in the code rather than a generic checklist, the following remain true on main:</p>
+  <ol>
+    <li><strong>Moderation is English-centric while the product is not.</strong> The regex patterns in <code>contentGuard.js</code> and both profanity dictionaries operate on English. The platform generates lessons in 12 Indian languages, and a harmful request phrased in Hindi or Tamil would meet materially weaker input filtering. (Commit history shows a "multilingual+obfuscation moderation" pass, and the zero-width/NFKC normalization is real, but the pattern corpus itself is English.)</li>
+    <li><strong>The docs overstate the moderation stack.</strong> SECURITY.md and <code>AGENT_MEMORY.md</code> describe "regex + LLM" moderation; the LLM verdict stage was replaced by dictionary filtering (commit <code>9beaa75</code>) and main today is entirely rule-based. Rule-based systems cannot catch novel phrasings a semantic classifier would. The claim and the code should be reconciled, in whichever direction the team chooses.</li>
+    <li><strong>Input moderation fails open.</strong> By design, an exception in <code>moderateText(question, "input")</code> lets the question proceed. Output moderation failing closed is the compensating control, but the asymmetry is a standing bet that the output pass catches what the input pass missed.</li>
+    <li><strong>A baked-in fallback trust anchor.</strong> The default Clerk PEM public key lives in source. It activates only for the configured issuer when JWKS is unreachable, and <code>ERR_JWKS_NO_MATCHING_KEY</code> correctly does not trigger it — but revoking or rotating that anchor requires a deploy unless the env override is in use.</li>
+    <li><strong>Rate limiting is per-instance memory.</strong> All limiter stores are in-process. On a single Render instance this is sound; any horizontal scale-out silently multiplies every budget by the instance count until a shared store is introduced.</li>
+    <li><strong>Cache hits skip moderation by design.</strong> Sound as long as rules only ever tighten <em>and</em> flagged lessons are evicted via <code>deleteCachedLesson()</code>; a tightened rule does not retroactively purge the up-to-six-hours of previously cached lessons that would now fail it.</li>
+    <li><strong>Requests without an Origin header bypass CORS entirely.</strong> Intentional (curl, server-to-server, and same-origin requests send none) and harmless in itself since CORS is a browser control — but it means the allowlist is a browser-abuse control only, and the real gate for non-browser callers is auth plus rate limits.</li>
+    <li><strong>Hand-rolled controls carry maintenance duty.</strong> No <code>helmet</code>, no Clerk backend SDK — headers and token verification are owned in-repo. The record so far is good (each discovered bug is fixed with an explanatory comment and often a regression test), but the duty is permanent.</li>
+  </ol>
+  <div class="callout">
+    <div class="callout-title">Security by iteration, not by declaration</div>
+    <p>The most convincing evidence in this codebase is not any single control but the visible loop: <code>errors.md</code> documents at least three formal security passes, each naming concrete vulnerabilities — the shared rate-limit bucket from hashing only the JWT header, the <code>*.accounts.dev</code> issuer bypass, the consent-record IDOR, the auth-debug oracle, IPv6 bucket exhaustion, header-injection in export filenames — alongside their fixes. Commits titled "harden security" and "Verify Clerk tokens against the token's own issuer" are already merged into main's history, and the pattern of dated hardening rounds suggests further passes are a matter of routine rather than crisis.</p>
+  </div>
+
+  <h2>Verdict</h2>
+  <p>For a solo-maintained, largely AI-agent-driven project on free-tier infrastructure, this backend's security posture is well above its weight class. The controls that matter for its actual threat model — abusive callers burning paid LLM tokens, minors receiving unsafe content, cross-user data access — are real, tested, and in several cases show second- and third-iteration sophistication (fail-closed spray gates, identity pinning order, JWKS error taxonomy). The honest gaps are equally clear: multilingual moderation depth, documentation drift, and single-instance limiter state. None is an open door; all are known-shape work. A security posture is credible when its weaknesses are enumerable, and here they are.</p>
+</section>

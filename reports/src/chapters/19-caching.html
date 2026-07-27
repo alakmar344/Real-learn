@@ -1,0 +1,84 @@
+<section class="chapter" id="ch-19">
+  <div class="chapter-opener">
+    <div class="chapter-kicker">Part III · The Backend</div>
+    <h1><span class="ch-num">19</span>Two-Tier Caching — LRU and MongoDB</h1>
+    <p class="chapter-lede">Lesson generation is a 20–60 second pipeline of search, LLM calls, validation, and moderation. The two-tier cache in <code>lessonCache.js</code> collapses a repeat question into a single lookup — and the design decisions around its key, TTL, and failure modes are where the interesting engineering lives.</p>
+  </div>
+
+  <h2>Why cache lessons at all</h2>
+  <p>A cold <code>POST /api/generate-lesson</code> request fans out to Serper for real-world context, calls Gemma (Cerebras primary, Cloudflare fallback) with retries and a circuit breaker, repairs and schema-validates the JSON, runs quality-gate mutations, and moderates both the input and the final output. On a free-tier Render instance, that is 20–60 seconds of wall time and a meaningful bill of upstream tokens. But a learning platform's traffic is heavily repetitive: popular questions ("what is photosynthesis") arrive from many students in the same language and level. The header comment of <code>backend/src/lib/lessonCache.js</code> states the payoff plainly: a cached lesson "was already moderated (regex + LLM) and schema-validated the first time it was generated, so a cache hit legitimately skips Serper, the Gemma generation call, AND both moderation passes — turning a ~20-60s pipeline into a single lookup."</p>
+  <p>The architecture is two tiers with distinct jobs:</p>
+  <ul>
+    <li><strong>Tier 1 — in-process LRU.</strong> Sub-millisecond hits on the instance that already generated the lesson. Bounded at <code>LESSON_CACHE_MAX_MEMORY_ENTRIES</code> (default <code>100</code>).</li>
+    <li><strong>Tier 2 — MongoDB with a TTL index.</strong> Survives restarts (Render free-tier instances sleep and recycle) and is shared across instances, "so any server in the fleet benefits from any other's work."</li>
+  </ul>
+
+  <h2>The cache key: deterministic, normalized, personalization-aware</h2>
+  <p><code>lessonCacheKey()</code> produces a SHA-256 hex digest over a canonical string of every input that changes the lesson:</p>
+  <pre class="code-block">export function lessonCacheKey(
+  question, language, level, mode = "explain", personalization = null
+) {
+  const normalizedQuestion = String(question ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+  const material = `${normalizedQuestion}|${language ?? ""}|${level ?? ""}|` +
+    `${mode ?? "explain"}|${normalizePersonalization(personalization)}`;
+  return crypto.createHash("sha256").update(material).digest("hex");
+}</pre>
+  <p>The question is lowercased and whitespace-collapsed, so "What is Gravity?" and "what is gravity ?" share an entry. Language, level, and mode are exact allowlisted enums (Chapter 21 covers why), so they concatenate cleanly. The subtle part is <code>normalizePersonalization()</code>: when a signed-in learner has set learning-style preferences, the checklist is <em>sorted</em> before joining (order-insensitive) and the free-text notes are lowercased and whitespace-normalized. Two learners asking the same question with different preferences get distinct keys — and therefore distinct, tailored lessons — while the same learner toggling checklist items in a different order does not fragment the cache. Hashing also means the raw personalization notes never appear in a database key.</p>
+
+  <h2>Tier 1: the memory LRU and per-entry expiry</h2>
+  <p>The memory tier is an <code>lru-cache</code> instance capped at 100 entries. Recency eviction and the capacity cap are delegated to the library, but expiry is handled with a belt-and-suspenders pattern: each entry stores its own absolute <code>expiresAt</code> alongside the lesson, <em>and</em> is written with a per-entry <code>ttl</code> of <code>expiresAt - Date.now()</code>. <code>memoryGet()</code> re-checks <code>expiresAt &lt;= Date.now()</code> on every read and deletes stale entries itself. <code>memorySet()</code> refuses to store an already-expired entry at all — a guard against clock skew when an entry's expiry was computed elsewhere (for example, backfilled from a Mongo document written by another instance).</p>
+  <p>This absolute-expiry discipline matters because of the backfill path: when Tier 2 produces a hit, the lesson is copied into Tier 1 with the <em>original</em> expiry from the Mongo document, not a fresh six hours. A lesson generated five hours ago expires at the same moment on every instance that has ever served it.</p>
+
+  <h2>Tier 2: MongoDB with a TTL index</h2>
+  <p>The durable tier is the <code>lessonCache</code> collection, prepared lazily by <code>ensureTtlIndex()</code>: a TTL index on <code>expiresAt</code> with <code>expireAfterSeconds: 0</code> (MongoDB deletes each document at its own stamped expiry) plus a unique index on <code>key</code>. Index creation is wrapped so a failure "must never break lesson generation" — the ensured flag resets and a later write retries. Because MongoDB's TTL monitor only sweeps roughly once a minute and can lag, <code>getCachedLesson()</code> re-checks expiry in application code before serving a Mongo hit.</p>
+  <p>Writes go through <code>setCachedLesson()</code> as an upsert stamping <code>key</code>, <code>lesson</code>, <code>expiresAt</code>, <code>updatedAt</code>, and <code>createdAt</code> (insert-only). Both the write and the companion <code>deleteCachedLesson()</code> are fire-and-forget: the memory tier is updated synchronously, then an async IIFE handles Mongo with all errors swallowed after logging. A learner never waits on cache bookkeeping.</p>
+  <p>The connection underneath, in <code>backend/src/lib/mongodb.js</code>, carries its own reliability lessons. The client is created once with <code>serverSelectionTimeoutMS: 10000</code>, <code>connectTimeoutMS: 10000</code>, <code>maxPoolSize: 10</code>, <code>minPoolSize: 2</code> — the driver's default 30-second server-selection wait let requests pile up sockets during an outage. And a rejected connection promise is explicitly <em>not</em> cached: an earlier version poisoned <code>clientPromise</code> after one transient DNS blip, after which every DB-backed endpoint returned 500 until a manual restart. The catch handler now resets the promise, tears down the half-open client, and lets the next request retry.</p>
+
+  <h2>Configuration and the six-hour question</h2>
+  <table class="data">
+    <thead>
+      <tr><th>Constant</th><th>Default</th><th>Env override</th><th>Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>DEFAULT_LESSON_CACHE_TTL_MS</code></td><td>6 hours</td><td><code>LESSON_CACHE_TTL_MS</code></td><td>Lifetime of a cached lesson in both tiers</td></tr>
+      <tr><td><code>DEFAULT_LESSON_CACHE_MAX_MEMORY_ENTRIES</code></td><td>100</td><td><code>LESSON_CACHE_MAX_MEMORY_ENTRIES</code></td><td>Tier-1 LRU capacity</td></tr>
+      <tr><td><code>CACHE_COLLECTION</code></td><td><code>"lessonCache"</code></td><td>—</td><td>Tier-2 collection name</td></tr>
+      <tr><td><code>isLessonCacheEnabled()</code></td><td>enabled</td><td><code>LESSON_CACHE_ENABLED</code> = <code>false/0/off/no</code></td><td>Global kill switch</td></tr>
+    </tbody>
+  </table>
+  <div class="callout">
+    <div class="callout-title">Why only six hours?</div>
+    <p>A lesson cache could plausibly live for weeks — photosynthesis does not change. But Part 3 of every explain-mode lesson is grounded in live Serper news ("what's happening in the real world right now"), so a long TTL would serve stale current events as if they were current. Six hours is the compromise: long enough to absorb the same-day repetition that dominates traffic, short enough that "real world" stays honest. The comment in <code>lessonCache.js</code> makes this trade-off explicit.</p>
+  </div>
+
+  <h2>The hit path, and the one security wrinkle</h2>
+  <p>In <code>server.js</code>, the cache check runs after auth, validation, and the synchronous regex pre-gate, but <em>before</em> the concurrency gates — a hit costs almost nothing, so it should never consume a generation slot. On a hit, the server flushes SSE headers and emits the whole lesson as a single <code>lesson</code> event followed by <code>done</code>. Even this trivial path is defensively wrapped: a client that requests a cached question and immediately aborts can make <code>res.write</code> throw, which in an async Express 4 handler becomes an <code>unhandledRejection</code> that kills the Node process — a trivially triggerable denial of service that the surrounding try/catch now contains.</p>
+  <p>The wrinkle is moderation. A cache hit intentionally skips both moderation passes, on the argument that the stored lesson already passed them at generation time. That argument holds only if the stored bytes are the moderated bytes — which is why the output verdict is taken on the final normalized JSON before <code>setCachedLesson()</code> runs — and only until moderation rules change. For the second case there is <code>deleteCachedLesson(key)</code>, which evicts a flagged lesson from <em>both</em> tiers so "no other user can be served it." Eviction is fire-and-forget by design; a Mongo hiccup during eviction is logged as non-fatal.</p>
+
+  <h2>The wider cache family</h2>
+  <p>The lesson cache is the flagship, but the backend runs four in-process caches, all standardized on <code>lru-cache</code> after commit <code>140bb05</code> replaced a set of hand-rolled insertion-ordered <code>Map</code> "LRUs." The factory in <code>backend/src/lib/lruCache.js</code> (<code>createLruCache({ max, ttlMs })</code>) documents that consolidation: the library "does the recency-eviction + capacity cap correctly and efficiently," and each caller configures its own bounds.</p>
+  <table class="data">
+    <thead>
+      <tr><th>Cache</th><th>Location</th><th>Bound</th><th>TTL</th><th>Caches</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Lesson (Tier 1)</td><td><code>lessonCache.js</code></td><td>100 entries</td><td>per-entry, ≤ 6 h</td><td>Validated, moderated lessons</td></tr>
+      <tr><td>Moderation verdicts</td><td><code>moderation.js</code></td><td>500 entries</td><td>15 min</td><td>Allow/block results by content hash</td></tr>
+      <tr><td>TTS audio</td><td><code>server.js</code></td><td>16 MB by bytes</td><td>24 h</td><td>Synthesized MP3s, with ETag/304 revalidation</td></tr>
+      <tr><td>JWKS key sets</td><td><code>auth.js</code></td><td>32 entries</td><td>1 h</td><td>Remote key sets per token issuer</td></tr>
+    </tbody>
+  </table>
+  <p>The TTS cache is the only one bounded by bytes rather than entries — <code>maxSize: TTS_CACHE_MAX_BYTES</code> (16 MB) with a <code>sizeCalculation</code> of buffer length — because a single MP3 can run to megabytes and audio is "by far the largest payload this server emits." The JWKS cache's small cap of 32 is itself a security decision, covered in the next chapter: its keys derive from an attacker-influenced value, so boundedness is the defense.</p>
+  <div class="stat-row">
+    <div class="stat"><div class="stat-value">2</div><div class="stat-label">lesson cache tiers</div></div>
+    <div class="stat"><div class="stat-value">6 h</div><div class="stat-label">lesson TTL</div></div>
+    <div class="stat"><div class="stat-value">100</div><div class="stat-label">memory entries</div></div>
+    <div class="stat"><div class="stat-value">16 MB</div><div class="stat-label">TTS byte budget</div></div>
+  </div>
+
+  <h2>Failure philosophy: the cache must never be the outage</h2>
+  <p>Every public function in <code>lessonCache.js</code> upholds one invariant: cache failure degrades to cache absence. <code>getCachedLesson()</code> "never throws — any storage error degrades to a cache miss so the normal generation path takes over." Writes and evictions swallow errors after logging. Index creation failures reset and retry later. Combined with the kill switch and the connection-retry fix in <code>mongodb.js</code>, the result is a cache that can lose its database entirely and cost the product nothing but speed. For a system whose durable tier lives on a free-tier MongoDB Atlas cluster, that is the correct posture: the cache is an accelerant, never a dependency.</p>
+</section>

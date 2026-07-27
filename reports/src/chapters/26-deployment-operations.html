@@ -1,0 +1,67 @@
+<section class="chapter" id="ch-26">
+  <div class="chapter-opener">
+    <div class="chapter-kicker">Part IV · Engineering Process</div>
+    <h1><span class="ch-num">26</span>Deployment &amp; Operations</h1>
+    <p class="chapter-lede">RealLearn runs as a classic split deployment — Next.js frontend on Vercel, Express backend on Render — held together by 63 environment variables, a hand-tuned security-header stack, and operational workarounds for the realities of free-tier hosting.</p>
+  </div>
+
+  <h2>Topology</h2>
+  <p>The deployment layout is declared directly in the repository map of <code>docs/AGENT_MEMORY.md</code>: <code>frontend/</code> is a "Next.js 15 app (deploy: Vercel)" and <code>backend/</code> is an "Express API (deploy: Render)." The production domain is <code>reallearn.site</code>, with Clerk authentication served from <code>clerk.reallearn.site</code> and the backend at <code>real-learn.onrender.com</code> — the latter hardcoded as the documented fallback for <code>NEXT_PUBLIC_BACKEND_URL</code> and listed among the repo's explicit "no-gos": <em>"Don't hardcode the backend URL."</em> There is no <code>render.yaml</code>, <code>vercel.json</code>, or Dockerfile in the repository; both platforms are configured through their dashboards, which means the deployment configuration itself is not version-controlled.</p>
+
+  <table class="data">
+    <thead>
+      <tr><th>Tier</th><th>Platform</th><th>Runtime</th><th>Key characteristics</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Frontend</td><td>Vercel</td><td>Next.js 15, React 19, <code>output: "standalone"</code></td><td>CSP and security headers emitted from <code>next.config.js</code>; immutable caching for static assets and fonts; AVIF/WebP image pipeline restricted to <code>img.clerk.com</code></td></tr>
+      <tr><td>Backend</td><td>Render</td><td>Node + Express, SSE streaming</td><td><code>trust proxy</code> set for real client IPs; per-user and per-IP rate limiting; heartbeat-kept SSE; warm-up pings to the AI provider</td></tr>
+      <tr><td>Data</td><td>MongoDB (external)</td><td>—</td><td>Consent records, lesson cache tier 2, moderation logs (90-day TTL index), feedback</td></tr>
+      <tr><td>Auth</td><td>Clerk</td><td>JWT via JWKS + offline PEM fallback</td><td>Issuer pinned in production; dev issuers gated behind an explicit flag</td></tr>
+      <tr><td>AI</td><td>Cerebras Cloud + Cloudflare Workers AI</td><td>Gemma 4</td><td>Hedged primary/fallback engine with circuit breakers (Chapter 25)</td></tr>
+      <tr><td>Search / TTS</td><td>Serper; Microsoft Edge TTS</td><td>—</td><td>Live news grounding for Part 3; server-side read-aloud synthesis with byte-capped LRU cache</td></tr>
+    </tbody>
+  </table>
+
+  <h2>The frontend edge: security headers as code</h2>
+  <p><code>frontend/next.config.js</code> is the closest thing the project has to infrastructure-as-code, and it carries real operational scar tissue. The Content-Security-Policy is now <em>built from the same environment-derived hosts the app actually calls</em> — a comment in the file records that the CSP string previously hardcoded production hosts, so "any deploy pointing at a different backend/Clerk domain had every fetch blocked by connect-src with no obvious cause." The header stack includes HSTS with a two-year <code>max-age</code>, <code>includeSubDomains</code>, and <code>preload</code>; <code>frame-ancestors 'self'</code>; <code>object-src 'none'</code>; COOP/CORP isolation; a Permissions-Policy that grants only same-origin microphone access (for voice input); and <code>'unsafe-eval'</code> added to <code>script-src</code> in development builds only, with the reasoning documented inline. Static assets under <code>/_next/static</code> and <code>/fonts</code> ship with one-year immutable cache headers, API routes are marked <code>no-store</code>, and legacy paths (<code>/reallan</code>, <code>/real-learn</code>) get permanent redirects.</p>
+
+  <h2>63 environment variables, grouped</h2>
+  <p>A repo-wide scan of <code>process.env.</code> references across <code>backend/src</code> and <code>frontend</code> yields <strong>63 distinct variables</strong> — a large surface for a two-service system, and a direct reflection of how much operational behavior is tunable without a deploy. Grouped by service:</p>
+
+  <table class="data">
+    <thead>
+      <tr><th>Group</th><th>Count</th><th>Variables (abbreviated)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Clerk (auth)</td><td>10</td><td><code>CLERK_ISSUER</code>, <code>CLERK_SECRET_KEY</code>, <code>CLERK_JWKS_URL</code>, <code>CLERK_JWT_PUBLIC_KEY</code>, <code>CLERK_FRONTEND_API</code>, <code>CLERK_AUTHORIZED_PARTIES</code>, <code>CLERK_ADDITIONAL_ISSUERS</code>, <code>CLERK_ALLOW_DEV_ISSUERS</code>, <code>CLERK_API_URL</code>, <code>NEXT_PUBLIC_CLERK_FRONTEND_API</code></td></tr>
+      <tr><td>AI engine (Gemma / Cerebras / Cloudflare)</td><td>18</td><td><code>CEREBRAS_API_KEY</code>; <code>CLOUDFLARE_ACCOUNT_ID</code>, <code>CLOUDFLARE_API_TOKEN</code>, <code>CLOUDFLARE_AI_MODEL</code>, <code>CLOUDFLARE_AI_MODELS</code>; <code>GEMMA_MODEL</code>, <code>GEMMA_FALLBACK_MODELS</code>, <code>GEMMA_MAX_RETRIES</code>, <code>GEMMA_RETRY_DELAY_MS</code>, <code>GEMMA_MAX_RETRY_DELAY_MS</code>, <code>GEMMA_CALL_TIMEOUT_MS</code>, <code>GEMMA_TIMEOUT_CIRCUIT_FAILURE_THRESHOLD</code>, <code>GEMMA_TIMEOUT_CIRCUIT_COOLDOWN_MS</code>, <code>GEMMA_WARM_UP_INTERVAL_MS</code>; <code>AI_HEDGE_DELAY_MS</code>, <code>AI_FIRST_BYTE_TIMEOUT_MS</code>, <code>AI_STALL_TIMEOUT_MS</code>, <code>AI_DISABLE_THINKING</code></td></tr>
+      <tr><td>Serper (news grounding)</td><td>3</td><td><code>SERPER_API_KEY</code>, <code>SERPER_TIMEOUT_MS</code>, <code>SERPER_CACHE_TTL_MS</code></td></tr>
+      <tr><td>MongoDB</td><td>3</td><td><code>MONGODB_URI</code>, <code>MONGODB_URL</code>, <code>MONGODB_DB</code></td></tr>
+      <tr><td>Lesson pipeline &amp; caching</td><td>9</td><td><code>LESSON_CACHE_ENABLED</code>, <code>LESSON_CACHE_TTL_MS</code>, <code>LESSON_CACHE_MAX_MEMORY_ENTRIES</code>, <code>LESSON_TIMEOUT_MS</code>, <code>LESSON_FAILURE_ALERT_THRESHOLD</code>, <code>MAX_CONCURRENT_LESSON_REQUESTS</code>, <code>MAX_CONCURRENT_LESSON_REQUESTS_PER_USER</code>, <code>SSE_HEARTBEAT_INTERVAL_MS</code>, <code>WARM_UP_IDLE_WINDOW_MS</code></td></tr>
+      <tr><td>Moderation</td><td>4</td><td><code>MODERATION_ENABLED</code>, <code>MODERATION_TIMEOUT_MS</code>, <code>MODERATION_CACHE_TTL_MS</code>, <code>MODERATION_LOG_TTL_DAYS</code></td></tr>
+      <tr><td>Rate limiting &amp; hardening</td><td>5</td><td><code>RATE_LIMIT_WINDOW_MS</code>, <code>RATE_LIMIT_MAX_REQUESTS</code>, <code>AUTH_DEBUG_ENABLED</code>, <code>UA_HASH_SALT</code>, <code>FRONTEND_ORIGIN</code></td></tr>
+      <tr><td>Legal versioning</td><td>3</td><td><code>PRIVACY_POLICY_VERSION</code>, <code>TERMS_OF_SERVICE_VERSION</code>, <code>COOKIE_POLICY_VERSION</code></td></tr>
+      <tr><td>Frontend public config</td><td>6</td><td><code>NEXT_PUBLIC_BACKEND_URL</code>, <code>NEXT_PUBLIC_GA_ID</code>, <code>NEXT_PUBLIC_STREAM_IDLE_TIMEOUT_MS</code>, <code>NEXT_PUBLIC_GENERATE_RETRY_ATTEMPTS</code>, <code>NEXT_PUBLIC_GENERATE_RETRY_DELAY_MS</code>, plus the Clerk frontend API above</td></tr>
+      <tr><td>Platform / diagnostics</td><td>3</td><td><code>PORT</code>, <code>NODE_ENV</code>, <code>GOOGLE_AI_STUDIO_API_KEY</code> (diagnostic only — see below)</td></tr>
+    </tbody>
+  </table>
+
+  <p>Two details in this inventory reward attention. The duplicate <code>MONGODB_URI</code>/<code>MONGODB_URL</code> pair is a compatibility shim for differing platform conventions. And <code>UA_HASH_SALT</code> exists because a July 16 security fix stopped deriving the user-agent hash salt from database credentials — an environment variable born directly from an incident.</p>
+
+  <h2>Operating on the free tier</h2>
+  <p>The most consequential operational facts are consequences of the hosting choice. Render's shared IP ranges are blocked by Google's API edge — the constraint that forced the entire provider migration (Chapter 25) and that AGENT_MEMORY.md §3 pins down with the recorded <code>FAILED_PRECONDITION</code> response ("User location is not supported for the API use") from a one-off Google AI Studio diagnostic ping. Render's spin-down behavior produced the project's headline performance war story: cold-start latency was reduced from <strong>109 seconds to 50 seconds</strong> per the changelog, attacked through warm-up pings (<code>GEMMA_WARM_UP_INTERVAL_MS</code>, <code>WARM_UP_IDLE_WINDOW_MS</code>), SSE keep-alive heartbeats so proxies do not sever long generations, and a two-tier lesson cache (in-memory LRU backed by MongoDB) so repeated questions bypass generation entirely. Well-behaved clients get <code>Retry-After</code> headers on 429/503, and the frontend's retry knobs (<code>NEXT_PUBLIC_GENERATE_RETRY_*</code>) complete the loop.</p>
+
+  <div class="callout">
+    <div class="callout-title">The regional-restriction record</div>
+    <p>The Google-on-Render restriction is documented in three places — <code>errors.md</code> (the original 403 investigation), <code>AGENT_MEMORY.md</code> §3 (the AI Studio <code>FAILED_PRECONDITION</code> ping), and the changelog's provider-migration summary. This redundancy is deliberate: it is the single most expensive lesson the project learned, and the docs are structured so that no future agent re-attempts a direct Google integration from Render without hitting the warning first. <code>GOOGLE_AI_STUDIO_API_KEY</code> remains in the environment surface for manual diagnostics only; nothing in production calls it.</p>
+  </div>
+
+  <h2>The release process</h2>
+  <p>Releases are continuous and implicit: both platforms deploy automatically from <code>main</code>, so every one of the 239 merged PRs was also a production deployment. The safety model wrapped around that fact lives entirely in the pre-merge Change Protocol — typecheck, lint, production build, and backend tests must pass locally before a PR is opened, and the PR body must list which docs were updated. There is no staging tier, no canary, no feature-flag system, and no rollback tooling beyond <code>git revert</code>, which the history shows being used in anger exactly once (the <code>agent/rapid-spark-5nqx</code> rollback on June 30). Two <code>next.config.js</code> choices matter operationally: <code>output: "standalone"</code> keeps the build portable beyond Vercel if the hosting decision ever changes, and <code>trailingSlash: true</code> plus the permanent redirects from <code>/reallan</code> and <code>/real-learn</code> preserve URL equity across the project's early naming changes. The riskiest property of this pipeline is its symmetry: a one-line copy fix and a full design-system replacement travel the identical path to production, with identical (manual) safeguards — and July 26 saw ten such deployments in a single day.</p>
+
+  <h2>Data operations and privacy plumbing</h2>
+  <p>Operational data handling is unusually intertwined with the legal layer. Moderation logs carry a MongoDB TTL index (<code>MODERATION_LOG_TTL_DAYS</code>, default 90) with a backfill that converted legacy string timestamps so old records also age out. Consent records are permanent until account deletion by design, keyed by verified token identity after the July IDOR fix. The TTS cache is a byte-capped LRU keyed by a one-way content hash, never user identity, with 24-hour browser caching via ETag. Account deletion fans out to MongoDB and the Clerk Backend API and is rate limited. The three legal-version variables let operators trigger a re-consent flow across the user base by bumping an environment value — versioning as an operational lever, used seven times between v1.2 and v2.7. GDPR-facing operations are likewise code paths rather than runbooks: <code>/api/export-data</code> assembles a user's records on demand, and the "Delete My Data" flow clears both server-side collections and the browser's localStorage keys, with the key list dynamically matched after a July 25 fix so renamed stores cannot silently escape deletion.</p>
+
+  <h2>What is missing operationally</h2>
+  <p>An honest assessment must note the gaps. There is <strong>no observability stack</strong>: no APM, no error tracker, no uptime monitor in the repository; "performance monitoring remains a future observability choice" per <code>DESIGN_AUDIT.md</code>, and diagnosis relies on Render's console logs plus the structured per-request logging added during the debugging sagas (<code>LESSON_FAILURE_ALERT_THRESHOLD</code> exists, but alerting terminates in logs, not a pager). There is <strong>no deployment automation</strong>: no CI/CD pipeline, no version-controlled platform config, no staging environment — every deploy is a platform-dashboard event following a manually verified merge. And the system is <strong>single-region and single-instance</strong> at both tiers, with the backend's in-memory LRU cache and rate-limit buckets assuming one process. For the current scale these are defensible economies; each becomes a real constraint the moment traffic or team size grows, and none of them is currently written down as a tracked risk anywhere except this report and the scattered doc references cited above.</p>
+</section>
