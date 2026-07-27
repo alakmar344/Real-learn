@@ -112,6 +112,28 @@ export default function HomePage() {
         <section className="hero">
           <div className="hero__stage">
             <div className="hero-greeting hero__greeting">
+              <div 
+                className="hero__badge cyber-badge scale-in" 
+                style={{ 
+                  display: "inline-flex", 
+                  alignItems: "center", 
+                  gap: 8, 
+                  padding: "6px 14px", 
+                  borderRadius: "999px", 
+                  background: "var(--brand-soft)", 
+                  border: "1px solid var(--border-neon)", 
+                  color: "var(--text-accent-strong)", 
+                  fontSize: 12, 
+                  fontWeight: 700, 
+                  letterSpacing: "0.06em", 
+                  textTransform: "uppercase", 
+                  marginBottom: 12, 
+                  boxShadow: "0 0 16px var(--accent-glow)" 
+                }}
+              >
+                <span className="typing-cursor" aria-hidden="true" style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--brand)", display: "inline-block" }}></span>
+                ⚡ Built for Gen Z • Zero Boring Lectures
+              </div>
               {greeting ? (
                 <h1 className="hero__title" suppressHydrationWarning>
                   {greeting}
