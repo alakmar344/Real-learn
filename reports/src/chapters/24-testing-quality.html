@@ -1,0 +1,80 @@
+<section class="chapter" id="ch-24">
+  <div class="chapter-opener">
+    <div class="chapter-kicker">Part IV · Engineering Process</div>
+    <h1><span class="ch-num">24</span>Testing &amp; Quality Gates</h1>
+    <p class="chapter-lede">RealLearn's quality strategy is unusual: a small but sharply targeted backend test suite, a 50,000-round property check for its most user-critical algorithm, an algorithmic content-quality gate that runs on every lesson in production — and no CI, no frontend unit tests, and no end-to-end coverage.</p>
+  </div>
+
+  <h2>The declared gates</h2>
+  <p>Section 3 of <code>docs/AGENT_MEMORY.md</code> defines the verification contract that every agent must satisfy before committing, and section 11's Change Protocol makes it mandatory for "every change, small or big":</p>
+  <pre class="code-block"># Frontend (from /frontend)
+npx tsc --noEmit          # typecheck  — MUST be clean
+npx next lint             # lint       — MUST be clean
+npm run build             # production build — MUST succeed before a PR
+npm run verify:quiz       # Fisher-Yates shuffle sanity check
+
+# Backend (from /backend)
+npm test                  # gemma-engine + moderation tests</pre>
+  <p>A baseline was recorded on <strong>2026-07-21</strong>: typecheck clean, lint clean, production build clean, and the backend suite at <strong>17/17</strong>. The suite has since grown to <strong>28 tests across 4 files</strong>, largely through the July 26 moderation false-positive fixes and the personalization security work. The same section also preserves an operational finding worth keeping: a one-off Google AI Studio diagnostic ping from Render returned <em>"User location is not supported for the API use"</em> (<code>FAILED_PRECONDITION</code>), so no automatic Google ping is wired into production — a test that was deliberately <em>not</em> added, for a documented reason.</p>
+
+  <div class="stat-row">
+    <div class="stat"><div class="stat-value">28</div><div class="stat-label">backend tests</div></div>
+    <div class="stat"><div class="stat-value">4</div><div class="stat-label">test files</div></div>
+    <div class="stat"><div class="stat-value">50,000</div><div class="stat-label">shuffle verification rounds</div></div>
+    <div class="stat"><div class="stat-value">0</div><div class="stat-label">CI pipelines</div></div>
+  </div>
+
+  <h2>How the gates work in practice</h2>
+  <p>Because there is no CI, the four commands function as a social contract with tooling teeth. The TypeScript compiler is the broadest net: the frontend is fully typed (Next.js 15, React 19, strict <code>tsconfig</code>), and <code>tsc --noEmit</code> has repeatedly been the check that caught agent regressions — the changelog records fixes like "update types and fix TypeScript compilation for gamification features" landing immediately after feature drops. <code>next build</code> adds route-level verification (every page must compile and prerender; the July 6 session explicitly confirmed "all <code>/legal/*</code> routes compile and prerender"). The backend, being untyped JavaScript, leans on <code>node --check</code> syntax passes — recorded in nearly every <code>errors.md</code> session — plus live boot verification of <code>/health</code>. The definition of "green" is therefore layered but manual: syntax, types, lint, build, unit tests, and a booted server, each invoked by whichever agent is on duty and attested in the PR body. When the protocol is followed, the record shows it works; the risk is entirely in the word "when."</p>
+
+  <h2>The backend suite: 28 tests, all aimed at real incidents</h2>
+  <p>The backend uses Node's built-in runner (<code>"test": "node --test"</code> — no Jest, no framework dependency). What the suite lacks in breadth it makes up in aim: nearly every test corresponds to a failure documented in <code>errors.md</code>.</p>
+
+  <table class="data">
+    <thead>
+      <tr><th>File</th><th>Tests</th><th>What it protects</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>backend/test/gemma-engine.test.js</code></td><td>13</td><td>The hedged multi-provider engine: healthy-primary wins, slow primary is hedged by Cloudflare, failing primary fails fast to fallback, model rotation on 429, circuit breakers open on total outage and half-open probe afterward, hedge is skipped while the leader streams, the silence watchdog kills stalled streams as retryable 408s, caller aborts propagate, empty payloads are rejected, and <code>parseJSON</code> repairs fenced and truncated model output.</td></tr>
+      <tr><td><code>backend/test/personalization.test.js</code></td><td>8</td><td>Prompt-injection defense for user-supplied learning notes: zero-width and control characters stripped, fence markers stripped, length caps enforced, checklist values allowlisted, notes fenced and "demoted to data," and — notably — a test that notes cannot forge the fence from inside the fenced block.</td></tr>
+      <tr><td><code>backend/test/moderation.test.js</code></td><td>5</td><td>Both directions of the moderation regression from July 26: legitimate educational questions and lessons pass (cricket's "6 balls in an over," Homo sapiens, Dick Fosbury), genuinely harmful input and output are still blocked, and <code>sanitizeText</code> replaces profanity from both filter layers.</td></tr>
+      <tr><td><code>backend/test/search-index.test.js</code></td><td>2</td><td>Search-query sanitization: whitespace normalization, risky-character stripping, non-string rejection, length caps.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>The quiz-shuffle property check</h2>
+  <p><code>frontend/scripts/verify-quiz-shuffle.mjs</code> is the frontend's only automated test, and it is a genuinely good one. The quiz gate is the product's core mechanic — a learner must score 100 percent to unlock the next part — so a shuffle bug that detaches <code>correctIndex</code> from the true answer would silently break the entire product. The script imports the <em>same module the app uses</em> (<code>lib/quizShuffle.ts</code>, via Node ≥ 22.18 native TypeScript type-stripping, "so it tests the real logic, not a copy") and runs <strong>50,000 rounds</strong> across representative questions, including a two-option true/false edge case. It asserts two properties on every round: the correct answer remains genuinely correct after reshuffling, and it always <em>moves</em> to a new position so a retaking learner cannot pass by position memory. This is property-based thinking applied exactly where the product can least afford a defect. The check earned its place the hard way: it was added on June 30 in the same session as the shuffle feature itself (<code>test(frontend): verify quiz shuffle keeps the real correct answer</code>), and it remains the only place in the frontend where correctness is proven rather than eyeballed.</p>
+
+  <h2>The production quality gate</h2>
+  <p>Beyond pre-commit checks, RealLearn runs a quality gate on the content itself. <code>backend/src/lib/qualityGate.js</code> — "Zero AI calls, pure text analysis" — evaluates every generated lesson before it reaches the student and auto-fixes what it can:</p>
+  <ul>
+    <li><strong>Readability scoring:</strong> Flesch-Kincaid grade level, average sentence length, and hard-word percentage (3+ syllables), checked against per-level thresholds — e.g., Class 6-8 content must stay at or below grade 8.0, 16 words per sentence, and 12 percent hard words; College / Advanced is allowed up to grade 16.</li>
+    <li><strong>Quiz difficulty analysis:</strong> question grade level, question length (max 20 words for Class 6-8), option word counts, option readability, explanation complexity, and even a distractor-design heuristic that flags four-option sets with wildly uneven option lengths.</li>
+    <li><strong>Automatic simplification:</strong> a curated map of roughly 70 complex terms with kid-friendly replacements ("photosynthesis" → "how plants make food from sunlight"), splitting of 25+ word sentences at conjunctions, and clause-aware truncation of overlong quiz options — applied only at the Class 6-8 level.</li>
+  </ul>
+  <p>The gate never blocks a lesson; it repairs and reports (<code>{ passed, issues, fixed, metrics }</code>), logging issue counts server-side. Its honest limitation is linguistic scope: Flesch-Kincaid and the simplification map are English constructs, and the code applies word-level simplification only when <code>language === "English"</code>. Eleven of the product's twelve languages pass through with only the language-agnostic sentence splitting — the level-appropriateness guarantee is materially weaker for Hindi or Tamil lessons than for English ones. The gate also has no test file of its own.</p>
+
+  <h2>What is verified but not automated</h2>
+  <p><code>errors.md</code> shows a consistent pattern of serious ad-hoc verification that never became regression tests: a mocked-fetch retry matrix (408 → success, stream-error chunk → success, terminated body → success, 400 fails immediately) run during the July 9 resilience work; a live SSML-injection payload neutralization test against <code>/api/tts</code>; server boot checks confirming <code>/health</code>, security headers, and the production lockdown of <code>/api/auth-debug</code>; and salvage-logic unit checks for truncated lessons. Some of these later graduated into <code>gemma-engine.test.js</code>; others exist only as prose. The Change Protocol's rule 8 — "Never mark a task done … without concrete evidence (a passing build, a screenshot, a green test)" — sets the right expectation, but the evidence is gathered manually, per session, by whichever agent is working.</p>
+
+  <h2>The gaps, plainly stated</h2>
+  <table class="data">
+    <thead>
+      <tr><th>Layer</th><th>Coverage</th><th>Risk</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Backend AI engine / sanitization</td><td>28 targeted unit tests</td><td>Low for covered paths</td></tr>
+      <tr><td>Backend HTTP endpoints (<code>server.js</code>, ~12 endpoints)</td><td>None automated (boot checks only)</td><td>High — auth, rate limiting, consent, SSE all hand-verified</td></tr>
+      <tr><td>Quality gate (<code>qualityGate.js</code>)</td><td>None</td><td>Medium — auto-rewrites student-facing content</td></tr>
+      <tr><td>Frontend components / hooks / stores (50 components, 5 hooks, 4 stores)</td><td>None beyond typecheck and lint</td><td>High — errors.md records 21 frontend bugs found in one manual sweep</td></tr>
+      <tr><td>Quiz shuffle algorithm</td><td>50,000-round property check</td><td>Low</td></tr>
+      <tr><td>End-to-end user flows</td><td>None</td><td>High — the quiz-gate flow has regressed before (empty-quiz deadlock, hardcoded question counts)</td></tr>
+      <tr><td>Continuous integration</td><td>No <code>.github/workflows</code> directory exists</td><td>High — every gate depends on agent discipline</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <div class="callout-title">The honor-system pipeline</div>
+    <p>There is no CI configuration anywhere in the repository. Every "MUST be clean" gate — typecheck, lint, build, tests, the shuffle check — runs only if the committing agent chooses to run it, and the only enforcement is a markdown protocol and the owner's review at merge time. The system has worked better than one might expect (the recorded baseline is clean, and test counts are growing), but the July 26 merge-conflict residue left inside <code>AGENT_MEMORY.md</code> itself demonstrates that manual protocol steps do get skipped under velocity. A single GitHub Actions workflow running the five existing commands would convert the project's best practices from convention into guarantee at nearly zero cost — no other quality investment available to this project buys as much per hour spent.</p>
+  </div>
+</section>

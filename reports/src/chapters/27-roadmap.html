@@ -1,0 +1,69 @@
+<section class="chapter" id="ch-27">
+  <div class="chapter-opener">
+    <div class="chapter-kicker">Part IV · Engineering Process</div>
+    <h1><span class="ch-num">27</span>Roadmap &amp; Priorities</h1>
+    <p class="chapter-lede">RealLearn's formal roadmap is nearly exhausted: the six-sprint improvement plan is checked off almost to the last box, and the todo file belongs to a design era three revolutions old. What remains is the harder question this chapter answers — where the real technical debt now sits.</p>
+  </div>
+
+  <h2>The official roadmap: six sprints, ~88 hours, essentially done</h2>
+  <p><code>IMPROVEMENT_PRIORITIES.md</code> is the project's only formal planning document. It decomposes the findings of the June design audit into six one-week sprints with per-task hour estimates, explicit dependencies (Sprint 1 blocks nothing; Sprint 3 follows 1–2; Sprint 6 can run anytime), and success metrics. Its current state is the roadmap's most important fact: of the roughly 120 checkboxes across all six sprints, <strong>every task is marked complete except one</strong> — the four-item Storybook setup in Sprint 6, explicitly annotated as "optional future tooling."</p>
+
+  <table class="data">
+    <thead>
+      <tr><th>Sprint</th><th>Topic</th><th>Estimated effort</th><th>Priority</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>Critical Accessibility &amp; Fixes</td><td>16 hrs</td><td>Critical</td><td>Complete</td></tr>
+      <tr><td>2</td><td>Responsive Design</td><td>16 hrs</td><td>Critical</td><td>Complete</td></tr>
+      <tr><td>3</td><td>Design System Refactoring</td><td>16 hrs</td><td>High</td><td>Complete</td></tr>
+      <tr><td>4</td><td>UX Enhancements</td><td>14 hrs</td><td>High</td><td>Complete</td></tr>
+      <tr><td>5</td><td>Performance &amp; Polish</td><td>12 hrs</td><td>Medium</td><td>Complete</td></tr>
+      <tr><td>6</td><td>Documentation &amp; Tooling</td><td>14 hrs</td><td>Low</td><td>Complete except Storybook (open)</td></tr>
+    </tbody>
+  </table>
+
+  <p>The completed work is verifiable in the codebase: WCAG AA contrast tokens, focus trapping and keyboard navigation, the <code>--space-*</code>/<code>--radius-*</code>/<code>--shadow-*</code> token scales, the <code>ErrorState</code>/<code>LoadingCinematic</code>/empty-state trio, <code>PreferenceModal</code> onboarding and <code>PersonalizationGate</code>, the <code>/api/feedback</code> endpoint, and lazy loading via <code>next/dynamic</code>. All ten "Quick Wins" are checked. The document's ten success metrics are all claimed met — although the Lighthouse 90+ accessibility and performance claims carry no committed report as evidence, and the sprint hour estimates (~88 hours total) describe human effort for work that was largely executed by agents at a different cost structure.</p>
+
+  <h2>The stale todo: a fossil from the Japanese era</h2>
+  <p><code>todo.md</code> is the second planning artifact, and it is best read as an archaeological find. Its title — "Redesign Real-learn UI/UX — Japanese-inspired, world-class design" — dates it to July 19 (PR #198), and every one of its thirty items is checked: the kusari chain dividers, kanji section labels, vermillion logo gradients, and the four-phase discovery/design/fix/deliver structure of a single agent session. Three complete design revolutions later (Indian tricolor, Soft Pastel, solid-color bold electric), the file survives unmodified at the repository root. It is harmless as a record and misleading as a roadmap; nothing in it describes current or future work.</p>
+
+  <div class="callout">
+    <div class="callout-title">The planning gap</div>
+    <p>The project currently has <strong>no live forward-looking roadmap</strong>. <code>IMPROVEMENT_PRIORITIES.md</code> is a completed remediation plan for a June audit; <code>todo.md</code> is a closed session checklist for a retired design. The only explicitly open items anywhere in the planning docs are Storybook (optional) and the open question recorded in <code>errors.md</code> — whether the observed quality gap between Cloudflare-hosted Gemma and the earlier Vertex attempts stems from thinking-mode defaults or serving quantization, "worth revisiting if output quality becomes a concern again." For a repo whose governance model depends on agents reading documents to decide what to do, the absence of a current priorities file is itself a priority.</p>
+  </div>
+
+  <h2>What the two documents reveal about how this project plans</h2>
+  <p>Read together, the planning artifacts show a project that plans <em>backward</em> from audits rather than forward from strategy. <code>IMPROVEMENT_PRIORITIES.md</code> was generated from the June design audit and consumed by July's agent sessions; <code>todo.md</code> was generated at the start of one redesign session and consumed by its end. Both are remediation lists, and both were executed with unusual completeness — the repository demonstrably closes what it writes down. What neither document contains is a product hypothesis: nothing about user acquisition, retention, content quality measurement, additional subjects or grade levels, or the criteria under which the Gen Z persona experiment of July 25–26 would be judged a success or reverted. The forward-looking energy that does exist is scattered across other files as side effects — the "Known open question" in <code>errors.md</code>, the Storybook placeholder, the deferred dependency majors listed in the July 6 session notes, and the future-tense hedges in <code>DESIGN_AUDIT.md</code> ("Storybook … remains a future tooling choice," "performance monitoring remains a future observability choice"). A reader looking for the project's intended next quarter must assemble it from margins; this chapter's remaining sections do exactly that.</p>
+
+  <h2>A measured assessment of the largest technical debts</h2>
+  <p>Drawing on the evidence assembled in Chapters 22–26, the following ranking reflects both likelihood and blast radius, not merely effort.</p>
+
+  <table class="data">
+    <thead>
+      <tr><th>#</th><th>Debt</th><th>Evidence</th><th>Cost of inaction</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>No CI enforcement of the existing gates</td><td>No <code>.github/workflows</code> directory; all five verify commands run on the honor system (Ch. 24)</td><td>One skipped protocol step ships a broken build; the July 26 merge-conflict residue inside <code>AGENT_MEMORY.md</code> shows steps already get skipped under velocity</td></tr>
+      <tr><td>2</td><td>Documentation drift in the canonical memory</td><td><code>DESIGN_AUDIT.md</code> still describes Japanese-era themes; AGENT_MEMORY's product paragraph predates the electric-dark pass; conflict markers in two docs (Ch. 23)</td><td>Agents act on stale truth — the PR #249 purple incident is the existence proof of this failure mode</td></tr>
+      <tr><td>3</td><td>Frontend and endpoint test coverage</td><td>Zero component/store/hook tests across 50 components; ~12 Express endpoints verified only by boot checks; <code>qualityGate.js</code> untested (Ch. 24)</td><td>Regressions in auth, consent, SSE, and the quiz flow are detectable only by manual sweeps that historically found 20+ defects at a time</td></tr>
+      <tr><td>4</td><td>Deferred major upgrades</td><td>Express 5, Next 16, Tailwind 4, ESLint 10, TypeScript 6, react-markdown 10 all "deliberately held back" since July 6; Next's bundled postcss advisory unactionable (Ch. 25)</td><td>Each month of deferral raises migration cost; security posture depends on staying inside patched minor ranges</td></tr>
+      <tr><td>5</td><td>Zero observability</td><td>No APM, error tracking, or uptime monitoring; alerting terminates in console logs (Ch. 26)</td><td>Production failures are discovered by users; the provider saga's debugging cost was inflated by exactly this gap</td></tr>
+      <tr><td>6</td><td>Design churn without a freeze mechanism</td><td>Ten identities in twelve weeks; five redesign PRs on the final day alone (Ch. 23)</td><td>Styling work crowds out product work; every reskin risks new contrast and readability regressions (PR #263 fixed one introduced by PR #262)</td></tr>
+      <tr><td>7</td><td>Single-instance operational assumptions</td><td>In-memory LRU caches and rate-limit buckets assume one process; no staging environment; platform config unversioned (Ch. 26)</td><td>Any horizontal scaling or platform migration silently breaks rate limiting and cache coherence</td></tr>
+      <tr><td>8</td><td>English-centric quality gate</td><td>Flesch-Kincaid scoring and the simplification map apply only to English; 11 of 12 languages get sentence-splitting alone (Ch. 24)</td><td>The level-appropriateness promise is materially weaker for the Indian-language majority of the product's stated audience</td></tr>
+    </tbody>
+  </table>
+
+  <h2>What a next roadmap should contain</h2>
+  <p>Translating the debt table into a sequenced plan, in the spirit of the sprint format the project already uses:</p>
+  <ol>
+    <li><strong>Enforce, then extend (highest payoff, lowest effort).</strong> A single GitHub Actions workflow running <code>tsc --noEmit</code>, <code>next lint</code>, <code>next build</code>, <code>npm test</code>, and <code>verify:quiz</code> on every PR converts existing discipline into a guarantee. Add branch protection so PR #264 onward cannot merge red.</li>
+    <li><strong>Reconcile the memory.</strong> One documentation pass: update AGENT_MEMORY's product paragraph and design-system section to the post-#263 reality, rewrite or clearly date-stamp <code>DESIGN_AUDIT.md</code>, delete <code>todo.md</code> or replace it with a live priorities file, and remove the merge-conflict residue. Then declare a design freeze with an explicit change bar, giving the no-purple rule a companion: no full reskins without a written rationale.</li>
+    <li><strong>Test the money paths.</strong> Endpoint tests for <code>/api/generate-lesson</code> (auth, rate limit, validation, SSE lifecycle) and the consent endpoints; a unit suite for <code>qualityGate.js</code>; a first Playwright flow covering ask → three parts → quiz gate → completion. The gemma-engine suite proves the team can write excellent tests when it targets them.</li>
+    <li><strong>Schedule the migrations.</strong> One held-back major per sprint, starting with Next 16 (security surface) and Express 5, each behind the CI net built in step 1.</li>
+    <li><strong>Instrument production.</strong> An error tracker and uptime monitor are afternoon-sized tasks that would have shortened every incident in Chapter 25; wire <code>LESSON_FAILURE_ALERT_THRESHOLD</code> to a notification channel.</li>
+    <li><strong>Close the language gap.</strong> Extend the quality gate with language-aware readability heuristics (even sentence-length and word-length proxies per script) and run the July 26 moderation regression suite's approach — real user-shaped fixtures — across all twelve languages.</li>
+  </ol>
+
+  <p>The through-line of this report's final chapter is the same as its first: RealLearn's distinctive asset is not any single feature but its documented, protocol-driven way of working with AI agents — and its distinctive risk is that every safeguard in that protocol is advisory. The completed sprint plan proves the model can retire large bodies of debt quickly once the debt is written down. The next act of engineering leadership here is simply to write the next list — this time with enforcement attached.</p>
+</section>

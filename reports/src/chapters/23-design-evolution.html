@@ -1,0 +1,58 @@
+<section class="chapter" id="ch-23">
+  <div class="chapter-opener">
+    <div class="chapter-kicker">Part IV · Engineering Process</div>
+    <h1><span class="ch-num">23</span>Design Evolution — The UI Eras</h1>
+    <p class="chapter-lede">RealLearn's interface has been rebuilt more often than any other part of the system: at least ten distinct visual identities in twelve weeks, converging on the Soft Pastel design language, one standing rule — no purple, ever — and a final electric-contrast pass layered on top.</p>
+  </div>
+
+  <h2>Why the design history matters</h2>
+  <p>In most projects the visual layer is a slow-moving veneer over the product logic. In RealLearn the opposite is true: <code>frontend/app/globals.css</code> — 3,189 lines and 108 design tokens — is the single most rewritten file in the repository, and the commit log records complete aesthetic reinventions at a pace of roughly one per week during July. The churn was possible because agents can re-skin an entire token-driven UI in a single PR, and it was survivable because the token architecture (colors, spacing, radii, shadows as CSS custom properties) kept each revolution mostly confined to one file. The eras below are reconstructed from real commit subjects, <code>DESIGN_AUDIT.md</code>, and the changelog in <code>docs/AGENT_MEMORY.md</code>.</p>
+
+  <table class="data">
+    <thead>
+      <tr><th>Era</th><th>Period</th><th>Identity</th><th>Evidence (commit subject)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>May 6–11</td><td>Hackathon dark, brightened</td><td><code>style: brighten palette and tighten layout spacing</code></td></tr>
+      <tr><td>2</td><td>May–June 20</td><td>Dark gold-noir</td><td>referenced in the June 20 pivot commit</td></tr>
+      <tr><td>3</td><td>June 20 –</td><td>Printed textbook</td><td><code>Redesign: dark gold-noir → classic printed-textbook aesthetic</code></td></tr>
+      <tr><td>4</td><td>July 2–12</td><td>Teal-ink, Twilight, Gen Z refresh, pastel crayon</td><td><code>frontend: refresh design with teal-ink palette and richer theming</code></td></tr>
+      <tr><td>5</td><td>July 16</td><td>Apple liquid glass (rejected same week)</td><td><code>feat(ui): Apple liquid-glass / glassmorphic theme overhaul</code></td></tr>
+      <tr><td>6</td><td>July 17</td><td>Cobalt editorial ink</td><td><code>design: deepen cobalt &amp; editorial ink richness across all themes</code></td></tr>
+      <tr><td>7</td><td>July 18–20</td><td>Japanese (Shiro / Yoru / Tasogare)</td><td><code>feat: world-class Japanese-inspired UI/UX redesign</code></td></tr>
+      <tr><td>8</td><td>July 21</td><td>Indian cultural / tricolor</td><td><code>Redesign UI around Indian tricolor and diversity themes</code></td></tr>
+      <tr><td>9</td><td>July 22 –</td><td><strong>Soft Pastel</strong> (Paper / Ink / Dusk)</td><td><code>feat(design): Soft Pastel palette — cream, sky, peach, mint, rose</code></td></tr>
+      <tr><td>10</td><td>July 25–26</td><td>Gen Z overlays: Bold Canvas, locked dark, solid-color bold electric</td><td><code>style: overhaul UI to solid-color bold electric design system</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2>From hackathon dark to the printed textbook</h2>
+  <p>The first identity was whatever copilot-swe-agent shipped on day one, quickly adjusted (<code>bd0c605 style: brighten palette and tighten layout spacing</code>, May 6). By June the app wore a "dark gold-noir" look, known to us mainly through its obituary: the June 20 return-from-hiatus commit <code>e55b098 Redesign: dark gold-noir → classic printed-textbook aesthetic</code>, paired the same day with <code>48fc6c5 Design audit: comprehensive accessibility, UX, and design system fixes</code>. That audit produced <code>DESIGN_AUDIT.md</code> and <code>IMPROVEMENT_PRIORITIES.md</code> — the documents that turned styling from taste into checklist: WCAG AA contrast, focus trapping, 44px touch targets, and the extraction of inline styles into a token system.</p>
+
+  <h2>The July experiments: glass, cobalt, Japan, India</h2>
+  <p>July opened a period best described as identity search by exhaustion. A teal-ink palette (July 2) and a new Twilight theme (July 3) gave way to a Gen Z color refresh (<code>3e476ec feat: Gen Z UI refresh — vibrant colors, modern design, bold aesthetics</code>, July 10) and a pastel crayon default light theme (July 12). Then came the sharpest lesson of the whole design history: <code>4d01075 feat(ui): Apple liquid-glass / glassmorphic theme overhaul</code> (July 16) was reverted in spirit the same session — the engineering log in <code>errors.md</code> records that the glass pass had "swapped the brand for generic iOS system-blue," and the scholarly gold identity was restored within hours. A themed redesign that erases brand identity is a regression, no matter how fashionable the technique.</p>
+  <p>The cobalt editorial pass (July 17) lasted a day. The Japanese era (July 18–19, PR #198: <code>1805568 feat: world-class Japanese-inspired UI/UX redesign</code>) went deepest: three themes renamed Shiro, Yoru, and Tasogare; sumi-ink text tokens; vermillion accents; washi textures; even kanji section labels. It also left the longest documentation shadow — <code>DESIGN_AUDIT.md</code> is still written in this era's vocabulary today, praising "the Japanese-inspired aesthetic … across all three themes (Shiro, Yoru, Tasogare)" three redesigns after that aesthetic was removed. The era ended in two steps: <code>1db21ff Remove all Japanese glyphs from the UI while keeping the cultural theme</code> (July 20), then a one-day Indian cultural direction (<code>f099cb0 Redesign UI with Indian cultural theme</code>, <code>b4c9bdb Redesign UI around Indian tricolor and diversity themes</code>, July 21), which itself was retired the following morning.</p>
+
+  <h2>July 22: Soft Pastel, and the no-purple rule</h2>
+  <p>July 22 compressed three redesigns into one day and produced the system the project's canonical memory still declares as its aesthetic. First came <code>492cf3c feat(design): replace themed UI with the Still Ink design system</code> — a deliberately quiet gray direction the owner rejected as bland within hours. A follow-up "blurple" pass was rejected for its violet cast. The third attempt stuck: <code>6e50a02 feat(design): Soft Pastel palette — cream, sky, peach, mint, rose</code>, reinforced the same day by <code>625e372 feat(design): make the pastels unmissable — soft, cool, not neon</code>. The system: cream paper washed with pastel sky, peach, mint, and rose; a sky-blue anchor accent; warm cocoa ink text; and three "moods of the same room" — Paper (cream day), Ink (charcoal night), Dusk (teal sunset).</p>
+
+  <div class="callout">
+    <div class="callout-title">The owner's standing rule</div>
+    <p><code>docs/AGENT_MEMORY.md</code> records it twice, in bold, as non-negotiable: <strong>"NO purple/violet — owner's rule."</strong> The rule was born from the rejected blurple pass on July 22 and was enforced with real teeth on July 26, when PR #250 (<code>a19e391 fix(design): purge purple/violet &amp; restore Soft Pastel design system</code>) purged "all 40+ purple/violet/indigo color violations introduced in PR #249 across 12 files" — theme pickers, the logo gradient, manifest colors, achievement badges, confetti particles, and share-card orbs included. In an agent-driven repo, a taste rule only survives if it is written down and audited; this one is the clearest proof of that mechanism working.</p>
+  </div>
+
+  <h2>The Gen Z endgame: July 25–26</h2>
+  <p>The final 48 hours in the log are the densest design period of the project, and they operate on two levels at once: persona and pixels. On July 25 the product's voice and audience were re-aimed — <code>5b33c2e feat(ui): overhaul real-learn for gen z and gen alpha learners</code>, <code>0041705 feat(ai): integrate Gen Z and Gen Alpha prompt persona and homepage hero identity</code>, then a corrective "de-slop" pass (<code>9841303</code>, PR #247) that removed the self-congratulatory "Made for Gen Z" badges the previous pass had added. July 26 then cycled through <code>77910f9 feat(ui): re-skin to "Bold Canvas"</code>, <code>2dc5607 feat: default to Void</code>, the purple purge (#250), and <code>b406588 style(ui): Apple-inspired Soft Pastel UI redesign &amp; ChatGPT desktop experience overhaul</code> (PR #252) — an attempt to keep Soft Pastel while borrowing Apple-grade restraint and a ChatGPT-style desktop layout.</p>
+  <p>The day's last five merged PRs form the current visible state of the product:</p>
+  <ol>
+    <li><strong>PR #259</strong> — <code>337e9be style: implement locked Gen Z dark mode palette and typography system</code>: off-black <code>#0B0E14</code>, dominant electric green <code>#00FF66</code>, action orange <code>#FF3E00</code>, Space Grotesk headings at weight 700–800.</li>
+    <li><strong>PR #260</strong> — <code>84185b9 fix-themes-and-contrast</code>: curated the palette down to two fully distinct themes, Paper (light) and Ink (dark), removing the Twilight/Dusk theme entirely and fixing white-on-white contrast failures.</li>
+    <li><strong>PR #261</strong> — <code>5276e91 style: set dark mode as default theme for new visitors</code>: Ink becomes the default first impression.</li>
+    <li><strong>PR #262</strong> — <code>99d38c6 style: overhaul UI to solid-color bold electric design system</code>: every linear, radial, and text-clip gradient purged; 2px solid borders; weights 700–800 throughout.</li>
+    <li><strong>PR #263</strong> — <code>6ebd48a fix(theme): enhance AI response text contrast and readability in lite mode</code>: the immediate correction the electric pass required, forcing AI response text onto <code>--text-primary</code> so lesson content stays legible in the light theme.</li>
+  </ol>
+
+  <h2>Where the design actually stands</h2>
+  <p>The honest reading is that the project currently holds two truths at once. The <em>documented</em> system — AGENT_MEMORY.md's opening paragraph, the Rule 4 compliance claims repeated in every late-July PR — is Soft Pastel: cream paper, pastel washes, sky-blue anchor, no purple. The <em>shipped</em> surface, after PRs #259–#263, is a bolder, solid-color, electric-green-on-dark expression layered over that foundation, with dark as the default and the pastel wash vocabulary retained in the light Paper theme and in component tokens (skeleton loaders, aurora variables, spacing tokens like <code>--space-breath</code> all still speak Soft Pastel). The constants across every era are more meaningful than any single palette: a token-driven single-source design system in <code>globals.css</code>, the Paper/Ink duality, WCAG AA contrast as a hard floor, and the owner's no-purple rule — the one aesthetic decision that has survived every redesign since it was made.</p>
+  <p>Two weaknesses deserve the record. First, documentation lag: <code>DESIGN_AUDIT.md</code> still describes the Japanese-era themes and awards itself "10/10," and AGENT_MEMORY's product paragraph predates the electric pass — in a repo whose governance depends on agents reading docs before acting, stale design docs are an active hazard, and were plausibly a contributing cause of the PR #249 purple incident. Second, cost: ten identities in twelve weeks means a meaningful fraction of July's 461 commits was spent painting and repainting the same rooms. The token architecture kept that affordable; it did not make it free.</p>
+</section>

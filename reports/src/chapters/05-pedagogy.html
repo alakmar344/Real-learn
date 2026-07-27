@@ -1,0 +1,61 @@
+<section class="chapter" id="ch-05">
+  <div class="chapter-opener">
+    <div class="chapter-kicker">Part I · The Product</div>
+    <h1><span class="ch-num">05</span>Pedagogy — Why Mastery Gating and Grounding Matter</h1>
+    <p class="chapter-lede">The quiz gate and the news-grounded third part are not features bolted onto an answer engine; they are the product's two pedagogical commitments, and this chapter examines how the code keeps both of them honest.</p>
+  </div>
+
+  <h2>The bet: reading is not learning</h2>
+  <p>RealLearn's founding diagnosis, stated in the README, is that conventional answers are "instantly forgettable because the learner never engaged with the content." A learner who reads a fluent AI answer experiences understanding; whether they possess it is a different question, and the only way to find out is to ask. The product's response is to make asking non-optional. In Explain mode, no learner reaches Part 2 without correctly answering two questions about Part 1, and no learner completes a journey without passing three such gates. The design borrows from two of the oldest well-supported ideas in learning science: mastery learning, in which advancement is conditioned on demonstrated competence rather than time spent, and retrieval practice, in which being made to recall information strengthens retention far more than re-reading it. RealLearn does not cite the literature in its UI; it simply hard-codes the conclusions.</p>
+
+  <h2>The 100% rule</h2>
+  <p>The pass threshold is perfection: two questions per gate, both correct, or no unlock. This sounds severe and is deliberately not. With two questions of four options each, the gate is small enough to clear in under a minute when the learner actually read the part, and each part is only 150-180 words by prompt rule, so re-reading after a failure costs seconds, not minutes. The threshold's real function is to remove the ambiguity of partial credit. A 50% pass would let a learner advance on one lucky guess; a 100% requirement on a two-question quiz means the learner engaged with both tested ideas. The repository treats this rule as identity-level: <code>docs/AGENT_MEMORY.md</code> lists "Don't bypass the quiz gate — 100% pass to unlock the next part is the product" among its no-gos, on the same list as not committing secrets.</p>
+
+  <p>Severity is also bounded by design at the edges. <code>QuizSheet.tsx</code> derives the quiz length from the delivered questions rather than assuming two, because the backend can legitimately salvage a truncated lesson with a single question; the code comment notes that "with a hardcoded total of 2 such a quiz could never be passed and the learner would be stuck forever." A gate that can deadlock is not pedagogy, it is a bug, and the project's changelog shows the empty-quiz deadlock being found and fixed on 2026-07-22.</p>
+
+  <h2>Retrieval practice, kept honest</h2>
+  <p>A comprehension gate is only as good as its resistance to gaming, and the fastest way to game a retake is positional memory: "the answer was C." RealLearn closes this with the reshuffle mechanism in <code>frontend/lib/quizShuffle.ts</code>. On every failed attempt, each question's options pass through a Fisher-Yates shuffle, and then a deterministic post-step guarantees the correct answer occupies a different slot than before ("if the shuffle happened to leave it in its original slot, swap that slot with a neighbour... no probability involved," per the code comments). The sheet tells the learner exactly what happened: "Answers reshuffled — the correct one has moved. Find it again." The retake is therefore a genuine second retrieval attempt, not a pattern-matching exercise, and the interface pairs it with the productive path back: a link labeled "Re-read the section before retrying" that closes the sheet and scrolls to the part card.</p>
+
+  <table class="data">
+    <thead>
+      <tr><th>Learner event</th><th>System behavior</th><th>Pedagogical purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Answers a question (right or wrong)</td><td>Explanation is revealed for the chosen answer</td><td>Immediate corrective feedback; wrong answers teach</td></tr>
+      <tr><td>Scores 100%</td><td>"Unlock Next Part →"; unlock animation; next card's blur dissolves</td><td>Competence, visibly rewarded</td></tr>
+      <tr><td>Scores less than 100%</td><td>"Run It Back"; all options Fisher-Yates reshuffled with the correct answer guaranteed to move</td><td>Retakes require retrieval, not position memory</td></tr>
+      <tr><td>Passes after a failed first attempt</td><td>First-attempt score, not the passing score, is reported to stats</td><td>"Perfect" achievements mean aced on the first try</td></tr>
+      <tr><td>Receives a salvaged one-question quiz</td><td>Quiz length derived from actual questions; gate remains passable</td><td>The gate can demand mastery but never deadlock</td></tr>
+    </tbody>
+  </table>
+
+  <p>The first-attempt scoring rule deserves emphasis because it is invisible and principled. Since passing requires perfection, the score at the moment of passing is always perfect, which would make every recorded score meaningless. <code>QuizSheet.tsx</code> therefore captures the first completed attempt's score and reports that through <code>onPass</code>; the comment explains that perfect stats "only mean something if they track whether the learner aced the quiz on the FIRST try." The gamification layer (XP, streaks, 17 achievements) is thus built on honest data. A system that gates on mastery but inflates its own metrics would be teaching learners to optimize the wrong thing.</p>
+
+  <h2>Friction, calibrated</h2>
+  <p>Mastery gating is friction by definition, and the product spends effort calibrating rather than maximizing it. The reading timer on an unlocked <code>PartCard</code> fills a thin progress bar before surfacing the primary "I've Read This → Take Quiz" button, a nudge toward actually reading; but the escape hatch "I already know this → Skip to quiz" is present from the first second, rendered quietly at 70% opacity, because a learner who genuinely knows the material should be tested, not detained. Locked parts are blurred but visible, so the cost of the gate is always displayed next to what it unlocks. And celebration is rationed by rule: the repository's de-slop guidelines permit confetti on quiz pass ("the user chose it") while banning celebration noise on micro-interactions. Friction where comprehension is at stake, none where it is not.</p>
+
+  <div class="callout">
+    <div class="callout-title">Why the cache expires in six hours</div>
+    <p>The header comment in <code>backend/src/lib/lessonCache.js</code> makes the pedagogical trade-off explicit: "TTL is deliberately modest (default 6 hours) because Part 3 of every lesson is grounded in 'what's happening in the real world right now.'" A cheaper design would cache lessons for weeks; RealLearn accepts recurring generation cost so that the Real World part stays real. Infrastructure parameters encoding teaching philosophy is a recurring pattern in this codebase.</p>
+  </div>
+
+  <h2>Why grounding matters</h2>
+  <p>The second commitment is that every Explain journey ends in the present tense. Before generation, <code>backend/src/lib/serper.js</code> fetches up to three current news items about the question, India-localized and language-matched, and the server injects them into the prompt as fenced reference data with the instruction "REAL WORLD CONTEXT FOR PART 3 (use this — do not search)." The prompt then demands specificity of the model:</p>
+
+  <blockquote>"Part 3 must land on something the learner sees in their actual daily life or current events — not a generic 'in the real world...' paragraph." — <code>GENERATE_LESSON_PROMPT</code>, <code>backend/src/lib/prompts.js</code></blockquote>
+
+  <p>Pedagogically this serves transfer and motivation at once. Transfer, because a concept demonstrated against this week's headlines has been applied at least once outside the lesson, in front of the learner; abstraction plus a worked contemporary instance is a stronger package than abstraction alone. Motivation, because relevance is the answer to the question every teenager asks of every lesson: why does this matter to me? The design also respects its own fallibility: the Serper fetch runs under a 4-second budget and the lesson generates gracefully without context if news retrieval fails, because a slightly less grounded lesson beats a hung loading screen. Sources, meanwhile, are a schema requirement ("Sources must be real public URLs"), rendered as visible chips on every part, so grounding is inspectable rather than asserted.</p>
+
+  <h2>Register is a pedagogical instrument</h2>
+  <p>The voice work described in Chapters 02 and 04, the "sharp friend" register, the hooks, the analogies from gaming and creator culture, the native-language generation, belongs in the pedagogy chapter too, because register controls whether the learner is present for any of the above. The prompts order the model to open every part with a hook and never with a definition, to explain through "analogies from the learner's world," and to respect "the reader's intelligence while keeping explanations fun." The three-level system does the same work along the other axis: pitching vocabulary and rigor at Class 6-8, Class 9-10, or College / Advanced keeps the material inside the band where effort produces comprehension rather than frustration. None of this is decoration. A mastery gate on a lesson nobody finishes reading gates nothing.</p>
+
+  <h2>What the gate cannot do, and what the product does about it</h2>
+  <p>Honest pedagogy requires stating limits. Two multiple-choice questions per part verify recognition and basic comprehension; they do not verify deep understanding, and a determined learner can brute-force any four-option quiz given enough retakes. RealLearn's mitigations are proportionate rather than punitive: reshuffling raises the cost of guessing, explanations convert even brute-forced attempts into feedback, and first-attempt scoring keeps the records truthful. The deeper limit is the generator itself: lessons are model-written and can be wrong. Here the product's honesty rules apply: the "AI-generated, may be inaccurate" disclaimers are non-removable by repository policy, every part carries source links out to checkable material, output moderation and an algorithmic quality gate (<code>backend/src/lib/qualityGate.js</code>) screen lessons before they ship, and a post-hoc moderation verdict can evict a cached lesson from both tiers so it is never served again. The roadmap in the README points at the pieces still missing, spaced repetition on key takeaways, richer learning-outcome analytics, a classroom mode. What exists today is narrower and coherent: a system that refuses to let reading impersonate learning, and refuses to let a textbook impersonate the world.</p>
+
+  <div class="stat-row">
+    <div class="stat"><div class="stat-value">100%</div><div class="stat-label">score required at every gate</div></div>
+    <div class="stat"><div class="stat-value">2</div><div class="stat-label">questions per gate</div></div>
+    <div class="stat"><div class="stat-value">150-180</div><div class="stat-label">words per lesson part</div></div>
+    <div class="stat"><div class="stat-value">3</div><div class="stat-label">news items grounding Part 3</div></div>
+  </div>
+</section>

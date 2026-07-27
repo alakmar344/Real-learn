@@ -1,0 +1,63 @@
+<section class="chapter" id="ch-15">
+  <div class="chapter-opener">
+    <div class="chapter-kicker">Part III · The Backend</div>
+    <h1><span class="ch-num">15</span>The AI Engine — Inside gemma.js</h1>
+    <p class="chapter-lede">At 1,449 lines, gemma.js is the largest module in the backend — a multi-provider inference engine built on three ideas: hedged racing, per-provider circuit breakers, and model rotation.</p>
+  </div>
+
+  <h2>The provider chain</h2>
+  <p>The engine speaks to two providers. Cerebras Cloud is the primary, called through the official SDK (<code>@cerebras/cerebras_cloud_sdk</code>) with the model from <code>GEMMA_MODEL</code>, defaulting to <code>"gemma-4-31b"</code>. Cloudflare Workers AI is the fallback, called via plain <code>fetch</code> against <code>https://api.cloudflare.com/client/v4/accounts/&lt;accountId&gt;/ai/v1/chat/completions</code> with a default model of <code>"@cf/google/gemma-4-26b-a4b-it"</code>. Each provider carries an ordered model list — <code>GEMMA_MODEL</code> plus <code>GEMMA_FALLBACK_MODELS</code> for Cerebras, <code>CLOUDFLARE_AI_MODEL</code>/<code>CLOUDFLARE_AI_MODELS</code> for Cloudflare — because, as the header comment puts it, "Free-tier or hosted models get rate-limited or removed without notice."</p>
+  <p>The design premise is stated at the top of the file: the providers are individually unreliable, so the engine is built to return "the fastest answer that actually succeeds." Both providers stream (<code>stream: true</code>), not for UI reasons — the caller receives the full text — but because streaming makes a <em>silence watchdog</em> possible: a healthy generation emits tokens continuously, so a hung request reveals itself by going quiet rather than by burning a full timeout.</p>
+
+  <h2>The public entrypoint and its ceilings</h2>
+  <p>Route code calls one function: <code>callGemma(systemPrompt, userMessage, enableSearch, temperature, timeoutMs, signal, maxOutputTokens, allowFallback)</code>. The lesson route passes a per-call timeout of <code>GEMMA_CALL_TIMEOUT_MS</code> (default 45,000 ms) inside an overall lesson budget of <code>LESSON_TIMEOUT_MS</code> (default 300,000 ms, clamped between 30,000 and 600,000), with <code>maxOutputTokens</code> fixed at 4,000. Inside, <code>callGemma</code> assembles the message array, filters out providers whose circuits are open, orders the survivors by health, and hands them to the race orchestrator. One subtlety: when <em>every</em> circuit is open, the engine does not fail the user with "come back later" — it half-open-probes the provider closest to recovery instead.</p>
+  <table class="data">
+    <thead><tr><th>Constant</th><th>Default</th><th>Role</th></tr></thead>
+    <tbody>
+      <tr><td><code>DEFAULT_MAX_RETRIES</code></td><td>1</td><td>Retries per provider (so 2 attempts each)</td></tr>
+      <tr><td><code>DEFAULT_RETRY_DELAY_MS</code></td><td>700</td><td>Base backoff, doubled per attempt with full jitter</td></tr>
+      <tr><td><code>DEFAULT_MAX_RETRY_DELAY_MS</code></td><td>5,000</td><td>Backoff cap in the normal case</td></tr>
+      <tr><td><code>COLD_START_RETRY_DELAY_MS</code></td><td>15,000</td><td>Backoff after a 408/timeout with no bytes received (cold model loading)</td></tr>
+      <tr><td><code>COLD_START_MAX_RETRY_DELAY_MS</code></td><td>45,000</td><td>Cold-start backoff cap</td></tr>
+      <tr><td><code>RACING_MAX_RETRY_DELAY_MS</code></td><td>2,500</td><td>Backoff cap when another provider is racing in parallel</td></tr>
+      <tr><td><code>DEFAULT_CIRCUIT_FAILURE_THRESHOLD</code></td><td>2</td><td>Consecutive availability failures before the circuit opens</td></tr>
+      <tr><td><code>DEFAULT_CIRCUIT_COOLDOWN_MS</code></td><td>60,000</td><td>How long an open circuit stays open</td></tr>
+      <tr><td><code>DEFAULT_HEDGE_DELAY_MS</code></td><td>12,000</td><td>Silence window before the second provider is launched in parallel</td></tr>
+      <tr><td><code>DEFAULT_FIRST_BYTE_TIMEOUT_MS</code></td><td>20,000</td><td>Watchdog: maximum wait for the first byte</td></tr>
+      <tr><td><code>DEFAULT_STALL_TIMEOUT_MS</code></td><td>15,000</td><td>Watchdog: maximum mid-stream silence</td></tr>
+    </tbody>
+  </table>
+  <p>Every one of these is overridable by environment variable (<code>GEMMA_MAX_RETRIES</code>, <code>AI_HEDGE_DELAY_MS</code>, <code>AI_FIRST_BYTE_TIMEOUT_MS</code>, <code>AI_STALL_TIMEOUT_MS</code>, and so on), parsed through validating helpers that fall back to the default on garbage input.</p>
+
+  <h2>Hedged racing, cost-aware</h2>
+  <p>The orchestrator, <code>hedgedRace(starters, hedgeDelayMs, onWinner, onHedgeSkipped)</code>, launches the healthiest provider immediately. If that provider fails outright, the next one launches instantly — fail-fast, no waiting on the hedge timer. If the hedge timer fires at 12 seconds and the leader has shown <em>no sign of life</em> — no bytes received, tracked by a <code>markAlive</code> callback wired through every stream chunk — the second provider launches in parallel and the first success wins, with all losers aborted through a shared <code>AbortController</code>.</p>
+  <p>The cost-control clause is the interesting part: if the leader <em>is</em> alive and generating when the timer fires, the hedge is skipped. Hedging a healthy provider only doubles token spend and burns the fallback's free-tier limits; a leader that goes quiet later is killed by the stall watchdog, which lands in the fail-fast path anyway. Each newly launched provider also resets the liveness flag, so — in the source's phrasing — "its own hedge window judges IT, not the corpse of its predecessor."</p>
+
+  <h2>Watchdogs instead of blunt timeouts</h2>
+  <p>Both provider callers (<code>callCerebras</code> and <code>fetchChatCompletion</code>, which backs <code>callWorkersAI</code>) implement the same two-phase watchdog. A timer armed at <code>firstByteTimeoutMs</code> (20 s — cold starts legitimately take 10–30 s) aborts the request if nothing arrives; once data flows, every chunk re-arms a shorter <code>stallTimeoutMs</code> (15 s) timer. When a watchdog fires, the abort is translated into a retryable <code>GemmaApiError(408, "StallTimeout", ...)</code> carrying a <code>receivedData</code> flag — a stall <em>after</em> bytes flowed is a dead connection, not a cold start, so the retry scheduler skips the 15-second cold-start backoff. The production motivation is recorded in the comments: before the watchdogs, a hung request wasted the full 45-second per-attempt timeout.</p>
+  <pre class="code-block">const stallError = new GemmaApiError(
+  408,
+  "StallTimeout",
+  `provider sent no data for ${watchdogAtMs}ms (silence watchdog)`
+);
+stallError.receivedData = receivedData;
+throw stallError;</pre>
+  <p>The Cerebras SDK client itself is configured with <code>maxRetries: 0</code> and a 600,000 ms internal timeout — deliberately inert, because the engine's own watchdogs and abort signals own all timing. Cloudflare mid-stream failures reported <em>inside</em> the SSE payload (rather than as an HTTP status) are caught by <code>extractStreamChunkError</code> and rethrown as retryable 408s instead of surfacing as silently truncated JSON.</p>
+
+  <h2>Circuit breakers and health accounting</h2>
+  <p>Each provider has a health record: <code>consecutiveFailures</code>, <code>openUntil</code>, an EWMA latency (<code>ewma * 0.7 + latest * 0.3</code>), the preferred model index, and last error/success timestamps. Only <em>availability</em> failures feed the breaker — timeouts, 408, 429, 403 (Cloudflare's rate-limit status), 5xx, and transient network errors from a curated set of Node/undici codes (<code>ECONNRESET</code>, <code>UND_ERR_SOCKET</code>, and friends). Auth and validation errors do not count: the provider answered, it just said no. Two consecutive availability failures open the circuit for 60 seconds, after which requests route straight to the healthy provider instead of spending latency budget on a dead one. <code>getProviderHealthSnapshot()</code> exposes all of this to <code>/health</code> and the tests, and <code>orderProviders</code> uses it to sort candidates: closed circuits first, then lowest EWMA latency, with registry order (Cerebras first) as the stable tiebreak.</p>
+  <p>Model rotation is the third leg. On a model-shaped failure (400, 404, 429) — or an availability failure, since free-tier models get overloaded without notice — <code>runProviderAttempts</code> advances <code>health.modelIndex</code> to the next model in the provider's list and remembers the working index for future requests.</p>
+
+  <div class="callout">
+    <div class="callout-title">The circuit breaker has an escape hatch</div>
+    <p>In <code>server.js</code>, the last two rungs of the generation ladder call <code>callCloudflareAI()</code> directly, bypassing <code>callGemma</code>'s circuit breaker entirely. The comment quantifies why: once the primary's circuit trips open, every <code>callGemma()</code> rejects immediately with <code>GemmaCircuitOpenError</code> — so without a circuit-independent path, requests would fail even though Cloudflare is healthy. The source calls this "the difference between 0% and ~100% reliability when Cerebras is degraded."</p>
+  </div>
+
+  <h2>Errors, thinking tokens, and tolerant parsing</h2>
+  <p>The module exports three typed errors that <code>server.js</code> maps to user-safe messages: <code>GemmaTimeoutError</code>, <code>GemmaApiError</code> (which carries <code>status</code>, capped 500-char upstream details, and any <code>Retry-After</code>), and <code>GemmaCircuitOpenError</code> (which tells the caller how long until a retry is worthwhile). Raw <code>GemmaApiError.message</code> is never echoed to clients — it can embed upstream response bodies that leak account and model internals.</p>
+  <p>Because Gemma is a reasoning model that spends output tokens "thinking" before answering, the engine supports the vLLM-style <code>chat_template_kwargs: { enable_thinking: false }</code> flag, opt-in per provider via <code>AI_DISABLE_THINKING</code> (<code>off</code> | <code>cerebras</code> | <code>cloudflare</code> | <code>both</code>/<code>all</code>) — the comment estimates it roughly halves wall-clock time for structured-output workloads. Whatever thinking survives is stripped: <code>stripThinkingTags</code> removes <code>&lt;think&gt;</code>/<code>&lt;thinking&gt;</code> blocks from both the system prompt and the output, and <code>extractTextFromResult</code> digs the text out of half a dozen possible response shapes, throwing a 502 <code>EmptyResponse</code> if nothing usable remains.</p>
+  <p>Finally, <code>parseJSON</code> is the engine's answer to models that almost follow instructions. It strips thinking tags and <code>```json</code> fences, discards any preamble before the first <code>{</code> or <code>[</code>, and runs the result through the <code>jsonrepair</code> library — fixing trailing commas, unquoted keys, and truncated structures — before giving up and returning <code>null</code>, which sends the request to the next ladder rung with a repair hint.</p>
+
+  <h2>Keeping the fallback warm</h2>
+  <p>Cloudflare Workers AI unloads idle models quickly — production logs showed the model going cold within 30–40 seconds — so <code>startPeriodicWarmUp()</code> pings it with a tiny non-streaming request (<code>max_tokens: 5</code>, content <code>"Hi"</code>, two attempts, 60-second timeout) every <code>GEMMA_WARM_UP_INTERVAL_MS</code> (default 120 s). Cerebras is deliberately not warmed: it has no meaningful cold start, and pinging it around the clock would waste tokens for no latency benefit. The cost control goes further: warm-up pauses entirely once no user request has arrived within <code>WARM_UP_IDLE_WINDOW_MS</code> (default 10 minutes, tracked via <code>lastUserRequestAt</code>), because pinging 24/7 is roughly 960 inference calls a day even when nobody is using the site. After an idle stretch, the first request pays one cold start — bounded by the watchdog-plus-fallback rescue — and warm-up resumes with the traffic.</p>
+</section>

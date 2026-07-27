@@ -1,0 +1,78 @@
+<section class="chapter" id="ch-04">
+  <div class="chapter-opener">
+    <div class="chapter-kicker">Part I · The Product</div>
+    <h1><span class="ch-num">04</span>Languages, Levels &amp; Modes</h1>
+    <p class="chapter-lede">Three dials sit in front of the generation pipeline — 12 Indian languages, 3 difficulty levels, and 2 answer modes — and every position of every dial changes the prompt, the cache key, and the lesson a learner receives.</p>
+  </div>
+
+  <h2>Three dials, one pipeline</h2>
+  <p>RealLearn personalizes lessons with configuration, not conversation. Before a question is submitted, the learner has three persistent choices, stored in the Zustand <code>preferenceStore</code> and editable from the settings page or the <code>PreferenceModal</code>: which language the lesson is written in, which academic level it is pitched at, and whether the answer is a single direct part (Fast) or a quiz-gated three-part journey (Explain). All three values travel with every <code>POST /api/generate-lesson</code> request, all three are validated against server-side allowlists, all three are placed at the top of the user prompt as server-controlled fields (<code>Language:</code> and <code>Level:</code> literally precede the fenced question), and all three are hashed into the SHA-256 lesson cache key. The combinatorics are worth stating: 12 languages × 3 levels × 2 modes yields 72 distinct lesson variants for any single question, each generated independently and cached independently.</p>
+
+  <div class="stat-row">
+    <div class="stat"><div class="stat-value">12</div><div class="stat-label">Indian languages</div></div>
+    <div class="stat"><div class="stat-value">3</div><div class="stat-label">difficulty levels</div></div>
+    <div class="stat"><div class="stat-value">2</div><div class="stat-label">answer modes</div></div>
+    <div class="stat"><div class="stat-value">72</div><div class="stat-label">variants per question</div></div>
+  </div>
+
+  <h2>Twelve languages, generated natively</h2>
+  <p>The <code>Language</code> union type in <code>frontend/types/index.ts</code> and the <code>LANGUAGES</code> array in <code>frontend/components/shared/LanguageSelector.tsx</code> enumerate twelve options: English, Hindi, Gujarati, Tamil, Bengali, Marathi, Telugu, Kannada, Malayalam, Punjabi, Urdu, and Odia. The project's changelog records that support expanded from 8 to 12 languages on 2026-07-14, when Malayalam, Punjabi, Urdu, and Odia were added.</p>
+
+  <p>The load-bearing design decision is <em>how</em> those languages are supported. The no-go list in <code>docs/AGENT_MEMORY.md</code> is categorical: "Don't machine-translate lessons. Generation is natively multilingual." There is no translation layer anywhere in the codebase. Instead, the selected language is passed into the prompt, and Gemma writes the lesson, the quiz questions, the answer explanations, and the key takeaways directly in that language. The system prompts even govern register, not just vocabulary: "For non-English lessons (e.g. Hindi, Hinglish, Tamil), adapt with natural regional youth slang rather than forcing English words" (verbatim from both prompts in <code>backend/src/lib/prompts.js</code>). A Hindi lesson is not an English lesson run through a translator; it is a lesson conceived in Hindi for a Hindi-speaking teenager.</p>
+
+  <p>Language selection also steers the grounding layer. <code>backend/src/lib/serper.js</code> maintains a <code>SERPER_LANGUAGE_MAP</code> that converts the app language into the <code>hl</code> parameter of the Serper news query, so a Tamil learner's Part 3 is grounded, where possible, in Tamil-language news coverage; every query also pins <code>gl: "in"</code> so results are India-localized regardless of language.</p>
+
+  <table class="data">
+    <thead>
+      <tr><th>Language</th><th>Serper <code>hl</code> code</th><th>Language</th><th>Serper <code>hl</code> code</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>English</td><td><code>en</code></td><td>Telugu</td><td><code>te</code></td></tr>
+      <tr><td>Hindi</td><td><code>hi</code></td><td>Kannada</td><td><code>kn</code></td></tr>
+      <tr><td>Gujarati</td><td><code>gu</code></td><td>Malayalam</td><td><code>ml</code></td></tr>
+      <tr><td>Tamil</td><td><code>ta</code></td><td>Punjabi</td><td><code>pa</code></td></tr>
+      <tr><td>Bengali</td><td><code>bn</code></td><td>Urdu</td><td><code>ur</code></td></tr>
+      <tr><td>Marathi</td><td><code>mr</code></td><td>Odia</td><td><code>or</code></td></tr>
+    </tbody>
+  </table>
+
+  <p>The language dial reaches the audio layer too. The <code>MicButton</code> component accepts the app language ("App language to listen in, e.g. 'Hindi'," per its prop documentation) so speech-to-text input transcribes in the learner's language, and the <code>ListenButton</code> on every lesson part passes the lesson's language to text-to-speech so read-aloud uses an appropriate voice. Voice is a first-class input path: transcripts are appended into the question textarea and clamped to the same 1,000-character backend limit as typed text.</p>
+
+  <div class="callout">
+    <div class="callout-title">Why native generation matters</div>
+    <p>Machine-translated educational content fails twice: technical vocabulary translates badly, and idiom translates worse. Because RealLearn generates in-language, the prompt's voice requirements (open with a hook, use analogies from gaming, creators, and money, keep sentences short) apply in Bengali or Marathi exactly as they do in English, and quiz distractors are written as plausible wrong answers in the target language rather than artifacts of translation. The cost of this choice is real: each language variant is a separate generation and a separate cache entry. The repository accepts that cost as the price of lessons that read like they were written for the reader.</p>
+  </div>
+
+  <h2>Three levels, one question</h2>
+  <p>The <code>LEVELS</code> array in <code>frontend/components/shared/LevelSelector.tsx</code> defines the three difficulty settings verbatim: <code>"Class 6-8"</code>, <code>"Class 9-10"</code>, and <code>"College / Advanced"</code>. The naming is deliberately Indian: levels map onto the school-class bands a learner already uses to describe themselves, and the feature list in <code>ThingsComingModal.tsx</code> glosses the third tier as "College &amp; Lifelong Learner." The level string is injected into the prompt as a top-level field (<code>Level: Class 9-10</code>) and both system prompts carry the instruction to "Match complexity to level."</p>
+
+  <p>What changes between levels is register and rigor, not topic access. A Class 6-8 learner asking about inflation gets shorter sentences, more concrete analogies, and gentler quiz distractors; a College / Advanced learner asking the same question gets the mechanism at full strength. The README describes this as adaptive difficulty in which "vocabulary, examples, and rigor adjust to selected level." Because level participates in the cache key, the two lessons never collide: the same question at two levels is two cache entries with two independent six-hour lifetimes.</p>
+
+  <h2>Two modes: Fast and Explain</h2>
+  <p>The mode toggle in <code>QuestionInput.tsx</code> is the one dial learners touch most often, so its two positions are annotated in plain language: Fast is "Straight answer, zero fluff"; Explain is "Full 3-part deep dive — quizzes included." The submit button follows the selection ("Get a Quick Answer →" versus "Start Guided Lesson →"), and the choice persists across sessions. Behind the toggle sit two entirely separate system prompts in <code>backend/src/lib/prompts.js</code>, with different structures and different generation parameters set in <code>server.js</code>:</p>
+
+  <table class="data">
+    <thead>
+      <tr><th>Dimension</th><th>Fast mode</th><th>Explain mode</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>System prompt</td><td><code>GENERATE_FAST_ANSWER_PROMPT</code></td><td><code>GENERATE_LESSON_PROMPT</code></td></tr>
+      <tr><td>Parts</td><td>Exactly 1</td><td>Exactly 3 (Foundation → Mechanism → Real World)</td></tr>
+      <tr><td>Content length</td><td>130-200 words, "Lead with the answer. No padding."</td><td>150-180 words per part</td></tr>
+      <tr><td>Quiz</td><td>2 questions, 4 options</td><td>2 questions per part (6 total), 100% gate between parts</td></tr>
+      <tr><td>Key takeaways</td><td>Exactly 2</td><td>Exactly 3</td></tr>
+      <tr><td>Temperature</td><td>0.2 (focused, more deterministic)</td><td>0.6</td></tr>
+      <tr><td>Output token ceiling</td><td>4,000</td><td>4,000</td></tr>
+    </tbody>
+  </table>
+
+  <p>The identical token ceiling is a scar from a real bug: the code comment in <code>server.js</code> records that fast mode once broke because thinking tokens consumed the output budget and "the quiz was cut off mid-object," so both modes now share the larger cap on the reasoning that "max_tokens is a CEILING, not a target — a short fast answer still finishes early." For the same reason, both prompts open the generation contract with "No thinking, no reasoning, no preamble. Start JSON with '{' immediately," suppressing the model's reasoning tokens so the budget is spent on the lesson itself. Fast mode's lower temperature is a latency and reliability choice as much as a stylistic one. Notably, even Fast mode ships a quiz and key takeaways: the product refuses to produce a bare answer with no comprehension hook, in either mode.</p>
+
+  <p>The two modes also share one grounding path with different emphasis. The server fetches Serper news context before generation in both modes, and a code comment notes that even fast answers "can benefit from current-events context when available"; but only the Explain prompt makes real-world connection a structural requirement of a dedicated part. In practice, Fast is the mode for settling a curiosity in ninety seconds, and Explain is the mode the rest of this report is about.</p>
+
+  <h2>The fourth, quieter dial: personalization</h2>
+  <p>Beyond the three public dials there is an optional fourth, added 2026-07-22. Signed-in learners can set learning-style preferences (a checklist) and free-text notes capped at 500 characters, through a post-sign-in onboarding modal or in Settings. The data lives only in the client's <code>preferenceStore</code> and <code>localStorage</code>, is sent with each generation request, and is injected into the prompt as a fenced "LEARNER PROFILE — HIGH PRIORITY (mandatory adaptation)" block; the backend validates and caps it but never stores it, and the notes field passes its own moderation check because free text into a prompt is otherwise a moderation bypass. Critically for correctness, <code>lessonCacheKey()</code> normalizes and includes personalization, so two learners with different profiles asking the same question get distinct, tailored lessons instead of sharing one cache entry.</p>
+
+  <h2>What the dials add up to</h2>
+  <p>Every axis in this chapter feeds the same three destinations: the prompt (what the model is asked to write), the allowlists (what the server accepts), and the cache key (which learners can share a result). That symmetry is the design. A configuration dial that changed the lesson without changing the cache key would silently serve one learner another learner's variant; a dial that changed the key without changing the prompt would fragment the cache for nothing. In RealLearn, the twelve languages, three levels, two modes, and the personalization profile all move through <code>lessonCacheKey(question, language, level, mode, personalization)</code> in <code>backend/src/lib/lessonCache.js</code> together, which is why the personalization system could be added late in the project without corrupting cached results. The dials are simple on the surface, one modal and one toggle, and rigorously plumbed underneath.</p>
+</section>

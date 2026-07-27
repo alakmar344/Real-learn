@@ -1,0 +1,69 @@
+<section class="chapter" id="ch-13">
+  <div class="chapter-opener">
+    <div class="chapter-kicker">Part III · The Backend</div>
+    <h1><span class="ch-num">13</span>Backend Architecture</h1>
+    <p class="chapter-lede">A single Express process on Render carries the entire server side of RealLearn: twelve endpoints, twelve library modules, a two-tier cache, and a defense-in-depth middleware stack — all in plain JavaScript ES modules.</p>
+  </div>
+
+  <h2>One process, one entrypoint</h2>
+  <p>The backend is a Node.js application (<code>reallearn-backend</code>, version <code>1.2.0</code>, <code>"type": "module"</code>) whose entire routing surface lives in a single 2,262-line entrypoint, <code>backend/src/server.js</code>. There is no framework beyond Express 4 (<code>express@^4.21.2</code>), no ORM, and no build step: <code>npm start</code> runs <code>node src/server.js</code>, and <code>npm run dev</code> adds <code>--watch</code>. The process listens on <code>process.env.PORT</code> with a default of <code>10000</code> — Render's convention — and sets <code>app.set("trust proxy", 1)</code> so <code>req.ip</code> reflects the real client behind Render's proxy rather than the proxy itself, which matters for both rate limiting and the anonymized IP prefixes written into consent records.</p>
+
+  <div class="stat-row">
+    <div class="stat"><div class="stat-value">12</div><div class="stat-label">HTTP endpoints</div></div>
+    <div class="stat"><div class="stat-value">12</div><div class="stat-label">lib modules</div></div>
+    <div class="stat"><div class="stat-value">2,262</div><div class="stat-label">lines in server.js</div></div>
+    <div class="stat"><div class="stat-value">28</div><div class="stat-label">tests in 4 files</div></div>
+  </div>
+
+  <p>The dependency list is deliberately short and every entry earns its place: <code>@cerebras/cerebras_cloud_sdk</code> for the primary AI provider, <code>jose</code> for Clerk JWT verification, <code>mongodb</code> for persistence, <code>lru-cache</code> for every in-memory cache tier, <code>express-rate-limit</code> for request budgets, <code>compression</code> for Brotli/gzip, <code>jsonrepair</code> for tolerant parsing of model output, <code>node-edge-tts</code> for speech synthesis, <code>text-readability</code> for the algorithmic quality gate, plus <code>validator</code>, <code>ip-address</code>, <code>bad-words</code>, and <code>better-profane-words</code> for input hygiene and moderation.</p>
+
+  <h2>The module map</h2>
+  <p>Everything that is not routing lives in <code>backend/src/lib/</code>. The twelve modules divide into four functional groups.</p>
+  <table class="data">
+    <thead><tr><th>Module</th><th>Lines</th><th>Responsibility</th></tr></thead>
+    <tbody>
+      <tr><td><code>gemma.js</code></td><td>1,449</td><td>Multi-provider AI engine: hedged racing, circuit breakers, model rotation, streaming watchdogs, <code>parseJSON</code></td></tr>
+      <tr><td><code>prompts.js</code></td><td>86</td><td><code>GENERATE_LESSON_PROMPT</code> and <code>GENERATE_FAST_ANSWER_PROMPT</code> system prompts</td></tr>
+      <tr><td><code>serper.js</code></td><td>159</td><td>Live news grounding via Serper's <code>/news</code> API, with its own LRU cache</td></tr>
+      <tr><td><code>qualityGate.js</code></td><td>639</td><td>Flesch-Kincaid readability scoring and automatic simplification, zero AI calls</td></tr>
+      <tr><td><code>moderation.js</code></td><td>175</td><td>Rule-based input/output moderation (<code>moderateText</code>)</td></tr>
+      <tr><td><code>contentGuard.js</code></td><td>123</td><td>Banned-content prefilter (<code>filterUserInput</code>)</td></tr>
+      <tr><td><code>auth.js</code></td><td>284</td><td>Clerk JWT verification with <code>jose</code>: remote JWKS, PEM fallback, issuer allowlist</td></tr>
+      <tr><td><code>personalization.js</code></td><td>139</td><td>Sanitizes and formats learner preferences for prompt injection</td></tr>
+      <tr><td><code>lessonCache.js</code></td><td>192</td><td>Two-tier lesson cache: in-memory LRU plus MongoDB TTL collection</td></tr>
+      <tr><td><code>lruCache.js</code></td><td>22</td><td>Small LRU helper</td></tr>
+      <tr><td><code>searchIndex.js</code></td><td>105</td><td>Text indexes and query sanitization for cached-lesson search</td></tr>
+      <tr><td><code>mongodb.js</code></td><td>53</td><td>Singleton MongoDB connection (<code>getDb</code>)</td></tr>
+    </tbody>
+  </table>
+
+  <h2>The middleware pipeline</h2>
+  <p>Requests pass through a fixed pipeline before touching any route handler. First CORS: allowed origins come from <code>FRONTEND_ORIGIN</code> (comma-separated) with a fallback of <code>https://reallearn.site</code> and <code>https://real-learn.onrender.com</code>; denied origins get logged and rejected with a 403 by the terminal error handler. Second, body parsing with a hard cap — <code>express.json({ limit: "100kb" })</code> — because every legitimate body here is a question plus a few enum fields. Third, compression: <code>compression@1.8</code> negotiates Brotli first at quality 5 (set explicitly through <code>zlib.constants.BROTLI_PARAM_QUALITY</code>), falls back to gzip level 6, and compresses anything at or above a 128-byte threshold. The one exemption is the SSE route: the filter returns <code>false</code> for <code>/api/generate-lesson</code>, because buffering an event stream would delay heartbeats.</p>
+  <p>A dedicated <code>securityHeaders</code> middleware then applies <code>X-Frame-Options: SAMEORIGIN</code>, <code>X-Content-Type-Options: nosniff</code>, <code>Referrer-Policy: strict-origin-when-cross-origin</code>, a locked-down <code>Permissions-Policy</code>, and — unless <code>NODE_ENV === "development"</code> — HSTS with <code>max-age=63072000; includeSubDomains; preload</code> and a <code>Content-Security-Policy</code> of <code>default-src 'none'; base-uri 'self'; form-action 'self'</code>. The gate is deliberately inverted: hardening applies unless the host is explicitly in development, so a forgotten <code>NODE_ENV</code> fails safe rather than silently dropping HSTS.</p>
+
+  <div class="callout">
+    <div class="callout-title">Fail-safe by default</div>
+    <p>Two recurring patterns define this codebase's security posture. Gates fail closed (security headers apply unless explicitly in development; unknown token shapes never earn a rate-limit bucket), and every background task is non-fatal (index creation, IP scrubbing, and cache writes log errors and retry on the next boot instead of crashing the process).</p>
+  </div>
+
+  <h2>Rate limiting as a two-gate chain</h2>
+  <p>The factory <code>createRateLimiter({ windowMs, max, ipMultiplier = 5 })</code> returns not one limiter but an array of two <code>express-rate-limit</code> instances that Express flattens into the middleware chain. Gate one is an always-on IP backstop capped at <code>max * ipMultiplier</code>, counting every request from an IP regardless of token. Gate two is the per-caller bucket: keyed on a SHA-256 hash of the bearer token when one is present, or on the IP otherwise. The design closes a real hole documented in the source — the token is <em>unverified</em> at this layer, so three safeguards apply: only JWT-shaped tokens (matching <code>JWT_SHAPE_PATTERN</code>, three base64url segments of bounded length) count as tokens at all; each IP may mint at most <code>MAX_TOKEN_KEYS_PER_IP = 200</code> distinct token buckets per window before <code>isTokenSpray</code> collapses it into one shared <code>spray:</code> bucket; and IPv6 callers are keyed on their <code>/64</code> prefix via <code>rateLimitIpKey</code>, since a residential IPv6 allocation would otherwise hand an attacker 2<sup>64</sup> fresh buckets.</p>
+  <p>The general API limiter defaults to 20 requests per 60 seconds (<code>DEFAULT_RATE_LIMIT_MAX_REQUESTS = 20</code>, <code>DEFAULT_RATE_LIMIT_WINDOW_MS = 60000</code>, both overridable by env). Three routes get their own budgets: <code>/health</code> at 120/min, <code>/api/feedback</code> at 5/min with <code>ipMultiplier: 2</code>, and <code>/api/tts</code> at 30/min. On top of rate limits, lesson generation has concurrency gates: at most <code>MAX_CONCURRENT_LESSON_REQUESTS = 6</code> in flight globally and <code>MAX_CONCURRENT_LESSON_REQUESTS_PER_USER = 2</code> per verified user, so one user cannot occupy every slot with 20–60-second explain-mode generations.</p>
+
+  <h2>Authentication: Clerk JWTs verified with jose</h2>
+  <p>Every data endpoint except <code>/health</code> and <code>/api/feedback</code> passes through <code>requireAuth</code> from <code>lib/auth.js</code>. Verification is done locally with <code>jose</code>: the primary path fetches the issuer's JWKS from <code>&lt;issuer&gt;/.well-known/jwks.json</code> (cached in an LRU capped at 32 entries with a one-hour TTL, because the issuer string comes from the token's unverified <code>iss</code> claim and an unbounded map would be a memory-growth vector), and a PEM public key imported via <code>importSPKI</code> serves as an offline fallback when the JWKS endpoint is unreachable. Issuer trust is an explicit allowlist: the configured <code>CLERK_FRONTEND_API</code> (default <code>https://clerk.reallearn.site</code>), any <code>CLERK_ADDITIONAL_ISSUERS</code> entries, and <code>*.reallearn.site</code> over HTTPS. Shared Clerk dev domains (<code>*.clerk.accounts.dev</code>) are trusted only behind the explicit <code>CLERK_ALLOW_DEV_ISSUERS=true</code> flag — the source notes that anyone can mint valid tokens on those multi-tenant domains, so trusting them by <code>NODE_ENV</code> alone would be an authentication bypass one misconfigured host away. In production, the token's <code>azp</code> (authorized party) claim is additionally pinned to the known frontend origins.</p>
+
+  <h2>Caching tiers</h2>
+  <p>The backend runs four distinct caches, each sized to its payload. The lesson cache (<code>lessonCache.js</code>) is the important one: tier 1 is an in-memory LRU of 100 entries; tier 2 is the MongoDB <code>lessonCache</code> collection with a TTL index, shared across instances and restarts. Keys are SHA-256 hashes over the normalized question (trimmed, lowercased, whitespace-collapsed) plus language, level, mode, and personalization, so trivially different phrasings of the same question still hit. The TTL is deliberately modest — six hours — because Part 3 of every lesson is grounded in current news. A cache hit turns a 20–60-second pipeline into a single lookup and legitimately skips Serper, Gemma, and both moderation passes, since the cached lesson passed all of them when first generated. The other caches: a 16 MB byte-budgeted LRU for synthesized TTS audio (24-hour TTL, ETag revalidation), a 200-entry, 10-minute LRU for Serper contexts, and the JWKS LRU in <code>auth.js</code>.</p>
+
+  <h2>Startup, shutdown, and operational posture</h2>
+  <p><code>validateStartupConfig()</code> refuses to boot unless at least one AI provider is configured (<code>CEREBRAS_API_KEY</code>, or <code>CLOUDFLARE_API_TOKEN</code> plus <code>CLOUDFLARE_ACCOUNT_ID</code>). After <code>app.listen</code>, three fire-and-forget background jobs run: <code>startPeriodicWarmUp()</code> keeps the Cloudflare fallback model warm (only if Cloudflare is configured), <code>scrubStoredConsentIps()</code> retroactively anonymizes any raw IPs left by earlier releases, and <code>ensureUserDataIndexes()</code> creates the MongoDB indexes that keep consent lookups, exports, and deletions from becoming collection scans.</p>
+  <pre class="code-block">server.headersTimeout = 15_000;
+server.requestTimeout = 30_000;
+// Keep idle keep-alive sockets on a short leash as well.
+server.keepAliveTimeout = 10_000;</pre>
+  <p>Those three timeouts are Slowloris hardening: Node's defaults (60s/300s) would let a client hold sockets hostage far longer than uploading a sub-100 kb body requires, and they apply only to request reception, so long-lived SSE responses are unaffected. Shutdown is graceful: on <code>SIGTERM</code> or <code>SIGINT</code> the server stops accepting connections, drains in-flight requests, and force-exits after a 30-second deadline. Configuration is env-driven throughout — 63 environment variables are referenced across the repository, most with clamped, validated defaults (for example <code>LESSON_TIMEOUT_MS</code> is clamped between 30,000 and 600,000 ms, with a warning logged when a configured value is adjusted).</p>
+
+  <h3>What the tests cover</h3>
+  <p>The suite runs on Node's built-in runner (<code>npm test</code> → <code>node --test</code>): 28 tests across four files — <code>gemma-engine.test.js</code> (13), <code>personalization.test.js</code> (8), <code>moderation.test.js</code> (5), and <code>search-index.test.js</code> (2). The weighting mirrors the risk: the AI engine's retry, circuit-breaker, and racing logic gets the deepest coverage, followed by the personalization sanitizer and the moderation regression suite that guards against false positives on legitimate educational questions.</p>
+</section>
