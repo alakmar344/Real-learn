@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, memo } from "react";
 import { QuizQuestion as Question } from "@/types";
 import QuizQuestion from "@/components/learning/QuizQuestion";
-import { reshuffleQuestion } from "@/lib/quizShuffle";
+import { reshuffleQuestion, sanitizeQuestion } from "@/lib/quizShuffle";
 
 interface Props {
   open: boolean;
@@ -28,7 +28,9 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
   // Local working copy of the questions whose option order we control. On a
   // failed attempt the options are reshuffled so the learner has to find the
   // correct answer again.
-  const [quizQuestions, setQuizQuestions] = useState<Question[]>(questions ?? []);
+  const [quizQuestions, setQuizQuestions] = useState<Question[]>(
+    (questions ?? []).map(sanitizeQuestion)
+  );
   const [shuffledHint, setShuffledHint] = useState(false);
   // First-attempt score: passing requires a perfect run, so the score at the
   // moment of passing is ALWAYS perfect. "Perfect" stats/achievements only
@@ -41,7 +43,7 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
   // Reset to the original (unshuffled) questions whenever the source changes
   // (e.g. a new part) or the sheet is (re)opened.
   useEffect(() => {
-    setQuizQuestions(questions ?? []);
+    setQuizQuestions((questions ?? []).map(sanitizeQuestion));
     setCurrent(0);
     setAnswers(Array.from({ length: Math.max(questions?.length ?? 0, 1) }, () => null));
     setShuffledHint(false);
