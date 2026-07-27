@@ -38,7 +38,7 @@ export default function ExampleQuestions({ onPick }: Props) {
       title="Click to try this question"
       onClick={() => onPick?.(RECOMMENDATIONS[index])}
       disabled={!onPick}
-      className="chip electric-card"
+      className="chip"
       style={{
         fontSize: 12,
         color: "var(--accent)",
@@ -48,16 +48,10 @@ export default function ExampleQuestions({ onPick }: Props) {
         textOverflow: "ellipsis",
         whiteSpace: "nowrap",
         textAlign: "left",
-        border: "1px solid var(--border-neon)",
-        background: "var(--brand-soft)",
-        boxShadow: "0 0 12px var(--accent-glow)",
-        padding: "6px 14px",
-        borderRadius: "var(--radius-pill)",
-        transition: "all 250ms var(--ease-spring)",
       }}
     >
-      <span style={{ color: "var(--text-accent-strong)", fontWeight: 700, marginRight: 6 }}>⚡ Gen Z Spark:</span>{" "}
-      <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>{RECOMMENDATIONS[index]}</span>
+      <span style={{ color: "var(--text-tertiary)", fontWeight: 500, marginRight: 4 }}>💡 Try:</span>{" "}
+      <span>{RECOMMENDATIONS[index]}</span>
     </button>
   );
 }

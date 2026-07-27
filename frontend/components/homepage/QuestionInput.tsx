@@ -12,8 +12,8 @@ import { LessonMode } from "@/types";
 const MAX_QUESTION_LENGTH = 1000;
 
 const MODES: { value: LessonMode; label: string; hint: string }[] = [
-  { value: "fast", label: "⚡ Quick", hint: "Straight answer, zero fluff" },
-  { value: "explain", label: "🧠 Deep Dive", hint: "Full 3-part journey — quizzes included" },
+  { value: "fast", label: "Fast", hint: "Straight answer, zero fluff" },
+  { value: "explain", label: "Explain", hint: "Full 3-part deep dive — quizzes included" },
 ];
 
 interface Props {
@@ -27,11 +27,11 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
   const [focused, setFocused] = useState(false);
   const [interimSpeech, setInterimSpeech] = useState("");
   const [showHint, setShowHint] = useState(false);
-  const [glowIntensity, setGlowIntensity] = useState(0);
   const { isSignedIn } = useAuth();
   const language = usePreferenceStore((s) => s.language);
   const persistedMode = usePreferenceStore((s) => s.mode);
   const setMode = usePreferenceStore((s) => s.setMode);
+  // mode is persisted; keep SSR default until mounted to avoid hydration mismatch.
   const mounted = useMounted();
   const mode = mounted ? persistedMode : "fast";
   const activeMode = MODES.find((m) => m.value === mode) ?? MODES[0];
@@ -46,6 +46,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
     textarea.style.height = `${Math.min(textarea.scrollHeight, 160)}px`;
   }, [question]);
 
+  // Invisible UX: Restore draft question from sessionStorage on mount if empty
   useEffect(() => {
     if (!mounted) return;
     try {
@@ -53,6 +54,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
       if (savedDraft && !question) {
         setQuestion(savedDraft);
       }
+      // Smart desktop auto-focus: on non-mobile screens, focus input automatically
       if (window.innerWidth >= 768 && textareaRef.current) {
         textareaRef.current.focus();
       }
@@ -61,6 +63,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
     }
   }, [mounted]);
 
+  // Invisible UX: Persist typed question as draft in sessionStorage
   useEffect(() => {
     if (!mounted) return;
     try {
@@ -86,6 +89,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Ctrl/Cmd + Enter submits; Enter alone adds a newline.
     if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
       e.preventDefault();
       handleSubmit();
@@ -98,64 +102,36 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
     <form
       onSubmit={handleSubmit}
       aria-label="Ask a question"
-      className={`q-form engraved texture-noise${focused ? " q-form--focused" : ""} electric-card`}
-      style={{
-        "--glow-intensity": glowIntensity,
-        transition: "box-shadow 300ms var(--ease-spring), border-color 300ms var(--ease-color), transform 300ms var(--ease-spring)",
-      } as React.CSSProperties}
-      onMouseEnter={() => setGlowIntensity(1)}
-      onMouseLeave={() => setGlowIntensity(0)}
+      className={`q-form engraved${focused ? " q-form--focused" : ""}`}
     >
       <div className="q-form__body">
         <label htmlFor="question-input" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}>
           What do you want to understand today?
         </label>
-        <div className="q-form__textarea-wrapper" style={{ position: "relative" }}>
-          <textarea
-            id="question-input"
-            ref={textareaRef}
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-            onFocus={() => { setFocused(true); setShowHint(true); }}
-            onBlur={() => { setFocused(false); window.setTimeout(() => setShowHint(false), 2000); }}
-            onKeyDown={handleKeyDown}
-            maxLength={MAX_QUESTION_LENGTH}
-            placeholder="Ask literally anything — no dumb questions here 🤷‍♂️"
-            aria-label="Your question"
-            className="q-form__textarea"
-            style={{
-              background: focused ? "var(--bg-surface)" : "var(--bg-card)",
-              transition: "background 200ms var(--ease-color), box-shadow 200ms var(--ease-color)",
-            }}
-          />
-          {focused && (
-            <div 
-              className="q-form__focus-glow" 
-              aria-hidden="true"
-              style={{
-                position: "absolute",
-                inset: -2,
-                borderRadius: "inherit",
-                background: "var(--accent-gradient)",
-                opacity: 0.15,
-                filter: "blur(16px)",
-                pointerEvents: "none",
-                zIndex: -1,
-                animation: "glowPulse 2s ease-in-out infinite",
-              }}
-            />
-          )}
-          {interimSpeech ? (
-            <p aria-live="polite" className="q-form__listening" style={{ animation: "slideUpFade 300ms var(--ease-reveal)" }}>
-              <span className="typing-cursor" aria-hidden="true"></span>
-              Listening — {interimSpeech}
-            </p>
-          ) : null}
-        </div>
+        <textarea
+          id="question-input"
+          ref={textareaRef}
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
+          onFocus={() => { setFocused(true); setShowHint(true); }}
+          onBlur={() => { setFocused(false); window.setTimeout(() => setShowHint(false), 2000); }}
+          onKeyDown={handleKeyDown}
+          maxLength={MAX_QUESTION_LENGTH}
+          placeholder="Ask literally anything — no dumb questions here"
+          aria-label="Your question"
+          className="q-form__textarea"
+        />
+        {interimSpeech ? (
+          <p aria-live="polite" className="q-form__listening">
+            Listening — {interimSpeech}
+          </p>
+        ) : null}
         <div className="q-form__footer">
-          <span className={`q-form__hint${hintShow ? " q-form__hint--show" : ""}`} style={{ animation: "slideUpFade 300ms var(--ease-reveal)" }}>
+          <span className={`q-form__hint${hintShow ? " q-form__hint--show" : ""}`}>
             Press{" "}
-            <kbd className="q-form__kbd" style={{ background: "var(--accent-dim)", color: "var(--accent)", border: "1px solid var(--border-glow)" }}>
+            <kbd className="q-form__kbd">
+              {/* Render neutral "Ctrl" until mounted; navigator.platform differs
+                  between server and a Mac client (hydration mismatch). */}
               {mounted && /Mac|iPod|iPhone|iPad/.test(navigator.platform) ? "⌘" : "Ctrl"}
               +Enter
             </kbd>{" "}
@@ -164,19 +140,14 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           <span
             aria-live="polite"
             className={`q-form__count${nearLimit ? " q-form__count--near" : ""}`}
-            style={{ 
-              color: nearLimit ? "var(--wrong)" : "var(--text-tertiary)",
-              transition: "color 200ms var(--ease-color)",
-              fontVariantNumeric: "tabular-nums",
-            }}
           >
             {charCount}/{MAX_QUESTION_LENGTH}
           </span>
         </div>
       </div>
 
-      {/* Answer-mode toggle: Quick (1 direct part) vs Deep Dive (3-part journey). */}
-      <div className="q-form__modes" style={{ animation: "slideUpFade 400ms var(--ease-reveal) 100ms both" }}>
+      {/* Answer-mode toggle: Fast (1 direct part) vs Explain (3-part journey). */}
+      <div className="q-form__modes">
         <div role="radiogroup" aria-label="Answer mode" className="mode-glider">
           <span
             aria-hidden="true"
@@ -184,7 +155,6 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
             style={{
               width: `calc((100% - 10px) / ${MODES.length})`,
               transform: `translateX(calc(${activeIndex} * 100%))`,
-              transition: "transform 300ms var(--ease-spring)",
             }}
           />
           {MODES.map((opt) => {
@@ -198,34 +168,25 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
                 title={opt.hint}
                 onClick={() => setMode(opt.value)}
                 className={`mode-glider__option${active ? " mode-glider__option--active" : ""}`}
-                style={{
-                  transition: "all 250ms var(--ease-spring)",
-                  transform: active ? "scale(1.02)" : "scale(1)",
-                }}
               >
                 {opt.label}
               </button>
             );
           })}
         </div>
-        <span className="q-form__mode-hint" style={{ 
-          color: "var(--accent)", 
-          fontWeight: 600,
-          animation: "slideUpFade 300ms var(--ease-reveal) 200ms both",
-        }}>
-          {activeMode.hint}
-        </span>
+        <span className="q-form__mode-hint">{activeMode.hint}</span>
       </div>
 
-      <div className="q-form__actions" style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center", animation: "slideUpFade 400ms var(--ease-reveal) 300ms both" }}>
+      <div className="q-form__actions">
         <ExampleQuestions onPick={(q) => {
           setQuestion(q);
           textareaRef.current?.focus();
         }} />
-        <div className="q-form__actions-right" style={{ display: "flex", gap: 10, marginLeft: "auto", flexWrap: "wrap" }}>
+        <div className="q-form__actions-right">
           <MicButton
             language={language}
             onTranscript={(text) =>
+              // Voice transcripts bypass the textarea maxLength — clamp to the backend limit.
               setQuestion(
                 (question.trim() ? `${question.trim()} ${text}` : text).slice(0, MAX_QUESTION_LENGTH)
               )
@@ -237,9 +198,8 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
               type="button"
               aria-label="Clear question"
               title="Clear"
-              className="btn-icon btn-icon--danger electric-card"
+              className="btn-icon btn-icon--danger"
               onClick={() => { setQuestion(""); textareaRef.current?.focus(); }}
-              style={{ transition: "all 200ms var(--ease-spring)" }}
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                 <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -247,14 +207,12 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
             </button>
           )}
           {isSignedIn ? (
-            <button type="submit" disabled={!question.trim()} aria-label="Start learning" className="btn-primary btn-cyber">
-              <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                {mode === "fast" ? "⚡ Get Quick Answer →" : "🧠 Start Deep Dive →"}
-              </span>
+            <button type="submit" disabled={!question.trim()} aria-label="Start learning" className="btn-primary">
+              {mode === "fast" ? "Get a Quick Answer →" : "Start Guided Lesson →"}
             </button>
           ) : (
             <SignInButton mode="modal">
-              <button type="button" aria-label="Sign in to start learning" className="btn-primary btn-cyber">
+              <button type="button" aria-label="Sign in to start learning" className="btn-primary">
                 Sign in to Learn →
               </button>
             </SignInButton>
