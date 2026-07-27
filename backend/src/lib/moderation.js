@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { LRUCache } from "lru-cache";
 import { Filter } from "bad-words";
-import { filterText, containsProfanity } from "better-profane-words";
+import { filterText } from "better-profane-words";
 import { containsHarmfulContent } from "./contentGuard.js";
 
 const DEFAULT_MODERATION_TIMEOUT_MS = 8000;
@@ -39,6 +39,56 @@ function isModerationEnabled() {
   return !["false", "0", "off", "no"].includes(raw);
 }
 
+// ── LAYER 1: Canonicalization & Character Normalization ──────────────────────
+const INVISIBLE_CHARS_PATTERN = /[­͏؜᠎​-‏‪-‮⁠-⁤﻿]/g;
+
+function canonicalizeText(rawText) {
+  if (!rawText || typeof rawText !== "string") return "";
+  return rawText
+    .normalize("NFKC")
+    .replace(INVISIBLE_CHARS_PATTERN, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// ── LAYER 2: Deterministic Syntactic Grammar & Intent Frame Parser ────────────
+const INQUIRY_GRAMMAR_PATTERNS = [
+  /^(?:what|how|why|when|where|who|explain|describe|tell\s+me\s+about|detail|history\s+of|background\s+of)\b/i,
+  /(?:what|how|why|when|where|who)\s+(?:was|were|did|is|are|happened|occurred|took\s+place|developed|created|invented|discovered|unfolded|fought|worked|functioned)\b/i,
+  /\b(?:in\s+world\s*war|during\s+ww[12]|in\s+history|the\s+manhattan\s+project|in\s+physics|in\s+chemistry|in\s+biology)\b/i,
+];
+
+const IMPERATIVE_ACTION_PATTERNS = [
+  /^(?:how\s+(?:to|can\s+i|do\s+i)|directions?\s+to|steps?\s+to|recipe\s+for|blueprint\s+for|guide\s+to|tutorial\s+on)\s+(?:make|build|synthesize|cook|manufacture|construct|assemble|3d\s*print)\b/i,
+];
+
+function isEducationalInquiryFrame(text) {
+  const isImperative = IMPERATIVE_ACTION_PATTERNS.some((pattern) => pattern.test(text));
+  if (isImperative) return false;
+  return INQUIRY_GRAMMAR_PATTERNS.some((pattern) => pattern.test(text));
+}
+
+// ── LAYER 3: Educational Whitelist & Fast-Path Engine ────────────────────────
+const EDUCATIONAL_DOMAIN_PATTERNS = [
+  // History & World Conflict Events:
+  /\b(?:world\s*war\s*[12i|v]+|ww[12]|manhattan\s*project|atomic\s*bomb|nuclear\s*bomb|holocaust|cold\s*war|french\s*revolution|civil\s*war|inquisition|vietnam\s*war|gulf\s*war|pearl\s*harbor|hiroshima|nagasaki|oppenheimer)\b/i,
+  // Physics & Chemistry:
+  /\b(?:nuclear\s*fission|nuclear\s*fusion|radioactivity|chain\s*reaction|uranium|plutonium|thermodynamics|quantum|combustion)\b/i,
+  // Biology & Health:
+  /\b(?:cell\s*penetration|immune\s*system|white\s*blood\s*cells|pathogen|virus|bacteria|homo\s*sapiens|vaccogenic|vaccines?|herd\s*immunity)\b/i,
+  // Social & Behavioral Science:
+  /\b(?:history\s+of\s+terrorism|suicide\s+prevention|human\s+trafficking\s+prevention|rap\s+music)\b/i,
+  // Sports & Game Theory:
+  /\b(?:tit\s+for\s+tat|bowling\s+\d+\s+balls|dick\s+fosbury|cock\s+the\s+wrist|shoot\s+a\s+basketball|power\s+hitter)\b/i,
+  // Business & Tech:
+  /\b(?:market\s+penetration|ethical\s+hacking|radar\s+penetration)\b/i,
+];
+
+function isEducationalDomain(text) {
+  return EDUCATIONAL_DOMAIN_PATTERNS.some((pattern) => pattern.test(text));
+}
+
+// ── Profanity Filter Setup ───────────────────────────────────────────────────
 const EDUCATIONAL_EXCLUDED_WORDS = [
   "god",
   "balls",
@@ -50,32 +100,16 @@ const EDUCATIONAL_EXCLUDED_WORDS = [
   "cock",
   "penetrate",
   "penetration",
+  "bomb",
+  "war",
+  "kill",
 ];
 
 const profanityFilter = new Filter({ placeHolder: "*" });
 profanityFilter.removeWords(...EDUCATIONAL_EXCLUDED_WORDS);
 
 const EDUCATIONAL_EXCLUDED_SET = new Set(EDUCATIONAL_EXCLUDED_WORDS);
-
-// IMPORTANT — do NOT re-add blanket topic keywords here (e.g. "bomb", "gun",
-// "kill", "terrorism", "suicide", "hack", "rap", "grooming"). Whole-word bans
-// on sensitive TOPICS block a huge amount of legitimate educational content on
-// this platform: "how the atomic bomb ended World War 2", "how white blood
-// cells kill bacteria", "the history of terrorism", "suicide prevention", "the
-// history of rap music", "how do I groom my dog", "ethical hacking". Harmful
-// INTENT ("how to build a bomb", "I want to shoot up my school", "best way to
-// kill myself") is caught by the shared, intent-scoped patterns in
-// contentGuard.js via containsHarmfulContent() below. This layer only adds
-// profanity/slur detection on top of that.
-
 const TEEN_MIN_INTENSITY = 2;
-
-// better-profane-words tags each match with categories. "violence" and "drug"
-// are TOPIC categories ("how to kill", "torture", "cocaine") that flag ordinary
-// educational content (history, biology, first-aid, health/drug awareness). The
-// genuinely harmful INTENT behind those topics is already caught, intent-scoped,
-// by containsHarmfulContent(). So a match is only treated as unsafe here if it
-// carries at least one NON-topic category (profanity, slur, sexual, insult).
 const TOPIC_ONLY_CATEGORIES = new Set(["violence", "drug"]);
 
 function isNonTopicMatch(match) {
@@ -86,14 +120,23 @@ function isNonTopicMatch(match) {
   return cats.some((category) => !TOPIC_ONLY_CATEGORIES.has(category));
 }
 
+// ── LAYER 4: Harmful Intent & Profanity Verification ────────────────────────
 function containsUnsafeContent(text) {
   if (!text || typeof text !== "string") return false;
-  // Intent-based harmful-content check (shared with the input/response guard) —
-  // topic mentions pass, harmful requests are blocked.
-  if (containsHarmfulContent(text)) return true;
-  // Profanity / slurs (two independent dictionaries).
-  if (profanityFilter.isProfane(text)) return true;
-  const result = filterText(text, { minIntensity: TEEN_MIN_INTENSITY });
+  const canonicalized = canonicalizeText(text);
+
+  // LAYER 4A: Intent-based zero-tolerance harmful-content check (weapons recipes, CSAM, threats)
+  if (containsHarmfulContent(canonicalized)) return true;
+
+  // LAYER 3 FAST-PATH: If this is an educational inquiry frame matching an educational domain,
+  // bypass broad topic-based profanity heuristics (while zero-tolerance harmful content above still ran).
+  if (isEducationalInquiryFrame(canonicalized) && isEducationalDomain(canonicalized)) {
+    return false;
+  }
+
+  // LAYER 4B: Profanity / slurs (two independent dictionaries for offensive non-topic slurs).
+  if (profanityFilter.isProfane(canonicalized)) return true;
+  const result = filterText(canonicalized, { minIntensity: TEEN_MIN_INTENSITY });
   return result.matched.some(isNonTopicMatch);
 }
 
@@ -116,6 +159,7 @@ export function sanitizeText(text) {
   return sanitizeContent(text);
 }
 
+// ── Main Entry Point ────────────────────────────────────────────────────────
 export async function moderateText(text, kind = "input") {
   if (!isModerationEnabled()) return { allowed: true };
   if (!text || typeof text !== "string" || !text.trim()) return { allowed: true };
@@ -136,11 +180,26 @@ export async function moderateText(text, kind = "input") {
 
   const startedAt = Date.now();
   try {
-    const blocked = containsUnsafeContent(snippet);
+    const canonicalized = canonicalizeText(snippet);
+
+    // LAYER 3 FAST-PATH EXECUTION
+    if (kind === "input" && isEducationalInquiryFrame(canonicalized) && isEducationalDomain(canonicalized)) {
+      if (!containsHarmfulContent(canonicalized)) {
+        console.log("[moderation] Educational fast-path approved", {
+          kind,
+          latencyMs: Date.now() - startedAt,
+        });
+        const fastPathResult = { allowed: true, category: "educational_inquiry" };
+        verdictCacheSet(cacheKey, fastPathResult);
+        return fastPathResult;
+      }
+    }
+
+    const blocked = containsUnsafeContent(canonicalized);
     const reason = kind === "output" ? getAIResponseBlockReason() : getUserInputBlockReason();
 
     if (blocked) {
-      console.warn("[moderation] Content blocked by profanity filter", {
+      console.warn("[moderation] Content blocked by profanity/safety filter", {
         kind,
         latencyMs: Date.now() - startedAt,
       });
@@ -173,3 +232,4 @@ export async function moderateText(text, kind = "input") {
     return { allowed: true };
   }
 }
+

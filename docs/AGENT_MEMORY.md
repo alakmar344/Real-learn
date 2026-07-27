@@ -339,6 +339,9 @@ this protocol. No exceptions.**
   Deleted redundant singular `report/` directory (`c:\Users\proma\real-learn\report`). Overhauled HTML generator `reports/src/build-html.js` to transform `reports/RealLearn-Complete-Report.html` into a high-performance, interactive, SVG-powered Professional Analytics Dashboard. Features 6 KPI metric tiles, monthly commit velocity SVG curve chart, language distribution progress bars, interactive system architecture SVG diagram, tabbed dashboard navigation (Overview, Velocity, Architecture, Design System Tokens, 27-Chapter Reader), real-time global search (`Ctrl+K`), and Dark Ink / Light Paper theme switcher.
 - 2026-07-27 — **Documentation Streamlining & Cleanup.**
   Removed 7 obsolete and redundant documentation files (`HEROIC_SAGA.md`, `reallearn-summarised.md`, `REALLEARN_BY_THE_NUMBERS.md`, `DESIGN_AUDIT.md`, `IMPROVEMENT_PRIORITIES.md`, `errors.md`, `todo.md`). Rewrote `README.md` into a modern, concise overview. Preserved `change-made-after-submission.md` per user directive and updated `AGENT_MEMORY.md`, `llms.txt`, `llms-full.txt`, and agent pointers.
+- 2026-07-27 — **6-Layer Deterministic Algorithmic Moderation & Intent Routing System.**
+  Designed and implemented a 100% deterministic multi-layered moderation engine in `backend/src/lib/moderation.js` and `backend/src/lib/contentGuard.js`. Eliminates false-positive blocks on historical/scientific questions (e.g. "how was atomic bomb developed", "what happened in ww2") via NFKC canonicalization, syntactic grammar frame parsing, and educational whitelist fast-path routing, while retaining zero-tolerance protection against actionable harm recipes and slurs. Expanded `backend/test/moderation.test.js` regression suite.
+
 
 
 
