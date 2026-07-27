@@ -59,8 +59,8 @@ Real-learn/
 │       ├── lib/lessonCache.js + lruCache.js   two-tier caching
 │       ├── lib/auth.js        Clerk JWT verify (jose)
 │       └── lib/mongodb.js
-└── docs/, *.md         this file + README, DESIGN_AUDIT, IMPROVEMENT_PRIORITIES,
-                        llms.txt, llms-full.txt, change-made-after-submission.md, errors.md
+└── docs/, *.md         this file + README, GEMINI.md, AGENT_INSTRUCTIONS.md,
+                        llms.txt, llms-full.txt, change-made-after-submission.md
 ```
 
 ---
@@ -214,14 +214,11 @@ Target: WCAG 2.1 AA. Non-negotiables:
 
 | Need | Read |
 |---|---|
-| Brand/product facts for an LLM | `llms.txt`, `llms-full.txt` |
-| Full changelog since hackathon submission | `change-made-after-submission.md` |
-| Design audit findings (some now fixed) | `DESIGN_AUDIT.md` |
-| Improvement roadmap (sprints) | `IMPROVEMENT_PRIORITIES.md` |
-| Known errors / fixes history | `errors.md` |
-| Stats / numbers | `REALLEARN_BY_THE_NUMBERS.md` |
-| Narrative history | `HEROIC_SAGA.md` |
+| Project Overview & Getting Started | `README.md` |
 | **How to work on this repo (you are here)** | **`docs/AGENT_MEMORY.md`** |
+| Full changelog since hackathon submission | `change-made-after-submission.md` |
+| Brand/product facts for an LLM | `llms.txt`, `llms-full.txt` |
+| Core AI Agent mandates | `GEMINI.md`, `AGENT_INSTRUCTIONS.md` |
 
 ---
 
@@ -338,6 +335,11 @@ this protocol. No exceptions.**
   Transformed the entire UI to be bolder, electric, and strictly powered by solid colors. Purged all linear, radial, repeating, and text-clip gradients across `globals.css` and core components (`CompletionScreen`, `Sidebar`, `ShareResult`, `UnlockAnimation`, `ReadingProgressBar`, `ThemeModal`, `PreferenceModal`, `settings`). Reinforced typography to weights 700–800, strengthened card/button/chip borders to 2px solid outlines, and used vibrant solid electric accents (`#00CC52` in Paper daylight, `#00FF66` in Ink dark, `#FF3E00` action accent). Verified clean `tsc` build and strict Rule 4 compliance (zero purple/violet).
 - 2026-07-27 — **Fix Quiz Answer Validation & Multi-Strategy Answer Alignment.**
   Resolved bug where quiz answer validation marked correct answers as wrong due to 1-based indexing confusion in LLM outputs. Updated `GENERATE_FAST_ANSWER_PROMPT` and `GENERATE_LESSON_PROMPT` in `backend/src/lib/prompts.js` to request `"correctAnswer": "<exact text of correct option>"` (natural string output for AI models). Updated `alignQuizCorrectIndex` in `backend/src/validation.js` and `sanitizeQuestion` in `frontend/lib/quizShuffle.ts` & `QuizSheet.tsx` to align `correctIndex` using 4 fallback strategies: exact text matching, option letter ("A"-"D"), 1-based off-by-one correction, and explanation keyword overlap. Added backend regression suite in `backend/test/quizValidation.test.js`.
+- 2026-07-27 — **Delete Singular Report Folder & Build Professional SVG Analytics Dashboard.**
+  Deleted redundant singular `report/` directory (`c:\Users\proma\real-learn\report`). Overhauled HTML generator `reports/src/build-html.js` to transform `reports/RealLearn-Complete-Report.html` into a high-performance, interactive, SVG-powered Professional Analytics Dashboard. Features 6 KPI metric tiles, monthly commit velocity SVG curve chart, language distribution progress bars, interactive system architecture SVG diagram, tabbed dashboard navigation (Overview, Velocity, Architecture, Design System Tokens, 27-Chapter Reader), real-time global search (`Ctrl+K`), and Dark Ink / Light Paper theme switcher.
+- 2026-07-27 — **Documentation Streamlining & Cleanup.**
+  Removed 7 obsolete and redundant documentation files (`HEROIC_SAGA.md`, `reallearn-summarised.md`, `REALLEARN_BY_THE_NUMBERS.md`, `DESIGN_AUDIT.md`, `IMPROVEMENT_PRIORITIES.md`, `errors.md`, `todo.md`). Rewrote `README.md` into a modern, concise overview. Preserved `change-made-after-submission.md` per user directive and updated `AGENT_MEMORY.md`, `llms.txt`, `llms-full.txt`, and agent pointers.
+
 
 
 
