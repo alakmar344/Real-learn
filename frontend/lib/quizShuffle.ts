@@ -21,12 +21,34 @@ export function sanitizeQuestion(question: QuizQuestion): QuizQuestion {
   }
 
   const options = question.options;
-  let correctIndex = typeof question.correctIndex === "number" ? question.correctIndex : 0;
+  let correctIndex = -1;
 
-  if (correctIndex >= options.length && correctIndex === options.length) {
-    correctIndex = options.length - 1;
-  } else if (correctIndex < 0) {
-    correctIndex = 0;
+  // 1. Direct text/letter match from `correctAnswer` string if present
+  const rawAnswer = (question as { correctAnswer?: string }).correctAnswer;
+  if (typeof rawAnswer === "string" && rawAnswer.trim()) {
+    const targetText = rawAnswer.trim().toLowerCase();
+    const exactIdx = options.findIndex((opt) => typeof opt === "string" && opt.trim().toLowerCase() === targetText);
+    if (exactIdx !== -1) {
+      correctIndex = exactIdx;
+    } else {
+      const subIdx = options.findIndex((opt) => typeof opt === "string" && (opt.toLowerCase().includes(targetText) || targetText.includes(opt.toLowerCase())));
+      if (subIdx !== -1) {
+        correctIndex = subIdx;
+      }
+    }
+    if (correctIndex === -1 && /^[a-d1-4]$/i.test(targetText)) {
+      const char = targetText.toUpperCase();
+      if (char >= "A" && char <= "D") correctIndex = char.charCodeAt(0) - 65;
+      else if (char >= "1" && char <= "4") correctIndex = parseInt(char, 10) - 1;
+    }
+  }
+
+  // 2. Integer or letter index
+  if (correctIndex === -1 && typeof question.correctIndex === "number") {
+    correctIndex = question.correctIndex;
+    if (correctIndex >= options.length && correctIndex === options.length) {
+      correctIndex = options.length - 1;
+    }
   }
 
   const explanation = typeof question.explanation === "string" ? question.explanation.toLowerCase() : "";
@@ -66,7 +88,9 @@ export function sanitizeQuestion(question: QuizQuestion): QuizQuestion {
     const bestScore = Math.max(...scores);
     const bestIndex = scores.indexOf(bestScore);
 
-    if (
+    if (correctIndex < 0 || correctIndex >= options.length) {
+      correctIndex = bestScore > 0 ? bestIndex : 0;
+    } else if (
       correctIndex >= 1 &&
       correctIndex <= options.length &&
       scores[correctIndex - 1] > scores[correctIndex] &&

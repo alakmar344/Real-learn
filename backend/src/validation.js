@@ -40,7 +40,7 @@ export function getModeRules(mode) {
 
 /**
  * Ensures a quiz question's `correctIndex` is 0-indexed and points to the
- * option that best matches the explanation text.
+ * option that best matches `correctAnswer` or the explanation text.
  */
 export function alignQuizCorrectIndex(q) {
   if (!q || typeof q !== "object" || !Array.isArray(q.options) || q.options.length === 0) {
@@ -48,18 +48,46 @@ export function alignQuizCorrectIndex(q) {
   }
 
   const options = q.options;
-  let correctIndex = Number.isInteger(q.correctIndex) ? q.correctIndex : 0;
+  let correctIndex = -1;
 
-  // Detect 1-based index out of bounds (e.g. correctIndex === options.length, e.g. 4 for 4 options)
-  if (correctIndex >= options.length && correctIndex === options.length) {
-    correctIndex = options.length - 1;
-  } else if (correctIndex < 0) {
-    correctIndex = 0;
+  // 1. Direct text/letter match from model's `correctAnswer` string
+  if (typeof q.correctAnswer === "string" && q.correctAnswer.trim()) {
+    const targetText = q.correctAnswer.trim().toLowerCase();
+    const exactIdx = options.findIndex((opt) => typeof opt === "string" && opt.trim().toLowerCase() === targetText);
+    if (exactIdx !== -1) {
+      correctIndex = exactIdx;
+    } else {
+      const subIdx = options.findIndex((opt) => typeof opt === "string" && (opt.toLowerCase().includes(targetText) || targetText.includes(opt.toLowerCase())));
+      if (subIdx !== -1) {
+        correctIndex = subIdx;
+      }
+    }
+    if (correctIndex === -1 && /^[a-d1-4]$/i.test(targetText)) {
+      const char = targetText.toUpperCase();
+      if (char >= "A" && char <= "D") correctIndex = char.charCodeAt(0) - 65;
+      else if (char >= "1" && char <= "4") correctIndex = parseInt(char, 10) - 1;
+    }
   }
 
+  // 2. Letter/number string match from `correctIndex` (e.g. "A", "B", "C", "D" or "1", "2", "3", "4")
+  if (correctIndex === -1 && typeof q.correctIndex === "string") {
+    const strIdx = q.correctIndex.trim().toUpperCase();
+    if (strIdx >= "A" && strIdx <= "D") correctIndex = strIdx.charCodeAt(0) - 65;
+    else if (/^[1-4]$/.test(strIdx)) correctIndex = parseInt(strIdx, 10) - 1;
+  }
+
+  // 3. Integer index (fallback)
+  if (correctIndex === -1 && Number.isInteger(q.correctIndex)) {
+    correctIndex = q.correctIndex;
+    if (correctIndex >= options.length && correctIndex === options.length) {
+      correctIndex = options.length - 1;
+    }
+  }
+
+  // 4. Token overlap fallback matching against `explanation`
   const explanation = typeof q.explanation === "string" ? q.explanation.toLowerCase() : "";
 
-  if (explanation) {
+  if (explanation && (correctIndex < 0 || correctIndex >= options.length || true)) {
     const stopWords = new Set([
       "the", "a", "an", "is", "are", "was", "were", "be", "been", "being",
       "have", "has", "had", "do", "does", "did", "to", "from", "in", "out",
@@ -112,8 +140,9 @@ export function alignQuizCorrectIndex(q) {
     const bestScore = Math.max(...scores);
     const bestIndex = scores.indexOf(bestScore);
 
-    // If correctIndex is 1-based (1..options.length) and options[correctIndex - 1] matches significantly better
-    if (
+    if (correctIndex < 0 || correctIndex >= options.length) {
+      correctIndex = bestScore > 0 ? bestIndex : 0;
+    } else if (
       correctIndex >= 1 &&
       correctIndex <= options.length &&
       scores[correctIndex - 1] > scores[correctIndex] &&

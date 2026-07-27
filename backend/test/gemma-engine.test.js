@@ -105,8 +105,8 @@ test("GEMMA_MODEL defaults to gemma-4-31b", () => {
 
 test("healthy primary wins without touching the fallback", async () => {
   let cloudflareCalls = 0;
-  scenario = async (isCerebras) => {
-    if (isCerebras) return sseResponse(null, [{ at: 0, data: sseChunk("primary-answer") }]);
+  scenario = async (isCerebras, isCloudflare, opts) => {
+    if (isCerebras) return sseResponse(opts?.signal, [{ at: 0, data: sseChunk("primary-answer") }]);
     cloudflareCalls += 1;
     return okResponse("fallback-answer");
   };
