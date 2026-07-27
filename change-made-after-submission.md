@@ -86,6 +86,7 @@
 ---
 
 **Today — July 27, 2026**
+- **6-Layer Deterministic Algorithmic Moderation & Intent Routing System:** Designed and implemented a 100% deterministic multi-layered moderation engine in `backend/src/lib/moderation.js` and `backend/src/lib/contentGuard.js`. Features NFKC canonicalization, syntactic grammar frame parsing (differentiating Inquiry Frames from Imperative Execution Frames), an educational whitelist fast-path engine, and zero-tolerance harm guardrails. Solved false-positive blocking on educational questions like *"how was atomic bomb developed"* and *"what happened in ww2"* while retaining strict security against actionable harm recipes. Expanded regression tests in `backend/test/moderation.test.js`.
 - **Documentation Streamlining & Repository Cleanup:** Purged 7 obsolete and redundant documentation files (`HEROIC_SAGA.md`, `reallearn-summarised.md`, `REALLEARN_BY_THE_NUMBERS.md`, `DESIGN_AUDIT.md`, `IMPROVEMENT_PRIORITIES.md`, `errors.md`, `todo.md`). Completely overhauled `README.md` into a sleek, modern, single-page project overview. Preserved `change-made-after-submission.md` intact per user directive, updated `docs/AGENT_MEMORY.md`, `llms.txt`, `llms-full.txt`, `GEMINI.md`, and `AGENT_INSTRUCTIONS.md` to reflect current architecture and Soft Pastel + Solid Gen Z Dark design system.
 
 - **Today — July 26, 2026**
