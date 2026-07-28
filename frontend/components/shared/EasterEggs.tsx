@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { showToast } from "./ToastContainer";
+import { celebrationColors } from "@/lib/palette";
 
 /**
  * Hidden delights, none of them announced, all of them findable:
@@ -28,7 +29,6 @@ const SECRET_WORDS: Record<string, string> = {
   love: "💛 We love that you're here. Truly.",
 };
 
-const CONFETTI_COLORS = ["#0284C7", "#38BDF8", "#0D9488", "#FECAB4", "#F4A6B8", "#3DDC97", "#FFC24B"];
 const HEARTS = ["💛", "💜", "💙", "💚", "🧡", "❤️", "💖"];
 
 function todayKey() {
@@ -73,16 +73,18 @@ interface Piece {
 }
 
 function ConfettiStorm() {
-  const [pieces] = useState<Piece[]>(() =>
-    Array.from({ length: 70 }, (_, i) => ({
+  // Resolve at fire time so the storm matches the active theme.
+  const [pieces] = useState<Piece[]>(() => {
+    const colors = celebrationColors();
+    return Array.from({ length: 70 }, (_, i) => ({
       id: i,
       left: Math.random() * 100,
       delay: Math.random() * 0.9,
       size: 6 + Math.random() * 6,
-      color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+      color: colors[i % colors.length],
       duration: 1.6 + Math.random() * 1.6,
-    }))
-  );
+    }));
+  });
   return (
     <div
       aria-hidden="true"

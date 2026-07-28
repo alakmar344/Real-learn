@@ -362,13 +362,15 @@ export default function SettingsPage() {
         <button
           type="button"
           onClick={() => router.back()}
+          className="settings-back"
           style={{
             border: "none",
             background: "transparent",
             color: "var(--text-secondary)",
             cursor: "pointer",
             fontSize: 14,
-            padding: "4px 0",
+            padding: "4px 8px 4px 0",
+            minHeight: 44,
             marginBottom: 16,
             display: "flex",
             alignItems: "center",

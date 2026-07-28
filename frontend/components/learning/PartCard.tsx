@@ -157,14 +157,14 @@ const PartCardBase = ({
                     border: "1px solid var(--border-default)",
                     background: "var(--bg-surface)",
                     color: copied ? "var(--accent)" : "var(--text-secondary)",
-                    padding: "4px 10px",
-                    fontSize: 11,
+                    padding: "8px 14px",
+                    fontSize: 12,
                     fontWeight: 600,
                     cursor: "pointer",
                     display: "inline-flex",
                     alignItems: "center",
                     gap: 4,
-                    minHeight: 28,
+                    minHeight: 44,
                     transition: "all 200ms var(--ease-color)",
                   }}
                 >
@@ -184,15 +184,17 @@ const PartCardBase = ({
           {part.title}
         </h2>
 
-        {/* Gen Z / Gen Alpha TL;DR Concept Banner */}
+        {/* Orientation banner — tells the learner what this part's JOB is
+            (structural, honest) rather than pretending to summarize content
+            it hasn't read. Sets expectation, reduces "where am I?" load. */}
         <div className="tldr-banner" style={{ marginTop: 16 }}>
-          <span className="tldr-pill">⚡ TL;DR</span>
+          <span className="tldr-pill">In this part</span>
           <span>
             {part.partNumber === 1
-              ? "Key concepts & core fundamentals explained simply."
+              ? "The core idea, built from first intuition."
               : part.partNumber === 2
-              ? "Step-by-step mechanism & how it works under the hood."
-              : "Real-world news grounding & practical applications."}
+              ? "How it actually works, step by step."
+              : "Where it shows up in the real world right now."}
           </span>
         </div>
 
@@ -240,25 +242,19 @@ const PartCardBase = ({
                     }}
                   />
                 </div>
+                {/* The forward path is ALWAYS visible. While the reading timer
+                    runs it's a quiet outline button; once the timer completes
+                    it upgrades to the filled primary CTA below. Hiding the
+                    only exit behind a low-contrast 13px link trapped fast
+                    readers — an obvious, honest affordance beats a nudge. */}
                 <button
                   type="button"
                   onClick={onStartQuiz}
-                  style={{
-                    alignSelf: "flex-end",
-                    fontSize: 13,
-                    color: "var(--text-tertiary)",
-                    background: "transparent",
-                    border: "none",
-                    cursor: "pointer",
-                    padding: "4px 8px",
-                    opacity: 0.7,
-                    transition: "opacity 200ms",
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.opacity = "1"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.opacity = "0.7"; }}
+                  className="btn-toggle animate-fade-up"
+                  style={{ alignSelf: "flex-end", fontSize: 14 }}
                   aria-label={`Skip reading and take quiz for Part ${part.partNumber}`}
                 >
-                  I already know this → Skip to quiz
+                  I already know this → Take quiz
                 </button>
               </div>
             ) : (
@@ -336,8 +332,8 @@ const PartCardBase = ({
             <h3 style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", margin: "0 0 6px" }}>
               Part {part.partNumber} Locked
             </h3>
-            <p style={{ fontSize: 13, color: "var(--text-tertiary)", margin: 0 }}>
-              Complete Part {part.partNumber - 1} quiz to unlock
+            <p style={{ fontSize: 14, color: "var(--text-secondary)", margin: 0 }}>
+              Pass the Part {part.partNumber - 1} check to unlock
             </p>
           </div>
         </div>

@@ -5,6 +5,7 @@ import { LessonJourney } from "@/types";
 import ShareResult from "@/components/learning/ShareResult";
 import FeedbackGate from "@/components/shared/FeedbackGate";
 import QuickSummaryCards from "@/components/learning/QuickSummaryCards";
+import { celebrationColors } from "@/lib/palette";
 
 interface Props {
   lesson: LessonJourney;
@@ -14,16 +15,7 @@ interface Props {
   onRetake?: () => void;
 }
 
-/* ── Confetti particles — electric brand palette, punchy not rainbow ── */
-const CONFETTI_COLORS = [
-  "#0284C7",
-  "#38BDF8",
-  "#0D9488",
-  "#FECAB4",
-  "#F4A6B8",
-  "#3DDC97",
-  "#FFC24B",
-];
+/* ── Confetti particles — theme-aware brand palette, punchy not rainbow ── */
 
 /** Generate contextual follow-up suggestions based on the lesson topic and takeaways. */
 function generateFollowUpSuggestions(lesson: LessonJourney): string[] {
@@ -49,17 +41,18 @@ function generateFollowUpSuggestions(lesson: LessonJourney): string[] {
 }
 
 function Confetti() {
-  const [particles] = useState(() =>
-    Array.from({ length: 50 }, (_, i) => ({
+  const [particles] = useState(() => {
+    const colors = celebrationColors();
+    return Array.from({ length: 50 }, (_, i) => ({
       id: i,
       left: Math.random() * 100,
       delay: Math.random() * 1.5,
       size: 6 + Math.random() * 8,
-      color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+      color: colors[i % colors.length],
       duration: 2 + Math.random() * 2,
       rotation: Math.random() * 360,
-    }))
-  );
+    }));
+  });
 
   return (
     <div aria-hidden="true" style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 1 }}>
@@ -175,12 +168,12 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
               color: "var(--accent)",
             }}
           >
-            {(lesson.parts?.length ?? 3) === 1 ? "Quick W" : "Run Complete"}
+            {(lesson.parts?.length ?? 3) === 1 ? "Got it." : "Journey complete"}
           </h3>
           <p style={{ marginTop: 6, color: "var(--text-secondary)", fontSize: 15 }}>
             {/* First-try score: quizzes must be perfected to advance, so the
                 meaningful number is how you did before any retries. */}
-            You scored <strong style={{ color: "var(--correct)" }}>{totalScore}/{maxScore}</strong> on the first try — {pct >= 80 ? "clean run." : pct >= 50 ? "solid. The retries locked it in." : "tough one. A rematch would hit different."}
+            You scored <strong style={{ color: "var(--correct)" }}>{totalScore}/{maxScore}</strong> on the first try — {pct >= 80 ? "a clean run." : pct >= 50 ? "solid, and the retries sealed it." : "a tough one. It'll feel easier next time."}
           </p>
         </div>
       </div>

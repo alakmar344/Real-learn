@@ -6,7 +6,6 @@
    --font-inter / --font-lora / --font-display / --font-mono. The old Google
    Fonts @import was placed after the Tailwind directives (making it invalid
    CSS) AND blocked by our CSP — so remote fonts never actually loaded. */
-
 :root {
   color-scheme: light;
 
@@ -251,7 +250,17 @@ body {
   min-height: 100dvh;
   color: var(--text-primary);
   font-family: var(--font-inter), system-ui, sans-serif;
-  font-weight: 700;
+  /* Body text reads at book weight. Bold is reserved for headings, labels
+     and emphasis — when everything is bold, nothing is. */
+  font-weight: 400;
+}
+
+/* UI chrome (buttons, labels, nav) sits between body and display weight. */
+button,
+input,
+select,
+textarea {
+  font-weight: 500;
 }
 
 html {
@@ -1422,15 +1431,94 @@ a:active {
   }
 }
 
+/* Settings renders no navbar, so on mobile its "← Back" control would sit
+   under the fixed hamburger toggle (top:14/left:14, 42px). Clear it. */
+@media (max-width: 900px) {
+  .settings-back {
+    margin-left: 52px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Bottom tab bar — mobile-first wayfinding.
+   Below 900px the sidebar collapses and the navbar links disappear; the tab
+   bar puts the three primary destinations (Home / Library / Progress) in the
+   thumb zone, per mobile-HCI reachability research. Hidden on desktop where
+   the sidebar + navbar already cover navigation.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.bottom-nav {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .bottom-nav {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 60;
+    background: var(--bg-glass);
+    -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+    backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+    border-top: 1px solid var(--border-subtle);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  [data-perf="low"] .bottom-nav {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--bg-surface);
+  }
+  .bottom-nav__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-height: 56px;
+    padding: 6px 4px;
+    text-decoration: none;
+    color: var(--text-tertiary);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: color var(--dur-base) var(--ease-color);
+  }
+  .bottom-nav__item svg {
+    width: 22px;
+    height: 22px;
+  }
+  .bottom-nav__item[aria-current="page"] {
+    color: var(--accent);
+  }
+  .bottom-nav__item:focus-visible {
+    outline: none;
+    box-shadow: inset var(--focus-ring);
+    border-radius: var(--radius-md);
+  }
+  /* Reserve room so page content and footers never hide under the bar. */
+  .app-main {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 @media (max-width: 640px) {
+  /* Reading text NEVER shrinks below 16px on phones — most of our users read
+     lessons on a phone, and 13px body text is the fastest way to lose them.
+     Headings compress instead; body stays at a comfortable book size. */
   .markdown-content {
-    font-size: var(--text-sm);
+    font-size: 16px;
   }
   .markdown-content h2 {
-    font-size: 18px;
+    font-size: 19px;
   }
   .markdown-content h3 {
-    font-size: 15px;
+    font-size: 16px;
   }
 }
 
@@ -3073,12 +3161,16 @@ p {
 }
 .quiz-sheet__close {
   position: absolute;
-  top: 22px;
-  right: 32px;
+  top: 16px;
+  right: 16px;
   background: transparent;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  padding: 10px 16px;
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: var(--text-secondary);
   cursor: pointer;
   font-size: 14px;
