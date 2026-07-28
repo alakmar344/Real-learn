@@ -234,41 +234,6 @@ html[data-theme="dark"] {
   --aurora-3: rgba(16, 185, 129, 0.05);
 }
 
-  /* Text — Pure white on deep dark = maximum contrast */
-  --text-primary: #FFFFFF;
-  --text-secondary: #94A3B8;
-  --text-tertiary: #64748B;
-  --text-accent-strong: #00FF66;
-
-  --correct: #00FF66;
-  --correct-bg: rgba(0, 255, 102, 0.15);
-  --wrong: #FF3E00;
-  --wrong-bg: rgba(255, 62, 0, 0.15);
-  --locked: #3F3F46;
-
-  --subject-physics: #00FF66;
-  --subject-chemistry: #33FF85;
-  --subject-economics: #FF3E00;
-  --subject-biology: #00FF66;
-  --subject-cs: #00FF66;
-  --subject-history: #FF3E00;
-  --subject-general: #00FF66;
-
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6);
-  --shadow-glow-correct: 0 0 20px rgba(0, 255, 102, 0.25);
-
-  --focus-ring: 0 0 0 3px rgba(0, 255, 102, 0.3);
-  --focus-ring-simple: 0 0 0 2px #00FF66;
-
-  --scrim: rgba(0, 0, 0, 0.6);
-
-  --aurora-1: rgba(0, 255, 102, 0.08);
-  --aurora-2: rgba(255, 62, 0, 0.08);
-  --aurora-3: rgba(0, 255, 102, 0.05);
-}
-
 html {
   transition: background 200ms var(--ease-color);
   /* Firefox scrollbar theming (webkit rules below cover Chromium/Safari). */
