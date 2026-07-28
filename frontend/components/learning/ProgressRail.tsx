@@ -46,50 +46,64 @@ export default function ProgressRail({ unlockedPart, completedParts, totalParts 
 
   const parts = Array.from({ length: totalParts }, (_, i) => i + 1);
   const completedCount = parts.filter((p) => completedParts.includes(p)).length;
+  const lineProgressPercent =
+    totalParts > 1
+      ? Math.min(100, Math.max(0, ((unlockedPart - 1) / (totalParts - 1)) * 100))
+      : 100;
 
   return (
     <nav
       aria-label="Learning progress conduit"
       style={{
         marginTop: "var(--space-lg)",
-        maxWidth: 520,
+        maxWidth: 580,
         marginInline: "auto",
         padding: "0 12px",
       }}
     >
-      <ol
-        role="list"
-        aria-label={`${completedCount} of ${totalParts} parts completed`}
-        className="learning-conduit"
-      >
-        {parts.map((part) => {
-          const done = completedParts.includes(part);
-          const active = !done && part <= unlockedPart;
-          const statusLabel = done ? "completed" : active ? "current active part" : "locked";
+      <div className="learning-conduit">
+        <div className="learning-conduit__line" aria-hidden="true">
+          <div
+            className="learning-conduit__line-fill"
+            style={{ width: `${lineProgressPercent}%` }}
+          />
+        </div>
+        <ol
+          role="list"
+          aria-label={`${completedCount} of ${totalParts} parts completed`}
+          className="learning-conduit__steps"
+        >
+          {parts.map((part) => {
+            const done = completedParts.includes(part);
+            const active = !done && part <= unlockedPart;
+            const statusLabel = done ? "completed" : active ? "current active part" : "locked";
 
-          return (
-            <li
-              key={part}
-              role="listitem"
-              aria-label={`Part ${part} (${PART_NAMES[part - 1] ?? `Part ${part}`}): ${statusLabel}`}
-              className={`learning-conduit__step${
-                done
-                  ? " learning-conduit__step--completed"
-                  : active
-                  ? " learning-conduit__step--active"
-                  : ""
-              }`}
-            >
-              <span>{done ? "✓" : active ? "▶" : "🔒"}</span>
-              <span>
-                Part {part}: {PART_NAMES[part - 1] ?? `Part ${part}`}
-              </span>
-            </li>
-          );
-        })}
-      </ol>
+            return (
+              <li
+                key={part}
+                role="listitem"
+                aria-label={`Part ${part} (${PART_NAMES[part - 1] ?? `Part ${part}`}): ${statusLabel}`}
+                className={`learning-conduit__step${
+                  done
+                    ? " learning-conduit__step--completed"
+                    : active
+                    ? " learning-conduit__step--active"
+                    : ""
+                }`}
+              >
+                <span className="learning-conduit__step-icon">{done ? "✓" : active ? "▶" : "🔒"}</span>
+                <span className="learning-conduit__step-text">
+                  <span className="learning-conduit__step-prefix">Part {part}: </span>
+                  <span className="learning-conduit__step-name">{PART_NAMES[part - 1] ?? `Part ${part}`}</span>
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
     </nav>
   );
 }
+
 
 

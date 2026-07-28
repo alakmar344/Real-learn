@@ -811,16 +811,13 @@ a:active {
 
 /* ── The Learning Conduit — Continuous 3-part stepper line ── */
 .learning-conduit {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   position: relative;
   width: 100%;
   padding: 10px 14px;
   background: var(--bg-surface);
   border: 1.5px solid var(--border-subtle);
   border-radius: var(--radius-pill);
-  gap: 12px;
+  box-sizing: border-box;
 }
 
 .learning-conduit__line {
@@ -832,13 +829,27 @@ a:active {
   background: var(--border-subtle);
   transform: translateY(-50%);
   z-index: 0;
+  overflow: hidden;
+  border-radius: 999px;
 }
 
 .learning-conduit__line-fill {
   height: 100%;
   background: var(--brand);
   transition: width var(--dur-slow) var(--ease-reveal);
+}
+
+.learning-conduit__steps {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   position: relative;
+  z-index: 1;
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
 }
 
 .learning-conduit__step {
@@ -846,7 +857,8 @@ a:active {
   z-index: 1;
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 6px;
   padding: 6px 14px;
   border-radius: var(--radius-pill);
   background: var(--bg-surface);
@@ -855,6 +867,26 @@ a:active {
   font-weight: 700;
   color: var(--text-secondary);
   transition: all var(--dur-fast) var(--ease-color);
+  white-space: nowrap;
+  flex: 1 1 0%;
+  min-width: 0;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.learning-conduit__step-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.learning-conduit__step-text {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .learning-conduit__step--active {
@@ -869,6 +901,31 @@ a:active {
   background: var(--correct-bg);
   color: var(--correct);
 }
+
+@media (max-width: 540px) {
+  .learning-conduit {
+    padding: 8px 8px;
+  }
+  .learning-conduit__steps {
+    gap: 6px;
+  }
+  .learning-conduit__step {
+    padding: 5px 8px;
+    font-size: 11px;
+    gap: 4px;
+  }
+  .learning-conduit__line {
+    left: 24px;
+    right: 24px;
+  }
+}
+
+@media (max-width: 380px) {
+  .learning-conduit__step-prefix {
+    display: none;
+  }
+}
+
 
 /* ── TL;DR Concept Stamp ── */
 .concept-stamp {
