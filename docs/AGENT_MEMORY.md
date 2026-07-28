@@ -376,8 +376,9 @@ this protocol. No exceptions.**
   (one pre-existing warning), `next build` clean, `verify:quiz` pass.
 - 2026-07-28 — **Expanded Achievement Catalog (56 Badges: Easy Effort, Medium, Impossibly High).**
   Expanded achievement catalogue in `frontend/lib/achievements.ts` from 32 to 56 badges. Added 24 new achievements covering easy wins needing effort (Late Night Shift, 5-Day Pulse), medium milestones (Quarter Century parts, 2,500 XP Collector, 3-Week Titan, 35 Journeys, Polymath in Training, Hat-Trick), and impossibly high legendary feats (100-Day Streak, Century Club 100 journeys, 200 Quiz Parts, 10,000 XP, Level 30 Final Boss, 12-Language Omniglot, 50 Perfect Parts, 20 Perfect Journeys, 100 Goals). Created `frontend/scripts/verify-achievements.mjs` verification script and added `npm run verify:achievements`. Verified clean TypeScript build (`tsc`) and Next.js build.
-- 2026-07-28 — **Fix Learning Conduit Part 3 Pill Alignment & Non-Wrapping Capsules.**
-  Fixed UI layout bug on the learn page answer header where Part 3 ("Part 3: Real World") wrapped onto two lines, causing it to deform into a vertical oval shape and misalign with Part 1 and Part 2. Updated `.learning-conduit`, `.learning-conduit__steps`, `.learning-conduit__step`, and `.learning-conduit__step-text` in `frontend/app/globals.css` with `white-space: nowrap`, `flex: 1 1 0%`, equal height baselines, line fill progress, and responsive mobile scaling in `frontend/components/learning/ProgressRail.tsx`.
+- 2026-07-28 — **Vibrant Brand Color Refresh & Ambient Depth Layer.**
+  Enhanced brand, accent, and subject color tokens across light and dark themes in `frontend/app/globals.css` (`#EE5125` solar terracotta light / `#FF6435` electric terracotta dark / `#04A16C` & `#00D284` rich emerald). Re-enabled `.aurora-bg` ambient background washes (`--aurora-1`, `--aurora-2`, `--aurora-3`) to give the UI warm, inviting depth without pulling focus or causing high contrast glare. Updated JS celebration particle colors in `frontend/lib/palette.ts`.
+
 
 
 

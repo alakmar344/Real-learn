@@ -18,16 +18,16 @@
      Typography: Space Grotesk (700-800) + Inter (500-700)
      ═══════════════════════════════════════════════════════════════════════ */
 
-  --brand: #E05624;
-  --brand-strong: #C44517;
-  --brand-bright: #FF6B38;
-  --brand-soft: rgba(224, 86, 36, 0.10);
+  --brand: #EE5125;
+  --brand-strong: #D03F18;
+  --brand-bright: #FF6435;
+  --brand-soft: rgba(238, 81, 37, 0.12);
 
   --cobalt-deep: #0F172A;
   --cobalt-mid: #1E293B;
-  --cobalt-vivid: #E05624;
-  --cobalt-pale: rgba(224, 86, 36, 0.08);
-  --cobalt-wash: rgba(224, 86, 36, 0.04);
+  --cobalt-vivid: #EE5125;
+  --cobalt-pale: rgba(238, 81, 37, 0.08);
+  --cobalt-wash: rgba(238, 81, 37, 0.04);
   --cobalt-ink: #0F172A;
 
   /* Canvas & Tactile Surfaces */
@@ -44,8 +44,8 @@
 
   --border-subtle: #E6E4DC;
   --border-default: #D4D1C5;
-  --border-accent: #E05624;
-  --border-glow: rgba(224, 86, 36, 0.18);
+  --border-accent: #EE5125;
+  --border-glow: rgba(238, 81, 37, 0.22);
 
   --glass-blur: 12px;
   --glass-blur-strong: 16px;
@@ -55,35 +55,35 @@
   --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 0 0 1px rgba(212, 209, 197, 0.6);
   --glass-sheen: none;
 
-  --accent: #E05624;
-  --accent-action: #E05624;
-  --accent-hover: #C44517;
-  --accent-dim: rgba(224, 86, 36, 0.10);
-  --accent-glow: rgba(224, 86, 36, 0.18);
+  --accent: #EE5125;
+  --accent-action: #EE5125;
+  --accent-hover: #D03F18;
+  --accent-dim: rgba(238, 81, 37, 0.12);
+  --accent-glow: rgba(238, 81, 37, 0.22);
   --accent-companion: #1E293B;
-  --accent-gradient: #E05624;
+  --accent-gradient: #EE5125;
   --on-accent: #FFFFFF;
-  --shadow-glow-accent: 0 4px 16px rgba(224, 86, 36, 0.20);
+  --shadow-glow-accent: 0 4px 18px rgba(238, 81, 37, 0.24);
 
   /* High-Contrast Readability */
   --text-primary: #0F172A;
   --text-secondary: #475569;
   --text-tertiary: #64748B;
-  --text-accent-strong: #C44517;
+  --text-accent-strong: #D03F18;
 
-  --correct: #059669;
-  --correct-bg: #D1FAE5;
-  --wrong: #DC2626;
+  --correct: #04A16C;
+  --correct-bg: #E6F7F0;
+  --wrong: #EF4444;
   --wrong-bg: #FEE2E2;
   --locked: #94A3B8;
 
-  --subject-physics: #E05624;
-  --subject-chemistry: #059669;
+  --subject-physics: #EE5125;
+  --subject-chemistry: #04A16C;
   --subject-economics: #0284C7;
-  --subject-biology: #059669;
-  --subject-cs: #E05624;
-  --subject-history: #D97706;
-  --subject-general: #E05624;
+  --subject-biology: #04A16C;
+  --subject-cs: #EE5125;
+  --subject-history: #F59E0B;
+  --subject-general: #EE5125;
 
   /* Tactile Folio Corner Radii */
   --radius-sm: 8px;
@@ -139,28 +139,28 @@
   --blur-md: 12px;
 
   --scrim: rgba(15, 23, 42, 0.4);
-  --focus-ring: 0 0 0 3px rgba(224, 86, 36, 0.25);
-  --focus-ring-simple: 0 0 0 2px #E05624;
+  --focus-ring: 0 0 0 3px rgba(238, 81, 37, 0.25);
+  --focus-ring-simple: 0 0 0 2px #EE5125;
 
-  --aurora-1: rgba(224, 86, 36, 0.05);
-  --aurora-2: rgba(30, 41, 59, 0.04);
-  --aurora-3: rgba(5, 150, 105, 0.04);
+  --aurora-1: rgba(238, 81, 37, 0.09);
+  --aurora-2: rgba(14, 165, 233, 0.07);
+  --aurora-3: rgba(16, 185, 129, 0.07);
 }
 
 /* ── Ink (Dark) — Midnight Obsidian Canvas with Solar Terracotta Energy ── */
 html[data-theme="dark"] {
   color-scheme: dark;
 
-  --brand: #FF6B38;
-  --brand-strong: #E05624;
-  --brand-bright: #FF885E;
-  --brand-soft: rgba(255, 107, 56, 0.14);
+  --brand: #FF6435;
+  --brand-strong: #EE5125;
+  --brand-bright: #FF8054;
+  --brand-soft: rgba(255, 100, 53, 0.18);
 
   --cobalt-deep: #0D1117;
   --cobalt-mid: #161B22;
-  --cobalt-vivid: #FF6B38;
-  --cobalt-pale: #FF6B38;
-  --cobalt-wash: rgba(255, 107, 56, 0.08);
+  --cobalt-vivid: #FF6435;
+  --cobalt-pale: #FF6435;
+  --cobalt-wash: rgba(255, 100, 53, 0.10);
   --cobalt-ink: #0D1117;
 
   --ambient-a: transparent;
@@ -177,8 +177,8 @@ html[data-theme="dark"] {
 
   --border-subtle: #21262D;
   --border-default: #30363D;
-  --border-accent: #FF6B38;
-  --border-glow: rgba(255, 107, 56, 0.25);
+  --border-accent: #FF6435;
+  --border-glow: rgba(255, 100, 53, 0.30);
 
   --glass-blur: 12px;
   --glass-blur-strong: 16px;
@@ -188,49 +188,49 @@ html[data-theme="dark"] {
   --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(48, 54, 61, 0.8);
   --glass-sheen: none;
 
-  --accent: #FF6B38;
-  --accent-action: #FF6B38;
-  --accent-hover: #E05624;
-  --accent-dim: rgba(255, 107, 56, 0.14);
-  --accent-glow: rgba(255, 107, 56, 0.25);
+  --accent: #FF6435;
+  --accent-action: #FF6435;
+  --accent-hover: #EE5125;
+  --accent-dim: rgba(255, 100, 53, 0.18);
+  --accent-glow: rgba(255, 100, 53, 0.30);
   --accent-companion: #94A3B8;
-  --accent-gradient: #FF6B38;
+  --accent-gradient: #FF6435;
   --on-accent: #0D1117;
-  --shadow-glow-accent: 0 4px 20px rgba(255, 107, 56, 0.3);
+  --shadow-glow-accent: 0 4px 22px rgba(255, 100, 53, 0.35);
 
   /* High-Contrast Dark Text */
   --text-primary: #F0F6FC;
-  --text-secondary: #8B949E;
+  --text-secondary: #94A3B8;
   --text-tertiary: #6E7681;
-  --text-accent-strong: #FF6B38;
+  --text-accent-strong: #FF6435;
 
-  --correct: #10B981;
-  --correct-bg: rgba(16, 185, 129, 0.15);
-  --wrong: #EF4444;
-  --wrong-bg: rgba(239, 68, 68, 0.15);
+  --correct: #00D284;
+  --correct-bg: rgba(0, 210, 132, 0.18);
+  --wrong: #F87171;
+  --wrong-bg: rgba(248, 113, 113, 0.18);
   --locked: #484F58;
 
-  --subject-physics: #FF6B38;
-  --subject-chemistry: #10B981;
+  --subject-physics: #FF6435;
+  --subject-chemistry: #00D284;
   --subject-economics: #38BDF8;
-  --subject-biology: #10B981;
-  --subject-cs: #FF6B38;
+  --subject-biology: #00D284;
+  --subject-cs: #FF6435;
   --subject-history: #F59E0B;
-  --subject-general: #FF6B38;
+  --subject-general: #FF6435;
 
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6);
-  --shadow-glow-correct: 0 0 20px rgba(16, 185, 129, 0.25);
+  --shadow-glow-correct: 0 0 20px rgba(0, 210, 132, 0.30);
 
-  --focus-ring: 0 0 0 3px rgba(255, 107, 56, 0.3);
-  --focus-ring-simple: 0 0 0 2px #FF6B38;
+  --focus-ring: 0 0 0 3px rgba(255, 100, 53, 0.35);
+  --focus-ring-simple: 0 0 0 2px #FF6435;
 
   --scrim: rgba(0, 0, 0, 0.65);
 
-  --aurora-1: rgba(255, 107, 56, 0.08);
-  --aurora-2: rgba(148, 163, 184, 0.05);
-  --aurora-3: rgba(16, 185, 129, 0.05);
+  --aurora-1: rgba(255, 100, 53, 0.12);
+  --aurora-2: rgba(56, 189, 248, 0.09);
+  --aurora-3: rgba(16, 185, 129, 0.09);
 }
 
 html {
@@ -284,10 +284,11 @@ body {
   pointer-events: none;
   overflow: hidden;
   contain: layout style paint;
-}
-
-.aurora-bg {
-  display: none !important;
+  background:
+    radial-gradient(65vmax 65vmax at 10% 10%, var(--aurora-1), transparent 70%),
+    radial-gradient(75vmax 65vmax at 90% 90%, var(--aurora-2), transparent 75%),
+    radial-gradient(55vmax 55vmax at 50% 50%, var(--aurora-3), transparent 70%);
+  opacity: 0.9;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
