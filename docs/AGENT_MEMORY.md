@@ -349,6 +349,7 @@ this protocol. No exceptions.**
   Designed and implemented a 100% deterministic multi-layered moderation engine in `backend/src/lib/moderation.js` and `backend/src/lib/contentGuard.js`. Eliminates false-positive blocks on historical/scientific questions (e.g. "how was atomic bomb developed", "what happened in ww2") via NFKC canonicalization, syntactic grammar frame parsing, and educational whitelist fast-path routing, while retaining zero-tolerance protection against actionable harm recipes and slurs. Expanded `backend/test/moderation.test.js` regression suite.
 - 2026-07-27 — **Revert PR #271 (Electric Gen Z UI Overhaul).**
   Reverted all PR #271 changes per user instruction, restoring the stable design system baseline.
+ agent/eagle-spark-attm
 - 2026-07-28 — **"Evergreen" research-backed redesign (full UX audit + design system + IA fixes).**
   Replaced the neon electric palette with the calibrated Evergreen system: deep
   emerald `#047857` on green-tinted paper `#F6F8F6` (light), soft mint `#34D399`
@@ -373,6 +374,9 @@ this protocol. No exceptions.**
   the mobile hamburger. Full audit, ranked problems, system spec, IA and
   follow-ups: `docs/REDESIGN.md`. Verified: `tsc` clean, `next lint` clean
   (one pre-existing warning), `next build` clean, `verify:quiz` pass.
+- 2026-07-28 — **Expanded Achievement Catalog (56 Badges: Easy Effort, Medium, Impossibly High).**
+  Expanded achievement catalogue in `frontend/lib/achievements.ts` from 32 to 56 badges. Added 24 new achievements covering easy wins needing effort (Late Night Shift, 5-Day Pulse), medium milestones (Quarter Century parts, 2,500 XP Collector, 3-Week Titan, 35 Journeys, Polymath in Training, Hat-Trick), and impossibly high legendary feats (100-Day Streak, Century Club 100 journeys, 200 Quiz Parts, 10,000 XP, Level 30 Final Boss, 12-Language Omniglot, 50 Perfect Parts, 20 Perfect Journeys, 100 Goals). Created `frontend/scripts/verify-achievements.mjs` verification script and added `npm run verify:achievements`. Verified clean TypeScript build (`tsc`) and Next.js build.
+ main
 
 
 

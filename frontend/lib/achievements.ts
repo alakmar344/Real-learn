@@ -186,7 +186,7 @@ function ratio(value: number, target: number): number {
 }
 
 export const BADGES: Badge[] = [
-  /* ── Gentle first wins — earned within minutes of arriving ── */
+  /* ── Gentle first wins & Easy effort (Bronze) ── */
   {
     id: "first_spark",
     emoji: "🌱",
@@ -288,6 +288,16 @@ export const BADGES: Badge[] = [
     earned: (s) => s.lastActivityHour !== null && s.lastActivityHour >= 5 && s.lastActivityHour < 8,
   },
   {
+    id: "late_night_grind",
+    emoji: "🌙",
+    title: "Late Night Shift",
+    description: "Pass a quiz between 10 PM and midnight.",
+    how: "Pass a quiz part between 10 PM and midnight (22:00–23:59). Finishing the day strong.",
+    tier: "bronze",
+    progress: (s) => (s.lastActivityHour !== null && s.lastActivityHour >= 22 && s.lastActivityHour < 24 ? 1 : 0),
+    earned: (s) => s.lastActivityHour !== null && s.lastActivityHour >= 22 && s.lastActivityHour < 24,
+  },
+  {
     id: "streak_3",
     emoji: "🔥",
     title: "It's a Streak Now",
@@ -297,8 +307,18 @@ export const BADGES: Badge[] = [
     progress: (s) => ratio(s.longestStreak, 3),
     earned: (s) => s.longestStreak >= 3,
   },
+  {
+    id: "streak_5",
+    emoji: "⚡",
+    title: "Five-Day Pulse",
+    description: "Keep a 5-day learning streak.",
+    how: "Hit your daily goal 5 days in a row. You're building a real habit now.",
+    tier: "bronze",
+    progress: (s) => ratio(s.longestStreak, 5),
+    earned: (s) => s.longestStreak >= 5,
+  },
 
-  /* ── Silver — habits taking root ── */
+  /* ── Silver — habits taking root & steady effort ── */
   {
     id: "ten_parts",
     emoji: "🧩",
@@ -308,6 +328,16 @@ export const BADGES: Badge[] = [
     tier: "silver",
     progress: (s) => ratio(s.partsPassed, 10),
     earned: (s) => s.partsPassed >= 10,
+  },
+  {
+    id: "quarter_century_parts",
+    emoji: "🧱",
+    title: "Quarter Century",
+    description: "Pass 25 quiz parts.",
+    how: "Pass 25 part quizzes across your journeys. Every single step counts.",
+    tier: "silver",
+    progress: (s) => ratio(s.partsPassed, 25),
+    earned: (s) => s.partsPassed >= 25,
   },
   {
     id: "five_lessons",
@@ -320,6 +350,16 @@ export const BADGES: Badge[] = [
     earned: (s) => s.lessonsCompleted >= 5,
   },
   {
+    id: "ten_lessons",
+    emoji: "🌊",
+    title: "Deep Diver",
+    description: "Complete 10 learning journeys.",
+    how: "Ten finished journeys — keep asking, keep reading, keep passing those quizzes.",
+    tier: "silver",
+    progress: (s) => ratio(s.lessonsCompleted, 10),
+    earned: (s) => s.lessonsCompleted >= 10,
+  },
+  {
     id: "xp_500",
     emoji: "🏮",
     title: "XP Farmer",
@@ -328,6 +368,16 @@ export const BADGES: Badge[] = [
     tier: "silver",
     progress: (s) => ratio(s.xp, 500),
     earned: (s) => s.xp >= 500,
+  },
+  {
+    id: "xp_2500",
+    emoji: "💎",
+    title: "XP Collector",
+    description: "Gather 2,500 lifetime XP.",
+    how: "Stack up 2,500 XP through quizzes, streak bonuses, and completed journeys.",
+    tier: "silver",
+    progress: (s) => ratio(s.xp, 2500),
+    earned: (s) => s.xp >= 2500,
   },
   {
     id: "streak_7",
@@ -350,6 +400,16 @@ export const BADGES: Badge[] = [
     earned: (s) => s.languagesUsed.length >= 2,
   },
   {
+    id: "hyperglot_5",
+    emoji: "🌐",
+    title: "Language Explorer",
+    description: "Learn in 5 different languages.",
+    how: "Try out RealLearn in 5 of the 12 supported languages across your quizzes.",
+    tier: "silver",
+    progress: (s) => ratio(s.languagesUsed.length, 5),
+    earned: (s) => s.languagesUsed.length >= 5,
+  },
+  {
     id: "level_5",
     emoji: "⭐",
     title: "Built Different",
@@ -370,6 +430,16 @@ export const BADGES: Badge[] = [
     earned: (s) => s.followUps >= 5,
   },
   {
+    id: "curious_scholar",
+    emoji: "🔍",
+    title: "Curious Scholar",
+    description: "Ask 10 follow-up questions.",
+    how: "Ask 10 follow-up questions after finishing lessons. Dig deeper into the details.",
+    tier: "silver",
+    progress: (s) => ratio(s.followUps, 10),
+    earned: (s) => s.followUps >= 10,
+  },
+  {
     id: "goal_getter",
     emoji: "🎯",
     title: "Goal Getter",
@@ -380,17 +450,17 @@ export const BADGES: Badge[] = [
     earned: (s) => s.dailyGoalsMet >= 5,
   },
   {
-    id: "ten_lessons",
-    emoji: "🌊",
-    title: "Deep Diver",
-    description: "Complete 10 learning journeys.",
-    how: "Ten finished journeys — keep asking, keep reading, keep passing those quizzes.",
+    id: "flawless_hat_trick",
+    emoji: "🎩",
+    title: "Hat-Trick",
+    description: "Ace 3 quiz parts with perfect scores.",
+    how: "Get 100% on 3 different quiz parts on your very first try.",
     tier: "silver",
-    progress: (s) => ratio(s.lessonsCompleted, 10),
-    earned: (s) => s.lessonsCompleted >= 10,
+    progress: (s) => ratio(s.perfectParts, 3),
+    earned: (s) => s.perfectParts >= 3,
   },
 
-  /* ── Gold — real dedication ── */
+  /* ── Gold — real dedication & medium/high milestones ── */
   {
     id: "perfect_lesson",
     emoji: "🏆",
@@ -400,6 +470,16 @@ export const BADGES: Badge[] = [
     tier: "gold",
     progress: (s) => ratio(s.perfectLessons, 1),
     earned: (s) => s.perfectLessons >= 1,
+  },
+  {
+    id: "flawless_five",
+    emoji: "🌟",
+    title: "Flawless Streak",
+    description: "Finish 5 journeys with a 100% perfect score.",
+    how: "Complete 5 whole lessons without a single incorrect quiz answer.",
+    tier: "gold",
+    progress: (s) => ratio(s.perfectLessons, 5),
+    earned: (s) => s.perfectLessons >= 5,
   },
   {
     id: "sharpshooter",
@@ -412,6 +492,16 @@ export const BADGES: Badge[] = [
     earned: (s) => s.perfectParts >= 5,
   },
   {
+    id: "fifty_parts",
+    emoji: "🧩",
+    title: "Half-Century",
+    description: "Pass 50 quiz parts.",
+    how: "Fifty quizzes cleared. You're building a serious foundation of knowledge.",
+    tier: "gold",
+    progress: (s) => ratio(s.partsPassed, 50),
+    earned: (s) => s.partsPassed >= 50,
+  },
+  {
     id: "twenty_lessons",
     emoji: "🧠",
     title: "Walking Wikipedia",
@@ -420,6 +510,16 @@ export const BADGES: Badge[] = [
     tier: "gold",
     progress: (s) => ratio(s.lessonsCompleted, 20),
     earned: (s) => s.lessonsCompleted >= 20,
+  },
+  {
+    id: "knowledge_seeker",
+    emoji: "📜",
+    title: "Knowledge Seeker",
+    description: "Complete 35 learning journeys.",
+    how: "Complete 35 entire 3-part lessons across any subjects.",
+    tier: "gold",
+    progress: (s) => ratio(s.lessonsCompleted, 35),
+    earned: (s) => s.lessonsCompleted >= 35,
   },
   {
     id: "streak_14",
@@ -432,6 +532,16 @@ export const BADGES: Badge[] = [
     earned: (s) => s.longestStreak >= 14,
   },
   {
+    id: "streak_21",
+    emoji: "🔥",
+    title: "Three-Week Titan",
+    description: "Keep a 21-day learning streak.",
+    how: "Maintain your daily goal streak for 21 days straight (3 full weeks).",
+    tier: "gold",
+    progress: (s) => ratio(s.longestStreak, 21),
+    earned: (s) => s.longestStreak >= 21,
+  },
+  {
     id: "polyglot_3",
     emoji: "🗺️",
     title: "Polyglot",
@@ -440,6 +550,16 @@ export const BADGES: Badge[] = [
     tier: "gold",
     progress: (s) => ratio(s.languagesUsed.length, 3),
     earned: (s) => s.languagesUsed.length >= 3,
+  },
+  {
+    id: "linguist_8",
+    emoji: "🗣️",
+    title: "Linguistic Prodigy",
+    description: "Learn in 8 different languages.",
+    how: "Complete quiz parts across 8 different Indian languages.",
+    tier: "gold",
+    progress: (s) => ratio(s.languagesUsed.length, 8),
+    earned: (s) => s.languagesUsed.length >= 8,
   },
   {
     id: "level_10",
@@ -452,6 +572,16 @@ export const BADGES: Badge[] = [
     earned: (s) => s.level >= 10,
   },
   {
+    id: "level_15",
+    emoji: "⚡",
+    title: "Big Brain Era",
+    description: "Reach Level 15.",
+    how: "Climb the levels through steady learning until you hit Level 15.",
+    tier: "gold",
+    progress: (s) => ratio(s.level, 15),
+    earned: (s) => s.level >= 15,
+  },
+  {
     id: "renaissance",
     emoji: "🎭",
     title: "Genre Hopper",
@@ -460,6 +590,16 @@ export const BADGES: Badge[] = [
     tier: "gold",
     progress: (s) => ratio(s.subjectsSeen.length, 5),
     earned: (s) => s.subjectsSeen.length >= 5,
+  },
+  {
+    id: "subject_master",
+    emoji: "🌌",
+    title: "Polymath in Training",
+    description: "Explore 8 different subjects.",
+    how: "Ask questions across 8 distinct academic or real-world subject domains.",
+    tier: "gold",
+    progress: (s) => ratio(s.subjectsSeen.length, 8),
+    earned: (s) => s.subjectsSeen.length >= 8,
   },
   {
     id: "habit_builder",
@@ -472,6 +612,16 @@ export const BADGES: Badge[] = [
     earned: (s) => s.dailyGoalsMet >= 20,
   },
   {
+    id: "goal_crusher",
+    emoji: "🎯",
+    title: "Goal Crusher",
+    description: "Hit your daily goal 50 times.",
+    how: "Meet your daily learning goal on 50 separate calendar days.",
+    tier: "gold",
+    progress: (s) => ratio(s.dailyGoalsMet, 50),
+    earned: (s) => s.dailyGoalsMet >= 50,
+  },
+  {
     id: "endless_wonder",
     emoji: "🎐",
     title: "Thread Puller",
@@ -482,7 +632,7 @@ export const BADGES: Badge[] = [
     earned: (s) => s.followUps >= 15,
   },
 
-  /* ── Legendary — the stuff of stories ── */
+  /* ── Legendary — impossibly high feats & ultra grind ── */
   {
     id: "streak_30",
     emoji: "🌟",
@@ -492,6 +642,16 @@ export const BADGES: Badge[] = [
     tier: "legendary",
     progress: (s) => ratio(s.longestStreak, 30),
     earned: (s) => s.longestStreak >= 30,
+  },
+  {
+    id: "streak_100",
+    emoji: "👑",
+    title: "Centurion Flame",
+    description: "Keep a 100-day learning streak.",
+    how: "Maintain a 100-day learning streak without losing your flame. Legendary!",
+    tier: "legendary",
+    progress: (s) => ratio(s.longestStreak, 100),
+    earned: (s) => s.longestStreak >= 100,
   },
   {
     id: "grand_library",
@@ -504,6 +664,36 @@ export const BADGES: Badge[] = [
     earned: (s) => s.lessonsCompleted >= 50,
   },
   {
+    id: "century_club",
+    emoji: "🏛️",
+    title: "Century Club",
+    description: "Complete 100 learning journeys.",
+    how: "Complete 100 full 3-part lessons. A monumental feat of intellect.",
+    tier: "legendary",
+    progress: (s) => ratio(s.lessonsCompleted, 100),
+    earned: (s) => s.lessonsCompleted >= 100,
+  },
+  {
+    id: "two_hundred_parts",
+    emoji: "🔱",
+    title: "Quiz Sovereign",
+    description: "Pass 200 quiz parts.",
+    how: "Pass 200 individual part quizzes. Truly legendary dedication.",
+    tier: "legendary",
+    progress: (s) => ratio(s.partsPassed, 200),
+    earned: (s) => s.partsPassed >= 200,
+  },
+  {
+    id: "xp_10000",
+    emoji: "🌌",
+    title: "XP Overlord",
+    description: "Gather 10,000 lifetime XP.",
+    how: "Amass a staggering 10,000 total lifetime XP across all activity.",
+    tier: "legendary",
+    progress: (s) => ratio(s.xp, 10000),
+    earned: (s) => s.xp >= 10000,
+  },
+  {
     id: "level_20",
     emoji: "🌌",
     title: "Final Form",
@@ -512,6 +702,56 @@ export const BADGES: Badge[] = [
     tier: "legendary",
     progress: (s) => ratio(s.level, 20),
     earned: (s) => s.level >= 20,
+  },
+  {
+    id: "level_30",
+    emoji: "👾",
+    title: "Final Boss",
+    description: "Reach Level 30.",
+    how: "Reach the ultimate rank — Level 30. You are the Final Boss.",
+    tier: "legendary",
+    progress: (s) => ratio(s.level, 30),
+    earned: (s) => s.level >= 30,
+  },
+  {
+    id: "omniglot",
+    emoji: "🌀",
+    title: "Omniglot",
+    description: "Learn in all 12 supported languages.",
+    how: "Complete at least one quiz part in every single language RealLearn supports (12 languages!).",
+    tier: "legendary",
+    progress: (s) => ratio(s.languagesUsed.length, 12),
+    earned: (s) => s.languagesUsed.length >= 12,
+  },
+  {
+    id: "deadeye",
+    emoji: "🎯",
+    title: "Deadeye Specialist",
+    description: "Ace 50 quiz parts with perfect scores.",
+    how: "Score 100% on 50 part quizzes on your first try. Flawless precision.",
+    tier: "legendary",
+    progress: (s) => ratio(s.perfectParts, 50),
+    earned: (s) => s.perfectParts >= 50,
+  },
+  {
+    id: "perfectionist_prime",
+    emoji: "💫",
+    title: "Perfectionist Prime",
+    description: "Finish 20 journeys with 100% perfect scores.",
+    how: "Complete 20 entire lessons without missing a single quiz question.",
+    tier: "legendary",
+    progress: (s) => ratio(s.perfectLessons, 20),
+    earned: (s) => s.perfectLessons >= 20,
+  },
+  {
+    id: "hundred_goals",
+    emoji: "🏆",
+    title: "Century of Goals",
+    description: "Hit your daily goal 100 times.",
+    how: "Meet your daily learning goal on 100 distinct days. Unwavering discipline.",
+    tier: "legendary",
+    progress: (s) => ratio(s.dailyGoalsMet, 100),
+    earned: (s) => s.dailyGoalsMet >= 100,
   },
 ];
 
