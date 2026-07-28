@@ -6,93 +6,86 @@
    --font-inter / --font-lora / --font-display / --font-mono. The old Google
    Fonts @import was placed after the Tailwind directives (making it invalid
    CSS) AND blocked by our CSP — so remote fonts never actually loaded. */
-
 :root {
   color-scheme: light;
 
   /* ═══════════════════════════════════════════════════════════════════════
-     RealLearn "Evergreen" Design System — Light Theme (Paper)
-     A calm, confident emerald identity: deep-green ink on soft green-tinted
-     paper, with a single warm amber companion for energy moments (streaks,
-     sparks). No neon, no purple (owner's rule). Every text/surface pairing
-     verified ≥ WCAG AA (most AAA).
-     Space Grotesk (Headings: 700-800) + Inter (Body: 400 / UI: 500-600)
+     RealLearn Brand DNA System — Light Theme (Sunlight Alabaster Paper)
+     Primary Accent: Solar Terracotta (#E05624)
+     Grounding Secondary: Slate Cobalt (#1E293B)
+     Success: Sage Emerald (#059669) | Danger: Warm Coral (#DC2626)
+     Canvas: Warm Alabaster (#FAF9F6)
+     Typography: Space Grotesk (700-800) + Inter (500-700)
      ═══════════════════════════════════════════════════════════════════════ */
 
-  /* Brand accent — Deep Emerald (5.48:1 on white — AA for normal text) */
-  --brand: #047857;
-  --brand-strong: #065F46;
-  --brand-bright: #059669;
-  --brand-soft: rgba(4, 120, 87, 0.10);
+  --brand: #E05624;
+  --brand-strong: #C44517;
+  --brand-bright: #FF6B38;
+  --brand-soft: rgba(224, 86, 36, 0.10);
 
-  --cobalt-deep: #10231B;
-  --cobalt-mid: #3D4B44;
-  --cobalt-vivid: #047857;
-  --cobalt-pale: rgba(4, 120, 87, 0.08);
-  --cobalt-wash: rgba(4, 120, 87, 0.05);
-  --cobalt-ink: #10231B;
+  --cobalt-deep: #0F172A;
+  --cobalt-mid: #1E293B;
+  --cobalt-vivid: #E05624;
+  --cobalt-pale: rgba(224, 86, 36, 0.08);
+  --cobalt-wash: rgba(224, 86, 36, 0.04);
+  --cobalt-ink: #0F172A;
 
-  /* Canvas: soft green-tinted paper — warmer than plain grey, never sterile */
-  --bg-primary: #F6F8F6;
+  /* Canvas & Tactile Surfaces */
+  --bg-primary: #FAF9F6;
   --bg-surface: #FFFFFF;
   --bg-card: #FFFFFF;
-  --bg-card-hover: #EFF4F1;
-  --bg-glass: rgba(246, 248, 246, 0.92);
-  --bg-solid: #EFF4F1;
+  --bg-card-hover: #F4F2EC;
+  --bg-glass: rgba(250, 249, 246, 0.94);
+  --bg-solid: #F0EEE6;
   --bg-warm: #FFFFFF;
 
   --ambient-a: transparent;
   --ambient-b: transparent;
 
-  --border-subtle: #E3E9E5;
-  --border-default: #C9D4CD;
-  --border-accent: #047857;
-  --border-glow: rgba(4, 120, 87, 0.22);
+  --border-subtle: #E6E4DC;
+  --border-default: #D4D1C5;
+  --border-accent: #E05624;
+  --border-glow: rgba(224, 86, 36, 0.18);
 
-  --glass-blur: 16px;
-  --glass-blur-strong: 24px;
-  --glass-saturate: 120%;
+  --glass-blur: 12px;
+  --glass-blur-strong: 16px;
+  --glass-saturate: 110%;
   --glass-highlight: rgba(255, 255, 255, 0.9);
-  --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.03);
-  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 0 0 1px rgba(0, 0, 0, 0.04);
+  --glass-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 0 0 1px rgba(212, 209, 197, 0.6);
   --glass-sheen: none;
 
-  /* One interactive accent; ONE warm companion (amber) reserved for energy
-     moments — streaks, sparks, celebration. The companion is deliberately
-     NOT the error color: errors are red, energy is amber. */
-  --accent: #047857;
-  --accent-action: #B45309;
-  --accent-hover: #065F46;
-  --accent-dim: rgba(4, 120, 87, 0.10);
-  --accent-glow: rgba(4, 120, 87, 0.20);
-  --accent-companion: #B45309;
-  --accent-gradient: #047857;
+  --accent: #E05624;
+  --accent-action: #E05624;
+  --accent-hover: #C44517;
+  --accent-dim: rgba(224, 86, 36, 0.10);
+  --accent-glow: rgba(224, 86, 36, 0.18);
+  --accent-companion: #1E293B;
+  --accent-gradient: #E05624;
   --on-accent: #FFFFFF;
-  --shadow-glow-accent: 0 4px 16px rgba(4, 120, 87, 0.18);
+  --shadow-glow-accent: 0 4px 16px rgba(224, 86, 36, 0.20);
 
-  /* Ink text — near-black green ink on paper = maximum readability */
-  --text-primary: #101915;
-  --text-secondary: #47554E;
-  --text-tertiary: #5C6B63;
-  --text-accent-strong: #047857;
+  /* High-Contrast Readability */
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-tertiary: #64748B;
+  --text-accent-strong: #C44517;
 
-  --correct: #15803D;
-  --correct-bg: #DCFCE7;
+  --correct: #059669;
+  --correct-bg: #D1FAE5;
   --wrong: #DC2626;
   --wrong-bg: #FEE2E2;
-  --locked: #8A9990;
+  --locked: #94A3B8;
 
-  /* Subjects: harmonized, distinguishable hues (teal → olive → rust → amber).
-     All ≥3:1 on white for UI, no purple. */
-  --subject-physics: #0F766E;
-  --subject-chemistry: #15803D;
-  --subject-economics: #B45309;
-  --subject-biology: #4D7C0F;
-  --subject-cs: #0E7490;
-  --subject-history: #C2410C;
-  --subject-general: #047857;
+  --subject-physics: #E05624;
+  --subject-chemistry: #059669;
+  --subject-economics: #0284C7;
+  --subject-biology: #059669;
+  --subject-cs: #E05624;
+  --subject-history: #D97706;
+  --subject-general: #E05624;
 
-  /* Educational AI Soft Rounded Corner Radii */
+  /* Tactile Folio Corner Radii */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
@@ -128,10 +121,10 @@
   --tracking-normal: 0;
   --tracking-wide: 0.04em;
 
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.08);
-  --shadow-glow-correct: 0 0 16px rgba(22, 163, 74, 0.15);
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 4px 14px rgba(15, 23, 42, 0.07);
+  --shadow-lg: 0 10px 30px rgba(15, 23, 42, 0.09);
+  --shadow-glow-correct: 0 0 16px rgba(5, 150, 105, 0.15);
 
   --ease-reveal: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-color: cubic-bezier(0.4, 0, 0.2, 1);
@@ -145,103 +138,99 @@
   --blur-sm: 4px;
   --blur-md: 12px;
 
-  --scrim: rgba(0, 0, 0, 0.4);
-  --focus-ring: 0 0 0 3px rgba(0, 204, 82, 0.25);
-  --focus-ring-simple: 0 0 0 2px #00CC52;
+  --scrim: rgba(15, 23, 42, 0.4);
+  --focus-ring: 0 0 0 3px rgba(224, 86, 36, 0.25);
+  --focus-ring-simple: 0 0 0 2px #E05624;
 
-  --aurora-1: rgba(0, 204, 82, 0.06);
-  --aurora-2: rgba(255, 62, 0, 0.06);
-  --aurora-3: rgba(0, 204, 82, 0.04);
+  --aurora-1: rgba(224, 86, 36, 0.05);
+  --aurora-2: rgba(30, 41, 59, 0.04);
+  --aurora-3: rgba(5, 150, 105, 0.04);
 }
 
-/* ── Ink (Dark) — deep forest-tinted canvas with a soft mint accent.
-   Deliberately NOT neutral slate (that's every dev-tool dark mode) and NOT
-   neon: mint #34D399 reads vivid on the green-black canvas (8.9:1 on cards)
-   without the eye strain of #00FF66. Text is off-white, never pure white —
-   pure white on near-black causes halation for astigmatic readers. ── */
+/* ── Ink (Dark) — Midnight Obsidian Canvas with Solar Terracotta Energy ── */
 html[data-theme="dark"] {
   color-scheme: dark;
 
-  --brand: #34D399;
-  --brand-strong: #2BB984;
-  --brand-bright: #5EEAB4;
-  --brand-soft: rgba(52, 211, 153, 0.12);
+  --brand: #FF6B38;
+  --brand-strong: #E05624;
+  --brand-bright: #FF885E;
+  --brand-soft: rgba(255, 107, 56, 0.14);
 
-  --cobalt-deep: #0B100E;
-  --cobalt-mid: #1B241F;
-  --cobalt-vivid: #34D399;
-  --cobalt-pale: #34D399;
-  --cobalt-wash: rgba(52, 211, 153, 0.08);
-  --cobalt-ink: #0B100E;
+  --cobalt-deep: #0D1117;
+  --cobalt-mid: #161B22;
+  --cobalt-vivid: #FF6B38;
+  --cobalt-pale: #FF6B38;
+  --cobalt-wash: rgba(255, 107, 56, 0.08);
+  --cobalt-ink: #0D1117;
 
   --ambient-a: transparent;
   --ambient-b: transparent;
 
-  /* Canvas: green-black ink, layered warm-dark surfaces */
-  --bg-primary: #0B100E;
-  --bg-surface: #111714;
-  --bg-card: #151D19;
-  --bg-card-hover: #1C2620;
-  --bg-glass: rgba(11, 16, 14, 0.92);
-  --bg-solid: #151D19;
-  --bg-warm: #111714;
+  /* Canvas: Midnight Obsidian Slate */
+  --bg-primary: #0D1117;
+  --bg-surface: #161B22;
+  --bg-card: #161B22;
+  --bg-card-hover: #21262D;
+  --bg-glass: rgba(13, 17, 23, 0.94);
+  --bg-solid: #21262D;
+  --bg-warm: #161B22;
 
-  --border-subtle: #222C27;
-  --border-default: #313D36;
-  --border-accent: #34D399;
-  --border-glow: rgba(52, 211, 153, 0.28);
+  --border-subtle: #21262D;
+  --border-default: #30363D;
+  --border-accent: #FF6B38;
+  --border-glow: rgba(255, 107, 56, 0.25);
 
-  --glass-blur: 16px;
-  --glass-blur-strong: 24px;
-  --glass-saturate: 120%;
-  --glass-highlight: rgba(255, 255, 255, 0.05);
+  --glass-blur: 12px;
+  --glass-blur-strong: 16px;
+  --glass-saturate: 110%;
+  --glass-highlight: rgba(255, 255, 255, 0.06);
   --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
-  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 0 0 1px rgba(52, 211, 153, 0.10);
+  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(48, 54, 61, 0.8);
   --glass-sheen: none;
 
-  --accent: #34D399;
-  --accent-action: #FBBF24;
-  --accent-hover: #5EEAB4;
-  --accent-dim: rgba(52, 211, 153, 0.13);
-  --accent-glow: rgba(52, 211, 153, 0.24);
-  --accent-companion: #FBBF24;
-  --accent-gradient: #34D399;
-  --on-accent: #052E1F;
-  --shadow-glow-accent: 0 4px 20px rgba(52, 211, 153, 0.22);
+  --accent: #FF6B38;
+  --accent-action: #FF6B38;
+  --accent-hover: #E05624;
+  --accent-dim: rgba(255, 107, 56, 0.14);
+  --accent-glow: rgba(255, 107, 56, 0.25);
+  --accent-companion: #94A3B8;
+  --accent-gradient: #FF6B38;
+  --on-accent: #0D1117;
+  --shadow-glow-accent: 0 4px 20px rgba(255, 107, 56, 0.3);
 
-  /* Text — off-white on deep green-black: high contrast without halation */
-  --text-primary: #EDF3EF;
-  --text-secondary: #A6B5AD;
-  --text-tertiary: #7E8D85;
-  --text-accent-strong: #34D399;
+  /* High-Contrast Dark Text */
+  --text-primary: #F0F6FC;
+  --text-secondary: #8B949E;
+  --text-tertiary: #6E7681;
+  --text-accent-strong: #FF6B38;
 
-  --correct: #4ADE80;
-  --correct-bg: rgba(74, 222, 128, 0.14);
-  --wrong: #F87171;
-  --wrong-bg: rgba(248, 113, 113, 0.14);
-  --locked: #4A564F;
+  --correct: #10B981;
+  --correct-bg: rgba(16, 185, 129, 0.15);
+  --wrong: #EF4444;
+  --wrong-bg: rgba(239, 68, 68, 0.15);
+  --locked: #484F58;
 
-  --subject-physics: #2DD4BF;
-  --subject-chemistry: #4ADE80;
-  --subject-economics: #FBBF24;
-  --subject-biology: #A3E635;
-  --subject-cs: #22D3EE;
-  --subject-history: #FB923C;
-  --subject-general: #34D399;
+  --subject-physics: #FF6B38;
+  --subject-chemistry: #10B981;
+  --subject-economics: #38BDF8;
+  --subject-biology: #10B981;
+  --subject-cs: #FF6B38;
+  --subject-history: #F59E0B;
+  --subject-general: #FF6B38;
 
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6);
-  --shadow-glow-correct: 0 0 20px rgba(74, 222, 128, 0.2);
+  --shadow-glow-correct: 0 0 20px rgba(16, 185, 129, 0.25);
 
-  --focus-ring: 0 0 0 3px rgba(52, 211, 153, 0.35);
-  --focus-ring-simple: 0 0 0 2px #34D399;
+  --focus-ring: 0 0 0 3px rgba(255, 107, 56, 0.3);
+  --focus-ring-simple: 0 0 0 2px #FF6B38;
 
-  --scrim: rgba(0, 0, 0, 0.6);
+  --scrim: rgba(0, 0, 0, 0.65);
 
-  --aurora-1: rgba(52, 211, 153, 0.07);
-  --aurora-2: rgba(251, 191, 36, 0.06);
-  --aurora-3: rgba(52, 211, 153, 0.05);
+  --aurora-1: rgba(255, 107, 56, 0.08);
+  --aurora-2: rgba(148, 163, 184, 0.05);
+  --aurora-3: rgba(16, 185, 129, 0.05);
 }
 
 html {
@@ -778,6 +767,164 @@ a:active {
    live here and silently overrode the richer definitions above with flatter,
    less springy ones. The duplicates were removed so the intended motion is
    what actually plays. */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RealLearn Brand DNA Component Architecture
+   • Tactile Folio Cards (.folio-card)
+   • The Learning Conduit (.learning-conduit)
+   • TL;DR Concept Stamp (.concept-stamp)
+   • Stamped Quiz Choice (.quiz-stamped-option)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.folio-card {
+  position: relative;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  transition: transform var(--dur-fast) var(--ease-reveal), border-color var(--dur-fast) var(--ease-color), box-shadow var(--dur-fast) var(--ease-color);
+  overflow: hidden;
+}
+
+.folio-card--notched::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 36px;
+  height: 36px;
+  background: var(--accent-dim);
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.folio-card:hover {
+  border-color: var(--border-accent);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.folio-card:active {
+  transform: scale(0.985);
+}
+
+/* ── The Learning Conduit — Continuous 3-part stepper line ── */
+.learning-conduit {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  gap: 12px;
+}
+
+.learning-conduit__line {
+  position: absolute;
+  top: 50%;
+  left: 40px;
+  right: 40px;
+  height: 3px;
+  background: var(--border-subtle);
+  transform: translateY(-50%);
+  z-index: 0;
+}
+
+.learning-conduit__line-fill {
+  height: 100%;
+  background: var(--brand);
+  transition: width var(--dur-slow) var(--ease-reveal);
+  position: relative;
+}
+
+.learning-conduit__step {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-default);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  transition: all var(--dur-fast) var(--ease-color);
+}
+
+.learning-conduit__step--active {
+  border-color: var(--brand);
+  background: var(--brand);
+  color: var(--on-accent);
+  box-shadow: var(--shadow-glow-accent);
+}
+
+.learning-conduit__step--completed {
+  border-color: var(--correct);
+  background: var(--correct-bg);
+  color: var(--correct);
+}
+
+/* ── TL;DR Concept Stamp ── */
+.concept-stamp {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--brand-soft);
+  border-left: 4px solid var(--brand);
+  border-radius: var(--radius-md);
+  margin-bottom: 20px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* ── Stamped Quiz Option ── */
+.quiz-stamped-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  color: var(--text-primary);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-reveal);
+  width: 100%;
+  text-align: left;
+}
+
+.quiz-stamped-option:hover {
+  border-color: var(--brand);
+  background: var(--bg-card-hover);
+  transform: translateX(4px);
+}
+
+.quiz-stamped-option--selected {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+}
+
+.quiz-stamped-option--correct {
+  border-color: var(--correct);
+  background: var(--correct-bg);
+  color: var(--correct);
+}
+
+.quiz-stamped-option--wrong {
+  border-color: var(--wrong);
+  background: var(--wrong-bg);
+  color: var(--wrong);
+}
 
 /* ── Easter-egg keyframes ── */
 @keyframes heartFloat {

@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import Sidebar from "@/components/shared/Sidebar";
-import BottomNav from "@/components/shared/BottomNav";
 import ScrollToTop from "@/components/shared/ScrollToTop";
 import ErrorBoundary from "@/components/shared/ErrorBoundary";
 import dynamic from "next/dynamic";
@@ -121,7 +120,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <div id="main-content" className="app-main">
         <ErrorBoundary>{children}</ErrorBoundary>
       </div>
-      <BottomNav onOpenLibrary={() => setOpen(true)} />
       <ScrollToTop />
       <EngagementLayer />
       <KeyboardShortcuts />

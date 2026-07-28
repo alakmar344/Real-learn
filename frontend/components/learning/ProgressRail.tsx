@@ -7,24 +7,10 @@ interface Props {
   totalParts?: number;
 }
 
-function NodeIcon({ part, unlockedPart, completedParts }: { part: number; unlockedPart: number; completedParts: number[] }) {
-  const done = completedParts.includes(part);
-  const active = !done && part <= unlockedPart;
-
-  if (done) return <span aria-hidden="true" style={{ color: "var(--correct)", fontSize: 18, fontWeight: 700 }}>✓</span>;
-  if (active) return <span style={{ color: "var(--on-accent)", fontWeight: 800, fontSize: 16 }}>{part}</span>;
-  return (
-    <span aria-hidden="true" style={{ color: "var(--text-tertiary)", display: "grid", placeItems: "center" }}>
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-        <rect x="5" y="10.5" width="14" height="9.5" rx="2.5" stroke="currentColor" strokeWidth="2" />
-        <path d="M8 10V7.8C8 5.6 9.8 4 12 4s4 1.6 4 3.8V10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      </svg>
-    </span>
-  );
-}
+const PART_NAMES = ["Foundation", "Mechanism", "Real World"];
 
 export default function ProgressRail({ unlockedPart, completedParts, totalParts = 3 }: Props) {
-  /* ── Fast mode: a single direct answer — show a light badge, not a rail ── */
+  /* ── Fast mode: a single direct answer ── */
   if (totalParts <= 1) {
     const done = completedParts.includes(1);
     return (
@@ -32,30 +18,27 @@ export default function ProgressRail({ unlockedPart, completedParts, totalParts 
         role="status"
         aria-label={done ? "Quick answer mastered" : "Fast mode – one quick answer"}
         style={{
-          marginTop: varSpaceXl,
+          marginTop: "var(--space-lg)",
           display: "flex",
           justifyContent: "center",
         }}
       >
         <span
-          aria-hidden="true"
           style={{
             display: "inline-flex",
             alignItems: "center",
             gap: 10,
-            padding: "10px 20px",
-            borderRadius: 999,
+            padding: "8px 18px",
+            borderRadius: "var(--radius-pill)",
             fontSize: 13,
             fontWeight: 700,
-            letterSpacing: "0.04em",
             color: done ? "var(--correct)" : "var(--accent)",
             background: done ? "var(--correct-bg)" : "var(--accent-dim)",
             border: `1.5px solid ${done ? "var(--correct)" : "var(--accent)"}`,
-            boxShadow: "none",
           }}
         >
-          <span aria-hidden="true" style={{ fontSize: 16 }}>{done ? "✓" : "•"}</span>
-          {done ? "Quick answer mastered" : "Fast mode — one quick answer"}
+          <span>{done ? "✓" : "•"}</span>
+          {done ? "Quick answer mastered" : "Fast mode — direct explanation"}
         </span>
       </div>
     );
@@ -66,96 +49,41 @@ export default function ProgressRail({ unlockedPart, completedParts, totalParts 
 
   return (
     <nav
-      aria-label="Learning progress"
+      aria-label="Learning progress conduit"
       style={{
-        marginTop: varSpaceXl,
-        maxWidth: 400,
+        marginTop: "var(--space-lg)",
+        maxWidth: 520,
         marginInline: "auto",
-        display: "flex",
-        alignItems: "flex-start",
+        padding: "0 12px",
       }}
     >
       <ol
         role="list"
         aria-label={`${completedCount} of ${totalParts} parts completed`}
-        style={{
-          listStyle: "none",
-          margin: 0,
-          padding: 0,
-          display: "flex",
-          alignItems: "flex-start",
-          width: "100%",
-        }}
+        className="learning-conduit"
       >
-        {parts.map((part, index) => {
+        {parts.map((part) => {
           const done = completedParts.includes(part);
           const active = !done && part <= unlockedPart;
-          const locked = !done && !active;
-
-          const statusLabel = done ? "completed" : active ? "current part" : "locked";
+          const statusLabel = done ? "completed" : active ? "current active part" : "locked";
 
           return (
             <li
               key={part}
               role="listitem"
-              aria-label={`Part ${part}: ${statusLabel}`}
-              style={{ display: "flex", alignItems: "center", flex: 1 }}
+              aria-label={`Part ${part} (${PART_NAMES[part - 1] ?? `Part ${part}`}): ${statusLabel}`}
+              className={`learning-conduit__step${
+                done
+                  ? " learning-conduit__step--completed"
+                  : active
+                  ? " learning-conduit__step--active"
+                  : ""
+              }`}
             >
-              <div style={{ display: "grid", placeItems: "center", minWidth: 44 }}>
-                <div
-                  className={active ? "animate-unlock-pop" : undefined}
-                  aria-hidden="true"
-                  style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: "50%",
-                    display: "grid",
-                    placeItems: "center",
-                    /* Done, current and locked are distinguishable by SHAPE,
-                       not just hue (done = soft outlined ✓ that recedes;
-                       current = the only filled disc, with a halo ring;
-                       locked = dashed-quiet outline). Color-only coding
-                       failed in dark mode where correct ≈ accent. */
-                    background: done ? "var(--correct-bg)" : active ? "var(--accent)" : "var(--bg-card)",
-                    border: done
-                      ? "2px solid var(--correct)"
-                      : locked
-                        ? "2px solid var(--border-default)"
-                        : "none",
-                    boxShadow: active
-                      ? "var(--shadow-sm), 0 0 0 4px var(--accent-dim)"
-                      : "none",
-                    backgroundSize: "200% 200%",
-                    animation: undefined,
-                  }}
-                >
-                  <NodeIcon part={part} unlockedPart={unlockedPart} completedParts={completedParts} />
-                </div>
-                <span
-                  aria-hidden="true"
-                  style={{
-                    marginTop: 10,
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: done ? "var(--correct)" : active ? "var(--accent)" : "var(--text-tertiary)",
-                  }}
-                >
-                  Part {part}
-                </span>
-              </div>
-              {index < parts.length - 1 ? (
-                <div
-                  aria-hidden="true"
-                  style={{
-                    height: 3,
-                    flexGrow: 1,
-                    margin: "0 10px 18px",
-                    borderRadius: 2,
-                    background: done ? "var(--correct)" : "var(--border-default)",
-                    transition: "background 350ms var(--ease-color)",
-                  }}
-                />
-              ) : null}
+              <span>{done ? "✓" : active ? "▶" : "🔒"}</span>
+              <span>
+                Part {part}: {PART_NAMES[part - 1] ?? `Part ${part}`}
+              </span>
             </li>
           );
         })}
@@ -164,4 +92,4 @@ export default function ProgressRail({ unlockedPart, completedParts, totalParts 
   );
 }
 
-const varSpaceXl = "var(--space-xl)";
+
