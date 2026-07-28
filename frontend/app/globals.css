@@ -11,40 +11,43 @@
   color-scheme: light;
 
   /* ═══════════════════════════════════════════════════════════════════════
-     RealLearn Gen Z Design System — Light Theme (Paper)
-     Background: #F8FAF9 | Dominant: #00CC52 | Accent: #FF3E00
-     Space Grotesk (Headings: 700-800) + Inter (Body/UI: 700)
+     RealLearn "Evergreen" Design System — Light Theme (Paper)
+     A calm, confident emerald identity: deep-green ink on soft green-tinted
+     paper, with a single warm amber companion for energy moments (streaks,
+     sparks). No neon, no purple (owner's rule). Every text/surface pairing
+     verified ≥ WCAG AA (most AAA).
+     Space Grotesk (Headings: 700-800) + Inter (Body: 400 / UI: 500-600)
      ═══════════════════════════════════════════════════════════════════════ */
 
-  /* Brand accent — Vivid Green (accessible on light surfaces) */
-  --brand: #00CC52;
-  --brand-strong: #00A844;
-  --brand-bright: #00FF66;
-  --brand-soft: rgba(0, 204, 82, 0.10);
+  /* Brand accent — Deep Emerald (5.48:1 on white — AA for normal text) */
+  --brand: #047857;
+  --brand-strong: #065F46;
+  --brand-bright: #059669;
+  --brand-soft: rgba(4, 120, 87, 0.10);
 
-  --cobalt-deep: #0F172A;
-  --cobalt-mid: #334155;
-  --cobalt-vivid: #00CC52;
-  --cobalt-pale: rgba(0, 204, 82, 0.08);
-  --cobalt-wash: rgba(0, 204, 82, 0.05);
-  --cobalt-ink: #0F172A;
+  --cobalt-deep: #10231B;
+  --cobalt-mid: #3D4B44;
+  --cobalt-vivid: #047857;
+  --cobalt-pale: rgba(4, 120, 87, 0.08);
+  --cobalt-wash: rgba(4, 120, 87, 0.05);
+  --cobalt-ink: #10231B;
 
-  /* Canvas: Clean Bright Paper */
-  --bg-primary: #F8FAF9;
+  /* Canvas: soft green-tinted paper — warmer than plain grey, never sterile */
+  --bg-primary: #F6F8F6;
   --bg-surface: #FFFFFF;
   --bg-card: #FFFFFF;
-  --bg-card-hover: #F1F5F2;
-  --bg-glass: rgba(248, 250, 249, 0.92);
-  --bg-solid: #F1F5F2;
+  --bg-card-hover: #EFF4F1;
+  --bg-glass: rgba(246, 248, 246, 0.92);
+  --bg-solid: #EFF4F1;
   --bg-warm: #FFFFFF;
 
   --ambient-a: transparent;
   --ambient-b: transparent;
 
-  --border-subtle: #E2E8F0;
-  --border-default: #CBD5E1;
-  --border-accent: #00CC52;
-  --border-glow: rgba(0, 204, 82, 0.18);
+  --border-subtle: #E3E9E5;
+  --border-default: #C9D4CD;
+  --border-accent: #047857;
+  --border-glow: rgba(4, 120, 87, 0.22);
 
   --glass-blur: 16px;
   --glass-blur-strong: 24px;
@@ -54,35 +57,40 @@
   --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 0 0 1px rgba(0, 0, 0, 0.04);
   --glass-sheen: none;
 
-  --accent: #00CC52;
-  --accent-action: #FF3E00;
-  --accent-hover: #00A844;
-  --accent-dim: rgba(0, 204, 82, 0.10);
-  --accent-glow: rgba(0, 204, 82, 0.18);
-  --accent-companion: #FF3E00;
-  --accent-gradient: #00CC52;
+  /* One interactive accent; ONE warm companion (amber) reserved for energy
+     moments — streaks, sparks, celebration. The companion is deliberately
+     NOT the error color: errors are red, energy is amber. */
+  --accent: #047857;
+  --accent-action: #B45309;
+  --accent-hover: #065F46;
+  --accent-dim: rgba(4, 120, 87, 0.10);
+  --accent-glow: rgba(4, 120, 87, 0.20);
+  --accent-companion: #B45309;
+  --accent-gradient: #047857;
   --on-accent: #FFFFFF;
-  --shadow-glow-accent: 0 4px 16px rgba(0, 204, 82, 0.20);
+  --shadow-glow-accent: 0 4px 16px rgba(4, 120, 87, 0.18);
 
-  /* Ink text — Deep slate on bright paper = maximum readability */
-  --text-primary: #0F172A;
-  --text-secondary: #475569;
-  --text-tertiary: #64748B;
-  --text-accent-strong: #00A844;
+  /* Ink text — near-black green ink on paper = maximum readability */
+  --text-primary: #101915;
+  --text-secondary: #47554E;
+  --text-tertiary: #5C6B63;
+  --text-accent-strong: #047857;
 
-  --correct: #16A34A;
+  --correct: #15803D;
   --correct-bg: #DCFCE7;
   --wrong: #DC2626;
   --wrong-bg: #FEE2E2;
-  --locked: #94A3B8;
+  --locked: #8A9990;
 
-  --subject-physics: #00CC52;
-  --subject-chemistry: #16A34A;
-  --subject-economics: #FF3E00;
-  --subject-biology: #00CC52;
-  --subject-cs: #00CC52;
-  --subject-history: #FF3E00;
-  --subject-general: #00CC52;
+  /* Subjects: harmonized, distinguishable hues (teal → olive → rust → amber).
+     All ≥3:1 on white for UI, no purple. */
+  --subject-physics: #0F766E;
+  --subject-chemistry: #15803D;
+  --subject-economics: #B45309;
+  --subject-biology: #4D7C0F;
+  --subject-cs: #0E7490;
+  --subject-history: #C2410C;
+  --subject-general: #047857;
 
   /* Educational AI Soft Rounded Corner Radii */
   --radius-sm: 8px;
@@ -146,90 +154,94 @@
   --aurora-3: rgba(0, 204, 82, 0.04);
 }
 
-/* ── Ink (Dark) — Locked Gen Z dark canvas with electric green. ── */
+/* ── Ink (Dark) — deep forest-tinted canvas with a soft mint accent.
+   Deliberately NOT neutral slate (that's every dev-tool dark mode) and NOT
+   neon: mint #34D399 reads vivid on the green-black canvas (8.9:1 on cards)
+   without the eye strain of #00FF66. Text is off-white, never pure white —
+   pure white on near-black causes halation for astigmatic readers. ── */
 html[data-theme="dark"] {
   color-scheme: dark;
 
-  --brand: #00FF66;
-  --brand-strong: #00E65C;
-  --brand-bright: #33FF85;
-  --brand-soft: rgba(0, 255, 102, 0.12);
+  --brand: #34D399;
+  --brand-strong: #2BB984;
+  --brand-bright: #5EEAB4;
+  --brand-soft: rgba(52, 211, 153, 0.12);
 
-  --cobalt-deep: #0B0E14;
-  --cobalt-mid: #1A202C;
-  --cobalt-vivid: #00FF66;
-  --cobalt-pale: #00FF66;
-  --cobalt-wash: rgba(0, 255, 102, 0.08);
-  --cobalt-ink: #0B0E14;
+  --cobalt-deep: #0B100E;
+  --cobalt-mid: #1B241F;
+  --cobalt-vivid: #34D399;
+  --cobalt-pale: #34D399;
+  --cobalt-wash: rgba(52, 211, 153, 0.08);
+  --cobalt-ink: #0B100E;
 
   --ambient-a: transparent;
   --ambient-b: transparent;
 
-  /* Canvas: Locked Off-Black */
-  --bg-primary: #0B0E14;
-  --bg-surface: #121620;
-  --bg-card: #141A26;
-  --bg-card-hover: #1E2638;
-  --bg-glass: rgba(11, 14, 20, 0.92);
-  --bg-solid: #141A26;
-  --bg-warm: #121620;
+  /* Canvas: green-black ink, layered warm-dark surfaces */
+  --bg-primary: #0B100E;
+  --bg-surface: #111714;
+  --bg-card: #151D19;
+  --bg-card-hover: #1C2620;
+  --bg-glass: rgba(11, 16, 14, 0.92);
+  --bg-solid: #151D19;
+  --bg-warm: #111714;
 
-  --border-subtle: #1E2430;
-  --border-default: #2A3245;
-  --border-accent: #00FF66;
-  --border-glow: rgba(0, 255, 102, 0.25);
+  --border-subtle: #222C27;
+  --border-default: #313D36;
+  --border-accent: #34D399;
+  --border-glow: rgba(52, 211, 153, 0.28);
 
   --glass-blur: 16px;
   --glass-blur-strong: 24px;
   --glass-saturate: 120%;
   --glass-highlight: rgba(255, 255, 255, 0.05);
   --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
-  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 0 0 1px rgba(0, 255, 102, 0.12);
+  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 0 0 1px rgba(52, 211, 153, 0.10);
   --glass-sheen: none;
 
-  --accent: #00FF66;
-  --accent-action: #FF3E00;
-  --accent-hover: #00E65C;
-  --accent-dim: rgba(0, 255, 102, 0.14);
-  --accent-glow: rgba(0, 255, 102, 0.25);
-  --accent-companion: #FF3E00;
-  --accent-gradient: #00FF66;
-  --on-accent: #0B0E14;
-  --shadow-glow-accent: 0 4px 20px rgba(0, 255, 102, 0.3);
+  --accent: #34D399;
+  --accent-action: #FBBF24;
+  --accent-hover: #5EEAB4;
+  --accent-dim: rgba(52, 211, 153, 0.13);
+  --accent-glow: rgba(52, 211, 153, 0.24);
+  --accent-companion: #FBBF24;
+  --accent-gradient: #34D399;
+  --on-accent: #052E1F;
+  --shadow-glow-accent: 0 4px 20px rgba(52, 211, 153, 0.22);
 
-  /* Text — Pure white on deep dark = maximum contrast */
-  --text-primary: #FFFFFF;
-  --text-secondary: #94A3B8;
-  --text-tertiary: #64748B;
-  --text-accent-strong: #00FF66;
+  /* Text — off-white on deep green-black: high contrast without halation */
+  --text-primary: #EDF3EF;
+  --text-secondary: #A6B5AD;
+  --text-tertiary: #7E8D85;
+  --text-accent-strong: #34D399;
 
-  --correct: #00FF66;
-  --correct-bg: rgba(0, 255, 102, 0.15);
-  --wrong: #FF3E00;
-  --wrong-bg: rgba(255, 62, 0, 0.15);
-  --locked: #3F3F46;
+  --correct: #4ADE80;
+  --correct-bg: rgba(74, 222, 128, 0.14);
+  --wrong: #F87171;
+  --wrong-bg: rgba(248, 113, 113, 0.14);
+  --locked: #4A564F;
 
-  --subject-physics: #00FF66;
-  --subject-chemistry: #33FF85;
-  --subject-economics: #FF3E00;
-  --subject-biology: #00FF66;
-  --subject-cs: #00FF66;
-  --subject-history: #FF3E00;
-  --subject-general: #00FF66;
+  --subject-physics: #2DD4BF;
+  --subject-chemistry: #4ADE80;
+  --subject-economics: #FBBF24;
+  --subject-biology: #A3E635;
+  --subject-cs: #22D3EE;
+  --subject-history: #FB923C;
+  --subject-general: #34D399;
 
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6);
-  --shadow-glow-correct: 0 0 20px rgba(0, 255, 102, 0.25);
+  --shadow-glow-correct: 0 0 20px rgba(74, 222, 128, 0.2);
 
-  --focus-ring: 0 0 0 3px rgba(0, 255, 102, 0.3);
-  --focus-ring-simple: 0 0 0 2px #00FF66;
+  --focus-ring: 0 0 0 3px rgba(52, 211, 153, 0.35);
+  --focus-ring-simple: 0 0 0 2px #34D399;
 
   --scrim: rgba(0, 0, 0, 0.6);
 
-  --aurora-1: rgba(0, 255, 102, 0.08);
-  --aurora-2: rgba(255, 62, 0, 0.08);
-  --aurora-3: rgba(0, 255, 102, 0.05);
+  --aurora-1: rgba(52, 211, 153, 0.07);
+  --aurora-2: rgba(251, 191, 36, 0.06);
+  --aurora-3: rgba(52, 211, 153, 0.05);
 }
 
 html {
@@ -249,7 +261,17 @@ body {
   min-height: 100dvh;
   color: var(--text-primary);
   font-family: var(--font-inter), system-ui, sans-serif;
-  font-weight: 700;
+  /* Body text reads at book weight. Bold is reserved for headings, labels
+     and emphasis — when everything is bold, nothing is. */
+  font-weight: 400;
+}
+
+/* UI chrome (buttons, labels, nav) sits between body and display weight. */
+button,
+input,
+select,
+textarea {
+  font-weight: 500;
 }
 
 html {
@@ -1262,15 +1284,94 @@ a:active {
   }
 }
 
+/* Settings renders no navbar, so on mobile its "← Back" control would sit
+   under the fixed hamburger toggle (top:14/left:14, 42px). Clear it. */
+@media (max-width: 900px) {
+  .settings-back {
+    margin-left: 52px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Bottom tab bar — mobile-first wayfinding.
+   Below 900px the sidebar collapses and the navbar links disappear; the tab
+   bar puts the three primary destinations (Home / Library / Progress) in the
+   thumb zone, per mobile-HCI reachability research. Hidden on desktop where
+   the sidebar + navbar already cover navigation.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.bottom-nav {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .bottom-nav {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 60;
+    background: var(--bg-glass);
+    -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+    backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+    border-top: 1px solid var(--border-subtle);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  [data-perf="low"] .bottom-nav {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--bg-surface);
+  }
+  .bottom-nav__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-height: 56px;
+    padding: 6px 4px;
+    text-decoration: none;
+    color: var(--text-tertiary);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: color var(--dur-base) var(--ease-color);
+  }
+  .bottom-nav__item svg {
+    width: 22px;
+    height: 22px;
+  }
+  .bottom-nav__item[aria-current="page"] {
+    color: var(--accent);
+  }
+  .bottom-nav__item:focus-visible {
+    outline: none;
+    box-shadow: inset var(--focus-ring);
+    border-radius: var(--radius-md);
+  }
+  /* Reserve room so page content and footers never hide under the bar. */
+  .app-main {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 @media (max-width: 640px) {
+  /* Reading text NEVER shrinks below 16px on phones — most of our users read
+     lessons on a phone, and 13px body text is the fastest way to lose them.
+     Headings compress instead; body stays at a comfortable book size. */
   .markdown-content {
-    font-size: var(--text-sm);
+    font-size: 16px;
   }
   .markdown-content h2 {
-    font-size: 18px;
+    font-size: 19px;
   }
   .markdown-content h3 {
-    font-size: 15px;
+    font-size: 16px;
   }
 }
 
@@ -2913,12 +3014,16 @@ p {
 }
 .quiz-sheet__close {
   position: absolute;
-  top: 22px;
-  right: 32px;
+  top: 16px;
+  right: 16px;
   background: transparent;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  padding: 10px 16px;
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: var(--text-secondary);
   cursor: pointer;
   font-size: 14px;

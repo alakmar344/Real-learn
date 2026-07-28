@@ -18,7 +18,6 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
   // (e.g. when the model's output was truncated); with a hardcoded total of 2
   // such a quiz could never be passed and the learner would be stuck forever.
   const totalQuestions = Math.max(questions?.length ?? 0, 1);
-  const lastQuestionIndex = totalQuestions - 1;
   const perfectScore = totalQuestions;
 
   const [current, setCurrent] = useState(0);
@@ -135,8 +134,11 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
   };
 
   const nextAction = () => {
-    if (current < lastQuestionIndex) {
-      setCurrent((prev) => prev + 1);
+    // Move to the next question that still needs an answer (on a retry pass,
+    // already-correct answers are kept, so "next" may skip over them).
+    const nextUnanswered = answers.findIndex((a, i) => a === null && i !== current);
+    if (nextUnanswered !== -1) {
+      setCurrent(nextUnanswered);
       return;
     }
 
@@ -155,15 +157,25 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
       return;
     }
 
-    // Failed attempt → retake. Reshuffle every question's options so the
-    // correct answer moves to a new position and must be found again.
-    setQuizQuestions((prev) => prev.map(reshuffleQuestion));
-    setCurrent(0);
-    setAnswers(Array.from({ length: totalQuestions }, () => null));
+    // Missed some → mastery still requires every question right, but correct
+    // answers are BANKED. Only the missed questions come back (with their
+    // options reshuffled so the right answer must be understood, not
+    // memorized by position). This keeps the 100% gate without the punishing
+    // "one slip restarts everything" loop that traps struggling learners.
+    const missed = quizQuestions
+      .map((q, i) => (answers[i] === q.correctIndex ? -1 : i))
+      .filter((i) => i !== -1);
+    setQuizQuestions((prev) =>
+      prev.map((q, i) => (missed.includes(i) ? reshuffleQuestion(q) : q))
+    );
+    setAnswers((prev) => prev.map((a, i) => (missed.includes(i) ? null : a)));
+    setCurrent(missed[0] ?? 0);
     setShuffledHint(true);
   };
 
-  const success = score === perfectScore && current === lastQuestionIndex;
+  const remaining = answers.filter((a) => a === null).length;
+  const hasNextUnanswered = answers.some((a, i) => a === null && i !== current);
+  const success = score === perfectScore && !hasNextUnanswered;
 
   return (
     <div
@@ -198,7 +210,9 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
         {shuffledHint ? (
           <>
             <div className="quiz-sheet__status animate-fade-up" role="status">
-              Answers reshuffled — the correct one has moved. Find it again.
+              {remaining === 1
+                ? "Almost there — one question to revisit. Your correct answers are saved."
+                : `Almost there — ${remaining} questions to revisit. Your correct answers are saved.`}
             </div>
             <button
               type="button"
@@ -212,8 +226,10 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
               }}
               style={{
                 display: "block",
-                margin: "8px auto 0",
-                fontSize: 13,
+                margin: "4px auto 0",
+                minHeight: 44,
+                padding: "10px 16px",
+                fontSize: 14,
                 color: "var(--accent)",
                 background: "transparent",
                 border: "none",
@@ -242,19 +258,19 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
             type="button"
             onClick={nextAction}
             aria-label={
-              current < lastQuestionIndex
+              hasNextUnanswered
                 ? "Next question"
                 : success
                   ? "Unlock next part"
-                  : "Read again"
+                  : "Retry missed questions"
             }
             className={`quiz-sheet__action${success ? " is-success" : ""}`}
           >
-            {current < lastQuestionIndex
+            {hasNextUnanswered
               ? "Next Question →"
               : success
                 ? "Unlock Next Part →"
-                : "Run It Back"}
+                : "Retry the Missed Ones →"}
           </button>
         ) : null}
       </div>

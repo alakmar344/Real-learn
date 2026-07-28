@@ -21,37 +21,65 @@ interface Props {
   onPick?: (question: string) => void;
 }
 
+/**
+ * One suggested question + a shuffle control.
+ *
+ * This used to auto-rotate on a 3.5s interval — a moving click target that
+ * violated WCAG 2.2.2 (no pause/stop for auto-updating content) and could
+ * swap the question between read and click. Curiosity is now user-driven:
+ * the learner shuffles when THEY want a new spark. Same discovery value,
+ * zero motion tax, stable target.
+ */
 export default function ExampleQuestions({ onPick }: Props) {
   const [index, setIndex] = useState(0);
 
+  // Vary the starting suggestion per visit (after mount, so SSR markup
+  // stays deterministic and hydration never mismatches).
   useEffect(() => {
-    const id = window.setInterval(() => {
-      setIndex((prev) => (prev + 1) % RECOMMENDATIONS.length);
-    }, 3500);
-    return () => window.clearInterval(id);
+    setIndex(Math.floor(Math.random() * RECOMMENDATIONS.length));
   }, []);
 
   return (
-    <button
-      type="button"
-      aria-label="Use a recommended question"
-      title="Click to try this question"
-      onClick={() => onPick?.(RECOMMENDATIONS[index])}
-      disabled={!onPick}
-      className="chip"
-      style={{
-        fontSize: 12,
-        color: "var(--accent)",
-        margin: 0,
-        maxWidth: "100%",
-        overflow: "hidden",
-        textOverflow: "ellipsis",
-        whiteSpace: "nowrap",
-        textAlign: "left",
-      }}
-    >
-      <span style={{ color: "var(--text-tertiary)", fontWeight: 500, marginRight: 4 }}>💡 Try:</span>{" "}
-      <span>{RECOMMENDATIONS[index]}</span>
-    </button>
+    <div style={{ display: "inline-flex", alignItems: "center", gap: 6, maxWidth: "100%" }}>
+      <button
+        type="button"
+        aria-label="Use a recommended question"
+        title="Click to try this question"
+        onClick={() => onPick?.(RECOMMENDATIONS[index])}
+        disabled={!onPick}
+        className="chip"
+        style={{
+          fontSize: 12,
+          color: "var(--accent)",
+          margin: 0,
+          minWidth: 0,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+          textAlign: "left",
+        }}
+      >
+        <span style={{ color: "var(--text-tertiary)", fontWeight: 500, marginRight: 4 }}>💡 Try:</span>{" "}
+        <span>{RECOMMENDATIONS[index]}</span>
+      </button>
+      <button
+        type="button"
+        aria-label="Show another suggested question"
+        title="Another suggestion"
+        onClick={() => setIndex((prev) => (prev + 1) % RECOMMENDATIONS.length)}
+        className="chip"
+        style={{
+          fontSize: 14,
+          color: "var(--text-secondary)",
+          margin: 0,
+          minWidth: 44,
+          minHeight: 36,
+          flexShrink: 0,
+          justifyContent: "center",
+        }}
+      >
+        ↻
+      </button>
+    </div>
   );
 }

@@ -130,12 +130,12 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0B0E14",
+  themeColor: "#0B100E",
 };
 
 // Applies the persisted theme BEFORE first paint so users never see a wrong
 // flash (FOUC). Must stay tiny and synchronous.
-const themeInitScript = `(function(){try{var t=null;var p=localStorage.getItem("reallearn-preferences");if(p){var s=JSON.parse(p);t=s&&s.state&&s.state.theme}if(!t){var l=localStorage.getItem("reallearn-theme");if(l){var v=JSON.parse(l);t=typeof v==="string"?v:v&&v.state&&v.state.theme}}if(t!=="light"&&t!=="dark"){t="dark"}var m=document.querySelector('meta[name="theme-color"]');if(!m){m=document.createElement("meta");m.name="theme-color";document.head.appendChild(m)}if(t==="dark"){document.documentElement.dataset.theme=t;m.content="#0B0E14"}else{m.content="#F8FAF9"}}catch(e){}})();`;
+const themeInitScript = `(function(){try{var t=null;var p=localStorage.getItem("reallearn-preferences");if(p){var s=JSON.parse(p);t=s&&s.state&&s.state.theme}if(!t){var l=localStorage.getItem("reallearn-theme");if(l){var v=JSON.parse(l);t=typeof v==="string"?v:v&&v.state&&v.state.theme}}if(t!=="light"&&t!=="dark"){t="dark"}var m=document.querySelector('meta[name="theme-color"]');if(!m){m=document.createElement("meta");m.name="theme-color";document.head.appendChild(m)}if(t==="dark"){document.documentElement.dataset.theme=t;m.content="#0B100E"}else{m.content="#F6F8F6"}}catch(e){}})();`;
 
 // Resolves the visual-performance tier BEFORE first paint so low-end devices
 // never pay for a single expensive frame (backdrop blurs, grain, ambient

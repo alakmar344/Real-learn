@@ -6,7 +6,7 @@
 1. **Never guess code logic, schemas, or file paths**: Inspect the authoritative source using file tools before editing.
 2. **Never swallow exceptions or patch symptoms**: Trace root causes.
 3. **Never declare success without empirical verification**: Run tests/builds (`npx tsc`, `npx next lint`, `npm run build`).
-4. **Preserve Soft Pastel Design System**: Cream paper base, pastel sky (`--aurora-1`), peach (`--aurora-2`), mint (`--aurora-3`), sky-blue accent (`--accent`). NO purple/violet.
+4. **Preserve the Evergreen Design System**: green-tinted paper `#F6F8F6` / forest-black `#0B100E` canvases, ONE emerald/mint interactive accent (`--accent`), warm amber companion for energy moments only, WCAG-AA-verified pairings, body text weight 400. NO neon, NO purple/violet. JS-side brand colors come from `frontend/lib/palette.ts`. Spec: `docs/REDESIGN.md`.
 5. **Zero Cognitive Load / Invisible UX**: Keep UI clean, simple, and intuitive. High complexity stays in the code, hidden from users.
 
 ## 2. Change Protocol
