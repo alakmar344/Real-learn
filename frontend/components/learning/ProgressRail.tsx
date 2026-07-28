@@ -11,7 +11,7 @@ function NodeIcon({ part, unlockedPart, completedParts }: { part: number; unlock
   const done = completedParts.includes(part);
   const active = !done && part <= unlockedPart;
 
-  if (done) return <span aria-hidden="true" style={{ color: "white", fontSize: 18, fontWeight: 700 }}>✓</span>;
+  if (done) return <span aria-hidden="true" style={{ color: "var(--correct)", fontSize: 18, fontWeight: 700 }}>✓</span>;
   if (active) return <span style={{ color: "var(--on-accent)", fontWeight: 800, fontSize: 16 }}>{part}</span>;
   return (
     <span aria-hidden="true" style={{ color: "var(--text-tertiary)", display: "grid", placeItems: "center" }}>
@@ -111,13 +111,20 @@ export default function ProgressRail({ unlockedPart, completedParts, totalParts 
                     borderRadius: "50%",
                     display: "grid",
                     placeItems: "center",
-                    background: done ? "var(--correct)" : active ? "var(--accent)" : "var(--bg-card)",
-                    border: locked ? "2px solid var(--border-default)" : "none",
-                    boxShadow: done
-                      ? "none"
-                      : active
-                        ? "var(--shadow-sm)"
+                    /* Done, current and locked are distinguishable by SHAPE,
+                       not just hue (done = soft outlined ✓ that recedes;
+                       current = the only filled disc, with a halo ring;
+                       locked = dashed-quiet outline). Color-only coding
+                       failed in dark mode where correct ≈ accent. */
+                    background: done ? "var(--correct-bg)" : active ? "var(--accent)" : "var(--bg-card)",
+                    border: done
+                      ? "2px solid var(--correct)"
+                      : locked
+                        ? "2px solid var(--border-default)"
                         : "none",
+                    boxShadow: active
+                      ? "var(--shadow-sm), 0 0 0 4px var(--accent-dim)"
+                      : "none",
                     backgroundSize: "200% 200%",
                     animation: undefined,
                   }}

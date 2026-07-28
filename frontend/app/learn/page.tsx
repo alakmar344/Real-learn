@@ -23,6 +23,7 @@ import { triggerHaptic } from "@/lib/haptics";
 import { LessonJourney, LessonPart } from "@/types";
 import { useShallow } from "zustand/shallow";
 import confetti from "canvas-confetti";
+import { celebrationColors } from "@/lib/palette";
 
 const CompletionScreen = lazy(() => import("@/components/learning/CompletionScreen"));
 const FollowUpBox = lazy(() => import("@/components/learning/FollowUpBox"));
@@ -335,7 +336,7 @@ export default function LearnPage() {
       particleCount: 70,
       spread: 60,
       origin: { y: 0.6 },
-      colors: ["#b8860b", "#e0b341", "#d4847a", "#ffffff"],
+      colors: celebrationColors(),
       disableForReducedMotion: true,
     });
     passPart(part.partNumber, score);

@@ -137,7 +137,7 @@ export default function ProgressPage() {
             Your Progress
           </h1>
           <p style={{ margin: "6px 0 0", color: "var(--text-secondary)", fontSize: 14 }}>
-            Every quiz you pass builds this. Keep the flame alive.
+            Every quiz you pass builds this — at your own pace.
           </p>
         </div>
         <div className="kusari" style={{ margin: "0 0 24px", maxWidth: 240 }} aria-hidden="true">

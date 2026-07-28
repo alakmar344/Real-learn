@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useProgressStore, Celebration } from "@/store/progressStore";
 import { BADGE_BY_ID, TIER_COLOR, levelTitle } from "@/lib/achievements";
 import { useMounted } from "@/hooks/useMounted";
+import { celebrationColors } from "@/lib/palette";
 
 /* Duration each celebration type stays on screen.
    Reduced from original values to minimize user interruption — celebrations
@@ -16,19 +17,19 @@ const DURATION: Record<Celebration["kind"], number> = {
   "daily-goal": 2000,
 };
 
-const BURST_COLORS = ["#0284C7", "#0D9488", "#FECAB4", "#FFC24B", "var(--correct)", "var(--accent)"];
-
 function Burst() {
-  const [pieces] = useState(() =>
-    Array.from({ length: 16 }, (_, i) => ({
+  // Resolve colors at burst time so they track the active theme.
+  const [pieces] = useState(() => {
+    const colors = celebrationColors();
+    return Array.from({ length: 16 }, (_, i) => ({
       id: i,
       left: 50 + (Math.random() * 30 - 15),
       delay: Math.random() * 0.2,
       size: 5 + Math.random() * 5,
-      color: BURST_COLORS[i % BURST_COLORS.length],
+      color: colors[i % colors.length],
       duration: 1.2 + Math.random() * 0.8,
-    }))
-  );
+    }));
+  });
   return (
     <div aria-hidden="true" style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
       {pieces.map((p) => (
@@ -481,7 +482,7 @@ export default function EngagementLayer() {
           {current.streak}-day streak!
         </h3>
         <p style={{ margin: 0, fontSize: 14, color: "var(--text-secondary)" }}>
-          Come back tomorrow to keep the flame alive.
+          Showing up daily — that&apos;s how learning sticks.
         </p>
       </CenterCard>
     );

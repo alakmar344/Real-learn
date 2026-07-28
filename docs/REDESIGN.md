@@ -1,0 +1,213 @@
+# RealLearn "Evergreen" Redesign — UX Audit, Design System & Implementation Record
+
+> **Goal:** redesign RealLearn so Gen Z naturally feels at home — not by decorating
+> it with "Gen Z" signifiers, but by applying what actually makes modern products
+> feel effortless: clarity, strong hierarchy, expressive-but-restrained visuals,
+> speed, and low cognitive load. This repo already tried the other path once
+> (PR #271, "electric cyber Gen Z aesthetic") and had to revert it (PR #272).
+> This document is the correction of course, and the record of what shipped.
+
+---
+
+## 1. UX Audit of the existing experience
+
+A full-codebase audit (every page, every shared component, the token system,
+motion, and a11y) surfaced the following state:
+
+**What already worked well (deliberately preserved):**
+- Robust lesson lifecycle (`useLesson.ts`): abort-on-new-request, retry/backoff, defensive SSE parsing.
+- `LoadingCinematic` turning generation wait into real progress feedback.
+- Honest streaks (a lapsed streak shows as dead, not perpetually alive).
+- Non-blocking XP chips + batched celebration events.
+- Strong a11y baseline: skip links, focus traps, `role=radiogroup` quizzes, live regions, pre-paint theme script (no FOUC), reduced-motion global kill-switch, perf-tier gating of expensive effects.
+- First-attempt scoring ("perfect" = aced on first try) — a genuinely honest stat.
+
+**What did not work** — see §2.
+
+---
+
+## 2. Problems ranked by severity
+
+| # | Severity | Problem | Evidence |
+|---|----------|---------|----------|
+| 1 | Critical | **Neon palette with broken semantics.** Dark theme used pure `#00FF66` electric green on near-black with pure-white text (eye strain, halation); the error color `#FF3E00` doubled as the "action accent" — errors and CTAs shared a color. | `globals.css` old tokens |
+| 2 | Critical | **Everything was bold.** `body { font-weight: 700 }` — all paragraph text rendered bold, destroying hierarchy and reading comfort. Mobile then *shrank* lesson text to 13px. | `globals.css:252`, 640px media query |
+| 3 | Critical | **Mobile wayfinding was broken.** Below 900px the navbar links disappear and the sidebar (hamburger) contains no Home/Progress destination. There was literally no visible route to `/progress` beyond a small chip, and none to Home. | `Navbar.tsx:16`, `Sidebar.tsx` |
+| 4 | High | **Punishing quiz gate.** One wrong answer reshuffled *all* options and restarted the quiz from Q1 ("Run It Back") — a struggling learner loops indefinitely, losing correct work each time. | `QuizSheet.tsx:149-164` |
+| 5 | High | **The only forward affordance was hidden.** Until the reading timer elapsed, the lone "continue" control was a 13px, 70%-opacity tertiary link with a sub-44px target. | `PartCard.tsx:243-262` |
+| 6 | High | **Three competing brand palettes in one flow.** Green UI → gold/tan confetti → blue/teal/pink completion burst → sky-blue share card → orange hearts. | `page.tsx:338`, `CompletionScreen`, `ShareResult`, `EngagementLayer`, `EasterEggs` |
+| 7 | High | **WCAG 2.2.2 violation on the homepage.** The suggested-question chip auto-rotated every 3.5s with no pause control — a moving click target that could swap between read and click. | `ExampleQuestions.tsx:27-32` |
+| 8 | Medium | **Duplicate suggestion widgets.** The rotating chip and "Today's spark" stacked on the homepage with overlapping topic lists — decision overload beside the primary action. | `HomeStats.tsx:89-105` |
+| 9 | Medium | Sub-44px tap targets: quiz close button, copy button, summary-card arrows, skip link, feedback stars. | multiple |
+| 10 | Medium | Voice whiplash: "Quick W", "a rematch would hit different", "can you pass this? 💀" beside formal system copy. | `CompletionScreen`, `ShareResult` |
+| 11 | Medium | Streak copy leaned on loss-aversion/guilt ("keep the flame alive") — the addictive-pattern edge of gamification. | `EngagementLayer`, `progress/page.tsx` |
+| 12 | Medium | Done vs. current progress nodes distinguished by color alone; in dark mode both were literally `#00FF66`. | `ProgressRail.tsx` |
+| 13 | Low | Settings' "← Back" collided with the fixed hamburger on mobile; `theme-color` fallback hex typo (`#0B0D14`); TL;DR banner pretended to summarize content it hadn't read. | `settings/page.tsx`, `ThemeApplier.tsx:25`, `PartCard.tsx` |
+
+---
+
+## 3. Design philosophy
+
+**"Evergreen": calm surface, warm core.**
+
+Research on how Gen Z actually engages with products they trust (as opposed to
+stereotypes about them) consistently converges on the same properties: speed,
+honesty, legibility, control, and *earned* — not manufactured — delight. The
+products this cohort lives in daily are visually quiet and typographically
+confident; energy comes from responsiveness and feedback, not decoration.
+
+Principles applied throughout:
+
+1. **One identity, everywhere.** A single emerald + amber system flows from CSS
+   tokens through canvas confetti to the share card. Coherence *is* premium.
+2. **Energy is a moment, not a wallpaper.** The warm amber companion appears
+   only at energy moments (streaks, celebration, sparks). The rest of the
+   interface stays calm so those moments land.
+3. **Reward effort, never punish it.** Mastery gates stay (they're the
+   product), but correct work is banked. Feedback celebrates progress and
+   never mocks failure.
+4. **The exit is always visible.** No affordance a user needs is hidden,
+   dimmed, or moved while they aim at it.
+5. **Motion communicates state.** Progress bars track real progress; the CTA
+   *upgrades* (outline → filled) when the reading timer completes; everything
+   honors `prefers-reduced-motion`.
+6. **Accessibility is the floor, not a feature.** Every shipped color pairing
+   was computed against WCAG before commit.
+
+Identity note: the green-black dark canvas (`#0B100E`) is deliberately *not*
+the neutral slate of Linear/Vercel-style dev tools, and the green-tinted paper
+is deliberately not Apple white — a recognizably "RealLearn" room in both
+lights, within the owner's standing rule (**no purple/violet**).
+
+---
+
+## 4. Design system specification
+
+### 4.1 Color (all pairings verified; ratios vs. their actual background)
+
+**Paper (light)**
+| Token | Value | Contrast | Role |
+|---|---|---|---|
+| `--bg-primary` | `#F6F8F6` | — | green-tinted paper canvas |
+| `--bg-card` | `#FFFFFF` | — | cards/surfaces |
+| `--accent` | `#047857` | 5.48:1 on white | the ONE interactive accent (AA normal text) |
+| `--accent-hover` | `#065F46` | — | hover/pressed |
+| `--accent-companion` / `--accent-action` | `#B45309` | 5.02:1 | warm amber — energy moments only |
+| `--text-primary` | `#101915` | 16.8:1 | body ink |
+| `--text-secondary` | `#47554E` | 7.84:1 | supporting |
+| `--text-tertiary` | `#5C6B63` | 5.62:1 | captions (still AA) |
+| `--correct` / `--wrong` | `#15803D` / `#DC2626` | 5.02 / 4.83 | feedback — never reused as brand/CTA |
+| Subjects | teal `#0F766E`, green `#15803D`, amber `#B45309`, olive `#4D7C0F`, cyan `#0E7490`, rust `#C2410C` | ≥3:1 | distinguishable, harmonized, no purple |
+
+**Ink (dark)** — key deltas: canvas `#0B100E` (forest black), cards `#151D19`,
+accent mint `#34D399` (8.9:1 on cards — vivid *without* neon), on-accent
+`#052E1F` (7.7:1), text `#EDF3EF` off-white (15.3:1 — pure white causes
+halation for astigmatic readers), amber `#FBBF24`, wrong `#F87171`, correct
+`#4ADE80`.
+
+### 4.2 Typography
+- **Display:** Space Grotesk 700–800, tight tracking — headings only.
+- **Body:** Inter **400** (was 700 globally — the single biggest readability fix), `line-height: 1.55`; lesson prose in Lora at 1.75.
+- **UI chrome:** buttons/inputs/labels at 500–600.
+- **Floor:** lesson reading text never renders below **16px** on phones (was 13px).
+- Scale: 11 / 13 / 15 / 18 / 22 / 28 / 36 / 48 / 56 (existing tokens, retained).
+
+### 4.3 Spacing, radius, elevation
+- Spacing tokens retained: 6 / 10 / 16 / 24 / 32 / 48 / 64 / 80.
+- Radii retained: 8 → 24px + pill. Cards `--radius-2xl`, controls `--radius-md/lg`.
+- Shadows: soft neutral (`--shadow-sm/md/lg`); glow shadows now derive from the emerald accent at low alpha — depth, not bloom.
+
+### 4.4 Motion
+- Durations 120/200/300ms; reveal easing `cubic-bezier(0.16,1,0.3,1)`.
+- Transform/opacity-only animations (compositor-cheap); backdrop blurs gated behind the `data-perf` tier; global `prefers-reduced-motion` kill-switch retained.
+- State-communicating motion kept (quiz shake/pulse, unlock pop, reading progress); decorative confetti reduced to *one* consistent system.
+
+### 4.5 Components & icons
+- Buttons: filled accent (primary) / outlined `btn-toggle` (secondary) / underlined text (tertiary). All ≥44px targets.
+- Icons: 1.8–2px stroke line icons (lock, home, library, progress) — no emoji as UI controls.
+- New: `bottom-nav` (mobile tab bar), `settings-back` clearance rule.
+
+---
+
+## 5. Information architecture
+
+**Before (mobile):** navbar links hidden below 900px; sidebar = saved lessons only; no route to Home or Progress. **After:**
+
+```
+Mobile (≤900px)                        Desktop (>900px)
+┌──────────────────────┐               ┌──────────┬────────────────┐
+│  content             │               │ Sidebar  │ Navbar (links) │
+│                      │               │ (library,│    content     │
+│                      │               │  new,    │                │
+├──────────────────────┤               │  theme,  │                │
+│ Learn│Library│Progress│  ← tab bar   │ settings)│                │
+└──────────────────────┘               └──────────┴────────────────┘
+```
+
+- **Three primary destinations, thumb-reachable, 56px targets** (Fitts's law / thumb-zone research). "Library" opens the saved-lessons drawer — progressive disclosure instead of a fourth route.
+- Homepage: **one** suggestion surface (chip + explicit shuffle next to the input) instead of two competing widgets — Hick's law: fewer choices before the primary action.
+- Duplicate settings entry points left intact (they share one store) but copy divergence is now documented for follow-up.
+
+---
+
+## 6. Redesigned layouts (what shipped per page)
+
+- **Home:** greeting → question input (primary) → single stable suggestion + shuffle → resume card → how-it-works strip. No moving targets.
+- **Learn:** sticky context header; part cards with an honest "In this part" orientation banner; always-visible forward path (outline → filled CTA upgrade); locked parts explain exactly what unlocks them.
+- **Quiz sheet:** bottom sheet retained (thumb-friendly); 44px close control at a reachable position; **missed-questions-only retry**.
+- **Completion:** consistent emerald/amber celebration; supportive first-try framing; share card re-rendered in brand palette.
+- **Progress:** copy shifted from loss-aversion to self-efficacy framing; heatmap/achievements retained.
+- **Settings:** back control cleared from the hamburger, 44px target.
+
+---
+
+## 7. New interaction patterns
+
+| Pattern | Behavior | Principle |
+|---|---|---|
+| **Banked mastery** | Wrong answers re-queue only the missed questions (reshuffled); correct answers persist | Mastery learning without punishment; protects competence (self-determination theory) |
+| **CTA upgrade** | Forward button always exists; visual weight upgrades outline→filled when the reading timer completes | Visibility of system status; no hidden exits |
+| **User-paced discovery** | Suggestion shuffle is a button, not a timer | WCAG 2.2.2; user control & freedom |
+| **Tab-bar + drawer hybrid** | 3 primary tabs; deep archive behind "Library" | Thumb-zone reach; progressive disclosure |
+
+---
+
+## 8. Motion guidelines
+
+1. Motion must encode a state change (progress, unlock, error, success) — decoration-only animation is capped at the single celebration system.
+2. Transform + opacity only on the hot path; no animated blurs/filters; ambient layers are compositor-contained and disabled on `data-perf="low"`.
+3. Every animation dies under `prefers-reduced-motion` (existing global rule verified and retained).
+4. Duration discipline: micro-feedback ≤200ms, reveals ≤300–500ms, celebrations ≤2s and dismissible.
+
+---
+
+## 9. Engagement without addiction
+
+- **Kept:** streaks, XP, levels, achievements, daily goal ring — with honest states (dead streaks look dead).
+- **Changed:** guilt copy ("keep the flame alive") → self-efficacy copy ("showing up daily — that's how learning sticks"); quiz failure no longer erases progress; celebration surfaces unified and calm.
+- **Why:** loss-aversion loops drive short-term retention but erode trust — the mechanism behind "streak anxiety." Competence + autonomy framing (self-determination theory) sustains intrinsic motivation, which is the only kind that survives in an education product.
+
+---
+
+## 10. Implementation record & next steps for developers
+
+**Shipped in this change** (all verified: `tsc` 0 errors, `next lint` clean of new issues, `next build` clean, `verify:quiz` 150k/150k pass):
+
+1. `app/globals.css` — full token overhaul (both themes), body weight 400, 16px mobile reading floor, bottom-nav styles, 44px quiz close, settings-back clearance.
+2. `components/shared/BottomNav.tsx` (new) + `AppShell` integration.
+3. `components/learning/QuizSheet.tsx` — banked-mastery retry, supportive copy.
+4. `components/learning/PartCard.tsx` — visible forward path, honest orientation banner, 44px targets.
+5. `lib/palette.ts` (new) — single JS-side brand palette; migrated: learn-page confetti, `CompletionScreen`, `ShareResult` (canvas + share text), `EngagementLayer`, `EasterEggs`, `FeedbackPrompt`.
+6. `components/homepage/ExampleQuestions.tsx` — static chip + shuffle; `HomeStats` spark removed.
+7. `components/learning/ProgressRail.tsx` — shape-coded states (done=outlined ✓, current=filled+halo, locked=outline lock).
+8. `lib/themes.ts`, `ThemeApplier.tsx` (typo fix), `layout.tsx` — theme-color hexes synced to new canvases.
+9. Copy pass: slang whiplash and guilt framing removed.
+
+**Recommended follow-ups (not yet shipped):**
+- Migrate remaining inline-style objects in `learn/page.tsx`, `CompletionScreen`, `settings/page.tsx` to the class-based system (consistency + smaller markup).
+- Consolidate the duplicated focus-trap in `QuizSheet` onto `hooks/useFocusTrap`.
+- Reduce completion-screen CTA count (currently 3+ "ask another question" paths) to one primary + one secondary.
+- Consider `aria-hidden` on blurred locked-part content so screen readers match the visual gate (product decision: is pre-reading locked content acceptable?).
+- `LoadingCinematic`: render a 1-part skeleton in fast mode instead of the hardcoded 3-part deck.
+- Remove dead `contexts/SidebarContext.tsx` or wire `AppShell` through it.
+- Desktop learn layout: promote `ProgressRail` to a sticky side rail above 1200px.

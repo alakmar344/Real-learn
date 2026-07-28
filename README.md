@@ -17,7 +17,7 @@ When a learner asks a question:
 2. **Quiz-Gated Mastery**: Each part is locked behind a 2-question quiz. Learners must achieve **100% score** to unlock the next part.
 3. **Multilingual & Adaptive**: Supports 12 Indian languages and 3 grade levels (Class 6-8, Class 9-10, College).
 4. **Learning Personalization**: Optional user learning preferences and notes seamlessly injected into AI prompt generation.
-5. **Soft Pastel & Gen Z Dark Design System**: Clean, readable, cream paper daylight / charcoal night themes with sky-blue (`#0284C7`) & solid electric green (`#00FF66`) accents (strictly zero purple/violet).
+5. **Evergreen Design System**: calm, readable, WCAG-AA-verified — green-tinted paper daylight (`#F6F8F6`) / forest-black night (`#0B100E`) themes with a deep emerald (`#047857`) / soft mint (`#34D399`) accent and a warm amber companion for celebration moments (no neon, strictly zero purple/violet). Full spec: [`docs/REDESIGN.md`](docs/REDESIGN.md).
 
 ---
 
