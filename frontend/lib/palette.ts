@@ -24,8 +24,8 @@ export function activeTheme(): ThemeName {
 
 /** Confetti / particle-burst colors — emerald family + amber spark + paper. */
 const CELEBRATION: Record<ThemeName, string[]> = {
-  light: ["#047857", "#059669", "#34D399", "#F59E0B", "#FBBF24", "#FFFFFF"],
-  dark: ["#34D399", "#5EEAB4", "#A7F3D0", "#FBBF24", "#FDE68A", "#EDF3EF"],
+  light: ["#EE5125", "#FF6435", "#04A16C", "#10B981", "#F59E0B", "#FBBF24", "#FFFFFF"],
+  dark: ["#FF6435", "#FF8054", "#00D284", "#34D399", "#FBBF24", "#FDE68A", "#EDF3EF"],
 };
 
 export function celebrationColors(theme: ThemeName = activeTheme()): string[] {
