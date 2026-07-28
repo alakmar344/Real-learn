@@ -11,80 +11,82 @@
   color-scheme: light;
 
   /* ═══════════════════════════════════════════════════════════════════════
-     RealLearn Gen Z Design System — Light Theme (Paper)
-     Background: #F8FAF9 | Dominant: #00CC52 | Accent: #FF3E00
-     Space Grotesk (Headings: 700-800) + Inter (Body/UI: 700)
+     RealLearn Brand DNA System — Light Theme (Sunlight Alabaster Paper)
+     Primary Accent: Solar Terracotta (#E05624)
+     Grounding Secondary: Slate Cobalt (#1E293B)
+     Success: Sage Emerald (#059669) | Danger: Warm Coral (#DC2626)
+     Canvas: Warm Alabaster (#FAF9F6)
+     Typography: Space Grotesk (700-800) + Inter (500-700)
      ═══════════════════════════════════════════════════════════════════════ */
 
-  /* Brand accent — Vivid Green (accessible on light surfaces) */
-  --brand: #00CC52;
-  --brand-strong: #00A844;
-  --brand-bright: #00FF66;
-  --brand-soft: rgba(0, 204, 82, 0.10);
+  --brand: #E05624;
+  --brand-strong: #C44517;
+  --brand-bright: #FF6B38;
+  --brand-soft: rgba(224, 86, 36, 0.10);
 
   --cobalt-deep: #0F172A;
-  --cobalt-mid: #334155;
-  --cobalt-vivid: #00CC52;
-  --cobalt-pale: rgba(0, 204, 82, 0.08);
-  --cobalt-wash: rgba(0, 204, 82, 0.05);
+  --cobalt-mid: #1E293B;
+  --cobalt-vivid: #E05624;
+  --cobalt-pale: rgba(224, 86, 36, 0.08);
+  --cobalt-wash: rgba(224, 86, 36, 0.04);
   --cobalt-ink: #0F172A;
 
-  /* Canvas: Clean Bright Paper */
-  --bg-primary: #F8FAF9;
+  /* Canvas & Tactile Surfaces */
+  --bg-primary: #FAF9F6;
   --bg-surface: #FFFFFF;
   --bg-card: #FFFFFF;
-  --bg-card-hover: #F1F5F2;
-  --bg-glass: rgba(248, 250, 249, 0.92);
-  --bg-solid: #F1F5F2;
+  --bg-card-hover: #F4F2EC;
+  --bg-glass: rgba(250, 249, 246, 0.94);
+  --bg-solid: #F0EEE6;
   --bg-warm: #FFFFFF;
 
   --ambient-a: transparent;
   --ambient-b: transparent;
 
-  --border-subtle: #E2E8F0;
-  --border-default: #CBD5E1;
-  --border-accent: #00CC52;
-  --border-glow: rgba(0, 204, 82, 0.18);
+  --border-subtle: #E6E4DC;
+  --border-default: #D4D1C5;
+  --border-accent: #E05624;
+  --border-glow: rgba(224, 86, 36, 0.18);
 
-  --glass-blur: 16px;
-  --glass-blur-strong: 24px;
-  --glass-saturate: 120%;
+  --glass-blur: 12px;
+  --glass-blur-strong: 16px;
+  --glass-saturate: 110%;
   --glass-highlight: rgba(255, 255, 255, 0.9);
-  --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.03);
-  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 0 0 1px rgba(0, 0, 0, 0.04);
+  --glass-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 0 0 1px rgba(212, 209, 197, 0.6);
   --glass-sheen: none;
 
-  --accent: #00CC52;
-  --accent-action: #FF3E00;
-  --accent-hover: #00A844;
-  --accent-dim: rgba(0, 204, 82, 0.10);
-  --accent-glow: rgba(0, 204, 82, 0.18);
-  --accent-companion: #FF3E00;
-  --accent-gradient: #00CC52;
+  --accent: #E05624;
+  --accent-action: #E05624;
+  --accent-hover: #C44517;
+  --accent-dim: rgba(224, 86, 36, 0.10);
+  --accent-glow: rgba(224, 86, 36, 0.18);
+  --accent-companion: #1E293B;
+  --accent-gradient: #E05624;
   --on-accent: #FFFFFF;
-  --shadow-glow-accent: 0 4px 16px rgba(0, 204, 82, 0.20);
+  --shadow-glow-accent: 0 4px 16px rgba(224, 86, 36, 0.20);
 
-  /* Ink text — Deep slate on bright paper = maximum readability */
+  /* High-Contrast Readability */
   --text-primary: #0F172A;
   --text-secondary: #475569;
   --text-tertiary: #64748B;
-  --text-accent-strong: #00A844;
+  --text-accent-strong: #C44517;
 
-  --correct: #16A34A;
-  --correct-bg: #DCFCE7;
+  --correct: #059669;
+  --correct-bg: #D1FAE5;
   --wrong: #DC2626;
   --wrong-bg: #FEE2E2;
   --locked: #94A3B8;
 
-  --subject-physics: #00CC52;
-  --subject-chemistry: #16A34A;
-  --subject-economics: #FF3E00;
-  --subject-biology: #00CC52;
-  --subject-cs: #00CC52;
-  --subject-history: #FF3E00;
-  --subject-general: #00CC52;
+  --subject-physics: #E05624;
+  --subject-chemistry: #059669;
+  --subject-economics: #0284C7;
+  --subject-biology: #059669;
+  --subject-cs: #E05624;
+  --subject-history: #D97706;
+  --subject-general: #E05624;
 
-  /* Educational AI Soft Rounded Corner Radii */
+  /* Tactile Folio Corner Radii */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
@@ -120,10 +122,10 @@
   --tracking-normal: 0;
   --tracking-wide: 0.04em;
 
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.08);
-  --shadow-glow-correct: 0 0 16px rgba(22, 163, 74, 0.15);
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 4px 14px rgba(15, 23, 42, 0.07);
+  --shadow-lg: 0 10px 30px rgba(15, 23, 42, 0.09);
+  --shadow-glow-correct: 0 0 16px rgba(5, 150, 105, 0.15);
 
   --ease-reveal: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-color: cubic-bezier(0.4, 0, 0.2, 1);
@@ -137,65 +139,100 @@
   --blur-sm: 4px;
   --blur-md: 12px;
 
-  --scrim: rgba(0, 0, 0, 0.4);
-  --focus-ring: 0 0 0 3px rgba(0, 204, 82, 0.25);
-  --focus-ring-simple: 0 0 0 2px #00CC52;
+  --scrim: rgba(15, 23, 42, 0.4);
+  --focus-ring: 0 0 0 3px rgba(224, 86, 36, 0.25);
+  --focus-ring-simple: 0 0 0 2px #E05624;
 
-  --aurora-1: rgba(0, 204, 82, 0.06);
-  --aurora-2: rgba(255, 62, 0, 0.06);
-  --aurora-3: rgba(0, 204, 82, 0.04);
+  --aurora-1: rgba(224, 86, 36, 0.05);
+  --aurora-2: rgba(30, 41, 59, 0.04);
+  --aurora-3: rgba(5, 150, 105, 0.04);
 }
 
-/* ── Ink (Dark) — Locked Gen Z dark canvas with electric green. ── */
+/* ── Ink (Dark) — Midnight Obsidian Canvas with Solar Terracotta Energy ── */
 html[data-theme="dark"] {
   color-scheme: dark;
 
-  --brand: #00FF66;
-  --brand-strong: #00E65C;
-  --brand-bright: #33FF85;
-  --brand-soft: rgba(0, 255, 102, 0.12);
+  --brand: #FF6B38;
+  --brand-strong: #E05624;
+  --brand-bright: #FF885E;
+  --brand-soft: rgba(255, 107, 56, 0.14);
 
-  --cobalt-deep: #0B0E14;
-  --cobalt-mid: #1A202C;
-  --cobalt-vivid: #00FF66;
-  --cobalt-pale: #00FF66;
-  --cobalt-wash: rgba(0, 255, 102, 0.08);
-  --cobalt-ink: #0B0E14;
+  --cobalt-deep: #0D1117;
+  --cobalt-mid: #161B22;
+  --cobalt-vivid: #FF6B38;
+  --cobalt-pale: #FF6B38;
+  --cobalt-wash: rgba(255, 107, 56, 0.08);
+  --cobalt-ink: #0D1117;
 
   --ambient-a: transparent;
   --ambient-b: transparent;
 
-  /* Canvas: Locked Off-Black */
-  --bg-primary: #0B0E14;
-  --bg-surface: #121620;
-  --bg-card: #141A26;
-  --bg-card-hover: #1E2638;
-  --bg-glass: rgba(11, 14, 20, 0.92);
-  --bg-solid: #141A26;
-  --bg-warm: #121620;
+  /* Canvas: Midnight Obsidian Slate */
+  --bg-primary: #0D1117;
+  --bg-surface: #161B22;
+  --bg-card: #161B22;
+  --bg-card-hover: #21262D;
+  --bg-glass: rgba(13, 17, 23, 0.94);
+  --bg-solid: #21262D;
+  --bg-warm: #161B22;
 
-  --border-subtle: #1E2430;
-  --border-default: #2A3245;
-  --border-accent: #00FF66;
-  --border-glow: rgba(0, 255, 102, 0.25);
+  --border-subtle: #21262D;
+  --border-default: #30363D;
+  --border-accent: #FF6B38;
+  --border-glow: rgba(255, 107, 56, 0.25);
 
-  --glass-blur: 16px;
-  --glass-blur-strong: 24px;
-  --glass-saturate: 120%;
-  --glass-highlight: rgba(255, 255, 255, 0.05);
+  --glass-blur: 12px;
+  --glass-blur-strong: 16px;
+  --glass-saturate: 110%;
+  --glass-highlight: rgba(255, 255, 255, 0.06);
   --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
-  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 0 0 1px rgba(0, 255, 102, 0.12);
+  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(48, 54, 61, 0.8);
   --glass-sheen: none;
 
-  --accent: #00FF66;
-  --accent-action: #FF3E00;
-  --accent-hover: #00E65C;
-  --accent-dim: rgba(0, 255, 102, 0.14);
-  --accent-glow: rgba(0, 255, 102, 0.25);
-  --accent-companion: #FF3E00;
-  --accent-gradient: #00FF66;
-  --on-accent: #0B0E14;
-  --shadow-glow-accent: 0 4px 20px rgba(0, 255, 102, 0.3);
+  --accent: #FF6B38;
+  --accent-action: #FF6B38;
+  --accent-hover: #E05624;
+  --accent-dim: rgba(255, 107, 56, 0.14);
+  --accent-glow: rgba(255, 107, 56, 0.25);
+  --accent-companion: #94A3B8;
+  --accent-gradient: #FF6B38;
+  --on-accent: #0D1117;
+  --shadow-glow-accent: 0 4px 20px rgba(255, 107, 56, 0.3);
+
+  /* High-Contrast Dark Text */
+  --text-primary: #F0F6FC;
+  --text-secondary: #8B949E;
+  --text-tertiary: #6E7681;
+  --text-accent-strong: #FF6B38;
+
+  --correct: #10B981;
+  --correct-bg: rgba(16, 185, 129, 0.15);
+  --wrong: #EF4444;
+  --wrong-bg: rgba(239, 68, 68, 0.15);
+  --locked: #484F58;
+
+  --subject-physics: #FF6B38;
+  --subject-chemistry: #10B981;
+  --subject-economics: #38BDF8;
+  --subject-biology: #10B981;
+  --subject-cs: #FF6B38;
+  --subject-history: #F59E0B;
+  --subject-general: #FF6B38;
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6);
+  --shadow-glow-correct: 0 0 20px rgba(16, 185, 129, 0.25);
+
+  --focus-ring: 0 0 0 3px rgba(255, 107, 56, 0.3);
+  --focus-ring-simple: 0 0 0 2px #FF6B38;
+
+  --scrim: rgba(0, 0, 0, 0.65);
+
+  --aurora-1: rgba(255, 107, 56, 0.08);
+  --aurora-2: rgba(148, 163, 184, 0.05);
+  --aurora-3: rgba(16, 185, 129, 0.05);
+}
 
   /* Text — Pure white on deep dark = maximum contrast */
   --text-primary: #FFFFFF;
@@ -756,6 +793,164 @@ a:active {
    live here and silently overrode the richer definitions above with flatter,
    less springy ones. The duplicates were removed so the intended motion is
    what actually plays. */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RealLearn Brand DNA Component Architecture
+   • Tactile Folio Cards (.folio-card)
+   • The Learning Conduit (.learning-conduit)
+   • TL;DR Concept Stamp (.concept-stamp)
+   • Stamped Quiz Choice (.quiz-stamped-option)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.folio-card {
+  position: relative;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  transition: transform var(--dur-fast) var(--ease-reveal), border-color var(--dur-fast) var(--ease-color), box-shadow var(--dur-fast) var(--ease-color);
+  overflow: hidden;
+}
+
+.folio-card--notched::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 36px;
+  height: 36px;
+  background: var(--accent-dim);
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.folio-card:hover {
+  border-color: var(--border-accent);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.folio-card:active {
+  transform: scale(0.985);
+}
+
+/* ── The Learning Conduit — Continuous 3-part stepper line ── */
+.learning-conduit {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  gap: 12px;
+}
+
+.learning-conduit__line {
+  position: absolute;
+  top: 50%;
+  left: 40px;
+  right: 40px;
+  height: 3px;
+  background: var(--border-subtle);
+  transform: translateY(-50%);
+  z-index: 0;
+}
+
+.learning-conduit__line-fill {
+  height: 100%;
+  background: var(--brand);
+  transition: width var(--dur-slow) var(--ease-reveal);
+  position: relative;
+}
+
+.learning-conduit__step {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-default);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  transition: all var(--dur-fast) var(--ease-color);
+}
+
+.learning-conduit__step--active {
+  border-color: var(--brand);
+  background: var(--brand);
+  color: var(--on-accent);
+  box-shadow: var(--shadow-glow-accent);
+}
+
+.learning-conduit__step--completed {
+  border-color: var(--correct);
+  background: var(--correct-bg);
+  color: var(--correct);
+}
+
+/* ── TL;DR Concept Stamp ── */
+.concept-stamp {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--brand-soft);
+  border-left: 4px solid var(--brand);
+  border-radius: var(--radius-md);
+  margin-bottom: 20px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* ── Stamped Quiz Option ── */
+.quiz-stamped-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  color: var(--text-primary);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-reveal);
+  width: 100%;
+  text-align: left;
+}
+
+.quiz-stamped-option:hover {
+  border-color: var(--brand);
+  background: var(--bg-card-hover);
+  transform: translateX(4px);
+}
+
+.quiz-stamped-option--selected {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+}
+
+.quiz-stamped-option--correct {
+  border-color: var(--correct);
+  background: var(--correct-bg);
+  color: var(--correct);
+}
+
+.quiz-stamped-option--wrong {
+  border-color: var(--wrong);
+  background: var(--wrong-bg);
+  color: var(--wrong);
+}
 
 /* ── Easter-egg keyframes ── */
 @keyframes heartFloat {
