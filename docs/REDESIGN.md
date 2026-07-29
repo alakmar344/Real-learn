@@ -211,3 +211,31 @@ Mobile (≤900px)                        Desktop (>900px)
 - `LoadingCinematic`: render a 1-part skeleton in fast mode instead of the hardcoded 3-part deck.
 - Remove dead `contexts/SidebarContext.tsx` or wire `AppShell` through it.
 - Desktop learn layout: promote `ProgressRail` to a sticky side rail above 1200px.
+
+---
+
+## Addendum — "Sunset Pop" vibrancy pass (July 2026)
+
+A follow-up pass turned the Solar Terracotta system up from calm to vibrant —
+deliberately **not** a return to the reverted "electric cyber" extreme (PR
+#271/#272). Grounded in current Gen Z design research (dopamine color used
+with restraint, soft Y2K/Frutiger-Aero airiness, gradient display moments),
+every change stays token-level and WCAG-AA-checked:
+
+- **Sunset gradients** (`--accent-gradient`, `--text-pop-gradient`):
+  terracotta → rose (light; every stop ≥3:1 under white CTA text) and
+  amber → ember → rose (dark; near-black CTA text). Applied to `.btn-primary`
+  and gradient display text (`.text-gradient`, `.hero__title-name`), with a
+  solid-accent fallback where `background-clip: text` is unsupported.
+- **Dopamine subject spectrum**: each subject chip now owns a distinct vivid
+  hue (sky/emerald/amber/green/orange/rose/teal), ≥4.5:1 as chip text on the
+  card in both themes. No purple/violet (owner's rule, unchanged).
+- **Aurora turned from whisper to hum**: alphas raised (still ≤0.17) and a
+  fourth rose wash added; still transform-only, still perf-tier gated.
+- **Celebration palette** widened to the full spectrum (terracotta, rose,
+  sky, emerald, amber) for confetti/bursts; share-card canvas re-synced to
+  the terracotta brand.
+- **Consistency fixes**: `themes.ts` picker copy/swatches, `ThemeApplier`
+  fallback, the pre-paint theme-color script, and the README design bullet
+  all still pointed at retired Evergreen hexes — now synced to
+  `#FAF9F6` / `#0D1117` / `#EE5125` / `#FF6435`.

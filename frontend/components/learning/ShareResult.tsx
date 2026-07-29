@@ -91,9 +91,9 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
 
       // Decorative accent line
       const lineGrad = ctx.createLinearGradient(80, 0, W - 80, 0);
-      lineGrad.addColorStop(0, "rgba(4, 120, 87, 0)");
-      lineGrad.addColorStop(0.5, "rgba(4, 120, 87, 0.55)");
-      lineGrad.addColorStop(1, "rgba(4, 120, 87, 0)");
+      lineGrad.addColorStop(0, "rgba(238, 81, 37, 0)");
+      lineGrad.addColorStop(0.5, "rgba(238, 81, 37, 0.55)");
+      lineGrad.addColorStop(1, "rgba(238, 81, 37, 0)");
       ctx.strokeStyle = lineGrad;
       ctx.lineWidth = 4;
       ctx.beginPath();
