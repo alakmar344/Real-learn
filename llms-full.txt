@@ -75,17 +75,16 @@ Curiosity doesn't stop at one question. When you finish a journey, a Follow-Up b
 ### 9. Designed for Everyone — Accessibility First
 WCAG 2.1 Level AA targeting. Skip-to-content link, ARIA live regions, full keyboard navigation in quizzes (arrow keys, Enter/Space), focus trapping in modals, prefers-reduced-motion support, high-contrast WCAG-AA-tuned color tokens, visible focus outlines, mobile-first responsive typography, 44px minimum touch targets.
 
-### 10. Modern Soft Pastel & Dark Themes
-Switch between clean, curated theme modes:
-- **Paper (Daylight)** — soft cream paper light mode with warm cocoa text and sky-blue accents
-- **Ink (Night)** — charcoal dark mode lit by pastel sky and solid electric green (`#00FF66`) accents
-- **Dusk (Sunset)** — teal evening mode warmed by soft peach and rose washes
+### 10. Solar Terracotta Light & Dark Themes
+Switch between clean, curated theme modes (the "Sunset Pop" design system):
+- **Paper (Daylight)** — warm alabaster light mode (`#FAF9F6`) with a solar terracotta accent (`#EE5125`) and sunset terracotta→rose gradients on CTAs
+- **Ink (Night)** — midnight obsidian dark mode (`#0D1117`) with a glowing ember accent (`#FF6435`) and amber→ember→rose gradients on CTAs
 
 ### 11. Voice-Powered Learning
 Voice Input (Mic Button): Ask questions by speaking using the Web Speech API (`SpeechRecognition`). Supports all 12 app languages with proper BCP-47 speech codes. Read Aloud (Listen Button): Every lesson part has a "Listen" button using `speechSynthesis` with intelligent voice selection by language match, provider quality, and voice type.
 
 ### 12. Gamification & Achievement System
-XP & Levels (5 base + 5 per correct answer, bonus XP for full journeys, streak bonuses up to 15 extra). Daily Streaks with streak freezes. Daily Goals with a circular progress ring. 17 Achievements from "First Steps" to "Unstoppable". Activity Heatmap (GitHub-style 14-week grid). Celebration System with FIFO queue of XP pop-ups, level-up modals, badge unlocks, streak flames.
+XP & Levels (5 base + 5 per correct answer, bonus XP for full journeys, streak bonuses up to 15 extra). Daily Streaks with streak freezes. Daily Goals with a circular progress ring. 56 Achievements from "First Steps" to legendary feats like the 100-day "Centurion Flame". Activity Heatmap (GitHub-style 14-week grid). Celebration System with FIFO queue of XP pop-ups, level-up modals, badge unlocks, streak flames.
 
 ### 13. Shareable Result Cards
 Canvas-generated 1080x1920 PNG result card with purple-to-teal gradient, grid texture, glowing orbs, brand header, question box, stats pills, score arc, CTA band. Native Web Share API support with fallback to download. Copy-to-clipboard text summary.
@@ -142,7 +141,7 @@ Signed-in learners can set learning-style preferences (checklist) and free-text 
 - **Auth:** Clerk (`@clerk/nextjs`)
 - **State:** Zustand (5 stores with `persist` middleware for localStorage backing)
 - **Content:** React Markdown + `remark-gfm`
-- **Styling:** Tailwind CSS + custom CSS variables for Soft Pastel (Paper/Ink/Dusk) design system
+- **Styling:** Tailwind CSS + custom CSS variables for the Solar Terracotta (Paper/Ink) design system
 - **Speech:** Web Speech API (SpeechRecognition for input, speechSynthesis for read-aloud)
 - **Sharing:** Canvas API + Web Share API (1080x1920 result cards)
 
