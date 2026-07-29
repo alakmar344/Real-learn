@@ -177,7 +177,7 @@ function isValidQuizQuestion(q) {
     q.options.every((opt) => typeof opt === "string") &&
     Number.isInteger(q.correctIndex) &&
     q.correctIndex >= 0 &&
-    q.correctIndex <= q.options.length &&
+    q.correctIndex < q.options.length &&
     typeof q.explanation === "string"
   );
 }

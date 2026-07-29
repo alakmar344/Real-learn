@@ -6,7 +6,7 @@
 1. **Never guess code logic, schemas, or file paths**: Inspect the authoritative source using file tools before editing.
 2. **Never swallow exceptions or patch symptoms**: Trace root causes.
 3. **Never declare success without empirical verification**: Run tests/builds (`npx tsc`, `npx next lint`, `npm run build`).
-4. **Preserve the Evergreen Design System**: green-tinted paper `#F6F8F6` / forest-black `#0B100E` canvases, ONE emerald/mint interactive accent (`--accent`), warm amber companion for energy moments only, WCAG-AA-verified pairings, body text weight 400. NO neon, NO purple/violet. JS-side brand colors come from `frontend/lib/palette.ts`. Spec: `docs/REDESIGN.md`.
+4. **Preserve the Solar Terracotta Design System** (with the "Sunset Pop" vibrancy pass): warm alabaster paper `#FAF9F6` / midnight obsidian `#0D1117` canvases, ONE terracotta/ember interactive accent (`--accent`: `#EE5125` light / `#FF6435` dark), sunset gradients (`--accent-gradient`) reserved for CTAs and one hero display moment, emerald companion (`#04A16C` / `#00D284`) for success/progress, dopamine subject-color spectrum for chips, WCAG-AA-verified pairings, body text weight 400. NO purple/violet. JS-side brand colors come from `frontend/lib/palette.ts`. Spec: `docs/REDESIGN.md`.
 5. **Zero Cognitive Load / Invisible UX**: Keep UI clean, simple, and intuitive. High complexity stays in the code, hidden from users.
 
 ## 2. Change Protocol

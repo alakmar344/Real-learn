@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import {
   Inter,
   JetBrains_Mono,
@@ -122,20 +123,19 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-  verification: {
-    google: "google-site-verification-code",
-  },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0B100E",
+  // Must match --bg-primary (dark) in globals.css so browser chrome blends
+  // with the page on first paint.
+  themeColor: "#0D1117",
 };
 
 // Applies the persisted theme BEFORE first paint so users never see a wrong
 // flash (FOUC). Must stay tiny and synchronous.
-const themeInitScript = `(function(){try{var t=null;var p=localStorage.getItem("reallearn-preferences");if(p){var s=JSON.parse(p);t=s&&s.state&&s.state.theme}if(!t){var l=localStorage.getItem("reallearn-theme");if(l){var v=JSON.parse(l);t=typeof v==="string"?v:v&&v.state&&v.state.theme}}if(t!=="light"&&t!=="dark"){t="dark"}var m=document.querySelector('meta[name="theme-color"]');if(!m){m=document.createElement("meta");m.name="theme-color";document.head.appendChild(m)}if(t==="dark"){document.documentElement.dataset.theme=t;m.content="#0B100E"}else{m.content="#F6F8F6"}}catch(e){}})();`;
+const themeInitScript = `(function(){try{var t=null;var p=localStorage.getItem("reallearn-preferences");if(p){var s=JSON.parse(p);t=s&&s.state&&s.state.theme}if(!t){var l=localStorage.getItem("reallearn-theme");if(l){var v=JSON.parse(l);t=typeof v==="string"?v:v&&v.state&&v.state.theme}}if(t!=="light"&&t!=="dark"){t="dark"}var m=document.querySelector('meta[name="theme-color"]');if(!m){m=document.createElement("meta");m.name="theme-color";document.head.appendChild(m)}if(t==="dark"){document.documentElement.dataset.theme=t;m.content="#0D1117"}else{m.content="#FAF9F6"}}catch(e){}})();`;
 
 // Resolves the visual-performance tier BEFORE first paint so low-end devices
 // never pay for a single expensive frame (backdrop blurs, grain, ambient
@@ -144,11 +144,16 @@ const themeInitScript = `(function(){try{var t=null;var p=localStorage.getItem("
 // afterwards when the user changes the setting.
 const perfInitScript = `(function(){try{var mode=null;try{var p=localStorage.getItem("reallearn-preferences");if(p){var s=JSON.parse(p);mode=s&&s.state&&s.state.perfMode}}catch(e){}var tier;if(mode==="low"||mode==="high"){tier=mode}else{var mem=navigator.deviceMemory||8;var cores=navigator.hardwareConcurrency||8;var rm=false;try{rm=window.matchMedia("(prefers-reduced-motion: reduce)").matches}catch(e){}var sd=Boolean(navigator.connection&&navigator.connection.saveData);tier=(mem<=4||cores<=4||rm||sd)?"low":((mem>=8&&cores>=8)?"high":"mid")}document.documentElement.dataset.perf=tier;var ua=(navigator.userAgent||"").toLowerCase();if(ua.indexOf("firefox")>-1&&ua.indexOf("seamonkey")===-1){document.documentElement.dataset.browser="firefox"}}catch(e){}})();`;
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // CSP: per-request script nonce generated in middleware.ts. Only scripts
+  // stamped with this nonce may execute — the price is dynamic rendering
+  // (headers() opts every route out of static generation), which this
+  // Clerk-authenticated app effectively pays already.
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
     <html
       lang="en"
@@ -156,8 +161,8 @@ export default function RootLayout({
       className={`${inter.variable} ${lora.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable}`}
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-        <script dangerouslySetInnerHTML={{ __html: perfInitScript }} />
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: perfInitScript }} />
         {/* Structured data for AI crawlers and search engines */}
         <script
           type="application/ld+json"
@@ -310,7 +315,7 @@ export default function RootLayout({
       <body>
         <AmbientBackground />
         <SkipToContent />
-        <ClerkProvider afterSignOutUrl="/">
+        <ClerkProvider afterSignOutUrl="/" nonce={nonce}>
           <ThemeApplier />
           <AppShell>{children}</AppShell>
           <DeferredProviders />

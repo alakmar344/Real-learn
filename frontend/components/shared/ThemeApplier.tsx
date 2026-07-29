@@ -22,7 +22,7 @@ export default function ThemeApplier() {
     // with the active theme's PAGE BACKGROUND (`bg`, mirrors --bg-primary) —
     // not the picker swatch, which once painted the address bar flag-orange.
     const swatch =
-      THEME_OPTIONS.find((option) => option.value === theme)?.bg ?? "#0B100E";
+      THEME_OPTIONS.find((option) => option.value === theme)?.bg ?? "#0D1117";
     let meta = document.querySelector<HTMLMetaElement>(
       'meta[name="theme-color"]'
     );

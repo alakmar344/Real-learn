@@ -30,6 +30,7 @@
     "lru-cache": "^11.5.2",
     "mongodb": "^7.4.0",
     "node-edge-tts": "^1.2.10",
+    "syllable": "^5.0.1",
     "text-readability": "^1.1.1",
     "validator": "^13.12.0"
   }

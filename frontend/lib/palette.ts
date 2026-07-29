@@ -7,9 +7,10 @@
  * own palette (gold confetti, blue/teal completion burst, sky-blue share
  * card, orange hearts) — three unrelated brand identities inside one flow.
  *
- * Everything here derives from the Evergreen system: deep emerald + mint
- * (brand), warm amber (energy/celebration companion), paper/ink neutrals.
- * NO purple/violet (owner's rule), no neon.
+ * Everything here derives from the Solar Terracotta system: terracotta +
+ * ember (brand), rose + amber (dopamine celebration companions), emerald
+ * (success), sky (air), alabaster/obsidian neutrals.
+ * NO purple/violet (owner's rule).
  */
 
 export type ThemeName = "light" | "dark";
@@ -22,10 +23,11 @@ export function activeTheme(): ThemeName {
   return "light";
 }
 
-/** Confetti / particle-burst colors — emerald family + amber spark + paper. */
+/** Confetti / particle-burst colors — terracotta + rose + sky + emerald +
+ *  amber: the full dopamine spectrum for celebration moments. */
 const CELEBRATION: Record<ThemeName, string[]> = {
-  light: ["#EE5125", "#FF6435", "#04A16C", "#10B981", "#F59E0B", "#FBBF24", "#FFFFFF"],
-  dark: ["#FF6435", "#FF8054", "#00D284", "#34D399", "#FBBF24", "#FDE68A", "#EDF3EF"],
+  light: ["#EE5125", "#FF6435", "#E11D48", "#0EA5E9", "#04A16C", "#10B981", "#F59E0B", "#FBBF24", "#FFFFFF"],
+  dark: ["#FF6435", "#FF8054", "#FB7185", "#38BDF8", "#00D284", "#34D399", "#FBBF24", "#FDE68A", "#F0F6FC"],
 };
 
 export function celebrationColors(theme: ThemeName = activeTheme()): string[] {
@@ -42,13 +44,13 @@ export function starColor(theme: ThemeName = activeTheme()): string {
  * theme for legibility in feeds regardless of the app theme).
  */
 export const SHARE_CARD = {
-  paper: "#F6F8F6",
+  paper: "#FAF9F6",
   card: "#FFFFFF",
-  ink: "#101915",
-  inkSoft: "#47554E",
-  brand: "#047857",
-  brandBright: "#059669",
-  mint: "#34D399",
+  ink: "#0F172A",
+  inkSoft: "#475569",
+  brand: "#D03F18",
+  brandBright: "#EE5125",
+  mint: "#04A16C",
   amber: "#F59E0B",
-  border: "#E3E9E5",
+  border: "#E6E4DC",
 } as const;

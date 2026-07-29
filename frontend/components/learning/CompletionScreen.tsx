@@ -232,7 +232,7 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
       {/* Share your result */}
       <ShareResult question={lesson.question ?? lesson.topic ?? ""} totalScore={totalScore} maxScore={maxScore} />
 
-      {/* Optional, anonymous review — shown the day after the first lesson */}
+      {/* Optional, anonymous review — offered soon after the first lesson */}
       <FeedbackGate />
 
       {/* Action buttons */}

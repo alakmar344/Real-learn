@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 
 /**
  * Keyboard shortcuts overlay — press "?" to show all available shortcuts.
@@ -18,7 +19,9 @@ const SHORTCUTS = [
 
 export default function KeyboardShortcuts() {
   const [open, setOpen] = useState(false);
-  const dialogRef = useRef<HTMLDivElement>(null);
+  // A11y (WCAG 2.4.3): real focus trap — keeps Tab inside the dialog and
+  // restores focus on close, consistent with every other dialog in the app.
+  const dialogRef = useFocusTrap<HTMLDivElement>(open);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -38,17 +41,6 @@ export default function KeyboardShortcuts() {
 
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [open]);
-
-  // Focus trap
-  useEffect(() => {
-    if (!open) return;
-    const previouslyFocused = document.activeElement as HTMLElement;
-    dialogRef.current?.focus();
-
-    return () => {
-      previouslyFocused?.focus?.();
-    };
   }, [open]);
 
   if (!open) return null;

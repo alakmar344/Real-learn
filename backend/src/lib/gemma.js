@@ -35,6 +35,13 @@ import Cerebras from "@cerebras/cerebras_cloud_sdk";
 
 export const GEMMA_MODEL = process.env.GEMMA_MODEL || "gemma-4-31b";
 
+// SECURITY: hard ceiling on accumulated streamed characters. Providers are
+// first-party and max_tokens bounds normal generation, but a misbehaving
+// upstream that streams continuously (defeating the stall watchdog by always
+// sending SOMETHING) could otherwise grow memory without limit. ~2M chars is
+// far above any legitimate lesson (~500k tokens' worth of text).
+const MAX_STREAM_CHARS = 2_000_000;
+
 const DEFAULT_MAX_RETRIES = 1;
 const DEFAULT_RETRY_DELAY_MS = 700;
 const DEFAULT_MAX_RETRY_DELAY_MS = 5000;
@@ -736,6 +743,14 @@ async function callCerebras(model, body, signal, opts) {
       }
       const token = chunk.choices?.[0]?.delta?.content ?? "";
       fullText += token;
+      if (fullText.length > MAX_STREAM_CHARS) {
+        // 408 keeps this on the retryable path (see isRetryableGemmaError).
+        throw new GemmaApiError(
+          408,
+          "StreamOverflow",
+          `provider stream exceeded ${MAX_STREAM_CHARS} characters`
+        );
+      }
     }
 
     if (!fullText.trim()) {
@@ -824,6 +839,13 @@ async function handleStreamingResponse(response, onChunk) {
         chunk.response ??
         "";
       fullText += token;
+      if (fullText.length > MAX_STREAM_CHARS) {
+        throw new GemmaApiError(
+          408,
+          "StreamOverflow",
+          `provider stream exceeded ${MAX_STREAM_CHARS} characters`
+        );
+      }
     } catch (error) {
       if (error instanceof GemmaApiError) throw error;
       // Non-JSON keep-alive/comment lines are safe to ignore.

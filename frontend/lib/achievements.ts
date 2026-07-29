@@ -767,5 +767,5 @@ export const TIER_COLOR: Record<BadgeTier, string> = {
   bronze: "#a9713b",
   silver: "#8a8f98",
   gold: "#c9a227",
-  legendary: "#0284C7",
+  legendary: "#EE5125",
 };
