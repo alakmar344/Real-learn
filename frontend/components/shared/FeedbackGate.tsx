@@ -9,11 +9,12 @@ import FeedbackPrompt from "@/components/learning/FeedbackPrompt";
 /**
  * Centralized, placement-agnostic gate for the optional feedback prompt.
  *
- * Why this exists: the prompt must appear "anytime a day after" the user's
- * first lesson — including on a *return visit* (after a refresh or a later
+ * Why this exists: the prompt must appear soon after the user's first
+ * lesson — including on a *return visit* (after a refresh or a later
  * session), not only in the moment of completion. Eligibility is computed here
  * from the persisted `firstLessonCompletedAt` timestamp, so the prompt shows
- * on whatever page the user lands on once the 24h window has elapsed. A local
+ * on whatever page the user lands on once the short
+ * `FEEDBACK_ELIGIBLE_AFTER_MS` buffer has elapsed. A local
  * `dismissed` flag prevents it from re-appearing within the same page view
  * after the user submits / snoozes / declines.
  */
