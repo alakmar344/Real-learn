@@ -61,7 +61,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
     } catch {
       // Best-effort storage
     }
-  }, [mounted]);
+  }, [mounted, question, setQuestion]);
 
   // Invisible UX: Persist typed question as draft in sessionStorage
   useEffect(() => {

@@ -78,7 +78,6 @@ function Confetti() {
 
 export default function CompletionScreen({ lesson, totalScore, onRestart, onRetake }: Props) {
   const [showConfetti, setShowConfetti] = useState(true);
-  const [takeawaysExpanded, setTakeawaysExpanded] = useState(true);
   const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {

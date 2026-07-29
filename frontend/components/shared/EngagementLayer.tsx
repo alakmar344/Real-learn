@@ -372,7 +372,7 @@ export default function EngagementLayer() {
     const ms = DURATION[current.kind] ?? 2500;
     const id = window.setTimeout(() => dequeue(), ms);
     return () => window.clearTimeout(id);
-  }, [current, celebrations, batchMode, dequeue]);
+  }, [current, celebrations, batchMode, dequeue, clearAll]);
 
   if (!mounted || !current) return null;
 

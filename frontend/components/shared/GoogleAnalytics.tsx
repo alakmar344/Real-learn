@@ -34,7 +34,7 @@ function loadGtag() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const w = window as any;
   w.dataLayer = w.dataLayer || [];
-  function gtag(..._args: unknown[]) {
+  function gtag() {
     // gtag requires the real `arguments` object (not a spread array).
     // eslint-disable-next-line prefer-rest-params
     w.dataLayer.push(arguments);

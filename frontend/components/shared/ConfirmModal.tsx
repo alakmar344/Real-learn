@@ -60,7 +60,7 @@ export default function ConfirmModal({
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
-  }, [open, onClose, onConfirm]);
+  }, [open, onClose, onConfirm, trapRef]);
 
   if (!open) return null;
 
