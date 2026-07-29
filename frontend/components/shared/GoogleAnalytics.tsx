@@ -11,10 +11,9 @@ import {
 } from "@/lib/legalConsent";
 import { parseCookie, stringifySetCookie } from "cookie";
 
-// Security: the measurement id is interpolated into an inline <script> body
-// and a script src URL below. Restrict it to the GA id character set so a
-// malformed/tampered env value (e.g. one containing quotes) can never become
-// script injection in the app origin.
+// Security: the measurement id is interpolated into a script src URL below.
+// Restrict it to the GA id character set so a malformed/tampered env value
+// (e.g. one containing quotes) can never become injection in the app origin.
 const RAW_GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 const GA_MEASUREMENT_ID =
   RAW_GA_ID && /^[A-Za-z0-9_-]+$/.test(RAW_GA_ID) ? RAW_GA_ID : undefined;
@@ -29,21 +28,26 @@ function loadGtag() {
 
   if (document.getElementById(`ga-script-${GA_MEASUREMENT_ID}`)) return;
 
+  // CSP: the gtag init runs as ordinary bundled code (not an injected inline
+  // <script>), so it needs no 'unsafe-inline'/nonce — gtag.js only reads
+  // window.dataLayer, it doesn't care how the queue was seeded.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const w = window as any;
+  w.dataLayer = w.dataLayer || [];
+  function gtag(..._args: unknown[]) {
+    // gtag requires the real `arguments` object (not a spread array).
+    // eslint-disable-next-line prefer-rest-params
+    w.dataLayer.push(arguments);
+  }
+  w.gtag = w.gtag || gtag;
+  w.gtag("js", new Date());
+  w.gtag("config", GA_MEASUREMENT_ID, { anonymize_ip: true });
+
   const script = document.createElement("script");
   script.id = `ga-script-${GA_MEASUREMENT_ID}`;
   script.async = true;
   script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
   document.head.appendChild(script);
-
-  const initScript = document.createElement("script");
-  initScript.id = `ga-init-${GA_MEASUREMENT_ID}`;
-  initScript.text = [
-    "window.dataLayer = window.dataLayer || [];",
-    "function gtag(){dataLayer.push(arguments);}",
-    "gtag('js', new Date());",
-    `gtag('config', '${GA_MEASUREMENT_ID}', { anonymize_ip: true });`,
-  ].join("\n");
-  document.head.appendChild(initScript);
 }
 
 /** Honour consent withdrawal immediately: set GA's documented opt-out flag

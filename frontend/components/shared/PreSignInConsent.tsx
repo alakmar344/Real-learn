@@ -92,7 +92,14 @@ export default function PreSignInConsent() {
   }, [dobYear, dobMonth]);
 
   useEffect(() => {
+    // Staleness guard: this effect re-runs when Clerk resolves `user` from
+    // undefined → object, so two overlapping async runs can complete out of
+    // order and set a stale dialog state. Cancel the superseded run
+    // (CookieConsent guards the same lifecycle the same way).
+    let cancelled = false;
+
     const applyLocalRecord = (parsed: LegalConsentState | null) => {
+      if (cancelled) return;
       if (!parsed) {
         setShowConsent(true);
       } else if (isConsentCurrent(parsed)) {
@@ -148,9 +155,11 @@ export default function PreSignInConsent() {
           method: "GET",
           headers,
         });
+        if (cancelled) return;
 
         if (response.ok) {
           const data = await response.json();
+          if (cancelled) return;
           const mongoAccepted =
             data.accepted &&
             data.privacyVersion === CURRENT_PRIVACY_VERSION &&
@@ -177,6 +186,7 @@ export default function PreSignInConsent() {
               user?.emailAddresses?.[0]?.emailAddress ||
               "";
             const ok = await syncLegalConsentToBackend(getToken, parsed, email);
+            if (cancelled) return;
             if (ok && user?.id) {
               writeLegalConsent({
                 accepted: true,
@@ -206,6 +216,7 @@ export default function PreSignInConsent() {
         // the app render (the re-run will resolve it). Showing the blocking
         // first-time prompt here is exactly the Firefox-only "keeps re-asking"
         // bug, since Firefox keeps a separate localStorage from Chrome.
+        if (cancelled) return;
         if (isSignedIn) {
           if (isConsentCurrent(parsed)) {
             setShowConsent(false);
@@ -219,6 +230,9 @@ export default function PreSignInConsent() {
     };
 
     checkConsent();
+    return () => {
+      cancelled = true;
+    };
   }, [isSignedIn, getToken, user]);
 
   const saveConsent = async (accepted: boolean) => {
