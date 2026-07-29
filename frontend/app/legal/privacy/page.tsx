@@ -20,7 +20,7 @@ export default function PrivacyPolicy() {
         Privacy Policy
       </h2>
       <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
-        Last updated: July 22, 2026 (version 2.7)
+        Last updated: July 29, 2026 (version 2.8)
       </p>
 
       <section style={{ marginBottom: 28 }}>
@@ -77,7 +77,7 @@ export default function PrivacyPolicy() {
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Consent Records:</strong> Timestamps of when you accepted our Privacy Policy
-            (version 2.7), Terms of Service (version 2.5), and cookie/analytics consent, together
+            (version 2.8), Terms of Service (version 2.6), and cookie/analytics consent, together
             with the policy version, an <strong>anonymized (truncated) device IP</strong>, and a
             hashed User-Agent, kept as proof of consent.
           </li>
@@ -322,6 +322,12 @@ export default function PrivacyPolicy() {
             hosted on Cloudflare&apos;s network. When invoked, the same question, language, and
             difficulty level are sent for one-time inference with no user identity attached, and no
             user data is used for training.
+          </li>
+          <li style={{ marginBottom: 4 }}>
+            <strong>MongoDB Atlas</strong> (mongodb.com) — Managed database hosting. Stores your
+            account record (Clerk ID, email), saved preferences, consent records, and feedback as
+            described in Section 4, encrypted in transit and at rest. MongoDB acts as our storage
+            processor and does not use your data for its own purposes.
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Google Analytics</strong> — Website analytics to understand usage patterns
@@ -611,6 +617,12 @@ export default function PrivacyPolicy() {
             involvement and consent of a parent or legal guardian.
           </li>
           <li style={{ marginBottom: 4 }}>
+            For learners aged 13&ndash;17, we require an explicit confirmation during onboarding
+            that a parent or guardian has reviewed and approved their use of RealLearn. This is a
+            self-attested confirmation — we do not currently operate an independent
+            identity-verification process for parents.
+          </li>
+          <li style={{ marginBottom: 4 }}>
             We do not knowingly serve targeted advertising to children and do not sell or
             &quot;share&quot; children&apos;s personal information.
           </li>
@@ -622,7 +634,7 @@ export default function PrivacyPolicy() {
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           This section supports our obligations under laws such as the U.S. Children&apos;s Online
           Privacy Protection Act (COPPA), the GDPR provisions on children&apos;s data, and the
-          verifiable-parental-consent requirements of India&apos;s DPDP Act.
+          parental-consent requirements of India&apos;s DPDP Act.
         </p>
       </section>
 
@@ -673,9 +685,10 @@ export default function PrivacyPolicy() {
             esamzai365@gmail.com
           </a>
           . If your concern is not resolved, you may escalate it to the Data Protection Board of
-          India. Where you are below 18, processing requires verifiable consent from a parent or
-          lawful guardian, and we do not undertake tracking, behavioral monitoring, or targeted
-          advertising directed at children.
+          India. The DPDP Act requires parental consent for users below 18: RealLearn requires
+          users aged 13&ndash;17 to confirm during onboarding that a parent or lawful guardian has
+          reviewed and approved their use of the service (see Section 19), and we do not undertake
+          tracking, behavioral monitoring, or targeted advertising directed at children.
         </p>
       </section>
 

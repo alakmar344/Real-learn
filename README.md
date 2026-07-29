@@ -15,7 +15,7 @@ When a learner asks a question:
    - **Part 2: Mechanism** — Step-by-step inner workings & mechanics.
    - **Part 3: Real World** — Real-life applications grounded with live news updates (via Serper API).
 2. **Quiz-Gated Mastery**: Each part is locked behind a 2-question quiz. Learners must achieve **100% score** to unlock the next part.
-3. **Multilingual & Adaptive**: Supports 12 Indian languages and 3 grade levels (Class 6-8, Class 9-10, College).
+3. **Multilingual & Adaptive**: Supports 12 Indian languages and 3 difficulty levels — from middle-school foundations to college/advanced. (RealLearn is intended for learners aged 13+; the entry-level tier reflects content difficulty, not target age.)
 4. **Learning Personalization**: Optional user learning preferences and notes seamlessly injected into AI prompt generation.
 5. **Evergreen Design System**: calm, readable, WCAG-AA-verified — green-tinted paper daylight (`#F6F8F6`) / forest-black night (`#0B100E`) themes with a deep emerald (`#047857`) / soft mint (`#34D399`) accent and a warm amber companion for celebration moments (no neon, strictly zero purple/violet). Full spec: [`docs/REDESIGN.md`](docs/REDESIGN.md).
 
