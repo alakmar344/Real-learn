@@ -84,7 +84,13 @@ function isTrustedIssuer(issuer) {
   try {
     const { hostname, protocol } = new URL(issuer);
     if (protocol !== "https:") return false;
-    if (hostname === "reallearn.site" || hostname.endsWith(".reallearn.site")) {
+    // SECURITY: only the apex domain and the known Clerk subdomain are
+    // trusted — NOT every `*.reallearn.site` subdomain. A broad suffix match
+    // would let anyone who can serve content on any subdomain (e.g. via a
+    // dangling-DNS takeover) publish their own JWKS at
+    // `<sub>.reallearn.site/.well-known/jwks.json` and mint accepted tokens.
+    // Additional issuers belong in CLERK_ADDITIONAL_ISSUERS.
+    if (hostname === "reallearn.site" || hostname === "clerk.reallearn.site") {
       return true;
     }
     // Shared multi-tenant Clerk dev domains (*.clerk.accounts.dev): anyone can

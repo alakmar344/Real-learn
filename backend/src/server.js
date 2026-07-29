@@ -2088,26 +2088,10 @@ END_EXTERNAL_CONTEXT>>>`
     const outputModerationPromise = moderateText(JSON.stringify(normalized), "output");
 
     if (mode === "fast") {
-      const fastInputModeration = await inputModerationPromise;
+      // NOTE: input moderation was already awaited (Promise.all above) and
+      // enforced for BOTH modes before generation started — re-checking the
+      // settled promise here would be dead code.
       if (finished) return;
-      if (!fastInputModeration.allowed) {
-        const moderationEvent = buildModerationEvent({
-          requestId,
-          clerkId: req.auth?.userId,
-          type: "user-input-moderated",
-          reason: fastInputModeration.reason,
-          question,
-        });
-        console.warn("[moderation] Fast-mode input blocked by rule-based moderation", redactModerationEvent(moderationEvent));
-        await logModerationEvent(moderationEvent);
-        sendEvent("error", {
-          error:
-            fastInputModeration.reason ||
-            "Your question was flagged by our safety review. Please try a different question.",
-        });
-        recordLessonResult(false);
-        return;
-      }
       // Security: enforce the output verdict BEFORE streaming the lesson.
       // The old post-hoc check only deleted the cache entry — the requesting
       // user had already received unmoderated content. The check is
