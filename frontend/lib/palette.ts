@@ -23,18 +23,17 @@ export function activeTheme(): ThemeName {
   return "light";
 }
 
-/** Confetti / particle-burst colors — terracotta + rose + sky + emerald +
- *  amber: the full dopamine spectrum for celebration moments. */
+/** Confetti / particle-burst colors — cyan + pink + mint celebration */
 const CELEBRATION: Record<ThemeName, string[]> = {
-  light: ["#EE5125", "#FF6435", "#E11D48", "#0EA5E9", "#04A16C", "#10B981", "#F59E0B", "#FBBF24", "#FFFFFF"],
-  dark: ["#FF6435", "#FF8054", "#FB7185", "#38BDF8", "#00D284", "#34D399", "#FBBF24", "#FDE68A", "#F0F6FC"],
+  light: ["#0891B2", "#06B6D4", "#22D3EE", "#DB2777", "#EC4899", "#F472B6", "#10B981", "#34D399", "#FFFFFF"],
+  dark: ["#06B6D4", "#22D3EE", "#67E8F9", "#EC4899", "#F472B6", "#F9A8D4", "#10B981", "#34D399", "#FAFAFA"],
 };
 
 export function celebrationColors(theme: ThemeName = activeTheme()): string[] {
   return CELEBRATION[theme];
 }
 
-/** Rating stars / streak flames — amber, the "energy" companion. */
+/** Rating stars / streak flames — warm glow. */
 export function starColor(theme: ThemeName = activeTheme()): string {
   return theme === "dark" ? "#FBBF24" : "#D97706";
 }
@@ -44,13 +43,13 @@ export function starColor(theme: ThemeName = activeTheme()): string {
  * theme for legibility in feeds regardless of the app theme).
  */
 export const SHARE_CARD = {
-  paper: "#FAF9F6",
+  paper: "#FAFAFA",
   card: "#FFFFFF",
-  ink: "#0F172A",
-  inkSoft: "#475569",
-  brand: "#D03F18",
-  brandBright: "#EE5125",
-  mint: "#04A16C",
-  amber: "#F59E0B",
-  border: "#E6E4DC",
+  ink: "#18181B",
+  inkSoft: "#52525B",
+  brand: "#0891B2",
+  brandBright: "#06B6D4",
+  mint: "#10B981",
+  amber: "#EC4899",
+  border: "#E4E4E7",
 } as const;

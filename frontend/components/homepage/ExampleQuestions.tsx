@@ -5,16 +5,16 @@ import { useEffect, useState } from "react";
 /* Questions from THEIR world — algorithms, games, money, brains, internet
    culture — each one a real lesson in disguise (CS, econ, bio, physics…). */
 const RECOMMENDATIONS = [
-  "How does my For You page know me so well? 🧠",
-  "Why is everything so expensive right now? 💸",
-  "How does AI actually learn — and can it think? 🤖",
-  "What does doomscrolling do to my brain? 📱",
-  "How do black holes bend time itself? 🌌",
-  "How do speedrunners break games with physics? 🎮",
-  "Why do memes spread exactly like viruses? 🦠",
-  "What actually happens in my brain at 3am? 🌙",
-  "How do sneaker resellers make money from hype? 👟",
-  "Why can't we just print more money? 🏦",
+  "how does the FYP know me better than my bestie? 🧠",
+  "why is everything so expensive rn? 💸",
+  "can AI actually think or is it just guessing? 🤖",
+  "what does doomscrolling do to my brain? 📱",
+  "how do black holes bend time? 🌌",
+  "how do speedrunners break games with physics? 🎮",
+  "why do memes spread like viruses? 🦠",
+  "what happens in my brain at 3am? 🌙",
+  "how do sneaker resellers make bank from hype? 👟",
+  "why can't we just print more money? 🏦",
 ];
 
 interface Props {

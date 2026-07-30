@@ -26,10 +26,10 @@ function CompanionDays() {
   if (days === null) return null;
 
   const label = MILESTONES.has(days)
-    ? `${days} days of learning together — thanks for sticking with it.`
+    ? `${days} days learning together — no cap, you're built different.`
     : days === 1
-      ? "Day 1 — welcome aboard."
-      : `Learning together for ${days} days.`;
+      ? "day 1 — let's vibe."
+      : `learning together for ${days} days. main character energy.`;
 
   return <p className="app-footer__companion">{label}</p>;
 }

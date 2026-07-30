@@ -978,9 +978,9 @@ vendors). All of these live between `2b239b5` (start) and now:
 
 
 
----
-
-*This changelog is maintained as the project's running history. New changes are
-appended under the relevant section (and the chronological table) as they land.*
+- 2026-07-30 — **Cyber Aqua Gen Z Redesign & Security Fixes.** Fixed CORS null-origin bypass (rejected null origins instead of allowing them). Removed client-supplied email fallback — `clerkId` is now the sole identity key. Replaced purple/violet palette (violated owner's rule) with electric cyan (`#06B6D4`)/teal (`#0891B2`) primary, hot pink (`#EC4899`) energy companion, emerald success, deep space dark mode default. Purple/violet purged from all 12 files: globals.css, themes.ts, palette.ts, layout.tsx, ThemeApplier.tsx, page.tsx, and components. Updated README and AGENT_MEMORY.md. No gold (per user request). Verified: tsc clean, lint clean, build clean.
+ 
+ *This changelog is maintained as the project's running history. New changes are
+ appended under the relevant section (and the chronological table) as they land.*
 
 
