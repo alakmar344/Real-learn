@@ -6,7 +6,6 @@ import type { PersistStorage, StorageValue } from "zustand/middleware";
 function debounce<T extends (...args: never[]) => void>(
   fn: T,
   ms: number,
-  _options?: { leading?: boolean; trailing?: boolean }
 ): T & { cancel: () => void; flush: () => void } {
   let timer: ReturnType<typeof setTimeout> | null = null;
   const debounced = ((...args: Parameters<T>) => {
@@ -74,10 +73,7 @@ export function createDebouncedStorage<S>(delayMs = 800): PersistStorage<S> {
     }
   };
 
-  const debouncedFlush = debounce(flush, delayMs, {
-    leading: false,
-    trailing: true,
-  });
+  const debouncedFlush = debounce(flush, delayMs);
 
   cancelCallbacks.add(() => {
     pending = null;

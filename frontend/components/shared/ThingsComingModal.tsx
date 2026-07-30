@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 
 interface Props {
@@ -59,6 +59,15 @@ export default function ThingsComingModal({ open, onClose }: Props) {
   const [currentStep, setCurrentStep] = useState(0);
   const trapRef = useFocusTrap<HTMLDivElement>(open);
 
+  const handleDismiss = useCallback(() => {
+    try {
+      localStorage.setItem("reallearn-things-coming-seen", "true");
+    } catch {
+      // ignore
+    }
+    onClose();
+  }, [onClose]);
+
   useEffect(() => {
     if (open) {
       setCurrentStep(0);
@@ -78,16 +87,7 @@ export default function ThingsComingModal({ open, onClose }: Props) {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, currentStep]);
-
-  const handleDismiss = () => {
-    try {
-      localStorage.setItem("reallearn-things-coming-seen", "true");
-    } catch {
-      // ignore
-    }
-    onClose();
-  };
+  }, [open, currentStep, handleDismiss]);
 
   const handleNext = () => {
     if (currentStep < STEPS.length - 1) {

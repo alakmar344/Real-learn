@@ -421,11 +421,14 @@ this protocol. No exceptions.**
   canvas re-synced in `lib/palette.ts`; stale Evergreen hexes fixed in
   `themes.ts`, `ThemeApplier` fallback, the pre-paint theme-color script,
   viewport themeColor, and the README. Full addendum: `docs/REDESIGN.md`.
-  §1 of this file updated to describe the Solar Terracotta / Sunset Pop
-  system as canonical.
-
-
-
+   §1 of this file updated to describe the Solar Terracotta / Sunset Pop
+   system as canonical.
+- 2026-07-29 — **Lint cleanup — 7 frontend ESLint warnings fixed.**
+   Fixed `QuestionInput.tsx` missing deps, `CompletionScreen.tsx` unused state,
+   `ConfirmModal.tsx` missing dep, `EngagementLayer.tsx` missing dep,
+   `GoogleAnalytics.tsx` unused parameter, `ThingsComingModal.tsx` hoisted
+   `handleDismiss` + useCallback, `debouncedStorage.ts` unused parameter.
+   Clean lint/tsc/build verify.
 
 
 
