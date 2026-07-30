@@ -12,8 +12,8 @@ import { LessonMode } from "@/types";
 const MAX_QUESTION_LENGTH = 1000;
 
 const MODES: { value: LessonMode; label: string; hint: string }[] = [
-  { value: "fast", label: "Fast", hint: "Straight answer, zero fluff" },
-  { value: "explain", label: "Explain", hint: "Full 3-part deep dive — quizzes included" },
+  { value: "fast", label: "TL;DR", hint: "Straight answer, zero fluff" },
+  { value: "explain", label: "Deep Dive", hint: "Full 3-part with quizzes" },
 ];
 
 interface Props {
@@ -117,7 +117,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           onBlur={() => { setFocused(false); window.setTimeout(() => setShowHint(false), 2000); }}
           onKeyDown={handleKeyDown}
           maxLength={MAX_QUESTION_LENGTH}
-          placeholder="Ask literally anything — no dumb questions here"
+          placeholder="ask literally anything, no cap"
           aria-label="Your question"
           className="q-form__textarea"
         />
@@ -208,7 +208,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           )}
           {isSignedIn ? (
             <button type="submit" disabled={!question.trim()} aria-label="Start learning" className="btn-primary">
-              {mode === "fast" ? "Get a Quick Answer →" : "Start Guided Lesson →"}
+              {mode === "fast" ? "Gimme the tea →" : "Teach me →"}
             </button>
           ) : (
             <SignInButton mode="modal">

@@ -693,8 +693,7 @@ const allowedOrigins =
       ];
 
 function isOriginAllowed(origin) {
-  if (!origin) return true;
-  return allowedOrigins.includes(origin);
+  return !!origin && allowedOrigins.includes(origin);
 }
 
 // CORS and JSON body parsing MUST be registered before any route so that every
@@ -884,9 +883,9 @@ app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
     // sid, iss, exp, azp. So we fall back to the request body email, which
     // is safe because the user is already authenticated (JWT verified).
     const emailFromToken = req.auth?.email || req.auth?.email_address || "";
-    // Security: the body fallback is strictly validated (shape + 320-char
-    // max) and recorded as client-provided/unverified via emailSource below.
-    const email = emailFromToken || sanitizeClientEmail(req.body?.email);
+    // Security: NEVER trust client-supplied email — use empty string instead.
+    // clerkId is the canonical identity key for all data-subject requests.
+    const email = "";
 
   const db = await getDb();
   const collection = db.collection("agreements");
@@ -896,11 +895,8 @@ app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
     $set: {
       accepted,
       email,
-      // Security: a body-supplied email is self-asserted. Record provenance
-      // so downstream consumers (data-subject requests, notifications) never
-      // treat it as a verified address — clerkId is the identity key.
-      emailVerified: Boolean(emailFromToken),
-      emailSource: emailFromToken ? "token" : email ? "client-unverified" : "none",
+      emailVerified: false,
+      emailSource: "none",
       clerkId,
         // Privacy (policy v2.3): store only the anonymized network prefix,
         // never the full client IP (see anonymizeIp above).
@@ -1140,25 +1136,17 @@ app.post("/api/legal-consent", rateLimit, requireAuth, async (req, res) => {
     if (!clerkId) {
       return res.status(400).json({ error: "Could not determine the authenticated user" });
     }
-    // Security: the email is derived ONLY from the verified token — a
-    // client-supplied body email is never trusted (it could stamp a victim's
-    // address onto this record and pollute their data-subject requests).
-    // HOWEVER: Clerk JWTs do not include email claims — only sub (userId),
-    // sid, iss, exp, azp. So we fall back to the request body email, which
-    // is safe because the user is already authenticated (JWT verified).
-    const emailFromToken = req.auth?.email || req.auth?.email_address || "";
-    // Security: the body fallback is strictly validated (shape + 320-char
-    // max) and recorded as client-provided/unverified via emailSource below.
-    const email = emailFromToken || sanitizeClientEmail(req.body?.email);
+    // Security: NEVER trust client-supplied email — use empty string instead.
+    // clerkId is the canonical identity key for all data-subject requests.
+    const email = "";
 
     const filter = { clerkId, type: "legal-consent" };
     const update = {
       $set: {
         accepted,
         email,
-        // Security: a body-supplied email is self-asserted (see above).
-        emailVerified: Boolean(emailFromToken),
-        emailSource: emailFromToken ? "token" : email ? "client-unverified" : "none",
+        emailVerified: false,
+        emailSource: "none",
         clerkId,
         ageBracket: sanitizedAgeBracket,
         // Privacy (policy v2.3): store only the anonymized network prefix,

@@ -89,7 +89,7 @@ export default function HomeStats({ onStartTopic }: Props) {
           <span style={{ fontSize: 20 }}>↩️</span>
           <span style={{ flex: 1, minWidth: 0 }}>
             <span style={{ display: "block", fontSize: 11, color: "var(--text-tertiary)", fontWeight: 600 }}>
-              Continue where you left off
+              pick up where you left off
             </span>
             <span
               style={{
@@ -105,7 +105,7 @@ export default function HomeStats({ onStartTopic }: Props) {
               {inProgress.question}
             </span>
           </span>
-          <span style={{ color: "var(--accent)", fontWeight: 700, fontSize: 13 }}>Resume →</span>
+          <span style={{ color: "var(--accent)", fontWeight: 700, fontSize: 13 }}>resume →</span>
         </button>
       )}
 

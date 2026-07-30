@@ -43,11 +43,11 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "RealLearn — AI-Powered Interactive Learning Platform",
+    default: "RealLearn — vibe-check your knowledge, level up daily",
     template: "%s | RealLearn",
   },
   description:
-    "RealLearn (often searched as 'reallan') is an AI-powered interactive learning platform that transforms any question into a structured 3-part lesson with quizzes, progress tracking, achievements, and text-to-speech. Ask anything, learn everything with adaptive AI tutoring in 12 languages.",
+    "RealLearn is an AI learning sidekick that turns any question into a 3-part lesson with quizes, streaks, achievements, and text-to-speech. Ask anything, learn everything.",
   keywords: [
     "RealLearn",
     "reallan",
@@ -130,12 +130,12 @@ export const viewport: Viewport = {
   initialScale: 1,
   // Must match --bg-primary (dark) in globals.css so browser chrome blends
   // with the page on first paint.
-  themeColor: "#0D1117",
+  themeColor: "#0A0A0F",
 };
 
 // Applies the persisted theme BEFORE first paint so users never see a wrong
 // flash (FOUC). Must stay tiny and synchronous.
-const themeInitScript = `(function(){try{var t=null;var p=localStorage.getItem("reallearn-preferences");if(p){var s=JSON.parse(p);t=s&&s.state&&s.state.theme}if(!t){var l=localStorage.getItem("reallearn-theme");if(l){var v=JSON.parse(l);t=typeof v==="string"?v:v&&v.state&&v.state.theme}}if(t!=="light"&&t!=="dark"){t="dark"}var m=document.querySelector('meta[name="theme-color"]');if(!m){m=document.createElement("meta");m.name="theme-color";document.head.appendChild(m)}if(t==="dark"){document.documentElement.dataset.theme=t;m.content="#0D1117"}else{m.content="#FAF9F6"}}catch(e){}})();`;
+const themeInitScript = `(function(){try{var t=null;var p=localStorage.getItem("reallearn-preferences");if(p){var s=JSON.parse(p);t=s&&s.state&&s.state.theme}if(!t){var l=localStorage.getItem("reallearn-theme");if(l){var v=JSON.parse(l);t=typeof v==="string"?v:v&&v.state&&v.state.theme}}if(t!=="light"&&t!=="dark"){t="dark"}var m=document.querySelector('meta[name="theme-color"]');if(!m){m=document.createElement("meta");m.name="theme-color";document.head.appendChild(m)}if(t==="dark"){document.documentElement.dataset.theme=t;m.content="#0A0A0F"}else{m.content="#FAFAFA"}}catch(e){}})();`;
 
 // Resolves the visual-performance tier BEFORE first paint so low-end devices
 // never pay for a single expensive frame (backdrop blurs, grain, ambient

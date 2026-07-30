@@ -20,18 +20,18 @@ export interface ThemeOption {
 export const THEME_OPTIONS: ThemeOption[] = [
   {
     value: "light",
-    label: "Paper",
-    hint: "Warm alabaster daylight, solar terracotta accent",
-    bg: "#FAF9F6",
-    swatch: "#FAF9F6",
-    accent: "#EE5125",
+    label: "Light",
+    hint: "Clean purple, airy vibes",
+    bg: "#FAFAFA",
+    swatch: "#FAFAFA",
+    accent: "#7C3AED",
   },
   {
     value: "dark",
-    label: "Ink",
-    hint: "Midnight obsidian, glowing ember accent",
-    bg: "#0D1117",
-    swatch: "#0D1117",
-    accent: "#FF6435",
+    label: "Dark",
+    hint: "Deep space, neon purple glow",
+    bg: "#0A0A0F",
+    swatch: "#0A0A0F",
+    accent: "#8B5CF6",
   },
 ];
