@@ -21,17 +21,17 @@ export const THEME_OPTIONS: ThemeOption[] = [
   {
     value: "light",
     label: "Light",
-    hint: "Clean purple, airy vibes",
+    hint: "Clean cyan, airy vibes",
     bg: "#FAFAFA",
     swatch: "#FAFAFA",
-    accent: "#7C3AED",
+    accent: "#0891B2",
   },
   {
     value: "dark",
     label: "Dark",
-    hint: "Deep space, neon purple glow",
+    hint: "Deep space, neon cyan glow",
     bg: "#0A0A0F",
     swatch: "#0A0A0F",
-    accent: "#8B5CF6",
+    accent: "#06B6D4",
   },
 ];

@@ -23,10 +23,10 @@ export function activeTheme(): ThemeName {
   return "light";
 }
 
-/** Confetti / particle-burst colors — purple + cyan + pink + mint celebration */
+/** Confetti / particle-burst colors — cyan + pink + mint celebration */
 const CELEBRATION: Record<ThemeName, string[]> = {
-  light: ["#7C3AED", "#8B5CF6", "#A78BFA", "#06B6D4", "#22D3EE", "#EC4899", "#F472B6", "#34D399", "#FFFFFF"],
-  dark: ["#8B5CF6", "#A78BFA", "#C4B5FD", "#22D3EE", "#67E8F9", "#F472B6", "#F9A8D4", "#34D399", "#FAFAFA"],
+  light: ["#0891B2", "#06B6D4", "#22D3EE", "#DB2777", "#EC4899", "#F472B6", "#10B981", "#34D399", "#FFFFFF"],
+  dark: ["#06B6D4", "#22D3EE", "#67E8F9", "#EC4899", "#F472B6", "#F9A8D4", "#10B981", "#34D399", "#FAFAFA"],
 };
 
 export function celebrationColors(theme: ThemeName = activeTheme()): string[] {
@@ -35,7 +35,7 @@ export function celebrationColors(theme: ThemeName = activeTheme()): string[] {
 
 /** Rating stars / streak flames — warm glow. */
 export function starColor(theme: ThemeName = activeTheme()): string {
-  return theme === "dark" ? "#F472B6" : "#EC4899";
+  return theme === "dark" ? "#FBBF24" : "#D97706";
 }
 
 /**
@@ -47,9 +47,9 @@ export const SHARE_CARD = {
   card: "#FFFFFF",
   ink: "#18181B",
   inkSoft: "#52525B",
-  brand: "#7C3AED",
-  brandBright: "#8B5CF6",
-  mint: "#34D399",
-  amber: "#F472B6",
+  brand: "#0891B2",
+  brandBright: "#06B6D4",
+  mint: "#10B981",
+  amber: "#EC4899",
   border: "#E4E4E7",
 } as const;

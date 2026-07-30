@@ -17,7 +17,7 @@ When a learner asks a question:
 2. **Quiz-Gated Mastery**: Each part is locked behind a 2-question quiz. Learners must achieve **100% score** to unlock the next part.
 3. **Multilingual & Adaptive**: Supports 12 Indian languages and 3 difficulty levels — from middle-school foundations to college/advanced. (RealLearn is intended for learners aged 13+; the entry-level tier reflects content difficulty, not target age.)
 4. **Learning Personalization**: Optional user learning preferences and notes seamlessly injected into AI prompt generation.
-5. **Solar Terracotta Design System**: vibrant but readable, WCAG-AA-verified — warm alabaster daylight (`#FAF9F6`) / midnight obsidian night (`#0D1117`) themes with a solar terracotta (`#EE5125`) / glowing ember (`#FF6435`) accent, sunset-pop gradients (terracotta → rose → amber) on CTAs and display text, a dopamine subject-color spectrum, and airy multi-hue ambient auroras (strictly zero purple/violet). Full spec: [`docs/REDESIGN.md`](docs/REDESIGN.md).
+5. **Cyber Aqua Design System**: Gen Z aesthetic with electric cyan (`#06B6D4`) / teal (`#0891B2`) accent, hot pink (`#EC4899`) energy companion, emerald success, deep space dark mode (`#0A0A0F`) and clean light mode (`#FAFAFA`), gradient accents, and airy multi-hue ambient auroras (strictly zero purple/violet, zero gold). Full spec: [`docs/REDESIGN.md`](docs/REDESIGN.md).
 
 ---
 
