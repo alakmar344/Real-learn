@@ -36,9 +36,11 @@ and clean `#FAFAFA` by day, plus airy transform-only ambient auroras
 only), lesson prose never drops below 16px on phones, every color pairing
 is WCAG-AA-verified, and there is NO gold and NO purple/violet (owner's
 rule). JS-side colors (confetti, share card) come from
-`frontend/lib/palette.ts` — never hardcode brand hexes in components. Full
-audit + system spec: `docs/REDESIGN.md`. Frontend: Next.js 15 + React 19 +
-TypeScript + Tailwind + Clerk + Zustand. Backend: Node + Express.
+`frontend/lib/palette.ts` — never hardcode brand hexes in components. Prior
+design iterations (Evergreen, Solar Terracotta/"Sunset Pop") are recorded in
+`docs/REDESIGN.md` for history only — this §1 is the canonical spec. Frontend:
+Next.js 15 + React 19 + TypeScript + Tailwind + Clerk + Zustand. Backend: Node
++ Express.
 
 ---
 
@@ -82,6 +84,7 @@ npx tsc --noEmit          # typecheck  — MUST be clean
 npx next lint             # lint       — MUST be clean (next lint is deprecated but still works)
 npm run build             # production build — MUST succeed before a PR
 npm run verify:quiz       # Fisher-Yates shuffle sanity check
+npm run verify:achievements  # achievement catalogue sanity check
 
 # Backend (from /backend)
 npm install
@@ -189,7 +192,7 @@ These are the tells we are actively removing. Apply them on every UI touch:
    below 900px (by design).
 6. **Honest about AI.** Keep the "AI-generated, may be inaccurate" disclaimers.
 7. **Don't add features to "improve" UX without checking it isn't already
-   there.** This repo is mature (586+ commits). Search before you build.
+   there.** This repo is mature (770+ commits). Search before you build.
 
 ---
 
@@ -248,8 +251,8 @@ this protocol. No exceptions.**
      **this file** (`docs/AGENT_MEMORY.md`).
    - If the change affects public brand facts → update `llms.txt` +
      `llms-full.txt`.
-   - If the change affects the design system → update `DESIGN_AUDIT.md` and/or
-     `IMPROVEMENT_PRIORITIES.md` (mark items done).
+   - If the change affects the design system → update `docs/REDESIGN.md`
+     (append the change; mark the design state) and/or mark items done there.
 6. **Commit** with a conventional, specific message. Stage the doc updates in
    the same commit or a tightly-coupled follow-up commit.
 7. **Push + open a PR.** In the PR body, explicitly list which docs you updated.
@@ -434,6 +437,23 @@ this protocol. No exceptions.**
     to the no-gos. Updated §1 (design language description) to reflect Cyber
     Aqua system: cyan `#06B6D4` / teal `#0891B2` accent, pink companion,
     emerald success, deep space dark default.
+- 2026-07-31 — **Docs accuracy cleanup.** Scanned every doc against the code
+    and corrected stale facts: README backend port (5000 → 10000 default);
+    GEMINI.md + llms.txt + llms-full.txt design-system copy moved to the Cyber
+    Aqua system (Solar Terracotta/Evergreen/Soft Pastel descriptions retired);
+    llms.txt achievements 17 → 56 and repo URL → `alakmar344/Real-learn`;
+    llms-full.txt corrected circuit-breaker threshold (2), concurrency cap (6
+    + 2/user), LRU cache size (100), fast-mode tokens (4,000 both modes), fast
+    mode Serper + moderation behavior, moderation engine (deterministic, not
+    LLM), security-headers list, Zustand store count (4), typography (Lora
+    added), API endpoint table and SSE `progress` event, and removed the
+    retired "7-stage JSON repair pipeline" claim; CONTRIBUTING.md broken link
+    + verify commands; §7 commit count (586 → 770+); §11 design-system doc
+    pointer → `docs/REDESIGN.md`; `change-made-after-submission.md` header
+    (achievements, policy versions, themes, commit count, HEAD date);
+    `public/manifest.json` stale brand hex `#0D1117` → `#0A0A0F`.
+    `docs/REDESIGN.md` marked as historical record (canonical system is now
+    Cyber Aqua, see §1).
 
 
 

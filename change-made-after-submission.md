@@ -8,7 +8,7 @@
 > authentication, no legal framework, no accessibility features, no gamification,
 > no voice capabilities, and a rough gold-noir UI.
 >
-> In the **three weeks since submission**, RealLearn has undergone **290+
+> In the **five weeks since submission**, RealLearn has undergone **600+
 > commits** of intensive iteration, transforming it from a hackathon prototype
 > into a **production-grade learning platform**. This changelog documents every
 > single change — every bug fixed, every security vulnerability patched, every
@@ -26,10 +26,10 @@
 > - **Security Hardening:** From zero authentication to Clerk JWT verification
 >   with JWKS + offline PEM fallback. Eliminated IDOR vulnerabilities. Added
 >   per-user rate limiting, input validation, CORS hardening, security headers,
->   and multi-layer content moderation (regex + LLM).
+>   and multi-layer deterministic algorithmic content moderation.
 >
 > - **Legal Compliance:** Built a complete legal framework from scratch —
->   Privacy Policy (now v2.7), Terms of Service (v2.5), Cookie Policy (v2.3) — with
+>   Privacy Policy (now v2.8), Terms of Service (v2.6), Cookie Policy (v2.3) — with
 >   COPPA/CCPA/DPDP compliance, versioned consent, IP anonymization, optional
 >   learning personalization disclosure, and automatic reconsent flows.
 >
@@ -37,11 +37,12 @@
 >   AA — ARIA labels, keyboard navigation, focus trapping, skip-to-content,
 >   reduced-motion support, 44px touch targets, and screen reader announcements.
 >
-> - **Design Evolution:** Transformed from a basic dark theme to three beautiful
->   themes (Paper, Night, Twilight) with a crayon-painting background, adaptive
->   performance tiers, and self-hosted fonts.
+> - **Design Evolution:** Transformed from a basic dark theme to a full design
+>   system — the current Cyber Aqua system (Paper light / Ink dark themes,
+>   electric cyan/teal accent, hot-pink energy companion, ambient auroras),
+>   adaptive performance tiers, and self-hosted fonts.
 >
-> - **Gamification:** Added XP, levels, daily streaks, streak freezes, 17
+> - **Gamification:** Added XP, levels, daily streaks, streak freezes, 56
 >   achievements, activity heatmap, and shareable result cards — turning
 >   learning into a rewarding habit.
 >
@@ -75,7 +76,7 @@
 > **Scope:** This document records every notable change made to the RealLearn
 > codebase starting from the **"dark gold-noir → classic printed-textbook
 > aesthetic" redesign** (commit `e55b098`, 2026-06-20) up to the current
-> `HEAD` (2026-07-14). It intentionally starts at that design pivot because it
+> `HEAD` (2026-07-30). It intentionally starts at that design pivot because it
 > is the point where the look moved away from the gold accent and the product
 > entered its current long arc of iterations.
 >
@@ -830,7 +831,7 @@ vendors). All of these live between `2b239b5` (start) and now:
 
 ---
 
-## 10. Plain chronological summary (290 commits, 2026-06-20 → 2026-07-13)
+## 10. Plain chronological summary (600+ commits, 2026-06-20 → 2026-07-30)
 
 | Date | Commit | Summary |
 |------|--------|---------|
@@ -979,6 +980,16 @@ vendors). All of these live between `2b239b5` (start) and now:
 
 
 - 2026-07-30 — **Cyber Aqua Gen Z Redesign & Security Fixes.** Fixed CORS null-origin bypass (rejected null origins instead of allowing them). Removed client-supplied email fallback — `clerkId` is now the sole identity key. Replaced purple/violet palette (violated owner's rule) with electric cyan (`#06B6D4`)/teal (`#0891B2`) primary, hot pink (`#EC4899`) energy companion, emerald success, deep space dark mode default. Purple/violet purged from all 12 files: globals.css, themes.ts, palette.ts, layout.tsx, ThemeApplier.tsx, page.tsx, and components. Updated README and AGENT_MEMORY.md. No gold (per user request). Verified: tsc clean, lint clean, build clean.
+- 2026-07-31 — **Docs accuracy cleanup.** Scanned every doc against the codebase and corrected all stale facts:
+  - README: backend default port `5000` → `10000`.
+  - GEMINI.md, llms.txt, llms-full.txt: design-system copy synced to the current **Cyber Aqua** system (Solar Terracotta / Evergreen / Soft Pastel / Paper-Ink-Dusk descriptions retired).
+  - llms.txt: achievements `17` → `56`; repository URL → `alakmar344/Real-learn`.
+  - llms-full.txt: circuit-breaker threshold `5` → `2`; concurrency cap `3` → `6` (+ 2 per user); LRU cache `200` → `100` entries; fast mode (now 4,000-token ceiling shared with explain, runs Serper + full moderation, temperature 0.2); moderation engine described as deterministic/algorithmic (LLM "safety judge" retired); security-headers list corrected (CORP intentionally unset); Zustand store count `5` → `4`; typography list + Lora; API endpoint table completed (agreement/status, search-lessons, tts, feedback); SSE `progress` event added; retired "7-stage JSON repair pipeline" claim; Graceful Degradation wording aligned with fail-open/fail-closed semantics.
+  - CONTRIBUTING.md: broken `README.md#local-development` link → `#quick-start`; backend verify command `node --check` → `npm test`; frontend verify commands expanded.
+  - docs/AGENT_MEMORY.md: commit count `586+` → `770+`; deleted DESIGN_AUDIT.md/IMPROVEMENT_PRIORITIES.md references in §11 → `docs/REDESIGN.md`; added `verify:achievements` to §3.
+  - docs/REDESIGN.md: marked as a historical record; canonical design system is now Cyber Aqua (see AGENT_MEMORY §1).
+  - change-made-after-submission.md: header highlights corrected (commits, policy versions v2.8/v2.6/v2.3, 56 achievements, Light/Dark themes, deterministic moderation); scope HEAD date → 2026-07-30.
+  - public/manifest.json: stale brand hex `#0D1117` → `#0A0A0F` (deep space dark canvas).
  
  *This changelog is maintained as the project's running history. New changes are
  appended under the relevant section (and the chronological table) as they land.*

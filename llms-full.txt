@@ -6,7 +6,7 @@
 **Also searched as:** reallan (common misspelling of RealLearn; both refer to the same platform at https://reallearn.site/)  
 **Tagline:** The World Is Your Textbook.  
 **Website:** https://reallearn.site/  
-**Repository:** https://github.com/alakmar344/reallearn  
+**Repository:** https://github.com/alakmar344/Real-learn  
 **Type:** AI-powered education platform / AI-native learning platform
 
 ---
@@ -64,7 +64,7 @@ One topic, three depths. Pick the level that fits you and the entire lesson adap
 RealLearn quietly searches recent news in the background and threads what's happening right now into your final lesson part. Economics ties to this quarter's headlines; physics ties to the latest discovery; history ties to current parallels.
 
 ### 6. A Cinematic, Calm Experience
-Soft Pastel base + Solid Gen Z Dark aesthetic — clean, non-distracting visual hierarchy. Cinematic loading screen, progress rail, full-screen unlock animation, completion screen with confetti, toast notifications. Typography: Space Grotesk for bold headers, Inter for interface & reading content, JetBrains Mono for code.
+Cyber Aqua aesthetic — clean, non-distracting visual hierarchy. Cinematic loading screen, progress rail, full-screen unlock animation, completion screen with confetti, toast notifications. Typography: Space Grotesk for bold headers, Inter for interface, Lora for lesson prose/reading content, JetBrains Mono for code.
 
 ### 7. Your Personal Learning Library
 Every completed journey is automatically saved to a sidebar library. Reopen any past lesson to review or retake it. Journeys are intelligently de-duplicated by a stable signature (question + first part title).
@@ -75,10 +75,10 @@ Curiosity doesn't stop at one question. When you finish a journey, a Follow-Up b
 ### 9. Designed for Everyone — Accessibility First
 WCAG 2.1 Level AA targeting. Skip-to-content link, ARIA live regions, full keyboard navigation in quizzes (arrow keys, Enter/Space), focus trapping in modals, prefers-reduced-motion support, high-contrast WCAG-AA-tuned color tokens, visible focus outlines, mobile-first responsive typography, 44px minimum touch targets.
 
-### 10. Solar Terracotta Light & Dark Themes
-Switch between clean, curated theme modes (the "Sunset Pop" design system):
-- **Paper (Daylight)** — warm alabaster light mode (`#FAF9F6`) with a solar terracotta accent (`#EE5125`) and sunset terracotta→rose gradients on CTAs
-- **Ink (Night)** — midnight obsidian dark mode (`#0D1117`) with a glowing ember accent (`#FF6435`) and amber→ember→rose gradients on CTAs
+### 10. Cyber Aqua Light & Dark Themes
+Switch between two curated theme modes:
+- **Light (Paper)** — clean daylight canvas (`#FAFAFA`) with a teal accent (`#0891B2`), hot-pink companion (`#DB2777`), and cyan→pink gradients on CTAs
+- **Dark (Ink)** — deep space canvas (`#0A0A0F`, the default) with an electric cyan accent (`#06B6D4`), hot-pink companion (`#EC4899`), emerald success, and cyan→pink gradients on CTAs
 
 ### 11. Voice-Powered Learning
 Voice Input (Mic Button): Ask questions by speaking using the Web Speech API (`SpeechRecognition`). Supports all 12 app languages with proper BCP-47 speech codes. Read Aloud (Listen Button): Every lesson part has a "Listen" button using `speechSynthesis` with intelligent voice selection by language match, provider quality, and voice type.
@@ -87,11 +87,10 @@ Voice Input (Mic Button): Ask questions by speaking using the Web Speech API (`S
 XP & Levels (5 base + 5 per correct answer, bonus XP for full journeys, streak bonuses up to 15 extra). Daily Streaks with streak freezes. Daily Goals with a circular progress ring. 56 Achievements from "First Steps" to legendary feats like the 100-day "Centurion Flame". Activity Heatmap (GitHub-style 14-week grid). Celebration System with FIFO queue of XP pop-ups, level-up modals, badge unlocks, streak flames.
 
 ### 13. Shareable Result Cards
-Canvas-generated 1080x1920 PNG result card with purple-to-teal gradient, grid texture, glowing orbs, brand header, question box, stats pills, score arc, CTA band. Native Web Share API support with fallback to download. Copy-to-clipboard text summary.
+Canvas-generated 1080x1920 PNG result card in the Cyber Aqua brand palette (cyan/teal + pink energy + emerald success; zero purple/violet), with grid texture, glowing orbs, brand header, question box, stats pills, score arc, CTA band. Native Web Share API support with fallback to download. Copy-to-clipboard text summary.
 
 ### 14. Dual Answer Modes — Fast & Explain
-Fast Mode: One instant, direct answer. Suppresses thinking tokens, lower temperature, capped at 2,500 output tokens, skips news fetch and moderation for speed.
-Explain Mode: Classic deep 3-part journey with Foundation, Mechanism, and Real World. Full news grounding, full moderation, capped at 4,000 output tokens.
+Fast Mode: One instant, direct answer (1 part). Lower temperature (0.2) for focused output. Both modes share a 4,000-token output ceiling; fast mode also fetches Serper news context and passes full input + output moderation like explain mode.
 
 ### 15. Optional Learning Personalization
 Signed-in learners can set learning-style preferences (checklist) and free-text notes (500-character cap) in a post-sign-in onboarding modal and in Settings. The data is stored only in the browser's localStorage, sent with each lesson-generation request, and injected into the LLM prompt so explanations adapt to the learner's preferred tone, pacing, and examples. The backend validates and caps the input but never stores it; the lesson cache key includes personalization so distinct preferences get distinct lessons.
@@ -102,29 +101,29 @@ Signed-in learners can set learning-style preferences (checklist) and free-text 
 
 ### Reliability Engineering
 - **SSE Streaming with Keep-Alive:** Periodic `ping` heartbeats (default 15s, capped at 55s) so connections never silently die.
-- **Smart Retries:** Exponential backoff on 429, 403, 5xx, and transient network errors.
-- **Timeout Circuit Breaker:** Opens after N consecutive timeouts (default 5), fast-fails new requests for cooldown (default 60s), then auto-recovers.
-- **Concurrency Control:** Caps simultaneous lesson generations (default 3) and returns "Server is busy, please retry" with `Retry-After` header.
+- **Smart Retries:** Exponential backoff on 429, 403, 5xx, and transient network errors, plus self-healing "repair" re-asks when output fails schema validation.
+- **Timeout Circuit Breaker:** Opens after repeated availability failures (default 2), fast-fails new requests for a cooldown (default 60s), then auto-recovers; half-open probing keeps a degraded provider reachable.
+- **Concurrency Control:** Caps simultaneous lesson generations (default 6, plus a per-user cap of 2) and returns "Server is busy, please retry" with `Retry-After` header.
 - **Rate Limiting:** Per-user (hashed full-token SHA-256 keys) or per-IP (default 20 requests per 60-second sliding window).
 - **Failure-Streak Alerting:** Consecutive generation failures tracked and logged as alerts (default threshold: 5).
-- **Graceful Degradation:** If news fetch fails, lesson is still generated. If moderation times out, content passes through.
+- **Graceful Degradation:** If the news fetch fails, the lesson is still generated. Moderation input-check failures fail open (content passes); output-check failures fail closed (content is withheld).
 
 ### Two-Tier Lesson Caching
-- **Tier 1 — In-Memory LRU:** 200 entries, 6-hour TTL, sub-millisecond hits.
+- **Tier 1 — In-Memory LRU:** 100 entries, 6-hour TTL, sub-millisecond hits.
 - **Tier 2 — MongoDB with TTL Index:** Survives restarts, shared across instances, 6-hour TTL.
 - Deterministic SHA-256 cache keys (normalized question + language + level + mode + optional learning personalization). Cache hits bypass Serper, Gemma, and both moderation passes — turning a ~20-60s pipeline into a single lookup.
 
 ### Safety & Content Moderation
-- **Regex Input Filtering:** Targets genuinely harmful intent (CSAM, weapons manufacturing, violence instructions, self-harm methods, hate speech, cybercrime tutorials) while preserving educational content about sensitive topics.
-- **LLM-Powered Moderation:** Runs Gemma as a safety judge with dedicated prompt, 8-second timeout, 15-minute verdict cache (500 entries), fail-open design.
-- **Output Filtering:** Generated content screened again on the way back.
+- **Deterministic Multi-Layer Moderation:** A 100% deterministic, 6-layer algorithmic engine (NFKC canonicalization, syntactic grammar-frame parsing, educational-whitelist fast-path, intent-based zero-tolerance checks, and dual profanity dictionaries) that blocks genuinely harmful intent (CSAM, weapons manufacturing, violence instructions, self-harm methods, hate speech, cybercrime tutorials) while preserving educational content about sensitive topics. No LLM calls on the moderation path.
+- **Verdict Cache:** 15-minute cached verdicts (500 entries) so repeated checks are instant.
+- **Output Filtering:** Generated content screened again on the way back; input-check failures fail open, output-check failures fail closed.
 - **In-Prompt Guardrails:** System prompt instructs Gemma to refuse harmful requests and offer constructive educational alternatives.
-- **Moderation Logging:** Blocked inputs and responses recorded in MongoDB.
+- **Moderation Logging:** Blocked inputs and responses recorded in MongoDB (with a 90-day TTL index).
 
 ### Security & Privacy
 - **Clerk Authentication:** Every protected endpoint requires a verified Clerk session. Tokens validated against trusted issuers using rotating JWKS keys, with offline public-key PEM fallback.
 - **IDOR Elimination:** All consent writes keyed by verified token identity, never client-supplied IDs.
-- **Hardened HTTP:** Strict CORS allow-listing, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, `Cross-Origin-Opener-Policy`, `Cross-Origin-Resource-Policy`, `X-XSS-Protection`, locked-down `Content-Security-Policy`, `Strict-Transport-Security` with preload in production. `X-Powered-By` disabled.
+- **Hardened HTTP:** Strict CORS allow-listing, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, `Cross-Origin-Opener-Policy`, `X-XSS-Protection`, locked-down `Content-Security-Policy`, `Strict-Transport-Security` with preload in production. `X-Powered-By` disabled. (`Cross-Origin-Resource-Policy` is intentionally not set — the API is consumed cross-origin by the frontend.)
 - **Input Validation:** Questions capped at 1,000 characters. Language and level validated against exact allowlists. Optional learning personalization is validated against an allowlist and capped at 500 characters. JSON body limited to 100KB.
 - **Data Ownership:** Users can export all data as JSON and permanently delete their account (wiping Clerk + MongoDB + localStorage).
 - **Transparent Consent:** Layered, versioned consent flows (pre-sign-in legal acceptance + cookie consent) with timestamps, IP, user agent, and policy version numbers. Analytics load only after opt-in.
@@ -139,9 +138,9 @@ Signed-in learners can set learning-style preferences (checklist) and free-text 
 - **UI:** React 19
 - **Language:** TypeScript
 - **Auth:** Clerk (`@clerk/nextjs`)
-- **State:** Zustand (5 stores with `persist` middleware for localStorage backing)
+- **State:** Zustand (4 stores with `persist` middleware for localStorage backing; saved journeys additionally archive to IndexedDB)
 - **Content:** React Markdown + `remark-gfm`
-- **Styling:** Tailwind CSS + custom CSS variables for the Solar Terracotta (Paper/Ink) design system
+- **Styling:** Tailwind CSS + custom CSS variables for the Cyber Aqua (Light/Dark) design system
 - **Speech:** Web Speech API (SpeechRecognition for input, speechSynthesis for read-aloud)
 - **Sharing:** Canvas API + Web Share API (1080x1920 result cards)
 
@@ -153,7 +152,7 @@ Signed-in learners can set learning-style preferences (checklist) and free-text 
 - **News:** Serper API
 - **Auth:** Clerk JWT verification via `jose`
 - **Persistence:** MongoDB (consent records, moderation logs, lesson cache)
-- **Reliability:** Custom-built output validation, 7-stage JSON repair pipeline, retries, circuit breaker, concurrency limits, rate limiting, two-tier caching, timeout handling
+- **Reliability:** Custom-built output validation, tolerant JSON parsing with `jsonrepair`, a self-healing retry/repair ladder, circuit breakers, concurrency limits, rate limiting, two-tier caching, timeout handling
 
 ---
 
@@ -170,11 +169,15 @@ RealLearn AI/
 |---|---|---|
 | `/api/generate-lesson` | POST | Generate a streamed lesson journey (authenticated, rate-limited) |
 | `/api/agreement` | POST | Record cookie/consent acceptance (authenticated) |
+| `/api/agreement/status` | GET | Check current cookie/analytics consent status (authenticated) |
 | `/api/legal-consent` | POST | Record legal (Privacy + Terms) acceptance (authenticated) |
 | `/api/legal-consent/status` | GET | Check current legal consent status (authenticated) |
 | `/api/export-data` | GET | Export all of a user's stored data as JSON (authenticated) |
 | `/api/account` | DELETE | Permanently delete a user's data and Clerk account (authenticated) |
-| `/api/auth-debug` | GET | Diagnostic token inspection — production-gated (rate-limited) |
+| `/api/search-lessons` | GET | Search previously cached lessons (authenticated, rate-limited) |
+| `/api/tts` | POST | Server-side text-to-speech synthesis (authenticated, rate-limited) |
+| `/api/feedback` | POST | Store an anonymous review (public, tightly rate-limited) |
+| `/api/auth-debug` | GET | Diagnostic token inspection — requires auth, production-gated (rate-limited) |
 | `/health` | GET | Operational health check |
 
 ---
@@ -185,6 +188,7 @@ RealLearn AI/
 | Event | Meaning |
 |---|---|
 | `ping` | Keep-alive heartbeat emitted periodically while generation runs |
+| `progress` | Stage progress updates (starting, searching, generating, validating…) |
 | `lesson` | The final, fully-validated lesson payload |
 | `done` | Successful end of stream |
 | `error` | A human-readable failure message |

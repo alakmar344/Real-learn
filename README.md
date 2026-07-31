@@ -52,7 +52,7 @@ cd backend
 npm install
 npm start
 ```
-The backend API server will run on `http://localhost:5000` (or configured `PORT`).
+The backend API server will run on `http://localhost:10000` (or configured `PORT`).
 
 ---
 

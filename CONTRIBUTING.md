@@ -31,12 +31,13 @@ Feature suggestions are welcome. Please open an issue with:
    ```bash
    # Frontend
    cd frontend
-   npm run lint
-   npm run build
+   npx tsc --noEmit      # TypeScript check (must be 0 errors)
+   npm run lint          # Next.js ESLint check
+   npm run build         # Production build
 
    # Backend
    cd backend
-   node --check src/*.js
+   npm test              # AI engine, moderation, quiz validation, and personalization tests
    ```
 5. **Commit** with a clear message (use conventional format: `feat:`, `fix:`, `chore:`, `docs:`)
 6. **Push** to your fork
@@ -60,7 +61,7 @@ npm install
 npm start
 ```
 
-See the [Local Development](README.md#local-development) section in the README for full details.
+See the [Quick Start](README.md#quick-start) section in the README for full details.
 
 ## Code Style
 
