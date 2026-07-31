@@ -1,5 +1,14 @@
 # RealLearn "Evergreen" Redesign — UX Audit, Design System & Implementation Record
 
+> **Status: historical record.** This document records the "Evergreen"
+> research-backed redesign (2026-07-28) and the "Sunset Pop" vibrancy pass
+> (2026-07-29) — the design iterations of that week. **The current canonical
+> design system is now the Cyber Aqua system** (electric cyan/teal accent,
+> hot-pink energy companion, deep space dark default `#0A0A0F`, light
+> `#FAFAFA`, no purple/violet, no gold). See `docs/AGENT_MEMORY.md` §1 for the
+> canonical description; the Evergreen/Solar Terracotta details below describe
+> superseded states and are kept only as history.
+
 > **Goal:** redesign RealLearn so Gen Z naturally feels at home — not by decorating
 > it with "Gen Z" signifiers, but by applying what actually makes modern products
 > feel effortless: clarity, strong hierarchy, expressive-but-restrained visuals,

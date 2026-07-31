@@ -1,104 +1,432 @@
 {
- "generatedAt": "2026-07-27T13:39:21.429Z",
+ "generatedAt": "2026-07-31T02:32:02.419Z",
  "repo": "alakmar344/Real-learn",
  "branchAnalyzed": "main",
  "totals": {
-  "trackedFiles": 146,
-  "codeFiles": 144,
-  "totalLines": 32725,
-  "totalBytes": 1950829,
-  "commits": 717,
-  "mergedPRs": 236,
-  "highestPR": 260,
+  "trackedFiles": 140,
+  "codeFiles": 138,
+  "totalLines": 30447,
+  "totalBytes": 1532546,
+  "commits": 770,
+  "mergedPRs": 256,
+  "highestPR": 280,
   "authors": 9,
   "firstCommitDate": "2026-05-06",
-  "lastCommitDate": "2026-07-26",
+  "lastCommitDate": "2026-07-30",
   "components": 50,
   "pages": 10,
   "hooks": 5,
   "stores": 4,
-  "frontendLibs": 11,
+  "frontendLibs": 12,
   "backendLibs": 12,
   "endpoints": 12,
-  "dependencies": 40,
-  "designTokens": 108,
-  "cssLines": 3189,
+  "dependencies": 41,
+  "designTokens": 111,
+  "cssLines": 3611,
   "envVars": 63,
   "backendTestFiles": 5,
   "backendTestCount": 37,
-  "docFiles": 15,
-  "docWords": 45317
+  "docFiles": 9,
+  "docWords": 21207
  },
  "byLang": {
   "other": {
    "files": 3,
    "lines": 78,
-   "bytes": 1692
+   "bytes": 1617
   },
   "Markdown": {
-   "files": 15,
-   "lines": 5284,
-   "bytes": 328010
+   "files": 9,
+   "lines": 2077,
+   "bytes": 156359
   },
   ".example": {
    "files": 2,
-   "lines": 140,
-   "bytes": 6893
+   "lines": 141,
+   "bytes": 6823
   },
   "JSON": {
    "files": 5,
-   "lines": 185,
-   "bytes": 4586
+   "lines": 187,
+   "bytes": 4499
   },
   "JavaScript": {
-   "files": 23,
-   "lines": 7130,
-   "bytes": 282447
+   "files": 24,
+   "lines": 7288,
+   "bytes": 280264
   },
   "CSS": {
    "files": 1,
-   "lines": 3189,
-   "bytes": 92051
+   "lines": 3611,
+   "bytes": 100111
   },
   "TypeScript (TSX)": {
    "files": 63,
-   "lines": 12559,
-   "bytes": 479790
+   "lines": 12527,
+   "bytes": 467902
   },
   "TypeScript": {
    "files": 25,
-   "lines": 3749,
-   "bytes": 132860
+   "lines": 4143,
+   "bytes": 143168
   },
   "SVG": {
    "files": 1,
    "lines": 14,
-   "bytes": 710
+   "bytes": 709
   },
   "Text": {
    "files": 3,
-   "lines": 268,
-   "bytes": 18202
+   "lines": 271,
+   "bytes": 19250
   },
   "XML": {
    "files": 2,
-   "lines": 128,
-   "bytes": 3614
-  },
-  ".tsbuildinfo": {
-   "files": 1,
-   "lines": 1,
-   "bytes": 241369
+   "lines": 110,
+   "bytes": 2983
   }
  },
  "byArea": {
   "root": {
-   "files": 144,
-   "lines": 32725,
-   "bytes": 1592224
+   "files": 12,
+   "lines": 1747,
+   "bytes": 123889
+  },
+  "backend": {
+   "files": 22,
+   "lines": 6932,
+   "bytes": 271280
+  },
+  "docs": {
+   "files": 2,
+   "lines": 712,
+   "bytes": 54338
+  },
+  "frontend": {
+   "files": 102,
+   "lines": 21056,
+   "bytes": 734178
   }
  },
  "commits": [
+  {
+   "hash": "9c5a208",
+   "date": "2026-07-30",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #280 from alakmar344/agent/maple-lunar-bjcz"
+  },
+  {
+   "hash": "f162d09",
+   "date": "2026-07-30",
+   "author": "AL-Aqmar tinwala",
+   "subject": "fix: purge purple/violet violations, replace with Cyber Aqua palette"
+  },
+  {
+   "hash": "fdb3e8f",
+   "date": "2026-07-30",
+   "author": "AL-Aqmar tinwala",
+   "subject": "feat: Gen Z redesign & security fixes"
+  },
+  {
+   "hash": "c2d9445",
+   "date": "2026-07-30",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #279 from alakmar344/agent/drift-bloom-7wx8"
+  },
+  {
+   "hash": "49407ae",
+   "date": "2026-07-29",
+   "author": "AL-Aqmar tinwala",
+   "subject": "fix(lint): resolve 7 ESLint warnings across frontend"
+  },
+  {
+   "hash": "9e0fbd3",
+   "date": "2026-07-29",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #278 from alakmar344/agent/wave-eagle-itwl"
+  },
+  {
+   "hash": "c9bf9ce",
+   "date": "2026-07-29",
+   "author": "AL-Aqmar tinwala",
+   "subject": "fix(brand): finish Sunset Pop consistency — manifest, logo, tier color, stale comments"
+  },
+  {
+   "hash": "1b097f1",
+   "date": "2026-07-29",
+   "author": "AL-Aqmar tinwala",
+   "subject": "docs(brand): sync GEMINI.md and llms-full.txt to Solar Terracotta system"
+  },
+  {
+   "hash": "4b21fc6",
+   "date": "2026-07-29",
+   "author": "AL-Aqmar tinwala",
+   "subject": "docs: complete Change Protocol for hardening + legal + Sunset Pop commits"
+  },
+  {
+   "hash": "9dc1e24",
+   "date": "2026-07-29",
+   "author": "AL-Aqmar tinwala",
+   "subject": "feat(design): Sunset Pop vibrancy pass — Gen Z-leaning, WCAG-AA-kept"
+  },
+  {
+   "hash": "04eb2e1",
+   "date": "2026-07-29",
+   "author": "AL-Aqmar tinwala",
+   "subject": "fix(legal): align policies with implementation and compliance requirements"
+  },
+  {
+   "hash": "9511528",
+   "date": "2026-07-29",
+   "author": "AL-Aqmar tinwala",
+   "subject": "fix(frontend): nonce-based CSP, a11y focus trap, consent race guard, dep updates"
+  },
+  {
+   "hash": "b034243",
+   "date": "2026-07-29",
+   "author": "AL-Aqmar tinwala",
+   "subject": "fix(backend): harden validation, auth issuer trust, and stream limits"
+  },
+  {
+   "hash": "a646e49",
+   "date": "2026-07-28",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #277 from alakmar344/feature/vibrant-brand-colors"
+  },
+  {
+   "hash": "75b9261",
+   "date": "2026-07-28",
+   "author": "Alakmar Teenwala",
+   "subject": "style(theme): refresh brand and ambient color tokens for rich vibrant warmth"
+  },
+  {
+   "hash": "3da9a55",
+   "date": "2026-07-28",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #276 from alakmar344/fix/conduit-part3-pill-alignment"
+  },
+  {
+   "hash": "e21a34d",
+   "date": "2026-07-28",
+   "author": "Alakmar Teenwala",
+   "subject": "fix(learning): align conduit part pills and prevent multi-line wrapping"
+  },
+  {
+   "hash": "b5d7737",
+   "date": "2026-07-28",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #275 from alakmar344/feature/reallearn-brand-dna-redesign"
+  },
+  {
+   "hash": "e794757",
+   "date": "2026-07-28",
+   "author": "Alakmar Teenwala",
+   "subject": "fix(ui): remove BottomNav import and element from AppShell"
+  },
+  {
+   "hash": "04846e4",
+   "date": "2026-07-28",
+   "author": "Alakmar Teenwala",
+   "subject": "merge: resolve conflicts with main and enforce RealLearn Brand DNA design system"
+  },
+  {
+   "hash": "9190c31",
+   "date": "2026-07-28",
+   "author": "Alakmar Teenwala",
+   "subject": "fix(ui): remove duplicate dangling css variables in globals.css"
+  },
+  {
+   "hash": "731300f",
+   "date": "2026-07-28",
+   "author": "Alakmar Teenwala",
+   "subject": "feat(ui): implement RealLearn Brand DNA visual ownability and design system overhaul"
+  },
+  {
+   "hash": "7fd2152",
+   "date": "2026-07-28",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #274 from alakmar344/agent/eagle-spark-attm"
+  },
+  {
+   "hash": "6c50f7c",
+   "date": "2026-07-28",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge branch 'main' into agent/eagle-spark-attm"
+  },
+  {
+   "hash": "763448a",
+   "date": "2026-07-28",
+   "author": "AL-Aqmar tinwala",
+   "subject": "feat(design): Evergreen redesign — research-backed UX overhaul"
+  },
+  {
+   "hash": "ebe60f7",
+   "date": "2026-07-28",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #273 from alakmar344/feat/expand-achievement-catalog"
+  },
+  {
+   "hash": "bbe308f",
+   "date": "2026-07-28",
+   "author": "Alakmar Teenwala",
+   "subject": "feat(achievements): expand achievement catalog with 24 new badges across tiers"
+  },
+  {
+   "hash": "69efa01",
+   "date": "2026-07-27",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #272 from alakmar344/revert/electric-genz-ui-redesign"
+  },
+  {
+   "hash": "a1af286",
+   "date": "2026-07-27",
+   "author": "Alakmar Teenwala",
+   "subject": "docs: update AGENT_MEMORY and changelog for revert"
+  },
+  {
+   "hash": "760fab8",
+   "date": "2026-07-27",
+   "author": "Alakmar Teenwala",
+   "subject": "Revert \"feat(ui): transform UI to 100% electric cyber & Gen Z aesthetic\""
+  },
+  {
+   "hash": "5275602",
+   "date": "2026-07-27",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #271 from alakmar344/feat/electric-genz-ui-redesign"
+  },
+  {
+   "hash": "8236ac9",
+   "date": "2026-07-27",
+   "author": "Alakmar Teenwala",
+   "subject": "feat(ui): transform UI to 100% electric cyber & Gen Z aesthetic"
+  },
+  {
+   "hash": "3a9fdc0",
+   "date": "2026-07-27",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #270 from alakmar344/feat/deterministic-moderation-layers"
+  },
+  {
+   "hash": "d7d3378",
+   "date": "2026-07-27",
+   "author": "Alakmar Teenwala",
+   "subject": "feat(moderation): implement 6-layer deterministic moderation engine and educational fast-path"
+  },
+  {
+   "hash": "49593b8",
+   "date": "2026-07-27",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #269 from alakmar344/chore/streamline-docs"
+  },
+  {
+   "hash": "f38b074",
+   "date": "2026-07-27",
+   "author": "Alakmar Teenwala",
+   "subject": "docs: update and streamline documentation across repository"
+  },
+  {
+   "hash": "17ce31d",
+   "date": "2026-07-27",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #268 from alakmar344/fix/quiz-exact-text-answer-validation"
+  },
+  {
+   "hash": "464bccb",
+   "date": "2026-07-27",
+   "author": "Alakmar Teenwala",
+   "subject": "fix(quiz): prevent heuristic explanation override when correctIndex is already exact"
+  },
+  {
+   "hash": "8ca8826",
+   "date": "2026-07-27",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #267 from alakmar344/fix/quiz-exact-text-answer-validation"
+  },
+  {
+   "hash": "d09d4c5",
+   "date": "2026-07-27",
+   "author": "Alakmar Teenwala",
+   "subject": "feat(quiz): add correctAnswer exact text matching for AI models"
+  },
+  {
+   "hash": "5ef85eb",
+   "date": "2026-07-27",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #266 from alakmar344/fix/quiz-answer-validation"
+  },
+  {
+   "hash": "8e9976c",
+   "date": "2026-07-27",
+   "author": "Alakmar Teenwala",
+   "subject": "fix(quiz): correct quiz answer validation and 1-based index alignment"
+  },
+  {
+   "hash": "50128bc",
+   "date": "2026-07-27",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #265 from alakmar344/agent/flame-coral-l9rg"
+  },
+  {
+   "hash": "dc05024",
+   "date": "2026-07-27",
+   "author": "AL-Aqmar tinwala",
+   "subject": "security: close prompt-injection fence breakout via question and news context"
+  },
+  {
+   "hash": "d503a81",
+   "date": "2026-07-27",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #264 from alakmar344/agent/flame-coral-l9rg"
+  },
+  {
+   "hash": "628bbf2",
+   "date": "2026-07-27",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Add standalone HTML edition of the complete report alongside the PDF"
+  },
+  {
+   "hash": "de4b167",
+   "date": "2026-07-26",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #263 from alakmar344/fix/lite-mode-ai-response-readability"
+  },
+  {
+   "hash": "6ea6f59",
+   "date": "2026-07-26",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge branch 'main' into fix/lite-mode-ai-response-readability"
+  },
+  {
+   "hash": "6ebd48a",
+   "date": "2026-07-26",
+   "author": "Alakmar Teenwala",
+   "subject": "fix(theme): enhance AI response text contrast and readability in lite mode"
+  },
+  {
+   "hash": "847b45d",
+   "date": "2026-07-26",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #262 from alakmar344/style/solid-color-bold-electric"
+  },
+  {
+   "hash": "99d38c6",
+   "date": "2026-07-26",
+   "author": "Alakmar Teenwala",
+   "subject": "style: overhaul UI to solid-color bold electric design system"
+  },
+  {
+   "hash": "c53a189",
+   "date": "2026-07-26",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #261 from alakmar344/feat/set-dark-theme-default"
+  },
+  {
+   "hash": "5276e91",
+   "date": "2026-07-26",
+   "author": "Alakmar Teenwala",
+   "subject": "style: set dark mode as default theme for new visitors"
+  },
   {
    "hash": "37b41b0",
    "date": "2026-07-26",
@@ -4404,6 +4732,146 @@
  ],
  "merges": [
   {
+   "hash": "9c5a208",
+   "date": "2026-07-30",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #280 from alakmar344/agent/maple-lunar-bjcz",
+   "pr": 280
+  },
+  {
+   "hash": "c2d9445",
+   "date": "2026-07-30",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #279 from alakmar344/agent/drift-bloom-7wx8",
+   "pr": 279
+  },
+  {
+   "hash": "9e0fbd3",
+   "date": "2026-07-29",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #278 from alakmar344/agent/wave-eagle-itwl",
+   "pr": 278
+  },
+  {
+   "hash": "a646e49",
+   "date": "2026-07-28",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #277 from alakmar344/feature/vibrant-brand-colors",
+   "pr": 277
+  },
+  {
+   "hash": "3da9a55",
+   "date": "2026-07-28",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #276 from alakmar344/fix/conduit-part3-pill-alignment",
+   "pr": 276
+  },
+  {
+   "hash": "b5d7737",
+   "date": "2026-07-28",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #275 from alakmar344/feature/reallearn-brand-dna-redesign",
+   "pr": 275
+  },
+  {
+   "hash": "7fd2152",
+   "date": "2026-07-28",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #274 from alakmar344/agent/eagle-spark-attm",
+   "pr": 274
+  },
+  {
+   "hash": "ebe60f7",
+   "date": "2026-07-28",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #273 from alakmar344/feat/expand-achievement-catalog",
+   "pr": 273
+  },
+  {
+   "hash": "69efa01",
+   "date": "2026-07-27",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #272 from alakmar344/revert/electric-genz-ui-redesign",
+   "pr": 272
+  },
+  {
+   "hash": "5275602",
+   "date": "2026-07-27",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #271 from alakmar344/feat/electric-genz-ui-redesign",
+   "pr": 271
+  },
+  {
+   "hash": "3a9fdc0",
+   "date": "2026-07-27",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #270 from alakmar344/feat/deterministic-moderation-layers",
+   "pr": 270
+  },
+  {
+   "hash": "49593b8",
+   "date": "2026-07-27",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #269 from alakmar344/chore/streamline-docs",
+   "pr": 269
+  },
+  {
+   "hash": "17ce31d",
+   "date": "2026-07-27",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #268 from alakmar344/fix/quiz-exact-text-answer-validation",
+   "pr": 268
+  },
+  {
+   "hash": "8ca8826",
+   "date": "2026-07-27",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #267 from alakmar344/fix/quiz-exact-text-answer-validation",
+   "pr": 267
+  },
+  {
+   "hash": "5ef85eb",
+   "date": "2026-07-27",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #266 from alakmar344/fix/quiz-answer-validation",
+   "pr": 266
+  },
+  {
+   "hash": "50128bc",
+   "date": "2026-07-27",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #265 from alakmar344/agent/flame-coral-l9rg",
+   "pr": 265
+  },
+  {
+   "hash": "d503a81",
+   "date": "2026-07-27",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #264 from alakmar344/agent/flame-coral-l9rg",
+   "pr": 264
+  },
+  {
+   "hash": "de4b167",
+   "date": "2026-07-26",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #263 from alakmar344/fix/lite-mode-ai-response-readability",
+   "pr": 263
+  },
+  {
+   "hash": "847b45d",
+   "date": "2026-07-26",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #262 from alakmar344/style/solid-color-bold-electric",
+   "pr": 262
+  },
+  {
+   "hash": "c53a189",
+   "date": "2026-07-26",
+   "author": "AL-Aqmar tinwala",
+   "subject": "Merge pull request #261 from alakmar344/feat/set-dark-theme-default",
+   "pr": 261
+  },
+  {
    "hash": "37b41b0",
    "date": "2026-07-26",
    "author": "AL-Aqmar tinwala",
@@ -6057,12 +6525,16 @@
   }
  ],
  "commitsByMonth": {
-  "2026-07": 454,
+  "2026-07": 507,
   "2026-06": 100,
   "2026-05": 163
  },
  "commitsByDay": {
-  "2026-07-26": 26,
+  "2026-07-30": 4,
+  "2026-07-29": 9,
+  "2026-07-28": 14,
+  "2026-07-27": 19,
+  "2026-07-26": 33,
   "2026-07-25": 27,
   "2026-07-24": 14,
   "2026-07-23": 14,
@@ -6105,8 +6577,8 @@
   "2026-05-06": 27
  },
  "authors": {
-  "AL-Aqmar tinwala": 605,
-  "Alakmar Teenwala": 24,
+  "AL-Aqmar tinwala": 640,
+  "Alakmar Teenwala": 42,
   "Claude": 2,
   "SuperNinja Agent": 1,
   "superninja-app": 1,
@@ -6116,13 +6588,13 @@
   "google-labs-jules[bot]": 5
  },
  "typeDist": {
-  "merge": 253,
-  "other": 241,
-  "style": 9,
-  "fix": 102,
+  "merge": 275,
+  "fix": 114,
+  "feat": 60,
+  "docs": 28,
+  "style": 12,
+  "other": 245,
   "perf": 11,
-  "feat": 52,
-  "docs": 24,
   "revert": 2,
   "refactor": 11,
   "chore": 10,
@@ -6358,6 +6830,12 @@
    "kind": "runtime"
   },
   {
+   "name": "syllable",
+   "version": "^5.0.1",
+   "area": "backend",
+   "kind": "runtime"
+  },
+  {
    "name": "text-readability",
    "version": "^1.1.1",
    "area": "backend",
@@ -6372,185 +6850,190 @@
  ],
  "inventory": {
   "components": [
-   "frontend\\components\\homepage\\ExampleQuestions.tsx",
-   "frontend\\components\\homepage\\HomeStats.tsx",
-   "frontend\\components\\homepage\\QuestionInput.tsx",
-   "frontend\\components\\learning\\CompletionScreen.tsx",
-   "frontend\\components\\learning\\FeedbackPrompt.tsx",
-   "frontend\\components\\learning\\FollowUpBox.tsx",
-   "frontend\\components\\learning\\PartCard.tsx",
-   "frontend\\components\\learning\\ProgressRail.tsx",
-   "frontend\\components\\learning\\QuickSummaryCards.tsx",
-   "frontend\\components\\learning\\QuizQuestion.tsx",
-   "frontend\\components\\learning\\QuizSheet.tsx",
-   "frontend\\components\\learning\\ShareResult.tsx",
-   "frontend\\components\\learning\\UnlockAnimation.tsx",
-   "frontend\\components\\shared\\AchievementsGrid.tsx",
-   "frontend\\components\\shared\\ActivityHeatmap.tsx",
-   "frontend\\components\\shared\\AmbientBackground.tsx",
-   "frontend\\components\\shared\\AppShell.tsx",
-   "frontend\\components\\shared\\ConfirmModal.tsx",
-   "frontend\\components\\shared\\CookieConsent.tsx",
-   "frontend\\components\\shared\\DailyGoalRing.tsx",
-   "frontend\\components\\shared\\DeferredProviders.tsx",
-   "frontend\\components\\shared\\EasterEggs.tsx",
-   "frontend\\components\\shared\\EngagementLayer.tsx",
-   "frontend\\components\\shared\\ErrorBoundary.tsx",
-   "frontend\\components\\shared\\ErrorState.tsx",
-   "frontend\\components\\shared\\FeedbackGate.tsx",
-   "frontend\\components\\shared\\Footer.tsx",
-   "frontend\\components\\shared\\GoogleAnalytics.tsx",
-   "frontend\\components\\shared\\KeyboardShortcuts.tsx",
-   "frontend\\components\\shared\\LanguageSelector.tsx",
-   "frontend\\components\\shared\\LevelSelector.tsx",
-   "frontend\\components\\shared\\ListenButton.tsx",
-   "frontend\\components\\shared\\LiveRegion.tsx",
-   "frontend\\components\\shared\\LoadingCinematic.tsx",
-   "frontend\\components\\shared\\MicButton.tsx",
-   "frontend\\components\\shared\\Navbar.tsx",
-   "frontend\\components\\shared\\PersonalizationGate.tsx",
-   "frontend\\components\\shared\\PreSignInConsent.tsx",
-   "frontend\\components\\shared\\PreferenceModal.tsx",
-   "frontend\\components\\shared\\ProgressHub.tsx",
-   "frontend\\components\\shared\\ReadingProgressBar.tsx",
-   "frontend\\components\\shared\\ScrollToTop.tsx",
-   "frontend\\components\\shared\\Sidebar.tsx",
-   "frontend\\components\\shared\\Skeleton.tsx",
-   "frontend\\components\\shared\\SkipToContent.tsx",
-   "frontend\\components\\shared\\SourceTag.tsx",
-   "frontend\\components\\shared\\ThemeApplier.tsx",
-   "frontend\\components\\shared\\ThemeModal.tsx",
-   "frontend\\components\\shared\\ThingsComingModal.tsx",
-   "frontend\\components\\shared\\ToastContainer.tsx"
+   "frontend/components/homepage/ExampleQuestions.tsx",
+   "frontend/components/homepage/HomeStats.tsx",
+   "frontend/components/homepage/QuestionInput.tsx",
+   "frontend/components/learning/CompletionScreen.tsx",
+   "frontend/components/learning/FeedbackPrompt.tsx",
+   "frontend/components/learning/FollowUpBox.tsx",
+   "frontend/components/learning/PartCard.tsx",
+   "frontend/components/learning/ProgressRail.tsx",
+   "frontend/components/learning/QuickSummaryCards.tsx",
+   "frontend/components/learning/QuizQuestion.tsx",
+   "frontend/components/learning/QuizSheet.tsx",
+   "frontend/components/learning/ShareResult.tsx",
+   "frontend/components/learning/UnlockAnimation.tsx",
+   "frontend/components/shared/AchievementsGrid.tsx",
+   "frontend/components/shared/ActivityHeatmap.tsx",
+   "frontend/components/shared/AmbientBackground.tsx",
+   "frontend/components/shared/AppShell.tsx",
+   "frontend/components/shared/ConfirmModal.tsx",
+   "frontend/components/shared/CookieConsent.tsx",
+   "frontend/components/shared/DailyGoalRing.tsx",
+   "frontend/components/shared/DeferredProviders.tsx",
+   "frontend/components/shared/EasterEggs.tsx",
+   "frontend/components/shared/EngagementLayer.tsx",
+   "frontend/components/shared/ErrorBoundary.tsx",
+   "frontend/components/shared/ErrorState.tsx",
+   "frontend/components/shared/FeedbackGate.tsx",
+   "frontend/components/shared/Footer.tsx",
+   "frontend/components/shared/GoogleAnalytics.tsx",
+   "frontend/components/shared/KeyboardShortcuts.tsx",
+   "frontend/components/shared/LanguageSelector.tsx",
+   "frontend/components/shared/LevelSelector.tsx",
+   "frontend/components/shared/ListenButton.tsx",
+   "frontend/components/shared/LiveRegion.tsx",
+   "frontend/components/shared/LoadingCinematic.tsx",
+   "frontend/components/shared/MicButton.tsx",
+   "frontend/components/shared/Navbar.tsx",
+   "frontend/components/shared/PersonalizationGate.tsx",
+   "frontend/components/shared/PreSignInConsent.tsx",
+   "frontend/components/shared/PreferenceModal.tsx",
+   "frontend/components/shared/ProgressHub.tsx",
+   "frontend/components/shared/ReadingProgressBar.tsx",
+   "frontend/components/shared/ScrollToTop.tsx",
+   "frontend/components/shared/Sidebar.tsx",
+   "frontend/components/shared/Skeleton.tsx",
+   "frontend/components/shared/SkipToContent.tsx",
+   "frontend/components/shared/SourceTag.tsx",
+   "frontend/components/shared/ThemeApplier.tsx",
+   "frontend/components/shared/ThemeModal.tsx",
+   "frontend/components/shared/ThingsComingModal.tsx",
+   "frontend/components/shared/ToastContainer.tsx"
   ],
   "componentGroups": {
-   "(root)": [
-    "frontend\\components\\homepage\\ExampleQuestions",
-    "frontend\\components\\homepage\\HomeStats",
-    "frontend\\components\\homepage\\QuestionInput",
-    "frontend\\components\\learning\\CompletionScreen",
-    "frontend\\components\\learning\\FeedbackPrompt",
-    "frontend\\components\\learning\\FollowUpBox",
-    "frontend\\components\\learning\\PartCard",
-    "frontend\\components\\learning\\ProgressRail",
-    "frontend\\components\\learning\\QuickSummaryCards",
-    "frontend\\components\\learning\\QuizQuestion",
-    "frontend\\components\\learning\\QuizSheet",
-    "frontend\\components\\learning\\ShareResult",
-    "frontend\\components\\learning\\UnlockAnimation",
-    "frontend\\components\\shared\\AchievementsGrid",
-    "frontend\\components\\shared\\ActivityHeatmap",
-    "frontend\\components\\shared\\AmbientBackground",
-    "frontend\\components\\shared\\AppShell",
-    "frontend\\components\\shared\\ConfirmModal",
-    "frontend\\components\\shared\\CookieConsent",
-    "frontend\\components\\shared\\DailyGoalRing",
-    "frontend\\components\\shared\\DeferredProviders",
-    "frontend\\components\\shared\\EasterEggs",
-    "frontend\\components\\shared\\EngagementLayer",
-    "frontend\\components\\shared\\ErrorBoundary",
-    "frontend\\components\\shared\\ErrorState",
-    "frontend\\components\\shared\\FeedbackGate",
-    "frontend\\components\\shared\\Footer",
-    "frontend\\components\\shared\\GoogleAnalytics",
-    "frontend\\components\\shared\\KeyboardShortcuts",
-    "frontend\\components\\shared\\LanguageSelector",
-    "frontend\\components\\shared\\LevelSelector",
-    "frontend\\components\\shared\\ListenButton",
-    "frontend\\components\\shared\\LiveRegion",
-    "frontend\\components\\shared\\LoadingCinematic",
-    "frontend\\components\\shared\\MicButton",
-    "frontend\\components\\shared\\Navbar",
-    "frontend\\components\\shared\\PersonalizationGate",
-    "frontend\\components\\shared\\PreSignInConsent",
-    "frontend\\components\\shared\\PreferenceModal",
-    "frontend\\components\\shared\\ProgressHub",
-    "frontend\\components\\shared\\ReadingProgressBar",
-    "frontend\\components\\shared\\ScrollToTop",
-    "frontend\\components\\shared\\Sidebar",
-    "frontend\\components\\shared\\Skeleton",
-    "frontend\\components\\shared\\SkipToContent",
-    "frontend\\components\\shared\\SourceTag",
-    "frontend\\components\\shared\\ThemeApplier",
-    "frontend\\components\\shared\\ThemeModal",
-    "frontend\\components\\shared\\ThingsComingModal",
-    "frontend\\components\\shared\\ToastContainer"
+   "homepage": [
+    "ExampleQuestions",
+    "HomeStats",
+    "QuestionInput"
+   ],
+   "learning": [
+    "CompletionScreen",
+    "FeedbackPrompt",
+    "FollowUpBox",
+    "PartCard",
+    "ProgressRail",
+    "QuickSummaryCards",
+    "QuizQuestion",
+    "QuizSheet",
+    "ShareResult",
+    "UnlockAnimation"
+   ],
+   "shared": [
+    "AchievementsGrid",
+    "ActivityHeatmap",
+    "AmbientBackground",
+    "AppShell",
+    "ConfirmModal",
+    "CookieConsent",
+    "DailyGoalRing",
+    "DeferredProviders",
+    "EasterEggs",
+    "EngagementLayer",
+    "ErrorBoundary",
+    "ErrorState",
+    "FeedbackGate",
+    "Footer",
+    "GoogleAnalytics",
+    "KeyboardShortcuts",
+    "LanguageSelector",
+    "LevelSelector",
+    "ListenButton",
+    "LiveRegion",
+    "LoadingCinematic",
+    "MicButton",
+    "Navbar",
+    "PersonalizationGate",
+    "PreSignInConsent",
+    "PreferenceModal",
+    "ProgressHub",
+    "ReadingProgressBar",
+    "ScrollToTop",
+    "Sidebar",
+    "Skeleton",
+    "SkipToContent",
+    "SourceTag",
+    "ThemeApplier",
+    "ThemeModal",
+    "ThingsComingModal",
+    "ToastContainer"
    ]
   },
   "pages": [
-   "frontend\\app\\learn\\page.tsx",
-   "frontend\\app\\legal\\cookies\\page.tsx",
-   "frontend\\app\\legal\\page.tsx",
-   "frontend\\app\\legal\\privacy\\page.tsx",
-   "frontend\\app\\legal\\terms\\page.tsx",
-   "frontend\\app\\page.tsx",
-   "frontend\\app\\progress\\page.tsx",
-   "frontend\\app\\settings\\page.tsx",
-   "frontend\\app\\sign-in\\[[...sign-in]]\\page.tsx",
-   "frontend\\app\\sign-up\\[[...sign-up]]\\page.tsx"
+   "frontend/app/learn/page.tsx",
+   "frontend/app/legal/cookies/page.tsx",
+   "frontend/app/legal/page.tsx",
+   "frontend/app/legal/privacy/page.tsx",
+   "frontend/app/legal/terms/page.tsx",
+   "frontend/app/page.tsx",
+   "frontend/app/progress/page.tsx",
+   "frontend/app/settings/page.tsx",
+   "frontend/app/sign-in/[[...sign-in]]/page.tsx",
+   "frontend/app/sign-up/[[...sign-up]]/page.tsx"
   ],
   "appFiles": [
-   "frontend\\app\\layout.tsx",
-   "frontend\\app\\learn\\page.tsx",
-   "frontend\\app\\legal\\cookies\\page.tsx",
-   "frontend\\app\\legal\\page.tsx",
-   "frontend\\app\\legal\\privacy\\page.tsx",
-   "frontend\\app\\legal\\terms\\page.tsx",
-   "frontend\\app\\not-found.tsx",
-   "frontend\\app\\page.tsx",
-   "frontend\\app\\progress\\page.tsx",
-   "frontend\\app\\robots.ts",
-   "frontend\\app\\settings\\page.tsx",
-   "frontend\\app\\sign-in\\[[...sign-in]]\\page.tsx",
-   "frontend\\app\\sign-up\\[[...sign-up]]\\page.tsx",
-   "frontend\\app\\sitemap.ts"
+   "frontend/app/layout.tsx",
+   "frontend/app/learn/page.tsx",
+   "frontend/app/legal/cookies/page.tsx",
+   "frontend/app/legal/page.tsx",
+   "frontend/app/legal/privacy/page.tsx",
+   "frontend/app/legal/terms/page.tsx",
+   "frontend/app/not-found.tsx",
+   "frontend/app/page.tsx",
+   "frontend/app/progress/page.tsx",
+   "frontend/app/robots.ts",
+   "frontend/app/settings/page.tsx",
+   "frontend/app/sign-in/[[...sign-in]]/page.tsx",
+   "frontend/app/sign-up/[[...sign-up]]/page.tsx",
+   "frontend/app/sitemap.ts"
   ],
   "hooks": [
-   "frontend\\hooks\\useFocusTrap.ts",
-   "frontend\\hooks\\useLesson.ts",
-   "frontend\\hooks\\useMounted.ts",
-   "frontend\\hooks\\useReadingTimer.ts",
-   "frontend\\hooks\\useSpeech.ts"
+   "frontend/hooks/useFocusTrap.ts",
+   "frontend/hooks/useLesson.ts",
+   "frontend/hooks/useMounted.ts",
+   "frontend/hooks/useReadingTimer.ts",
+   "frontend/hooks/useSpeech.ts"
   ],
   "stores": [
-   "frontend\\store\\lessonStore.ts",
-   "frontend\\store\\preferenceStore.ts",
-   "frontend\\store\\progressStore.ts",
-   "frontend\\store\\savedJourneysStore.ts"
+   "frontend/store/lessonStore.ts",
+   "frontend/store/preferenceStore.ts",
+   "frontend/store/progressStore.ts",
+   "frontend/store/savedJourneysStore.ts"
   ],
   "frontendLibs": [
-   "frontend\\lib\\achievements.ts",
-   "frontend\\lib\\debouncedStorage.ts",
-   "frontend\\lib\\feedback.ts",
-   "frontend\\lib\\haptics.ts",
-   "frontend\\lib\\legalConsent.ts",
-   "frontend\\lib\\lessonArchive.ts",
-   "frontend\\lib\\modalManager.ts",
-   "frontend\\lib\\performance.ts",
-   "frontend\\lib\\personalization.ts",
-   "frontend\\lib\\quizShuffle.ts",
-   "frontend\\lib\\themes.ts"
+   "frontend/lib/achievements.ts",
+   "frontend/lib/debouncedStorage.ts",
+   "frontend/lib/feedback.ts",
+   "frontend/lib/haptics.ts",
+   "frontend/lib/legalConsent.ts",
+   "frontend/lib/lessonArchive.ts",
+   "frontend/lib/modalManager.ts",
+   "frontend/lib/palette.ts",
+   "frontend/lib/performance.ts",
+   "frontend/lib/personalization.ts",
+   "frontend/lib/quizShuffle.ts",
+   "frontend/lib/themes.ts"
   ],
   "backendLibs": [
-   "backend\\src\\lib\\auth.js",
-   "backend\\src\\lib\\contentGuard.js",
-   "backend\\src\\lib\\gemma.js",
-   "backend\\src\\lib\\lessonCache.js",
-   "backend\\src\\lib\\lruCache.js",
-   "backend\\src\\lib\\moderation.js",
-   "backend\\src\\lib\\mongodb.js",
-   "backend\\src\\lib\\personalization.js",
-   "backend\\src\\lib\\prompts.js",
-   "backend\\src\\lib\\qualityGate.js",
-   "backend\\src\\lib\\searchIndex.js",
-   "backend\\src\\lib\\serper.js"
+   "backend/src/lib/auth.js",
+   "backend/src/lib/contentGuard.js",
+   "backend/src/lib/gemma.js",
+   "backend/src/lib/lessonCache.js",
+   "backend/src/lib/lruCache.js",
+   "backend/src/lib/moderation.js",
+   "backend/src/lib/mongodb.js",
+   "backend/src/lib/personalization.js",
+   "backend/src/lib/prompts.js",
+   "backend/src/lib/qualityGate.js",
+   "backend/src/lib/searchIndex.js",
+   "backend/src/lib/serper.js"
   ],
   "backendTests": [
-   "backend\\test\\gemma-engine.test.js",
-   "backend\\test\\moderation.test.js",
-   "backend\\test\\personalization.test.js",
-   "backend\\test\\quizValidation.test.js",
-   "backend\\test\\search-index.test.js"
+   "backend/test/gemma-engine.test.js",
+   "backend/test/moderation.test.js",
+   "backend/test/personalization.test.js",
+   "backend/test/quizValidation.test.js",
+   "backend/test/search-index.test.js"
   ]
  },
  "endpoints": [
@@ -6606,71 +7089,71 @@
  "cssTokens": [
   {
    "token": "--brand",
-   "value": "#00CC52"
+   "value": "#06B6D4"
   },
   {
    "token": "--brand-strong",
-   "value": "#00A844"
+   "value": "#0891B2"
   },
   {
    "token": "--brand-bright",
-   "value": "#00FF66"
+   "value": "#22D3EE"
   },
   {
    "token": "--brand-soft",
-   "value": "rgba(0, 204, 82, 0.10)"
+   "value": "rgba(6, 182, 212, 0.15)"
   },
   {
    "token": "--cobalt-deep",
-   "value": "#0F172A"
+   "value": "#0A0A0F"
   },
   {
    "token": "--cobalt-mid",
-   "value": "#334155"
+   "value": "#18181B"
   },
   {
    "token": "--cobalt-vivid",
-   "value": "#00CC52"
+   "value": "#06B6D4"
   },
   {
    "token": "--cobalt-pale",
-   "value": "rgba(0, 204, 82, 0.08)"
+   "value": "rgba(6, 182, 212, 0.1)"
   },
   {
    "token": "--cobalt-wash",
-   "value": "rgba(0, 204, 82, 0.05)"
+   "value": "rgba(6, 182, 212, 0.06)"
   },
   {
    "token": "--cobalt-ink",
-   "value": "#0F172A"
+   "value": "#0A0A0F"
   },
   {
    "token": "--bg-primary",
-   "value": "#F8FAF9"
+   "value": "#0A0A0F"
   },
   {
    "token": "--bg-surface",
-   "value": "#FFFFFF"
+   "value": "#18181B"
   },
   {
    "token": "--bg-card",
-   "value": "#FFFFFF"
+   "value": "#18181B"
   },
   {
    "token": "--bg-card-hover",
-   "value": "#F1F5F2"
+   "value": "#27272A"
   },
   {
    "token": "--bg-glass",
-   "value": "rgba(248, 250, 249, 0.92)"
+   "value": "rgba(10, 10, 15, 0.92)"
   },
   {
    "token": "--bg-solid",
-   "value": "#F1F5F2"
+   "value": "#27272A"
   },
   {
    "token": "--bg-warm",
-   "value": "#FFFFFF"
+   "value": "#18181B"
   },
   {
    "token": "--ambient-a",
@@ -6682,19 +7165,19 @@
   },
   {
    "token": "--border-subtle",
-   "value": "#E2E8F0"
+   "value": "#27272A"
   },
   {
    "token": "--border-default",
-   "value": "#CBD5E1"
+   "value": "#3F3F46"
   },
   {
    "token": "--border-accent",
-   "value": "#00CC52"
+   "value": "#06B6D4"
   },
   {
    "token": "--border-glow",
-   "value": "rgba(0, 204, 82, 0.18)"
+   "value": "rgba(6, 182, 212, 0.35)"
   },
   {
    "token": "--glass-blur",
@@ -6706,19 +7189,19 @@
   },
   {
    "token": "--glass-saturate",
-   "value": "120%"
+   "value": "140%"
   },
   {
    "token": "--glass-highlight",
-   "value": "rgba(255, 255, 255, 0.9)"
+   "value": "rgba(255, 255, 255, 0.05)"
   },
   {
    "token": "--glass-shadow",
-   "value": "0 4px 20px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.03"
+   "value": "0 8px 32px rgba(0, 0, 0, 0.5)"
   },
   {
    "token": "--glass-edge",
-   "value": "inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 0 0 1px rgba"
+   "value": "inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 0 1px rgba(63, "
   },
   {
    "token": "--glass-sheen",
@@ -6726,31 +7209,35 @@
   },
   {
    "token": "--accent",
-   "value": "#00CC52"
+   "value": "#06B6D4"
   },
   {
    "token": "--accent-action",
-   "value": "#FF3E00"
+   "value": "#06B6D4"
   },
   {
    "token": "--accent-hover",
-   "value": "#00A844"
+   "value": "#0891B2"
   },
   {
    "token": "--accent-dim",
-   "value": "rgba(0, 204, 82, 0.10)"
+   "value": "rgba(6, 182, 212, 0.15)"
   },
   {
    "token": "--accent-glow",
-   "value": "rgba(0, 204, 82, 0.18)"
+   "value": "rgba(6, 182, 212, 0.35)"
   },
   {
    "token": "--accent-companion",
-   "value": "#FF3E00"
+   "value": "#EC4899"
   },
   {
    "token": "--accent-gradient",
-   "value": "#00CC52"
+   "value": "linear-gradient(135deg, #06B6D4 0%, #EC4899 100%)"
+  },
+  {
+   "token": "--text-pop-gradient",
+   "value": "linear-gradient(105deg, #22D3EE 0%, #06B6D4 45%, #EC4899 100"
   },
   {
    "token": "--on-accent",
@@ -6758,91 +7245,91 @@
   },
   {
    "token": "--shadow-glow-accent",
-   "value": "0 4px 16px rgba(0, 204, 82, 0.20)"
+   "value": "0 4px 24px rgba(6, 182, 212, 0.4)"
   },
   {
    "token": "--text-primary",
-   "value": "#0F172A"
+   "value": "#FAFAFA"
   },
   {
    "token": "--text-secondary",
-   "value": "#475569"
+   "value": "#A1A1AA"
   },
   {
    "token": "--text-tertiary",
-   "value": "#64748B"
+   "value": "#71717A"
   },
   {
    "token": "--text-accent-strong",
-   "value": "#00A844"
+   "value": "#22D3EE"
   },
   {
    "token": "--correct",
-   "value": "#16A34A"
+   "value": "#10B981"
   },
   {
    "token": "--correct-bg",
-   "value": "#DCFCE7"
+   "value": "rgba(16, 185, 129, 0.15)"
   },
   {
    "token": "--wrong",
-   "value": "#DC2626"
+   "value": "#FB7185"
   },
   {
    "token": "--wrong-bg",
-   "value": "#FEE2E2"
+   "value": "rgba(251, 113, 133, 0.15)"
   },
   {
    "token": "--locked",
-   "value": "#94A3B8"
+   "value": "#52525B"
   },
   {
    "token": "--subject-physics",
-   "value": "#00CC52"
+   "value": "#38BDF8"
   },
   {
    "token": "--subject-chemistry",
-   "value": "#16A34A"
+   "value": "#34D399"
   },
   {
    "token": "--subject-economics",
-   "value": "#FF3E00"
+   "value": "#FBBF24"
   },
   {
    "token": "--subject-biology",
-   "value": "#00CC52"
+   "value": "#4ADE80"
   },
   {
    "token": "--subject-cs",
-   "value": "#00CC52"
+   "value": "#FB923C"
   },
   {
    "token": "--subject-history",
-   "value": "#FF3E00"
+   "value": "#FB7185"
   },
   {
    "token": "--subject-general",
-   "value": "#00CC52"
+   "value": "#06B6D4"
   },
   {
    "token": "--radius-sm",
-   "value": "8px"
+   "value": "10px"
   },
   {
    "token": "--radius-md",
-   "value": "12px"
+   "value": "14px"
   },
   {
    "token": "--radius-lg",
-   "value": "16px"
+   "value": "18px"
   },
   {
    "token": "--radius-xl",
-   "value": "20px"
+   "value": "22px"
   },
   {
    "token": "--radius-2xl",
-   "value": "24px"
+   "value": "28px"
   },
   {
    "token": "--radius-pill",
@@ -6946,19 +7433,19 @@
   },
   {
    "token": "--shadow-sm",
-   "value": "0 1px 3px rgba(0, 0, 0, 0.06)"
+   "value": "0 2px 8px rgba(0, 0, 0, 0.3)"
   },
   {
    "token": "--shadow-md",
-   "value": "0 4px 12px rgba(0, 0, 0, 0.06)"
+   "value": "0 8px 24px rgba(0, 0, 0, 0.4)"
   },
   {
    "token": "--shadow-lg",
-   "value": "0 8px 30px rgba(0, 0, 0, 0.08)"
+   "value": "0 16px 40px rgba(0, 0, 0, 0.5)"
   },
   {
    "token": "--shadow-glow-correct",
-   "value": "0 0 16px rgba(22, 163, 74, 0.15)"
+   "value": "0 0 24px rgba(16, 185, 129, 0.3)"
   },
   {
    "token": "--ease-reveal",
@@ -6970,7 +7457,7 @@
   },
   {
    "token": "--ease-spring",
-   "value": "cubic-bezier(0.16, 1, 0.3, 1)"
+   "value": "cubic-bezier(0.34, 1.56, 0.64, 1)"
   },
   {
    "token": "--ease-smooth",
@@ -6998,43 +7485,51 @@
   },
   {
    "token": "--scrim",
-   "value": "rgba(0, 0, 0, 0.4)"
+   "value": "rgba(0, 0, 0, 0.7)"
   },
   {
    "token": "--focus-ring",
-   "value": "0 0 0 3px rgba(0, 204, 82, 0.25)"
+   "value": "0 0 0 3px rgba(6, 182, 212, 0.35)"
   },
   {
    "token": "--focus-ring-simple",
-   "value": "0 0 0 2px #00CC52"
+   "value": "0 0 0 2px #06B6D4"
   },
   {
    "token": "--aurora-1",
-   "value": "rgba(0, 204, 82, 0.06)"
+   "value": "rgba(6, 182, 212, 0.18)"
   },
   {
    "token": "--aurora-2",
-   "value": "rgba(255, 62, 0, 0.06)"
+   "value": "rgba(236, 72, 153, 0.14)"
   },
   {
    "token": "--aurora-3",
-   "value": "rgba(0, 204, 82, 0.04)"
+   "value": "rgba(16, 185, 129, 0.1)"
+  },
+  {
+   "token": "--aurora-4",
+   "value": "rgba(251, 113, 133, 0.1)"
+  },
+  {
+   "token": "--notched",
+   "value": ":before {\n  content: \"\""
   },
   {
    "token": "--earned",
-   "value": "hover,\r\n.badge-tile--earned.badge-tile--open {\r\n  box-shadow"
+   "value": "hover,\n.badge-tile--earned.badge-tile--open {\n  box-shadow: "
   },
   {
    "token": "--danger",
-   "value": "hover,\r\n.btn-icon--danger:focus-visible {\r\n  border-color: v"
+   "value": "hover,\n.btn-icon--danger:focus-visible {\n  border-color: var"
   },
   {
    "token": "--active",
-   "value": ":before {\r\n  content: \"\""
+   "value": ":before {\n  content: \"\""
   },
   {
    "token": "--secondary",
-   "value": "hover,\r\n.error-state__btn--secondary:focus-visible {\r\n  bord"
+   "value": "hover,\n.error-state__btn--secondary:focus-visible {\n  border"
   }
  ],
  "envVars": [
@@ -7106,1102 +7601,1024 @@
   {
    "path": "AGENT_INSTRUCTIONS.md",
    "lines": 24,
-   "bytes": 961,
+   "bytes": 938,
    "words": 153
   },
   {
    "path": "change-made-after-submission.md",
-   "lines": 964,
-   "bytes": 71810,
-   "words": 9856
+   "lines": 998,
+   "bytes": 85671,
+   "words": 11700
   },
   {
    "path": "CODE_OF_CONDUCT.md",
    "lines": 72,
-   "bytes": 4540,
+   "bytes": 4469,
    "words": 616
   },
   {
    "path": "CONTRIBUTING.md",
-   "lines": 91,
-   "bytes": 2217,
-   "words": 332
+   "lines": 92,
+   "bytes": 2305,
+   "words": 357
   },
   {
-   "path": "DESIGN_AUDIT.md",
-   "lines": 452,
-   "bytes": 17925,
-   "words": 2448
+   "path": "docs/AGENT_MEMORY.md",
+   "lines": 461,
+   "bytes": 37028,
+   "words": 4798
   },
   {
-   "path": "docs\\AGENT_MEMORY.md",
-   "lines": 347,
-   "bytes": 26403,
-   "words": 3446
-  },
-  {
-   "path": "errors.md",
-   "lines": 615,
-   "bytes": 40355,
-   "words": 5621
+   "path": "docs/REDESIGN.md",
+   "lines": 251,
+   "bytes": 17310,
+   "words": 2384
   },
   {
    "path": "GEMINI.md",
    "lines": 23,
-   "bytes": 1372,
-   "words": 200
-  },
-  {
-   "path": "HEROIC_SAGA.md",
-   "lines": 596,
-   "bytes": 35472,
-   "words": 5281
-  },
-  {
-   "path": "IMPROVEMENT_PRIORITIES.md",
-   "lines": 327,
-   "bytes": 11047,
-   "words": 1652
+   "bytes": 1881,
+   "words": 267
   },
   {
    "path": "README.md",
-   "lines": 798,
-   "bytes": 71485,
-   "words": 9581
-  },
-  {
-   "path": "REALLEARN_BY_THE_NUMBERS.md",
-   "lines": 170,
-   "bytes": 5645,
-   "words": 913
-  },
-  {
-   "path": "reallearn-summarised.md",
-   "lines": 708,
-   "bytes": 33900,
-   "words": 4530
+   "lines": 90,
+   "bytes": 3781,
+   "words": 509
   },
   {
    "path": "SECURITY.md",
    "lines": 66,
-   "bytes": 3041,
+   "bytes": 2976,
    "words": 423
-  },
-  {
-   "path": "todo.md",
-   "lines": 31,
-   "bytes": 1837,
-   "words": 265
   }
  ],
  "files": [
   {
    "path": ".gitignore",
    "lines": 52,
-   "bytes": 547,
+   "bytes": 496,
    "area": "root",
    "lang": "other"
   },
   {
    "path": "AGENT_INSTRUCTIONS.md",
    "lines": 24,
-   "bytes": 961,
+   "bytes": 938,
    "area": "root",
    "lang": "Markdown"
   },
   {
-   "path": "backend\\.env.example",
-   "lines": 129,
-   "bytes": 6442,
-   "area": "root",
+   "path": "backend/.env.example",
+   "lines": 130,
+   "bytes": 6382,
+   "area": "backend",
    "lang": ".example"
   },
   {
-   "path": "backend\\package.json",
-   "lines": 37,
-   "bytes": 992,
-   "area": "root",
+   "path": "backend/package.json",
+   "lines": 38,
+   "bytes": 982,
+   "area": "backend",
    "lang": "JSON"
   },
   {
-   "path": "backend\\src\\lib\\auth.js",
-   "lines": 285,
-   "bytes": 12097,
-   "area": "root",
+   "path": "backend/src/lib/auth.js",
+   "lines": 291,
+   "bytes": 12235,
+   "area": "backend",
    "lang": "JavaScript"
   },
   {
-   "path": "backend\\src\\lib\\contentGuard.js",
+   "path": "backend/src/lib/contentGuard.js",
    "lines": 124,
-   "bytes": 7268,
-   "area": "root",
+   "bytes": 7145,
+   "area": "backend",
    "lang": "JavaScript"
   },
   {
-   "path": "backend\\src\\lib\\gemma.js",
-   "lines": 1450,
-   "bytes": 51556,
-   "area": "root",
+   "path": "backend/src/lib/gemma.js",
+   "lines": 1472,
+   "bytes": 51015,
+   "area": "backend",
    "lang": "JavaScript"
   },
   {
-   "path": "backend\\src\\lib\\lessonCache.js",
+   "path": "backend/src/lib/lessonCache.js",
    "lines": 193,
-   "bytes": 6868,
-   "area": "root",
+   "bytes": 6676,
+   "area": "backend",
    "lang": "JavaScript"
   },
   {
-   "path": "backend\\src\\lib\\lruCache.js",
+   "path": "backend/src/lib/lruCache.js",
    "lines": 23,
-   "bytes": 921,
-   "area": "root",
+   "bytes": 899,
+   "area": "backend",
    "lang": "JavaScript"
   },
   {
-   "path": "backend\\src\\lib\\moderation.js",
-   "lines": 176,
-   "bytes": 6527,
-   "area": "root",
+   "path": "backend/src/lib/moderation.js",
+   "lines": 236,
+   "bytes": 9361,
+   "area": "backend",
    "lang": "JavaScript"
   },
   {
-   "path": "backend\\src\\lib\\mongodb.js",
+   "path": "backend/src/lib/mongodb.js",
    "lines": 54,
-   "bytes": 1960,
-   "area": "root",
+   "bytes": 1907,
+   "area": "backend",
    "lang": "JavaScript"
   },
   {
-   "path": "backend\\src\\lib\\personalization.js",
+   "path": "backend/src/lib/personalization.js",
    "lines": 159,
-   "bytes": 8202,
-   "area": "root",
+   "bytes": 8044,
+   "area": "backend",
    "lang": "JavaScript"
   },
   {
-   "path": "backend\\src\\lib\\prompts.js",
+   "path": "backend/src/lib/prompts.js",
    "lines": 87,
-   "bytes": 7189,
-   "area": "root",
+   "bytes": 7103,
+   "area": "backend",
    "lang": "JavaScript"
   },
   {
-   "path": "backend\\src\\lib\\qualityGate.js",
+   "path": "backend/src/lib/qualityGate.js",
    "lines": 640,
-   "bytes": 23035,
-   "area": "root",
+   "bytes": 22396,
+   "area": "backend",
    "lang": "JavaScript"
   },
   {
-   "path": "backend\\src\\lib\\searchIndex.js",
+   "path": "backend/src/lib/searchIndex.js",
    "lines": 106,
-   "bytes": 2985,
-   "area": "root",
+   "bytes": 2880,
+   "area": "backend",
    "lang": "JavaScript"
   },
   {
-   "path": "backend\\src\\lib\\serper.js",
+   "path": "backend/src/lib/serper.js",
    "lines": 160,
-   "bytes": 5110,
-   "area": "root",
+   "bytes": 4951,
+   "area": "backend",
    "lang": "JavaScript"
   },
   {
-   "path": "backend\\src\\scripts\\ping-google-ai-studio.js",
+   "path": "backend/src/scripts/ping-google-ai-studio.js",
    "lines": 36,
-   "bytes": 1195,
-   "area": "root",
+   "bytes": 1160,
+   "area": "backend",
    "lang": "JavaScript"
   },
   {
-   "path": "backend\\src\\server.js",
-   "lines": 2277,
-   "bytes": 97146,
-   "area": "root",
+   "path": "backend/src/server.js",
+   "lines": 2249,
+   "bytes": 93213,
+   "area": "backend",
    "lang": "JavaScript"
   },
   {
-   "path": "backend\\src\\validation.js",
+   "path": "backend/src/validation.js",
    "lines": 286,
-   "bytes": 10690,
-   "area": "root",
+   "bytes": 10404,
+   "area": "backend",
    "lang": "JavaScript"
   },
   {
-   "path": "backend\\test\\gemma-engine.test.js",
+   "path": "backend/test/gemma-engine.test.js",
    "lines": 292,
-   "bytes": 10571,
-   "area": "root",
+   "bytes": 10280,
+   "area": "backend",
    "lang": "JavaScript"
   },
   {
-   "path": "backend\\test\\moderation.test.js",
-   "lines": 108,
-   "bytes": 5333,
-   "area": "root",
+   "path": "backend/test/moderation.test.js",
+   "lines": 112,
+   "bytes": 5338,
+   "area": "backend",
    "lang": "JavaScript"
   },
   {
-   "path": "backend\\test\\personalization.test.js",
+   "path": "backend/test/personalization.test.js",
    "lines": 127,
-   "bytes": 4733,
-   "area": "root",
+   "bytes": 4607,
+   "area": "backend",
    "lang": "JavaScript"
   },
   {
-   "path": "backend\\test\\quizValidation.test.js",
+   "path": "backend/test/quizValidation.test.js",
    "lines": 101,
-   "bytes": 3732,
-   "area": "root",
+   "bytes": 3632,
+   "area": "backend",
    "lang": "JavaScript"
   },
   {
-   "path": "backend\\test\\search-index.test.js",
+   "path": "backend/test/search-index.test.js",
    "lines": 16,
-   "bytes": 685,
-   "area": "root",
+   "bytes": 670,
+   "area": "backend",
    "lang": "JavaScript"
   },
   {
    "path": "change-made-after-submission.md",
-   "lines": 964,
-   "bytes": 71810,
+   "lines": 998,
+   "bytes": 85671,
    "area": "root",
    "lang": "Markdown"
   },
   {
    "path": "CODE_OF_CONDUCT.md",
    "lines": 72,
-   "bytes": 4540,
+   "bytes": 4469,
    "area": "root",
    "lang": "Markdown"
   },
   {
    "path": "CONTRIBUTING.md",
-   "lines": 91,
-   "bytes": 2217,
+   "lines": 92,
+   "bytes": 2305,
    "area": "root",
    "lang": "Markdown"
   },
   {
-   "path": "DESIGN_AUDIT.md",
-   "lines": 452,
-   "bytes": 17925,
-   "area": "root",
+   "path": "docs/AGENT_MEMORY.md",
+   "lines": 461,
+   "bytes": 37028,
+   "area": "docs",
    "lang": "Markdown"
   },
   {
-   "path": "docs\\AGENT_MEMORY.md",
-   "lines": 347,
-   "bytes": 26403,
-   "area": "root",
+   "path": "docs/REDESIGN.md",
+   "lines": 251,
+   "bytes": 17310,
+   "area": "docs",
    "lang": "Markdown"
   },
   {
-   "path": "errors.md",
-   "lines": 615,
-   "bytes": 40355,
-   "area": "root",
-   "lang": "Markdown"
-  },
-  {
-   "path": "frontend\\.env.local.example",
+   "path": "frontend/.env.local.example",
    "lines": 11,
-   "bytes": 451,
-   "area": "root",
+   "bytes": 441,
+   "area": "frontend",
    "lang": ".example"
   },
   {
-   "path": "frontend\\.eslintrc.json",
+   "path": "frontend/.eslintrc.json",
    "lines": 7,
-   "bytes": 79,
-   "area": "root",
+   "bytes": 73,
+   "area": "frontend",
    "lang": "JSON"
   },
   {
-   "path": "frontend\\.gitignore",
+   "path": "frontend/.gitignore",
    "lines": 4,
-   "bytes": 57,
-   "area": "root",
+   "bytes": 54,
+   "area": "frontend",
    "lang": "other"
   },
   {
-   "path": "frontend\\app\\globals.css",
-   "lines": 3189,
-   "bytes": 92051,
-   "area": "root",
+   "path": "frontend/app/globals.css",
+   "lines": 3611,
+   "bytes": 100111,
+   "area": "frontend",
    "lang": "CSS"
   },
   {
-   "path": "frontend\\app\\layout.tsx",
-   "lines": 322,
-   "bytes": 14038,
-   "area": "root",
+   "path": "frontend/app/layout.tsx",
+   "lines": 327,
+   "bytes": 14071,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\app\\learn\\page.tsx",
-   "lines": 581,
-   "bytes": 20729,
-   "area": "root",
+   "path": "frontend/app/learn/page.tsx",
+   "lines": 582,
+   "bytes": 20175,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\app\\legal\\cookies\\page.tsx",
+   "path": "frontend/app/legal/cookies/page.tsx",
    "lines": 129,
-   "bytes": 7011,
-   "area": "root",
+   "bytes": 6883,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\app\\legal\\page.tsx",
+   "path": "frontend/app/legal/page.tsx",
    "lines": 115,
-   "bytes": 3848,
-   "area": "root",
+   "bytes": 3734,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\app\\legal\\privacy\\page.tsx",
-   "lines": 700,
-   "bytes": 47554,
-   "area": "root",
+   "path": "frontend/app/legal/privacy/page.tsx",
+   "lines": 713,
+   "bytes": 47809,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\app\\legal\\terms\\page.tsx",
-   "lines": 412,
-   "bytes": 27942,
-   "area": "root",
+   "path": "frontend/app/legal/terms/page.tsx",
+   "lines": 414,
+   "bytes": 27661,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\app\\not-found.tsx",
+   "path": "frontend/app/not-found.tsx",
    "lines": 81,
-   "bytes": 2180,
-   "area": "root",
+   "bytes": 2100,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\app\\page.tsx",
-   "lines": 152,
-   "bytes": 5211,
-   "area": "root",
+   "path": "frontend/app/page.tsx",
+   "lines": 149,
+   "bytes": 4891,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\app\\progress\\page.tsx",
+   "path": "frontend/app/progress/page.tsx",
    "lines": 336,
-   "bytes": 14163,
-   "area": "root",
+   "bytes": 13827,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\app\\robots.ts",
+   "path": "frontend/app/robots.ts",
    "lines": 16,
-   "bytes": 337,
-   "area": "root",
+   "bytes": 322,
+   "area": "frontend",
    "lang": "TypeScript"
   },
   {
-   "path": "frontend\\app\\settings\\page.tsx",
-   "lines": 929,
-   "bytes": 33406,
-   "area": "root",
+   "path": "frontend/app/settings/page.tsx",
+   "lines": 931,
+   "bytes": 32549,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\app\\sign-in\\[[...sign-in]]\\page.tsx",
+   "path": "frontend/app/sign-in/[[...sign-in]]/page.tsx",
    "lines": 51,
-   "bytes": 1301,
-   "area": "root",
+   "bytes": 1251,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\app\\sign-up\\[[...sign-up]]\\page.tsx",
+   "path": "frontend/app/sign-up/[[...sign-up]]/page.tsx",
    "lines": 51,
-   "bytes": 1301,
-   "area": "root",
+   "bytes": 1251,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\app\\sitemap.ts",
+   "path": "frontend/app/sitemap.ts",
    "lines": 49,
-   "bytes": 1164,
-   "area": "root",
+   "bytes": 1116,
+   "area": "frontend",
    "lang": "TypeScript"
   },
   {
-   "path": "frontend\\components\\homepage\\ExampleQuestions.tsx",
-   "lines": 58,
-   "bytes": 1842,
-   "area": "root",
+   "path": "frontend/components/homepage/ExampleQuestions.tsx",
+   "lines": 86,
+   "bytes": 2816,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\homepage\\HomeStats.tsx",
-   "lines": 203,
-   "bytes": 7972,
-   "area": "root",
+   "path": "frontend/components/homepage/HomeStats.tsx",
+   "lines": 154,
+   "bytes": 5854,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\homepage\\QuestionInput.tsx",
+   "path": "frontend/components/homepage/QuestionInput.tsx",
    "lines": 226,
-   "bytes": 8383,
-   "area": "root",
+   "bytes": 8131,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\learning\\CompletionScreen.tsx",
-   "lines": 313,
-   "bytes": 11784,
-   "area": "root",
+   "path": "frontend/components/learning/CompletionScreen.tsx",
+   "lines": 305,
+   "bytes": 11377,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\learning\\FeedbackPrompt.tsx",
-   "lines": 319,
-   "bytes": 10522,
-   "area": "root",
+   "path": "frontend/components/learning/FeedbackPrompt.tsx",
+   "lines": 320,
+   "bytes": 10249,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\learning\\FollowUpBox.tsx",
+   "path": "frontend/components/learning/FollowUpBox.tsx",
    "lines": 138,
-   "bytes": 4839,
-   "area": "root",
+   "bytes": 4702,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\learning\\PartCard.tsx",
-   "lines": 356,
-   "bytes": 13562,
-   "area": "root",
+   "path": "frontend/components/learning/PartCard.tsx",
+   "lines": 352,
+   "bytes": 13285,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\learning\\ProgressRail.tsx",
-   "lines": 161,
-   "bytes": 5803,
-   "area": "root",
+   "path": "frontend/components/learning/ProgressRail.tsx",
+   "lines": 110,
+   "bytes": 3567,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\learning\\QuickSummaryCards.tsx",
+   "path": "frontend/components/learning/QuickSummaryCards.tsx",
    "lines": 176,
-   "bytes": 5411,
-   "area": "root",
+   "bytes": 5236,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\learning\\QuizQuestion.tsx",
+   "path": "frontend/components/learning/QuizQuestion.tsx",
    "lines": 130,
-   "bytes": 4733,
-   "area": "root",
+   "bytes": 4604,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\learning\\QuizSheet.tsx",
-   "lines": 265,
-   "bytes": 9264,
-   "area": "root",
+   "path": "frontend/components/learning/QuizSheet.tsx",
+   "lines": 281,
+   "bytes": 9969,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\learning\\ShareResult.tsx",
-   "lines": 317,
-   "bytes": 10843,
-   "area": "root",
+   "path": "frontend/components/learning/ShareResult.tsx",
+   "lines": 318,
+   "bytes": 10632,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\learning\\UnlockAnimation.tsx",
+   "path": "frontend/components/learning/UnlockAnimation.tsx",
    "lines": 36,
-   "bytes": 763,
-   "area": "root",
+   "bytes": 728,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\AchievementsGrid.tsx",
+   "path": "frontend/components/shared/AchievementsGrid.tsx",
    "lines": 376,
-   "bytes": 14475,
-   "area": "root",
+   "bytes": 14100,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\ActivityHeatmap.tsx",
+   "path": "frontend/components/shared/ActivityHeatmap.tsx",
    "lines": 86,
-   "bytes": 3118,
-   "area": "root",
+   "bytes": 3033,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\AmbientBackground.tsx",
+   "path": "frontend/components/shared/AmbientBackground.tsx",
    "lines": 21,
-   "bytes": 747,
-   "area": "root",
+   "bytes": 727,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\AppShell.tsx",
+   "path": "frontend/components/shared/AppShell.tsx",
    "lines": 131,
-   "bytes": 4287,
-   "area": "root",
+   "bytes": 4157,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\ConfirmModal.tsx",
+   "path": "frontend/components/shared/ConfirmModal.tsx",
    "lines": 165,
-   "bytes": 4921,
-   "area": "root",
+   "bytes": 4766,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\CookieConsent.tsx",
+   "path": "frontend/components/shared/CookieConsent.tsx",
    "lines": 249,
-   "bytes": 8686,
-   "area": "root",
+   "bytes": 8438,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\DailyGoalRing.tsx",
+   "path": "frontend/components/shared/DailyGoalRing.tsx",
    "lines": 68,
-   "bytes": 1964,
-   "area": "root",
+   "bytes": 1897,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\DeferredProviders.tsx",
+   "path": "frontend/components/shared/DeferredProviders.tsx",
    "lines": 59,
-   "bytes": 1965,
-   "area": "root",
+   "bytes": 1907,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\EasterEggs.tsx",
-   "lines": 260,
-   "bytes": 8798,
-   "area": "root",
+   "path": "frontend/components/shared/EasterEggs.tsx",
+   "lines": 262,
+   "bytes": 8585,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\EngagementLayer.tsx",
-   "lines": 506,
-   "bytes": 16007,
-   "area": "root",
+   "path": "frontend/components/shared/EngagementLayer.tsx",
+   "lines": 507,
+   "bytes": 15575,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\ErrorBoundary.tsx",
+   "path": "frontend/components/shared/ErrorBoundary.tsx",
    "lines": 72,
-   "bytes": 1887,
-   "area": "root",
+   "bytes": 1816,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\ErrorState.tsx",
+   "path": "frontend/components/shared/ErrorState.tsx",
    "lines": 32,
-   "bytes": 974,
-   "area": "root",
+   "bytes": 943,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\FeedbackGate.tsx",
-   "lines": 31,
-   "bytes": 1307,
-   "area": "root",
+   "path": "frontend/components/shared/FeedbackGate.tsx",
+   "lines": 32,
+   "bytes": 1300,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\Footer.tsx",
+   "path": "frontend/components/shared/Footer.tsx",
    "lines": 93,
-   "bytes": 3159,
-   "area": "root",
+   "bytes": 3086,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\GoogleAnalytics.tsx",
-   "lines": 136,
-   "bytes": 5378,
-   "area": "root",
+   "path": "frontend/components/shared/GoogleAnalytics.tsx",
+   "lines": 140,
+   "bytes": 5461,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\KeyboardShortcuts.tsx",
-   "lines": 161,
-   "bytes": 5327,
-   "area": "root",
+   "path": "frontend/components/shared/KeyboardShortcuts.tsx",
+   "lines": 153,
+   "bytes": 5133,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\LanguageSelector.tsx",
+   "path": "frontend/components/shared/LanguageSelector.tsx",
    "lines": 71,
-   "bytes": 1583,
-   "area": "root",
+   "bytes": 1513,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\LevelSelector.tsx",
+   "path": "frontend/components/shared/LevelSelector.tsx",
    "lines": 52,
-   "bytes": 1406,
-   "area": "root",
+   "bytes": 1355,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\ListenButton.tsx",
+   "path": "frontend/components/shared/ListenButton.tsx",
    "lines": 127,
-   "bytes": 4315,
-   "area": "root",
+   "bytes": 4189,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\LiveRegion.tsx",
+   "path": "frontend/components/shared/LiveRegion.tsx",
    "lines": 26,
-   "bytes": 525,
-   "area": "root",
+   "bytes": 500,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\LoadingCinematic.tsx",
+   "path": "frontend/components/shared/LoadingCinematic.tsx",
    "lines": 239,
-   "bytes": 9899,
-   "area": "root",
+   "bytes": 9661,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\MicButton.tsx",
+   "path": "frontend/components/shared/MicButton.tsx",
    "lines": 105,
-   "bytes": 3380,
-   "area": "root",
+   "bytes": 3276,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\Navbar.tsx",
-   "lines": 69,
-   "bytes": 2599,
-   "area": "root",
+   "path": "frontend/components/shared/Navbar.tsx",
+   "lines": 66,
+   "bytes": 2030,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\PersonalizationGate.tsx",
+   "path": "frontend/components/shared/PersonalizationGate.tsx",
    "lines": 240,
-   "bytes": 7791,
-   "area": "root",
+   "bytes": 7552,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\PreferenceModal.tsx",
+   "path": "frontend/components/shared/PreferenceModal.tsx",
    "lines": 326,
-   "bytes": 10587,
-   "area": "root",
+   "bytes": 10262,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\PreSignInConsent.tsx",
-   "lines": 755,
-   "bytes": 30234,
-   "area": "root",
+   "path": "frontend/components/shared/PreSignInConsent.tsx",
+   "lines": 772,
+   "bytes": 30704,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\ProgressHub.tsx",
+   "path": "frontend/components/shared/ProgressHub.tsx",
    "lines": 119,
-   "bytes": 4518,
-   "area": "root",
+   "bytes": 4400,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\ReadingProgressBar.tsx",
+   "path": "frontend/components/shared/ReadingProgressBar.tsx",
    "lines": 75,
-   "bytes": 2509,
-   "area": "root",
+   "bytes": 2435,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\ScrollToTop.tsx",
+   "path": "frontend/components/shared/ScrollToTop.tsx",
    "lines": 62,
-   "bytes": 1792,
-   "area": "root",
+   "bytes": 1731,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\Sidebar.tsx",
+   "path": "frontend/components/shared/Sidebar.tsx",
    "lines": 404,
-   "bytes": 14994,
-   "area": "root",
+   "bytes": 14591,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\Skeleton.tsx",
+   "path": "frontend/components/shared/Skeleton.tsx",
    "lines": 143,
-   "bytes": 3681,
-   "area": "root",
+   "bytes": 3539,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\SkipToContent.tsx",
+   "path": "frontend/components/shared/SkipToContent.tsx",
    "lines": 43,
-   "bytes": 1137,
-   "area": "root",
+   "bytes": 1095,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\SourceTag.tsx",
+   "path": "frontend/components/shared/SourceTag.tsx",
    "lines": 98,
-   "bytes": 2802,
-   "area": "root",
+   "bytes": 2705,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\ThemeApplier.tsx",
+   "path": "frontend/components/shared/ThemeApplier.tsx",
    "lines": 39,
-   "bytes": 1354,
-   "area": "root",
+   "bytes": 1316,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\ThemeModal.tsx",
+   "path": "frontend/components/shared/ThemeModal.tsx",
    "lines": 143,
-   "bytes": 4772,
-   "area": "root",
+   "bytes": 4630,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\ThingsComingModal.tsx",
+   "path": "frontend/components/shared/ThingsComingModal.tsx",
    "lines": 306,
-   "bytes": 9250,
-   "area": "root",
+   "bytes": 8997,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\components\\shared\\ToastContainer.tsx",
+   "path": "frontend/components/shared/ToastContainer.tsx",
    "lines": 96,
-   "bytes": 2907,
-   "area": "root",
+   "bytes": 2812,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\contexts\\SidebarContext.tsx",
+   "path": "frontend/contexts/SidebarContext.tsx",
    "lines": 18,
-   "bytes": 350,
-   "area": "root",
+   "bytes": 333,
+   "area": "frontend",
    "lang": "TypeScript (TSX)"
   },
   {
-   "path": "frontend\\hooks\\useFocusTrap.ts",
+   "path": "frontend/hooks/useFocusTrap.ts",
    "lines": 60,
-   "bytes": 2019,
-   "area": "root",
+   "bytes": 1960,
+   "area": "frontend",
    "lang": "TypeScript"
   },
   {
-   "path": "frontend\\hooks\\useLesson.ts",
+   "path": "frontend/hooks/useLesson.ts",
    "lines": 529,
-   "bytes": 19976,
-   "area": "root",
+   "bytes": 19448,
+   "area": "frontend",
    "lang": "TypeScript"
   },
   {
-   "path": "frontend\\hooks\\useMounted.ts",
+   "path": "frontend/hooks/useMounted.ts",
    "lines": 15,
-   "bytes": 462,
-   "area": "root",
+   "bytes": 448,
+   "area": "frontend",
    "lang": "TypeScript"
   },
   {
-   "path": "frontend\\hooks\\useReadingTimer.ts",
+   "path": "frontend/hooks/useReadingTimer.ts",
    "lines": 86,
-   "bytes": 2728,
-   "area": "root",
+   "bytes": 2643,
+   "area": "frontend",
    "lang": "TypeScript"
   },
   {
-   "path": "frontend\\hooks\\useSpeech.ts",
+   "path": "frontend/hooks/useSpeech.ts",
    "lines": 381,
-   "bytes": 13756,
-   "area": "root",
+   "bytes": 13376,
+   "area": "frontend",
    "lang": "TypeScript"
   },
   {
-   "path": "frontend\\lib\\achievements.ts",
-   "lines": 532,
-   "bytes": 18765,
-   "area": "root",
+   "path": "frontend/lib/achievements.ts",
+   "lines": 772,
+   "bytes": 26173,
+   "area": "frontend",
    "lang": "TypeScript"
   },
   {
-   "path": "frontend\\lib\\debouncedStorage.ts",
-   "lines": 118,
-   "bytes": 3612,
-   "area": "root",
+   "path": "frontend/lib/debouncedStorage.ts",
+   "lines": 114,
+   "bytes": 3393,
+   "area": "frontend",
    "lang": "TypeScript"
   },
   {
-   "path": "frontend\\lib\\feedback.ts",
+   "path": "frontend/lib/feedback.ts",
    "lines": 116,
-   "bytes": 4320,
-   "area": "root",
+   "bytes": 4205,
+   "area": "frontend",
    "lang": "TypeScript"
   },
   {
-   "path": "frontend\\lib\\haptics.ts",
+   "path": "frontend/lib/haptics.ts",
    "lines": 35,
-   "bytes": 1105,
-   "area": "root",
+   "bytes": 1071,
+   "area": "frontend",
    "lang": "TypeScript"
   },
   {
-   "path": "frontend\\lib\\legalConsent.ts",
+   "path": "frontend/lib/legalConsent.ts",
    "lines": 206,
-   "bytes": 7094,
-   "area": "root",
+   "bytes": 6889,
+   "area": "frontend",
    "lang": "TypeScript"
   },
   {
-   "path": "frontend\\lib\\lessonArchive.ts",
+   "path": "frontend/lib/lessonArchive.ts",
    "lines": 192,
-   "bytes": 6819,
-   "area": "root",
+   "bytes": 6628,
+   "area": "frontend",
    "lang": "TypeScript"
   },
   {
-   "path": "frontend\\lib\\modalManager.ts",
+   "path": "frontend/lib/modalManager.ts",
    "lines": 43,
-   "bytes": 1108,
-   "area": "root",
+   "bytes": 1066,
+   "area": "frontend",
    "lang": "TypeScript"
   },
   {
-   "path": "frontend\\lib\\performance.ts",
+   "path": "frontend/lib/palette.ts",
+   "lines": 56,
+   "bytes": 2013,
+   "area": "frontend",
+   "lang": "TypeScript"
+  },
+  {
+   "path": "frontend/lib/performance.ts",
    "lines": 74,
-   "bytes": 2438,
-   "area": "root",
+   "bytes": 2365,
+   "area": "frontend",
    "lang": "TypeScript"
   },
   {
-   "path": "frontend\\lib\\personalization.ts",
+   "path": "frontend/lib/personalization.ts",
    "lines": 90,
-   "bytes": 3352,
-   "area": "root",
+   "bytes": 3263,
+   "area": "frontend",
    "lang": "TypeScript"
   },
   {
-   "path": "frontend\\lib\\quizShuffle.ts",
+   "path": "frontend/lib/quizShuffle.ts",
    "lines": 143,
-   "bytes": 5805,
-   "area": "root",
+   "bytes": 5663,
+   "area": "frontend",
    "lang": "TypeScript"
   },
   {
-   "path": "frontend\\lib\\themes.ts",
+   "path": "frontend/lib/themes.ts",
    "lines": 38,
-   "bytes": 956,
-   "area": "root",
+   "bytes": 887,
+   "area": "frontend",
    "lang": "TypeScript"
   },
   {
-   "path": "frontend\\middleware.ts",
-   "lines": 37,
-   "bytes": 987,
-   "area": "root",
+   "path": "frontend/middleware.ts",
+   "lines": 146,
+   "bytes": 5427,
+   "area": "frontend",
    "lang": "TypeScript"
   },
   {
-   "path": "frontend\\next-env.d.ts",
-   "lines": 7,
-   "bytes": 268,
-   "area": "root",
-   "lang": "TypeScript"
-  },
-  {
-   "path": "frontend\\next.config.js",
-   "lines": 199,
-   "bytes": 6024,
-   "area": "root",
+   "path": "frontend/next.config.js",
+   "lines": 133,
+   "bytes": 3407,
+   "area": "frontend",
    "lang": "JavaScript"
   },
   {
-   "path": "frontend\\package.json",
-   "lines": 54,
-   "bytes": 1488,
-   "area": "root",
+   "path": "frontend/package.json",
+   "lines": 55,
+   "bytes": 1502,
+   "area": "frontend",
    "lang": "JSON"
   },
   {
-   "path": "frontend\\public\\logo.svg",
+   "path": "frontend/public/logo.svg",
    "lines": 14,
-   "bytes": 710,
-   "area": "root",
+   "bytes": 709,
+   "area": "frontend",
    "lang": "SVG"
   },
   {
-   "path": "frontend\\public\\manifest.json",
+   "path": "frontend/public/manifest.json",
    "lines": 46,
-   "bytes": 1321,
-   "area": "root",
+   "bytes": 1276,
+   "area": "frontend",
    "lang": "JSON"
   },
   {
-   "path": "frontend\\public\\robots.txt",
+   "path": "frontend/public/robots.txt",
    "lines": 9,
-   "bytes": 192,
-   "area": "root",
+   "bytes": 184,
+   "area": "frontend",
    "lang": "Text"
   },
   {
-   "path": "frontend\\public\\sitemap.xml",
+   "path": "frontend/public/sitemap.xml",
    "lines": 64,
-   "bytes": 1807,
-   "area": "root",
+   "bytes": 1744,
+   "area": "frontend",
    "lang": "XML"
   },
   {
-   "path": "frontend\\scripts\\verify-quiz-shuffle.mjs",
+   "path": "frontend/scripts/verify-achievements.mjs",
+   "lines": 160,
+   "bytes": 4550,
+   "area": "frontend",
+   "lang": "JavaScript"
+  },
+  {
+   "path": "frontend/scripts/verify-quiz-shuffle.mjs",
    "lines": 102,
-   "bytes": 3541,
-   "area": "root",
+   "bytes": 3440,
+   "area": "frontend",
    "lang": "JavaScript"
   },
   {
-   "path": "frontend\\store\\lessonStore.ts",
+   "path": "frontend/store/lessonStore.ts",
    "lines": 248,
-   "bytes": 8687,
-   "area": "root",
+   "bytes": 8440,
+   "area": "frontend",
    "lang": "TypeScript"
   },
   {
-   "path": "frontend\\store\\preferenceStore.ts",
+   "path": "frontend/store/preferenceStore.ts",
    "lines": 151,
-   "bytes": 5628,
-   "area": "root",
+   "bytes": 5478,
+   "area": "frontend",
    "lang": "TypeScript"
   },
   {
-   "path": "frontend\\store\\progressStore.ts",
+   "path": "frontend/store/progressStore.ts",
    "lines": 362,
-   "bytes": 13875,
-   "area": "root",
+   "bytes": 13514,
+   "area": "frontend",
    "lang": "TypeScript"
   },
   {
-   "path": "frontend\\store\\savedJourneysStore.ts",
+   "path": "frontend/store/savedJourneysStore.ts",
    "lines": 121,
-   "bytes": 4989,
-   "area": "root",
+   "bytes": 4869,
+   "area": "frontend",
    "lang": "TypeScript"
   },
   {
-   "path": "frontend\\tailwind.config.js",
+   "path": "frontend/tailwind.config.js",
    "lines": 129,
-   "bytes": 5079,
-   "area": "root",
+   "bytes": 4951,
+   "area": "frontend",
    "lang": "JavaScript"
   },
   {
-   "path": "frontend\\tsconfig.json",
+   "path": "frontend/tsconfig.json",
    "lines": 41,
-   "bytes": 706,
-   "area": "root",
+   "bytes": 666,
+   "area": "frontend",
    "lang": "JSON"
   },
   {
-   "path": "frontend\\tsconfig.tsbuildinfo",
-   "lines": 1,
-   "bytes": 241369,
-   "area": "root",
-   "lang": ".tsbuildinfo"
-  },
-  {
-   "path": "frontend\\types\\index.ts",
+   "path": "frontend/types/index.ts",
    "lines": 100,
-   "bytes": 2610,
-   "area": "root",
+   "bytes": 2511,
+   "area": "frontend",
    "lang": "TypeScript"
   },
   {
    "path": "GEMINI.md",
    "lines": 23,
-   "bytes": 1372,
-   "area": "root",
-   "lang": "Markdown"
-  },
-  {
-   "path": "HEROIC_SAGA.md",
-   "lines": 596,
-   "bytes": 35472,
-   "area": "root",
-   "lang": "Markdown"
-  },
-  {
-   "path": "IMPROVEMENT_PRIORITIES.md",
-   "lines": 327,
-   "bytes": 11047,
+   "bytes": 1881,
    "area": "root",
    "lang": "Markdown"
   },
   {
    "path": "LICENSE",
    "lines": 22,
-   "bytes": 1088,
+   "bytes": 1067,
    "area": "root",
    "lang": "other"
   },
   {
    "path": "llms-full.txt",
-   "lines": 225,
-   "bytes": 15624,
+   "lines": 228,
+   "bytes": 16712,
    "area": "root",
    "lang": "Text"
   },
   {
    "path": "llms.txt",
    "lines": 34,
-   "bytes": 2386,
+   "bytes": 2354,
    "area": "root",
    "lang": "Text"
   },
   {
    "path": "README.md",
-   "lines": 798,
-   "bytes": 71485,
-   "area": "root",
-   "lang": "Markdown"
-  },
-  {
-   "path": "REALLEARN_BY_THE_NUMBERS.md",
-   "lines": 170,
-   "bytes": 5645,
-   "area": "root",
-   "lang": "Markdown"
-  },
-  {
-   "path": "reallearn-summarised.md",
-   "lines": 708,
-   "bytes": 33900,
+   "lines": 90,
+   "bytes": 3781,
    "area": "root",
    "lang": "Markdown"
   },
   {
    "path": "SECURITY.md",
    "lines": 66,
-   "bytes": 3041,
+   "bytes": 2976,
    "area": "root",
    "lang": "Markdown"
   },
   {
    "path": "sitemap.xml",
-   "lines": 64,
-   "bytes": 1807,
+   "lines": 46,
+   "bytes": 1239,
    "area": "root",
    "lang": "XML"
-  },
-  {
-   "path": "todo.md",
-   "lines": 31,
-   "bytes": 1837,
-   "area": "root",
-   "lang": "Markdown"
   }
  ]
 }

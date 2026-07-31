@@ -88,28 +88,28 @@ const htmlDocument = `<!DOCTYPE html>
   <title>RealLearn AI — Professional Engineering & Product Analytics Dashboard</title>
   <style>
     /* ==========================================================================
-       REALLEARN AI ANALYTICS DASHBOARD - CORE DESIGN SYSTEM (SOFT PASTEL / INK)
+       REALLEARN AI ANALYTICS DASHBOARD - CORE DESIGN SYSTEM (CYBER AQUA / INK)
        ========================================================================== */
     :root {
       /* Ink Dark Mode (Default) */
-      --bg-canvas: #090D16;
-      --bg-surface: #111827;
-      --bg-card: #1F2937;
-      --bg-card-hover: #374151;
-      --border: #374151;
-      --border-accent: rgba(2, 132, 199, 0.3);
-      --text-main: #F9FAFB;
-      --text-muted: #9CA3AF;
-      --text-subtle: #6B7280;
+      --bg-canvas: #0A0A0F;
+      --bg-surface: #131318;
+      --bg-card: #1A1A21;
+      --bg-card-hover: #23232C;
+      --border: #2A2A33;
+      --border-accent: rgba(6, 182, 212, 0.3);
+      --text-main: #FAFAFA;
+      --text-muted: #A1A1AA;
+      --text-subtle: #71717A;
       
-      /* Soft Pastel Accents (No Purple/Violet) */
-      --accent: #0284C7; /* Sky Blue */
-      --accent-bright: #38BDF8;
-      --accent-glow: rgba(2, 132, 199, 0.15);
-      --teal: #0D9488;
+      /* Cyber Aqua Accents (No Purple/Violet, No Gold) */
+      --accent: #06B6D4; /* Electric Cyan */
+      --accent-bright: #22D3EE;
+      --accent-glow: rgba(6, 182, 212, 0.15);
+      --teal: #0891B2;
       --mint: #10B981;
-      --peach: #F97316;
-      --rose: #F43F5E;
+      --pink: #EC4899;
+      --rose: #F472B6;
       --amber: #F59E0B;
 
       --radius-sm: 8px;
@@ -767,7 +767,7 @@ const htmlDocument = `<!DOCTYPE html>
             <div class="kpi-value">${fmt(T.commits)}</div>
             <div class="kpi-sub">${T.mergedPRs} merged PRs</div>
           </div>
-          <div class="kpi-card" style="--card-accent: var(--peach);">
+          <div class="kpi-card" style="--card-accent: var(--pink);">
             <div class="kpi-label">React Components</div>
             <div class="kpi-value">${T.components}</div>
             <div class="kpi-sub">Next.js 15 + React 19</div>
@@ -860,7 +860,7 @@ const htmlDocument = `<!DOCTYPE html>
               </p>
             </div>
             <div style="background: var(--bg-surface); padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
-              <strong style="color: var(--peach);">Part 2: Mechanism</strong>
+              <strong style="color: var(--pink);">Part 2: Mechanism</strong>
               <p style="font-size: 13px; margin-top: 6px; color: var(--text-muted);">
                 Tactical flexibility under pressure, high-stress game management, and late-game physical conditioning. Gated behind Quiz 2.
               </p>
@@ -943,7 +943,7 @@ const htmlDocument = `<!DOCTYPE html>
 
               <!-- Node 4: Serper Grounding -->
               <g transform="translate(560, 130)">
-                <rect width="200" height="70" class="arch-flow-box" style="stroke: var(--peach);" />
+                <rect width="200" height="70" class="arch-flow-box" style="stroke: var(--pink);" />
                 <text x="100" y="32" class="arch-flow-text">Serper Live Grounding</text>
                 <text x="100" y="50" class="arch-flow-sub">Real-time web news context</text>
               </g>
@@ -963,23 +963,23 @@ const htmlDocument = `<!DOCTYPE html>
       <section id="tab-design" class="tab-content">
         <div class="widget-card">
           <div class="widget-title">
-            <span>🎨 Soft Pastel Design System Tokens (Rule 4 Compliance)</span>
+            <span>🎨 Cyber Aqua Design System Tokens (Rule 4 Compliance)</span>
           </div>
           <p style="color: var(--text-muted); font-size: 14px;">
-            Strict design tokens enforced across Paper (Daylight), Ink (Dark Night), and Dusk themes. NO purple or violet permitted.
+            Strict design tokens enforced across the Cyber Aqua Light (Paper) and Dark (Ink) themes. NO purple/violet, NO gold.
           </p>
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-top: 16px;">
-            <div style="padding: 16px; background: #0284C7; color: white; border-radius: var(--radius-sm); font-weight: 700;">
-              Sky Blue Accent<br><small>#0284C7</small>
+            <div style="padding: 16px; background: #06B6D4; color: white; border-radius: var(--radius-sm); font-weight: 700;">
+              Electric Cyan Accent<br><small>#06B6D4</small>
             </div>
-            <div style="padding: 16px; background: #0D9488; color: white; border-radius: var(--radius-sm); font-weight: 700;">
-              Teal Companion<br><small>#0D9488</small>
+            <div style="padding: 16px; background: #0891B2; color: white; border-radius: var(--radius-sm); font-weight: 700;">
+              Teal Accent<br><small>#0891B2</small>
             </div>
-            <div style="padding: 16px; background: #F97316; color: white; border-radius: var(--radius-sm); font-weight: 700;">
-              Peach Wash<br><small>#F97316</small>
+            <div style="padding: 16px; background: #EC4899; color: white; border-radius: var(--radius-sm); font-weight: 700;">
+              Hot Pink Companion<br><small>#EC4899</small>
             </div>
             <div style="padding: 16px; background: #10B981; color: white; border-radius: var(--radius-sm); font-weight: 700;">
-              Mint Wash<br><small>#10B981</small>
+              Emerald Success<br><small>#10B981</small>
             </div>
           </div>
         </div>
