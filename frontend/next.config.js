@@ -16,7 +16,13 @@ const nextConfig = {
     formats: ["image/avif", "image/webp"],
   },
   experimental: {
-    optimizePackageImports: ["react-markdown", "remark-gfm"],
+    optimizePackageImports: [
+      "react-markdown",
+      "remark-gfm",
+      "lodash-es",
+      "canvas-confetti",
+      "@clerk/nextjs",
+    ],
   },
   async redirects() {
     return [

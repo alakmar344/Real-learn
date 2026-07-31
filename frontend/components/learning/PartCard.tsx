@@ -38,8 +38,11 @@ interface Props {
   isCompleted: boolean;
   isCollapsed: boolean;
   score: number | null;
-  onStartQuiz: () => void;
-  onToggleCollapse: () => void;
+  /* Handlers receive the part so the parent can pass ONE stable callback to
+     every card — inline per-part closures defeated the memo() below and
+     re-parsed all markdown on each page state change. */
+  onStartQuiz: (part: LessonPart) => void;
+  onToggleCollapse: (partNumber: number) => void;
 }
 
 const PartCardBase = ({
@@ -72,7 +75,7 @@ const PartCardBase = ({
     return (
       <button
         type="button"
-        onClick={onToggleCollapse}
+        onClick={() => onToggleCollapse(part.partNumber)}
         aria-expanded={false}
         aria-controls={contentId}
         className="part-done-bar"
@@ -249,7 +252,7 @@ const PartCardBase = ({
                     readers — an obvious, honest affordance beats a nudge. */}
                 <button
                   type="button"
-                  onClick={onStartQuiz}
+                  onClick={() => onStartQuiz(part)}
                   className="btn-toggle animate-fade-up"
                   style={{ alignSelf: "flex-end", fontSize: 14 }}
                   aria-label={`Skip reading and take quiz for Part ${part.partNumber}`}
@@ -260,7 +263,7 @@ const PartCardBase = ({
             ) : (
               <button
                 type="button"
-                onClick={onStartQuiz}
+                onClick={() => onStartQuiz(part)}
                 // Empty-quiz parts advance directly (see learn/page.tsx), so
                 // don't promise a quiz that will never open.
                 aria-label={
@@ -283,7 +286,7 @@ const PartCardBase = ({
         {isCompleted && !isCollapsed ? (
         <button
           type="button"
-          onClick={onToggleCollapse}
+          onClick={() => onToggleCollapse(part.partNumber)}
           aria-expanded={true}
           aria-controls={contentId}
           className="btn-toggle"
