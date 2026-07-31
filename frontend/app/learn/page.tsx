@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
 import Navbar from "@/components/shared/Navbar";
 import ProgressRail from "@/components/learning/ProgressRail";
 import PartCard from "@/components/learning/PartCard";
@@ -26,6 +26,7 @@ import confetti from "canvas-confetti";
 import { celebrationColors } from "@/lib/palette";
 
 const CompletionScreen = lazy(() => import("@/components/learning/CompletionScreen"));
+const Flashcards = lazy(() => import("@/components/learning/Flashcards"));
 const FollowUpBox = lazy(() => import("@/components/learning/FollowUpBox"));
 const UnlockAnimation = lazy(() => import("@/components/learning/UnlockAnimation"));
 
@@ -222,6 +223,116 @@ export default function LearnPage() {
     showUnlockFx,
   ]);
 
+  // Shared pass path: invoked by QuizSheet on a successful quiz AND directly
+  // by the part CTA when a part arrives with an empty quiz — opening the
+  // sheet for zero questions rendered nothing and deadlocked the journey.
+  // `score` is the FIRST-ATTEMPT score (see QuizSheet), so perfect-part
+  // stats mean "aced on the first try".
+  // Defined as stable useCallbacks BEFORE the early returns (Rules of Hooks)
+  // so PartCard's memo() actually holds: inline per-part closures re-created
+  // every render forced all cards to re-render (and re-parse markdown) on
+  // any page state change.
+  const handlePartPass = useCallback(
+    (part: LessonPart, score: number) => {
+      if (!lesson) return;
+      console.log("[frontend][LearnPage] quiz passed", {
+        part: part.partNumber,
+        score,
+      });
+      triggerHaptic("success");
+      confetti({
+        particleCount: 70,
+        spread: 60,
+        origin: { y: 0.6 },
+        colors: celebrationColors(),
+        disableForReducedMotion: true,
+      });
+      passPart(part.partNumber, score);
+
+      // Include the per-instance lesson id: retaking a quiz on THIS
+      // lesson stays idempotent (no XP farming), but generating a NEW
+      // lesson for the same question tomorrow earns credit again —
+      // previously the content-only key silently blocked all XP,
+      // daily-goal and streak progress for repeat topics.
+      const lessonSignature = `${lesson.question ?? lesson.topic ?? ""}|${language}|${lesson.lessonId ?? ""}`;
+      const maxPerPart = part.quiz?.length ?? 2;
+      recordPartPassed({
+        score,
+        maxPerPart,
+        language,
+        subject: part.subject,
+        creditKey: `part|${lessonSignature}|${part.partNumber}`,
+      });
+      if (part.partNumber === totalParts) {
+        const finalTotal = lesson.parts.reduce(
+          (sum, p) =>
+            sum +
+            (p.partNumber === part.partNumber
+              ? score
+              : partScores[p.partNumber] ?? 0),
+          0
+        );
+        const maxScore = lesson.parts.reduce(
+          (sum, p) => sum + (p.quiz?.length ?? 2),
+          0
+        );
+        recordLessonCompleted({
+          totalScore: finalTotal,
+          maxScore,
+          language,
+          creditKey: `lesson|${lessonSignature}`,
+        });
+      }
+
+      setQuizPart(null);
+      setShowUnlockFx(true);
+      if (unlockTimeoutRef.current) clearTimeout(unlockTimeoutRef.current);
+      unlockTimeoutRef.current = window.setTimeout(() => setShowUnlockFx(false), 850);
+      showToast(
+        score >= 1 ? "Correct — well done." : "Part completed.",
+        score >= 1 ? "success" : "info"
+      );
+
+      const nextPartNumber = part.partNumber + 1;
+      if (nextPartNumber <= totalParts) {
+        setTimeout(() => scrollToPart(nextPartNumber), 50);
+      }
+    },
+    [lesson, language, totalParts, partScores, passPart, recordPartPassed, recordLessonCompleted]
+  );
+
+  const handleStartQuiz = useCallback(
+    (part: LessonPart) => {
+      // Empty-quiz guard: a part with zero questions can't be "passed"
+      // through the sheet (it would render nothing), so advance directly
+      // with score = max (0 for an empty quiz).
+      if ((part.quiz?.length ?? 0) === 0) {
+        handlePartPass(part, 0);
+        return;
+      }
+      setQuizPart(part.partNumber);
+    },
+    [handlePartPass]
+  );
+
+  const handleToggleCollapse = useCallback(
+    (partNumber: number) => {
+      const isCollapsed = collapsedParts.includes(partNumber);
+      togglePartCollapse(partNumber);
+      setTimeout(() => {
+        if (isCollapsed) {
+          scrollToPart(partNumber);
+        } else {
+          const nextPartNumber = partNumber + 1;
+          if (nextPartNumber <= totalParts) {
+            scrollToPart(nextPartNumber);
+          }
+        }
+      }, 50);
+    },
+    [collapsedParts, togglePartCollapse, totalParts]
+  );
+
   /* ── Hydration gate: neutral shell until the client has mounted ── */
   if (!mounted) {
     return (
@@ -296,21 +407,7 @@ export default function LearnPage() {
             <p style={{ color: "var(--text-secondary)", fontSize: 14, marginBottom: 24 }}>
               Head back home and ask a question to start learning.
             </p>
-            <button
-              type="button"
-              onClick={restart}
-              style={{
-                border: "none",
-                borderRadius: "var(--radius-md)",
-                padding: "12px 24px",
-                background: "var(--accent)",
-                color: "var(--on-accent)",
-                fontWeight: 700,
-                fontSize: 15,
-                cursor: "pointer",
-                minHeight: 44,
-              }}
-            >
+            <button type="button" onClick={restart} className="btn-primary">
               Go Home →
             </button>
           </div>
@@ -320,76 +417,6 @@ export default function LearnPage() {
   }
 
   const activePart = quizPart ? lesson.parts[quizPart - 1] : null;
-
-  // Shared pass path: invoked by QuizSheet on a successful quiz AND directly
-  // by the part CTA when a part arrives with an empty quiz — opening the
-  // sheet for zero questions rendered nothing and deadlocked the journey.
-  // `score` is the FIRST-ATTEMPT score (see QuizSheet), so perfect-part
-  // stats mean "aced on the first try".
-  const handlePartPass = (part: LessonPart, score: number) => {
-    console.log("[frontend][LearnPage] quiz passed", {
-      part: part.partNumber,
-      score,
-    });
-    triggerHaptic("success");
-    confetti({
-      particleCount: 70,
-      spread: 60,
-      origin: { y: 0.6 },
-      colors: celebrationColors(),
-      disableForReducedMotion: true,
-    });
-    passPart(part.partNumber, score);
-
-    // Include the per-instance lesson id: retaking a quiz on THIS
-    // lesson stays idempotent (no XP farming), but generating a NEW
-    // lesson for the same question tomorrow earns credit again —
-    // previously the content-only key silently blocked all XP,
-    // daily-goal and streak progress for repeat topics.
-    const lessonSignature = `${lesson.question ?? lesson.topic ?? ""}|${language}|${lesson.lessonId ?? ""}`;
-    const maxPerPart = part.quiz?.length ?? 2;
-    recordPartPassed({
-      score,
-      maxPerPart,
-      language,
-      subject: part.subject,
-      creditKey: `part|${lessonSignature}|${part.partNumber}`,
-    });
-    if (part.partNumber === totalParts) {
-      const finalTotal = lesson.parts.reduce(
-        (sum, p) =>
-          sum +
-          (p.partNumber === part.partNumber
-            ? score
-            : partScores[p.partNumber] ?? 0),
-        0
-      );
-      const maxScore = lesson.parts.reduce(
-        (sum, p) => sum + (p.quiz?.length ?? 2),
-        0
-      );
-      recordLessonCompleted({
-        totalScore: finalTotal,
-        maxScore,
-        language,
-        creditKey: `lesson|${lessonSignature}`,
-      });
-    }
-
-    setQuizPart(null);
-    setShowUnlockFx(true);
-    if (unlockTimeoutRef.current) clearTimeout(unlockTimeoutRef.current);
-    unlockTimeoutRef.current = window.setTimeout(() => setShowUnlockFx(false), 850);
-    showToast(
-      score >= 1 ? "Correct — well done." : "Part completed.",
-      score >= 1 ? "success" : "info"
-    );
-
-    const nextPartNumber = part.partNumber + 1;
-    if (nextPartNumber <= totalParts) {
-      setTimeout(() => scrollToPart(nextPartNumber), 50);
-    }
-  };
 
   return (
     <>
@@ -467,32 +494,16 @@ export default function LearnPage() {
               isCompleted={completedParts.includes(part.partNumber)}
               isCollapsed={collapsedParts.includes(part.partNumber)}
               score={partScores[part.partNumber]}
-              onStartQuiz={() => {
-                // Empty-quiz guard: a part with zero questions can't be
-                // "passed" through the sheet (it would render nothing), so
-                // advance directly with score = max (0 for an empty quiz).
-                if ((part.quiz?.length ?? 0) === 0) {
-                  handlePartPass(part, 0);
-                  return;
-                }
-                setQuizPart(part.partNumber);
-              }}
-              onToggleCollapse={() => {
-                const isCollapsed = collapsedParts.includes(part.partNumber);
-                togglePartCollapse(part.partNumber);
-                setTimeout(() => {
-                  if (isCollapsed) {
-                    scrollToPart(part.partNumber);
-                  } else {
-                    const nextPartNumber = part.partNumber + 1;
-                    if (nextPartNumber <= totalParts) {
-                      scrollToPart(nextPartNumber);
-                    }
-                  }
-                }, 50);
-              }}
+              onStartQuiz={handleStartQuiz}
+              onToggleCollapse={handleToggleCollapse}
             />
           ))}
+
+          {/* Flashcards appear as soon as the lesson generates — a spaced-
+              repetition style recap built from the lesson's key takeaways. */}
+          <Suspense fallback={<SuspenseFallback />}>
+            <Flashcards lesson={lesson} />
+          </Suspense>
 
           {showCompletion ? (
             <Suspense fallback={<SuspenseFallback />}>
@@ -540,16 +551,8 @@ export default function LearnPage() {
                 resetAll();
                 restart();
               }}
-              style={{
-                marginTop: 20,
-                borderRadius: "var(--radius-md)",
-                border: "1px solid var(--border-default)",
-                background: "transparent",
-                color: "var(--text-secondary)",
-                padding: "10px 14px",
-                cursor: "pointer",
-                minHeight: 44,
-              }}
+              className="btn-ghost"
+              style={{ marginTop: 20 }}
             >
               Learn Something New
             </button>

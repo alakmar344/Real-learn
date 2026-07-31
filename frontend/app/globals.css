@@ -51,7 +51,11 @@
   --accent-dim: rgba(6, 182, 212, 0.15);
   --accent-glow: rgba(6, 182, 212, 0.35);
   --accent-companion: #EC4899;
-  --accent-gradient: linear-gradient(135deg, #06B6D4 0%, #EC4899 100%);
+  /* Structured single-family gradient: bright → brand → deep cyan.
+     Buttons read as one coherent color with intentional shading at the
+     edges (the old cyan→pink diagonal left CTAs looking mismatched at
+     the sides). Pink stays in --text-pop-gradient for display text. */
+  --accent-gradient: linear-gradient(135deg, #22D3EE 0%, #06B6D4 55%, #0891B2 100%);
   --text-pop-gradient: linear-gradient(105deg, #22D3EE 0%, #06B6D4 45%, #EC4899 100%);
   --on-accent: #FFFFFF;
   --shadow-glow-accent: 0 4px 24px rgba(6, 182, 212, 0.4);
@@ -176,7 +180,8 @@ html[data-theme="light"] {
   --accent-dim: rgba(8, 145, 178, 0.1);
   --accent-glow: rgba(8, 145, 178, 0.2);
   --accent-companion: #DB2777;
-  --accent-gradient: linear-gradient(135deg, #0891B2 0%, #DB2777 100%);
+  /* Structured single-family gradient (see dark-mode note above). */
+  --accent-gradient: linear-gradient(135deg, #06B6D4 0%, #0891B2 55%, #0E7490 100%);
   --text-pop-gradient: linear-gradient(105deg, #06B6D4 0%, #0891B2 45%, #DB2777 100%);
   --on-accent: #FFFFFF;
   --shadow-glow-accent: 0 4px 16px rgba(8, 145, 178, 0.25);
@@ -2134,18 +2139,18 @@ p {
   gap: 8px;
   border: none;
   border-radius: var(--radius-lg);
-  padding: 13px 26px;
+  padding: 15px 28px;
   min-height: 52px;
   font-family: var(--font-display), system-ui, sans-serif;
   font-size: 16px;
   font-weight: 800;
   letter-spacing: 0.02em;
   color: var(--on-accent);
-  /* Sunset-pop gradient press — one confident dopamine hit per CTA.
-     Solid accent underneath as the paint fallback. */
+  /* One confident accent press — structured cyan-family gradient with a
+     solid accent underneath as the paint fallback. No transparent border
+     rim: the gradient paints edge-to-edge so the sides stay clean. */
   background-color: var(--accent);
   background-image: var(--accent-gradient);
-  border: 2px solid transparent;
   cursor: pointer;
   box-shadow: var(--shadow-glow-accent);
   overflow: hidden;
@@ -2164,10 +2169,6 @@ p {
   transform: translateY(-2px) scale(1.02);
   box-shadow: var(--shadow-lg), 0 0 28px var(--accent-glow);
   filter: brightness(1.06);
-}
-.btn-primary:hover::after,
-.btn-primary:focus-visible::after {
-  transform: translateX(130%);
 }
 .btn-primary:active {
   transform: translateY(0) scale(0.97);
@@ -2356,7 +2357,8 @@ p {
   width: 42px;
   height: 42px;
   border-radius: var(--radius-md);
-  background: var(--accent);
+  background-color: var(--accent);
+  background-image: var(--accent-gradient);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3478,6 +3480,200 @@ p {
 /* ── Gen Z Neon Glow Text ── */
 .glow-text {
   text-shadow: 0 0 20px var(--accent-glow), 0 0 40px var(--accent-glow), 0 0 60px var(--accent-glow);
+}
+
+/* ── Flashcards ── classic internet-style 3D flip cards below the lesson.
+   Scene provides perspective; the card is a button that rotates 180° on the
+   Y axis. Faces stack with backface-visibility so only one shows at a time. */
+.flashcards {
+  margin-top: 36px;
+  padding: 24px clamp(16px, 4vw, 32px) 28px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-2xl);
+  background: var(--bg-card);
+  box-shadow: var(--glass-edge);
+}
+.flashcards__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.flashcards__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 800;
+  letter-spacing: var(--tracking-tight);
+}
+.flashcards__head-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+.flashcards__meta {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--accent);
+}
+.flashcards__shuffle {
+  width: 36px;
+  height: 36px;
+}
+.flashcards__shuffle:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.flashcards__sub {
+  margin: 6px 0 18px;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+.flashcards__stage {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.flashcards__nav { flex-shrink: 0; }
+.flashcards__nav:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.flashcard-scene {
+  flex: 1;
+  min-width: 0;
+  perspective: 1200px;
+}
+.flashcard {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-height: 200px;
+  border: none;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  border-radius: var(--radius-xl);
+  transform-style: preserve-3d;
+  transition: transform 560ms var(--ease-spring);
+  text-align: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.flashcard--flipped { transform: rotateY(180deg); }
+.flashcard:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-glow), 0 0 0 5px var(--accent);
+}
+.flashcard__face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 22px 24px;
+  border-radius: var(--radius-xl);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border: 1px solid var(--border-default);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.flashcard__face--front::before,
+.flashcard__face--back::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--accent-gradient);
+}
+.flashcard__face--back {
+  transform: rotateY(180deg);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border-default));
+  background:
+    linear-gradient(180deg, var(--accent-dim), transparent 55%),
+    var(--bg-surface);
+}
+.flashcard__tag {
+  font-size: var(--text-xs);
+  font-weight: 800;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+.flashcard__tag--answer { color: var(--accent); }
+.flashcard__text {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  line-height: var(--leading-snug);
+  color: var(--text-primary);
+  max-width: 46ch;
+}
+.flashcard__text--answer {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-size: var(--text-base);
+  font-weight: 500;
+  line-height: var(--leading-normal);
+}
+.flashcard__flip-hint {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+.flashcard:hover .flashcard__face {
+  border-color: var(--border-accent);
+  box-shadow: var(--shadow-md), 0 0 18px var(--accent-glow);
+}
+.flashcards__dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 18px;
+}
+.flashcards__dot {
+  width: 10px;
+  height: 10px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--border-default);
+  background: transparent;
+  cursor: pointer;
+  transition: background 240ms var(--ease-color),
+              border-color 240ms var(--ease-color),
+              transform 240ms var(--ease-spring);
+}
+.flashcards__dot--seen {
+  background: var(--accent-dim);
+  border-color: var(--border-accent);
+}
+.flashcards__dot--active {
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: scale(1.25);
+}
+.flashcards__dot:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.flashcards__counter {
+  margin-left: 6px;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 560px) {
+  .flashcards__stage { gap: 8px; }
+  .flashcard { min-height: 230px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flashcard { transition: none; }
 }
 
 /* ── Gradient border card ── */

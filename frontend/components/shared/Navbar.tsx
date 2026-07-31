@@ -26,11 +26,13 @@ export default function Navbar({ compact = false }: Props) {
     <header className={`navbar${compact ? " navbar--compact" : ""}`}>
       <div className="navbar-inner">
         <Link href="/" aria-label="RealLearn – Home" className="navbar-brand">
+          {/* Mark is drawn in currentColor (--on-accent) so it stays visible
+              on the accent tile — accent-on-accent made it disappear. */}
           <div className="navbar-logo" aria-hidden="true">
             <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <rect x="2" y="2" width="24" height="24" rx="8" stroke="currentColor" strokeWidth="1.5" opacity="0.3" />
-              <circle cx="14" cy="14" r="5" fill="var(--accent)" opacity="0.5" />
-              <circle cx="14" cy="14" r="2" fill="var(--accent)" />
+              <rect x="2" y="2" width="24" height="24" rx="8" stroke="currentColor" strokeWidth="1.5" opacity="0.55" />
+              <circle cx="14" cy="14" r="5.5" fill="currentColor" opacity="0.4" />
+              <circle cx="14" cy="14" r="2.5" fill="currentColor" />
             </svg>
           </div>
           <span className="navbar-wordmark">

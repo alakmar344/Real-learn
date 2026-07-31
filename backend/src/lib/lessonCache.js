@@ -126,7 +126,11 @@ export async function getCachedLesson(key) {
 
   try {
     const db = await getDb();
-    const doc = await db.collection(CACHE_COLLECTION).findOne({ key });
+    // Project only what we use — skips shipping key/createdAt/updatedAt
+    // bytes over the wire on every cache hit.
+    const doc = await db
+      .collection(CACHE_COLLECTION)
+      .findOne({ key }, { projection: { _id: 0, lesson: 1, expiresAt: 1 } });
     if (!doc?.lesson) return null;
     const expiresAt = doc.expiresAt instanceof Date ? doc.expiresAt.getTime() : 0;
     if (expiresAt <= Date.now()) return null; // TTL monitor may lag; enforce here.
