@@ -187,7 +187,7 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
     >
       <div
         ref={sheetRef}
-        className="quiz-sheet__panel animate-slide-bottom engraved identity-texture texture-noise"
+        className="quiz-sheet__panel animate-slide-bottom"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top border accent */}
@@ -224,20 +224,7 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
                   el?.scrollIntoView({ behavior: "smooth", block: "start" });
                 }, 300);
               }}
-              style={{
-                display: "block",
-                margin: "4px auto 0",
-                minHeight: 44,
-                padding: "10px 16px",
-                fontSize: 14,
-                color: "var(--accent)",
-                background: "transparent",
-                border: "none",
-                cursor: "pointer",
-                textDecoration: "underline",
-                textDecorationStyle: "dotted",
-                textUnderlineOffset: 3,
-              }}
+              className="quiz-sheet__reread"
             >
               Re-read the section before retrying
             </button>

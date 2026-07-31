@@ -32,6 +32,21 @@ const subjectColors: Record<string, string> = {
   General: "var(--subject-general)",
 };
 
+const PART_INTENT = [
+  "The core idea, built from first intuition.",
+  "How it actually works, step by step.",
+  "Where it shows up in the real world right now.",
+];
+
+function CopyIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="5.5" y="5.5" width="8" height="8" rx="2" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M10.5 5.5v-1a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h1" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
 interface Props {
   part: LessonPart;
   isUnlocked: boolean;
@@ -58,6 +73,7 @@ const PartCardBase = ({
   const timer = useReadingTimer(isUnlocked && !isCompleted);
   const contentId = `part-${part.partNumber}-content`;
   const lessonLanguage = useLessonStore((s) => s.lesson?.language);
+  const subjectColor = subjectColors[part.subject] ?? "var(--subject-general)";
 
   const handleCopyText = async () => {
     try {
@@ -79,7 +95,7 @@ const PartCardBase = ({
         aria-expanded={false}
         aria-controls={contentId}
         className="part-done-bar"
-        style={{ marginTop: varSpaceLg }}
+        style={{ marginTop: "var(--space-lg)" }}
       >
         <span>✓ {part.title} · Completed</span>
         <strong>{score ?? 0}/{part.quiz?.length ?? 2}</strong>
@@ -89,28 +105,14 @@ const PartCardBase = ({
 
   return (
     <article
-      className="part-card animate-fade-up engraved identity-texture identity-corner texture-noise"
+      className="part-card animate-fade-up"
       aria-label={`Part ${part.partNumber}: ${part.title}`}
       id={`part-${part.partNumber}`}
-      style={{
-        marginTop: varSpaceXl,
-        borderRadius: "var(--radius-2xl)",
-        border: "1px solid var(--border-subtle)",
-        background: "var(--bg-card)",
-        padding: "clamp(28px, 6vw, 48px)",
-        position: "relative",
-        overflow: "hidden",
-      }}
     >
-      <div
-        aria-hidden="true"
-        style={{
-          height: 3,
-          background: "var(--accent)",
-          borderRadius: "var(--radius-xl) var(--radius-xl) 0 0",
-          margin: "calc(-1 * clamp(28px, 6vw, 48px)) calc(-1 * clamp(28px, 6vw, 48px)) 0",
-        }}
-      />
+      <span className="part-card__num" aria-hidden="true">
+        {String(part.partNumber).padStart(2, "0")}
+      </span>
+
       {/* Locked-state obfuscation lives in globals.css (.part-locked-content)
           so low-end devices can swap the expensive 12px blur for a cheap fade
           via the data-perf tier. */}
@@ -118,143 +120,83 @@ const PartCardBase = ({
         id={contentId}
         className={`part-locked-content${isUnlocked ? " is-unlocked" : ""}`}
       >
-        {/* Part badge + subject */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-          <span
-            style={{
-              borderRadius: "var(--radius-sm)",
-              border: "1px solid var(--border-accent)",
-              background: "var(--accent-dim)",
-              color: "var(--accent)",
-              padding: "4px 10px",
-              fontSize: 11,
-              letterSpacing: "0.12em",
-              fontWeight: 600,
-            }}
-          >
-            PART {part.partNumber}
-          </span>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+        <div className="part-card__meta">
+          <div className="part-card__meta-left">
+            <span className="part-card__tag">Part {part.partNumber}</span>
             <span
-              style={{
-                borderRadius: "var(--radius-sm)",
-                border: `1px solid color-mix(in srgb, ${subjectColors[part.subject] ?? "var(--subject-general)"} 30%, transparent)`,
-                background: `color-mix(in srgb, ${subjectColors[part.subject] ?? "var(--subject-general)"} 12%, transparent)`,
-                color: subjectColors[part.subject] ?? "var(--subject-general)",
-                padding: "4px 10px",
-                fontSize: 11,
-                fontWeight: 500,
-              }}
+              className="part-card__tag part-card__tag--subject"
+              style={{ "--part-subject": subjectColor } as React.CSSProperties}
             >
+              <span className="part-card__tag-dot" aria-hidden="true" />
               {part.subject}
             </span>
-            {isUnlocked ? (
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-                <button
-                  type="button"
-                  onClick={handleCopyText}
-                  title="Copy section text"
-                  aria-label="Copy section text"
-                  style={{
-                    borderRadius: "var(--radius-sm)",
-                    border: "1px solid var(--border-default)",
-                    background: "var(--bg-surface)",
-                    color: copied ? "var(--accent)" : "var(--text-secondary)",
-                    padding: "8px 14px",
-                    fontSize: 12,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 4,
-                    minHeight: 44,
-                    transition: "all 200ms var(--ease-color)",
-                  }}
-                >
-                  {copied ? "Copied ✓" : "📋 Copy"}
-                </button>
-                <ListenButton
-                  text={`${part.title}. ${part.content}`}
-                  language={lessonLanguage}
-                  label={`Listen to Part ${part.partNumber}`}
-                />
-              </div>
-            ) : null}
           </div>
+          {isUnlocked ? (
+            <div className="part-card__meta-right">
+              <button
+                type="button"
+                onClick={handleCopyText}
+                title="Copy section text"
+                aria-label="Copy section text"
+                className={`part-card__tool${copied ? " is-active" : ""}`}
+              >
+                <CopyIcon />
+                {copied ? "Copied ✓" : "Copy"}
+              </button>
+              <ListenButton
+                text={`${part.title}. ${part.content}`}
+                language={lessonLanguage}
+                label={`Listen to Part ${part.partNumber}`}
+              />
+            </div>
+          ) : null}
         </div>
 
-        <h2 style={{ margin: "16px 0 0", fontSize: "clamp(22px, 4.5vw, 28px)", fontWeight: 600, fontFamily: "var(--font-display)", lineHeight: "var(--leading-snug)" }}>
-          {part.title}
-        </h2>
+        <h2 className="part-card__title">{part.title}</h2>
 
-        {/* Orientation banner — tells the learner what this part's JOB is
+        {/* Intent line — tells the learner what this part's JOB is
             (structural, honest) rather than pretending to summarize content
-            it hasn't read. Sets expectation, reduces "where am I?" load. */}
-        <div className="tldr-banner" style={{ marginTop: 16 }}>
-          <span className="tldr-pill">In this part</span>
-          <span>
-            {part.partNumber === 1
-              ? "The core idea, built from first intuition."
-              : part.partNumber === 2
-              ? "How it actually works, step by step."
-              : "Where it shows up in the real world right now."}
-          </span>
-        </div>
+            it hasn't read. */}
+        <p className="part-card__intent">
+          {PART_INTENT[part.partNumber - 1] ?? PART_INTENT[0]}
+        </p>
 
-        <div
-          className="markdown-content editorial-dropcap"
-          style={{
-            marginTop: 24,
-            fontSize: "var(--text-base)",
-            color: "var(--text-primary)",
-            lineHeight: "var(--leading-loose)",
-            maxWidth: "100%",
-            fontFamily: "var(--font-lora)",
-          }}
-        >
+        <div className="markdown-content part-card__prose">
           <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
             {part.content}
           </ReactMarkdown>
         </div>
 
-        <div style={{ marginTop: varSpaceBase, display: "flex", flexWrap: "wrap", gap: varSpaceSm }}>
-          {(part.sources ?? []).map((source) => (
-            <SourceTag key={source} href={source} />
-          ))}
-        </div>
+        {(part.sources ?? []).length > 0 ? (
+          <div className="part-card__sources">
+            {(part.sources ?? []).map((source) => (
+              <SourceTag key={source} href={source} />
+            ))}
+          </div>
+        ) : null}
 
-        {/* Reading timer / Quiz button */}
+        {/* Reading timer / quiz CTA */}
         {isUnlocked && !isCompleted ? (
-          <div style={{ marginTop: 28 }}>
+          <div className="part-card__footer">
             {!timer.isComplete ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <div className="part-card__reading">
                 <div
                   role="progressbar"
                   aria-valuenow={Math.round(timer.progress)}
                   aria-valuemin={0}
                   aria-valuemax={100}
                   aria-label="Reading progress"
-                  style={{ height: 3, width: "100%", borderRadius: 999, background: "var(--border-subtle)", overflow: "hidden" }}
+                  className="part-card__reading-track"
                 >
-                  <div
-                    style={{
-                      width: `${timer.progress}%`,
-                      height: "100%",
-                      background: "var(--accent)",
-                      transition: "width 100ms linear",
-                    }}
-                  />
+                  <div className="part-card__reading-fill" style={{ width: `${timer.progress}%` }} />
                 </div>
                 {/* The forward path is ALWAYS visible. While the reading timer
-                    runs it's a quiet outline button; once the timer completes
-                    it upgrades to the filled primary CTA below. Hiding the
-                    only exit behind a low-contrast 13px link trapped fast
-                    readers — an obvious, honest affordance beats a nudge. */}
+                    runs it's a quiet capsule; once the timer completes it
+                    upgrades to the filled gradient CTA below. */}
                 <button
                   type="button"
                   onClick={() => onStartQuiz(part)}
-                  className="btn-toggle animate-fade-up"
-                  style={{ alignSelf: "flex-end", fontSize: 14 }}
+                  className="btn-toggle part-card__skip animate-fade-up"
                   aria-label={`Skip reading and take quiz for Part ${part.partNumber}`}
                 >
                   I already know this → Take quiz
@@ -272,7 +214,6 @@ const PartCardBase = ({
                     : `Take quiz for Part ${part.partNumber}`
                 }
                 className="part-cta animate-fade-up"
-                style={{ marginTop: 4 }}
               >
                 {(part.quiz?.length ?? 0) === 0
                   ? "I've Read This → Continue"
@@ -284,71 +225,37 @@ const PartCardBase = ({
 
         {/* Collapse completed part */}
         {isCompleted && !isCollapsed ? (
-        <button
-          type="button"
-          onClick={() => onToggleCollapse(part.partNumber)}
-          aria-expanded={true}
-          aria-controls={contentId}
-          className="btn-toggle"
-          style={{ marginTop: varSpaceBase }}
-        >
-          Collapse part
-        </button>
+          <button
+            type="button"
+            onClick={() => onToggleCollapse(part.partNumber)}
+            aria-expanded={true}
+            aria-controls={contentId}
+            className="btn-toggle"
+            style={{ marginTop: "var(--space-base)" }}
+          >
+            Collapse part
+          </button>
         ) : null}
       </div>
 
-      {/* Locked overlay */}
+      {/* Locked veil */}
       {!isUnlocked && (
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "var(--bg-glass)",
-            backdropFilter: "blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))",
-            WebkitBackdropFilter: "blur(var(--glass-blur-strong)) saturate(var(--glass-saturate))",
-            zIndex: 10,
-          }}
-        >
-          <div
-            style={{
-              background: "var(--bg-card)",
-              padding: "24px 32px",
-              borderRadius: "var(--radius-xl)",
-              border: "1px solid var(--border-subtle)",
-              textAlign: "center",
-              backdropFilter: "blur(var(--glass-blur)) saturate(var(--glass-saturate))",
-              WebkitBackdropFilter: "blur(var(--glass-blur)) saturate(var(--glass-saturate))",
-              boxShadow: "var(--shadow-lg), var(--glass-edge)",
-            }}
-          >
-            <span aria-hidden="true" style={{ display: "block", marginBottom: 12, color: "var(--text-tertiary)" }}>
-              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" style={{ display: "block", margin: "0 auto" }}>
-                <rect x="5" y="10.5" width="14" height="9.5" rx="2.5" stroke="currentColor" strokeWidth="1.8" />
-                <path d="M8 10V7.8C8 5.6 9.8 4 12 4s4 1.6 4 3.8V10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                <circle cx="12" cy="15.2" r="1.4" fill="currentColor" />
-              </svg>
-            </span>
-            <h3 style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", margin: "0 0 6px" }}>
-              Part {part.partNumber} Locked
-            </h3>
-            <p style={{ fontSize: 14, color: "var(--text-secondary)", margin: 0 }}>
+        <div className="part-card__veil">
+          <div className="part-card__lock">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="5" y="10.5" width="14" height="9.5" rx="3" stroke="currentColor" strokeWidth="1.8" />
+              <path d="M8 10V7.8C8 5.6 9.8 4 12 4s4 1.6 4 3.8V10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+              <circle cx="12" cy="15.2" r="1.4" fill="currentColor" />
+            </svg>
+            <span>
+              <strong>Part {part.partNumber} locked</strong>
               Pass the Part {part.partNumber - 1} check to unlock
-            </p>
+            </span>
           </div>
         </div>
       )}
     </article>
   );
 }
-
-/* Design-token spacing helpers (avoid magic numbers) */
-const varSpaceSm = "var(--space-sm)";
-const varSpaceBase = "var(--space-base)";
-const varSpaceLg = "var(--space-lg)";
-const varSpaceXl = "var(--space-xl)";
 
 export default memo(PartCardBase);

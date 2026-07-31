@@ -31,22 +31,18 @@ export default function FollowUpBox({ onSubmit }: Props) {
     return () => window.removeEventListener("reallearn:fillFollowUp", handler);
   }, []);
 
+  const submit = async () => {
+    if (!value.trim() || loading) return;
+    setLoading(true);
+    await onSubmit(value.trim());
+    setValue("");
+    setLoading(false);
+  };
+
   return (
-    <section
-      className="animate-fade-up"
-      aria-label="Ask a follow-up question"
-      style={{
-        marginTop: varSpaceLg,
-        borderRadius: "var(--radius-lg)",
-        border: "1px solid var(--border-default)",
-        background: "var(--bg-surface)",
-        padding: varSpaceBase,
-      }}
-    >
-      <p style={{ marginTop: 0, marginBottom: 10, color: "var(--text-secondary)", fontSize: 13 }}>
-        Ask a follow-up and unlock a new 3-part journey.
-      </p>
-      <label htmlFor="followup-input" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}>
+    <section className="followup animate-fade-up" aria-label="Ask a follow-up question">
+      <p className="followup__label">Ask a follow-up and unlock a new 3-part journey.</p>
+      <label htmlFor="followup-input" className="sr-only">
         Follow-up question
       </label>
       <textarea
@@ -56,40 +52,20 @@ export default function FollowUpBox({ onSubmit }: Props) {
         onKeyDown={(e) => {
           if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
             e.preventDefault();
-            if (value.trim() && !loading) {
-              setLoading(true);
-              onSubmit(value.trim()).then(() => {
-                setValue("");
-                setLoading(false);
-              });
-            }
+            submit();
           }
         }}
         placeholder="Still curious? Pull the thread…"
         aria-label="Follow-up question"
         maxLength={MAX_QUESTION_LENGTH}
-        style={{
-          width: "100%",
-          minHeight: 80,
-          resize: "vertical",
-          borderRadius: "var(--radius-md)",
-          border: "1px solid var(--border-default)",
-          background: "var(--bg-card)",
-          color: "var(--text-primary)",
-          padding: varSpaceMd,
-          fontFamily: "var(--font-inter)",
-          fontSize: 14,
-        }}
+        className="followup__textarea"
       />
       {interimSpeech ? (
-        <p
-          aria-live="polite"
-          style={{ margin: "6px 0 0", fontSize: 13, color: "var(--text-tertiary)", fontStyle: "italic" }}
-        >
+        <p aria-live="polite" className="followup__listening">
           Listening — {interimSpeech}
         </p>
       ) : null}
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10 }}>
+      <div className="followup__actions">
         <MicButton
           language={language}
           onTranscript={(text) =>
@@ -99,39 +75,17 @@ export default function FollowUpBox({ onSubmit }: Props) {
           }
           onInterim={setInterimSpeech}
         />
-      <button
-        type="button"
-        disabled={loading || !value.trim()}
-        aria-busy={loading}
-        aria-label="Submit follow-up question"
-        onClick={async () => {
-          if (!value.trim()) return;
-          setLoading(true);
-          await onSubmit(value.trim());
-          setValue("");
-          setLoading(false);
-        }}
-        style={{
-          marginTop: 0,
-          border: "none",
-          borderRadius: "var(--radius-md)",
-          padding: "10px 16px",
-          fontWeight: 600,
-          background: loading || !value.trim() ? "var(--border-default)" : "var(--accent)",
-          color: loading || !value.trim() ? "var(--text-tertiary)" : "var(--on-accent)",
-          cursor: loading || !value.trim() ? "not-allowed" : "pointer",
-          fontSize: 14,
-          minHeight: 44,
-          transition: "background 200ms var(--ease-color)",
-        }}
-      >
-        {loading ? "Generating..." : "Teach Me More →"}
-      </button>
+        <button
+          type="button"
+          disabled={loading || !value.trim()}
+          aria-busy={loading}
+          aria-label="Submit follow-up question"
+          onClick={submit}
+          className="btn-primary"
+        >
+          {loading ? "Generating…" : "Teach Me More →"}
+        </button>
       </div>
     </section>
   );
 }
-
-const varSpaceMd = "var(--space-md)";
-const varSpaceBase = "var(--space-base)";
-const varSpaceLg = "var(--space-lg)";

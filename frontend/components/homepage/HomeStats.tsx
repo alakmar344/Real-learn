@@ -75,37 +75,18 @@ export default function HomeStats({ onStartTopic }: Props) {
             // question flow — usually a server-cache hit.
             onStartTopic(inProgress.question);
           }}
-          className="rl-card"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            maxWidth: 460,
-            width: "100%",
-            textAlign: "left",
-            padding: "12px 18px",
-          }}
+          className="resume-card"
         >
-          <span style={{ fontSize: 20 }}>↩️</span>
-          <span style={{ flex: 1, minWidth: 0 }}>
-            <span style={{ display: "block", fontSize: 11, color: "var(--text-tertiary)", fontWeight: 600 }}>
-              pick up where you left off
-            </span>
-            <span
-              style={{
-                display: "block",
-                fontSize: 14,
-                fontWeight: 600,
-                color: "var(--text-primary)",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              }}
-            >
-              {inProgress.question}
-            </span>
+          <span className="resume-card__icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M13 4v3.5a3 3 0 0 1-3 3H3.5m0 0L6.5 7.5m-3 3 3 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </span>
-          <span style={{ color: "var(--accent)", fontWeight: 700, fontSize: 13 }}>resume →</span>
+          <span className="resume-card__text">
+            <span className="resume-card__kicker">pick up where you left off</span>
+            <span className="resume-card__question">{inProgress.question}</span>
+          </span>
+          <span className="resume-card__cta">resume →</span>
         </button>
       )}
 

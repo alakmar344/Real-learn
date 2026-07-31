@@ -102,7 +102,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
     <form
       onSubmit={handleSubmit}
       aria-label="Ask a question"
-      className={`q-form engraved${focused ? " q-form--focused" : ""}`}
+      className={`q-form${focused ? " q-form--focused" : ""}`}
     >
       <div className="q-form__body">
         <label htmlFor="question-input" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}>
@@ -153,7 +153,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
             aria-hidden="true"
             className="mode-glider__pill"
             style={{
-              width: `calc((100% - 10px) / ${MODES.length})`,
+              width: `calc((100% - 8px) / ${MODES.length})`,
               transform: `translateX(calc(${activeIndex} * 100%))`,
             }}
           />

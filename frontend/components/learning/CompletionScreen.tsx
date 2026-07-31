@@ -15,26 +15,21 @@ interface Props {
   onRetake?: () => void;
 }
 
-/* ── Confetti particles — theme-aware brand palette, punchy not rainbow ── */
-
 /** Generate contextual follow-up suggestions based on the lesson topic and takeaways. */
 function generateFollowUpSuggestions(lesson: LessonJourney): string[] {
   const topic = lesson.question ?? lesson.topic ?? "";
   const takeaways = lesson.keyTakeaways ?? [];
   const suggestions: string[] = [];
 
-  // Derive follow-ups from the topic itself
   if (topic.length > 0) {
     suggestions.push(`What are the real-world applications of ${topic.slice(0, 60)}?`);
   }
 
-  // Derive from the first takeaway
   if (takeaways[0]) {
     const short = takeaways[0].slice(0, 80).replace(/\.$/, "");
     suggestions.push(`Can you explain ${short.toLowerCase()} in simpler terms?`);
   }
 
-  // Add a comparison/contrast question
   suggestions.push(`How does this compare to similar concepts?`);
 
   return suggestions.slice(0, 3);
@@ -105,36 +100,26 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
   const offset = circumference - (pct / 100) * circumference;
 
   return (
-    <section
-      ref={sectionRef}
-      className="animate-fade-up engraved identity-texture texture-noise"
-      aria-label="Journey complete"
-      style={{
-        marginTop: 32,
-        borderRadius: "var(--radius-2xl)",
-        border: "1px solid color-mix(in srgb, var(--correct) 20%, transparent)",
-        background: "var(--correct-bg)",
-        padding: "clamp(28px, 5vw, 48px)",
-        position: "relative",
-        overflow: "hidden",
-        backdropFilter: "blur(var(--glass-blur)) saturate(var(--glass-saturate))",
-        WebkitBackdropFilter: "blur(var(--glass-blur)) saturate(var(--glass-saturate))",
-        boxShadow: "var(--shadow-md), var(--glass-edge)",
-      }}
-    >
+    <section ref={sectionRef} className="completion animate-fade-up" aria-label="Journey complete">
       {showConfetti && <Confetti />}
 
-      {/* Score circle */}
-      <div style={{ display: "flex", alignItems: "center", gap: varSpaceLg, flexWrap: "wrap" }}>
-        <div style={{ position: "relative", width: 100, height: 100, flexShrink: 0 }} aria-hidden="true">
+      {/* Score ring */}
+      <div className="completion__hero">
+        <div className="completion__ring" aria-hidden="true">
           <svg width="100" height="100" viewBox="0 0 100 100">
+            <defs>
+              <linearGradient id="completion-ring" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="var(--brand-bright)" />
+                <stop offset="100%" stopColor="var(--accent)" />
+              </linearGradient>
+            </defs>
             <circle cx="50" cy="50" r="42" fill="none" stroke="var(--border-subtle)" strokeWidth="6" />
             <circle
               cx="50"
               cy="50"
               r="42"
               fill="none"
-              stroke="var(--accent)"
+              stroke="url(#completion-ring)"
               strokeWidth="6"
               strokeDasharray={circumference}
               strokeDashoffset={offset}
@@ -143,82 +128,44 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
               style={{ transition: "stroke-dashoffset 800ms var(--ease-reveal)" }}
             />
           </svg>
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              display: "grid",
-              placeItems: "center",
-              fontSize: 24,
-              fontWeight: 800,
-              color: "var(--correct)",
-            }}
-          >
+          <div className="completion__ring-score">
             {totalScore}/{maxScore}
           </div>
         </div>
 
         <div>
-          <h3
-            style={{
-              margin: 0,
-              fontSize: 30,
-              fontWeight: 800,
-              color: "var(--accent)",
-            }}
-          >
+          <h3 className="completion__title">
             {(lesson.parts?.length ?? 3) === 1 ? "Got it." : "Journey complete"}
           </h3>
-          <p style={{ marginTop: 6, color: "var(--text-secondary)", fontSize: 15 }}>
+          <p className="completion__subtitle">
             {/* First-try score: quizzes must be perfected to advance, so the
                 meaningful number is how you did before any retries. */}
-            You scored <strong style={{ color: "var(--correct)" }}>{totalScore}/{maxScore}</strong> on the first try — {pct >= 80 ? "a clean run." : pct >= 50 ? "solid, and the retries sealed it." : "a tough one. It'll feel easier next time."}
+            You scored <strong>{totalScore}/{maxScore}</strong> on the first try — {pct >= 80 ? "a clean run." : pct >= 50 ? "solid, and the retries sealed it." : "a tough one. It'll feel easier next time."}
           </p>
         </div>
       </div>
 
-      {/* Stylized Gen Z & Gen Alpha Quick Summary Deck */}
+      {/* Quick summary deck */}
       <QuickSummaryCards lesson={lesson} />
 
       {/* Suggested follow-up questions — zero cognitive load: just tap */}
       {lesson.keyTakeaways && lesson.keyTakeaways.length > 0 && (
-        <div style={{ marginTop: varSpaceLg }}>
-          <p style={{ margin: "0 0 10px", fontSize: 13, color: "var(--text-tertiary)", fontWeight: 500 }}>
-            Go deeper
-          </p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+        <div>
+          <p className="completion__section-label">Go deeper</p>
+          <div className="completion__suggests">
             {generateFollowUpSuggestions(lesson).map((suggestion, i) => (
               <button
                 key={i}
                 type="button"
+                className="suggest-pill"
                 onClick={() => {
                   const followUpInput = document.getElementById("followup-input");
                   if (followUpInput) {
                     followUpInput.scrollIntoView({ behavior: "smooth", block: "center" });
-                    // Dispatch a custom event with the suggestion text
                     const event = new CustomEvent("reallearn:fillFollowUp", { detail: suggestion });
                     window.dispatchEvent(event);
                     setTimeout(() => followUpInput.focus(), 500);
                   }
-                }}
-                style={{
-                  padding: "8px 14px",
-                  borderRadius: "var(--radius-lg)",
-                  border: "1px solid var(--border-subtle)",
-                  background: "var(--bg-card)",
-                  color: "var(--text-primary)",
-                  fontSize: 13,
-                  cursor: "pointer",
-                  transition: "all 200ms var(--ease-spring)",
-                  textAlign: "left",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = "var(--border-accent)";
-                  e.currentTarget.style.transform = "scale(1.02)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "var(--border-subtle)";
-                  e.currentTarget.style.transform = "scale(1)";
                 }}
               >
                 {suggestion}
@@ -234,64 +181,15 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
       {/* Optional, anonymous review — offered soon after the first lesson */}
       <FeedbackGate />
 
-      {/* Action buttons */}
-      <div style={{ marginTop: varSpaceLg, display: "flex", gap: varSpaceSm, flexWrap: "wrap" }}>
+      {/* Actions */}
+      <div className="completion__actions">
         {onRetake && (
-          <button
-            type="button"
-            onClick={onRetake}
-            style={{
-              border: "1.5px solid var(--border-default)",
-              borderRadius: "var(--radius-lg)",
-              background: "transparent",
-              color: "var(--text-secondary)",
-              padding: "14px 24px",
-              cursor: "pointer",
-              fontSize: 15,
-              fontWeight: 600,
-              minHeight: 50,
-              transition: "all 500ms var(--ease-spring)",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "var(--border-accent)";
-              e.currentTarget.style.color = "var(--accent)";
-              e.currentTarget.style.transform = "scale(1.04)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "var(--border-default)";
-              e.currentTarget.style.color = "var(--text-secondary)";
-              e.currentTarget.style.transform = "scale(1)";
-            }}
-          >
+          <button type="button" onClick={onRetake} className="btn-toggle">
             Retake Quiz
           </button>
         )}
         {onRestart && (
-          <button
-            type="button"
-            onClick={onRestart}
-            style={{
-              border: "none",
-              borderRadius: "var(--radius-lg)",
-              background: "var(--accent)",
-              color: "var(--on-accent)",
-              padding: "14px 28px",
-              cursor: "pointer",
-              fontSize: 15,
-              fontWeight: 600,
-              minHeight: 50,
-              boxShadow: "var(--shadow-sm)",
-              transition: "all 500ms var(--ease-spring)",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "scale(1.04)";
-              e.currentTarget.style.boxShadow = "var(--shadow-lg), var(--glass-edge)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "scale(1)";
-              e.currentTarget.style.boxShadow = "var(--shadow-sm)";
-            }}
-          >
+          <button type="button" onClick={onRestart} className="btn-primary">
             Continue Learning →
           </button>
         )}
@@ -299,6 +197,3 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
     </section>
   );
 }
-
-const varSpaceSm = "var(--space-sm)";
-const varSpaceLg = "var(--space-lg)";

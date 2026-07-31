@@ -248,3 +248,32 @@ every change stays token-level and WCAG-AA-checked:
   fallback, the pre-paint theme-color script, and the README design bullet
   all still pointed at retired Evergreen hexes — now synced to
   `#FAF9F6` / `#0D1117` / `#EE5125` / `#FF6435`.
+
+---
+
+## Addendum (2026-07-31) — "Liquid Flow" structural pass (current)
+
+The Cyber Aqua palette (see `AGENT_MEMORY.md` §1) is unchanged; this pass
+rebuilt the STRUCTURE of the lesson experience onto one frosted-glass
+language:
+
+- **Tokens**: `--surface-glass`, `--surface-glass-strong`, `--surface-veil`,
+  `--shadow-float`; radius scale raised to 12/16/20/26/32.
+- **Part cards** (`.part-card__*`): fluid glass panels — ghost outline
+  numeral, capsule meta pills, gradient intent rule (boxed TL;DR banner
+  removed), Lora prose, gradient reading-progress line, frosted lock veil
+  with a floating capsule. Inline-style soup removed from the component.
+- **Journey rail** (`.journey-rail`): floating glass capsule; SVG check/lock
+  nodes, gradient connector segments; fast mode gets a `--solo` capsule.
+- **Quiz**: frosted sheet, centered floating panel on ≥720px, circular letter
+  chips, accent-rule explanations (no boxes), gradient success action.
+- **Generation loader**: 4px gradient bar, quiet step list, three
+  materializing part capsules (`.loading-cinematic__parts`) replace the
+  skeleton-card deck.
+- **Homepage command bar** (`.q-form`): frosted floating surface, borderless
+  action row, gradient mode glider; suggestion duo + resume capsule moved to
+  `.suggest-duo` / `.resume-card`.
+- **Follow-up / completion**: `.followup` mirrors the command bar;
+  `.completion` gets a gradient score ring and `.suggest-pill` follow-ups.
+- All new interactive classes are covered by the reduced-motion kill-switch;
+  glass blurs remain gated by the `data-perf` tiers and the Firefox guard.
