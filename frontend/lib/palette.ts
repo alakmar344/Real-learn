@@ -42,13 +42,13 @@ export function starColor(theme: ThemeName = activeTheme()): string {
  * theme for legibility in feeds regardless of the app theme).
  */
 export const SHARE_CARD = {
-  paper: "#F6F8F6",
+  paper: "#FAF9F6",
   card: "#FFFFFF",
-  ink: "#101915",
-  inkSoft: "#47554E",
-  brand: "#047857",
-  brandBright: "#059669",
-  mint: "#34D399",
+  ink: "#0F172A",
+  inkSoft: "#475569",
+  brand: "#EE5125",
+  brandBright: "#FF6435",
+  mint: "#04A16C",
   amber: "#F59E0B",
-  border: "#E3E9E5",
+  border: "#D4D1C5",
 } as const;

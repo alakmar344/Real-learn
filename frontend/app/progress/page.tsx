@@ -29,13 +29,10 @@ const AchievementsGrid = dynamic(() => import("@/components/shared/AchievementsG
 function Card({ children, span }: { children: React.ReactNode; span?: boolean }) {
   return (
     <section
-      className="animate-fade-up"
+      className="glass-panel engraved identity-texture texture-noise animate-fade-up"
       style={{
-        background: "var(--bg-card)",
-        border: "1px solid var(--border-subtle)",
-        borderRadius: "var(--radius-xl)",
-        padding: "clamp(16px, 3vw, 22px)",
-        boxShadow: "var(--shadow-sm)",
+        padding: "clamp(20px, 4vw, 32px)",
+        borderRadius: "var(--radius-2xl)",
         gridColumn: span ? "1 / -1" : "auto",
       }}
     >
@@ -306,21 +303,11 @@ export default function ProgressPage() {
             </div>
 
             {/* CTA */}
-            <div style={{ marginTop: 22, textAlign: "center" }}>
+            <div style={{ marginTop: 32, textAlign: "center" }}>
               <Link
                 href="/"
-                style={{
-                  display: "inline-block",
-                  border: "none",
-                  borderRadius: "var(--radius-md)",
-                  padding: "12px 26px",
-                  background: "var(--accent)",
-                  color: "var(--on-accent)",
-                  fontWeight: 700,
-                  fontSize: 15,
-                  textDecoration: "none",
-                  boxShadow: "var(--shadow-sm)",
-                }}
+                className="btn-primary"
+                style={{ textDecoration: "none" }}
               >
                 Learn something new →
               </Link>

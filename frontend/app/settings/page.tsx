@@ -399,13 +399,11 @@ export default function SettingsPage() {
 
         {/* Preferences Section */}
         <section
-          className="settings-section"
+          className="settings-section glass-panel engraved identity-texture texture-noise"
           style={{
-            border: "1px solid var(--border-default)",
-            borderRadius: "var(--radius-lg)",
-            padding: 24,
+            borderRadius: "var(--radius-2xl)",
+            padding: 28,
             marginBottom: 24,
-            background: "var(--bg-card)",
           }}
         >
           <h2
@@ -624,13 +622,11 @@ export default function SettingsPage() {
 
         {/* Learning Preferences Section */}
         <section
-          className="settings-section"
+          className="settings-section glass-panel engraved identity-texture texture-noise"
           style={{
-            border: "1px solid var(--border-default)",
-            borderRadius: "var(--radius-lg)",
-            padding: 24,
+            borderRadius: "var(--radius-2xl)",
+            padding: 28,
             marginBottom: 24,
-            background: "var(--bg-card)",
           }}
         >
           <h2
@@ -752,13 +748,11 @@ export default function SettingsPage() {
 
         {/* Account Section */}
         <section
-          className="settings-section"
+          className="settings-section glass-panel engraved identity-texture texture-noise"
           style={{
-            border: "1px solid var(--border-default)",
-            borderRadius: "var(--radius-lg)",
-            padding: 24,
+            borderRadius: "var(--radius-2xl)",
+            padding: 28,
             marginBottom: 24,
-            background: "var(--bg-card)",
           }}
         >
           <h2
@@ -786,13 +780,11 @@ export default function SettingsPage() {
 
         {/* Privacy Section */}
         <section
-          className="settings-section"
+          className="settings-section glass-panel engraved identity-texture texture-noise"
           style={{
-            border: "1px solid var(--border-default)",
-            borderRadius: "var(--radius-lg)",
-            padding: 24,
+            borderRadius: "var(--radius-2xl)",
+            padding: 28,
             marginBottom: 24,
-            background: "var(--bg-card)",
           }}
         >
           <h2
@@ -838,12 +830,10 @@ export default function SettingsPage() {
 
         {/* Data Section */}
         <section
-          className="settings-section"
+          className="settings-section glass-panel engraved identity-texture texture-noise"
           style={{
-            border: "1px solid var(--border-default)",
-            borderRadius: "var(--radius-lg)",
-            padding: 24,
-            background: "var(--bg-card)",
+            borderRadius: "var(--radius-2xl)",
+            padding: 28,
           }}
         >
           <h2
