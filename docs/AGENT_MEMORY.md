@@ -456,21 +456,9 @@ this protocol. No exceptions.**
     `public/manifest.json` stale brand hex `#0D1117` → `#0A0A0F`.
     `docs/REDESIGN.md` marked as historical record (canonical system is now
     Cyber Aqua, see §1).
-- 2026-07-31 — **"Liquid Flow" structural redesign of the lesson experience.**
-    The Cyber Aqua palette is unchanged; the STRUCTURE moved to one frosted-glass
-    language. New tokens: `--surface-glass`, `--surface-glass-strong`,
-    `--surface-veil`, `--shadow-float`; radius scale raised (sm 12 / md 16 /
-    lg 20 / xl 26 / 2xl 32). `PartCard` rebuilt on `.part-card__*` classes
-    (ghost numeral, capsule pills, gradient intent line — the boxed
-    `.tldr-banner`/`.tldr-pill` classes were REMOVED), `ProgressRail` moved from
-    `.learning-conduit` (removed) to `.journey-rail` (SVG nodes + gradient
-    connectors), the quiz sheet floats centered on ≥720px screens, the loader's
-    skeleton deck became `.loading-cinematic__parts` capsules, and the homepage
-    `.q-form` is a frosted command bar with a borderless action row. FollowUp/
-    Completion/resume/suggestion surfaces moved onto `.followup`,
-    `.completion`, `.suggest-pill`, `.resume-card`, `.suggest-duo`, and the
-    learn header onto `.learn-topbar` (§5 updated). Verified: tsc/lint/build
-    clean, verify:quiz + verify:achievements pass.
+- 2026-07-31 — **"Liquid Flow" application-wide UI modernization.**
+    Extended the hyper-modern 2026 Liquid Flow frosted-glass paradigm to every remaining page and shell surface in the application: Homepage (`app/page.tsx`, `QuestionInput.tsx`), Progress Dashboard (`app/progress/page.tsx`, `AchievementsGrid.tsx`, `DailyGoalRing.tsx`), Settings Page (`app/settings/page.tsx`), 404 Page (`app/not-found.tsx`), Sign-In/Up Pages (`app/sign-in`, `app/sign-up`), and shared Shell (`Navbar.tsx`, `Sidebar.tsx`, `Footer.tsx`). Added `.hero-glass-card`, `.stat-tile-2026`, `.progress-hero-card`, `.settings-panel-glass`, `.not-found-canvas`, and `.auth-glass-card` classes to `globals.css` (§5 updated). Preserved Cyber Aqua design rules and left all Legal pages 100% untouched. Verified: tsc/lint/build clean, verify:quiz + verify:achievements pass.
+
 
 
 

@@ -29,13 +29,8 @@ const AchievementsGrid = dynamic(() => import("@/components/shared/AchievementsG
 function Card({ children, span }: { children: React.ReactNode; span?: boolean }) {
   return (
     <section
-      className="animate-fade-up"
+      className="animate-fade-up progress-hero-card"
       style={{
-        background: "var(--bg-card)",
-        border: "1px solid var(--border-subtle)",
-        borderRadius: "var(--radius-xl)",
-        padding: "clamp(16px, 3vw, 22px)",
-        boxShadow: "var(--shadow-sm)",
         gridColumn: span ? "1 / -1" : "auto",
       }}
     >
@@ -46,11 +41,11 @@ function Card({ children, span }: { children: React.ReactNode; span?: boolean })
 
 function StatTile({ label, value, accent }: { label: string; value: string | number; accent?: boolean }) {
   return (
-    <div className="stat-tile">
-      <div className="stat-tile__value" style={accent ? { color: "var(--accent)" } : undefined}>
+    <div className="stat-tile-2026">
+      <div className={`stat-tile-2026__value${accent ? " stat-tile-2026__value--accent" : ""}`}>
         {value}
       </div>
-      <div className="stat-tile__label">{label}</div>
+      <div className="stat-tile-2026__label">{label}</div>
     </div>
   );
 }
@@ -309,17 +304,12 @@ export default function ProgressPage() {
             <div style={{ marginTop: 22, textAlign: "center" }}>
               <Link
                 href="/"
+                className="btn-primary"
                 style={{
-                  display: "inline-block",
-                  border: "none",
-                  borderRadius: "var(--radius-md)",
+                  display: "inline-flex",
                   padding: "12px 26px",
-                  background: "var(--accent)",
-                  color: "var(--on-accent)",
-                  fontWeight: 700,
                   fontSize: 15,
                   textDecoration: "none",
-                  boxShadow: "var(--shadow-sm)",
                 }}
               >
                 Learn something new →

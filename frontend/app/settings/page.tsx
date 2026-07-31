@@ -398,16 +398,7 @@ export default function SettingsPage() {
         </p>
 
         {/* Preferences Section */}
-        <section
-          className="settings-section"
-          style={{
-            border: "1px solid var(--border-default)",
-            borderRadius: "var(--radius-lg)",
-            padding: 24,
-            marginBottom: 24,
-            background: "var(--bg-card)",
-          }}
-        >
+        <section className="settings-panel-glass">
           <h2
             style={{
               fontSize: 16,
@@ -623,16 +614,7 @@ export default function SettingsPage() {
         </section>
 
         {/* Learning Preferences Section */}
-        <section
-          className="settings-section"
-          style={{
-            border: "1px solid var(--border-default)",
-            borderRadius: "var(--radius-lg)",
-            padding: 24,
-            marginBottom: 24,
-            background: "var(--bg-card)",
-          }}
-        >
+        <section className="settings-panel-glass">
           <h2
             style={{
               fontSize: 16,
@@ -751,16 +733,7 @@ export default function SettingsPage() {
         </section>
 
         {/* Account Section */}
-        <section
-          className="settings-section"
-          style={{
-            border: "1px solid var(--border-default)",
-            borderRadius: "var(--radius-lg)",
-            padding: 24,
-            marginBottom: 24,
-            background: "var(--bg-card)",
-          }}
-        >
+        <section className="settings-panel-glass">
           <h2
             style={{
               fontSize: 16,
@@ -785,16 +758,7 @@ export default function SettingsPage() {
         </section>
 
         {/* Privacy Section */}
-        <section
-          className="settings-section"
-          style={{
-            border: "1px solid var(--border-default)",
-            borderRadius: "var(--radius-lg)",
-            padding: 24,
-            marginBottom: 24,
-            background: "var(--bg-card)",
-          }}
-        >
+        <section className="settings-panel-glass">
           <h2
             style={{
               fontSize: 16,
@@ -837,15 +801,7 @@ export default function SettingsPage() {
         </section>
 
         {/* Data Section */}
-        <section
-          className="settings-section"
-          style={{
-            border: "1px solid var(--border-default)",
-            borderRadius: "var(--radius-lg)",
-            padding: 24,
-            background: "var(--bg-card)",
-          }}
-        >
+        <section className="settings-panel-glass">
           <h2
             style={{
               fontSize: 16,
