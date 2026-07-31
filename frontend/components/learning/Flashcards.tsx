@@ -49,18 +49,41 @@ interface Props {
 }
 
 export default function Flashcards({ lesson }: Props) {
-  const cards = useMemo(() => buildFlashcards(lesson), [lesson]);
+  const baseCards = useMemo(() => buildFlashcards(lesson), [lesson]);
+  const [order, setOrder] = useState<number[] | null>(null);
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [seen, setSeen] = useState<Set<number>>(() => new Set());
   const cardRef = useRef<HTMLButtonElement>(null);
+
+  const cards = useMemo(
+    () => (order ? order.map((i) => baseCards[i]).filter(Boolean) : baseCards),
+    [baseCards, order]
+  );
 
   // New lesson → reset the deck.
   useEffect(() => {
     setIndex(0);
     setFlipped(false);
     setSeen(new Set());
+    setOrder(null);
   }, [lesson]);
+
+  const shuffle = useCallback(() => {
+    setOrder((prev) => {
+      const next = (prev ?? baseCards.map((_, i) => i)).slice();
+      // Fisher–Yates
+      for (let i = next.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [next[i], next[j]] = [next[j], next[i]];
+      }
+      return next;
+    });
+    setIndex(0);
+    setFlipped(false);
+    setSeen(new Set());
+    triggerHaptic("light");
+  }, [baseCards]);
 
   const flip = useCallback(() => {
     setFlipped((f) => {
@@ -98,9 +121,29 @@ export default function Flashcards({ lesson }: Props) {
         <h2 className="flashcards__title">
           <span aria-hidden="true">🃏</span> Flashcards
         </h2>
-        <span className="flashcards__meta" aria-live="polite">
-          {allSeen ? "Deck done — nice recall ✦" : `${seen.size}/${cards.length} flipped`}
-        </span>
+        <div className="flashcards__head-right">
+          <span className="flashcards__meta" aria-live="polite">
+            {allSeen ? "Deck done — nice recall ✦" : `${seen.size}/${cards.length} flipped`}
+          </span>
+          <button
+            type="button"
+            className="btn-icon flashcards__shuffle"
+            aria-label="Shuffle deck"
+            title="Shuffle deck"
+            disabled={cards.length < 2}
+            onClick={shuffle}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path
+                d="M1.5 4h3l6 8h4m0 0-2-2m2 2-2 2M1.5 12h3l1.7-2.27M14.5 4h-4L9 6m5.5-2-2-2m2 2-2 2"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
       </div>
       <p className="flashcards__sub">
         Tap a card to flip it — recall the idea before peeking.

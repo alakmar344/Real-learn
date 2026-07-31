@@ -407,21 +407,7 @@ export default function LearnPage() {
             <p style={{ color: "var(--text-secondary)", fontSize: 14, marginBottom: 24 }}>
               Head back home and ask a question to start learning.
             </p>
-            <button
-              type="button"
-              onClick={restart}
-              style={{
-                border: "none",
-                borderRadius: "var(--radius-md)",
-                padding: "12px 24px",
-                background: "var(--accent)",
-                color: "var(--on-accent)",
-                fontWeight: 700,
-                fontSize: 15,
-                cursor: "pointer",
-                minHeight: 44,
-              }}
-            >
+            <button type="button" onClick={restart} className="btn-primary">
               Go Home →
             </button>
           </div>
@@ -565,16 +551,8 @@ export default function LearnPage() {
                 resetAll();
                 restart();
               }}
-              style={{
-                marginTop: 20,
-                borderRadius: "var(--radius-md)",
-                border: "1px solid var(--border-default)",
-                background: "transparent",
-                color: "var(--text-secondary)",
-                padding: "10px 14px",
-                cursor: "pointer",
-                minHeight: 44,
-              }}
+              className="btn-ghost"
+              style={{ marginTop: 20 }}
             >
               Learn Something New
             </button>

@@ -3507,10 +3507,23 @@ p {
   font-weight: 800;
   letter-spacing: var(--tracking-tight);
 }
+.flashcards__head-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
 .flashcards__meta {
   font-size: var(--text-sm);
   font-weight: 700;
   color: var(--accent);
+}
+.flashcards__shuffle {
+  width: 36px;
+  height: 36px;
+}
+.flashcards__shuffle:disabled {
+  opacity: 0.35;
+  cursor: default;
 }
 .flashcards__sub {
   margin: 6px 0 18px;
