@@ -5,16 +5,16 @@ import { useEffect, useState } from "react";
 /* Questions from THEIR world — algorithms, games, money, brains, internet
    culture — each one a real lesson in disguise (CS, econ, bio, physics…). */
 const RECOMMENDATIONS = [
-  "how does the FYP know me better than my bestie? 🧠",
-  "why is everything so expensive rn? 💸",
-  "can AI actually think or is it just guessing? 🤖",
-  "what does doomscrolling do to my brain? 📱",
-  "how do black holes bend time? 🌌",
-  "how do speedrunners break games with physics? 🎮",
-  "why do memes spread like viruses? 🦠",
-  "what happens in my brain at 3am? 🌙",
-  "how do sneaker resellers make bank from hype? 👟",
-  "why can't we just print more money? 🏦",
+  "how does the FYP know me better than my bestie?",
+  "why is everything so expensive rn?",
+  "can AI actually think or is it just guessing?",
+  "what does doomscrolling do to my brain?",
+  "how do black holes bend time?",
+  "how do speedrunners break games with physics?",
+  "why do memes spread like viruses?",
+  "what happens in my brain at 3am?",
+  "how do sneaker resellers make bank from hype?",
+  "why can't we just print more money?",
 ];
 
 interface Props {
@@ -40,26 +40,16 @@ export default function ExampleQuestions({ onPick }: Props) {
   }, []);
 
   return (
-    <div style={{ display: "inline-flex", alignItems: "center", gap: 6, maxWidth: "100%" }}>
+    <div className="suggest-duo">
       <button
         type="button"
         aria-label="Use a recommended question"
         title="Click to try this question"
         onClick={() => onPick?.(RECOMMENDATIONS[index])}
         disabled={!onPick}
-        className="chip"
-        style={{
-          fontSize: 12,
-          color: "var(--accent)",
-          margin: 0,
-          minWidth: 0,
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-          textAlign: "left",
-        }}
+        className="chip suggest-duo__pick"
       >
-        <span style={{ color: "var(--text-tertiary)", fontWeight: 500, marginRight: 4 }}>💡 Try:</span>{" "}
+        <span className="suggest-duo__label">Try:</span>{" "}
         <span>{RECOMMENDATIONS[index]}</span>
       </button>
       <button
@@ -67,16 +57,7 @@ export default function ExampleQuestions({ onPick }: Props) {
         aria-label="Show another suggested question"
         title="Another suggestion"
         onClick={() => setIndex((prev) => (prev + 1) % RECOMMENDATIONS.length)}
-        className="chip"
-        style={{
-          fontSize: 14,
-          color: "var(--text-secondary)",
-          margin: 0,
-          minWidth: 44,
-          minHeight: 36,
-          flexShrink: 0,
-          justifyContent: "center",
-        }}
+        className="chip suggest-duo__shuffle"
       >
         ↻
       </button>

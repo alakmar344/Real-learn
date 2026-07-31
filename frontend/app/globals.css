@@ -79,12 +79,20 @@
   --subject-history: #FB7185;
   --subject-general: #06B6D4;
 
-  --radius-sm: 10px;
-  --radius-md: 14px;
-  --radius-lg: 18px;
-  --radius-xl: 22px;
-  --radius-2xl: 28px;
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 26px;
+  --radius-2xl: 32px;
   --radius-pill: 9999px;
+
+  /* Translucent surfaces — panels float over the aurora instead of sitting
+     in opaque boxes. Perf tiers strip the backdrop blur; these colors are
+     chosen to stay readable even unblurred. */
+  --surface-glass: rgba(24, 24, 27, 0.62);
+  --surface-glass-strong: rgba(17, 17, 21, 0.82);
+  --surface-veil: rgba(10, 10, 15, 0.55);
+  --shadow-float: 0 24px 64px rgba(0, 0, 0, 0.45), 0 4px 16px rgba(0, 0, 0, 0.3);
 
   --text-xs: 11px;
   --text-sm: 13px;
@@ -209,6 +217,11 @@ html[data-theme="light"] {
   --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.07);
   --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.09);
   --shadow-glow-correct: 0 0 16px rgba(5, 150, 105, 0.15);
+
+  --surface-glass: rgba(255, 255, 255, 0.66);
+  --surface-glass-strong: rgba(255, 255, 255, 0.86);
+  --surface-veil: rgba(250, 250, 250, 0.55);
+  --shadow-float: 0 24px 64px rgba(24, 24, 27, 0.1), 0 4px 16px rgba(24, 24, 27, 0.06);
 
   --focus-ring: 0 0 0 3px rgba(8, 145, 178, 0.25);
   --focus-ring-simple: 0 0 0 2px #0891B2;
@@ -799,119 +812,141 @@ a:active {
   transform: scale(0.985);
 }
 
-/* ── The Learning Conduit — Continuous 3-part stepper line ── */
-.learning-conduit {
+/* ── Journey rail — the 3-part path as a floating glass capsule.
+   No boxed steps: three quiet nodes on one gradient conduit. Depth comes
+   from frost + a soft float shadow, not borders. */
+.journey-rail {
   position: relative;
   width: 100%;
-  padding: 10px 14px;
-  background: var(--bg-surface);
-  border: 1.5px solid var(--border-subtle);
+  padding: 14px 22px;
+  background: var(--surface-glass);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-float);
   box-sizing: border-box;
 }
 
-.learning-conduit__line {
-  position: absolute;
-  top: 50%;
-  left: 40px;
-  right: 40px;
-  height: 3px;
-  background: var(--border-subtle);
-  transform: translateY(-50%);
-  z-index: 0;
-  overflow: hidden;
-  border-radius: 999px;
-}
-
-.learning-conduit__line-fill {
-  height: 100%;
-  background: var(--brand);
-  transition: width var(--dur-slow) var(--ease-reveal);
-}
-
-.learning-conduit__steps {
+.journey-rail__steps {
   display: flex;
   align-items: center;
   justify-content: space-between;
   position: relative;
   z-index: 1;
-  gap: 10px;
   list-style: none;
   margin: 0;
   padding: 0;
   width: 100%;
 }
 
-.learning-conduit__step {
-  position: relative;
-  z-index: 1;
+.journey-rail__step {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 6px 14px;
-  border-radius: var(--radius-pill);
-  background: var(--bg-surface);
-  border: 1.5px solid var(--border-default);
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-secondary);
-  transition: all var(--dur-fast) var(--ease-color);
-  white-space: nowrap;
+  gap: 9px;
   flex: 1 1 0%;
   min-width: 0;
-  text-align: center;
-  box-sizing: border-box;
-}
-
-.learning-conduit__step-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.learning-conduit__step-text {
-  display: inline-flex;
-  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--text-tertiary);
+  transition: color var(--dur-base) var(--ease-color);
   white-space: nowrap;
+}
+.journey-rail__step:first-child {
+  flex: 0 0 auto;
+}
+
+/* Connector — the conduit segment leading INTO a step. Lights up with the
+   gradient once that step is reached. */
+.journey-rail__connector {
+  flex: 1 1 24px;
+  min-width: 16px;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--border-subtle);
+  margin: 0 12px;
+  transition: background 600ms var(--ease-color);
+}
+.journey-rail__connector.is-filled {
+  background: var(--accent-gradient);
+}
+
+.journey-rail__node {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--bg-solid);
+  color: var(--text-tertiary);
+  transition: background var(--dur-base) var(--ease-color),
+              color var(--dur-base) var(--ease-color),
+              box-shadow var(--dur-base) var(--ease-color),
+              transform 400ms var(--ease-spring);
+}
+
+.journey-rail__step-text {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.learning-conduit__step--active {
-  border-color: var(--brand);
-  background: var(--brand);
+.journey-rail__step--active {
+  color: var(--text-primary);
+}
+.journey-rail__step--active .journey-rail__node {
+  background: var(--accent-gradient);
   color: var(--on-accent);
-  box-shadow: var(--shadow-glow-accent);
+  box-shadow: 0 0 0 5px var(--accent-dim), var(--shadow-glow-accent);
+  transform: scale(1.08);
 }
 
-.learning-conduit__step--completed {
-  border-color: var(--correct);
+.journey-rail__step--completed {
+  color: var(--correct);
+}
+.journey-rail__step--completed .journey-rail__node {
   background: var(--correct-bg);
+  color: var(--correct);
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--correct) 45%, transparent);
+}
+
+/* Fast mode — one-part status capsule in the same language. */
+.journey-rail--solo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: auto;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+}
+.journey-rail--solo.is-done {
   color: var(--correct);
 }
 
 @media (max-width: 540px) {
-  .learning-conduit {
-    padding: 8px 8px;
+  .journey-rail {
+    padding: 10px 14px;
   }
-  .learning-conduit__steps {
+  .journey-rail__step {
+    font-size: 11px;
     gap: 6px;
   }
-  .learning-conduit__step {
-    padding: 5px 8px;
-    font-size: 11px;
-    gap: 4px;
+  .journey-rail__node {
+    width: 26px;
+    height: 26px;
   }
-  .learning-conduit__line {
-    left: 24px;
-    right: 24px;
+  .journey-rail__connector {
+    margin: 0 8px;
+    min-width: 10px;
   }
 }
 
 @media (max-width: 380px) {
-  .learning-conduit__step-prefix {
+  .journey-rail__step-prefix {
     display: none;
   }
 }
@@ -2662,78 +2697,85 @@ p {
   box-shadow: var(--shadow-md), var(--glass-edge), 0 0 0 3px var(--accent-glow);
 }
 
-/* ── Part card quiz / action button ── full-width accent CTA inside a
-   lesson part. Spring lift on hover, calm disabled-ish pre-state. */
+/* ── Part CTA ── the one filled action inside a lesson part. Gradient pill,
+   same voice as .btn-primary so every primary action reads identical. */
 .part-cta {
   width: 100%;
-  min-height: 52px;
+  min-height: 54px;
   border: none;
-  border-radius: var(--radius-lg);
-  background: var(--accent);
+  border-radius: var(--radius-pill);
+  background: var(--accent-gradient);
   color: var(--on-accent);
   font-size: var(--text-base);
   font-weight: 700;
+  letter-spacing: 0.01em;
   cursor: pointer;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-glow-accent);
   transition: transform 300ms var(--ease-spring),
-              box-shadow 300ms var(--ease-spring);
+              box-shadow 300ms var(--ease-spring),
+              filter 200ms var(--ease-color);
 }
 .part-cta:hover {
-  transform: translateY(-2px) scale(1.01);
-  box-shadow: var(--shadow-lg), var(--glass-edge);
+  transform: translateY(-2px);
+  filter: brightness(1.06);
+  box-shadow: var(--shadow-float), var(--shadow-glow-accent);
 }
 .part-cta:active {
-  transform: translateY(0) scale(0.99);
+  transform: translateY(0) scale(0.985);
 }
 .part-cta:focus-visible {
   outline: none;
-  box-shadow: var(--shadow-lg), 0 0 0 3px var(--accent-glow), 0 0 0 5px var(--accent);
+  box-shadow: var(--shadow-glow-accent), 0 0 0 3px var(--accent-glow), 0 0 0 5px var(--accent);
 }
 
-/* ── Completed-part collapsed bar ── a calm green capsule that lifts slightly
-   on hover to signal it's re-expandable. */
+/* ── Completed-part collapsed capsule ── */
 .part-done-bar {
   width: 100%;
-  min-height: 48px;
-  border-radius: var(--radius-lg);
-  border: 1px solid color-mix(in srgb, var(--correct) 30%, transparent);
+  min-height: 52px;
+  border-radius: var(--radius-pill);
+  border: none;
   background: var(--correct-bg);
   color: var(--correct);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
+  gap: 12px;
+  padding: 0 24px;
   cursor: pointer;
   font-weight: 600;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--correct) 22%, transparent);
   transition: transform 250ms var(--ease-spring),
               box-shadow 250ms var(--ease-spring);
 }
 .part-done-bar:hover {
-  transform: scale(1.01);
-  box-shadow: var(--shadow-lg), var(--glass-edge);
+  transform: translateY(-1px);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--correct) 40%, transparent), var(--shadow-md);
 }
 .part-done-bar:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--correct) 40%, transparent);
 }
 
-/* ── Ghost toggle button ── for collapse/expand part actions. */
+/* ── Ghost toggle ── quiet capsule for secondary part actions. */
 .btn-toggle {
   border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-pill);
   background: transparent;
   color: var(--text-secondary);
-  padding: 12px 18px;
+  padding: 12px 22px;
   cursor: pointer;
   min-height: 48px;
+  font-weight: 600;
   transition: transform 300ms var(--ease-spring),
               border-color 250ms var(--ease-color),
-              color 250ms var(--ease-color);
+              color 250ms var(--ease-color),
+              background 250ms var(--ease-color);
 }
 .btn-toggle:hover {
   border-color: var(--border-accent);
   color: var(--accent);
-  transform: scale(1.02);
+  background: var(--accent-dim);
+  transform: translateY(-1px);
 }
 .btn-toggle:focus-visible {
   outline: none;
@@ -2747,29 +2789,31 @@ p {
   max-width: 680px;
   width: 100%;
   position: relative;
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-2xl);
   border: 1px solid var(--border-subtle);
-  background: var(--bg-card);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.04), 0 2px 6px rgba(0, 0, 0, 0.02);
-  transition: all 200ms var(--ease-color);
+  background: var(--surface-glass);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  box-shadow: var(--shadow-float);
+  transition: border-color 250ms var(--ease-color), box-shadow 350ms var(--ease-color), transform 350ms var(--ease-spring);
 }
 @media (min-width: 1024px) {
   .q-form {
     max-width: 880px;
     margin-top: 28px;
-    border-radius: var(--radius-xl);
   }
 }
 .q-form__body {
   position: relative;
-  padding: 20px 20px 12px;
+  padding: 22px 24px 12px;
 }
 .q-form__body::before {
   display: none !important;
 }
 .q-form--focused {
-  border-color: var(--border-accent);
-  box-shadow: 0 16px 40px rgba(2, 132, 199, 0.12), 0 0 0 3px var(--accent-glow);
+  border-color: var(--border-glow);
+  box-shadow: var(--shadow-float), 0 0 0 3px var(--accent-glow), 0 0 44px var(--accent-dim);
+  transform: translateY(-2px);
 }
 @media (min-width: 1024px) {
   .q-form__body { padding: 24px 28px 16px; }
@@ -2850,24 +2894,23 @@ p {
   font-weight: 500;
 }
 
-/* Answer-mode toggle: a solid sliding pill that glides between Fast / Explain. */
+/* Answer-mode toggle: a sliding gradient pill that glides between Fast / Explain. */
 .mode-glider {
   position: relative;
   display: inline-flex;
-  padding: 3px;
+  padding: 4px;
   gap: 0;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-subtle);
-  background: var(--bg-surface);
+  border-radius: var(--radius-pill);
+  background: var(--bg-solid);
 }
 .mode-glider__pill {
   position: absolute;
-  top: 3px;
-  bottom: 3px;
-  left: 3px;
-  border-radius: var(--radius-sm);
-  background: var(--accent);
-  box-shadow: var(--shadow-sm);
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-gradient);
+  box-shadow: var(--shadow-glow-accent);
   transition: transform 300ms var(--ease-spring);
   will-change: transform;
 }
@@ -2890,8 +2933,7 @@ p {
 .mode-glider__option--active { color: var(--on-accent); }
 
 .q-form__actions {
-  border-top: 1px solid var(--border-subtle);
-  padding: 20px 24px;
+  padding: 6px 24px 22px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -2899,7 +2941,7 @@ p {
 }
 @media (min-width: 1024px) {
   .q-form__actions {
-    padding: 24px 48px;
+    padding: 8px 32px 26px;
   }
 }
 .q-form__actions-right { display: flex; align-items: center; gap: 10px; }
@@ -2930,22 +2972,232 @@ p {
 }
 
 
-/* ── Part card hover lift ── the lesson part article gently rises and gains
-   an accent halo on hover/focus-within. Kept separate from the performance
-   .part-card containment rule so both apply cleanly. */
+/* ═══════════════════════════════════════════════════════════════════════════
+   Part card — a lesson part as a fluid glass panel, not a boxed template.
+   Structure: ghost numeral → meta strip → display title → intent line →
+   prose → action zone. One accent, generous air, frost for depth.
+   ═══════════════════════════════════════════════════════════════════════════ */
 .part-card {
+  margin-top: var(--space-xl);
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-2xl);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-glass);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  box-shadow: var(--shadow-float);
+  padding: clamp(28px, 6vw, 52px);
   transition: transform 500ms var(--ease-spring),
               border-color 400ms var(--ease-color),
               box-shadow 500ms var(--ease-spring);
 }
 .part-card:hover {
-  transform: translateY(-4px) scale(1.005);
-  border-color: var(--border-accent) !important;
-  box-shadow: var(--shadow-lg), var(--glass-edge), 0 0 0 4px var(--accent-glow) !important;
+  transform: translateY(-3px);
+  border-color: var(--border-glow);
 }
 .part-card:focus-within {
-  border-color: var(--border-accent) !important;
-  box-shadow: var(--shadow-lg), var(--glass-edge), 0 0 0 4px var(--accent-glow) !important;
+  border-color: var(--border-glow);
+}
+
+/* Ghost numeral — oversized, clipped, purely atmospheric. */
+.part-card__num {
+  position: absolute;
+  top: -14px;
+  right: 6px;
+  font-family: var(--font-display);
+  font-size: clamp(96px, 18vw, 160px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.06em;
+  color: transparent;
+  -webkit-text-stroke: 1.5px color-mix(in srgb, var(--accent) 22%, transparent);
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+}
+.part-card > * { position: relative; z-index: 1; }
+.part-card > .part-card__num { z-index: 0; }
+
+.part-card__meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.part-card__meta-left,
+.part-card__meta-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.part-card__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+.part-card__tag--subject {
+  letter-spacing: 0.02em;
+  text-transform: none;
+  font-weight: 600;
+  color: var(--part-subject, var(--accent));
+  background: color-mix(in srgb, var(--part-subject, var(--accent)) 12%, transparent);
+}
+.part-card__tag-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+.part-card__tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--bg-solid);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: color var(--dur-base) var(--ease-color),
+              background var(--dur-base) var(--ease-color),
+              transform 300ms var(--ease-spring);
+}
+.part-card__tool:hover {
+  color: var(--accent);
+  background: var(--accent-dim);
+  transform: translateY(-1px);
+}
+.part-card__tool:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.part-card__tool.is-active {
+  color: var(--accent);
+}
+
+.part-card__title {
+  margin: 22px 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(24px, 4.5vw, 32px);
+  font-weight: 700;
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-snug);
+}
+
+/* Intent line — replaces the boxed TL;DR banner: one quiet gradient tick
+   plus a sentence about the part's job. Boundary-free. */
+.part-card__intent {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-top: 14px;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+.part-card__intent::before {
+  content: "";
+  align-self: stretch;
+  width: 3px;
+  border-radius: 999px;
+  background: var(--accent-gradient);
+  flex-shrink: 0;
+}
+
+.part-card__prose {
+  margin-top: var(--space-base);
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  line-height: var(--leading-relaxed);
+  max-width: 100%;
+  font-family: var(--font-lora);
+}
+
+.part-card__sources {
+  margin-top: var(--space-base);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.part-card__footer {
+  margin-top: var(--space-breath);
+}
+.part-card__reading {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.part-card__reading-track {
+  height: 3px;
+  width: 100%;
+  border-radius: 999px;
+  background: var(--border-subtle);
+  overflow: hidden;
+}
+.part-card__reading-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent-gradient);
+  transition: width 100ms linear;
+}
+.part-card__skip {
+  align-self: flex-end;
+  font-size: var(--text-sm);
+}
+
+/* Locked state — a frosted veil with one floating capsule. */
+.part-card__veil {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--surface-veil);
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  border-radius: inherit;
+}
+.part-card__lock {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 26px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-glass-strong);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-float);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-align: left;
+}
+.part-card__lock svg {
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+.part-card__lock strong {
+  display: block;
+  color: var(--text-primary);
+  font-size: var(--text-base);
+  font-weight: 700;
 }
 
 /* ── Error state ── centered, calm failure UI with clear next steps. */
@@ -3065,9 +3317,9 @@ p {
 }
 .loading-cinematic__progress {
   width: 100%;
-  height: 12px;
+  height: 4px;
   border-radius: 999px;
-  background: var(--accent-dim);
+  background: var(--border-subtle);
   overflow: hidden;
   position: relative;
 }
@@ -3077,24 +3329,24 @@ p {
 .loading-cinematic__progress-bar {
   height: 100%;
   border-radius: 999px;
-  background: var(--accent);
+  background: var(--accent-gradient);
   transition: width 200ms linear;
   position: relative;
   z-index: 1;
 }
 .loading-cinematic__percent {
-  margin-top: 12px;
-  color: var(--accent);
-  font-size: 16px;
-  font-weight: 700;
+  margin-top: 10px;
+  color: var(--text-tertiary);
+  font-size: 13px;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 .loading-cinematic__steps {
   list-style: none;
   padding: 0;
-  margin: 24px auto 0;
+  margin: 28px auto 0;
   text-align: left;
-  max-width: 340px;
+  max-width: 320px;
   display: grid;
   gap: 12px;
 }
@@ -3102,46 +3354,95 @@ p {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: var(--text-base);
-  font-family: var(--font-lora);
-  font-weight: 400;
+  font-size: var(--text-sm);
+  font-weight: 500;
   transition: all 300ms ease;
 }
 .loading-cinematic__step.is-done {
   color: var(--text-primary);
-  font-weight: 600;
 }
 .loading-cinematic__step.is-active {
   color: var(--accent);
+  font-weight: 600;
 }
 .loading-cinematic__step.is-pending {
   color: var(--text-secondary);
-  opacity: 0.4;
+  opacity: 0.35;
 }
 .loading-cinematic__step-marker {
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-md);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
   flex-shrink: 0;
-  font-size: 14px;
+  font-size: 12px;
 }
 .loading-cinematic__step-marker.is-done {
   border: none;
-  background: var(--accent);
-  color: var(--on-accent);
+  background: var(--accent-dim);
+  color: var(--accent);
 }
 .loading-cinematic__step-marker.is-active {
-  border: 2px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  border: none;
   background: transparent;
+}
+/* The three parts materializing — quiet frosted capsules that light up as
+   generation reaches them. Replaces the boxed skeleton-card deck. */
+.loading-cinematic__parts {
+  margin: 28px auto 0;
+  width: 100%;
+  max-width: 460px;
+  display: flex;
+  gap: 10px;
+}
+.loading-cinematic__part {
+  flex: 1 1 0%;
+  min-width: 0;
+  padding: 12px 8px;
+  border-radius: var(--radius-lg);
+  background: var(--surface-glass);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text-tertiary);
+  opacity: 0.45;
+  transition: opacity 400ms ease, border-color 400ms ease, color 400ms ease, transform 500ms var(--ease-spring);
+}
+.loading-cinematic__part.is-building {
+  opacity: 1;
+  color: var(--text-secondary);
+  border-color: var(--border-glow);
+  transform: translateY(-2px);
+}
+.loading-cinematic__part.is-ready {
+  opacity: 1;
+  color: var(--correct);
+  border-color: color-mix(in srgb, var(--correct) 35%, transparent);
+}
+.loading-cinematic__part-bar {
+  width: 70%;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--border-subtle);
+  overflow: hidden;
+}
+.loading-cinematic__part-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent-gradient);
+  transition: width 300ms ease;
+}
+.loading-cinematic__part.is-ready .loading-cinematic__part-bar > span {
+  background: var(--correct);
 }
 .loading-cinematic__fact {
   margin-top: 32px;
-  padding: 14px 20px;
-  border-radius: var(--radius-lg);
-  border: 1px solid color-mix(in srgb, var(--accent) 12%, transparent);
-  background: color-mix(in srgb, var(--accent) 3%, transparent);
   animation: fadeUp 500ms var(--ease-reveal);
 }
 .loading-cinematic__fact-text {
@@ -3150,6 +3451,7 @@ p {
   font-size: 14px;
   line-height: 1.6;
   font-family: var(--font-lora);
+  font-style: italic;
 }
 .loading-cinematic__fact-star {
   color: var(--accent);
@@ -3167,7 +3469,7 @@ p {
 .loading-cinematic__cancel {
   margin-top: var(--space-xl);
   padding: 14px 28px;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-pill);
   border: 1px solid var(--border-default);
   background: transparent;
   color: var(--text-secondary);
@@ -3185,14 +3487,15 @@ p {
   transform: scale(1.03);
 }
 
-/* ── Quiz sheet ── bottom-sheet modal for lesson quizzes. */
+/* ── Quiz sheet ── frosted floating sheet. Bottom sheet on phones; a
+   centered floating panel on larger screens. Same glass DNA as part cards. */
 .quiz-sheet {
   position: fixed;
   inset: 0;
   z-index: 90;
   background: var(--scrim, rgba(0, 0, 0, 0.7));
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
 }
 .quiz-sheet__panel {
   position: fixed;
@@ -3201,10 +3504,34 @@ p {
   bottom: 0;
   max-height: 90vh;
   overflow-y: auto;
-  background: var(--bg-card);
+  background: var(--surface-glass-strong);
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  border: 1px solid var(--border-subtle);
+  border-bottom: none;
   border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
-  padding: 0 32px 56px;
-  box-shadow: var(--shadow-lg), var(--glass-edge);
+  padding: 0 clamp(20px, 5vw, 40px) 48px;
+  box-shadow: var(--shadow-float);
+}
+@media (min-width: 720px) {
+  .quiz-sheet {
+    display: grid;
+    place-items: center;
+    padding: 32px;
+  }
+  .quiz-sheet__panel {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    max-width: 640px;
+    max-height: min(84vh, 760px);
+    border-radius: var(--radius-2xl);
+    border-bottom: 1px solid var(--border-subtle);
+    animation: fadeUp 400ms var(--ease-reveal) both;
+  }
+  .quiz-sheet__handle {
+    visibility: hidden;
+  }
 }
 .quiz-sheet__accent {
   position: absolute;
@@ -3212,23 +3539,23 @@ p {
   left: 0;
   right: 0;
   height: 3px;
-  background: var(--accent);
+  background: var(--accent-gradient);
   border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
 }
 .quiz-sheet__handle {
-  width: 48px;
-  height: 5px;
+  width: 44px;
+  height: 4px;
   border-radius: 3px;
   background: var(--border-default);
   margin: 14px auto 20px;
 }
 .quiz-sheet__close {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  background: transparent;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
+  top: 18px;
+  right: 18px;
+  background: var(--bg-solid);
+  border: none;
+  border-radius: 50%;
   min-width: 44px;
   min-height: 44px;
   display: inline-flex;
@@ -3237,39 +3564,35 @@ p {
   color: var(--text-secondary);
   cursor: pointer;
   font-size: 14px;
-  transition: transform 500ms var(--ease-spring), border-color 300ms var(--ease-color), color 300ms var(--ease-color);
+  transition: transform 400ms var(--ease-spring), background 300ms var(--ease-color), color 300ms var(--ease-color);
 }
 .quiz-sheet__close:hover,
 .quiz-sheet__close:focus-visible {
-  border-color: var(--border-accent);
+  background: var(--accent-dim);
   color: var(--accent);
-  transform: scale(1.08);
+  transform: scale(1.06);
 }
 .quiz-sheet__title {
   margin: 0;
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 20px;
-  background: var(--accent);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  font-size: 22px;
+  letter-spacing: var(--tracking-tight);
+  color: var(--text-primary);
 }
 .quiz-sheet__subtitle {
-  margin-top: 8px;
-  margin-bottom: 20px;
+  margin-top: 6px;
+  margin-bottom: 24px;
   font-size: 13px;
   color: var(--text-secondary);
 }
 .quiz-sheet__divider {
-  border-bottom: 1px solid var(--border-subtle);
-  margin-bottom: 20px;
+  display: none;
 }
 .quiz-sheet__status {
   margin-bottom: 16px;
-  padding: 12px 16px;
+  padding: 12px 18px;
   border-radius: var(--radius-lg);
-  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
   background: var(--accent-dim);
   color: var(--accent);
   font-size: 13px;
@@ -3278,73 +3601,102 @@ p {
   align-items: center;
   gap: 10px;
 }
+.quiz-sheet__reread {
+  display: block;
+  margin: 4px auto 0;
+  min-height: 44px;
+  padding: 10px 16px;
+  font-size: 14px;
+  color: var(--accent);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 3px;
+}
 .quiz-sheet__action {
   margin-top: 28px;
   width: 100%;
-  border-radius: var(--radius-lg);
-  padding: 18px;
-  border: 1.5px solid var(--border-default);
+  border-radius: var(--radius-pill);
+  padding: 16px;
+  border: 1px solid var(--border-default);
   background: transparent;
   color: var(--text-primary);
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  min-height: 50px;
-  transition: transform 500ms var(--ease-spring), border-color 300ms var(--ease-color), color 300ms var(--ease-color), box-shadow 300ms var(--ease-spring);
+  min-height: 52px;
+  transition: transform 400ms var(--ease-spring), border-color 300ms var(--ease-color), color 300ms var(--ease-color), box-shadow 300ms var(--ease-spring), background 300ms var(--ease-color);
 }
 .quiz-sheet__action:hover,
 .quiz-sheet__action:focus-visible {
   border-color: var(--border-accent);
   color: var(--accent);
+  background: var(--accent-dim);
 }
 .quiz-sheet__action.is-success {
   border: none;
-  background: var(--accent);
-  color: white;
+  background: var(--accent-gradient);
+  color: var(--on-accent);
+  box-shadow: var(--shadow-glow-accent);
 }
 .quiz-sheet__action.is-success:hover,
 .quiz-sheet__action.is-success:focus-visible {
-  transform: scale(1.03);
-  box-shadow: var(--shadow-lg), var(--glass-edge);
+  transform: translateY(-2px);
+  filter: brightness(1.06);
+  box-shadow: var(--shadow-float), var(--shadow-glow-accent);
 }
 
-/* ── Quiz question ── option buttons, badges, and explanation. */
+/* ── Quiz question ── option rows, letter chips, explanation. */
 .quiz-question__meta {
   margin: 0 0 8px;
   font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--text-tertiary);
-  font-weight: 500;
 }
 .quiz-question__text {
-  margin: 0 0 16px;
-  font-size: 16px;
+  margin: 0 0 18px;
+  font-size: 17px;
   font-weight: 600;
+  line-height: var(--leading-snug);
   color: var(--text-primary);
 }
 .quiz-question__options {
   display: grid;
-  gap: 8px;
+  gap: 10px;
 }
 .quiz-question__option {
   width: 100%;
-  min-height: 44px;
+  min-height: 52px;
   text-align: left;
-  border-radius: var(--radius-md);
-  border: 1.5px solid var(--border-default);
-  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-solid);
   color: var(--text-primary);
-  padding: 14px 16px;
+  padding: 14px 18px;
   cursor: pointer;
   font-size: 14px;
-  transition: all 150ms var(--ease-color);
+  line-height: 1.45;
+  transition: border-color 150ms var(--ease-color),
+              background 150ms var(--ease-color),
+              box-shadow 200ms var(--ease-color),
+              transform 250ms var(--ease-spring);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 .quiz-question__option:hover:not(:disabled),
 .quiz-question__option:focus-visible:not(:disabled) {
   border-color: var(--border-accent);
+  background: var(--accent-dim);
   box-shadow: 0 0 0 3px var(--accent-glow);
+  transform: translateY(-1px);
+}
+.quiz-question__option:active:not(:disabled) {
+  transform: scale(0.99);
 }
 .quiz-question__option:disabled {
   cursor: default;
@@ -3360,12 +3712,13 @@ p {
 .quiz-question__badge {
   display: inline-grid;
   place-items: center;
-  width: 24px;
-  height: 24px;
-  border-radius: var(--radius-sm);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
   font-weight: 700;
   font-size: 12px;
   flex-shrink: 0;
+  transition: background 150ms var(--ease-color), color 150ms var(--ease-color);
 }
 .quiz-question__badge.is-correct {
   background: var(--correct);
@@ -3376,58 +3729,37 @@ p {
   color: white;
 }
 .quiz-question__badge.is-default {
-  background: var(--border-default);
+  background: var(--bg-card-hover);
   color: var(--text-secondary);
 }
 .quiz-question__explanation {
-  margin-top: 8px;
-  padding: 12px 16px;
-  border-radius: var(--radius-md);
-  border-left: 3px solid var(--accent);
-  background: var(--bg-primary);
+  margin-top: 12px;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 4px 2px;
   color: var(--text-secondary);
   font-size: 13px;
+  line-height: 1.6;
   font-family: var(--font-lora);
   font-style: italic;
 }
-.quiz-question__explanation.is-correct {
-  border-left-color: var(--correct);
-}
-.quiz-question__explanation.is-wrong {
-  border-left-color: var(--wrong);
-}
-
-/* ── Gen Z & Gen Alpha Kinetic UI Utilities ── */
-.tldr-banner {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: var(--accent-dim);
-  border: 1px solid var(--border-glow);
-  padding: 10px 14px;
-  border-radius: var(--radius-md);
-  margin-bottom: 16px;
-  font-size: 13px;
-  color: var(--text-primary);
-  font-weight: 500;
-  line-height: 1.4;
-}
-
-.tldr-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+.quiz-question__explanation::before {
+  content: "";
+  align-self: stretch;
+  width: 3px;
+  border-radius: 999px;
   background: var(--accent);
-  color: var(--on-accent);
-  font-size: 11px;
-  font-weight: 800;
-  padding: 3px 8px;
-  border-radius: 12px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
   flex-shrink: 0;
 }
+.quiz-question__explanation.is-correct::before {
+  background: var(--correct);
+}
+.quiz-question__explanation.is-wrong::before {
+  background: var(--wrong);
+}
 
+/* ── Kinetic UI utilities ── */
 .visual-waveform {
   display: inline-flex;
   align-items: flex-end;
@@ -3490,8 +3822,10 @@ p {
   padding: 24px clamp(16px, 4vw, 32px) 28px;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-2xl);
-  background: var(--bg-card);
-  box-shadow: var(--glass-edge);
+  background: var(--surface-glass);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  box-shadow: var(--shadow-float);
 }
 .flashcards__head {
   display: flex;
@@ -3780,6 +4114,303 @@ p {
   100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0); }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   Learn top bar — the compact lesson header under the navbar. One quiet line:
+   mode pill + question, no boxed chrome.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.learn-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--bg-glass);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border-bottom: 1px solid var(--border-subtle);
+}
+.learn-topbar__row {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 0 clamp(16px, 4vw, 48px) 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.learn-topbar__mode {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  background: var(--accent-dim);
+  flex-shrink: 0;
+}
+.learn-topbar__question {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: var(--tracking-tight);
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Follow-up bar — same prompt-surface DNA as the homepage command bar.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.followup {
+  margin-top: var(--space-lg);
+  border-radius: var(--radius-2xl);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-glass);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  box-shadow: var(--shadow-float);
+  padding: 24px clamp(20px, 4vw, 28px);
+  transition: border-color 250ms var(--ease-color), box-shadow 350ms var(--ease-color);
+}
+.followup:focus-within {
+  border-color: var(--border-glow);
+  box-shadow: var(--shadow-float), 0 0 0 3px var(--accent-glow);
+}
+.followup__label {
+  margin: 0 0 12px;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+.followup__textarea {
+  width: 100%;
+  min-height: 80px;
+  resize: vertical;
+  border: none;
+  outline: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-primary);
+  padding: 0;
+  font-family: var(--font-inter), sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.followup__listening {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--accent);
+  font-style: italic;
+}
+.followup__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Completion — the journey's landing moment. Emerald-tinted glass, gradient
+   score ring, capsule actions.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.completion {
+  margin-top: 32px;
+  border-radius: var(--radius-2xl);
+  border: 1px solid color-mix(in srgb, var(--correct) 22%, transparent);
+  background:
+    linear-gradient(180deg, var(--correct-bg), transparent 60%),
+    var(--surface-glass);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  padding: clamp(28px, 5vw, 48px);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-float);
+}
+.completion__hero {
+  display: flex;
+  align-items: center;
+  gap: var(--space-breath);
+  flex-wrap: wrap;
+}
+.completion__ring {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  flex-shrink: 0;
+}
+.completion__ring-score {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--correct);
+  font-variant-numeric: tabular-nums;
+}
+.completion__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(26px, 5vw, 32px);
+  font-weight: 800;
+  letter-spacing: var(--tracking-tight);
+  color: var(--text-primary);
+}
+.completion__subtitle {
+  margin-top: 6px;
+  color: var(--text-secondary);
+  font-size: 15px;
+  line-height: 1.6;
+}
+.completion__subtitle strong {
+  color: var(--correct);
+}
+.completion__section-label {
+  margin: var(--space-lg) 0 10px;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-tertiary);
+}
+.completion__suggests {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.completion__actions {
+  margin-top: var(--space-lg);
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+/* Suggestion pill — tap-to-fill follow-up ideas. Shared voice with .chip. */
+.suggest-pill {
+  padding: 10px 18px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-solid);
+  color: var(--text-primary);
+  font-size: 13px;
+  cursor: pointer;
+  text-align: left;
+  min-height: 44px;
+  transition: border-color 200ms var(--ease-color),
+              background 200ms var(--ease-color),
+              transform 300ms var(--ease-spring);
+}
+.suggest-pill:hover {
+  border-color: var(--border-accent);
+  background: var(--accent-dim);
+  transform: translateY(-1px);
+}
+.suggest-pill:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Home strip — resume capsule + suggestion duo.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.resume-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: 460px;
+  width: 100%;
+  text-align: left;
+  padding: 14px 22px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-glass);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  box-shadow: var(--shadow-md);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: border-color 250ms var(--ease-color),
+              transform 350ms var(--ease-spring),
+              box-shadow 350ms var(--ease-spring);
+}
+.resume-card:hover {
+  border-color: var(--border-glow);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-float);
+}
+.resume-card:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-md), 0 0 0 3px var(--accent-glow);
+}
+.resume-card__icon {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--accent-dim);
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.resume-card__text {
+  flex: 1;
+  min-width: 0;
+}
+.resume-card__kicker {
+  display: block;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-weight: 600;
+}
+.resume-card__question {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.resume-card__cta {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.suggest-duo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+}
+.suggest-duo__pick {
+  font-size: 12px;
+  color: var(--accent);
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+.suggest-duo__label {
+  color: var(--text-tertiary);
+  font-weight: 500;
+  margin-right: 4px;
+}
+.suggest-duo__shuffle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+  min-width: 44px;
+  min-height: 36px;
+  flex-shrink: 0;
+  justify-content: center;
+}
+
 /* ── Respect reduced motion for the new component system ── */
 @media (prefers-reduced-motion: reduce) {
   .btn-primary,
@@ -3790,6 +4421,14 @@ p {
   .chip,
   .rl-card,
   .stat-tile,
+  .part-cta,
+  .part-done-bar,
+  .part-card,
+  .part-card__tool,
+  .quiz-question__option,
+  .suggest-pill,
+  .resume-card,
+  .journey-rail__node,
   .scroll-top {
     transition-duration: 0.01ms !important;
   }
@@ -3799,6 +4438,13 @@ p {
   .nav-link:hover,
   .chip:hover,
   .rl-card:hover,
+  .part-cta:hover,
+  .part-done-bar:hover,
+  .part-card:hover,
+  .part-card__tool:hover,
+  .quiz-question__option:hover,
+  .suggest-pill:hover,
+  .resume-card:hover,
   .scroll-top:hover {
     transform: none !important;
   }

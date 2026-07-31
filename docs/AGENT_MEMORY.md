@@ -129,7 +129,9 @@ Available component classes (already implemented — use them):
 - Headers: `.section-header`, `.section-overline`, `.section-header__kanji`,
   `.section-header__title`, `.section-header__subtitle`
 - Cards: `.rl-card`, `.stat-tile`
-- Learning: `.part-card`, `.part-cta`, `.part-done-bar`, `.progress-hub`
+- Learning: `.part-card` (+ `.part-card__num/meta/tag/tool/title/intent/prose/footer/reading-*/veil/lock`),
+  `.part-cta`, `.part-done-bar`, `.journey-rail` (+ `__step`, `__node`, `__connector`, `--solo`),
+  `.learn-topbar`, `.followup`, `.completion` (+ `.suggest-pill`), `.progress-hub`
 - Quiz: `.quiz-sheet`, `.quiz-sheet__panel`, `.quiz-sheet__close`, `.quiz-sheet__action`,
   `.quiz-question`, `.quiz-question__option`, `.quiz-question__badge`, `.quiz-question__explanation`
 - Loading / error: `.loading-cinematic`, `.loading-cinematic__progress`, `.loading-cinematic__steps`,
@@ -454,6 +456,21 @@ this protocol. No exceptions.**
     `public/manifest.json` stale brand hex `#0D1117` → `#0A0A0F`.
     `docs/REDESIGN.md` marked as historical record (canonical system is now
     Cyber Aqua, see §1).
+- 2026-07-31 — **"Liquid Flow" structural redesign of the lesson experience.**
+    The Cyber Aqua palette is unchanged; the STRUCTURE moved to one frosted-glass
+    language. New tokens: `--surface-glass`, `--surface-glass-strong`,
+    `--surface-veil`, `--shadow-float`; radius scale raised (sm 12 / md 16 /
+    lg 20 / xl 26 / 2xl 32). `PartCard` rebuilt on `.part-card__*` classes
+    (ghost numeral, capsule pills, gradient intent line — the boxed
+    `.tldr-banner`/`.tldr-pill` classes were REMOVED), `ProgressRail` moved from
+    `.learning-conduit` (removed) to `.journey-rail` (SVG nodes + gradient
+    connectors), the quiz sheet floats centered on ≥720px screens, the loader's
+    skeleton deck became `.loading-cinematic__parts` capsules, and the homepage
+    `.q-form` is a frosted command bar with a borderless action row. FollowUp/
+    Completion/resume/suggestion surfaces moved onto `.followup`,
+    `.completion`, `.suggest-pill`, `.resume-card`, `.suggest-duo`, and the
+    learn header onto `.learn-topbar` (§5 updated). Verified: tsc/lint/build
+    clean, verify:quiz + verify:achievements pass.
 
 
 

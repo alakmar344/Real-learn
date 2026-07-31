@@ -428,56 +428,13 @@ export default function LearnPage() {
           color: "var(--text-primary)",
         }}
       >
-        <div
-          style={{
-            position: "sticky",
-            top: 0,
-            zIndex: 50,
-            background: "var(--bg-glass)",
-            backdropFilter: "blur(var(--glass-blur)) saturate(var(--glass-saturate))",
-            WebkitBackdropFilter: "blur(var(--glass-blur)) saturate(var(--glass-saturate))",
-            borderBottom: "1px solid var(--border-subtle)",
-          }}
-        >
+        <div className="learn-topbar">
           <Navbar compact />
-          <div style={{ maxWidth: 920, margin: "0 auto", padding: "0 clamp(16px, 4vw, 48px) 16px" }}>
-            <span
-              style={{
-                display: "inline-block",
-                marginRight: 8,
-                padding: "2px 10px",
-                borderRadius: 999,
-                fontSize: 11,
-                fontWeight: 700,
-                letterSpacing: "0.05em",
-                color: "var(--accent)",
-                background: "var(--accent-dim)",
-                border: "1px solid var(--accent)",
-                verticalAlign: "middle",
-              }}
-            >
-              {isFastMode ? "FAST" : "GUIDED"}
-            </span>
-             <span style={{ fontSize: 13, color: "var(--text-tertiary)", marginRight: 10 }}>Understanding:</span>
+          <div className="learn-topbar__row">
+            <span className="learn-topbar__mode">{isFastMode ? "FAST" : "GUIDED"}</span>
             {/* The lesson question is the page's h1 (WCAG 1.3.1/2.4.6) —
                 visually styled as the compact header line it always was. */}
-            <h1
-              style={{
-                fontFamily: "var(--font-display)",
-                fontStyle: "italic",
-                fontWeight: 600,
-                fontSize: 15,
-                color: "var(--accent)",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                display: "inline-block",
-                maxWidth: "100%",
-                verticalAlign: "bottom",
-                margin: 0,
-              }}
-              title={lesson.question ?? lesson.topic ?? ""}
-            >
+            <h1 className="learn-topbar__question" title={lesson.question ?? lesson.topic ?? ""}>
               {lesson.question ?? lesson.topic ?? ""}
             </h1>
           </div>

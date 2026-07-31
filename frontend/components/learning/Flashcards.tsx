@@ -118,9 +118,7 @@ export default function Flashcards({ lesson }: Props) {
   return (
     <section className="flashcards" aria-label="Flashcards for this lesson">
       <div className="flashcards__head">
-        <h2 className="flashcards__title">
-          <span aria-hidden="true">🃏</span> Flashcards
-        </h2>
+        <h2 className="flashcards__title">Flashcards</h2>
         <div className="flashcards__head-right">
           <span className="flashcards__meta" aria-live="polite">
             {allSeen ? "Deck done — nice recall ✦" : `${seen.size}/${cards.length} flipped`}
