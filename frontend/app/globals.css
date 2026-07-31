@@ -4411,6 +4411,118 @@ p {
   justify-content: center;
 }
 
+
+/* ── 2026 Liquid Flow Paradigm Utility Classes ──────────────────────── */
+.hero-glass-card {
+  background: var(--surface-glass);
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-float);
+  transition: border-color 300ms var(--ease-color), box-shadow 300ms var(--ease-reveal);
+}
+.hero-glass-card:hover {
+  border-color: var(--border-accent);
+  box-shadow: 0 16px 40px -12px rgba(6, 182, 212, 0.15);
+}
+
+.stat-tile-2026 {
+  background: var(--surface-glass);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: transform 300ms var(--ease-spring), border-color 300ms var(--ease-color);
+}
+.stat-tile-2026:hover {
+  transform: translateY(-3px);
+  border-color: var(--border-accent);
+}
+.stat-tile-2026__value {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+.stat-tile-2026__value--accent {
+  color: var(--accent);
+}
+.stat-tile-2026__label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+}
+
+.progress-hero-card {
+  background: var(--surface-glass-strong);
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-2xl);
+  padding: clamp(20px, 4vw, 32px);
+  box-shadow: var(--shadow-float);
+  transition: border-color 300ms var(--ease-color);
+}
+.progress-hero-card:hover {
+  border-color: var(--border-accent);
+}
+
+.settings-panel-glass {
+  background: var(--surface-glass);
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: clamp(20px, 3vw, 28px);
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 300ms var(--ease-color), box-shadow 300ms var(--ease-reveal);
+}
+.settings-panel-glass:hover {
+  border-color: var(--border-default);
+  box-shadow: var(--shadow-md);
+}
+
+.modal-glass-surface {
+  background: var(--bg-card);
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-xl);
+}
+
+.not-found-canvas {
+  background: var(--surface-glass-strong);
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-float);
+  padding: clamp(32px, 6vw, 56px) clamp(24px, 4vw, 40px);
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+}
+
+.auth-glass-card {
+  background: var(--surface-glass-strong);
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-float);
+  padding: 12px;
+}
+
 /* ── Respect reduced motion for the new component system ── */
 @media (prefers-reduced-motion: reduce) {
   .btn-primary,
@@ -4421,6 +4533,10 @@ p {
   .chip,
   .rl-card,
   .stat-tile,
+  .stat-tile-2026,
+  .hero-glass-card,
+  .progress-hero-card,
+  .settings-panel-glass,
   .part-cta,
   .part-done-bar,
   .part-card,
@@ -4438,6 +4554,9 @@ p {
   .nav-link:hover,
   .chip:hover,
   .rl-card:hover,
+  .stat-tile-2026:hover,
+  .hero-glass-card:hover,
+  .progress-hero-card:hover,
   .part-cta:hover,
   .part-done-bar:hover,
   .part-card:hover,
@@ -4449,4 +4568,5 @@ p {
     transform: none !important;
   }
 }
+
 

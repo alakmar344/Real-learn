@@ -97,13 +97,7 @@ export default function HomePage() {
   return (
     <>
       <LiveRegion />
-      <main
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
+      <main className="hero-page-wrapper" style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
         <Navbar />
 
         <section className="hero">
@@ -128,7 +122,7 @@ export default function HomePage() {
               <QuestionInput question={question} setQuestion={setQuestion} onSubmit={submit} />
             </div>
 
-            <div className="hero__content" style={{ marginTop: 24 }}>
+            <div className="hero__content hero-glass-card" style={{ marginTop: 28, padding: "20px 24px" }}>
               <HomeStats onStartTopic={(topic) => submit(topic)} />
             </div>
           </div>
