@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import { useAuth } from "@clerk/nextjs";
 import { useLessonStore } from "@/store/lessonStore";
 import { useSavedJourneysStore } from "@/store/savedJourneysStore";
+import { usePreferenceStore } from "@/store/preferenceStore";
 import { useLesson } from "@/hooks/useLesson";
 import { getArchivedLesson } from "@/lib/lessonArchive";
 import { useMounted } from "@/hooks/useMounted";
@@ -15,10 +16,6 @@ import { SavedJourney } from "@/types";
 // Lazy-load modals — they are only needed when the user clicks to open them.
 // This removes both components (and their deps, e.g. focus-trap hooks) from
 // the initial JS bundle, cutting parse/compile time on first paint.
-const ThemeModal = dynamic(
-  () => import("@/components/shared/ThemeModal"),
-  { ssr: false }
-);
 const ConfirmModal = dynamic(
   () => import("@/components/shared/ConfirmModal"),
   { ssr: false }
@@ -41,8 +38,9 @@ export default function Sidebar({ open, onClose }: Props) {
     }))
   );
   const { generateLesson } = useLesson();
+  const theme = usePreferenceStore((s) => s.theme);
+  const setTheme = usePreferenceStore((s) => s.setTheme);
 
-  const [themeOpen, setThemeOpen] = useState(false);
   const [journeyToRemove, setJourneyToRemove] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
@@ -222,11 +220,14 @@ export default function Sidebar({ open, onClose }: Props) {
         <div className="app-sidebar__foot">
           <button
             type="button"
-            onClick={() => setThemeOpen(true)}
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            aria-pressed={theme === "light"}
             className="btn-ghost app-sidebar__foot-btn"
           >
-            <span>🎨 Theme</span>
-            <span className="app-sidebar__foot-note">Open</span>
+            <span>{theme === "dark" ? "🌙 Theme" : "☀️ Theme"}</span>
+            <span className="app-sidebar__foot-note">
+              {theme === "dark" ? "Switch to light" : "Switch to dark"}
+            </span>
           </button>
 
           {/* Settings */}
@@ -242,8 +243,6 @@ export default function Sidebar({ open, onClose }: Props) {
           )}
         </div>
       </aside>
-
-      <ThemeModal open={themeOpen} onClose={() => setThemeOpen(false)} />
 
       <ConfirmModal
         open={journeyToRemove !== null}
