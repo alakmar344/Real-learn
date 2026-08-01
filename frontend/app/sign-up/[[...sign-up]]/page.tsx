@@ -4,15 +4,7 @@ import { SignUp } from "@clerk/nextjs";
 
 export default function SignUpPage() {
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 24,
-      }}
-    >
+    <main className="auth-canvas">
       <div className="auth-glass-card animate-fade-up">
         <SignUp
           path="/sign-up"

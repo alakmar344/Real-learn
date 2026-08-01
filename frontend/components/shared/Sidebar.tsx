@@ -99,43 +99,22 @@ export default function Sidebar({ open, onClose }: Props) {
         className={`app-sidebar${open ? " open" : ""}`}
         aria-label="Sidebar"
       >
-        <div
-          style={{
-            padding: "20px 20px 16px",
-            borderBottom: "1px solid var(--border-subtle)",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              marginBottom: 18,
-            }}
-          >
-            <svg viewBox="0 0 120 40" fill="none" aria-hidden="true" style={{ width: 38, height: 38, flexShrink: 0 }}>
+        <div className="app-sidebar__head">
+          <div className="app-sidebar__brand">
+            <svg viewBox="0 0 120 40" fill="none" aria-hidden="true" className="app-sidebar__brand-mark">
               <rect width="40" height="40" rx="12" fill="var(--accent)" />
               <text x="9" y="27" fontFamily="Inter, sans-serif" fontWeight="900" fontSize="17" fill="white">
                 RL
               </text>
             </svg>
-            <span
-              style={{
-                fontFamily: "var(--font-display)",
-                fontWeight: 800,
-                fontSize: 22,
-                letterSpacing: -0.5,
-              }}
-            >
-              <span style={{ color: "var(--text-primary)" }}>Real</span>
-              <span style={{ color: "var(--accent)" }}>Learn</span>
+            <span className="app-sidebar__wordmark">
+              Real<em>Learn</em>
             </span>
             <button
               type="button"
               className="app-sidebar-close btn-icon"
               aria-label="Close menu"
               onClick={onClose}
-              style={{ width: 34, height: 34, minHeight: "auto", fontSize: 14 }}
             >
               ✕
             </button>
@@ -143,37 +122,17 @@ export default function Sidebar({ open, onClose }: Props) {
           <button
             type="button"
             onClick={handleNewLesson}
-            className="btn-primary"
-            style={{ width: "100%" }}
+            className="btn-primary app-sidebar__new"
           >
             ＋ New lesson
           </button>
         </div>
 
-        <div style={{ flex: 1, overflowY: "auto", padding: "14px 14px 10px" }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "baseline",
-              justifyContent: "space-between",
-              gap: 8,
-              margin: "0 6px 10px",
-            }}
-          >
-            <p
-              style={{
-                margin: 0,
-                fontSize: 11,
-                letterSpacing: "0.12em",
-                textTransform: "uppercase",
-                color: "var(--text-tertiary)",
-                fontWeight: 600,
-              }}
-            >
-              Saved lessons
-            </p>
+        <div className="app-sidebar__scroll">
+          <div className="app-sidebar__list-head">
+            <p className="app-sidebar__list-title">Saved lessons</p>
             {mounted && journeys.length > 0 ? (
-              <span style={{ fontSize: 11, color: "var(--text-tertiary)", fontWeight: 600 }}>
+              <span className="app-sidebar__count">
                 {trimmedSearch ? `${filteredJourneys.length}/${journeys.length}` : journeys.length}
               </span>
             ) : null}
@@ -182,21 +141,14 @@ export default function Sidebar({ open, onClose }: Props) {
           {/* Search / filter — appears once there are enough lessons to be worth
               filtering. Instant, local, no network. */}
           {mounted && journeys.length > 4 ? (
-            <div style={{ position: "relative", margin: "0 6px 12px" }}>
+            <div className="sidebar-search">
               <svg
                 width="14"
                 height="14"
                 viewBox="0 0 16 16"
                 fill="none"
                 aria-hidden="true"
-                style={{
-                  position: "absolute",
-                  left: 10,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  color: "var(--text-tertiary)",
-                  pointerEvents: "none",
-                }}
+                className="sidebar-search__icon"
               >
                 <circle cx="7" cy="7" r="4.5" stroke="currentColor" strokeWidth="1.5" />
                 <path d="M10.5 10.5L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -207,38 +159,14 @@ export default function Sidebar({ open, onClose }: Props) {
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search saved lessons"
                 aria-label="Search saved lessons"
-                style={{
-                  width: "100%",
-                  boxSizing: "border-box",
-                  padding: "8px 30px 8px 30px",
-                  fontSize: 13,
-                  color: "var(--text-primary)",
-                  background: "var(--bg-surface)",
-                  border: "1px solid var(--border-subtle)",
-                  borderRadius: "var(--radius-md)",
-                  outline: "none",
-                }}
-                onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent)")}
-                onBlur={(e) => (e.currentTarget.style.borderColor = "var(--border-subtle)")}
+                className="sidebar-search__input"
               />
               {trimmedSearch ? (
                 <button
                   type="button"
                   aria-label="Clear search"
                   onClick={() => setSearch("")}
-                  style={{
-                    position: "absolute",
-                    right: 6,
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    border: "none",
-                    background: "transparent",
-                    color: "var(--text-tertiary)",
-                    cursor: "pointer",
-                    fontSize: 13,
-                    lineHeight: 1,
-                    padding: 4,
-                  }}
+                  className="sidebar-search__clear"
                 >
                   ✕
                 </button>
@@ -247,69 +175,26 @@ export default function Sidebar({ open, onClose }: Props) {
           ) : null}
 
           {(!mounted || journeys.length === 0) ? (
-            <p
-              style={{
-                margin: "10px 6px",
-                fontSize: 13,
-                color: "var(--text-tertiary)",
-                fontStyle: "italic",
-                lineHeight: 1.7,
-              }}
-            >
+            <p className="app-sidebar__empty">
               Ask a question and your lesson will be saved here automatically. You can
               return anytime to continue where you left off.
             </p>
           ) : filteredJourneys.length === 0 ? (
-            <p
-              style={{
-                margin: "10px 6px",
-                fontSize: 13,
-                color: "var(--text-tertiary)",
-                fontStyle: "italic",
-                lineHeight: 1.7,
-              }}
-            >
+            <p className="app-sidebar__empty">
               No saved lessons match “{trimmedSearch}”.
             </p>
           ) : (
-            <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 6 }}>
+            <ul className="journey-list">
               {filteredJourneys.map((journey) => (
-                <li key={journey.id} style={{ position: "relative" }}>
+                <li key={journey.id} className="journey-item">
                   <button
                     type="button"
                     onClick={() => void handleOpenJourney(journey)}
                     title={journey.question}
-                    style={{
-                      width: "100%",
-                      textAlign: "left",
-                      border: "1px solid transparent",
-                      borderRadius: "var(--radius-md)",
-                      background: "transparent",
-                      color: "var(--text-primary)",
-                      padding: "12px 38px 12px 12px",
-                      cursor: "pointer",
-                      display: "block",
-                      transition: "background var(--dur-fast) var(--ease-color)",
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-card-hover)")}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                    onFocus={(e) => (e.currentTarget.style.background = "var(--bg-card-hover)")}
-                    onBlur={(e) => (e.currentTarget.style.background = "transparent")}
+                    className="journey-item__open"
                   >
-                    <span
-                      style={{
-                        display: "block",
-                        fontSize: 13,
-                        fontWeight: 500,
-                        lineHeight: 1.4,
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      }}
-                    >
-                      {journey.question}
-                    </span>
-                    <span style={{ display: "block", fontSize: 11, color: "var(--text-tertiary)", marginTop: 2 }}>
+                    <span className="journey-item__q">{journey.question}</span>
+                    <span className="journey-item__meta">
                       {journey.language} · {journey.level} · {journey.totalScore}/{
                         (journey.lesson?.parts ?? []).reduce((sum, p) => sum + (p.quiz?.length ?? 2), 0) ||
                         journey.quizCount ||
@@ -324,18 +209,7 @@ export default function Sidebar({ open, onClose }: Props) {
                     type="button"
                     aria-label="Remove saved lesson"
                     onClick={() => setJourneyToRemove(journey.id)}
-                    style={{
-                      position: "absolute",
-                      top: 8,
-                      right: 6,
-                      border: "none",
-                      background: "transparent",
-                      color: "var(--text-tertiary)",
-                      cursor: "pointer",
-                      fontSize: 14,
-                      lineHeight: 1,
-                      padding: 4,
-                    }}
+                    className="journey-item__remove"
                   >
                     ✕
                   </button>
@@ -345,23 +219,14 @@ export default function Sidebar({ open, onClose }: Props) {
           )}
         </div>
 
-        <div
-          style={{
-            borderTop: "1px solid var(--border-subtle)",
-            padding: 16,
-            display: "flex",
-            flexDirection: "column",
-            gap: 10,
-          }}
-        >
+        <div className="app-sidebar__foot">
           <button
             type="button"
             onClick={() => setThemeOpen(true)}
-            className="btn-ghost"
-            style={{ width: "100%", justifyContent: "space-between", fontSize: 13 }}
+            className="btn-ghost app-sidebar__foot-btn"
           >
             <span>🎨 Theme</span>
-            <span style={{ color: "var(--accent)", fontSize: 12 }}>Open</span>
+            <span className="app-sidebar__foot-note">Open</span>
           </button>
 
           {/* Settings */}
@@ -369,11 +234,10 @@ export default function Sidebar({ open, onClose }: Props) {
             <button
               type="button"
               onClick={() => { onClose(); router.push("/settings"); }}
-              className="btn-ghost"
-              style={{ width: "100%", justifyContent: "space-between", fontSize: 13 }}
+              className="btn-ghost app-sidebar__foot-btn"
             >
               <span>⚙️ Settings</span>
-              <span style={{ color: "var(--accent)", fontSize: 12 }}>Account & data</span>
+              <span className="app-sidebar__foot-note">Account & data</span>
             </button>
           )}
         </div>

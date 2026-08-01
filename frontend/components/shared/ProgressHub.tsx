@@ -29,7 +29,7 @@ function ProgressHubImpl() {
 
   // Placeholder keeps navbar layout stable before hydration.
   if (!mounted) {
-    return <div style={{ marginLeft: "auto", width: 118, height: 34 }} aria-hidden="true" />;
+    return <div className="progress-hub-placeholder" aria-hidden="true" />;
   }
 
   const ringSize = 34;
@@ -45,25 +45,25 @@ function ProgressHubImpl() {
         aria-label={`Level ${info.level}, ${streak} day streak, daily goal ${todayCount} of ${dailyGoal}. Open progress.`}
         title="Your progress"
         className="progress-hub animate-fade-up"
-        style={{ marginLeft: "auto" }}
       >
         {/* Streak */}
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
-          <span className={streak > 0 ? "flame-flicker" : undefined} style={{ fontSize: 16, filter: streak > 0 ? "none" : "grayscale(1) opacity(0.6)" }}>
+        <span className="progress-hub__streak">
+          <span className={`progress-hub__flame${streak > 0 ? " flame-flicker" : " flame--dead"}`}>
             🔥
           </span>
-          <span style={{ fontSize: 13, fontWeight: 800, color: streak > 0 ? "var(--text-primary)" : "var(--text-tertiary)" }}>
+          <span className={`progress-hub__count${streak > 0 ? "" : " progress-hub__count--zero"}`}>
             {streak}
           </span>
         </span>
 
-        <span style={{ width: 1, height: 18, background: "var(--border-subtle)" }} aria-hidden="true" />
+        <span className="progress-hub__divider" aria-hidden="true" />
 
         {/* Level ring */}
-        <span style={{ position: "relative", width: ringSize, height: ringSize, display: "inline-block" }}>
+        <span className="progress-hub__ring">
           <svg width={ringSize} height={ringSize} viewBox={`0 0 ${ringSize} ${ringSize}`} aria-hidden="true">
             <circle cx={ringSize / 2} cy={ringSize / 2} r={r} fill="none" stroke="var(--border-subtle)" strokeWidth={3} />
             <circle
+              className="progress-hub__ring-arc"
               cx={ringSize / 2}
               cy={ringSize / 2}
               r={r}
@@ -74,33 +74,19 @@ function ProgressHubImpl() {
               strokeDasharray={c}
               strokeDashoffset={offset}
               transform={`rotate(-90 ${ringSize / 2} ${ringSize / 2})`}
-              style={{ transition: "stroke-dashoffset 700ms var(--ease-reveal)" }}
             />
           </svg>
-          <span
-            style={{
-              position: "absolute",
-              inset: 0,
-              display: "grid",
-              placeItems: "center",
-              fontSize: 12,
-              fontWeight: 800,
-              color: "var(--accent)",
-            }}
-          >
-            {info.level}
-          </span>
+          <span className="progress-hub__ring-level">{info.level}</span>
         </span>
 
         {/* Daily goal mini-progress (hidden on very small screens via title only) */}
         <span
-          className="progress-hub-daily"
-          style={{ fontSize: 11, color: todayCount >= dailyGoal ? "var(--correct)" : "var(--text-tertiary)", fontWeight: 700 }}
+          className={`progress-hub-daily progress-hub__daily${todayCount >= dailyGoal ? " progress-hub__daily--met" : ""}`}
         >
           {todayCount >= dailyGoal ? "✓ goal" : `${todayCount}/${dailyGoal}`}
         </span>
 
-        <span style={{ position: "absolute", width: 0, height: 0, overflow: "hidden" }}>{pct}%</span>
+        <span className="sr-only">{pct}%</span>
       </button>
 
       <style jsx>{`

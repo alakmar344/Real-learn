@@ -31,7 +31,7 @@ export default function HomeStats({ onStartTopic }: Props) {
 
   if (!mounted) {
     return (
-      <div style={{ marginTop: 18, display: "flex", justifyContent: "center" }}>
+      <div className="home-strip home-strip--skeleton">
         <Skeleton height={34} width={280} borderRadius={999} />
       </div>
     );
@@ -48,7 +48,7 @@ export default function HomeStats({ onStartTopic }: Props) {
   const hasActivity = xp > 0 || journeys.length > 0;
 
   return (
-    <div style={{ marginTop: 18, display: "flex", flexDirection: "column", gap: 14, alignItems: "center" }}>
+    <div className="home-strip">
       {/* The "Today's spark" chip used to live here — a second suggestion
           widget stacked directly under ExampleQuestions' suggestion chip,
           with heavily overlapping topics. One suggestion surface (next to
@@ -111,22 +111,12 @@ export default function HomeStats({ onStartTopic }: Props) {
 
       {/* Light-touch link to the full dashboard */}
       {hasActivity && (
-        <Link
-          href="/progress"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 8,
-            fontSize: 13,
-            color: "var(--text-tertiary)",
-            textDecoration: "none",
-          }}
-        >
-          <span className={streak > 0 ? "flame-flicker" : undefined} style={{ filter: streak > 0 ? "none" : "grayscale(1) opacity(0.6)" }}>🔥</span>
-          <span style={{ fontWeight: 700, color: "var(--text-secondary)" }}>{streak}</span>
+        <Link href="/progress" className="mini-progress-link">
+          <span className={streak > 0 ? "flame-flicker" : "flame--dead"}>🔥</span>
+          <span className="mini-progress-link__count">{streak}</span>
           <span>·</span>
-          <span>Level <strong style={{ color: "var(--text-secondary)" }}>{info.level}</strong></span>
-          <span style={{ color: "var(--accent)", fontWeight: 600 }}>· View progress →</span>
+          <span>Level <strong>{info.level}</strong></span>
+          <span className="mini-progress-link__cta">· View progress →</span>
         </Link>
       )}
     </div>
