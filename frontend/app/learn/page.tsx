@@ -338,9 +338,9 @@ export default function LearnPage() {
     return (
       <>
         <LiveRegion />
-        <main style={{ minHeight: "100vh", color: "var(--text-primary)" }}>
+        <main className="flow-page">
           <Navbar />
-          <div style={{ maxWidth: 920, margin: "0 auto", padding: "20px clamp(16px, 4vw, 48px) 80px", display: "flex", flexDirection: "column", gap: 16 }} aria-label="Loading lesson...">
+          <div className="learn-container learn-container--loading" aria-label="Loading lesson...">
             <Skeleton height={40} width="60%" borderRadius="8px" />
             <Skeleton height={24} width="100%" borderRadius="12px" />
             <SkeletonCard height={180} />
@@ -390,21 +390,11 @@ export default function LearnPage() {
     return (
       <>
         <LiveRegion />
-        <main style={{ minHeight: "100vh", color: "var(--text-primary)", padding: 24 }}>
+        <main className="flow-page">
           <Navbar />
-          <div style={{ maxWidth: 640, margin: "80px auto", textAlign: "center" }}>
-            <h2
-              style={{
-                fontWeight: 700,
-                marginBottom: 8,
-                fontFamily: "var(--font-display)",
-                fontStyle: "italic",
-                fontSize: 26,
-              }}
-            >
-              No lesson loaded yet
-            </h2>
-            <p style={{ color: "var(--text-secondary)", fontSize: 14, marginBottom: 24 }}>
+          <div className="learn-empty">
+            <h2 className="learn-empty__title">No lesson loaded yet</h2>
+            <p className="learn-empty__sub">
               Head back home and ask a question to start learning.
             </p>
             <button type="button" onClick={restart} className="btn-primary">
@@ -422,12 +412,7 @@ export default function LearnPage() {
     <>
       <LiveRegion />
       <ReadingProgressBar />
-      <main
-        style={{
-          minHeight: "100vh",
-          color: "var(--text-primary)",
-        }}
-      >
+      <main className="flow-page">
         <div className="learn-topbar">
           <Navbar compact />
           <div className="learn-topbar__row">
@@ -440,7 +425,7 @@ export default function LearnPage() {
           </div>
         </div>
 
-        <div style={{ maxWidth: 920, margin: "0 auto", padding: "0 clamp(16px, 4vw, 48px) 80px" }}>
+        <div className="learn-container">
           <ProgressRail unlockedPart={unlockedPart} completedParts={completedParts} totalParts={totalParts} />
 
           {lesson.parts.map((part) => (
@@ -508,8 +493,7 @@ export default function LearnPage() {
                 resetAll();
                 restart();
               }}
-              className="btn-ghost"
-              style={{ marginTop: 20 }}
+              className="btn-ghost flow-gap-lg"
             >
               Learn Something New
             </button>

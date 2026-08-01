@@ -17,7 +17,7 @@ const ActivityHeatmap = dynamic(() => import("@/components/shared/ActivityHeatma
 });
 const AchievementsGrid = dynamic(() => import("@/components/shared/AchievementsGrid"), {
   loading: () => (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: 12 }}>
+    <div className="stat-band">
       {Array.from({ length: 6 }).map((_, i) => (
         <SkeletonTile key={i} />
       ))}
@@ -26,14 +26,9 @@ const AchievementsGrid = dynamic(() => import("@/components/shared/AchievementsG
   ssr: true,
 });
 
-function Card({ children, span }: { children: React.ReactNode; span?: boolean }) {
+function Card({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <section
-      className="animate-fade-up progress-hero-card"
-      style={{
-        gridColumn: span ? "1 / -1" : "auto",
-      }}
-    >
+    <section className={`animate-fade-up progress-hero-card${className ? ` ${className}` : ""}`}>
       {children}
     </section>
   );
@@ -111,42 +106,27 @@ export default function ProgressPage() {
   };
 
   return (
-    <main style={{ minHeight: "100vh", color: "var(--text-primary)" }}>
+    <main className="flow-page">
       <Navbar />
 
-      <div style={{ maxWidth: 880, margin: "0 auto", padding: "24px 20px 56px" }}>
-        {/* Page heading */}
-        <div style={{ marginBottom: 20 }}>
-          <span className="section-overline" style={{ marginBottom: 6 }}>
-            Your Journey
+      <div className="flow-page__inner">
+        <header className="page-hero">
+          <span className="page-hero__glyph" aria-hidden="true">
+            {mounted ? info.level : "•"}
           </span>
-          <h1
-            style={{
-              margin: 0,
-              fontFamily: "var(--font-display)",
-              fontWeight: 700,
-              fontSize: "clamp(26px, 5vw, 34px)",
-              letterSpacing: "-0.02em",
-            }}
-          >
-            Your Progress
-          </h1>
-          <p style={{ margin: "6px 0 0", color: "var(--text-secondary)", fontSize: 14 }}>
-            Every quiz you pass builds this — at your own pace.
-          </p>
-        </div>
-        <div className="kusari" style={{ margin: "0 0 24px", maxWidth: 240 }} aria-hidden="true">
-          <span className="kusari__bead" />
-        </div>
+          <span className="section-overline">Your Journey</span>
+          <h1 className="page-hero__title">Progress</h1>
+          <p className="page-hero__sub">Every quiz you pass builds this — at your own pace.</p>
+        </header>
 
         {!mounted ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: 14 }} aria-label="Loading progress...">
+          <div className="flow-stack" aria-label="Loading progress...">
             <SkeletonCard height={120} />
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 14 }}>
+            <div className="duo-grid">
               <SkeletonCard height={150} />
               <SkeletonCard height={150} />
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(96px, 1fr))", gap: 10 }}>
+            <div className="stat-band">
               {Array.from({ length: 6 }).map((_, i) => (
                 <SkeletonTile key={i} />
               ))}
@@ -155,48 +135,21 @@ export default function ProgressPage() {
         ) : (
           <>
             {/* Level hero */}
-            <Card span>
-              <div style={{ display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap" }}>
-                <div
-                  className="animate-level-burst"
-                  style={{
-                    width: 74,
-                    height: 74,
-                    borderRadius: "50%",
-                    background: "var(--accent)",
-                    color: "var(--on-accent)",
-                    display: "grid",
-                    placeItems: "center",
-                    fontWeight: 800,
-                    fontSize: 30,
-                    flexShrink: 0,
-                    boxShadow: "var(--shadow-sm)",
-                  }}
-                >
-                  {info.level}
-                </div>
-                <div style={{ flex: 1, minWidth: 220 }}>
-                  <div style={{ fontSize: 22, fontWeight: 800 }}>
-                    Level {info.level} · <span style={{ color: "var(--accent)" }}>{levelTitle(info.level)}</span>
+            <Card>
+              <div className="level-hero">
+                <div className="level-orb animate-level-burst">{info.level}</div>
+                <div className="level-hero__body">
+                  <div className="level-hero__name">
+                    Level {info.level} · <em>{levelTitle(info.level)}</em>
                   </div>
-                  <div style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 8 }}>
-                    {info.totalXp.toLocaleString()} XP total
-                  </div>
-                  <div style={{ height: 12, borderRadius: 999, background: "var(--border-subtle)", overflow: "hidden" }}>
+                  <div className="level-hero__meta">{info.totalXp.toLocaleString()} XP total</div>
+                  <div className="xp-track">
                     <div
-                      className="animate-sheen"
-                      style={{
-                        position: "relative",
-                        width: `${Math.round(info.progress * 100)}%`,
-                        height: "100%",
-                        background: "var(--accent)",
-                        borderRadius: 999,
-                        transition: "width 700ms var(--ease-reveal)",
-                        overflow: "hidden",
-                      }}
+                      className="xp-track__fill animate-sheen"
+                      style={{ width: `${Math.round(info.progress * 100)}%` }}
                     />
                   </div>
-                  <div style={{ marginTop: 5, fontSize: 12, color: "var(--text-tertiary)", textAlign: "right" }}>
+                  <div className="xp-track__note">
                     {info.intoLevel} / {info.forNext} XP to Level {info.level + 1}
                   </div>
                 </div>
@@ -204,29 +157,32 @@ export default function ProgressPage() {
             </Card>
 
             {/* Two-up: streak + daily goal */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 14, marginTop: 14 }}>
+            <div className="duo-grid">
               <Card>
-                <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                <div className="streak-figure">
                   <span
-                    className={displayStreak > 0 ? "flame-flicker" : undefined}
-                    style={{ fontSize: 42, filter: displayStreak > 0 ? "none" : "grayscale(1)", lineHeight: 1 }}
+                    className={
+                      displayStreak > 0
+                        ? "streak-figure__emoji flame-flicker"
+                        : "streak-figure__emoji streak-figure__emoji--dead"
+                    }
                   >
                     🔥
                   </span>
                   <div>
-                    <div style={{ fontSize: 30, fontWeight: 800, lineHeight: 1 }}>{displayStreak}</div>
-                    <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>day streak</div>
+                    <div className="streak-figure__count">{displayStreak}</div>
+                    <div className="stat-tile-2026__label">day streak</div>
                   </div>
                 </div>
-                <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap", fontSize: 12, color: "var(--text-secondary)" }}>
-                  <span style={{ background: "var(--bg-surface)", border: "1px solid var(--border-subtle)", borderRadius: 999, padding: "4px 10px" }}>
+                <div className="pill-row">
+                  <span className="pill-stat">
                     Longest · <strong>{s.longestStreak}</strong>
                   </span>
-                  <span style={{ background: "var(--bg-surface)", border: "1px solid var(--border-subtle)", borderRadius: 999, padding: "4px 10px" }}>
+                  <span className="pill-stat">
                     Freezes · <strong>{s.streakFreezes}</strong>
                   </span>
                 </div>
-                <p style={{ margin: "12px 0 0", fontSize: 12, color: "var(--text-tertiary)", lineHeight: 1.5 }}>
+                <p className="flow-note">
                   {goalMetToday
                     ? "Today's goal is done — your streak is safe. See you tomorrow."
                     : "Complete today's daily goal to extend your streak."}
@@ -234,34 +190,25 @@ export default function ProgressPage() {
               </Card>
 
               <Card>
-                <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                <div className="streak-figure">
                   <DailyGoalRing value={todayCount} goal={s.dailyGoal} size={56} stroke={6} />
                   <div>
-                    <div style={{ fontSize: 15, fontWeight: 700 }}>Daily goal</div>
-                    <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
+                    <div className="flow-card__title flow-card__title--tight">Daily goal</div>
+                    <div className="stat-tile-2026__label">
                       {Math.min(todayCount, s.dailyGoal)}/{s.dailyGoal} parts today
                     </div>
                   </div>
                 </div>
-                <div style={{ marginTop: 14 }}>
-                  <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginBottom: 6 }}>Set your target</div>
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                <div className="flow-gap">
+                  <div className="flow-label">Set your target</div>
+                  <div className="chip-row">
                     {[1, 3, 5, 8].map((g) => (
                       <button
                         key={g}
                         type="button"
                         onClick={() => s.setDailyGoal(g)}
-                        style={{
-                          border: `1px solid ${s.dailyGoal === g ? "var(--accent)" : "var(--border-default)"}`,
-                          background: s.dailyGoal === g ? "var(--accent-dim)" : "transparent",
-                          color: s.dailyGoal === g ? "var(--accent)" : "var(--text-secondary)",
-                          borderRadius: "var(--radius-md)",
-                          padding: "6px 14px",
-                          fontSize: 13,
-                          fontWeight: 700,
-                          cursor: "pointer",
-                          minWidth: 40,
-                        }}
+                        className={`goal-chip${s.dailyGoal === g ? " goal-chip--active" : ""}`}
+                        aria-pressed={s.dailyGoal === g}
                       >
                         {g}
                       </button>
@@ -272,9 +219,9 @@ export default function ProgressPage() {
             </div>
 
             {/* Lifetime stats */}
-            <Card span>
-              <h3 style={{ margin: "0 0 12px", fontSize: 15, fontWeight: 700 }}>Lifetime stats</h3>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(96px, 1fr))", gap: 10 }}>
+            <Card className="flow-gap">
+              <h3 className="flow-card__title">Lifetime stats</h3>
+              <div className="stat-band">
                 <StatTile label="Journeys" value={s.lessonsCompleted} accent />
                 <StatTile label="Quizzes passed" value={s.partsPassed} />
                 <StatTile label="Perfect runs" value={s.perfectLessons} />
@@ -285,33 +232,22 @@ export default function ProgressPage() {
             </Card>
 
             {/* Activity */}
-            <div style={{ marginTop: 14 }} className="progress-activity">
-              <Card span>
-                <h3 style={{ margin: "0 0 12px", fontSize: 15, fontWeight: 700 }}>Activity</h3>
+            <div className="flow-gap progress-activity">
+              <Card>
+                <h3 className="flow-card__title">Activity</h3>
                 <ActivityHeatmap history={s.history} />
               </Card>
             </div>
 
-            {/* Achievements — carried on a quiet mandala-wave ground:
-                good fortune gathering, rhythm over rhythm. */}
-            <div style={{ marginTop: 14 }} className="progress-achievements pattern-seigaiha">
-              <Card span>
+            {/* Achievements */}
+            <div className="flow-gap progress-achievements pattern-seigaiha">
+              <Card>
                 <AchievementsGrid unlocked={s.badges} snapshot={snapshot} />
               </Card>
             </div>
 
-            {/* CTA */}
-            <div style={{ marginTop: 22, textAlign: "center" }}>
-              <Link
-                href="/"
-                className="btn-primary"
-                style={{
-                  display: "inline-flex",
-                  padding: "12px 26px",
-                  fontSize: 15,
-                  textDecoration: "none",
-                }}
-              >
+            <div className="flow-cta-row">
+              <Link href="/" className="btn-primary">
                 Learn something new →
               </Link>
             </div>

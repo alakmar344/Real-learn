@@ -140,6 +140,28 @@ Available component classes (already implemented — use them):
 - Decorative: `.kusari` (chain divider), `.liquid-sheen`, `.engraved`,
   `.identity-texture`, `.texture-noise`, `.texture-dots`
 - Misc: `.scroll-top`, `.hero-greeting`, `.hero-greeting-icon`, `.app-footer`
+- Page shells: `.flow-page` (+ `__inner`, `__inner--narrow`), `.page-column` (+ `--center`),
+  `.flow-stack`, `.duo-grid`, `.stat-band`, `.flow-gap`, `.flow-gap-lg`, `.auth-canvas`,
+  `.learn-container` (+ `--loading`), `.learn-empty` (+ `__title`, `__sub`)
+- Page hero: `.page-hero` (+ `__glyph` ghost glyph, `__title`, `__sub` gradient-tick subline)
+- Progress: `.level-hero` (+ `__body`, `__name`, `__meta`), `.level-orb`,
+  `.xp-track` (+ `__fill`, `__note`), `.pill-stat`, `.pill-row`, `.streak-figure`
+  (+ `__emoji`, `__emoji--dead`, `__count`), `.goal-chip` (+ `--active`), `.chip-row`,
+  `.flow-card__title` (+ `--tight`), `.flow-label`, `.flow-note`, `.flow-cta-row`
+- Settings: `.settings-back` (+ `__arrow`), `.settings-title`, `.settings-sub`,
+  `.settings-group`, `.option-stack` (+ `--loose`), `.option-row` (+ `--active`,
+  `__body`, `__title`, `__hint`, `__swatch`, `__check`), `.settings-action`
+  (+ `--danger`, `__note`), `.glass-textarea`, `.char-count`, `.fieldset-reset`,
+  `.account-row` (+ `__name`, `__hint`)
+- Sidebar: `.app-sidebar__head/brand/brand-mark/wordmark/new/scroll/list-head/list-title/count/empty/foot/foot-btn/foot-note`,
+  `.sidebar-search` (+ `__icon`, `__input`, `__clear`), `.journey-list`,
+  `.journey-item` (+ `__open`, `__q`, `__meta`, `__remove`)
+- Navbar hub / home strip: `.progress-hub__streak/flame/count/count--zero/divider/ring/ring-arc/ring-level/daily/daily--met`,
+  `.progress-hub-placeholder`, `.home-strip` (+ `--skeleton`), `.mini-progress-link`
+  (+ `__count`, `__cta`), `.flame--dead`
+- 2026 glass: `.hero-glass-card`, `.hero__panel`, `.stat-tile-2026`, `.progress-hero-card`,
+  `.settings-panel-glass`, `.modal-glass-surface`, `.not-found-canvas`,
+  `.not-found__code/title/sub/cta`, `.auth-glass-card`
 
 **Rules:**
 - New layout = add a class to `globals.css`, then use it. Do not inline a
@@ -458,6 +480,23 @@ this protocol. No exceptions.**
     Cyber Aqua, see §1).
 - 2026-07-31 — **"Liquid Flow" application-wide UI modernization.**
     Extended the hyper-modern 2026 Liquid Flow frosted-glass paradigm to every remaining page and shell surface in the application: Homepage (`app/page.tsx`, `QuestionInput.tsx`), Progress Dashboard (`app/progress/page.tsx`, `AchievementsGrid.tsx`, `DailyGoalRing.tsx`), Settings Page (`app/settings/page.tsx`), 404 Page (`app/not-found.tsx`), Sign-In/Up Pages (`app/sign-in`, `app/sign-up`), and shared Shell (`Navbar.tsx`, `Sidebar.tsx`, `Footer.tsx`). Added `.hero-glass-card`, `.stat-tile-2026`, `.progress-hero-card`, `.settings-panel-glass`, `.not-found-canvas`, and `.auth-glass-card` classes to `globals.css` (§5 updated). Preserved Cyber Aqua design rules and left all Legal pages 100% untouched. Verified: tsc/lint/build clean, verify:quiz + verify:achievements pass.
+- 2026-08-01 — **Liquid Flow deep pass on the remaining pages (inline-style
+    purge).** The 07-31 app-wide pass added glass containers but left page
+    interiors as inline-style objects; this pass moved every non-lesson,
+    non-legal surface onto design-system classes. New `globals.css` families
+    (all listed in §5): `.flow-page`/`.page-hero` page shells with ghost
+    glyphs, progress anatomy (`.level-orb`, `.xp-track`, `.goal-chip`,
+    `.pill-stat`, `.streak-figure`), settings anatomy (`.option-row` borderless
+    rows with gradient check nodes, `.settings-action`, `.glass-textarea`),
+    sidebar anatomy (`.app-sidebar__*`, `.sidebar-search`, `.journey-item` —
+    JS mouse-event hover hacks replaced with CSS states), navbar hub internals
+    (`.progress-hub__*`, `.mini-progress-link`), learn shell
+    (`.learn-container`, `.learn-empty`), `.auth-canvas`, 404 ghost numeral.
+    Rewritten: progress, settings, 404, sign-in/up, home wrapper, learn shell,
+    `Sidebar`, `HomeStats`, `ProgressHub`, `QuestionInput`. Only genuinely
+    dynamic values remain inline. Reduced-motion kill-switch extended to all
+    new interactive classes. Verified: tsc/lint/build clean, verify:quiz +
+    verify:achievements pass.
 
 
 

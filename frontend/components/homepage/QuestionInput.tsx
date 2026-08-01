@@ -105,7 +105,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
       className={`q-form${focused ? " q-form--focused" : ""}`}
     >
       <div className="q-form__body">
-        <label htmlFor="question-input" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}>
+        <label htmlFor="question-input" className="sr-only">
           What do you want to understand today?
         </label>
         <textarea

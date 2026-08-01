@@ -51,6 +51,23 @@ const BACKEND_URL = (
   process.env.NEXT_PUBLIC_BACKEND_URL || "https://real-learn.onrender.com"
 ).replace(/\/$/, "");
 
+// Journey-rail-style check node; visibility handled in CSS via --active.
+function CheckNode() {
+  return (
+    <span className="option-row__check" aria-hidden="true">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <path
+          d="M2.5 6.5L5 9l4.5-6"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </span>
+  );
+}
+
 export default function SettingsPage() {
   const router = useRouter();
   const { isLoaded, isSignedIn, getToken } = useAuth();
@@ -324,23 +341,13 @@ export default function SettingsPage() {
 
   if (!isLoaded || !mounted) {
     return (
-      <main
-        style={{
-          minHeight: "100vh",
-          color: "var(--text-primary)",
-          maxWidth: 680,
-          margin: "0 auto",
-          padding: "32px 20px 60px",
-          display: "flex",
-          flexDirection: "column",
-          gap: 20,
-        }}
-        aria-label="Loading settings..."
-      >
-        <Skeleton height={32} width="40%" borderRadius="6px" />
-        <SkeletonCard height={140} />
-        <SkeletonCard height={180} />
-        <SkeletonCard height={160} />
+      <main className="flow-page" aria-label="Loading settings...">
+        <div className="flow-page__inner flow-page__inner--narrow flow-stack">
+          <Skeleton height={32} width="40%" borderRadius="6px" />
+          <SkeletonCard height={140} />
+          <SkeletonCard height={180} />
+          <SkeletonCard height={160} />
+        </div>
       </main>
     );
   }
@@ -351,84 +358,32 @@ export default function SettingsPage() {
   }
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        color: "var(--text-primary)",
-        padding: "40px 24px",
-      }}
-    >
-      <div style={{ maxWidth: 600, margin: "0 auto" }}>
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="settings-back"
-          style={{
-            border: "none",
-            background: "transparent",
-            color: "var(--text-secondary)",
-            cursor: "pointer",
-            fontSize: 14,
-            padding: "4px 8px 4px 0",
-            minHeight: 44,
-            marginBottom: 16,
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-          }}
-        >
-          <span style={{ fontSize: 18 }}>←</span> Back
+    <main className="flow-page">
+      <div className="flow-page__inner flow-page__inner--narrow">
+        <button type="button" onClick={() => router.back()} className="settings-back">
+          <span className="settings-back__arrow" aria-hidden="true">←</span> Back
         </button>
 
-        <span className="section-overline" style={{ marginBottom: 6 }}>
-          Make It Yours
-        </span>
-        <h1
-          style={{
-            fontFamily: "var(--font-display)",
-            fontWeight: 800,
-            fontSize: 32,
-            marginBottom: 8,
-          }}
-        >
-          Settings
-        </h1>
-        <p style={{ color: "var(--text-secondary)", marginBottom: 32, fontSize: 14 }}>
-          Manage your account, data, and preferences.
-        </p>
+        <header className="page-hero">
+          <span className="page-hero__glyph" aria-hidden="true">{"⚙︎"}</span>
+          <span className="section-overline">Make It Yours</span>
+          <h1 className="page-hero__title">Settings</h1>
+          <p className="page-hero__sub">Manage your account, data, and preferences.</p>
+        </header>
 
         {/* Preferences Section */}
         <section className="settings-panel-glass">
-          <h2
-            style={{
-              fontSize: 16,
-              fontWeight: 700,
-              marginBottom: 4,
-              color: "var(--text-primary)",
-            }}
-          >
-            Preferences
-          </h2>
-          <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 20 }}>
+          <h2 className="settings-title">Preferences</h2>
+          <p className="settings-sub">
             Appearance, language, and learning level are saved on this device.
           </p>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div className="settings-group">
             <div>
-              <h3
-                id="theme-heading"
-                style={{
-                  display: "block",
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: "var(--text-secondary)",
-                  marginBottom: 8,
-                  margin: "0 0 8px 0"
-                }}
-              >
+              <h3 id="theme-heading" className="flow-label">
                 Theme
               </h3>
-              <div role="group" aria-labelledby="theme-heading" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <div role="group" aria-labelledby="theme-heading" className="option-stack">
                 {THEMES.map((opt) => {
                   const active = theme === opt.value;
                   return (
@@ -436,41 +391,19 @@ export default function SettingsPage() {
                       key={opt.value}
                       type="button"
                       onClick={() => setTheme(opt.value)}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 12,
-                        textAlign: "left",
-                        padding: "10px 12px",
-                        borderRadius: "var(--radius-md)",
-                        border: active ? "2px solid var(--accent)" : "1px solid var(--border-default)",
-                        background: active ? "var(--accent-dim)" : "var(--bg-surface)",
-                        cursor: "pointer",
-                        minHeight: 44,
-                      }}
+                      className={`option-row${active ? " option-row--active" : ""}`}
+                      aria-pressed={active}
                     >
                       <span
                         aria-hidden="true"
-                        style={{
-                          width: 28,
-                          height: 28,
-                          borderRadius: "50%",
-                          background: opt.swatch,
-                          border: `3px solid ${opt.accent}`,
-                          flexShrink: 0,
-                        }}
+                        className="option-row__swatch"
+                        style={{ background: opt.swatch, border: `3px solid ${opt.accent}` }}
                       />
-                      <span style={{ flex: 1 }}>
-                        <span style={{ display: "block", fontWeight: 600, fontSize: 14, color: "var(--text-primary)" }}>
-                          {opt.label}
-                        </span>
-                        <span style={{ display: "block", fontSize: 12, color: "var(--text-tertiary)" }}>{opt.hint}</span>
+                      <span className="option-row__body">
+                        <span className="option-row__title">{opt.label}</span>
+                        <span className="option-row__hint">{opt.hint}</span>
                       </span>
-                      {active && (
-                        <span aria-hidden="true" style={{ color: "var(--accent)", fontSize: 16 }}>
-                          ✓
-                        </span>
-                      )}
+                      <CheckNode />
                     </button>
                   );
                 })}
@@ -478,20 +411,10 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <h3
-                id="answer-mode-heading"
-                style={{
-                  display: "block",
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: "var(--text-secondary)",
-                  marginBottom: 8,
-                  margin: "0 0 8px 0"
-                }}
-              >
+              <h3 id="answer-mode-heading" className="flow-label">
                 Answer mode
               </h3>
-              <div role="group" aria-labelledby="answer-mode-heading" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <div role="group" aria-labelledby="answer-mode-heading" className="option-stack">
                 {MODES.map((opt) => {
                   const active = mode === opt.value;
                   return (
@@ -499,30 +422,14 @@ export default function SettingsPage() {
                       key={opt.value}
                       type="button"
                       onClick={() => setMode(opt.value)}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 12,
-                        textAlign: "left",
-                        padding: "10px 12px",
-                        borderRadius: "var(--radius-md)",
-                        border: active ? "2px solid var(--accent)" : "1px solid var(--border-default)",
-                        background: active ? "var(--accent-dim)" : "var(--bg-surface)",
-                        cursor: "pointer",
-                        minHeight: 44,
-                      }}
+                      className={`option-row${active ? " option-row--active" : ""}`}
+                      aria-pressed={active}
                     >
-                      <span style={{ flex: 1 }}>
-                        <span style={{ display: "block", fontWeight: 600, fontSize: 14, color: "var(--text-primary)" }}>
-                          {opt.label}
-                        </span>
-                        <span style={{ display: "block", fontSize: 12, color: "var(--text-tertiary)" }}>{opt.hint}</span>
+                      <span className="option-row__body">
+                        <span className="option-row__title">{opt.label}</span>
+                        <span className="option-row__hint">{opt.hint}</span>
                       </span>
-                      {active && (
-                        <span aria-hidden="true" style={{ color: "var(--accent)", fontSize: 16 }}>
-                          ✓
-                        </span>
-                      )}
+                      <CheckNode />
                     </button>
                   );
                 })}
@@ -530,50 +437,20 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label
-                style={{
-                  display: "block",
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: "var(--text-secondary)",
-                  marginBottom: 8,
-                }}
-              >
-                Language
-              </label>
+              <label className="flow-label">Language</label>
               <LanguageSelector value={language} onChange={setLanguage} />
             </div>
 
             <div>
-              <label
-                style={{
-                  display: "block",
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: "var(--text-secondary)",
-                  marginBottom: 8,
-                }}
-              >
-                Learning level
-              </label>
+              <label className="flow-label">Learning level</label>
               <LevelSelector value={level} onChange={setLevel} />
             </div>
 
             <div>
-              <h3
-                id="perf-mode-heading"
-                style={{
-                  display: "block",
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: "var(--text-secondary)",
-                  marginBottom: 8,
-                  margin: "0 0 8px 0"
-                }}
-              >
+              <h3 id="perf-mode-heading" className="flow-label">
                 Visual performance
               </h3>
-              <div role="group" aria-labelledby="perf-mode-heading" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <div role="group" aria-labelledby="perf-mode-heading" className="option-stack">
                 {PERF_MODE_OPTIONS.map((opt) => {
                   const active = perfMode === opt.value;
                   return (
@@ -581,30 +458,14 @@ export default function SettingsPage() {
                       key={opt.value}
                       type="button"
                       onClick={() => setPerfMode(opt.value)}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 12,
-                        textAlign: "left",
-                        padding: "10px 12px",
-                        borderRadius: "var(--radius-md)",
-                        border: active ? "2px solid var(--accent)" : "1px solid var(--border-default)",
-                        background: active ? "var(--accent-dim)" : "var(--bg-surface)",
-                        cursor: "pointer",
-                        minHeight: 44,
-                      }}
+                      className={`option-row${active ? " option-row--active" : ""}`}
+                      aria-pressed={active}
                     >
-                      <span style={{ flex: 1 }}>
-                        <span style={{ display: "block", fontWeight: 600, fontSize: 14, color: "var(--text-primary)" }}>
-                          {opt.label}
-                        </span>
-                        <span style={{ display: "block", fontSize: 12, color: "var(--text-tertiary)" }}>{opt.description}</span>
+                      <span className="option-row__body">
+                        <span className="option-row__title">{opt.label}</span>
+                        <span className="option-row__hint">{opt.description}</span>
                       </span>
-                      {active && (
-                        <span aria-hidden="true" style={{ color: "var(--accent)", fontSize: 16 }}>
-                          ✓
-                        </span>
-                      )}
+                      <CheckNode />
                     </button>
                   );
                 })}
@@ -615,51 +476,21 @@ export default function SettingsPage() {
 
         {/* Learning Preferences Section */}
         <section className="settings-panel-glass">
-          <h2
-            style={{
-              fontSize: 16,
-              fontWeight: 700,
-              marginBottom: 4,
-              color: "var(--text-primary)",
-            }}
-          >
-            Learning preferences
-          </h2>
-          <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 20 }}>
+          <h2 className="settings-title">Learning preferences</h2>
+          <p className="settings-sub">
             Optional: tell us how you learn best. This is stored on this device and sent with each
             lesson request so explanations can be tailored to you.
           </p>
 
-          <fieldset style={{ border: "none", padding: 0, margin: "0 0 16px" }}>
-            <legend
-              style={{
-                fontSize: 13,
-                fontWeight: 600,
-                color: "var(--text-secondary)",
-                marginBottom: 8,
-              }}
-            >
-              Select any that apply
-            </legend>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <fieldset className="fieldset-reset">
+            <legend className="flow-label">Select any that apply</legend>
+            <div className="option-stack">
               {PERSONALIZATION_CHECKLIST_OPTIONS.map((option) => {
                 const active = personalization.checklist.includes(option);
                 return (
                   <label
                     key={option}
-                    style={{
-                      display: "flex",
-                      alignItems: "flex-start",
-                      gap: 10,
-                      padding: "10px 12px",
-                      borderRadius: "var(--radius-md)",
-                      border: active ? "2px solid var(--accent)" : "1px solid var(--border-default)",
-                      background: active ? "var(--accent-dim)" : "var(--bg-surface)",
-                      cursor: "pointer",
-                      fontSize: 14,
-                      color: "var(--text-primary)",
-                      lineHeight: 1.4,
-                    }}
+                    className={`option-row${active ? " option-row--active" : ""}`}
                   >
                     <input
                       type="checkbox"
@@ -673,30 +504,22 @@ export default function SettingsPage() {
                           checklist: sanitizeChecklist(next),
                         });
                       }}
-                      style={{ marginTop: 2, flexShrink: 0 }}
                     />
-                    <span>{option}</span>
+                    <span className="option-row__body">{option}</span>
+                    <CheckNode />
                   </label>
                 );
               })}
             </div>
           </fieldset>
 
-          <div style={{ marginBottom: 8 }}>
-            <label
-              htmlFor="settings-personalization-notes"
-              style={{
-                display: "block",
-                fontSize: 13,
-                fontWeight: 600,
-                color: "var(--text-secondary)",
-                marginBottom: 8,
-              }}
-            >
+          <div>
+            <label htmlFor="settings-personalization-notes" className="flow-label">
               Anything else you&apos;d like us to know?
             </label>
             <textarea
               id="settings-personalization-notes"
+              className="glass-textarea"
               value={personalization.notes}
               onChange={(e) =>
                 setPersonalization({
@@ -706,27 +529,8 @@ export default function SettingsPage() {
               }
               placeholder="For example: I understand concepts better with pictures..."
               rows={4}
-              style={{
-                width: "100%",
-                padding: 12,
-                borderRadius: "var(--radius-md)",
-                border: "1px solid var(--border-default)",
-                background: "var(--bg-surface)",
-                color: "var(--text-primary)",
-                fontSize: 14,
-                lineHeight: 1.6,
-                resize: "vertical",
-                minHeight: 100,
-              }}
             />
-            <p
-              style={{
-                fontSize: 12,
-                color: "var(--text-tertiary)",
-                marginTop: 6,
-                textAlign: "right",
-              }}
-            >
+            <p className="char-count">
               {personalization.notes.length}/{MAX_PERSONALIZATION_NOTES_CHARS}
             </p>
           </div>
@@ -734,23 +538,12 @@ export default function SettingsPage() {
 
         {/* Account Section */}
         <section className="settings-panel-glass">
-          <h2
-            style={{
-              fontSize: 16,
-              fontWeight: 700,
-              marginBottom: 16,
-              color: "var(--text-primary)",
-            }}
-          >
-            Account
-          </h2>
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <h2 className="settings-title">Account</h2>
+          <div className="account-row">
             <UserButton />
             <div>
-              <p style={{ fontSize: 14, fontWeight: 500, color: "var(--text-primary)" }}>
-                Your account
-              </p>
-              <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginTop: 2 }}>
+              <p className="account-row__name">Your account</p>
+              <p className="account-row__hint">
                 Manage your profile, sign out, or delete your account via the menu above.
               </p>
             </div>
@@ -759,110 +552,42 @@ export default function SettingsPage() {
 
         {/* Privacy Section */}
         <section className="settings-panel-glass">
-          <h2
-            style={{
-              fontSize: 16,
-              fontWeight: 700,
-              marginBottom: 8,
-              color: "var(--text-primary)",
-            }}
-          >
-            Privacy
-          </h2>
-          <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 20 }}>
+          <h2 className="settings-title">Privacy</h2>
+          <p className="settings-sub">
             Change your cookie and analytics choice anytime — withdrawing consent
             is as easy as giving it.
           </p>
           <button
             type="button"
+            className="settings-action"
             onClick={() => window.dispatchEvent(new Event(COOKIE_SETTINGS_OPEN_EVENT))}
-            style={{
-              border: "1px solid var(--border-default)",
-              borderRadius: "var(--radius-md)",
-              background: "transparent",
-              color: "var(--text-secondary)",
-              padding: "12px 16px",
-              cursor: "pointer",
-              fontSize: 14,
-              fontWeight: 500,
-              minHeight: 44,
-              textAlign: "left",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              width: "100%",
-            }}
           >
             <span>Cookie &amp; analytics preferences</span>
-            <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
-              {cookieChoiceLabel}
-            </span>
+            <span className="settings-action__note">{cookieChoiceLabel}</span>
           </button>
         </section>
 
         {/* Data Section */}
         <section className="settings-panel-glass">
-          <h2
-            style={{
-              fontSize: 16,
-              fontWeight: 700,
-              marginBottom: 8,
-              color: "var(--text-primary)",
-            }}
-          >
-            Data
-          </h2>
-          <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 20 }}>
+          <h2 className="settings-title">Data</h2>
+          <p className="settings-sub">
             Export or permanently delete your data stored on RealLearn.
           </p>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <button
-              type="button"
-              onClick={handleExportData}
-              style={{
-                border: "1px solid var(--border-default)",
-                borderRadius: "var(--radius-md)",
-                background: "transparent",
-                color: "var(--text-secondary)",
-                padding: "12px 16px",
-                cursor: "pointer",
-                fontSize: 14,
-                fontWeight: 500,
-                minHeight: 44,
-                textAlign: "left",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
+          <div className="option-stack option-stack--loose">
+            <button type="button" className="settings-action" onClick={handleExportData}>
               <span>Export my data</span>
-              <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>Download JSON</span>
+              <span className="settings-action__note">Download JSON</span>
             </button>
 
             <button
               type="button"
+              className="settings-action settings-action--danger"
               onClick={() => setDeleteConfirmOpen(true)}
               disabled={deleting}
-              style={{
-                border: "1px solid var(--wrong)",
-                borderRadius: "var(--radius-md)",
-                background: "var(--wrong-bg)",
-                color: "var(--wrong)",
-                padding: "12px 16px",
-                cursor: deleting ? "not-allowed" : "pointer",
-                fontWeight: 600,
-                fontSize: 14,
-                minHeight: 44,
-                opacity: deleting ? 0.6 : 1,
-                textAlign: "left",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
             >
               <span>{deleting ? "Deleting…" : "Delete my data"}</span>
-              <span style={{ fontSize: 12, fontWeight: 400, opacity: 0.7 }}>Permanent</span>
+              <span className="settings-action__note">Permanent</span>
             </button>
           </div>
         </section>

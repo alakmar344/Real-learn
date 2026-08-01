@@ -277,3 +277,37 @@ language:
   `.completion` gets a gradient score ring and `.suggest-pill` follow-ups.
 - All new interactive classes are covered by the reduced-motion kill-switch;
   glass blurs remain gated by the `data-perf` tiers and the Firefox guard.
+
+---
+
+## Addendum (2026-08-01) — Liquid Flow deep pass on the remaining pages
+
+The 07-31 app-wide pass wrapped the non-lesson pages in glass containers but
+left their interiors as inline-style objects. This pass generalized the
+parts-page anatomy into shared classes and rewrote every remaining
+non-legal surface onto them:
+
+- **Page shells + hero**: `.flow-page`/`.flow-page__inner(--narrow)`,
+  `.page-column(--center)`, and `.page-hero` — overline, display title,
+  gradient-tick subline, and a ghost glyph floating behind (the
+  `.part-card__num` treatment: outline stroke, no fill).
+- **Progress**: gradient `.level-orb`, gradient `.xp-track`, capsule
+  `.pill-stat`s, `.streak-figure`, spring-hover `.goal-chip` toggles,
+  `.duo-grid`/`.stat-band` layout classes.
+- **Settings**: boxed 2px-border option buttons replaced by borderless
+  `.option-row`s that rest transparent, lift on hover, and mark selection
+  with an `--accent-dim` wash plus a journey-rail-style gradient check node;
+  privacy/data actions became `.settings-action` rows; textarea →
+  `.glass-textarea` with an accent focus ring; `.settings-back` styled
+  (arrow nudges left on hover).
+- **Sidebar**: full `.app-sidebar__*` anatomy; the JS `onMouseEnter`
+  background mutations replaced with CSS `:hover`/`:focus-visible`; search
+  became a pill `.sidebar-search` with focus ring; saved lessons are
+  `.journey-item` rows that slide 2px on hover.
+- **Navbar hub / home strip**: `.progress-hub__*` internals,
+  `.mini-progress-link`, `.home-strip`; learn shell → `.learn-container` /
+  `.learn-empty`; auth pages → `.auth-canvas`; 404 → `.not-found__code`
+  ghost numeral.
+- Inline styles now remain only for genuinely dynamic values (XP width,
+  ring dashoffset, theme swatches, mode-glider transform). Reduced-motion
+  kill-switch extended to every new interactive class. Legal pages untouched.
