@@ -24,6 +24,7 @@ interface Props {
 
 export default function QuestionInput({ question, setQuestion, onSubmit }: Props) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const initialQuestionRef = useRef(question);
   const [focused, setFocused] = useState(false);
   const [interimSpeech, setInterimSpeech] = useState("");
   const [showHint, setShowHint] = useState(false);
@@ -46,12 +47,15 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
     textarea.style.height = `${Math.min(textarea.scrollHeight, 160)}px`;
   }, [question]);
 
-  // Invisible UX: Restore draft question from sessionStorage on mount if empty
+  // Invisible UX: Restore draft question from sessionStorage on mount if empty.
+  // Must run ONCE on mount — re-running on every empty value re-injected the
+  // saved draft the instant the user deleted their text, so the field could
+  // never be fully cleared.
   useEffect(() => {
     if (!mounted) return;
     try {
       const savedDraft = sessionStorage.getItem("reallearn_draft_question");
-      if (savedDraft && !question) {
+      if (savedDraft && !initialQuestionRef.current) {
         setQuestion(savedDraft);
       }
       // Smart desktop auto-focus: on non-mobile screens, focus input automatically
@@ -61,7 +65,8 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
     } catch {
       // Best-effort storage
     }
-  }, [mounted, question, setQuestion]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mounted]);
 
   // Invisible UX: Persist typed question as draft in sessionStorage
   useEffect(() => {
