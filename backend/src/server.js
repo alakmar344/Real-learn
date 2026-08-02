@@ -32,7 +32,7 @@ import {
 } from "./lib/prompts.js";
 import { fetchRealWorldContext } from "./lib/serper.js";
 import { isValidJourney, normalizeJourney, hasExpectedPartCount } from "./validation.js";
-import { getDb } from "./lib/mongodb.js";
+import { getDb, closeMongo } from "./lib/mongodb.js";
 import {
   requireAuth,
   extractBearerToken,
@@ -159,12 +159,26 @@ async function scrubStoredConsentIps() {
       { projection: { deviceIp: 1 } }
     );
     let scrubbed = 0;
+    // Batch updates via bulkWrite instead of one round-trip per record.
+    let ops = [];
+    const flush = async () => {
+      if (ops.length === 0) return;
+      await collection.bulkWrite(ops, { ordered: false });
+      scrubbed += ops.length;
+      ops = [];
+    };
     for await (const doc of cursor) {
       const anonymized = anonymizeIp(doc.deviceIp);
       if (anonymized === doc.deviceIp) continue;
-      await collection.updateOne({ _id: doc._id }, { $set: { deviceIp: anonymized } });
-      scrubbed += 1;
+      ops.push({
+        updateOne: {
+          filter: { _id: doc._id },
+          update: { $set: { deviceIp: anonymized } },
+        },
+      });
+      if (ops.length >= 500) await flush();
     }
+    await flush();
     if (scrubbed > 0) {
       console.log(`[privacy] Anonymized stored IPs on ${scrubbed} legacy consent record(s)`);
     }
@@ -701,8 +715,10 @@ function isOriginAllowed(origin) {
 app.use(
   cors({
     origin: (origin, callback) => {
-      const isAllowed = isOriginAllowed(origin);
-      if (isAllowed) {
+      // No Origin header = non-browser client (uptime monitor, curl,
+      // server-to-server). CORS is a browser mechanism; auth still applies,
+      // so let those through without CORS headers instead of 403ing them.
+      if (!origin || isOriginAllowed(origin)) {
         return callback(null, true);
       }
       console.warn("[CORS] origin denied", { origin });
@@ -746,7 +762,8 @@ app.use(
 );
 
 function securityHeaders(req, res, next) {
-  res.setHeader("X-Frame-Options", "SAMEORIGIN");
+  // Pure JSON/SSE API — nothing here should ever render in a frame.
+  res.setHeader("X-Frame-Options", "DENY");
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
   res.setHeader("X-XSS-Protection", "0");
@@ -769,7 +786,7 @@ function securityHeaders(req, res, next) {
     );
     res.setHeader(
       "Content-Security-Policy",
-      "default-src 'none'; base-uri 'self'; form-action 'self'"
+      "default-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
     );
   }
   next();
@@ -1236,9 +1253,12 @@ app.get("/api/export-data", rateLimit, requireAuth, async (req, res) => {
     // Completeness (GDPR Art. 15 / DPDP access right): the export must cover
     // EVERY collection that stores data keyed to this user — consent records
     // AND moderation logs.
+    // Bound memory: a user's own records only, but cap the result size so a
+    // pathological history cannot balloon one request into an unbounded array.
+    const EXPORT_DOC_CAP = 10_000;
     const [agreements, moderationLogs] = await Promise.all([
-      db.collection("agreements").find(filter).toArray(),
-      db.collection("moderationLogs").find(filter).toArray(),
+      db.collection("agreements").find(filter).limit(EXPORT_DOC_CAP).toArray(),
+      db.collection("moderationLogs").find(filter).limit(EXPORT_DOC_CAP).toArray(),
     ]);
 
     res.setHeader("Content-Type", "application/json");
@@ -2171,6 +2191,13 @@ END_EXTERNAL_CONTEXT>>>`
   }
 });
 
+// JSON 404 for unmatched routes — without this, Express's finalhandler
+// returns an HTML "Cannot GET /x" body, a content-type mismatch for a JSON
+// API and a needless stack-fingerprint signal.
+app.use((req, res) => {
+  res.status(404).json({ error: "Not found" });
+});
+
 // Terminal error handler — MUST be registered after every route. Without it,
 // Express's default finalhandler echoes err.stack to the client whenever
 // NODE_ENV isn't "production" (easy to forget on a PaaS), leaking internal
@@ -2232,7 +2259,9 @@ try {
     console.log(`[shutdown] ${signal} received, starting graceful shutdown`);
     server.close(() => {
       console.log("[shutdown] All connections closed");
-      process.exit(0);
+      // Drain the Mongo pool before exit so in-flight writes are not
+      // severed mid-operation on every deploy/restart.
+      closeMongo().finally(() => process.exit(0));
     });
     // Force-kill after 30 seconds if connections won't drain.
     setTimeout(() => {
@@ -2242,6 +2271,17 @@ try {
   };
   process.on("SIGTERM", () => shutdown("SIGTERM"));
   process.on("SIGINT", () => shutdown("SIGINT"));
+
+  // Last-resort safety nets. A stray rejection kills the whole process on
+  // Node >= 15; log it instead of dying. A truly uncaught exception means
+  // unknown state — log, then exit so the platform restarts a clean process.
+  process.on("unhandledRejection", (reason) => {
+    console.error("[process] Unhandled promise rejection", reason);
+  });
+  process.on("uncaughtException", (error) => {
+    console.error("[process] Uncaught exception — exiting", error);
+    closeMongo().finally(() => process.exit(1));
+  });
 } catch (error) {
   console.error("[startup] Backend configuration error:", error);
   process.exit(1);

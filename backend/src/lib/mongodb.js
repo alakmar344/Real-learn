@@ -24,6 +24,10 @@ async function getMongoClient() {
   client = new MongoClient(MONGODB_URI, {
     serverSelectionTimeoutMS: 10000,
     connectTimeoutMS: 10000,
+    // A stuck socket mid-operation must not hang past the 30s request
+    // timeout, and idle pool sockets should be reaped instead of held open.
+    socketTimeoutMS: 45000,
+    maxIdleTimeMS: 60000,
     maxPoolSize: 10,
     minPoolSize: 2,
   });
@@ -50,4 +54,15 @@ async function getMongoClient() {
 export async function getDb() {
   const connectedClient = await getMongoClient();
   return connectedClient.db(MONGODB_DB);
+}
+
+// Graceful shutdown: drain the pool instead of dropping connections when the
+// process exits. Safe to call when no connection was ever established.
+export async function closeMongo() {
+  const active = client;
+  client = null;
+  clientPromise = null;
+  if (active) {
+    await active.close().catch(() => {});
+  }
 }
