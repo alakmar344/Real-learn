@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
 const EXAMPLES = [
   "Why does the sky turn red at sunset?",
   "How does inflation destroy economies?",
@@ -15,32 +13,19 @@ interface Props {
 }
 
 export default function ExampleQuestions({ onPick }: Props) {
-  const [index, setIndex] = useState(0);
-
-  useEffect(() => {
-    const id = window.setInterval(() => {
-      setIndex((prev) => (prev + 1) % EXAMPLES.length);
-    }, 3000);
-    return () => window.clearInterval(id);
-  }, []);
+  const example = EXAMPLES[0];
 
   return (
     <button
       type="button"
       aria-label="Use an example question"
       title="Click to use this example"
-      onClick={() => onPick?.(EXAMPLES[index])}
+      onClick={() => onPick?.(example)}
       disabled={!onPick}
-      className="chip"
-      style={{
-        fontSize: 12,
-        color: "var(--accent)",
-        margin: 0,
-        animation: "fadeUp 200ms var(--ease-reveal)",
-      }}
+      className="chip chip--example"
     >
-      <span style={{ color: "var(--text-tertiary)", fontWeight: 400 }}>Try:</span>{" "}
-      {EXAMPLES[index]}
+      <span className="chip__label">Example</span>
+      <span className="chip__value">{example}</span>
     </button>
   );
 }

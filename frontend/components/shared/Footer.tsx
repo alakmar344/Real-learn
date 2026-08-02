@@ -69,19 +69,20 @@ const Footer = ({ className }: { className?: string }) => {
         >
           RealLearn
         </span>
+        <span className="app-footer__dot" aria-hidden="true" />
         {/* suppressHydrationWarning: prerendered HTML cached across a year boundary
             would otherwise hydration-error on the year. */}
         <span suppressHydrationWarning>© {new Date().getFullYear()} alakmar344</span>
-        <span aria-hidden="true">·</span>
-        <span>AI-generated — verify with pros</span>
+        <span className="app-footer__dot" aria-hidden="true" />
+        <span>AI-generated content should be reviewed by a qualified source.</span>
       </p>
       <p className="app-footer__row app-footer__row--links">
         <a href="/legal?tab=privacy" className="app-footer__link">Privacy</a>
-        <span aria-hidden="true">·</span>
+        <span className="app-footer__dot" aria-hidden="true" />
         <a href="/legal?tab=terms" className="app-footer__link">Terms</a>
-        <span aria-hidden="true">·</span>
+        <span className="app-footer__dot" aria-hidden="true" />
         <a href="/legal" className="app-footer__link">Legal</a>
-        <span aria-hidden="true">·</span>
+        <span className="app-footer__dot" aria-hidden="true" />
         <a href="mailto:esamzai365@gmail.com" className="app-footer__link">Support</a>
       </p>
       <CompanionDays />

@@ -6,6 +6,22 @@ import { useProgressStore } from "@/store/progressStore";
 import { levelInfo, dayKey } from "@/lib/achievements";
 import { useMounted } from "@/hooks/useMounted";
 
+function StreakIcon() {
+  return (
+    <svg viewBox="0 0 16 16" aria-hidden="true" className="progress-hub__streak-icon">
+      <path
+        d="M9.584 1.322C9.827 3.08 9.303 4.155 8.126 5.303C7.194 6.212 6.667 7.207 6.667 8.52C6.667 10.554 8.311 12.2 10.333 12.2C12.355 12.2 14 10.554 14 8.52C14 5.859 12.6 3.727 9.584 1.322Z"
+        fill="currentColor"
+      />
+      <path
+        d="M5.183 5.236C5.327 6.298 5.005 6.96 4.274 7.674C3.71 8.224 3.4 8.823 3.4 9.608C3.4 10.865 4.417 11.883 5.667 11.883C6.917 11.883 7.933 10.865 7.933 9.608C7.933 7.98 7.076 6.663 5.183 5.236Z"
+        fill="currentColor"
+        opacity="0.45"
+      />
+    </svg>
+  );
+}
+
 /** Compact navbar widget: streak flame, level ring, daily-goal dots. Navigates
  * to the full /progress dashboard on click. This is the persistent "growing
  * self" the whole engagement loop revolves around.
@@ -29,7 +45,7 @@ function ProgressHubImpl() {
 
   // Placeholder keeps navbar layout stable before hydration.
   if (!mounted) {
-    return <div style={{ marginLeft: "auto", width: 118, height: 34 }} aria-hidden="true" />;
+    return <div className="progress-hub-placeholder" aria-hidden="true" />;
   }
 
   const ringSize = 34;
@@ -45,23 +61,22 @@ function ProgressHubImpl() {
         aria-label={`Level ${info.level}, ${streak} day streak, daily goal ${todayCount} of ${dailyGoal}. Open progress.`}
         title="Your progress"
         className="progress-hub animate-fade-up"
-        style={{ marginLeft: "auto" }}
       >
-        {/* Streak */}
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
-          <span className={streak > 0 ? "flame-flicker" : undefined} style={{ fontSize: 16, filter: streak > 0 ? "none" : "grayscale(1) opacity(0.6)" }}>
-            🔥
-          </span>
-          <span style={{ fontSize: 13, fontWeight: 800, color: streak > 0 ? "var(--text-primary)" : "var(--text-tertiary)" }}>
-            {streak}
-          </span>
+        <span className={`progress-hub__streak${streak > 0 ? " progress-hub__streak--active" : ""}`}>
+          <StreakIcon />
+          <span className="progress-hub__streak-count">{streak}</span>
         </span>
 
-        <span style={{ width: 1, height: 18, background: "var(--border-subtle)" }} aria-hidden="true" />
+        <span className="progress-hub__divider" aria-hidden="true" />
 
-        {/* Level ring */}
-        <span style={{ position: "relative", width: ringSize, height: ringSize, display: "inline-block" }}>
-          <svg width={ringSize} height={ringSize} viewBox={`0 0 ${ringSize} ${ringSize}`} aria-hidden="true">
+        <span className="progress-hub__ring">
+          <svg
+            width={ringSize}
+            height={ringSize}
+            viewBox={`0 0 ${ringSize} ${ringSize}`}
+            aria-hidden="true"
+            className="progress-hub__ring-svg"
+          >
             <circle cx={ringSize / 2} cy={ringSize / 2} r={r} fill="none" stroke="var(--border-subtle)" strokeWidth={3} />
             <circle
               cx={ringSize / 2}
@@ -74,42 +89,20 @@ function ProgressHubImpl() {
               strokeDasharray={c}
               strokeDashoffset={offset}
               transform={`rotate(-90 ${ringSize / 2} ${ringSize / 2})`}
-              style={{ transition: "stroke-dashoffset 700ms var(--ease-reveal)" }}
+              className="progress-hub__ring-progress"
             />
           </svg>
-          <span
-            style={{
-              position: "absolute",
-              inset: 0,
-              display: "grid",
-              placeItems: "center",
-              fontSize: 12,
-              fontWeight: 800,
-              color: "var(--accent)",
-            }}
-          >
-            {info.level}
-          </span>
+          <span className="progress-hub__level">{info.level}</span>
         </span>
 
-        {/* Daily goal mini-progress (hidden on very small screens via title only) */}
         <span
-          className="progress-hub-daily"
-          style={{ fontSize: 11, color: todayCount >= dailyGoal ? "var(--correct)" : "var(--text-tertiary)", fontWeight: 700 }}
+          className={`progress-hub__daily${todayCount >= dailyGoal ? " progress-hub__daily--complete" : ""}`}
         >
-          {todayCount >= dailyGoal ? "✓ goal" : `${todayCount}/${dailyGoal}`}
+          {todayCount >= dailyGoal ? "Goal met" : `${todayCount}/${dailyGoal} today`}
         </span>
 
-        <span style={{ position: "absolute", width: 0, height: 0, overflow: "hidden" }}>{pct}%</span>
+        <span className="progress-hub__sr">{pct}%</span>
       </button>
-
-      <style jsx>{`
-        @media (max-width: 420px) {
-          .progress-hub-daily {
-            display: none;
-          }
-        }
-      `}</style>
     </>
   );
 }

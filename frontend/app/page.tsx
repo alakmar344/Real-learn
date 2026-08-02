@@ -98,39 +98,38 @@ export default function HomePage() {
   return (
     <>
       <LiveRegion />
-      <main
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
+      <main className="home-page">
         <Navbar />
 
-        <section className="hero">
+        <section className="hero hero--home">
           <div className="hero__stage">
             <div className="hero__content">
               <HomeStats onStartTopic={(topic) => submit(topic)} />
-            </div>
+              <div className="hero__intro">
+                <p className="hero__eyebrow">Professional AI learning workspace</p>
+                <div className="hero-greeting hero__greeting">
+                  {greeting ? (
+                    <h1 className="hero__title" suppressHydrationWarning>
+                      {greeting}
+                      {firstName ? (
+                        <>
+                          ,{" "}
+                          <span className="hero__title-name">{firstName}</span>
+                        </>
+                      ) : null}
+                    </h1>
+                  ) : (
+                    <div className="hero__spacer" aria-hidden="true" />
+                  )}
+                </div>
+                <p className="hero__lede">
+                  Turn any question into a concise answer or a structured lesson you can revisit.
+                </p>
+              </div>
 
-            <div className="hero-greeting hero__greeting">
-              {greeting ? (
-                <h1 className="hero__title" suppressHydrationWarning>
-                  {greeting}
-                  {firstName ? (
-                    <>
-                      ,{" "}
-                      <span className="hero__title-name">{firstName}</span>
-                    </>
-                  ) : null}
-                </h1>
-              ) : (
-                <div className="hero__spacer" aria-hidden="true" />
-              )}
-            </div>
-
-            <div className="hero__input-row">
-              <QuestionInput question={question} setQuestion={setQuestion} onSubmit={submit} />
+              <div className="hero__input-row">
+                <QuestionInput question={question} setQuestion={setQuestion} onSubmit={submit} />
+              </div>
             </div>
           </div>
         </section>

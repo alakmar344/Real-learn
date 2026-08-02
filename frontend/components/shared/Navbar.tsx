@@ -19,21 +19,36 @@ export default function Navbar({ compact = false }: Props) {
   const pathname = usePathname();
 
   return (
-    <header className={`navbar engraved texture-dots${compact ? " navbar--compact" : ""}`}>
+    <header className={`navbar engraved${compact ? " navbar--compact" : ""}`}>
       <div className="navbar-inner">
         <Link href="/" aria-label="RealLearn – Home" className="navbar-brand">
           <div className="navbar-logo" aria-hidden="true">
-            <svg width="30" height="30" viewBox="0 0 28 28" fill="none" style={{ position: "relative", zIndex: 1 }}>
-              <circle cx="14" cy="14" r="12" stroke="currentColor" strokeWidth="2" opacity="0.35" />
-              <path d="M14 7C17 10.5 17 14 14 17.5C11 14 11 10.5 14 7Z" fill="currentColor" opacity="0.65" />
-              <path d="M7.5 13.5C11 13.5 13 15 14 18.5C10.5 18.5 8.5 17 7.5 13.5Z" fill="currentColor" opacity="0.45" />
-              <path d="M20.5 13.5C17 13.5 15 15 14 18.5C17.5 18.5 19.5 17 20.5 13.5Z" fill="currentColor" opacity="0.45" />
-              <path d="M8.5 21H13.6C13.9 21 14.1 21.1 14.4 21.3C14.7 21.1 15 21 15.3 21H20" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="navbar-logo__icon">
+              <path
+                d="M5.25 6.75C5.25 5.922 5.922 5.25 6.75 5.25H11.25C12.078 5.25 12.75 5.922 12.75 6.75V18C11.861 17.345 10.74 17 9.6 17H5.25V6.75Z"
+                fill="currentColor"
+                opacity="0.9"
+              />
+              <path
+                d="M18.75 6.75C18.75 5.922 18.078 5.25 17.25 5.25H12.75V18C13.639 17.345 14.76 17 15.9 17H18.75V6.75Z"
+                fill="currentColor"
+                opacity="0.55"
+              />
+              <path
+                d="M12 6V18M7.5 8.25H10.5M13.5 8.25H16.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                opacity="0.85"
+              />
             </svg>
           </div>
-          <span className="navbar-wordmark">
-            <span className="navbar-wordmark__real">Real</span>
-            <span className="navbar-wordmark__learn">Learn</span>
+          <span className="navbar-wordmark" aria-label="RealLearn">
+            <span className="navbar-wordmark__name">
+              <span className="navbar-wordmark__real">Real</span>
+              <span className="navbar-wordmark__learn">Learn</span>
+            </span>
+            <span className="navbar-wordmark__tag">Structured AI learning</span>
           </span>
         </Link>
 
@@ -56,7 +71,9 @@ export default function Navbar({ compact = false }: Props) {
           })}
         </nav>
 
-        <ProgressHub />
+        <div className="navbar-actions">
+          <ProgressHub />
+        </div>
       </div>
     </header>
   );

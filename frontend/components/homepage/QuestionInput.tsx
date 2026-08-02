@@ -69,9 +69,10 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
       className={`q-form engraved${focused ? " q-form--focused" : ""}`}
     >
       <div className="q-form__body">
-        <label htmlFor="question-input" style={{ display: "none" }}>
+        <label htmlFor="question-input" className="sr-only">
           What do you want to understand today?
         </label>
+        <div className="q-form__eyebrow">Ask a question</div>
         <textarea
           id="question-input"
           ref={textareaRef}
@@ -142,10 +143,12 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
       </div>
 
       <div className="q-form__actions">
-        <ExampleQuestions onPick={(q) => {
-          setQuestion(q);
-          textareaRef.current?.focus();
-        }} />
+        <div className="q-form__actions-left">
+          <ExampleQuestions onPick={(q) => {
+            setQuestion(q);
+            textareaRef.current?.focus();
+          }} />
+        </div>
         <div className="q-form__actions-right">
           <MicButton
             language={language}
@@ -172,12 +175,12 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           )}
           {isSignedIn ? (
             <button type="submit" disabled={!question.trim()} aria-label="Start learning" className="btn-primary">
-              {mode === "fast" ? "Get a Quick Answer →" : "Start Guided Lesson →"}
+              {mode === "fast" ? "Get quick answer" : "Start guided lesson"}
             </button>
           ) : (
             <SignInButton mode="modal">
               <button type="button" aria-label="Sign in to start learning" className="btn-primary">
-                Sign in to Learn →
+                Sign in to continue
               </button>
             </SignInButton>
           )}
