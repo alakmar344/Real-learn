@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { usePreferenceStore } from "@/store/preferenceStore";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { THEME_OPTIONS } from "@/lib/themes";
+import { Icon } from "@/components/shared/icons";
 
 interface Props {
   open: boolean;
@@ -76,12 +77,12 @@ export default function ThemeModal({ open, onClose }: Props) {
               border: "none",
               background: "transparent",
               color: "var(--text-secondary)",
-              fontSize: 20,
+              display: "inline-flex",
               cursor: "pointer",
               lineHeight: 1,
             }}
           >
-            ✕
+            <Icon name="close" size={20} />
           </button>
         </div>
         <p style={{ margin: "0 0 16px", fontSize: 13, color: "var(--text-secondary)" }}>
@@ -128,8 +129,8 @@ export default function ThemeModal({ open, onClose }: Props) {
                   <span style={{ display: "block", fontSize: 12, color: "var(--text-tertiary)" }}>{opt.hint}</span>
                 </span>
                 {active && (
-                  <span aria-hidden="true" style={{ color: "var(--accent)", fontSize: 18 }}>
-                    ✓
+                  <span aria-hidden="true" style={{ color: "var(--accent)", display: "inline-flex" }}>
+                    <Icon name="check" size={18} />
                   </span>
                 )}
               </button>

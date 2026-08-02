@@ -3457,6 +3457,9 @@ p {
   color: var(--accent);
   margin-right: 8px;
 }
+.loading-cinematic__fact-star svg {
+  vertical-align: -1px;
+}
 .loading-cinematic__patience {
   margin-top: 18px;
   color: var(--accent);
@@ -4721,8 +4724,11 @@ p {
   gap: 14px;
 }
 .streak-figure__emoji {
-  font-size: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   line-height: 1;
+  color: var(--accent);
 }
 .streak-figure__emoji--dead {
   filter: grayscale(1);
@@ -5196,7 +5202,9 @@ p {
   gap: 3px;
 }
 .progress-hub__flame {
-  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--accent);
 }
 .progress-hub__count {
   font-size: 13px;

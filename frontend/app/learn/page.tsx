@@ -148,7 +148,7 @@ export default function LearnPage() {
 
   // Initialize from the CURRENT (already-hydrated) store values — the lesson
   // store persists, so starting these at null/false made every reload of a
-  // persisted lesson re-fire "Lesson ready!" / "Journey complete! 🎉" toasts.
+  // persisted lesson re-fire "Lesson ready!" / "Journey complete!" toasts.
   const prevLessonRef = useRef<LessonJourney | null>(lesson);
   const prevCompletionRef = useRef(showCompletion);
 

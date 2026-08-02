@@ -2,15 +2,22 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
+import { Icon, type IconName } from "@/components/shared/icons";
 
 interface Props {
   open: boolean;
   onClose: () => void;
 }
 
-const STEPS = [
+const STEPS: {
+  icon: IconName;
+  tag: string;
+  title: string;
+  subtitle: string;
+  bullets: string[];
+}[] = [
   {
-    icon: "🚀",
+    icon: "rocket",
     tag: "Step 1 of 4 • Quick Start",
     title: "Things Coming: Ask Anything, Your Way",
     subtitle: "RealLearn AI turns any topic or question into a personalized, structured learning journey.",
@@ -21,7 +28,7 @@ const STEPS = [
     ]
   },
   {
-    icon: "⚡",
+    icon: "zap",
     tag: "Step 2 of 4 • Guided Journey",
     title: "3-Stage Deep-Dive Mastery",
     subtitle: "In Explain mode, complex subjects are broken down into three logical phases.",
@@ -32,7 +39,7 @@ const STEPS = [
     ]
   },
   {
-    icon: "🎯",
+    icon: "target",
     tag: "Step 3 of 4 • Active Learning",
     title: "100% Quiz Gate & Achievement Badges",
     subtitle: "We believe in active recall over passive reading.",
@@ -43,7 +50,7 @@ const STEPS = [
     ]
   },
   {
-    icon: "✨",
+    icon: "sparkle",
     tag: "Step 4 of 4 • Invisible Comfort",
     title: "Audio Voiceovers, Shortcuts & Personal Themes",
     subtitle: "Designed for zero cognitive load and effortless learning.",
@@ -163,7 +170,7 @@ export default function ThingsComingModal({ open, onClose }: Props) {
             justifyContent: "center",
           }}
         >
-          ✕
+          <Icon name="close" size={20} />
         </button>
 
         {/* Step Header */}
@@ -177,10 +184,10 @@ export default function ThingsComingModal({ open, onClose }: Props) {
               height: 36,
               borderRadius: "var(--radius-md)",
               background: "var(--accent-dim)",
-              fontSize: 18,
+              color: "var(--accent)",
             }}
           >
-            {step.icon}
+            <Icon name={step.icon} size={20} />
           </span>
           <span
             className="chip__label"
@@ -237,8 +244,8 @@ export default function ThingsComingModal({ open, onClose }: Props) {
         >
           {step.bullets.map((b, idx) => (
             <div key={idx} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-              <span style={{ color: "var(--accent)", fontWeight: 700, fontSize: 14, marginTop: 1 }}>
-                ✓
+              <span style={{ color: "var(--accent)", display: "inline-flex", marginTop: 2, flexShrink: 0 }}>
+                <Icon name="check" size={14} />
               </span>
               <span style={{ fontSize: 13.5, color: "var(--text-primary)", lineHeight: 1.5 }}>
                 {b}
@@ -295,7 +302,7 @@ export default function ThingsComingModal({ open, onClose }: Props) {
               onClick={handleNext}
               style={{ padding: "8px 20px", fontSize: 13 }}
             >
-              {currentStep === STEPS.length - 1 ? "Get Started 🚀" : "Next →"}
+              {currentStep === STEPS.length - 1 ? "Get Started" : "Next →"}
             </button>
           </div>
         </div>

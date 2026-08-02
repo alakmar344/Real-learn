@@ -8,6 +8,7 @@ import {
   snoozeFeedback,
 } from "@/lib/feedback";
 import { starColor } from "@/lib/palette";
+import { Icon } from "@/components/shared/icons";
 
 interface Props {
   /** Closes/removes the prompt from the parent (used after submit/dismiss). */
@@ -199,15 +200,15 @@ export default function FeedbackPrompt({ onDone }: Props) {
                     background: "none",
                     border: "none",
                     cursor: "pointer",
-                    fontSize: 28,
                     lineHeight: 1,
                     padding: 2,
+                    display: "inline-flex",
                     color: active ? starColor() : "var(--border-accent)",
                     transition: "transform 200ms var(--ease-spring), color 200ms ease",
                     transform: active ? "scale(1.15)" : "scale(1)",
                   }}
                 >
-                  ★
+                  <Icon name={active ? "star-solid" : "star"} size={28} />
                 </button>
               );
             })}

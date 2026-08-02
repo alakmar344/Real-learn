@@ -14,6 +14,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import removeMarkdown from "remove-markdown";
 import { LessonJourney } from "@/types";
 import { triggerHaptic } from "@/lib/haptics";
+import { Icon } from "@/components/shared/icons";
 
 interface Card {
   front: string;
@@ -121,7 +122,13 @@ export default function Flashcards({ lesson }: Props) {
         <h2 className="flashcards__title">Flashcards</h2>
         <div className="flashcards__head-right">
           <span className="flashcards__meta" aria-live="polite">
-            {allSeen ? "Deck done — nice recall ✦" : `${seen.size}/${cards.length} flipped`}
+            {allSeen ? (
+              <>
+                Deck done — nice recall <Icon name="sparkle" size={12} style={{ verticalAlign: "-1px" }} />
+              </>
+            ) : (
+              `${seen.size}/${cards.length} flipped`
+            )}
           </span>
           <button
             type="button"
@@ -185,12 +192,16 @@ export default function Flashcards({ lesson }: Props) {
             <span className="flashcard__face flashcard__face--front" aria-hidden="true">
               <span className="flashcard__tag">{card.hint}</span>
               <span className="flashcard__text">{card.front}</span>
-              <span className="flashcard__flip-hint">tap to flip ↺</span>
+              <span className="flashcard__flip-hint">
+                tap to flip <Icon name="refresh" size={11} style={{ verticalAlign: "-1px" }} />
+              </span>
             </span>
             <span className="flashcard__face flashcard__face--back" aria-hidden="true">
               <span className="flashcard__tag flashcard__tag--answer">answer</span>
               <span className="flashcard__text flashcard__text--answer">{card.back}</span>
-              <span className="flashcard__flip-hint">tap to flip back ↺</span>
+              <span className="flashcard__flip-hint">
+                tap to flip back <Icon name="refresh" size={11} style={{ verticalAlign: "-1px" }} />
+              </span>
             </span>
           </button>
         </div>

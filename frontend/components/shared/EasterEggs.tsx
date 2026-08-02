@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { showToast } from "./ToastContainer";
 import { celebrationColors } from "@/lib/palette";
+import { Icon } from "@/components/shared/icons";
 
 /**
  * Hidden delights, none of them announced, all of them findable:
@@ -25,11 +26,9 @@ const KONAMI = [
 ];
 
 const SECRET_WORDS: Record<string, string> = {
-  magic: "✨ You typed it — and a little magic appeared. Keep believing.",
-  love: "💛 We love that you're here. Truly.",
+  magic: "You typed it — and a little magic appeared. Keep believing.",
+  love: "We love that you're here. Truly.",
 };
-
-const HEARTS = ["💛", "💜", "💙", "💚", "🧡", "❤️", "💖"];
 
 function todayKey() {
   const d = new Date();
@@ -115,22 +114,24 @@ interface Heart {
   bottom: number;
   delay: number;
   size: number;
-  emoji: string;
+  color: string;
   duration: number;
 }
 
 function HeartBurst() {
-  const [hearts] = useState<Heart[]>(() =>
-    Array.from({ length: 18 }, (_, i) => ({
+  // Resolve at fire time so the burst matches the active theme.
+  const [hearts] = useState<Heart[]>(() => {
+    const colors = celebrationColors();
+    return Array.from({ length: 18 }, (_, i) => ({
       id: i,
       left: 8 + Math.random() * 84,
       bottom: Math.random() * 20,
       delay: Math.random() * 0.7,
       size: 18 + Math.random() * 18,
-      emoji: HEARTS[i % HEARTS.length],
+      color: colors[i % colors.length],
       duration: 1.8 + Math.random() * 1.4,
-    }))
-  );
+    }));
+  });
   return (
     <div
       aria-hidden="true"
@@ -143,12 +144,12 @@ function HeartBurst() {
             position: "absolute",
             bottom: `${h.bottom}%`,
             left: `${h.left}%`,
-            fontSize: h.size,
+            color: h.color,
             lineHeight: 1,
             animation: `heartFloat ${h.duration}s ${h.delay}s var(--ease-reveal) both`,
           }}
         >
-          {h.emoji}
+          <Icon name="heart" size={h.size} />
         </div>
       ))}
     </div>
@@ -180,7 +181,7 @@ export default function EasterEggs() {
       if (konamiIdx.current === KONAMI.length) {
         konamiIdx.current = 0;
         fireBurst("confetti");
-        showToast("🎮 Konami code! You're officially one of us now.", "success");
+        showToast("Konami code! You're officially one of us now.", "success");
         return;
       }
 
@@ -227,23 +228,23 @@ export default function EasterEggs() {
       if (month === 1 && day === 1) {
         onceToday("newyear", () => {
           fireBurst("confetti");
-          showToast("🎆 Happy New Year! A whole year of curiosity awaits.", "success");
+          showToast("Happy New Year! A whole year of curiosity awaits.", "success");
         });
       } else if (month === 11 && day === 14) {
         onceToday("childrensday", () =>
-          showToast("🎈 Happy Children's Day! Stay curious forever.", "info")
+          showToast("Happy Children's Day! Stay curious forever.", "info")
         );
       } else if (month === 9 && day === 5) {
         onceToday("teachersday", () =>
-          showToast("🍎 Happy Teachers' Day — today, the world is your teacher.", "info")
+          showToast("Happy Teachers' Day — today, the world is your teacher.", "info")
         );
       } else if (h >= 0 && h < 4) {
         onceToday("nightowl", () =>
-          showToast("🦉 Night owl! The quietest hours make the deepest thoughts.", "info")
+          showToast("Night owl! The quietest hours make the deepest thoughts.", "info")
         );
       } else if (h >= 4 && h < 7) {
         onceToday("earlybird", () =>
-          showToast("🌅 Early bird! The world is still asleep — but your mind is awake.", "info")
+          showToast("Early bird! The world is still asleep — but your mind is awake.", "info")
         );
       }
     }, 2500); // Let the page settle first; delight should never race the UI.

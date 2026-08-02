@@ -5,6 +5,7 @@ import { Language, Level } from "@/types";
 import { usePreferenceStore } from "@/store/preferenceStore";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { THEME_OPTIONS } from "@/lib/themes";
+import { Icon } from "@/components/shared/icons";
 
 const THEMES = THEME_OPTIONS;
 
@@ -183,8 +184,8 @@ export default function PreferenceModal({ open, onClose }: Props) {
                       <span style={{ display: "block", fontSize: 12, color: "var(--text-tertiary)" }}>{opt.hint}</span>
                     </span>
                     {active && (
-                      <span aria-hidden="true" style={{ color: "var(--accent)", fontSize: 16 }}>
-                        ✓
+                      <span aria-hidden="true" style={{ color: "var(--accent)", display: "inline-flex" }}>
+                        <Icon name="check" size={16} />
                       </span>
                     )}
                   </button>

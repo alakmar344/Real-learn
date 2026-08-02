@@ -6,7 +6,22 @@
  *   Run:  node scripts/verify-achievements.mjs
  *         (or: npm run verify:achievements)
  */
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { BADGES, BADGE_BY_ID, TIER_COLOR } from "../lib/achievements.ts";
+
+// Valid icon names, parsed from the IconName union in icons.tsx (the module
+// itself is JSX + path-aliased, so it can't be imported from plain Node).
+const iconsSource = readFileSync(
+  fileURLToPath(new URL("../components/shared/icons.tsx", import.meta.url)),
+  "utf8"
+);
+const unionSource = iconsSource.match(/export type IconName =([\s\S]*?);/)?.[1] ?? "";
+const VALID_ICONS = new Set([...unionSource.matchAll(/"([a-z0-9-]+)"/g)].map((m) => m[1]));
+if (VALID_ICONS.size === 0) {
+  console.error("[FAIL] Could not parse IconName union from icons.tsx");
+  process.exit(1);
+}
 
 console.log(`Verifying ${BADGES.length} badges in achievement catalog...`);
 
@@ -31,8 +46,14 @@ for (const badge of BADGES) {
   }
 
   // 3. Text fields presence check
-  if (!badge.title || !badge.description || !badge.how || !badge.emoji) {
+  if (!badge.title || !badge.description || !badge.how || !badge.icon) {
     console.error(`[FAIL] Missing text properties on badge "${badge.id}"`);
+    failures++;
+  }
+
+  // 3b. Icon must exist in the shared icon set
+  if (badge.icon && !VALID_ICONS.has(badge.icon)) {
+    console.error(`[FAIL] Unknown icon "${badge.icon}" on badge "${badge.id}"`);
     failures++;
   }
 
@@ -151,9 +172,9 @@ console.log(`- Gold (Medium / Dedication): ${tierCounts.gold}`);
 console.log(`- Legendary (Impossibly High / Grind): ${tierCounts.legendary}`);
 
 if (failures === 0) {
-  console.log(`\n✅ PASS — All ${BADGES.length} achievements verified cleanly.`);
+  console.log(`\nPASS — All ${BADGES.length} achievements verified cleanly.`);
   process.exit(0);
 } else {
-  console.error(`\n❌ FAIL — ${failures} issue(s) found in achievements catalog.`);
+  console.error(`\nFAIL — ${failures} issue(s) found in achievements catalog.`);
   process.exit(1);
 }

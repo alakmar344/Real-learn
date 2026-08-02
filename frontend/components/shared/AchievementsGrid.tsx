@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { BADGES, ProgressSnapshot, TIER_COLOR, BadgeTier } from "@/lib/achievements";
+import { Icon } from "@/components/shared/icons";
 
 interface Props {
   unlocked: Record<string, number>;
@@ -250,8 +251,17 @@ export default function AchievementsGrid({ unlocked, snapshot }: Props) {
               }}
             >
               <div className="badge-tile__inner">
-                <div style={{ fontSize: 26, filter: earned ? "none" : "grayscale(1)", lineHeight: 1.1, opacity: earned ? 1 : 0.72 }}>
-                  {badge.emoji}
+                {/* Tier color when earned, muted when locked — replaces the
+                    old grayscale-filtered emoji. */}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    color: earned ? TIER_COLOR[badge.tier] : "var(--text-tertiary)",
+                    opacity: earned ? 1 : 0.72,
+                  }}
+                >
+                  <Icon name={badge.icon} size={26} />
                 </div>
                 <div
                   style={{
@@ -276,14 +286,11 @@ export default function AchievementsGrid({ unlocked, snapshot }: Props) {
                       position: "absolute",
                       top: 5,
                       right: 6,
-                      fontSize: 10,
+                      display: "flex",
                       color: TIER_COLOR[badge.tier],
-                      fontWeight: 800,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.04em",
                     }}
                   >
-                    ✓
+                    <Icon name="check" size={10} />
                   </div>
                 )}
               </div>
@@ -343,7 +350,12 @@ export default function AchievementsGrid({ unlocked, snapshot }: Props) {
             />
           )}
           <div className="badge-popover__header">
-            <span aria-hidden="true" style={{ fontSize: 18 }}>{openBadgeData.emoji}</span>
+            <span
+              aria-hidden="true"
+              style={{ display: "inline-flex", color: TIER_COLOR[openBadgeData.tier] }}
+            >
+              <Icon name={openBadgeData.icon} size={18} />
+            </span>
             <span className="badge-popover__title">{openBadgeData.title}</span>
             <span
               className="badge-popover__tier"
@@ -357,7 +369,8 @@ export default function AchievementsGrid({ unlocked, snapshot }: Props) {
           </p>
           {unlocked[openBadgeData.id] ? (
             <p className="badge-popover__status badge-popover__status--earned">
-              Earned — beautifully done. ✓
+              Earned — beautifully done.{" "}
+              <Icon name="check" size={12} style={{ verticalAlign: "-2px" }} />
             </p>
           ) : (
             <div className="badge-popover__progress">

@@ -10,6 +10,7 @@ import { getArchivedLesson } from "@/lib/lessonArchive";
 import { levelInfo } from "@/lib/achievements";
 import { useMounted } from "@/hooks/useMounted";
 import { Skeleton } from "@/components/shared/Skeleton";
+import { Icon } from "@/components/shared/icons";
 
 interface Props {
   onStartTopic: (topic: string) => void;
@@ -112,7 +113,9 @@ export default function HomeStats({ onStartTopic }: Props) {
       {/* Light-touch link to the full dashboard */}
       {hasActivity && (
         <Link href="/progress" className="mini-progress-link">
-          <span className={streak > 0 ? "flame-flicker" : "flame--dead"}>🔥</span>
+          <span className={streak > 0 ? "flame-flicker" : "flame--dead"}>
+            <Icon name="flame" size={16} style={{ verticalAlign: "-3px" }} />
+          </span>
           <span className="mini-progress-link__count">{streak}</span>
           <span>·</span>
           <span>Level <strong>{info.level}</strong></span>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Icon } from "@/components/shared/icons";
 
 /* Questions from THEIR world — algorithms, games, money, brains, internet
    culture — each one a real lesson in disguise (CS, econ, bio, physics…). */
@@ -59,7 +60,7 @@ export default function ExampleQuestions({ onPick }: Props) {
         onClick={() => setIndex((prev) => (prev + 1) % RECOMMENDATIONS.length)}
         className="chip suggest-duo__shuffle"
       >
-        ↻
+        <Icon name="refresh" size={14} />
       </button>
     </div>
   );
