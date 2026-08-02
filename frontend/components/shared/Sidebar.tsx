@@ -12,6 +12,7 @@ import { getArchivedLesson } from "@/lib/lessonArchive";
 import { useMounted } from "@/hooks/useMounted";
 import { useShallow } from "zustand/shallow";
 import { SavedJourney } from "@/types";
+import { Icon } from "@/components/shared/icons";
 
 // Lazy-load modals — they are only needed when the user clicks to open them.
 // This removes both components (and their deps, e.g. focus-trap hooks) from
@@ -114,7 +115,7 @@ export default function Sidebar({ open, onClose }: Props) {
               aria-label="Close menu"
               onClick={onClose}
             >
-              ✕
+              <Icon name="close" />
             </button>
           </div>
           <button
@@ -122,7 +123,7 @@ export default function Sidebar({ open, onClose }: Props) {
             onClick={handleNewLesson}
             className="btn-primary app-sidebar__new"
           >
-            ＋ New lesson
+            <Icon name="plus" /> New lesson
           </button>
         </div>
 
@@ -166,7 +167,7 @@ export default function Sidebar({ open, onClose }: Props) {
                   onClick={() => setSearch("")}
                   className="sidebar-search__clear"
                 >
-                  ✕
+                  <Icon name="close" size={12} />
                 </button>
               ) : null}
             </div>
@@ -197,7 +198,8 @@ export default function Sidebar({ open, onClose }: Props) {
                         (journey.lesson?.parts ?? []).reduce((sum, p) => sum + (p.quiz?.length ?? 2), 0) ||
                         journey.quizCount ||
                         (journey.lesson?.parts?.length ?? journey.partCount ?? 3) * 2
-                      } ★
+                      }{" "}
+                      <Icon name="star-solid" size={10} label="points" />
                       {(journey.completedParts ?? []).length < (journey.lesson?.parts?.length ?? journey.partCount ?? 3) && (
                         <span> · Part {journey.unlockedPart ?? 1}</span>
                       )}
@@ -209,7 +211,7 @@ export default function Sidebar({ open, onClose }: Props) {
                     onClick={() => setJourneyToRemove(journey.id)}
                     className="journey-item__remove"
                   >
-                    ✕
+                    <Icon name="close" size={13} />
                   </button>
                 </li>
               ))}
@@ -220,13 +222,22 @@ export default function Sidebar({ open, onClose }: Props) {
         <div className="app-sidebar__foot">
           <button
             type="button"
+            role="switch"
+            aria-checked={theme === "dark"}
+            aria-label={theme === "dark" ? "Dark mode on — switch to light" : "Light mode on — switch to dark"}
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            aria-pressed={theme === "light"}
-            className="btn-ghost app-sidebar__foot-btn"
+            className="theme-switch-row"
           >
-            <span>{theme === "dark" ? "🌙 Theme" : "☀️ Theme"}</span>
-            <span className="app-sidebar__foot-note">
-              {theme === "dark" ? "Switch to light" : "Switch to dark"}
+            <span className="theme-switch-row__label">
+              {theme === "dark" ? "Dark mode" : "Light mode"}
+            </span>
+            <span
+              className={`theme-switch${theme === "dark" ? " theme-switch--on" : ""}`}
+              aria-hidden="true"
+            >
+              <Icon name="sun" size={12} className="theme-switch__icon theme-switch__icon--sun" />
+              <Icon name="moon" size={12} className="theme-switch__icon theme-switch__icon--moon" />
+              <span className="theme-switch__thumb" />
             </span>
           </button>
 
@@ -237,7 +248,9 @@ export default function Sidebar({ open, onClose }: Props) {
               onClick={() => { onClose(); router.push("/settings"); }}
               className="btn-ghost app-sidebar__foot-btn"
             >
-              <span>⚙️ Settings</span>
+              <span className="app-sidebar__foot-label">
+                <Icon name="settings" /> Settings
+              </span>
               <span className="app-sidebar__foot-note">Account & data</span>
             </button>
           )}

@@ -13,6 +13,7 @@ import { useSavedJourneysStore } from "@/store/savedJourneysStore";
 import { cancelPendingDebouncedWrites } from "@/lib/debouncedStorage";
 import { clearArchivedLessons } from "@/lib/lessonArchive";
 import { useMounted } from "@/hooks/useMounted";
+import { Icon } from "@/components/shared/icons";
 import { Skeleton, SkeletonCard } from "@/components/shared/Skeleton";
 import {
   COOKIE_CONSENT_ACCEPTED_EVENT,
@@ -361,11 +362,19 @@ export default function SettingsPage() {
     <main className="flow-page">
       <div className="flow-page__inner flow-page__inner--narrow">
         <button type="button" onClick={() => router.back()} className="settings-back">
-          <span className="settings-back__arrow" aria-hidden="true">←</span> Back
+          <span className="settings-back__arrow" aria-hidden="true">
+            <Icon name="arrow-left" size={14} />
+          </span>{" "}
+          Back
         </button>
 
         <header className="page-hero">
-          <span className="page-hero__glyph" aria-hidden="true">{"⚙︎"}</span>
+          <Icon
+            name="settings"
+            size={110}
+            strokeWidth={0.75}
+            className="page-hero__glyph page-hero__glyph--icon"
+          />
           <span className="section-overline">Make It Yours</span>
           <h1 className="page-hero__title">Settings</h1>
           <p className="page-hero__sub">Manage your account, data, and preferences.</p>
@@ -562,7 +571,10 @@ export default function SettingsPage() {
             className="settings-action"
             onClick={() => window.dispatchEvent(new Event(COOKIE_SETTINGS_OPEN_EVENT))}
           >
-            <span>Cookie &amp; analytics preferences</span>
+            <span className="settings-action__label">
+              <Icon name="cookie" size={18} />
+              Cookie &amp; analytics preferences
+            </span>
             <span className="settings-action__note">{cookieChoiceLabel}</span>
           </button>
         </section>
@@ -576,7 +588,10 @@ export default function SettingsPage() {
 
           <div className="option-stack option-stack--loose">
             <button type="button" className="settings-action" onClick={handleExportData}>
-              <span>Export my data</span>
+              <span className="settings-action__label">
+                <Icon name="download" size={18} />
+                Export my data
+              </span>
               <span className="settings-action__note">Download JSON</span>
             </button>
 
@@ -586,7 +601,10 @@ export default function SettingsPage() {
               onClick={() => setDeleteConfirmOpen(true)}
               disabled={deleting}
             >
-              <span>{deleting ? "Deleting…" : "Delete my data"}</span>
+              <span className="settings-action__label">
+                <Icon name="trash" size={18} />
+                {deleting ? "Deleting…" : "Delete my data"}
+              </span>
               <span className="settings-action__note">Permanent</span>
             </button>
           </div>
