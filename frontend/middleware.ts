@@ -96,7 +96,9 @@ function buildCsp(nonce: string): string {
     "font-src 'self'",
     "media-src 'self' blob:",
     "object-src 'none'",
-    "frame-ancestors 'self'",
+    // Nothing embeds this app; pairs with X-Frame-Options: DENY in
+    // next.config.js to shut down clickjacking entirely.
+    "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'",
     "upgrade-insecure-requests",
@@ -138,7 +140,9 @@ export default clerkMiddleware(async (auth, req) => {
 
 export const config = {
   matcher: [
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    // txt/xml matter here: without them /robots.txt, /sitemap.xml and
+    // /llms.txt hit Clerk auth and 307 to /sign-in — invisible to crawlers.
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest|txt|xml)).*)",
     "/__clerk/:path*",
     "/(api|trpc)(.*)",
   ],
