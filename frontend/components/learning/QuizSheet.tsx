@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, memo } from "react";
 import { QuizQuestion as Question } from "@/types";
 import QuizQuestion from "@/components/learning/QuizQuestion";
 import { reshuffleQuestion, sanitizeQuestion } from "@/lib/quizShuffle";
+import { Icon } from "@/components/shared/icons";
 
 interface Props {
   open: boolean;
@@ -198,7 +199,7 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
 
         {/* Close button */}
         <button type="button" onClick={onClose} aria-label="Close quiz" className="quiz-sheet__close">
-          ✕
+          <Icon name="close" size={16} />
         </button>
 
         <h3 className="quiz-sheet__title">Quick Check</h3>

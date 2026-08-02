@@ -3457,6 +3457,9 @@ p {
   color: var(--accent);
   margin-right: 8px;
 }
+.loading-cinematic__fact-star svg {
+  vertical-align: -1px;
+}
 .loading-cinematic__patience {
   margin-top: 18px;
   color: var(--accent);
@@ -4599,6 +4602,11 @@ p {
   pointer-events: none;
   user-select: none;
 }
+/* SVG variant of the ghost glyph — text-stroke doesn't apply to SVG. */
+.page-hero__glyph--icon {
+  color: color-mix(in srgb, var(--accent) 18%, transparent);
+  -webkit-text-stroke: 0;
+}
 .page-hero__title {
   margin: 0;
   font-family: var(--font-display);
@@ -4716,8 +4724,11 @@ p {
   gap: 14px;
 }
 .streak-figure__emoji {
-  font-size: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   line-height: 1;
+  color: var(--accent);
 }
 .streak-figure__emoji--dead {
   filter: grayscale(1);
@@ -4988,6 +4999,22 @@ p {
   font-weight: 400;
   flex-shrink: 0;
 }
+.settings-action__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.settings-action__label svg {
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+  transition: color var(--dur-base) var(--ease-color);
+}
+.settings-action:hover .settings-action__label svg {
+  color: currentColor;
+}
+.settings-action--danger .settings-action__label svg {
+  color: currentColor;
+}
 .settings-action--danger {
   background: var(--wrong-bg);
   color: var(--wrong);
@@ -5175,7 +5202,9 @@ p {
   gap: 3px;
 }
 .progress-hub__flame {
-  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--accent);
 }
 .progress-hub__count {
   font-size: 13px;
@@ -5404,6 +5433,104 @@ p {
   color: var(--wrong);
 }
 
+/* ── Physical theme switch (sidebar) ─────────────────────────────
+   A real slide toggle: recessed track (inset shadows), raised thumb
+   that springs across and squashes slightly while pressed, sun/moon
+   glyphs living inside the track. */
+.theme-switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-color);
+}
+.theme-switch-row:hover {
+  background: var(--bg-card-hover);
+}
+.theme-switch-row:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.theme-switch-row__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+.theme-switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 46px;
+  height: 26px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.28),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.06);
+  transition: background var(--dur-base) var(--ease-color),
+              border-color var(--dur-base) var(--ease-color);
+}
+.theme-switch__icon {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-tertiary);
+  opacity: 0.55;
+  transition: opacity var(--dur-base) var(--ease-color),
+              color var(--dur-base) var(--ease-color);
+}
+.theme-switch__icon--sun { left: 5px; }
+.theme-switch__icon--moon { right: 5px; }
+.theme-switch--on .theme-switch__icon--moon,
+.theme-switch:not(.theme-switch--on) .theme-switch__icon--sun {
+  color: var(--accent);
+  opacity: 1;
+}
+.theme-switch__thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-solid);
+  border: 1px solid var(--border-default);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.35),
+    0 2px 6px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transition: transform 380ms var(--ease-spring),
+              width 160ms ease;
+}
+.theme-switch--on .theme-switch__thumb {
+  transform: translateX(20px);
+}
+/* Tactile press: the thumb widens under the finger, anchored to its side. */
+.theme-switch-row:active .theme-switch__thumb {
+  width: 24px;
+}
+.theme-switch-row:active .theme-switch--on .theme-switch__thumb {
+  transform: translateX(16px);
+}
+
+.app-sidebar__foot-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.journey-item__meta svg {
+  vertical-align: -1.5px;
+}
+
 /* ── Respect reduced motion for the new component system ── */
 @media (prefers-reduced-motion: reduce) {
   .btn-primary,
@@ -5433,6 +5560,10 @@ p {
   .settings-action,
   .settings-back,
   .xp-track__fill,
+  .theme-switch,
+  .theme-switch__thumb,
+  .theme-switch__icon,
+  .theme-switch-row,
   .scroll-top {
     transition-duration: 0.01ms !important;
   }

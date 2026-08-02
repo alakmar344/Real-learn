@@ -7,6 +7,7 @@ import { useReadingTimer } from "@/hooks/useReadingTimer";
 import { LessonPart } from "@/types";
 import SourceTag from "@/components/shared/SourceTag";
 import ListenButton from "@/components/shared/ListenButton";
+import { Icon } from "@/components/shared/icons";
 import { useLessonStore } from "@/store/lessonStore";
 
 // Security: links inside AI-generated markdown are untrusted. react-markdown's
@@ -97,7 +98,9 @@ const PartCardBase = ({
         className="part-done-bar"
         style={{ marginTop: "var(--space-lg)" }}
       >
-        <span>✓ {part.title} · Completed</span>
+        <span>
+          <Icon name="check" size={14} style={{ verticalAlign: "-2px" }} /> {part.title} · Completed
+        </span>
         <strong>{score ?? 0}/{part.quiz?.length ?? 2}</strong>
       </button>
     );
@@ -140,8 +143,8 @@ const PartCardBase = ({
                 aria-label="Copy section text"
                 className={`part-card__tool${copied ? " is-active" : ""}`}
               >
-                <CopyIcon />
-                {copied ? "Copied ✓" : "Copy"}
+                {copied ? <Icon name="check" size={14} /> : <CopyIcon />}
+                {copied ? "Copied" : "Copy"}
               </button>
               <ListenButton
                 text={`${part.title}. ${part.content}`}

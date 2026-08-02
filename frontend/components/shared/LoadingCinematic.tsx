@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useLessonStore } from "@/store/lessonStore";
+import { Icon } from "@/components/shared/icons";
 
 // Each step "completes" once the real progress passes its threshold. The
 // thresholds are spread across the whole 0–100 range (no two steps share a
@@ -201,7 +202,9 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
         {/* Rotating fact */}
         <div key={factIndex} className="loading-cinematic__fact">
           <p className="loading-cinematic__fact-text">
-            <span aria-hidden="true" className="loading-cinematic__fact-star">✦</span>
+            <span aria-hidden="true" className="loading-cinematic__fact-star">
+              <Icon name="sparkle" size={12} />
+            </span>
             {facts[factIndex]}
           </p>
         </div>

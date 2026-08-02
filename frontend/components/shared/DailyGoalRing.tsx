@@ -1,5 +1,7 @@
 "use client";
 
+import { Icon } from "@/components/shared/icons";
+
 interface Props {
   value: number;
   goal: number;
@@ -59,7 +61,7 @@ export default function DailyGoalRing({
             lineHeight: 1,
           }}
         >
-          {met ? "✓" : `${value}/${safeGoal}`}
+          {met ? <Icon name="check" size={Math.round(size * 0.36)} /> : `${value}/${safeGoal}`}
         </div>
       )}
     </div>

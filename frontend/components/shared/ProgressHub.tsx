@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useProgressStore } from "@/store/progressStore";
 import { levelInfo, dayKey } from "@/lib/achievements";
 import { useMounted } from "@/hooks/useMounted";
+import { Icon } from "@/components/shared/icons";
 
 /** Compact navbar widget: streak flame, level ring, daily-goal dots. Navigates
  * to the full /progress dashboard on click. This is the persistent "growing
@@ -49,7 +50,7 @@ function ProgressHubImpl() {
         {/* Streak */}
         <span className="progress-hub__streak">
           <span className={`progress-hub__flame${streak > 0 ? " flame-flicker" : " flame--dead"}`}>
-            🔥
+            <Icon name="flame" size={16} />
           </span>
           <span className={`progress-hub__count${streak > 0 ? "" : " progress-hub__count--zero"}`}>
             {streak}
@@ -83,7 +84,13 @@ function ProgressHubImpl() {
         <span
           className={`progress-hub-daily progress-hub__daily${todayCount >= dailyGoal ? " progress-hub__daily--met" : ""}`}
         >
-          {todayCount >= dailyGoal ? "✓ goal" : `${todayCount}/${dailyGoal}`}
+          {todayCount >= dailyGoal ? (
+            <>
+              <Icon name="check" size={11} /> goal
+            </>
+          ) : (
+            `${todayCount}/${dailyGoal}`
+          )}
         </span>
 
         <span className="sr-only">{pct}%</span>

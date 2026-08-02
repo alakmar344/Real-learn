@@ -5,6 +5,7 @@ import { useProgressStore, Celebration } from "@/store/progressStore";
 import { BADGE_BY_ID, TIER_COLOR, levelTitle } from "@/lib/achievements";
 import { useMounted } from "@/hooks/useMounted";
 import { celebrationColors } from "@/lib/palette";
+import { Icon, type IconName } from "@/components/shared/icons";
 
 /* Duration each celebration type stays on screen.
    Reduced from original values to minimize user interruption — celebrations
@@ -222,29 +223,31 @@ function BatchCelebrationCard({
   const { hero, totalXp, badgeCount, leveledUp, streakExtended, dailyGoalMet } = summary;
 
   // Build the hero icon based on the most important event
-  let heroIcon = "✨";
+  let heroIcon: IconName = "sparkle";
+  let heroColor = "var(--accent)";
   let heroTitle = "Great work!";
   let heroSub = "";
 
   if (hero.kind === "level-up") {
-    heroIcon = "⭐";
+    heroIcon = "star";
     heroTitle = `Level ${hero.level}!`;
     heroSub = `You're now a ${levelTitle(hero.level)}.`;
   } else if (hero.kind === "badge") {
     const badge = BADGE_BY_ID[hero.badgeId];
-    heroIcon = badge?.emoji ?? "🏆";
+    heroIcon = badge?.icon ?? "trophy";
+    heroColor = TIER_COLOR[badge?.tier ?? "bronze"];
     heroTitle = badge?.title ?? "Achievement unlocked!";
     heroSub = badge?.description ?? "";
   } else if (hero.kind === "daily-goal") {
-    heroIcon = "🎯";
+    heroIcon = "target";
     heroTitle = "Daily goal complete!";
     heroSub = `${hero.goal} parts studied today.`;
   } else if (hero.kind === "streak") {
-    heroIcon = "🔥";
+    heroIcon = "flame";
     heroTitle = `${hero.streak}-day streak!`;
     heroSub = "Come back tomorrow to keep it alive.";
   } else {
-    heroIcon = "✨";
+    heroIcon = "sparkle";
     heroTitle = "Nice work!";
     heroSub = "";
   }
@@ -260,8 +263,11 @@ function BatchCelebrationCard({
 
   return (
     <CenterCard onDismiss={onDismiss}>
-      <div className="animate-badge-pop" style={{ fontSize: 56, lineHeight: 1 }}>
-        {heroIcon}
+      <div
+        className="animate-badge-pop"
+        style={{ display: "flex", justifyContent: "center", lineHeight: 1, color: heroColor }}
+      >
+        <Icon name={heroIcon} size={56} />
       </div>
       <h3
         style={{
@@ -432,7 +438,12 @@ export default function EngagementLayer() {
   if (current.kind === "level-up") {
     return (
       <CenterCard onDismiss={dequeue}>
-        <div className="animate-badge-pop" style={{ fontSize: 56, lineHeight: 1 }}>⭐</div>
+        <div
+          className="animate-badge-pop"
+          style={{ display: "flex", justifyContent: "center", lineHeight: 1, color: "var(--accent)" }}
+        >
+          <Icon name="star" size={56} />
+        </div>
         <h3 style={{ margin: "12px 0 4px", fontSize: 24, fontWeight: 800, color: "var(--text-primary)" }}>
           Level {current.level}!
         </h3>
@@ -457,13 +468,13 @@ export default function EngagementLayer() {
             borderRadius: "50%",
             display: "grid",
             placeItems: "center",
-            fontSize: 46,
+            color: TIER_COLOR[badge.tier],
             background: "var(--bg-card)",
             border: `3px solid ${TIER_COLOR[badge.tier]}`,
             boxShadow: "var(--shadow-md)",
           }}
         >
-          {badge.emoji}
+          <Icon name={badge.icon} size={46} />
         </div>
         <p style={{ margin: "12px 0 2px", fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: TIER_COLOR[badge.tier], fontWeight: 800 }}>
           {badge.tier} · Achievement unlocked
@@ -477,7 +488,12 @@ export default function EngagementLayer() {
   if (current.kind === "streak") {
     return (
       <CenterCard onDismiss={dequeue}>
-        <div className="flame-flicker" style={{ fontSize: 60, lineHeight: 1 }}>🔥</div>
+        <div
+          className="flame-flicker"
+          style={{ display: "flex", justifyContent: "center", lineHeight: 1, color: "var(--accent)" }}
+        >
+          <Icon name="flame" size={60} />
+        </div>
         <h3 style={{ margin: "10px 0 4px", fontSize: 26, fontWeight: 800, color: "var(--text-primary)" }}>
           {current.streak}-day streak!
         </h3>
@@ -491,7 +507,12 @@ export default function EngagementLayer() {
   if (current.kind === "daily-goal") {
     return (
       <CenterCard onDismiss={dequeue}>
-        <div className="animate-badge-pop" style={{ fontSize: 56, lineHeight: 1 }}>🎯</div>
+        <div
+          className="animate-badge-pop"
+          style={{ display: "flex", justifyContent: "center", lineHeight: 1, color: "var(--accent)" }}
+        >
+          <Icon name="target" size={56} />
+        </div>
         <h3 style={{ margin: "12px 0 4px", fontSize: 24, fontWeight: 800, color: "var(--text-primary)" }}>
           Daily goal complete!
         </h3>

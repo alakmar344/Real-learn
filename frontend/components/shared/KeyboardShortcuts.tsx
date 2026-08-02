@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
+import { Icon } from "@/components/shared/icons";
 
 /**
  * Keyboard shortcuts overlay — press "?" to show all available shortcuts.
@@ -92,11 +93,11 @@ export default function KeyboardShortcuts() {
               border: "none",
               cursor: "pointer",
               color: "var(--text-tertiary)",
-              fontSize: 18,
+              display: "inline-flex",
               padding: 4,
             }}
           >
-            ✕
+            <Icon name="close" size={18} />
           </button>
         </div>
 

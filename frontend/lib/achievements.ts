@@ -4,6 +4,11 @@
 //
 // Everything here is deterministic and side-effect free so it can be unit
 // tested and reused from the store, the UI, and the share card.
+//
+// NOTE: keep imports type-only — scripts/verify-achievements.mjs loads this
+// file in plain Node (type stripping erases them; runtime imports would break).
+
+import type { IconName } from "@/components/shared/icons";
 
 /* ─────────────────────────── XP & Levels ─────────────────────────── */
 
@@ -166,7 +171,8 @@ export interface ProgressSnapshot {
 
 export interface Badge {
   id: string;
-  emoji: string;
+  /** Name of the inline-SVG icon shown on the badge tile and celebrations. */
+  icon: IconName;
   title: string;
   description: string;
   /**
@@ -189,7 +195,7 @@ export const BADGES: Badge[] = [
   /* ── Gentle first wins & Easy effort (Bronze) ── */
   {
     id: "first_spark",
-    emoji: "🌱",
+    icon: "leaf",
     title: "First W",
     description: "Pass your very first quiz part.",
     how: "Ask any question you're curious about, read Part 1, and pass its little quiz. That's it — your journey begins.",
@@ -199,7 +205,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "first_lesson",
-    emoji: "🎓",
+    icon: "graduation-cap",
     title: "Tutorial Complete",
     description: "Complete your very first learning journey.",
     how: "Finish all the parts of one lesson — read each part and pass its quiz to unlock the next.",
@@ -209,7 +215,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "first_wonder",
-    emoji: "💭",
+    icon: "message-circle",
     title: "Rabbit Hole Opened",
     description: "Ask your first follow-up question.",
     how: "After finishing a lesson, tap the follow-up box and ask anything the lesson made you wonder about.",
@@ -219,7 +225,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "day_one_done",
-    emoji: "☀️",
+    icon: "sun",
     title: "Day One Done",
     description: "Meet your daily goal for the first time.",
     how: "Pass enough quiz parts today to fill your daily goal ring (you can adjust the goal in Settings).",
@@ -229,7 +235,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "level_2",
-    emoji: "✨",
+    icon: "sparkle",
     title: "Level Up",
     description: "Reach Level 2.",
     how: "Earn 100 XP by passing quizzes and completing journeys — one or two lessons will get you there.",
@@ -239,7 +245,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "streak_2",
-    emoji: "🕯️",
+    icon: "calendar",
     title: "Back-to-Back",
     description: "Learn on 2 days in a row.",
     how: "Meet your daily goal today, then pull up again tomorrow. Two days back-to-back starts the run.",
@@ -249,7 +255,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "branching_out",
-    emoji: "🌿",
+    icon: "compass",
     title: "Side Quest",
     description: "Explore 2 different subjects.",
     how: "Ask questions from two different worlds — maybe one about physics, then one about history.",
@@ -259,7 +265,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "first_perfect_part",
-    emoji: "💯",
+    icon: "medal",
     title: "Flawless",
     description: "Ace a quiz with a perfect part score.",
     how: "Read a part carefully, then answer every question in its quiz correctly on your first try.",
@@ -269,7 +275,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "night_owl",
-    emoji: "🦉",
+    icon: "moon",
     title: "Night Owl",
     description: "Learn something after midnight.",
     how: "Pass a quiz part between midnight and 5am — for the 3am search-history hours.",
@@ -279,7 +285,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "early_bird",
-    emoji: "🐦",
+    icon: "feather",
     title: "Early Bird",
     description: "Learn something before 8am.",
     how: "Pass a quiz part between 5am and 8am — start the day with something new in your head.",
@@ -289,7 +295,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "late_night_grind",
-    emoji: "🌙",
+    icon: "clock",
     title: "Late Night Shift",
     description: "Pass a quiz between 10 PM and midnight.",
     how: "Pass a quiz part between 10 PM and midnight (22:00–23:59). Finishing the day strong.",
@@ -299,7 +305,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "streak_3",
-    emoji: "🔥",
+    icon: "flame",
     title: "It's a Streak Now",
     description: "Keep a 3-day learning streak.",
     how: "Meet your daily goal three days in a row. A streak freeze will protect you if you miss one day.",
@@ -309,7 +315,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "streak_5",
-    emoji: "⚡",
+    icon: "zap",
     title: "Five-Day Pulse",
     description: "Keep a 5-day learning streak.",
     how: "Hit your daily goal 5 days in a row. You're building a real habit now.",
@@ -321,7 +327,7 @@ export const BADGES: Badge[] = [
   /* ── Silver — habits taking root & steady effort ── */
   {
     id: "ten_parts",
-    emoji: "🧩",
+    icon: "clipboard-check",
     title: "Quiz Boss",
     description: "Pass 10 quiz parts.",
     how: "Keep passing part quizzes across any lessons — every part counts toward the ten.",
@@ -331,7 +337,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "quarter_century_parts",
-    emoji: "🧱",
+    icon: "layers",
     title: "Quarter Century",
     description: "Pass 25 quiz parts.",
     how: "Pass 25 part quizzes across your journeys. Every single step counts.",
@@ -341,7 +347,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "five_lessons",
-    emoji: "📚",
+    icon: "book-open",
     title: "Binge Learner",
     description: "Complete 5 learning journeys.",
     how: "Finish five full lessons on anything you like — one more episode, but it's knowledge.",
@@ -351,7 +357,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "ten_lessons",
-    emoji: "🌊",
+    icon: "infinity",
     title: "Deep Diver",
     description: "Complete 10 learning journeys.",
     how: "Ten finished journeys — keep asking, keep reading, keep passing those quizzes.",
@@ -361,7 +367,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "xp_500",
-    emoji: "🏮",
+    icon: "lightbulb",
     title: "XP Farmer",
     description: "Gather 500 lifetime XP.",
     how: "Every quiz passed and journey finished drops XP. Farm it honestly — 500 lifetime and it's yours.",
@@ -371,7 +377,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "xp_2500",
-    emoji: "💎",
+    icon: "gem",
     title: "XP Collector",
     description: "Gather 2,500 lifetime XP.",
     how: "Stack up 2,500 XP through quizzes, streak bonuses, and completed journeys.",
@@ -381,7 +387,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "streak_7",
-    emoji: "🔥",
+    icon: "flame",
     title: "On Fire",
     description: "Keep a 7-day learning streak.",
     how: "Meet your daily goal every day for a week. Even one part a day keeps the flame alive.",
@@ -391,7 +397,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "polyglot_2",
-    emoji: "🌍",
+    icon: "globe",
     title: "Bilingual Brain",
     description: "Learn in 2 different languages.",
     how: "Switch the lesson language (from the home screen selector) and complete a part in a second language.",
@@ -401,7 +407,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "hyperglot_5",
-    emoji: "🌐",
+    icon: "compass",
     title: "Language Explorer",
     description: "Learn in 5 different languages.",
     how: "Try out RealLearn in 5 of the 12 supported languages across your quizzes.",
@@ -411,7 +417,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "level_5",
-    emoji: "⭐",
+    icon: "star",
     title: "Built Different",
     description: "Reach Level 5.",
     how: "Keep earning XP from quizzes, perfect parts and finished journeys until Level 5 lights up.",
@@ -421,7 +427,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "curious_cat",
-    emoji: "🐈",
+    icon: "message-circle",
     title: "Terminally Curious",
     description: "Ask 5 follow-up questions.",
     how: "After lessons, hit the follow-up box whenever something bugs you. Five follow-ups and it's official.",
@@ -431,7 +437,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "curious_scholar",
-    emoji: "🔍",
+    icon: "search",
     title: "Curious Scholar",
     description: "Ask 10 follow-up questions.",
     how: "Ask 10 follow-up questions after finishing lessons. Dig deeper into the details.",
@@ -441,7 +447,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "goal_getter",
-    emoji: "🎯",
+    icon: "target",
     title: "Goal Getter",
     description: "Hit your daily goal 5 times.",
     how: "Fill your daily goal ring on five different days — they don't have to be in a row.",
@@ -451,7 +457,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "flawless_hat_trick",
-    emoji: "🎩",
+    icon: "crown",
     title: "Hat-Trick",
     description: "Ace 3 quiz parts with perfect scores.",
     how: "Get 100% on 3 different quiz parts on your very first try.",
@@ -463,7 +469,7 @@ export const BADGES: Badge[] = [
   /* ── Gold — real dedication & medium/high milestones ── */
   {
     id: "perfect_lesson",
-    emoji: "🏆",
+    icon: "trophy",
     title: "Perfect Run",
     description: "Finish a journey with a perfect score.",
     how: "Complete every part of one lesson without missing a single quiz answer. Read closely — you've got this.",
@@ -473,7 +479,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "flawless_five",
-    emoji: "🌟",
+    icon: "star-solid",
     title: "Flawless Streak",
     description: "Finish 5 journeys with a 100% perfect score.",
     how: "Complete 5 whole lessons without a single incorrect quiz answer.",
@@ -483,7 +489,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "sharpshooter",
-    emoji: "🎯",
+    icon: "target",
     title: "Sharpshooter",
     description: "Ace 5 quiz parts with perfect scores.",
     how: "Score perfectly on five part quizzes (any lessons). Careful reading beats fast clicking.",
@@ -493,7 +499,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "fifty_parts",
-    emoji: "🧩",
+    icon: "mountain",
     title: "Half-Century",
     description: "Pass 50 quiz parts.",
     how: "Fifty quizzes cleared. You're building a serious foundation of knowledge.",
@@ -503,7 +509,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "twenty_lessons",
-    emoji: "🧠",
+    icon: "lightbulb",
     title: "Walking Wikipedia",
     description: "Complete 20 learning journeys.",
     how: "Twenty finished journeys. At this point the questions come to you — keep following them.",
@@ -513,7 +519,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "knowledge_seeker",
-    emoji: "📜",
+    icon: "book-open",
     title: "Knowledge Seeker",
     description: "Complete 35 learning journeys.",
     how: "Complete 35 entire 3-part lessons across any subjects.",
@@ -523,7 +529,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "streak_14",
-    emoji: "🌙",
+    icon: "moon",
     title: "Two Weeks, No Misses",
     description: "Keep a 14-day learning streak.",
     how: "Meet your daily goal every day for two weeks straight. Small steps, every single day.",
@@ -533,7 +539,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "streak_21",
-    emoji: "🔥",
+    icon: "flame",
     title: "Three-Week Titan",
     description: "Keep a 21-day learning streak.",
     how: "Maintain your daily goal streak for 21 days straight (3 full weeks).",
@@ -543,7 +549,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "polyglot_3",
-    emoji: "🗺️",
+    icon: "map",
     title: "Polyglot",
     description: "Learn in 3 different languages.",
     how: "Complete parts in three different languages — RealLearn speaks twelve; try a new one.",
@@ -553,7 +559,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "linguist_8",
-    emoji: "🗣️",
+    icon: "message-circle",
     title: "Linguistic Prodigy",
     description: "Learn in 8 different languages.",
     how: "Complete quiz parts across 8 different Indian languages.",
@@ -563,7 +569,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "level_10",
-    emoji: "🚀",
+    icon: "rocket",
     title: "Cracked",
     description: "Reach Level 10.",
     how: "Keep the XP flowing — daily goals, perfect parts and finished journeys all push you upward.",
@@ -573,7 +579,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "level_15",
-    emoji: "⚡",
+    icon: "zap",
     title: "Big Brain Era",
     description: "Reach Level 15.",
     how: "Climb the levels through steady learning until you hit Level 15.",
@@ -583,7 +589,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "renaissance",
-    emoji: "🎭",
+    icon: "layers",
     title: "Genre Hopper",
     description: "Explore 5 different subjects.",
     how: "Wander widely: ask questions across five subjects — science, history, economics, anything.",
@@ -593,7 +599,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "subject_master",
-    emoji: "🌌",
+    icon: "sparkle",
     title: "Polymath in Training",
     description: "Explore 8 different subjects.",
     how: "Ask questions across 8 distinct academic or real-world subject domains.",
@@ -603,7 +609,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "habit_builder",
-    emoji: "🧱",
+    icon: "calendar",
     title: "Habit Builder",
     description: "Hit your daily goal 20 times.",
     how: "Twenty days of met goals, in any pattern. That's not motivation anymore, that's a system.",
@@ -613,7 +619,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "goal_crusher",
-    emoji: "🎯",
+    icon: "clipboard-check",
     title: "Goal Crusher",
     description: "Hit your daily goal 50 times.",
     how: "Meet your daily learning goal on 50 separate calendar days.",
@@ -623,7 +629,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "endless_wonder",
-    emoji: "🎐",
+    icon: "feather",
     title: "Thread Puller",
     description: "Ask 15 follow-up questions.",
     how: "Keep pulling the thread after each lesson — fifteen follow-ups deep is a proper rabbit hole.",
@@ -635,7 +641,7 @@ export const BADGES: Badge[] = [
   /* ── Legendary — impossibly high feats & ultra grind ── */
   {
     id: "streak_30",
-    emoji: "🌟",
+    icon: "star-solid",
     title: "Unstoppable",
     description: "Keep a 30-day learning streak.",
     how: "A whole month of met daily goals. Guard your streak freezes with your life.",
@@ -645,7 +651,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "streak_100",
-    emoji: "👑",
+    icon: "crown",
     title: "Centurion Flame",
     description: "Keep a 100-day learning streak.",
     how: "Maintain a 100-day learning streak without losing your flame. Legendary!",
@@ -655,7 +661,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "grand_library",
-    emoji: "🏛️",
+    icon: "graduation-cap",
     title: "Lore Master",
     description: "Complete 50 learning journeys.",
     how: "Fifty finished journeys. At this point you ARE the group chat's fact-checker.",
@@ -665,7 +671,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "century_club",
-    emoji: "🏛️",
+    icon: "trophy",
     title: "Century Club",
     description: "Complete 100 learning journeys.",
     how: "Complete 100 full 3-part lessons. A monumental feat of intellect.",
@@ -675,7 +681,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "two_hundred_parts",
-    emoji: "🔱",
+    icon: "shield",
     title: "Quiz Sovereign",
     description: "Pass 200 quiz parts.",
     how: "Pass 200 individual part quizzes. Truly legendary dedication.",
@@ -685,7 +691,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "xp_10000",
-    emoji: "🌌",
+    icon: "gem",
     title: "XP Overlord",
     description: "Gather 10,000 lifetime XP.",
     how: "Amass a staggering 10,000 total lifetime XP across all activity.",
@@ -695,7 +701,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "level_20",
-    emoji: "🌌",
+    icon: "mountain",
     title: "Final Form",
     description: "Reach Level 20.",
     how: "The long road: keep showing up daily and let the XP stack. Level 20 is earned, never given.",
@@ -705,7 +711,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "level_30",
-    emoji: "👾",
+    icon: "gamepad",
     title: "Final Boss",
     description: "Reach Level 30.",
     how: "Reach the ultimate rank — Level 30. You are the Final Boss.",
@@ -715,7 +721,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "omniglot",
-    emoji: "🌀",
+    icon: "globe",
     title: "Omniglot",
     description: "Learn in all 12 supported languages.",
     how: "Complete at least one quiz part in every single language RealLearn supports (12 languages!).",
@@ -725,7 +731,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "deadeye",
-    emoji: "🎯",
+    icon: "target",
     title: "Deadeye Specialist",
     description: "Ace 50 quiz parts with perfect scores.",
     how: "Score 100% on 50 part quizzes on your first try. Flawless precision.",
@@ -735,7 +741,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "perfectionist_prime",
-    emoji: "💫",
+    icon: "medal",
     title: "Perfectionist Prime",
     description: "Finish 20 journeys with 100% perfect scores.",
     how: "Complete 20 entire lessons without missing a single quiz question.",
@@ -745,7 +751,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: "hundred_goals",
-    emoji: "🏆",
+    icon: "infinity",
     title: "Century of Goals",
     description: "Hit your daily goal 100 times.",
     how: "Meet your daily learning goal on 100 distinct days. Unwavering discipline.",

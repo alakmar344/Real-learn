@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { LessonJourney } from "@/types";
+import { Icon } from "@/components/shared/icons";
 
 interface Props {
   lesson: LessonJourney;
@@ -21,7 +22,7 @@ export default function QuickSummaryCards({ lesson }: Props) {
 
   const handleCopyCard = async () => {
     try {
-      const textToCopy = `📌 Quick Summary (${activeCardIndex + 1}/${totalCards}): ${lesson.question ?? lesson.topic ?? ""}\n\n${currentTakeaway}`;
+      const textToCopy = `Quick Summary (${activeCardIndex + 1}/${totalCards}): ${lesson.question ?? lesson.topic ?? ""}\n\n${currentTakeaway}`;
       await navigator.clipboard.writeText(textToCopy);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -59,16 +60,17 @@ export default function QuickSummaryCards({ lesson }: Props) {
             gap: 6,
           }}
         >
-          ⚡ Quick Takeaway Cards ({activeCardIndex + 1} of {totalCards})
+          <Icon name="zap" size={14} /> Quick Takeaway Cards ({activeCardIndex + 1} of {totalCards})
         </span>
         <button
           type="button"
           onClick={handleCopyCard}
           aria-label="Copy summary card text"
           className="btn-ghost"
-          style={{ fontSize: 12, padding: "4px 10px", minHeight: 28 }}
+          style={{ fontSize: 12, padding: "4px 10px", minHeight: 28, display: "inline-flex", alignItems: "center", gap: 4 }}
         >
-          {copied ? "Copied ✓" : "📋 Copy Card"}
+          <Icon name={copied ? "check" : "clipboard-check"} size={12} />
+          {copied ? "Copied" : "Copy Card"}
         </button>
       </div>
 
@@ -156,7 +158,7 @@ export default function QuickSummaryCards({ lesson }: Props) {
               className="btn-icon"
               style={{ width: 30, height: 30, minHeight: "auto", fontSize: 12 }}
             >
-              ←
+              <Icon name="arrow-left" size={14} />
             </button>
             <button
               type="button"
@@ -165,7 +167,7 @@ export default function QuickSummaryCards({ lesson }: Props) {
               className="btn-icon"
               style={{ width: 30, height: 30, minHeight: "auto", fontSize: 12 }}
             >
-              →
+              <Icon name="arrow-right" size={14} />
             </button>
           </div>
         </div>

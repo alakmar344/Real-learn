@@ -138,15 +138,15 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
 
       // Stats row — clean bordered glass pills
       const pills = [
-        { text: `⭐ Level ${info.level} · ${levelTitle(info.level)}`, color: SHARE_CARD.brand },
-        { text: `🔥 ${streak}-day streak`, color: SHARE_CARD.amber },
-        totalScore >= maxScore ? { text: "🏆 Perfect run", color: SHARE_CARD.amber } : { text: "✅ Completed", color: SHARE_CARD.mint },
+        { text: `Level ${info.level} · ${levelTitle(info.level)}`, color: SHARE_CARD.brand },
+        { text: `${streak}-day streak`, color: SHARE_CARD.amber },
+        totalScore >= maxScore ? { text: "Perfect run", color: SHARE_CARD.amber } : { text: "Completed", color: SHARE_CARD.mint },
       ];
       ctx.font = "700 34px Inter, sans-serif";
       let px = 72;
       const py = H - 560;
       pills.forEach((p) => {
-        const w = ctx.measureText(p.text).width + 48;
+        const w = ctx.measureText(p.text).width + 76;
         const ph = 66;
         // glass background
         ctx.fillStyle = SHARE_CARD.card;
@@ -161,9 +161,13 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
         ctx.beginPath();
         ctx.roundRect(px, py + 10, 6, ph - 20, 3);
         ctx.fill();
+        // colored bullet dot (replaces the old emoji prefix)
+        ctx.beginPath();
+        ctx.arc(px + 40, py + ph / 2, 9, 0, Math.PI * 2);
+        ctx.fill();
         // text
         ctx.fillStyle = SHARE_CARD.ink;
-        ctx.fillText(p.text, px + 30, py + 42);
+        ctx.fillText(p.text, px + 62, py + 42);
         px += w + 20;
       });
 
@@ -242,7 +246,7 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
       ctx.textAlign = "center";
       ctx.fillStyle = SHARE_CARD.card;
       ctx.font = "900 46px Inter, sans-serif";
-      ctx.fillText("👉  REALLEARN.SITE  👈", W / 2, ctaY + 65);
+      ctx.fillText("TRY IT — REALLEARN.SITE", W / 2, ctaY + 65);
 
       canvas.toBlob((b) => resolve(b), "image/png");
     });

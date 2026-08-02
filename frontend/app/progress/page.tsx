@@ -10,6 +10,7 @@ import { levelInfo, levelTitle, dayKey, daysBetween, ProgressSnapshot } from "@/
 import { useMounted } from "@/hooks/useMounted";
 import { useShallow } from "zustand/shallow";
 import { Skeleton, SkeletonCard, SkeletonTile } from "@/components/shared/Skeleton";
+import { Icon } from "@/components/shared/icons";
 
 const ActivityHeatmap = dynamic(() => import("@/components/shared/ActivityHeatmap"), {
   loading: () => <Skeleton height={140} borderRadius="var(--radius-xl)" />,
@@ -167,7 +168,7 @@ export default function ProgressPage() {
                         : "streak-figure__emoji streak-figure__emoji--dead"
                     }
                   >
-                    🔥
+                    <Icon name="flame" size={42} />
                   </span>
                   <div>
                     <div className="streak-figure__count">{displayStreak}</div>
