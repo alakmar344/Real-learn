@@ -76,6 +76,21 @@ function logTokenUsage(requestId, mode, provider, promptTokens, completionTokens
   });
 }
 
+// Security: escape XML metacharacters before embedding user-supplied text in
+// SSML. node-edge-tts inserts the text verbatim into an XML document; any
+// unescaped `<`, `>`, `&`, `"` or `'` breaks the SSML parse or, worse, lets
+// a crafted string inject arbitrary SSML tags (voice changes, pauses that hang
+// the synthesiser, embedded CDATA sections, etc.).
+function escapeXml(str) {
+  if (typeof str !== "string") return "";
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
 // Privacy: salt for hashing User-Agent strings. The salt must be STABLE
 // across restarts/instances or the stored hashes are useless for their
 // stated purpose (detecting repeat-device consent fraud) — a per-process
@@ -818,20 +833,37 @@ const healthRateLimiter = createRateLimiter({
 });
 
 app.get("/health", healthRateLimiter, async (_req, res) => {
-  const health = { ok: true, dependencies: {} };
+  const startedAt = Date.now();
+  const health = {
+    ok: true,
+    timestamp: new Date().toISOString(),
+    uptime: Math.floor(process.uptime()),
+    latency: {},
+    dependencies: {},
+  };
+
+  // Measure DB ping latency.
+  const dbStart = Date.now();
   try {
     const db = await getDb();
     await db.command({ ping: 1 });
+    health.latency.mongodb = Date.now() - dbStart;
     health.dependencies.mongodb = "ok";
   } catch {
     health.ok = false;
+    health.latency.mongodb = null;
     health.dependencies.mongodb = "down";
   }
+
   const aiSnapshot = getProviderHealthSnapshot();
   const aiDegraded = Object.values(aiSnapshot).some(
     (provider) => provider.circuitOpen || provider.consecutiveFailures > 0
   );
   health.dependencies.ai = aiDegraded ? "degraded" : "ok";
+
+  // Total time to build the health response (useful for uptime-monitor alerting).
+  health.latency.total = Date.now() - startedAt;
+
   const status = health.ok ? 200 : 503;
   res.setHeader("Cache-Control", "public, max-age=10, stale-while-revalidate=30");
   res.status(status).json(health);
@@ -875,10 +907,13 @@ app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
       return res.status(400).json({ error: "accepted (boolean) is required" });
     }
 
-    // Validate the client-supplied timestamp; fall back to the server clock.
-    // (A previous refactor referenced `parsedTimestamp` without defining it
-    // here, which made every call to this endpoint throw a ReferenceError and
-    // return 500 — cookie-consent records were silently never persisted.)
+    // Security: reject non-string timestamps before passing to the Date
+    // constructor. An attacker-supplied object like {} becomes the string
+    // "[object Object]" which new Date() silently treats as Invalid Date —
+    // previously that invalid date was persisted without detection.
+    if (timestamp !== undefined && typeof timestamp !== "string" && typeof timestamp !== "number") {
+      return res.status(400).json({ error: "timestamp must be a string or number" });
+    }
     const parsedTimestamp = timestamp ? new Date(timestamp) : new Date();
     if (Number.isNaN(parsedTimestamp.getTime())) {
       return res.status(400).json({ error: "A valid timestamp is required" });
@@ -1133,8 +1168,11 @@ app.post("/api/legal-consent", rateLimit, requireAuth, async (req, res) => {
     if (typeof accepted !== "boolean") {
       return res.status(400).json({ error: "accepted (boolean) is required" });
     }
-    // Validate the timestamp is an actual parseable date — otherwise an
-    // Invalid Date is silently persisted.
+    // Security: reject non-string timestamps before passing to the Date
+    // constructor — same guard applied to /api/agreement above.
+    if (timestamp !== undefined && typeof timestamp !== "string" && typeof timestamp !== "number") {
+      return res.status(400).json({ error: "timestamp must be a string or number" });
+    }
     const parsedTimestamp = timestamp ? new Date(timestamp) : null;
     if (!parsedTimestamp || Number.isNaN(parsedTimestamp.getTime())) {
       return res.status(400).json({ error: "A valid timestamp is required" });
@@ -1313,13 +1351,17 @@ app.post("/api/tts", ttsRateLimiter, requireAuth, async (req, res) => {
       return res.status(500).json({ error: "TTS service is not available." });
     }
 
-    const text = typeof req.body?.text === "string" ? req.body.text.trim() : "";
-    if (!text) {
+    const rawText = typeof req.body?.text === "string" ? req.body.text.trim() : "";
+    if (!rawText) {
       return res.status(400).json({ error: "text is required" });
     }
-    if (text.length > 2000) {
+    if (rawText.length > 2000) {
       return res.status(400).json({ error: "Text is too long (max 2000 characters)." });
     }
+    // Security: escape XML metacharacters so lesson content (inline code,
+    // angle brackets, ampersands) cannot break the SSML document or inject
+    // SSML tags (see escapeXml above).
+    const text = escapeXml(rawText);
 
     // Security: `lang` is interpolated unescaped into the SSML document by
     // node-edge-tts (xml:lang="..."), so an arbitrary string here is an SSML

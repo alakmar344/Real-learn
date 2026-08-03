@@ -112,11 +112,14 @@
   --space-lg: 48px;
   --space-xl: 64px;
   --space-2xl: 80px;
+  --space-3xl: 96px;
+  --space-4xl: 128px;
 
   --leading-tight: 1.15;
   --leading-snug: 1.35;
   --leading-normal: 1.55;
   --leading-relaxed: 1.75;
+  --leading-loose: 1.9;
 
   --tracking-tight: -0.03em;
   --tracking-normal: 0;
@@ -298,9 +301,7 @@ body {
    Pure solid background canvas; elements opt-in to glass styling.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-html::before {
-  display: none !important;
-}
+/* html::before is reserved for framework use; not suppressed globally. */
 
 /* The reusable glass surface. Ultra-frosted, luminous, Apple-style. */
 .glass,
@@ -380,12 +381,8 @@ html::before {
      • micro-noise (overlay, opt-in via .texture-noise) — Gen Z tactile grain
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Fine grain — a whisper only. The Bold Canvas reads as a crisp digital
-   surface, not paper stock; the grain just kills banding on the washes. */
-body::after,
-body::before {
-  display: none !important;
-}
+/* Fine grain — a whisper only. Body pseudo-elements are reserved for
+   framework use; grain is applied via explicit opt-in classes only. */
 
 /* Micro-noise overlay — a finer, higher-frequency grain that gives interactive
    surfaces a "tactile" feel, like premium paper or a well-worn object.

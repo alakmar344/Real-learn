@@ -122,7 +122,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           onBlur={() => { setFocused(false); window.setTimeout(() => setShowHint(false), 2000); }}
           onKeyDown={handleKeyDown}
           maxLength={MAX_QUESTION_LENGTH}
-          placeholder="ask literally anything, no cap"
+          placeholder="ask anything"
           aria-label="Your question"
           className="q-form__textarea"
         />
@@ -137,7 +137,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
             <kbd className="q-form__kbd">
               {/* Render neutral "Ctrl" until mounted; navigator.platform differs
                   between server and a Mac client (hydration mismatch). */}
-              {mounted && /Mac|iPod|iPhone|iPad/.test(navigator.platform) ? "⌘" : "Ctrl"}
+              {mounted && /Mac|iPhone|iPad|iPod/.test(navigator.userAgent) ? "⌘" : "Ctrl"}
               +Enter
             </kbd>{" "}
             to submit
@@ -213,12 +213,12 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           )}
           {isSignedIn ? (
             <button type="submit" disabled={!question.trim()} aria-label="Start learning" className="btn-primary">
-              {mode === "fast" ? "Gimme the tea →" : "Teach me →"}
+              {mode === "fast" ? "Quick answer →" : "Start lesson →"}
             </button>
           ) : (
             <SignInButton mode="modal">
               <button type="button" aria-label="Sign in to start learning" className="btn-primary">
-                Sign in to Learn →
+                Sign in to start →
               </button>
             </SignInButton>
           )}

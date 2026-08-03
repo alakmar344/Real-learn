@@ -22,12 +22,12 @@ const FeedbackGate = dynamic(() => import("@/components/shared/FeedbackGate"), {
 });
 
 function greetingForHour(h: number): string {
-  if (h < 4) return "still up?";
-  if (h < 7) return "early bird";
-  if (h < 12) return "morning glow";
-  if (h < 17) return "hey you";
-  if (h < 21) return "evening vibes";
-  return "night owl mode";
+  if (h < 4) return "late night";
+  if (h < 7) return "good morning";
+  if (h < 12) return "good morning";
+  if (h < 17) return "good afternoon";
+  if (h < 21) return "good evening";
+  return "good evening";
 }
 
 export default function HomePage() {
