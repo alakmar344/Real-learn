@@ -6,6 +6,7 @@ import cors from "cors";
 import express from "express";
 import expressRateLimit from "express-rate-limit";
 import { LRUCache } from "lru-cache";
+import { z } from "zod";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -143,6 +144,24 @@ function sanitizeClientEmail(raw) {
   const email = raw.trim();
   if (email.length === 0 || email.length > 320) return "";
   return isEmail(email) ? email : "";
+}
+
+function sanitizeErrorForLog(error) {
+  if (!error || typeof error !== "object") {
+    return { message: String(error || "Unknown error") };
+  }
+  return {
+    name: error.name || "Error",
+    message: error.message || "Unknown error",
+    code: error.code || undefined,
+  };
+}
+
+function logRouteError(scope, error, meta = {}) {
+  console.error(scope, {
+    ...meta,
+    error: sanitizeErrorForLog(error),
+  });
 }
 
 // One-time cleanup (policy v2.3): earlier releases stored the RAW client IP
@@ -429,7 +448,7 @@ const COOKIE_POLICY_VERSION = process.env.COOKIE_POLICY_VERSION || "2.3";
 // ── Input validation limits (security: bound prompt size and lock free-text
 // fields that are interpolated into the LLM prompt to known values) ──
 const MAX_QUESTION_LENGTH = 1000;
-const ALLOWED_LANGUAGES = new Set([
+const ALLOWED_LANGUAGES = [
   "English",
   "Hindi",
   "Gujarati",
@@ -442,8 +461,11 @@ const ALLOWED_LANGUAGES = new Set([
   "Punjabi",
   "Urdu",
   "Odia",
-]);
-const ALLOWED_LEVELS = new Set(["Class 6-8", "Class 9-10", "College / Advanced"]);
+];
+const ALLOWED_LANGUAGE_SET = new Set(ALLOWED_LANGUAGES);
+const ALLOWED_LEVELS = ["Class 6-8", "Class 9-10", "College / Advanced"];
+const ALLOWED_LEVEL_SET = new Set(ALLOWED_LEVELS);
+const ALLOWED_AGE_BRACKETS = ["under13", "13-17", "18+"];
 const DEFAULT_RATE_LIMIT_WINDOW_MS = 60000;
 const DEFAULT_RATE_LIMIT_MAX_REQUESTS = 20;
 const configuredRateLimitWindowMs = Number(process.env.RATE_LIMIT_WINDOW_MS);
@@ -456,6 +478,61 @@ const RATE_LIMIT_MAX_REQUESTS =
   Number.isFinite(configuredRateLimitMax) && configuredRateLimitMax > 0
     ? configuredRateLimitMax
     : DEFAULT_RATE_LIMIT_MAX_REQUESTS;
+const agreementBodySchema = z
+  .object({
+    accepted: z.boolean(),
+    timestamp: z.coerce.date().optional(),
+  })
+  .strict();
+const feedbackBodySchema = z
+  .object({
+    rating: z.coerce.number().finite().min(1).max(10),
+    likes: z.string().trim().max(1000).optional().default(""),
+    improvements: z.string().trim().max(1000).optional().default(""),
+  })
+  .strict();
+const legalConsentBodySchema = z
+  .object({
+    accepted: z.boolean(),
+    timestamp: z.coerce.date(),
+    ageBracket: z.enum(ALLOWED_AGE_BRACKETS).optional().nullable(),
+  })
+  .strict();
+const ttsBodySchema = z
+  .object({
+    text: z.string().trim().min(1).max(2000),
+    lang: z.string().trim().optional(),
+    rate: z.string().trim().optional(),
+    pitch: z.string().trim().optional(),
+    volume: z.string().trim().optional(),
+  })
+  .strict();
+const generateLessonBodySchema = z
+  .object({
+    question: z.string().trim().min(1).max(MAX_QUESTION_LENGTH),
+    language: z.enum(ALLOWED_LANGUAGES).optional(),
+    level: z.enum(ALLOWED_LEVELS).optional(),
+    mode: z.enum(["fast", "explain"]).optional(),
+    personalization: z.unknown().optional(),
+  })
+  .strict();
+
+function formatSchemaError(error) {
+  const firstIssue = error?.issues?.[0];
+  if (!firstIssue) return "Invalid request payload.";
+  const path = firstIssue.path?.length ? `${firstIssue.path.join(".")}: ` : "";
+  return `${path}${firstIssue.message}`;
+}
+
+function parseBodyOrReject(req, res, schema) {
+  const parsed = schema.safeParse(req.body ?? {});
+  if (!parsed.success) {
+    res.status(400).json({ error: formatSchemaError(parsed.error) });
+    return null;
+  }
+  return parsed.data;
+}
+
 const apiRateLimiter = createRateLimiter({
   windowMs: RATE_LIMIT_WINDOW_MS,
   max: RATE_LIMIT_MAX_REQUESTS,
@@ -817,25 +894,44 @@ const healthRateLimiter = createRateLimiter({
   max: 120,
 });
 
-app.get("/health", healthRateLimiter, async (_req, res) => {
-  const health = { ok: true, dependencies: {} };
+const healthHandler = async (_req, res) => {
+  const startedAt = Date.now();
+  const health = {
+    status: "ok",
+    ok: true,
+    timestamp: new Date().toISOString(),
+    uptimeSeconds: Math.floor(process.uptime()),
+    latencyMs: 0,
+    dependencies: {
+      mongodb: { status: "ok" },
+      ai: { status: "ok" },
+    },
+  };
   try {
     const db = await getDb();
     await db.command({ ping: 1 });
-    health.dependencies.mongodb = "ok";
+    health.dependencies.mongodb.status = "ok";
   } catch {
     health.ok = false;
-    health.dependencies.mongodb = "down";
+    health.status = "degraded";
+    health.dependencies.mongodb.status = "down";
   }
   const aiSnapshot = getProviderHealthSnapshot();
   const aiDegraded = Object.values(aiSnapshot).some(
     (provider) => provider.circuitOpen || provider.consecutiveFailures > 0
   );
-  health.dependencies.ai = aiDegraded ? "degraded" : "ok";
+  health.dependencies.ai.status = aiDegraded ? "degraded" : "ok";
+  if (aiDegraded) {
+    health.status = "degraded";
+  }
+  health.latencyMs = Date.now() - startedAt;
   const status = health.ok ? 200 : 503;
   res.setHeader("Cache-Control", "public, max-age=10, stale-while-revalidate=30");
   res.status(status).json(health);
-});
+};
+
+app.get("/health", healthRateLimiter, healthHandler);
+app.get("/api/health", healthRateLimiter, healthHandler);
 
 // Diagnostic endpoint: send the Clerk token as a Bearer header and it reports
 // exactly why verification passes/fails (issuer, expiry, trust). No secrets
