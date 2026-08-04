@@ -56,6 +56,18 @@ import { searchCachedLessons, ensureLessonSearchIndexes, sanitizeSearchQuery } f
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+// Service version, read once from package.json. Non-sensitive; surfaced by the
+// public /health endpoint so uptime monitors can detect deploy rollovers.
+const SERVICE_VERSION = (() => {
+  try {
+    const pkgRaw = fs.readFileSync(path.join(__dirname, "..", "package.json"), "utf8");
+    const parsed = JSON.parse(pkgRaw);
+    return typeof parsed.version === "string" ? parsed.version : "unknown";
+  } catch {
+    return "unknown";
+  }
+})();
+
 // Rough token estimator for logging (1 token ≈ 3.5 chars for English/most
 // languages). Providers don't always expose exact usage in streaming mode, so
 // this gives us directional visibility into per-request spend.
@@ -817,25 +829,62 @@ const healthRateLimiter = createRateLimiter({
   max: 120,
 });
 
-app.get("/health", healthRateLimiter, async (_req, res) => {
-  const health = { ok: true, dependencies: {} };
+// PUBLIC health check. This route is deliberately unauthenticated — uptime
+// monitors, load balancers, and container orchestrators must reach it without a
+// Clerk token. It NEVER discloses secrets: only coarse dependency states,
+// measured latencies, uptime, and the service version. It is rate limited (see
+// healthRateLimiter) because it pings MongoDB on every hit.
+async function healthHandler(_req, res) {
+  const startedAt = process.hrtime.bigint();
+
+  const dependencies = {};
+  let ok = true;
+
+  // Measure the MongoDB round-trip latency explicitly so operators can alert on
+  // DB slowness, not just hard failures.
+  const dbStart = process.hrtime.bigint();
   try {
     const db = await getDb();
     await db.command({ ping: 1 });
-    health.dependencies.mongodb = "ok";
+    dependencies.mongodb = {
+      status: "ok",
+      latencyMs: Number((process.hrtime.bigint() - dbStart) / 1_000_000n),
+    };
   } catch {
-    health.ok = false;
-    health.dependencies.mongodb = "down";
+    ok = false;
+    dependencies.mongodb = {
+      status: "down",
+      latencyMs: Number((process.hrtime.bigint() - dbStart) / 1_000_000n),
+    };
   }
+
+  // AI provider health is derived from the circuit-breaker snapshot. We expose
+  // only a coarse status — never provider names, keys, or endpoints.
   const aiSnapshot = getProviderHealthSnapshot();
   const aiDegraded = Object.values(aiSnapshot).some(
     (provider) => provider.circuitOpen || provider.consecutiveFailures > 0
   );
-  health.dependencies.ai = aiDegraded ? "degraded" : "ok";
-  const status = health.ok ? 200 : 503;
+  dependencies.ai = { status: aiDegraded ? "degraded" : "ok" };
+
+  const status = ok ? 200 : 503;
+  const payload = {
+    ok,
+    status: ok ? "healthy" : "unhealthy",
+    version: SERVICE_VERSION,
+    uptimeSeconds: Math.round(process.uptime()),
+    timestamp: new Date().toISOString(),
+    latencyMs: Number((process.hrtime.bigint() - startedAt) / 1_000_000n),
+    dependencies,
+  };
+
   res.setHeader("Cache-Control", "public, max-age=10, stale-while-revalidate=30");
-  res.status(status).json(health);
-});
+  res.status(status).json(payload);
+}
+
+// Register under both `/health` (existing monitors) and `/api/health` (matches
+// the frontend's `/api/*` proxy convention). Both are public and unauthenticated.
+app.get("/health", healthRateLimiter, healthHandler);
+app.get("/api/health", healthRateLimiter, healthHandler);
 
 // Diagnostic endpoint: send the Clerk token as a Bearer header and it reports
 // exactly why verification passes/fails (issuer, expiry, trust). No secrets
