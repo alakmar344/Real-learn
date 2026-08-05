@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
+import BrandMark from "@/components/shared/BrandMark";
 
 const ProgressHub = dynamic(() => import("@/components/shared/ProgressHub"), {
   ssr: false,
@@ -26,8 +27,8 @@ export default function Navbar({ compact = false }: Props) {
     <header className={`navbar${compact ? " navbar--compact" : ""}`}>
       <div className="navbar-inner">
         <Link href="/" aria-label="RealLearn – Home" className="navbar-brand">
-          {/* Plain black-on-white logo mark (background-image), decorative. */}
-          <div className="navbar-logo" aria-hidden="true"></div>
+          {/* Plain logo mark, filled in currentColor (theme-aware), no background. */}
+          <BrandMark className="navbar-logo" />
           <span className="navbar-wordmark">
             <span className="navbar-wordmark__real">real</span>
             <span className="navbar-wordmark__learn">learn</span>
