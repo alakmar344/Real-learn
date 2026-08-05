@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
 
@@ -27,11 +26,8 @@ export default function Navbar({ compact = false }: Props) {
     <header className={`navbar${compact ? " navbar--compact" : ""}`}>
       <div className="navbar-inner">
         <Link href="/" aria-label="RealLearn – Home" className="navbar-brand">
-          {/* Mark is drawn in currentColor (--on-accent) so it stays visible
-              on the accent tile — accent-on-accent made it disappear. */}
-          <div className="navbar-logo" aria-hidden="true">
-            <Image src="/favicon.png" alt="" width={28} height={28} className="navbar-logo__img" />
-          </div>
+          {/* Plain black-on-white logo mark (background-image), decorative. */}
+          <div className="navbar-logo" aria-hidden="true"></div>
           <span className="navbar-wordmark">
             <span className="navbar-wordmark__real">real</span>
             <span className="navbar-wordmark__learn">learn</span>
