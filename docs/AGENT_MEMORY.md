@@ -530,3 +530,4 @@ this protocol. No exceptions.**
 
 
 - 2026-08-05 — **AI provider routing update.** Backend AI inference now routes Cerebras primary → NVIDIA NIM fallback → Cloudflare Workers AI last-resort. Configure NVIDIA with `NVIDIA_API_KEY` and optionally `NVIDIA_AI_MODEL` / `NVIDIA_AI_MODELS` (default `google/gemma-4-31b-it`). Cloudflare remains available as the third rung with its existing `CLOUDFLARE_*` env vars. Legal consent bumped to Privacy v2.9 / Terms v2.7 so all users reconsent to the provider disclosure change.
+- 2026-08-05 — **Brand logo applied as favicon + app identity.** The owner's logo PNG is now the site favicon (`frontend/public/favicon.png`), Apple touch icon, PWA manifest icon set (`icon-192.png`/`icon-512.png`), social OG image (`og-image.png`, previously referenced but missing), and the in-app navbar/sidebar brand marks. Icon assets live under `frontend/public/`; `app/layout.tsx` metadata `icons` and `public/manifest.json` point at them.

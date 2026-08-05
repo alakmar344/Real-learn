@@ -11,9 +11,21 @@
   "lang": "en",
   "icons": [
     {
-      "src": "/logo.svg",
-      "type": "image/svg+xml",
-      "sizes": "any",
+      "src": "/favicon.png",
+      "type": "image/png",
+      "sizes": "64x64",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
       "purpose": "any maskable"
     }
   ],
@@ -32,14 +44,14 @@
       "short_name": "Learn",
       "description": "Open RealLearn and ask a new question",
       "url": "/learn",
-      "icons": [{ "src": "/logo.svg", "sizes": "any" }]
+      "icons": [{ "src": "/favicon.png", "sizes": "64x64" }]
     },
     {
       "name": "View Progress",
       "short_name": "Progress",
       "description": "Check your learning streak, XP, and achievements",
       "url": "/progress",
-      "icons": [{ "src": "/logo.svg", "sizes": "any" }]
+      "icons": [{ "src": "/favicon.png", "sizes": "64x64" }]
     }
   ]
 }

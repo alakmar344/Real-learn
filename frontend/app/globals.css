@@ -2403,6 +2403,13 @@ p {
   overflow: hidden;
   position: relative;
 }
+.navbar-logo__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: var(--radius-sm);
+}
 .navbar-wordmark {
   font-family: var(--font-display);
   font-weight: 800;
@@ -5260,6 +5267,8 @@ p {
   width: 38px;
   height: 38px;
   flex-shrink: 0;
+  object-fit: cover;
+  border-radius: var(--radius-md);
 }
 .app-sidebar__wordmark {
   font-family: var(--font-display);

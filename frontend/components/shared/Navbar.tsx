@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
 
@@ -29,11 +30,7 @@ export default function Navbar({ compact = false }: Props) {
           {/* Mark is drawn in currentColor (--on-accent) so it stays visible
               on the accent tile — accent-on-accent made it disappear. */}
           <div className="navbar-logo" aria-hidden="true">
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <rect x="2" y="2" width="24" height="24" rx="8" stroke="currentColor" strokeWidth="1.5" opacity="0.55" />
-              <circle cx="14" cy="14" r="5.5" fill="currentColor" opacity="0.4" />
-              <circle cx="14" cy="14" r="2.5" fill="currentColor" />
-            </svg>
+            <Image src="/favicon.png" alt="" width={28} height={28} className="navbar-logo__img" />
           </div>
           <span className="navbar-wordmark">
             <span className="navbar-wordmark__real">real</span>
