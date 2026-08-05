@@ -166,6 +166,13 @@ Available component classes (already implemented — use them):
   `.not-found__code/title/sub/cta`, `.auth-glass-card`
 - Theme switch: `.theme-switch-row` (+ `__label`), `.theme-switch` (+ `--on`,
   `__icon`, `__icon--sun/--moon`, `__thumb`) — the physical sidebar toggle
+- Tactile press system: the "Tactile press system" section at the end of
+  `globals.css` owns transform/box-shadow for all buttons — raised keys with
+  a lit bevel + hard bottom edge that press DOWN on `:active` (tokens:
+  `--edge-accent`, `--edge-neutral`, `--key-bevel`, `--key-bevel-soft`,
+  `--key-pressed`). New buttons should join one of its selector groups
+  (accent key / neutral key / round icon key / light press) instead of
+  inventing their own hover/press states.
 - Icons: ALL UI icons come from `components/shared/icons.tsx` (`<Icon name=.../>`,
   stroke-based, currentColor, `label` prop for accessible name). Helpers:
   `.settings-action__label`, `.app-sidebar__foot-label`, `.page-hero__glyph--icon`
@@ -536,3 +543,12 @@ this protocol. No exceptions.**
 - 2026-08-05 — **Brand mark is an inline SVG component.** CSS masks weren't applied in every browser (fell back to a solid square), so the sidebar + navbar marks now render `components/shared/BrandMark.tsx` — an inline `<svg>` path filled with `currentColor` (`color: var(--text-primary)`), no background, no external asset. `frontend/public/logo-mark.svg` remains the canonical mark file.
 - 2026-08-05 — **All platform assets use the B/W mark.** `frontend/public/favicon.png`, `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`, and `og-image.png` were regenerated (8-bit, black icon on white) from `logo-mark.svg`, replacing the blue AI-logo versions. `layout.tsx` metadata icons + `manifest.json` references were unchanged.
 - 2026-08-05 — **Homepage navbar is minimal.** `.navbar--home` (added in `Navbar.tsx` when `pathname === "/"`) removes the navbar bottom border/ring and hides `.navbar-wordmark`, leaving just the logo. Frosted glass background stays so the sticky bar reads as a floating surface.
+- 2026-08-05 — **Tactile press system (all buttons feel physical).** New
+    `globals.css` section extends the theme switch's physical feel to every
+    button: raised keys (lit bevel + hard bottom edge + cast shadow) that
+    lift 1px on hover and press down into their edge on `:active` (90ms drop,
+    spring release). Per-theme tokens `--edge-accent`/`--edge-neutral`/
+    `--key-bevel`/`--key-bevel-soft`/`--key-pressed`. §5 updated with the
+    rule: new buttons join a tactile selector group rather than defining
+    bespoke hover/press states. Reduced-motion lists extended. Verified:
+    tsc/lint/build clean, verify:quiz + verify:achievements pass.
