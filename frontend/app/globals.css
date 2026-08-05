@@ -2392,23 +2392,13 @@ p {
   width: 42px;
   height: 42px;
   border-radius: var(--radius-md);
-  background-color: var(--accent);
-  background-image: var(--accent-gradient);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--on-accent);
-  font-weight: 900;
-  border: 2px solid var(--accent);
+  background-color: var(--bg-solid);
+  background-image: url("/logo-mark.svg");
+  background-size: cover;
+  background-position: center;
+  border: 2px solid var(--border-default);
   overflow: hidden;
   position: relative;
-}
-.navbar-logo__img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  border-radius: var(--radius-sm);
 }
 .navbar-wordmark {
   font-family: var(--font-display);
@@ -5267,7 +5257,9 @@ p {
   width: 38px;
   height: 38px;
   flex-shrink: 0;
-  object-fit: cover;
+  background-image: url("/logo-mark.svg");
+  background-size: cover;
+  background-position: center;
   border-radius: var(--radius-md);
 }
 .app-sidebar__wordmark {

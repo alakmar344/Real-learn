@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import dynamic from "next/dynamic";
 import { useAuth } from "@clerk/nextjs";
 import { useLessonStore } from "@/store/lessonStore";
@@ -101,7 +100,7 @@ export default function Sidebar({ open, onClose }: Props) {
       >
         <div className="app-sidebar__head">
           <div className="app-sidebar__brand">
-            <Image src="/favicon.png" alt="" aria-hidden="true" width={38} height={38} className="app-sidebar__brand-mark" />
+            <span className="app-sidebar__brand-mark" aria-hidden="true" />
             <span className="app-sidebar__wordmark">
               Real<em>Learn</em>
             </span>
