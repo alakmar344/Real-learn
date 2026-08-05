@@ -333,3 +333,24 @@ theme switch. One section at the end of `globals.css` owns the treatment:
   they are results, not controls. Focus-ring parity rules still win on
   keyboard focus. All newly animated classes were added to the
   reduced-motion kill lists.
+
+## Addendum — 2026-08-05: 2026 polish layer
+
+Progressive-enhancement CSS at the end of `globals.css` — every rule
+degrades to the exact previous behavior in older engines:
+
+- `text-wrap: balance` (headings, quiz questions) and `text-wrap: pretty`
+  (markdown prose, sublines) for modern typographic rag.
+- `font-variant-numeric: tabular-nums` on live counters so XP/streak/char
+  numbers don't wobble as they tick.
+- Scroll-driven card entrances: `.rl-card`, `.stat-tile(-2026)`,
+  `.part-card`, `.resume-card` rise 14px as they enter the viewport via
+  `animation-timeline: view()` — pure CSS, compositor-only, behind
+  `@supports`, disabled on `data-perf="low"` and reduced-motion. Uses the
+  individual `translate` property so tactile hover `transform` lifts
+  compose instead of fighting.
+- Touch honesty: tactile hover lifts live behind `@media (hover: hover)`;
+  `touch-action: manipulation` kills the double-tap-zoom delay;
+  `overscroll-behavior: contain` stops the quiz sheet and sidebar from
+  scroll-chaining the page behind them; `scrollbar-gutter: stable` ends
+  sideways layout shift between short and long pages.

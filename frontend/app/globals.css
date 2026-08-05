@@ -253,6 +253,9 @@ html {
   transition: background 200ms var(--ease-color);
   /* Firefox scrollbar theming (webkit rules below cover Chromium/Safari). */
   scrollbar-color: var(--border-default) var(--bg-primary);
+  /* Reserve the scrollbar lane so short→long page transitions don't shift
+     the whole layout sideways. */
+  scrollbar-gutter: stable;
 }
 
 * {
@@ -629,7 +632,9 @@ pre {
   -webkit-touch-callout: none;
 }
 
-/* A gentle, on-brand press for buttons/controls (no blue, no jarring snap). */
+/* A gentle, on-brand press for buttons/controls (no blue, no jarring snap).
+   touch-action: manipulation removes the double-tap-to-zoom delay so every
+   key answers the finger immediately. */
 button,
 [role="button"],
 a,
@@ -638,6 +643,7 @@ textarea,
 select,
 [tabindex]:not([tabindex="-1"]) {
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 button:active,
 [role="button"]:active,
@@ -3521,6 +3527,8 @@ p {
   bottom: 0;
   max-height: 90vh;
   overflow-y: auto;
+  /* Reaching the sheet's end must not scroll the lesson behind it. */
+  overscroll-behavior: contain;
   background: var(--surface-glass-strong);
   -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
   backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
@@ -5294,6 +5302,7 @@ p {
 .app-sidebar__scroll {
   flex: 1;
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 14px 14px 10px;
 }
 .app-sidebar__list-head {
@@ -5570,25 +5579,29 @@ p {
     0 3px 0 var(--edge-accent),
     var(--shadow-glow-accent);
 }
-.btn-primary:hover,
-.part-cta:hover,
-.quiz-sheet__action.is-success:hover,
-.error-state__btn:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.05);
-  box-shadow:
-    var(--key-bevel),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.18),
-    0 4px 0 var(--edge-accent),
-    0 8px 24px var(--accent-glow);
-}
-.scroll-top:hover {
-  transform: translateY(-1px) scale(1.04);
-  box-shadow:
-    var(--key-bevel),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.18),
-    0 4px 0 var(--edge-accent),
-    0 8px 24px var(--accent-glow);
+/* Hover lifts only exist on devices that can hover — a tapped key on a
+   touch screen must never stay stuck in its raised state. */
+@media (hover: hover) {
+  .btn-primary:hover,
+  .part-cta:hover,
+  .quiz-sheet__action.is-success:hover,
+  .error-state__btn:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+    box-shadow:
+      var(--key-bevel),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.18),
+      0 4px 0 var(--edge-accent),
+      0 8px 24px var(--accent-glow);
+  }
+  .scroll-top:hover {
+    transform: translateY(-1px) scale(1.04);
+    box-shadow:
+      var(--key-bevel),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.18),
+      0 4px 0 var(--edge-accent),
+      0 8px 24px var(--accent-glow);
+  }
 }
 .btn-primary:active,
 .part-cta:active,
@@ -5635,22 +5648,24 @@ p {
     color 250ms var(--ease-color),
     filter 250ms var(--ease-color);
 }
-.btn-ghost:hover,
-.btn-toggle:hover,
-.chip:hover,
-.suggest-pill:hover,
-.goal-chip:hover,
-.settings-action:hover:not(:disabled),
-.part-card__tool:hover,
-.quiz-question__option:hover:not(:disabled),
-.quiz-sheet__action:hover,
-.error-state__btn--secondary:hover {
-  transform: translateY(-1px);
-  filter: none;
-  box-shadow:
-    var(--key-bevel-soft),
-    0 3px 0 var(--edge-neutral),
-    var(--shadow-md);
+@media (hover: hover) {
+  .btn-ghost:hover,
+  .btn-toggle:hover,
+  .chip:hover,
+  .suggest-pill:hover,
+  .goal-chip:hover,
+  .settings-action:hover:not(:disabled),
+  .part-card__tool:hover,
+  .quiz-question__option:hover:not(:disabled),
+  .quiz-sheet__action:hover,
+  .error-state__btn--secondary:hover {
+    transform: translateY(-1px);
+    filter: none;
+    box-shadow:
+      var(--key-bevel-soft),
+      0 3px 0 var(--edge-neutral),
+      var(--shadow-md);
+  }
 }
 .btn-ghost:active,
 .btn-toggle:active,
@@ -5687,14 +5702,28 @@ p {
     var(--key-bevel-soft),
     0 2px 0 var(--edge-neutral);
 }
-.btn-icon:hover,
-.quiz-sheet__close:hover,
 .quiz-sheet__close:focus-visible {
   transform: translateY(-1px) scale(1.04);
   box-shadow:
     var(--key-bevel-soft),
     0 3px 0 var(--edge-neutral),
     0 0 14px var(--accent-glow);
+}
+@media (hover: hover) {
+  .btn-icon:hover,
+  .quiz-sheet__close:hover {
+    transform: translateY(-1px) scale(1.04);
+    box-shadow:
+      var(--key-bevel-soft),
+      0 3px 0 var(--edge-neutral),
+      0 0 14px var(--accent-glow);
+  }
+  .btn-icon--danger:hover {
+    box-shadow:
+      var(--key-bevel-soft),
+      0 3px 0 var(--edge-neutral),
+      0 0 14px var(--wrong-bg);
+  }
 }
 .btn-icon:active,
 .quiz-sheet__close:active {
@@ -5706,13 +5735,6 @@ p {
     transform 90ms var(--ease-color),
     box-shadow 90ms var(--ease-color);
 }
-.btn-icon--danger:hover {
-  box-shadow:
-    var(--key-bevel-soft),
-    0 3px 0 var(--edge-neutral),
-    0 0 14px var(--wrong-bg);
-}
-
 /* ── Light presses — controls that sink without a machined edge. ── */
 .nav-link:active,
 .mode-glider__option:active,
@@ -5724,6 +5746,70 @@ p {
 .bottom-nav__item:active {
   transform: translateY(1px) scale(0.98);
   transition: transform 90ms var(--ease-color);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   2026 polish layer — progressive-enhancement CSS. Every rule here degrades
+   to the exact previous behavior in browsers that don't support it.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Headlines never orphan a single word on their own line; prose avoids
+   awkward last-line runts. Both are no-ops in older engines. */
+h1,
+h2,
+h3,
+.quiz-question__text,
+.learn-empty__title {
+  text-wrap: balance;
+}
+.markdown-content p,
+.markdown-content li,
+.part-card__intent,
+.page-hero__sub,
+.section-header__subtitle,
+.quiz-question__explanation {
+  text-wrap: pretty;
+}
+
+/* Counters and stats align digit-for-digit so live numbers don't wobble. */
+.stat-tile,
+.stat-tile-2026,
+.progress-hub__count,
+.streak-figure__count,
+.xp-track__note,
+.pill-stat,
+.q-form__count {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Scroll-driven card entrances — cards rise gently as they enter the
+   viewport. Pure CSS (animation-timeline), compositor-only properties,
+   gated on hardware tier and motion preference; browsers without
+   scroll-driven animations simply show the cards static. `translate` (the
+   individual property) composes with the hover `transform` lifts instead
+   of fighting them. */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    translate: 0 14px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    html:not([data-perf="low"]) .rl-card,
+    html:not([data-perf="low"]) .stat-tile,
+    html:not([data-perf="low"]) .stat-tile-2026,
+    html:not([data-perf="low"]) .part-card,
+    html:not([data-perf="low"]) .resume-card {
+      animation: rise-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 35%;
+    }
+  }
 }
 
 /* ── Respect reduced motion for the new component system ── */

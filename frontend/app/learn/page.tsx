@@ -22,13 +22,16 @@ import { Skeleton, SkeletonCard } from "@/components/shared/Skeleton";
 import { triggerHaptic } from "@/lib/haptics";
 import { LessonJourney, LessonPart } from "@/types";
 import { useShallow } from "zustand/shallow";
-import confetti from "canvas-confetti";
 import { celebrationColors } from "@/lib/palette";
 
 const CompletionScreen = lazy(() => import("@/components/learning/CompletionScreen"));
 const Flashcards = lazy(() => import("@/components/learning/Flashcards"));
 const FollowUpBox = lazy(() => import("@/components/learning/FollowUpBox"));
 const UnlockAnimation = lazy(() => import("@/components/learning/UnlockAnimation"));
+
+// canvas-confetti stays out of the initial learn bundle; the module is warmed
+// when a quiz opens so the celebration fires without a fetch delay.
+const loadConfetti = () => import("canvas-confetti").then((m) => m.default);
 
 function SuspenseFallback() {
   return null;
@@ -240,13 +243,15 @@ export default function LearnPage() {
         score,
       });
       triggerHaptic("success");
-      confetti({
-        particleCount: 70,
-        spread: 60,
-        origin: { y: 0.6 },
-        colors: celebrationColors(),
-        disableForReducedMotion: true,
-      });
+      loadConfetti().then((confetti) =>
+        confetti({
+          particleCount: 70,
+          spread: 60,
+          origin: { y: 0.6 },
+          colors: celebrationColors(),
+          disableForReducedMotion: true,
+        })
+      );
       passPart(part.partNumber, score);
 
       // Include the per-instance lesson id: retaking a quiz on THIS
@@ -310,6 +315,7 @@ export default function LearnPage() {
         handlePartPass(part, 0);
         return;
       }
+      void loadConfetti();
       setQuizPart(part.partNumber);
     },
     [handlePartPass]
