@@ -552,3 +552,14 @@ this protocol. No exceptions.**
     rule: new buttons join a tactile selector group rather than defining
     bespoke hover/press states. Reduced-motion lists extended. Verified:
     tsc/lint/build clean, verify:quiz + verify:achievements pass.
+- 2026-08-05 — **2026 polish layer + speed pass.** New progressive-enhancement
+    section at the end of `globals.css`: balanced headings / pretty prose
+    wrapping, tabular-nums counters, CSS-only scroll-driven card entrances
+    (`animation-timeline: view()`, perf-tier + reduced-motion gated, animates
+    the individual `translate` property so hover `transform` lifts still
+    compose), `scrollbar-gutter: stable`, `overscroll-behavior: contain` on
+    quiz sheet + sidebar. Tactile hover lifts wrapped in `@media (hover:
+    hover)` (no sticky raised keys on touch); `touch-action: manipulation`
+    on interactive elements. `canvas-confetti` now lazy-loads on the learn
+    page (warmed on quiz open); learn bundle 61.6→57.6 kB. Verified:
+    tsc/lint/build clean, verify scripts pass.
