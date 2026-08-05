@@ -173,6 +173,12 @@ Available component classes (already implemented — use them):
   `--key-pressed`). New buttons should join one of its selector groups
   (accent key / neutral key / round icon key / light press) instead of
   inventing their own hover/press states.
+- Night Owl (Swiss Industrial Brutalism) showcase: `NightOwlHero.tsx` + the
+  `.night-owl--night` / `.night-owl--day` / `.night-owl__outline` token scope
+  in `globals.css` (`--no-*` variables, Tailwind arbitrary values, two strict
+  themes, zero glow/gradient/shadow). Preview route: `/night-owl`. This is an
+  *experimental direction*, not the canonical design — the live app still uses
+  the Cyber Aqua system above.
 - Icons: ALL UI icons come from `components/shared/icons.tsx` (`<Icon name=.../>`,
   stroke-based, currentColor, `label` prop for accessible name). Helpers:
   `.settings-action__label`, `.app-sidebar__foot-label`, `.page-hero__glyph--icon`
@@ -562,4 +568,13 @@ this protocol. No exceptions.**
     hover)` (no sticky raised keys on touch); `touch-action: manipulation`
     on interactive elements. `canvas-confetti` now lazy-loads on the learn
     page (warmed on quiz open); learn bundle 61.6→57.6 kB. Verified:
+    tsc/lint/build clean, verify scripts pass.
+- 2026-08-05 — **Night Owl (Swiss Industrial Brutalism) showcase
+    component + token scope.** Added `components/homepage/NightOwlHero.tsx`
+    (pure Tailwind utility classes reading a component-scoped `--no-*` token
+    set) and the `.night-owl--night` / `.night-owl--day` / `.night-owl__outline`
+    CSS in `globals.css` (hard 1px borders, zero glow/gradient/shadow, two
+    strict themes). A `/night-owl` route previews it (sidebar excluded via
+    `HIDE_SIDEBAR_PREFIXES`); its "TEACH ME →" CTA forwards to the real lesson
+    pipeline. §5 lists it; marked experimental, not canonical. Verified:
     tsc/lint/build clean, verify scripts pass.

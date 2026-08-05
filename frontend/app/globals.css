@@ -5884,4 +5884,53 @@ h3,
   }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   NIGHT OWL — Swiss Industrial Brutalism (NightOwlHero component)
+   A self-contained design-token scope: hard 1px borders, sharp corners, zero
+   glow / gradient / drop-shadow. Two strict themes — night (deep carbon) and
+   day (off-white stone). Every utility in the component reads these tokens via
+   var(--no-*), so the component never hardcodes a hex. Wired up through
+   Tailwind arbitrary values in NightOwlHero.tsx.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.night-owl--night {
+  --no-bg: #09090b; /* deep carbon black canvas */
+  --no-panel: #121317; /* dark charcoal panel */
+  --no-border: #3f4550; /* slate gray hard lines */
+  --no-text: #ffffff; /* crisp white primary */
+  --no-muted: #8a919e; /* muted slate metadata */
+  --no-invert-bg: #ffffff; /* solid inverted fill */
+  --no-invert-text: #09090b; /* high-contrast text on inverted fill */
+}
+
+.night-owl--day {
+  --no-bg: #f4f2ec; /* off-white stone canvas */
+  --no-panel: #ffffff; /* pure white panel */
+  --no-border: #a3a9b3; /* cool gray hard lines */
+  --no-text: #09090b; /* pitch black primary */
+  --no-muted: #6e727c; /* muted neutral metadata */
+  --no-invert-bg: #09090b; /* solid inverted fill */
+  --no-invert-text: #ffffff; /* high-contrast text on inverted fill */
+}
+
+.night-owl {
+  background-color: var(--no-bg);
+  color: var(--no-text);
+}
+
+/* PRO outline: transparent fill + 1.5px foreground stroke (no blur, no glow) */
+.night-owl__outline {
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--no-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .night-owl * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+  .night-owl [data-night-owl] {
+    transform: none !important;
+  }
+}
+
 
