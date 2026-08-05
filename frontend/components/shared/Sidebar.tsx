@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import dynamic from "next/dynamic";
 import { useAuth } from "@clerk/nextjs";
 import { useLessonStore } from "@/store/lessonStore";
@@ -100,12 +101,7 @@ export default function Sidebar({ open, onClose }: Props) {
       >
         <div className="app-sidebar__head">
           <div className="app-sidebar__brand">
-            <svg viewBox="0 0 120 40" fill="none" aria-hidden="true" className="app-sidebar__brand-mark">
-              <rect width="40" height="40" rx="12" fill="var(--accent)" />
-              <text x="9" y="27" fontFamily="Inter, sans-serif" fontWeight="900" fontSize="17" fill="white">
-                RL
-              </text>
-            </svg>
+            <Image src="/favicon.png" alt="" aria-hidden="true" width={38} height={38} className="app-sidebar__brand-mark" />
             <span className="app-sidebar__wordmark">
               Real<em>Learn</em>
             </span>

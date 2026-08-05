@@ -79,6 +79,11 @@ export const metadata: Metadata = {
   authors: [{ name: "RealLearn" }],
   creator: "RealLearn",
   publisher: "RealLearn",
+  icons: {
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
+    apple: "/apple-touch-icon.png",
+  },
   formatDetection: {
     email: false,
     address: false,
