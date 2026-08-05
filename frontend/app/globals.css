@@ -147,6 +147,15 @@
   --aurora-2: rgba(236, 72, 153, 0.14);
   --aurora-3: rgba(16, 185, 129, 0.1);
   --aurora-4: rgba(251, 113, 133, 0.1);
+
+  /* Tactile key tokens — see the "Tactile press system" section. The edge is
+     the visible side of a raised key; the bevel is its lit top face; pressed
+     is the shade that pools when the key sinks into the surface. */
+  --edge-accent: #0E7490;
+  --edge-neutral: rgba(0, 0, 0, 0.55);
+  --key-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  --key-bevel-soft: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --key-pressed: inset 0 2px 5px rgba(0, 0, 0, 0.35);
 }
 
 /* ── Light Mode — Clean Airy Cyan ── */
@@ -232,6 +241,12 @@ html[data-theme="light"] {
   --aurora-2: rgba(236, 72, 153, 0.1);
   --aurora-3: rgba(16, 185, 129, 0.08);
   --aurora-4: rgba(251, 113, 133, 0.06);
+
+  --edge-accent: #155E75;
+  --edge-neutral: #D4D4D8;
+  --key-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --key-bevel-soft: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  --key-pressed: inset 0 2px 5px rgba(0, 0, 0, 0.14);
 }
 
 html {
@@ -5532,6 +5547,185 @@ p {
   vertical-align: -1.5px;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   Tactile press system — every actionable control is a physical key,
+   modeled on the sidebar theme switch: a lit top bevel, a hard bottom
+   edge, a soft cast shadow. Hover lifts the key a hair off the surface;
+   :active drops it into its edge with a fast 90ms press and a pressed-in
+   shade, then the spring transition pops it back on release.
+   This section owns transform/box-shadow for these controls — it
+   intentionally overrides the flat lift/scale states defined above.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Accent keys — the filled CTAs. 3px edge, glow underneath. ── */
+.btn-primary,
+.part-cta,
+.quiz-sheet__action.is-success,
+.error-state__btn,
+.scroll-top,
+.scroll-top.is-visible {
+  box-shadow:
+    var(--key-bevel),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.18),
+    0 3px 0 var(--edge-accent),
+    var(--shadow-glow-accent);
+}
+.btn-primary:hover,
+.part-cta:hover,
+.quiz-sheet__action.is-success:hover,
+.error-state__btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow:
+    var(--key-bevel),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.18),
+    0 4px 0 var(--edge-accent),
+    0 8px 24px var(--accent-glow);
+}
+.scroll-top:hover {
+  transform: translateY(-1px) scale(1.04);
+  box-shadow:
+    var(--key-bevel),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.18),
+    0 4px 0 var(--edge-accent),
+    0 8px 24px var(--accent-glow);
+}
+.btn-primary:active,
+.part-cta:active,
+.quiz-sheet__action.is-success:active,
+.error-state__btn:active,
+.scroll-top:active {
+  transform: translateY(3px);
+  filter: none;
+  box-shadow:
+    var(--key-pressed),
+    0 0 0 var(--edge-accent),
+    0 1px 6px var(--accent-glow);
+  transition:
+    transform 90ms var(--ease-color),
+    box-shadow 90ms var(--ease-color),
+    filter 90ms var(--ease-color);
+}
+.btn-primary:disabled,
+.btn-primary[aria-disabled="true"] {
+  box-shadow: none;
+  transform: none;
+}
+
+/* ── Neutral keys — secondary buttons, pills, toggles, quiz options. ── */
+.btn-ghost,
+.btn-toggle,
+.chip,
+.suggest-pill,
+.goal-chip,
+.settings-action,
+.part-card__tool,
+.quiz-question__option,
+.quiz-sheet__action,
+.error-state__btn--secondary {
+  box-shadow:
+    var(--key-bevel-soft),
+    0 2px 0 var(--edge-neutral),
+    var(--shadow-sm);
+  transition:
+    transform 300ms var(--ease-spring),
+    box-shadow 300ms var(--ease-spring),
+    border-color 250ms var(--ease-color),
+    background 250ms var(--ease-color),
+    color 250ms var(--ease-color),
+    filter 250ms var(--ease-color);
+}
+.btn-ghost:hover,
+.btn-toggle:hover,
+.chip:hover,
+.suggest-pill:hover,
+.goal-chip:hover,
+.settings-action:hover:not(:disabled),
+.part-card__tool:hover,
+.quiz-question__option:hover:not(:disabled),
+.quiz-sheet__action:hover,
+.error-state__btn--secondary:hover {
+  transform: translateY(-1px);
+  filter: none;
+  box-shadow:
+    var(--key-bevel-soft),
+    0 3px 0 var(--edge-neutral),
+    var(--shadow-md);
+}
+.btn-ghost:active,
+.btn-toggle:active,
+.chip:active,
+.suggest-pill:active,
+.goal-chip:active,
+.settings-action:active:not(:disabled),
+.part-card__tool:active,
+.quiz-question__option:active:not(:disabled),
+.quiz-sheet__action:active,
+.error-state__btn--secondary:active {
+  transform: translateY(2px);
+  box-shadow:
+    var(--key-pressed),
+    0 0 0 var(--edge-neutral);
+  transition:
+    transform 90ms var(--ease-color),
+    box-shadow 90ms var(--ease-color);
+}
+/* Answered quiz options stop being keys — they are results, not controls. */
+.quiz-question__option:disabled {
+  box-shadow: none;
+  transform: none;
+}
+.settings-action:disabled {
+  box-shadow: none;
+}
+
+/* ── Round icon keys — mic, clear, close, danger. ── */
+.btn-icon,
+.quiz-sheet__close {
+  background: var(--bg-solid);
+  box-shadow:
+    var(--key-bevel-soft),
+    0 2px 0 var(--edge-neutral);
+}
+.btn-icon:hover,
+.quiz-sheet__close:hover,
+.quiz-sheet__close:focus-visible {
+  transform: translateY(-1px) scale(1.04);
+  box-shadow:
+    var(--key-bevel-soft),
+    0 3px 0 var(--edge-neutral),
+    0 0 14px var(--accent-glow);
+}
+.btn-icon:active,
+.quiz-sheet__close:active {
+  transform: translateY(2px) scale(0.97);
+  box-shadow:
+    var(--key-pressed),
+    0 0 0 var(--edge-neutral);
+  transition:
+    transform 90ms var(--ease-color),
+    box-shadow 90ms var(--ease-color);
+}
+.btn-icon--danger:hover {
+  box-shadow:
+    var(--key-bevel-soft),
+    0 3px 0 var(--edge-neutral),
+    0 0 14px var(--wrong-bg);
+}
+
+/* ── Light presses — controls that sink without a machined edge. ── */
+.nav-link:active,
+.mode-glider__option:active,
+.part-done-bar:active,
+.settings-back:active,
+.journey-item__open:active,
+.option-row:active,
+.resume-card:active,
+.bottom-nav__item:active {
+  transform: translateY(1px) scale(0.98);
+  transition: transform 90ms var(--ease-color);
+}
+
 /* ── Respect reduced motion for the new component system ── */
 @media (prefers-reduced-motion: reduce) {
   .btn-primary,
@@ -5551,6 +5745,13 @@ p {
   .part-card,
   .part-card__tool,
   .quiz-question__option,
+  .quiz-sheet__action,
+  .quiz-sheet__close,
+  .btn-toggle,
+  .error-state__btn,
+  .bottom-nav__item,
+  .mode-glider__option,
+  .journey-item__open,
   .suggest-pill,
   .resume-card,
   .journey-rail__node,
@@ -5582,6 +5783,10 @@ p {
   .part-card:hover,
   .part-card__tool:hover,
   .quiz-question__option:hover,
+  .quiz-sheet__action:hover,
+  .quiz-sheet__close:hover,
+  .btn-toggle:hover,
+  .error-state__btn:hover,
   .suggest-pill:hover,
   .resume-card:hover,
   .goal-chip:hover,

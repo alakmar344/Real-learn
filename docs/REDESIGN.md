@@ -311,3 +311,25 @@ non-legal surface onto them:
 - Inline styles now remain only for genuinely dynamic values (XP width,
   ring dashoffset, theme swatches, mode-glider transform). Reduced-motion
   kill-switch extended to every new interactive class. Legal pages untouched.
+
+## Addendum — 2026-08-05: Tactile press system
+
+Every actionable control is now a physical key, modeled on the sidebar
+theme switch. One section at the end of `globals.css` owns the treatment:
+
+- **Anatomy**: lit top bevel (`--key-bevel` / `--key-bevel-soft`), hard
+  bottom edge (`--edge-accent` for filled CTAs, `--edge-neutral` for
+  secondary keys), soft cast shadow. Light theme edges are machined gray
+  (`#D4D4D8`); dark theme edges are near-black with the accent edge a
+  deep cyan (`#0E7490` dark / `#155E75` light — same family as the CTA
+  gradient's last stop, so the side reads as the same material).
+- **Motion**: hover lifts the key 1px and grows the edge (3px→4px accent,
+  2px→3px neutral); `:active` drops the key into its edge (translateY 2-3px,
+  edge collapses to 0, `--key-pressed` inset shade) over 90ms; release pops
+  back on the existing spring easings. Nav links, mode-glider options,
+  sidebar rows, settings rows, and bottom-nav tabs get a lighter edge-less
+  press (1px sink + 2% scale).
+- **States**: disabled buttons and answered quiz options drop their edge —
+  they are results, not controls. Focus-ring parity rules still win on
+  keyboard focus. All newly animated classes were added to the
+  reduced-motion kill lists.
