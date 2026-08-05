@@ -27,7 +27,7 @@ When a learner asks a question:
 |---|---|
 | **Frontend** | Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS, Clerk Auth, Zustand state management |
 | **Backend** | Node.js, Express API, Server-Sent Events (SSE) streaming |
-| **AI Inference Engine** | Google Gemma 4 (Cerebras Cloud primary, Cloudflare Workers AI fallback with circuit-breaker) |
+| **AI Inference Engine** | Google Gemma 4 (Cerebras Cloud primary, NVIDIA NIM fallback, Cloudflare Workers AI last-resort fallback with circuit-breaker) |
 | **Live Grounding** | Serper API for live news and web context |
 | **Caching & DB** | Two-tier LRU memory cache + MongoDB persistent cache |
 
