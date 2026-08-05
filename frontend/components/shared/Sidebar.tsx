@@ -13,6 +13,7 @@ import { useMounted } from "@/hooks/useMounted";
 import { useShallow } from "zustand/shallow";
 import { SavedJourney } from "@/types";
 import { Icon } from "@/components/shared/icons";
+import BrandMark from "@/components/shared/BrandMark";
 
 // Lazy-load modals — they are only needed when the user clicks to open them.
 // This removes both components (and their deps, e.g. focus-trap hooks) from
@@ -100,7 +101,7 @@ export default function Sidebar({ open, onClose }: Props) {
       >
         <div className="app-sidebar__head">
           <div className="app-sidebar__brand">
-            <span className="app-sidebar__brand-mark" aria-hidden="true" />
+            <BrandMark className="app-sidebar__brand-mark" />
             <span className="app-sidebar__wordmark">
               Real<em>Learn</em>
             </span>
