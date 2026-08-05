@@ -22,9 +22,10 @@ const NAV_ITEMS = [
 
 export default function Navbar({ compact = false }: Props) {
   const pathname = usePathname();
+  const isHome = pathname === "/";
 
   return (
-    <header className={`navbar${compact ? " navbar--compact" : ""}`}>
+    <header className={`navbar${compact ? " navbar--compact" : ""}${isHome ? " navbar--home" : ""}`}>
       <div className="navbar-inner">
         <Link href="/" aria-label="RealLearn – Home" className="navbar-brand">
           {/* Plain logo mark, filled in currentColor (theme-aware), no background. */}
