@@ -20,7 +20,7 @@ export default function PrivacyPolicy() {
         Privacy Policy
       </h2>
       <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
-        Last updated: July 29, 2026 (version 2.8)
+        Last updated: August 5, 2026 (version 2.9)
       </p>
 
       <section style={{ marginBottom: 28 }}>
@@ -48,8 +48,9 @@ export default function PrivacyPolicy() {
           learning journey (Foundation, Mechanism, Real World — &quot;Explain&quot; mode) for any
           topic you ask about. It is powered by Google&apos;s Gemma 4 open model: our primary
           inference provider is <strong>Cerebras Cloud</strong> (running Gemma 4 31B), with{" "}
-          <strong>Cloudflare Workers AI</strong> (Gemma) configured as an automatic fallback so
-          lessons can still be generated if the primary is slow or unavailable. This is designed to
+          <strong>NVIDIA NIM</strong> (Gemma 4 31B) configured as the automatic fallback and{" "}
+          <strong>Cloudflare Workers AI</strong> (Gemma) as a last-resort fallback so lessons can
+          still be generated if the primary and fallback are slow or unavailable. This is designed to
           help students learn through interactive quizzes and structured content.
         </p>
       </section>
@@ -77,7 +78,7 @@ export default function PrivacyPolicy() {
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Consent Records:</strong> Timestamps of when you accepted our Privacy Policy
-            (version 2.8), Terms of Service (version 2.6), and cookie/analytics consent, together
+            (version 2.9), Terms of Service (version 2.7), and cookie/analytics consent, together
             with the policy version, an <strong>anonymized (truncated) device IP</strong>, and a
             hashed User-Agent, kept as proof of consent.
           </li>
@@ -219,7 +220,9 @@ export default function PrivacyPolicy() {
           RealLearn generates content using Google&apos;s Gemma 4 open AI model. Our primary
           inference provider is <strong>Cerebras Cloud</strong> (running Gemma 4 31B); if Cerebras is
           temporarily slow or unavailable, the request automatically falls back to{" "}
-          <strong>Cloudflare Workers AI</strong> (Gemma) so your lesson can still be generated. All
+          <strong>NVIDIA NIM</strong> (Gemma 4 31B), and may then use{" "}
+          <strong>Cloudflare Workers AI</strong> (Gemma) as a last-resort provider so your lesson can
+          still be generated. All
           lesson content (in both Fast and Explain modes), quizzes,
           and explanations are AI-generated and are <strong>not reviewed by humans before being shown</strong>.
           AI-generated responses may be inaccurate, incomplete, or outdated. You should verify
@@ -236,9 +239,10 @@ export default function PrivacyPolicy() {
           <strong>RealLearn does not use your data to train, fine-tune, or improve any AI model.</strong>{" "}
           Your questions are sent to our primary inference provider, <strong>Cerebras Cloud</strong>{" "}
           (which runs the Gemma model), for one-time inference only. If Cerebras is temporarily slow
-          or unavailable, the same request falls back to <strong>Cloudflare Workers AI</strong> (also
-          running Gemma) for one-time inference so the lesson can still be generated; the same
-          &quot;no training on your data&quot; commitment applies to both providers. Safety moderation
+          or unavailable, the same request falls back to <strong>NVIDIA NIM</strong> (running Gemma),
+          and may then use <strong>Cloudflare Workers AI</strong> as a last-resort fallback for
+          one-time inference so the lesson can still be generated; the same &quot;no training on your
+          data&quot; commitment applies to all three providers. Safety moderation
           of your question and the generated lesson is performed locally on our own servers using
           rule-based pattern matching — your question is <strong> not</strong> sent to any third
           party just for moderation. We do not store your questions or generated lessons in a form
@@ -247,10 +251,12 @@ export default function PrivacyPolicy() {
           is deleted automatically when it expires. However, please note that your questions are
           transmitted to these providers&apos; APIs, and their own terms may govern how they handle
           that data. We recommend reviewing{" "}
+          <a href="https://www.nvidia.com/en-us/about-nvidia/privacy-policy/" style={{ color: "var(--accent)" }}>
+            NVIDIA&apos;s Privacy Policy
+          </a>{", "}
           <a href="https://www.cloudflare.com/privacypolicy/" style={{ color: "var(--accent)" }}>
             Cloudflare&apos;s Privacy Policy
-          </a>{" "}
-          and{" "}
+          </a>{", and "}
           <a href="https://www.cerebras.ai/privacy" style={{ color: "var(--accent)" }}>
             Cerebras&apos;s Privacy Policy
           </a>{" "}
@@ -316,8 +322,14 @@ export default function PrivacyPolicy() {
             data practices apply to API requests.
           </li>
           <li style={{ marginBottom: 4 }}>
-            <strong>Cloudflare Workers AI</strong> (cloudflare.com) — Our <strong>automatic
-            fallback</strong> AI provider. Used only when the primary (Cerebras) is temporarily slow
+            <strong>NVIDIA NIM</strong> (nvidia.com) — Our <strong>automatic fallback</strong> AI
+            provider. Used when Cerebras is temporarily slow or unavailable. NVIDIA receives the
+            same question, language, and difficulty level for one-time inference with no user
+            identity attached, and no user data is used for training.
+          </li>
+          <li style={{ marginBottom: 4 }}>
+            <strong>Cloudflare Workers AI</strong> (cloudflare.com) — Our <strong>last-resort</strong>
+            AI provider. Used only when the primary and NVIDIA fallback paths are temporarily slow
             or unavailable, so lessons can still be generated. It runs Google&apos;s Gemma open model
             hosted on Cloudflare&apos;s network. When invoked, the same question, language, and
             difficulty level are sent for one-time inference with no user identity attached, and no
@@ -417,6 +429,13 @@ export default function PrivacyPolicy() {
            by posting the new policy on this page and updating the &quot;Last updated&quot; date.
            Continued use of the service after changes constitutes acceptance of the updated policy.
          </p>
+          <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+            <strong>Version 2.9 (effective August 5, 2026).</strong> This update adds
+            <strong> NVIDIA NIM</strong> as the automatic AI fallback after Cerebras and moves
+            <strong> Cloudflare Workers AI</strong> to a last-resort provider role. Because this is a
+            material provider-routing disclosure change, we are re-prompting all users to review and
+            re-accept this Privacy Policy and the updated Terms before continuing.
+          </p>
           <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
             <strong>Version 2.7 (effective July 22, 2026).</strong> This update discloses the new
             optional <strong>learning personalization</strong> feature: signed-in users can choose

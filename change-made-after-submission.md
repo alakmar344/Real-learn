@@ -1017,3 +1017,5 @@ vendors). All of these live between `2b239b5` (start) and now:
  appended under the relevant section (and the chronological table) as they land.*
 
 
+
+- 2026-08-05 — **AI provider routing update: NVIDIA fallback + Cloudflare last-resort.** Added NVIDIA NIM (`NVIDIA_API_KEY`, optional `NVIDIA_AI_MODEL` / `NVIDIA_AI_MODELS`) as the automatic Gemma fallback after Cerebras. Cloudflare Workers AI remains configured as a third-rung last-resort provider instead of the immediate fallback. Backend startup validation, provider health/circuit snapshots, hedged racing, direct reliability rungs, and gemma-engine tests now cover the three-provider order. Privacy Policy bumped to v2.9 and Terms to v2.7, with frontend and backend consent constants updated so users are re-prompted to accept the new provider disclosures.

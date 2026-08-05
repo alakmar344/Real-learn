@@ -20,8 +20,11 @@ import {
   GemmaApiError,
   GemmaCircuitOpenError,
   parseJSON,
+  callNvidiaFallbackAI,
   callCloudflareAI,
   isFallbackConfigured,
+  isNvidiaFallbackConfigured,
+  isCloudflareFallbackConfigured,
   extractTextFromResult,
   getProviderHealthSnapshot,
   GEMMA_MODEL,
@@ -434,8 +437,8 @@ const SPEECH_LANG_TO_VOICE = {
   "en-US": "en-US-AriaNeural",
 };
 
-const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "2.8";
-const TERMS_OF_SERVICE_VERSION = process.env.TERMS_OF_SERVICE_VERSION || "2.6";
+const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "2.9";
+const TERMS_OF_SERVICE_VERSION = process.env.TERMS_OF_SERVICE_VERSION || "2.7";
 const COOKIE_POLICY_VERSION = process.env.COOKIE_POLICY_VERSION || "2.3";
 
 // ── Input validation limits (security: bound prompt size and lock free-text
@@ -555,13 +558,14 @@ function decrementUserLessonRequests(userKey) {
 
 function validateStartupConfig() {
   const hasCerebrasConfig = Boolean(process.env.CEREBRAS_API_KEY?.trim());
+  const hasNvidiaConfig = Boolean(process.env.NVIDIA_API_KEY?.trim());
   const hasCloudflareConfig = Boolean(
     process.env.CLOUDFLARE_API_TOKEN?.trim() &&
       process.env.CLOUDFLARE_ACCOUNT_ID?.trim()
   );
-  if (!hasCerebrasConfig && !hasCloudflareConfig) {
+  if (!hasCerebrasConfig && !hasNvidiaConfig && !hasCloudflareConfig) {
     throw new Error(
-      "Missing required environment variables: set CEREBRAS_API_KEY or CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID"
+      "Missing required environment variables: set CEREBRAS_API_KEY, NVIDIA_API_KEY, or CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID"
     );
   }
 }
@@ -1849,6 +1853,7 @@ END_EXTERNAL_CONTEXT>>>`
 
     const PROVIDER_LOG_LABELS = {
       primary: "Cerebras Cloud (Gemma 4 31B)",
+      nvidia: "NVIDIA NIM",
       cloudflare: "Cloudflare Workers AI",
     };
     console.log("[Gemma] Provider plan", {
@@ -1856,7 +1861,8 @@ END_EXTERNAL_CONTEXT>>>`
       mode,
       providerOrder: [
         "cerebras",
-        ...(isFallbackConfigured() ? ["cloudflare"] : []),
+        ...(isNvidiaFallbackConfigured() ? ["nvidia"] : []),
+        ...(isCloudflareFallbackConfigured() ? ["cloudflare"] : []),
       ],
       fallbackConfigured: isFallbackConfigured(),
     });
@@ -1901,7 +1907,22 @@ END_EXTERNAL_CONTEXT>>>`
       const startedAt = Date.now();
       let result;
       try {
-        if (source === "cloudflare") {
+        if (source === "nvidia") {
+          result = extractTextFromResult(
+            await callNvidiaFallbackAI(
+              GEMMA_MODEL,
+              {
+                messages: [
+                  { role: "system", content: systemPrompt },
+                  { role: "user", content: attemptUserPrompt },
+                ],
+                temperature: attemptTemperature,
+                max_tokens: maxOutputTokens,
+              },
+              generateAbortSignal
+            )
+          );
+        } else if (source === "cloudflare") {
           // Direct provider calls bypass callGemma's circuit breaker so a
           // fallback is still reachable when the primary's circuit is open.
           result = extractTextFromResult(
@@ -2046,23 +2067,22 @@ END_EXTERNAL_CONTEXT>>>`
     // — this is the server doing the "second try" the user used to have to do
     // by hand. Latency can grow a little on a bad first sample; that is a
     // deliberate trade for never surfacing a fixable error.
-    // Reliability: the direct-Cloudflare rungs call the fallback provider
-    // WITHOUT going through callGemma's timeout circuit breaker. This is the
-    // difference between 0% and ~100% reliability when Cerebras is degraded:
-    // once the primary's timeout circuit trips open, every callGemma() rejects
-    // immediately with GemmaCircuitOpenError, so without a circuit-independent
-    // path the whole request fails even though Cloudflare is healthy and fast.
-    // Enabling these rungs guarantees a working provider is always reachable.
-    // They only exist when Cloudflare is configured, so single-provider
-    // deployments are unaffected.
-    const fallbackRungsActive = isFallbackConfigured();
+    // Reliability: direct fallback rungs call NVIDIA first, then Cloudflare as
+    // the last-resort provider, WITHOUT going through callGemma's timeout
+    // circuit breaker. This keeps a circuit-independent path reachable when
+    // Cerebras is degraded. Each rung only exists when its provider is
+    // configured, so single-provider deployments are unaffected.
     const attemptPlan = [
       { source: "primary", label: "primary", repair: false },
       { source: "primary", label: "primary-repair", repair: true },
     ];
-    if (fallbackRungsActive) {
-      attemptPlan.push({ source: "cloudflare", label: "cloudflare", repair: false });
-      attemptPlan.push({ source: "cloudflare", label: "cloudflare-repair", repair: true });
+    if (isNvidiaFallbackConfigured()) {
+      attemptPlan.push({ source: "nvidia", label: "nvidia", repair: false });
+      attemptPlan.push({ source: "nvidia", label: "nvidia-repair", repair: true });
+    }
+    if (isCloudflareFallbackConfigured()) {
+      attemptPlan.push({ source: "cloudflare", label: "cloudflare-last-resort", repair: false });
+      attemptPlan.push({ source: "cloudflare", label: "cloudflare-last-resort-repair", repair: true });
     }
 
     let validated = null;

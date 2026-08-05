@@ -5,7 +5,8 @@ import Cerebras from "@cerebras/cerebras_cloud_sdk";
 //
 // Providers:
 //   • "cerebras"   — Cerebras Cloud SDK (Gemma 4 31B), the primary.
-//   • "cloudflare" — Cloudflare Workers AI (Gemma), the fallback.
+//   • "nvidia"     — NVIDIA NIM OpenAI-compatible chat completions, the fallback.
+//   • "cloudflare" — Cloudflare Workers AI (Gemma), the last-resort provider.
 
 //
 // The providers are individually unreliable, so the engine is built around
@@ -325,6 +326,7 @@ function newProviderHealth() {
 const providerHealth = {
   cerebras: newProviderHealth(),
   cloudflare: newProviderHealth(),
+  nvidia: newProviderHealth(),
 };
 
 function recordProviderSuccess(providerKey, latencyMs, modelIndex) {
@@ -382,6 +384,7 @@ export function getProviderHealthSnapshot() {
 export function resetProviderHealth() {
   providerHealth.cerebras = newProviderHealth();
   providerHealth.cloudflare = newProviderHealth();
+  providerHealth.nvidia = newProviderHealth();
 }
 
 // ── Provider registry ────────────────────────────────────────────────────────
@@ -397,13 +400,34 @@ function isCloudflareConfigured() {
   );
 }
 
-/** @deprecated Use isCloudflareConfigured() directly. Kept for server.js compatibility. */
+function isNvidiaConfigured() {
+  return Boolean(process.env.NVIDIA_API_KEY?.trim());
+}
+
+/** True when any non-primary provider is available. Kept for server.js compatibility. */
 export function isFallbackConfigured() {
+  return isNvidiaConfigured() || isCloudflareConfigured();
+}
+
+export function isCloudflareFallbackConfigured() {
   return isCloudflareConfigured();
+}
+
+export function isNvidiaFallbackConfigured() {
+  return isNvidiaConfigured();
 }
 
 function getCerebrasModels() {
   const models = [GEMMA_MODEL, ...parseModelList(process.env.GEMMA_FALLBACK_MODELS)];
+  return [...new Set(models)];
+}
+
+function getNvidiaModels() {
+  const models = [
+    ...parseModelList(process.env.NVIDIA_AI_MODEL),
+    ...parseModelList(process.env.NVIDIA_AI_MODELS),
+  ];
+  if (models.length === 0) models.push("google/gemma-4-31b-it");
   return [...new Set(models)];
 }
 
@@ -429,11 +453,21 @@ function getProviders(allowFallback) {
         callCerebras(model, body, signal, opts),
     });
   }
+  if (allowFallback && isNvidiaConfigured()) {
+    providers.push({
+      key: "nvidia",
+      label: "NVIDIA NIM",
+      tier: 0,
+      models: getNvidiaModels(),
+      call: (model, body, signal, opts) =>
+        callNvidiaAI(model, body, signal, opts),
+    });
+  }
   if (allowFallback && isCloudflareConfigured()) {
     providers.push({
       key: "cloudflare",
       label: "Cloudflare Workers AI",
-      tier: 0,
+      tier: 1,
       models: getCloudflareModels(),
       call: (model, body, signal, opts) =>
         callWorkersAI(process.env.CLOUDFLARE_ACCOUNT_ID.trim(), model, body, signal, opts),
@@ -601,11 +635,38 @@ async function fetchChatCompletion(url, headers, payload, signal, opts = {}) {
 // false }` to turn that off, roughly halving wall-clock generation for
 // structured-output workloads like ours. Because not every host tolerates
 // the extra field, it is opt-in per provider:
-//   AI_DISABLE_THINKING = off (default) | cerebras | cloudflare | both/all
-//                         | both/all (every provider)
+//   AI_DISABLE_THINKING = off (default) | cerebras | nvidia | cloudflare | both/all
 function thinkingDisabledFor(providerKey) {
   const mode = (process.env.AI_DISABLE_THINKING || "off").trim().toLowerCase();
   return mode === "both" || mode === "all" || mode === providerKey;
+}
+
+async function callNvidiaAI(model, body, signal, opts) {
+  const apiKey = process.env.NVIDIA_API_KEY?.trim();
+  if (!apiKey) {
+    throw new Error("NVIDIA_API_KEY is not configured");
+  }
+  const payload = {
+    model,
+    messages: body.messages,
+    temperature: body.temperature,
+    top_p: 0.95,
+    max_tokens: body.max_tokens,
+    stream: true,
+  };
+  payload.chat_template_kwargs = {
+    enable_thinking: !thinkingDisabledFor("nvidia"),
+  };
+  return fetchChatCompletion(
+    "https://integrate.api.nvidia.com/v1/chat/completions",
+    {
+      Authorization: `Bearer ${apiKey}`,
+      Accept: "text/event-stream",
+    },
+    payload,
+    signal,
+    opts
+  );
 }
 
 async function callWorkersAI(accountId, model, body, signal, opts) {
@@ -780,11 +841,16 @@ async function callCerebras(model, body, signal, opts) {
 }
 
 /**
- * Direct call to the Cloudflare fallback provider.
- * Public because server.js uses it for circuit-independent "last rung"
- * attempts. Returns the raw completion payload — pass it through
- * extractTextFromResult() to get text.
+ * Direct call to the NVIDIA fallback provider.
+ * Public because server.js uses it for circuit-independent fallback rungs.
+ * Returns the raw completion payload — pass it through extractTextFromResult().
  */
+export async function callNvidiaFallbackAI(model, body, signal) {
+  const models = getNvidiaModels();
+  const preferred = models[providerHealth.nvidia.modelIndex % models.length];
+  return callNvidiaAI(preferred || model, body, signal, {});
+}
+
 export async function callCloudflareAI(model, body, signal) {
   const accountId = process.env.CLOUDFLARE_ACCOUNT_ID?.trim();
   // Bug fix: without this guard a missing account ID silently produced a
@@ -1184,7 +1250,7 @@ export async function callGemma(
 
   if (providers.length === 0) {
     throw new Error(
-      "No AI provider is configured: set CEREBRAS_API_KEY or CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID"
+      "No AI provider is configured: set CEREBRAS_API_KEY, NVIDIA_API_KEY, or CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID"
     );
   }
   if (enableSearch) {
@@ -1297,7 +1363,7 @@ export async function callGemma(
 // ── Warm-up ──────────────────────────────────────────────────────────────────
 
 /**
- * Warm up the FALLBACK model (Cloudflare Workers AI) with a minimal request.
+ * Warm up the last-resort model (Cloudflare Workers AI) with a minimal request.
  * Cloudflare Workers AI unloads idle models quickly and can cold-start in
  * 10-30s, so we keep it warm with a tiny non-streaming ping.
  *
