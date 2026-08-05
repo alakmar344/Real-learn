@@ -26,7 +26,7 @@ const KeyboardShortcuts = dynamic(() => import("@/components/shared/KeyboardShor
   loading: () => null,
 });
 
-const HIDE_SIDEBAR_PREFIXES = ["/sign-in", "/sign-up"];
+const HIDE_SIDEBAR_PREFIXES = ["/sign-in", "/sign-up", "/night-owl"];
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
