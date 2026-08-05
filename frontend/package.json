@@ -20,7 +20,8 @@
     "start": "next start",
     "lint": "next lint",
     "verify:quiz": "node scripts/verify-quiz-shuffle.mjs",
-    "verify:achievements": "node scripts/verify-achievements.mjs"
+    "verify:achievements": "node scripts/verify-achievements.mjs",
+    "verify:reconsent": "node scripts/verify-reconsent-copy.mjs"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.5.9",
