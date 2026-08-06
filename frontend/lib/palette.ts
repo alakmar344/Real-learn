@@ -7,10 +7,10 @@
  * own palette (gold confetti, blue/teal completion burst, sky-blue share
  * card, orange hearts) — three unrelated brand identities inside one flow.
  *
- * Everything here derives from the Solar Terracotta system: terracotta +
- * ember (brand), rose + amber (dopamine celebration companions), emerald
- * (success), sky (air), alabaster/obsidian neutrals.
- * NO purple/violet (owner's rule).
+ * Everything here derives from the Olive Frenzy Minimal system: olive
+ * `#556B2F` (light anchor) / lime-olive `#A4C639` (dark glow) as the single
+ * accent family, emerald for success, warm cream/olive-black neutrals.
+ * NO purple/violet, NO gold (owner's rules).
  */
 
 export type ThemeName = "light" | "dark";
@@ -23,10 +23,10 @@ export function activeTheme(): ThemeName {
   return "light";
 }
 
-/** Confetti / particle-burst colors — cyan + pink + mint celebration */
+/** Confetti / particle-burst colors — olive + lime + emerald celebration */
 const CELEBRATION: Record<ThemeName, string[]> = {
-  light: ["#0891B2", "#06B6D4", "#22D3EE", "#DB2777", "#EC4899", "#F472B6", "#10B981", "#34D399", "#FFFFFF"],
-  dark: ["#06B6D4", "#22D3EE", "#67E8F9", "#EC4899", "#F472B6", "#F9A8D4", "#10B981", "#34D399", "#FAFAFA"],
+  light: ["#556B2F", "#6B8236", "#A4C639", "#84CC16", "#3F6212", "#D9F99D", "#059669", "#34D399", "#FFFFFF"],
+  dark: ["#A4C639", "#C3E85B", "#D9F99D", "#84CC16", "#65A30D", "#F5F3E8", "#10B981", "#34D399", "#FAF9F3"],
 };
 
 export function celebrationColors(theme: ThemeName = activeTheme()): string[] {
@@ -43,13 +43,13 @@ export function starColor(theme: ThemeName = activeTheme()): string {
  * theme for legibility in feeds regardless of the app theme).
  */
 export const SHARE_CARD = {
-  paper: "#FAFAFA",
+  paper: "#FAF9F3",
   card: "#FFFFFF",
-  ink: "#18181B",
-  inkSoft: "#52525B",
-  brand: "#0891B2",
-  brandBright: "#06B6D4",
-  mint: "#10B981",
-  amber: "#EC4899",
-  border: "#E4E4E7",
+  ink: "#1F2318",
+  inkSoft: "#565B48",
+  brand: "#556B2F",
+  brandBright: "#84CC16",
+  mint: "#059669",
+  amber: "#3F6212",
+  border: "#E7E5D8",
 } as const;

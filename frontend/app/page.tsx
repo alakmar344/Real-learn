@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Navbar from "@/components/shared/Navbar";
 import QuestionInput from "@/components/homepage/QuestionInput";
 import HomeStats from "@/components/homepage/HomeStats";
+import HeroTicker from "@/components/homepage/HeroTicker";
 import LoadingCinematic from "@/components/shared/LoadingCinematic";
 import LiveRegion from "@/components/shared/LiveRegion";
 import dynamic from "next/dynamic";
@@ -125,6 +126,8 @@ export default function HomePage() {
             <div className="hero__content hero-glass-card hero__panel">
               <HomeStats onStartTopic={(topic) => submit(topic)} />
             </div>
+
+            <HeroTicker />
           </div>
         </section>
 

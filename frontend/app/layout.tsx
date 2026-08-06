@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import {
+  Caveat,
   Inter,
   JetBrains_Mono,
   Lora,
@@ -38,6 +39,14 @@ const spaceGrotesk = Space_Grotesk({
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
+  display: "swap",
+});
+// Script face: Caveat — the expressive layer of the Olive Frenzy system.
+// Decorative Latin-only moments (hero greeting, ghost glyphs) — never
+// functional UI, never lesson prose (12-language coverage lives in Inter).
+const caveat = Caveat({
+  subsets: ["latin"],
+  variable: "--font-script",
   display: "swap",
 });
 
@@ -135,12 +144,12 @@ export const viewport: Viewport = {
   initialScale: 1,
   // Must match --bg-primary (dark) in globals.css so browser chrome blends
   // with the page on first paint.
-  themeColor: "#0A0A0F",
+  themeColor: "#121510",
 };
 
 // Applies the persisted theme BEFORE first paint so users never see a wrong
 // flash (FOUC). Must stay tiny and synchronous.
-const themeInitScript = `(function(){try{var t=null;var p=localStorage.getItem("reallearn-preferences");if(p){var s=JSON.parse(p);t=s&&s.state&&s.state.theme}if(!t){var l=localStorage.getItem("reallearn-theme");if(l){var v=JSON.parse(l);t=typeof v==="string"?v:v&&v.state&&v.state.theme}}if(t!=="light"&&t!=="dark"){t="dark"}var m=document.querySelector('meta[name="theme-color"]');if(!m){m=document.createElement("meta");m.name="theme-color";document.head.appendChild(m)}if(t==="dark"){document.documentElement.dataset.theme=t;m.content="#0A0A0F"}else{m.content="#FAFAFA"}}catch(e){}})();`;
+const themeInitScript = `(function(){try{var t=null;var p=localStorage.getItem("reallearn-preferences");if(p){var s=JSON.parse(p);t=s&&s.state&&s.state.theme}if(!t){var l=localStorage.getItem("reallearn-theme");if(l){var v=JSON.parse(l);t=typeof v==="string"?v:v&&v.state&&v.state.theme}}if(t!=="light"&&t!=="dark"){t="dark"}var m=document.querySelector('meta[name="theme-color"]');if(!m){m=document.createElement("meta");m.name="theme-color";document.head.appendChild(m)}if(t==="dark"){document.documentElement.dataset.theme=t;m.content="#121510"}else{m.content="#FAF9F3"}}catch(e){}})();`;
 
 // Resolves the visual-performance tier BEFORE first paint so low-end devices
 // never pay for a single expensive frame (backdrop blurs, grain, ambient
@@ -163,7 +172,7 @@ export default async function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${inter.variable} ${lora.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable}`}
+      className={`${inter.variable} ${lora.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} ${caveat.variable}`}
     >
       <head>
         <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeInitScript }} />

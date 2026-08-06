@@ -9,67 +9,67 @@
 :root {
   color-scheme: dark;
 
-  --brand: #06B6D4;
-  --brand-strong: #0891B2;
-  --brand-bright: #22D3EE;
-  --brand-soft: rgba(6, 182, 212, 0.15);
+  --brand: #A4C639;
+  --brand-strong: #8AAD26;
+  --brand-bright: #C3E85B;
+  --brand-soft: rgba(164, 198, 57, 0.15);
 
-  --cobalt-deep: #0A0A0F;
-  --cobalt-mid: #18181B;
-  --cobalt-vivid: #06B6D4;
-  --cobalt-pale: rgba(6, 182, 212, 0.1);
-  --cobalt-wash: rgba(6, 182, 212, 0.06);
-  --cobalt-ink: #0A0A0F;
+  --cobalt-deep: #121510;
+  --cobalt-mid: #1A1D16;
+  --cobalt-vivid: #A4C639;
+  --cobalt-pale: rgba(164, 198, 57, 0.1);
+  --cobalt-wash: rgba(164, 198, 57, 0.06);
+  --cobalt-ink: #121510;
 
-  --bg-primary: #0A0A0F;
-  --bg-surface: #18181B;
-  --bg-card: #18181B;
-  --bg-card-hover: #27272A;
-  --bg-glass: rgba(10, 10, 15, 0.92);
-  --bg-solid: #27272A;
-  --bg-warm: #18181B;
+  --bg-primary: #121510;
+  --bg-surface: #1A1D16;
+  --bg-card: #1A1D16;
+  --bg-card-hover: #232819;
+  --bg-glass: rgba(18, 21, 16, 0.92);
+  --bg-solid: #262B1E;
+  --bg-warm: #1A1D16;
 
   --ambient-a: transparent;
   --ambient-b: transparent;
 
-  --border-subtle: #27272A;
-  --border-default: #3F3F46;
-  --border-accent: #06B6D4;
-  --border-glow: rgba(6, 182, 212, 0.35);
+  --border-subtle: #262B1E;
+  --border-default: #3C4230;
+  --border-accent: #A4C639;
+  --border-glow: rgba(164, 198, 57, 0.35);
 
   --glass-blur: 16px;
   --glass-blur-strong: 24px;
   --glass-saturate: 140%;
   --glass-highlight: rgba(255, 255, 255, 0.05);
   --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 0 1px rgba(63, 63, 70, 0.6);
+  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 0 1px rgba(60, 66, 48, 0.6);
   --glass-sheen: none;
 
-  --accent: #06B6D4;
-  --accent-action: #06B6D4;
-  --accent-hover: #0891B2;
-  --accent-dim: rgba(6, 182, 212, 0.15);
-  --accent-glow: rgba(6, 182, 212, 0.35);
-  --accent-companion: #EC4899;
-  /* Structured single-family gradient: bright → brand → deep cyan.
-     Buttons read as one coherent color with intentional shading at the
-     edges (the old cyan→pink diagonal left CTAs looking mismatched at
-     the sides). Pink stays in --text-pop-gradient for display text. */
-  --accent-gradient: linear-gradient(135deg, #22D3EE 0%, #06B6D4 55%, #0891B2 100%);
-  --text-pop-gradient: linear-gradient(105deg, #22D3EE 0%, #06B6D4 45%, #EC4899 100%);
-  --on-accent: #FFFFFF;
-  --shadow-glow-accent: 0 4px 24px rgba(6, 182, 212, 0.4);
+  --accent: #A4C639;
+  --accent-action: #A4C639;
+  --accent-hover: #8AAD26;
+  --accent-dim: rgba(164, 198, 57, 0.15);
+  --accent-glow: rgba(164, 198, 57, 0.35);
+  --accent-companion: #C3E85B;
+  /* Structured single-family gradient: lime spark → olive glow → deep moss.
+     One coherent hue with intentional shading at the edges. In dark mode
+     text ON the accent must be ink (--on-accent), never white — white on
+     lime is ~2:1. */
+  --accent-gradient: linear-gradient(135deg, #C3E85B 0%, #A4C639 55%, #8AAD26 100%);
+  --text-pop-gradient: linear-gradient(105deg, #D7F284 0%, #A4C639 60%, #7E9C2C 100%);
+  --on-accent: #121510;
+  --shadow-glow-accent: 0 4px 24px rgba(164, 198, 57, 0.4);
 
-  --text-primary: #FAFAFA;
-  --text-secondary: #A1A1AA;
-  --text-tertiary: #71717A;
-  --text-accent-strong: #22D3EE;
+  --text-primary: #F5F3E8;
+  --text-secondary: #A9AE9A;
+  --text-tertiary: #7E8471;
+  --text-accent-strong: #C3E85B;
 
   --correct: #10B981;
   --correct-bg: rgba(16, 185, 129, 0.15);
   --wrong: #FB7185;
   --wrong-bg: rgba(251, 113, 133, 0.15);
-  --locked: #52525B;
+  --locked: #565B4A;
 
   --subject-physics: #38BDF8;
   --subject-chemistry: #34D399;
@@ -77,7 +77,7 @@
   --subject-biology: #4ADE80;
   --subject-cs: #FB923C;
   --subject-history: #FB7185;
-  --subject-general: #06B6D4;
+  --subject-general: #A4C639;
 
   --radius-sm: 12px;
   --radius-md: 16px;
@@ -89,9 +89,9 @@
   /* Translucent surfaces — panels float over the aurora instead of sitting
      in opaque boxes. Perf tiers strip the backdrop blur; these colors are
      chosen to stay readable even unblurred. */
-  --surface-glass: rgba(24, 24, 27, 0.62);
-  --surface-glass-strong: rgba(17, 17, 21, 0.82);
-  --surface-veil: rgba(10, 10, 15, 0.55);
+  --surface-glass: rgba(26, 29, 22, 0.62);
+  --surface-glass-strong: rgba(18, 21, 16, 0.82);
+  --surface-veil: rgba(18, 21, 16, 0.55);
   --shadow-float: 0 24px 64px rgba(0, 0, 0, 0.45), 0 4px 16px rgba(0, 0, 0, 0.3);
 
   --text-xs: 11px;
@@ -140,79 +140,79 @@
   --blur-md: 12px;
 
   --scrim: rgba(0, 0, 0, 0.7);
-  --focus-ring: 0 0 0 3px rgba(6, 182, 212, 0.35);
-  --focus-ring-simple: 0 0 0 2px #06B6D4;
+  --focus-ring: 0 0 0 3px rgba(164, 198, 57, 0.4);
+  --focus-ring-simple: 0 0 0 2px #A4C639;
 
-  --aurora-1: rgba(6, 182, 212, 0.18);
-  --aurora-2: rgba(236, 72, 153, 0.14);
-  --aurora-3: rgba(16, 185, 129, 0.1);
-  --aurora-4: rgba(251, 113, 133, 0.1);
+  --aurora-1: rgba(164, 198, 57, 0.16);
+  --aurora-2: rgba(85, 107, 47, 0.2);
+  --aurora-3: rgba(245, 243, 232, 0.05);
+  --aurora-4: rgba(16, 185, 129, 0.08);
 
   /* Tactile key tokens — see the "Tactile press system" section. The edge is
      the visible side of a raised key; the bevel is its lit top face; pressed
      is the shade that pools when the key sinks into the surface. */
-  --edge-accent: #0E7490;
+  --edge-accent: #66801F;
   --edge-neutral: rgba(0, 0, 0, 0.55);
   --key-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.18);
   --key-bevel-soft: inset 0 1px 0 rgba(255, 255, 255, 0.08);
   --key-pressed: inset 0 2px 5px rgba(0, 0, 0, 0.35);
 }
 
-/* ── Light Mode — Clean Airy Cyan ── */
+/* ── Light Mode — Warm Cream + Olive Ink ── */
 html[data-theme="light"] {
   color-scheme: light;
 
-  --brand: #0891B2;
-  --brand-strong: #0E7490;
-  --brand-bright: #06B6D4;
-  --brand-soft: rgba(8, 145, 178, 0.1);
+  --brand: #556B2F;
+  --brand-strong: #46591F;
+  --brand-bright: #6B8236;
+  --brand-soft: rgba(85, 107, 47, 0.1);
 
-  --cobalt-deep: #FAFAFA;
-  --cobalt-mid: #F4F4F5;
-  --cobalt-vivid: #0891B2;
-  --cobalt-pale: rgba(8, 145, 178, 0.08);
-  --cobalt-wash: rgba(8, 145, 178, 0.04);
-  --cobalt-ink: #FAFAFA;
+  --cobalt-deep: #FAF9F3;
+  --cobalt-mid: #F1F0E6;
+  --cobalt-vivid: #556B2F;
+  --cobalt-pale: rgba(85, 107, 47, 0.08);
+  --cobalt-wash: rgba(85, 107, 47, 0.04);
+  --cobalt-ink: #FAF9F3;
 
-  --bg-primary: #FAFAFA;
+  --bg-primary: #FAF9F3;
   --bg-surface: #FFFFFF;
   --bg-card: #FFFFFF;
-  --bg-card-hover: #F4F4F5;
-  --bg-glass: rgba(250, 250, 250, 0.92);
-  --bg-solid: #F4F4F5;
-  --bg-warm: #FFFFFF;
+  --bg-card-hover: #F3F2E9;
+  --bg-glass: rgba(250, 249, 243, 0.92);
+  --bg-solid: #F1F0E6;
+  --bg-warm: #FFFDF6;
 
-  --border-subtle: #E4E4E7;
-  --border-default: #D4D4D8;
-  --border-accent: #0891B2;
-  --border-glow: rgba(8, 145, 178, 0.2);
+  --border-subtle: #E7E5D8;
+  --border-default: #D6D4C4;
+  --border-accent: #556B2F;
+  --border-glow: rgba(85, 107, 47, 0.22);
 
   --glass-highlight: rgba(255, 255, 255, 0.9);
-  --glass-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
-  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 0 0 1px rgba(212, 212, 216, 0.6);
+  --glass-shadow: 0 4px 16px rgba(31, 35, 24, 0.05);
+  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 0 0 1px rgba(214, 212, 196, 0.6);
 
-  --accent: #0891B2;
-  --accent-action: #0891B2;
-  --accent-hover: #0E7490;
-  --accent-dim: rgba(8, 145, 178, 0.1);
-  --accent-glow: rgba(8, 145, 178, 0.2);
-  --accent-companion: #DB2777;
+  --accent: #556B2F;
+  --accent-action: #556B2F;
+  --accent-hover: #46591F;
+  --accent-dim: rgba(85, 107, 47, 0.1);
+  --accent-glow: rgba(85, 107, 47, 0.22);
+  --accent-companion: #3F6212;
   /* Structured single-family gradient (see dark-mode note above). */
-  --accent-gradient: linear-gradient(135deg, #06B6D4 0%, #0891B2 55%, #0E7490 100%);
-  --text-pop-gradient: linear-gradient(105deg, #06B6D4 0%, #0891B2 45%, #DB2777 100%);
+  --accent-gradient: linear-gradient(135deg, #6B8236 0%, #556B2F 55%, #46591F 100%);
+  --text-pop-gradient: linear-gradient(105deg, #6B8236 0%, #556B2F 50%, #3D4D1D 100%);
   --on-accent: #FFFFFF;
-  --shadow-glow-accent: 0 4px 16px rgba(8, 145, 178, 0.25);
+  --shadow-glow-accent: 0 4px 16px rgba(85, 107, 47, 0.28);
 
-  --text-primary: #18181B;
-  --text-secondary: #52525B;
-  --text-tertiary: #71717A;
-  --text-accent-strong: #0E7490;
+  --text-primary: #1F2318;
+  --text-secondary: #565B48;
+  --text-tertiary: #6E7460;
+  --text-accent-strong: #46591F;
 
   --correct: #059669;
   --correct-bg: rgba(5, 150, 105, 0.1);
   --wrong: #DC2626;
   --wrong-bg: rgba(220, 38, 38, 0.1);
-  --locked: #A1A1AA;
+  --locked: #A6AA96;
 
   --subject-physics: #0284C7;
   --subject-chemistry: #059669;
@@ -220,30 +220,30 @@ html[data-theme="light"] {
   --subject-biology: #16A34A;
   --subject-cs: #EA580C;
   --subject-history: #DC2626;
-  --subject-general: #0D9488;
+  --subject-general: #556B2F;
 
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.07);
-  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.09);
+  --shadow-sm: 0 1px 3px rgba(31, 35, 24, 0.05);
+  --shadow-md: 0 4px 14px rgba(31, 35, 24, 0.07);
+  --shadow-lg: 0 10px 30px rgba(31, 35, 24, 0.09);
   --shadow-glow-correct: 0 0 16px rgba(5, 150, 105, 0.15);
 
   --surface-glass: rgba(255, 255, 255, 0.66);
   --surface-glass-strong: rgba(255, 255, 255, 0.86);
-  --surface-veil: rgba(250, 250, 250, 0.55);
-  --shadow-float: 0 24px 64px rgba(24, 24, 27, 0.1), 0 4px 16px rgba(24, 24, 27, 0.06);
+  --surface-veil: rgba(250, 249, 243, 0.55);
+  --shadow-float: 0 24px 64px rgba(31, 35, 24, 0.1), 0 4px 16px rgba(31, 35, 24, 0.06);
 
-  --focus-ring: 0 0 0 3px rgba(8, 145, 178, 0.25);
-  --focus-ring-simple: 0 0 0 2px #0891B2;
+  --focus-ring: 0 0 0 3px rgba(85, 107, 47, 0.3);
+  --focus-ring-simple: 0 0 0 2px #556B2F;
 
   --scrim: rgba(0, 0, 0, 0.4);
 
-  --aurora-1: rgba(6, 182, 212, 0.12);
-  --aurora-2: rgba(236, 72, 153, 0.1);
-  --aurora-3: rgba(16, 185, 129, 0.08);
-  --aurora-4: rgba(251, 113, 133, 0.06);
+  --aurora-1: rgba(85, 107, 47, 0.12);
+  --aurora-2: rgba(164, 198, 57, 0.1);
+  --aurora-3: rgba(216, 222, 180, 0.16);
+  --aurora-4: rgba(5, 150, 105, 0.06);
 
-  --edge-accent: #155E75;
-  --edge-neutral: #D4D4D8;
+  --edge-accent: #38471A;
+  --edge-neutral: #D6D4C4;
   --key-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.9);
   --key-bevel-soft: inset 0 1px 0 rgba(255, 255, 255, 0.7);
   --key-pressed: inset 0 2px 5px rgba(0, 0, 0, 0.14);
@@ -1099,26 +1099,36 @@ a:active {
 .hero__greeting {
   margin-top: 16px;
   order: 2;
+  /* script overlaps the stark input card below — controlled-chaos layering */
+  position: relative;
+  z-index: 2;
+  margin-bottom: -10px;
+  pointer-events: none;
 }
+/* Olive Frenzy: the greeting is the expressive script moment — oversized
+   cursive tilted against the razor-straight input card below it. Script is
+   decorative-Latin-only; functional UI stays on the geometric sans. */
 .hero__title {
   margin: 0;
-  font-family: var(--font-display);
-  font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: -0.03em;
-  font-size: clamp(32px, 6vw, 48px);
+  font-family: var(--font-script), cursive;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0;
+  font-size: clamp(44px, 9vw, 68px);
   color: var(--text-primary);
+  transform: rotate(-1.5deg);
+  transform-origin: left bottom;
 }
 @media (min-width: 1024px) {
   .hero__title {
-    font-size: clamp(44px, 4vw, 56px);
-    line-height: 1.1;
-    letter-spacing: -0.035em;
+    font-size: clamp(56px, 5.5vw, 80px);
+    line-height: 1;
   }
   /* Desktop: Greeting H1 (order: 1), question input (order: 2), HomeStats spark below (order: 3) */
   .hero__greeting {
     order: 1;
     margin-top: 0;
+    margin-bottom: -16px;
   }
   .hero__input-row {
     order: 2;
@@ -2202,7 +2212,7 @@ p {
   font-weight: 800;
   letter-spacing: 0.02em;
   color: var(--on-accent);
-  /* One confident accent press — structured cyan-family gradient with a
+  /* One confident accent press — structured olive-family gradient with a
      solid accent underneath as the paint fallback. No transparent border
      rim: the gradient paints edge-to-edge so the sides stay clean. */
   background-color: var(--accent);
@@ -4449,7 +4459,7 @@ p {
 }
 .hero-glass-card:hover {
   border-color: var(--border-accent);
-  box-shadow: 0 16px 40px -12px rgba(6, 182, 212, 0.15);
+  box-shadow: 0 16px 40px -12px var(--accent-dim);
 }
 
 .stat-tile-2026 {
@@ -4611,16 +4621,17 @@ p {
 }
 .page-hero__glyph {
   position: absolute;
-  top: -30px;
+  top: -34px;
   right: -4px;
   z-index: 0;
-  font-family: var(--font-display);
-  font-size: clamp(80px, 16vw, 140px);
-  font-weight: 800;
+  font-family: var(--font-script), cursive;
+  font-size: clamp(90px, 18vw, 160px);
+  font-weight: 600;
   line-height: 1;
-  letter-spacing: -0.06em;
+  letter-spacing: 0;
   color: transparent;
-  -webkit-text-stroke: 1.5px color-mix(in srgb, var(--accent) 18%, transparent);
+  -webkit-text-stroke: 1.5px color-mix(in srgb, var(--accent) 22%, transparent);
+  transform: rotate(-5deg);
   pointer-events: none;
   user-select: none;
 }
@@ -5885,3 +5896,83 @@ h3,
 }
 
 
+
+/* ── Olive Frenzy — script accents + kinetic ticker ─────────────────────
+   The "frenzy" is kinetic composition: oversized script cutting through
+   rigid geometry, one moving ticker line, asymmetric tilt. The minimalism
+   survives because everything functional stays on the geometric sans. */
+
+/* Expressive script display — decorative Latin-only moments. Never use for
+   buttons, nav, metrics, or lesson prose (multilingual + legibility). */
+.script-display {
+  font-family: var(--font-script), cursive;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+/* Kinetic ticker bar — a single thin motion line between stark dividers.
+   Transform-only marquee (cheap); duplicated track for a seamless loop. */
+.hero-ticker {
+  order: 4;
+  width: 100%;
+  margin-top: 28px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  overflow: hidden;
+  display: flex;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.hero-ticker__track {
+  display: flex;
+  align-items: baseline;
+  gap: 28px;
+  padding-right: 28px;
+  flex-shrink: 0;
+  animation: tickerScroll 26s linear infinite;
+}
+.hero-ticker:hover .hero-ticker__track {
+  animation-play-state: paused;
+}
+.hero-ticker__word {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+.hero-ticker__word--script {
+  font-family: var(--font-script), cursive;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--accent);
+}
+.hero-ticker__tick {
+  width: 5px;
+  height: 5px;
+  border-radius: 1px;
+  align-self: center;
+  background: var(--accent);
+  opacity: 0.55;
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
+@keyframes tickerScroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
+}
+/* Static under reduced motion or the low perf tier — the line stays, the
+   motion goes. */
+@media (prefers-reduced-motion: reduce) {
+  .hero-ticker__track { animation: none !important; }
+}
+html[data-perf="low"] .hero-ticker__track {
+  animation: none;
+}
