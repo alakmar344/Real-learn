@@ -1,13 +1,14 @@
 # RealLearn "Evergreen" Redesign — UX Audit, Design System & Implementation Record
 
 > **Status: historical record.** This document records the "Evergreen"
-> research-backed redesign (2026-07-28) and the "Sunset Pop" vibrancy pass
-> (2026-07-29) — the design iterations of that week. **The current canonical
-> design system is now the Cyber Aqua system** (electric cyan/teal accent,
-> hot-pink energy companion, deep space dark default `#0A0A0F`, light
-> `#FAFAFA`, no purple/violet, no gold). See `docs/AGENT_MEMORY.md` §1 for the
-> canonical description; the Evergreen/Solar Terracotta details below describe
-> superseded states and are kept only as history.
+> research-backed redesign (2026-07-28), the "Sunset Pop" vibrancy pass
+> (2026-07-29), and the Cyber Aqua era (2026-07-30 → 2026-08-05). **The
+> current canonical design system is now Olive Frenzy Minimal** (single
+> olive accent family `#556B2F` light / lime-olive `#A4C639` dark, warm
+> cream `#FAF9F3` / olive-black `#121510` canvases, Caveat script for
+> decorative display moments, no purple/violet, no gold). See
+> `docs/AGENT_MEMORY.md` §1 for the canonical description; everything below
+> describes superseded states and is kept only as history.
 
 > **Goal:** redesign RealLearn so Gen Z naturally feels at home — not by decorating
 > it with "Gen Z" signifiers, but by applying what actually makes modern products
@@ -354,3 +355,26 @@ degrades to the exact previous behavior in older engines:
   `overscroll-behavior: contain` stops the quiz sheet and sidebar from
   scroll-chaining the page behind them; `scrollbar-gutter: stable` ends
   sideways layout shift between short and long pages.
+
+## Addendum — 2026-08-06: Olive Frenzy Minimal (canonical)
+
+The owner's "frenzy in minimalism" concept, mediated for this product:
+
+- **Palette** — ONE olive family. Light: olive `#556B2F` accent (hover
+  `#46591F`, bright `#6B8236`) on warm cream `#FAF9F3`, ink `#1F2318`.
+  Dark (default): lime-olive `#A4C639` (hover `#8AAD26`, spark `#C3E85B`)
+  on olive-black `#121510`, warm ivory `#F5F3E8` text. The hot-pink
+  companion is retired; `--accent-companion` is the lime spark tier.
+- **Contrast decisions** — dark-mode `--on-accent` is ink `#121510`
+  (white on `#A4C639` is ~2:1 and banned); light CTAs keep white on
+  `#556B2F` (5.9:1); every gradient stop ≥3:1 under its CTA text.
+- **Frenzy layer** — Caveat script (`--font-script`): tilted oversized
+  hero greeting overlapping the input card, script `.page-hero__glyph`
+  ghosts, `.hero-ticker` kinetic marquee (transform-only, hover-pause,
+  static under reduced-motion / low perf tier), `.script-display` utility.
+  Script is decorative-Latin-only — never functional UI or lesson prose
+  (12-language coverage stays on Inter).
+- **Re-synced surfaces** — `lib/palette.ts` (confetti spectrum + share
+  card), `lib/themes.ts`, `ThemeApplier` fallback, pre-paint theme-color
+  script, `viewport.themeColor`, `manifest.json`, tactile key edge tokens
+  (`--edge-accent` `#38471A` light / `#66801F` dark), auroras, focus rings.

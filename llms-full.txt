@@ -64,7 +64,7 @@ One topic, three depths. Pick the level that fits you and the entire lesson adap
 RealLearn quietly searches recent news in the background and threads what's happening right now into your final lesson part. Economics ties to this quarter's headlines; physics ties to the latest discovery; history ties to current parallels.
 
 ### 6. A Cinematic, Calm Experience
-Cyber Aqua aesthetic — clean, non-distracting visual hierarchy. Cinematic loading screen, progress rail, full-screen unlock animation, completion screen with confetti, toast notifications. Typography: Space Grotesk for bold headers, Inter for interface, Lora for lesson prose/reading content, JetBrains Mono for code.
+Olive Frenzy Minimal aesthetic — clean, non-distracting visual hierarchy with controlled kinetic energy. Cinematic loading screen, progress rail, full-screen unlock animation, completion screen with confetti, toast notifications, kinetic hero ticker. Typography: Space Grotesk for bold headers, Inter for interface, Lora for lesson prose/reading content, JetBrains Mono for code, Caveat script for decorative display moments.
 
 ### 7. Your Personal Learning Library
 Every completed journey is automatically saved to a sidebar library. Reopen any past lesson to review or retake it. Journeys are intelligently de-duplicated by a stable signature (question + first part title).
@@ -75,10 +75,10 @@ Curiosity doesn't stop at one question. When you finish a journey, a Follow-Up b
 ### 9. Designed for Everyone — Accessibility First
 WCAG 2.1 Level AA targeting. Skip-to-content link, ARIA live regions, full keyboard navigation in quizzes (arrow keys, Enter/Space), focus trapping in modals, prefers-reduced-motion support, high-contrast WCAG-AA-tuned color tokens, visible focus outlines, mobile-first responsive typography, 44px minimum touch targets.
 
-### 10. Cyber Aqua Light & Dark Themes
+### 10. Olive Frenzy Minimal Light & Dark Themes
 Switch between two curated theme modes:
-- **Light (Paper)** — clean daylight canvas (`#FAFAFA`) with a teal accent (`#0891B2`), hot-pink companion (`#DB2777`), and cyan→pink gradients on CTAs
-- **Dark (Ink)** — deep space canvas (`#0A0A0F`, the default) with an electric cyan accent (`#06B6D4`), hot-pink companion (`#EC4899`), emerald success, and cyan→pink gradients on CTAs
+- **Light** — warm cream canvas (`#FAF9F3`) with a rich olive accent (`#556B2F`), deep charcoal-olive ink, and single-family olive gradients on CTAs
+- **Dark** — deep olive-black canvas (`#121510`, the default) with a glowing lime-olive accent (`#A4C639`), warm ivory text, emerald success, and olive→lime gradients on CTAs (CTA text on lime is ink, never white)
 
 ### 11. Voice-Powered Learning
 Voice Input (Mic Button): Ask questions by speaking using the Web Speech API (`SpeechRecognition`). Supports all 12 app languages with proper BCP-47 speech codes. Read Aloud (Listen Button): Every lesson part has a "Listen" button using `speechSynthesis` with intelligent voice selection by language match, provider quality, and voice type.
@@ -87,7 +87,7 @@ Voice Input (Mic Button): Ask questions by speaking using the Web Speech API (`S
 XP & Levels (5 base + 5 per correct answer, bonus XP for full journeys, streak bonuses up to 15 extra). Daily Streaks with streak freezes. Daily Goals with a circular progress ring. 56 Achievements from "First Steps" to legendary feats like the 100-day "Centurion Flame". Activity Heatmap (GitHub-style 14-week grid). Celebration System with FIFO queue of XP pop-ups, level-up modals, badge unlocks, streak flames.
 
 ### 13. Shareable Result Cards
-Canvas-generated 1080x1920 PNG result card in the Cyber Aqua brand palette (cyan/teal + pink energy + emerald success; zero purple/violet), with grid texture, glowing orbs, brand header, question box, stats pills, score arc, CTA band. Native Web Share API support with fallback to download. Copy-to-clipboard text summary.
+Canvas-generated 1080x1920 PNG result card in the Olive Frenzy Minimal brand palette (olive + lime energy + emerald success; zero purple/violet, zero gold), with grid texture, glowing orbs, brand header, question box, stats pills, score arc, CTA band. Native Web Share API support with fallback to download. Copy-to-clipboard text summary.
 
 ### 14. Dual Answer Modes — Fast & Explain
 Fast Mode: One instant, direct answer (1 part). Lower temperature (0.2) for focused output. Both modes share a 4,000-token output ceiling; fast mode also fetches Serper news context and passes full input + output moderation like explain mode.
@@ -140,7 +140,7 @@ Signed-in learners can set learning-style preferences (checklist) and free-text 
 - **Auth:** Clerk (`@clerk/nextjs`)
 - **State:** Zustand (4 stores with `persist` middleware for localStorage backing; saved journeys additionally archive to IndexedDB)
 - **Content:** React Markdown + `remark-gfm`
-- **Styling:** Tailwind CSS + custom CSS variables for the Cyber Aqua (Light/Dark) design system
+- **Styling:** Tailwind CSS + custom CSS variables for the Olive Frenzy Minimal (Light/Dark) design system
 - **Speech:** Web Speech API (SpeechRecognition for input, speechSynthesis for read-aloud)
 - **Sharing:** Canvas API + Web Share API (1080x1920 result cards)
 
