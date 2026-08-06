@@ -3,6 +3,9 @@
 import React, { memo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 import { useReadingTimer } from "@/hooks/useReadingTimer";
 import { LessonPart } from "@/types";
 import SourceTag from "@/components/shared/SourceTag";
@@ -165,7 +168,11 @@ const PartCardBase = ({
         </p>
 
         <div className="markdown-content part-card__prose">
-          <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm, remarkMath]}
+            rehypePlugins={[rehypeKatex]}
+            components={markdownComponents}
+          >
             {part.content}
           </ReactMarkdown>
         </div>

@@ -1354,6 +1354,16 @@ a:active {
   color: var(--text-primary);
 }
 
+.markdown-content h1 {
+  margin: var(--space-xl) 0 var(--space-base);
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 28px;
+  color: var(--text-primary);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-snug);
+}
+
 .markdown-content h2 {
   margin: var(--space-lg) 0 var(--space-base);
   font-family: var(--font-display), system-ui, sans-serif;
@@ -1371,6 +1381,15 @@ a:active {
   font-size: 17px;
   color: var(--brand);
   letter-spacing: var(--tracking-normal);
+}
+
+.markdown-content h4 {
+  margin: var(--space-base) 0 var(--space-sm);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text-secondary);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
 }
 
 .markdown-content p {
@@ -1392,6 +1411,14 @@ a:active {
 .markdown-content em {
   color: var(--brand);
   font-style: italic;
+}
+
+.markdown-content s,
+.markdown-content del {
+  color: var(--text-tertiary);
+  text-decoration: line-through;
+  text-decoration-color: var(--text-tertiary);
+  opacity: 0.7;
 }
 
 .markdown-content code {
@@ -1419,6 +1446,8 @@ a:active {
   padding: 0;
   border-radius: 0;
   color: inherit;
+  font-size: 13px;
+  line-height: 1.6;
 }
 
 .markdown-content blockquote {
@@ -1431,6 +1460,14 @@ a:active {
   font-style: italic;
   font-family: var(--font-lora);
   box-shadow: inset 2px 0 8px var(--cobalt-wash);
+}
+
+.markdown-content blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-content blockquote code {
+  background: rgba(85, 107, 47, 0.12);
 }
 
 .markdown-content ul,
@@ -1446,6 +1483,16 @@ a:active {
   color: var(--text-primary);
 }
 
+.markdown-content li > ul,
+.markdown-content li > ol {
+  margin-top: var(--space-xs);
+  margin-bottom: 0;
+}
+
+.markdown-content li::marker {
+  color: var(--accent);
+}
+
 .markdown-content a {
   color: var(--accent);
   text-decoration: none;
@@ -1454,6 +1501,201 @@ a:active {
 }
 .markdown-content a:hover {
   border-bottom-color: var(--accent);
+}
+
+.markdown-content hr {
+  border: none;
+  height: 2px;
+  background: var(--border-default);
+  margin: var(--space-xl) 0;
+  border-radius: 1px;
+}
+
+.markdown-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  margin: var(--space-base) 0;
+}
+
+/* ── GFM Tables ── */
+.markdown-content table {
+  width: 100%;
+  margin: var(--space-lg) 0;
+  border-collapse: collapse;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-x: auto;
+  display: block;
+}
+
+.markdown-content thead {
+  border-bottom: 2px solid var(--border-default);
+}
+
+.markdown-content th {
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 700;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  color: var(--text-secondary);
+  background: var(--bg-solid);
+}
+
+.markdown-content td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+}
+
+.markdown-content tbody tr:hover {
+  background: var(--bg-card-hover);
+}
+
+.markdown-content tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ── GFM Task lists ── */
+.markdown-content input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border-default);
+  border-radius: 4px;
+  background: transparent;
+  vertical-align: middle;
+  margin-right: 8px;
+  position: relative;
+  cursor: default;
+  transition: background 150ms var(--ease-color), border-color 150ms var(--ease-color);
+}
+
+.markdown-content input[type="checkbox"]:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.markdown-content input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 0px;
+  width: 5px;
+  height: 9px;
+  border: solid var(--on-accent);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* ── KaTeX math rendering ── */
+.markdown-content .math-inline,
+.markdown-content .math-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 0;
+}
+
+.markdown-content .math-inline {
+  display: inline;
+  vertical-align: baseline;
+}
+
+.markdown-content .math-display {
+  display: block;
+  margin: var(--space-lg) 0;
+  padding: var(--space-base) var(--space-md);
+  background: var(--bg-solid);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  text-align: center;
+  overflow-x: auto;
+}
+
+.markdown-content .math-display .katex {
+  font-size: 1.15em;
+}
+
+.markdown-content .katex {
+  font-size: 1.05em;
+  color: var(--text-primary);
+}
+
+.markdown-content .katex-display {
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Keyboard keys (from GFM or HTML) ── */
+.markdown-content kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  font-family: var(--font-mono), monospace;
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 1px 0 var(--border-default);
+}
+
+/* ── Mark / highlight (from HTML passthrough) ── */
+.markdown-content mark {
+  background: var(--accent-dim);
+  color: var(--text-primary);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+/* ── Abbreviation ── */
+.markdown-content abbr[title] {
+  text-decoration: underline dotted var(--text-tertiary);
+  cursor: help;
+}
+
+/* ── Definition lists (if AI generates them) ── */
+.markdown-content dl {
+  margin: var(--space-base) 0;
+}
+
+.markdown-content dt {
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: var(--space-sm);
+}
+
+.markdown-content dd {
+  margin-left: var(--space-base);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-sm);
+}
+
+/* ── Footnotes (from remark-gfm) ── */
+.markdown-content sup a {
+  color: var(--accent);
+  font-weight: 600;
+  border-bottom: none;
+  font-size: 0.75em;
+}
+
+.markdown-content .footnotes {
+  margin-top: var(--space-xl);
+  padding-top: var(--space-base);
+  border-top: 1px solid var(--border-default);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.markdown-content .footnotes ol {
+  margin-left: 20px;
+}
+
+.markdown-content .footnotes li {
+  margin-bottom: var(--space-xs);
 }
 
 /* ── App shell — refined, spacious, Apple-style ── */
@@ -1652,11 +1894,24 @@ a:active {
   .markdown-content {
     font-size: 16px;
   }
+  .markdown-content h1 {
+    font-size: 24px;
+  }
   .markdown-content h2 {
     font-size: 19px;
   }
   .markdown-content h3 {
     font-size: 16px;
+  }
+  .markdown-content table {
+    font-size: 13px;
+  }
+  .markdown-content th,
+  .markdown-content td {
+    padding: 8px 10px;
+  }
+  .markdown-content .math-display {
+    padding: var(--space-sm) var(--space-xs);
   }
 }
 
