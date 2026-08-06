@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, memo } from "react";
 import { QuizQuestion as Question } from "@/types";
+import MathText from "@/components/shared/MathText";
 
 interface Props {
   question: Question;
@@ -74,7 +75,7 @@ const QuizQuestionBase = ({
       <p className="quiz-question__meta">
         Question {index + 1} of {totalQuestions}
       </p>
-      <p className="quiz-question__text">{question.question}</p>
+      <p className="quiz-question__text"><MathText text={question.question} /></p>
       <div role="radiogroup" aria-label="Answer options" className="quiz-question__options">
         {options.map((option, optionIndex) => {
           const isSelected = selectedIndex === optionIndex;
@@ -109,7 +110,7 @@ const QuizQuestionBase = ({
               className={optionClass}
             >
               <span className={badgeClass}>{letterFor(optionIndex)}</span>
-              {option}
+              <MathText text={option} />
             </button>
           );
         })}
@@ -119,7 +120,7 @@ const QuizQuestionBase = ({
           className={`quiz-question__explanation ${explanationState} animate-fade-up`}
           role="alert"
         >
-          {question.explanation}
+          <MathText text={question.explanation} />
         </div>
       ) : null}
     </div>
