@@ -184,6 +184,10 @@ Available component classes (already implemented — use them):
 - Icons: ALL UI icons come from `components/shared/icons.tsx` (`<Icon name=.../>`,
   stroke-based, currentColor, `label` prop for accessible name). Helpers:
   `.settings-action__label`, `.app-sidebar__foot-label`, `.page-hero__glyph--icon`
+- Olive Frenzy: `.script-display` (expressive script utility), `.hero-ticker`
+  (+ `__track`, `__word`, `__word--script`, `__tick`) kinetic marquee,
+  `.mic-btn` (+ `--listening`, `--unsupported`) voice-input key,
+  `.error-boundary` (+ `__title`, `__message`, `__retry`) render-error fallback
 
 **Rules:**
 - New layout = add a class to `globals.css`, then use it. Do not inline a
@@ -594,3 +598,20 @@ this protocol. No exceptions.**
     the sans they replaced (Caveat runs compact), weight 600 throughout.
     Functional UI and lesson prose unchanged. Verified: tsc/lint/build
     clean.
+- 2026-08-06 (full-app pass) — **Design/typography refresh + retheme bug
+    fixes.** Bugs: `ShareResult` canvas still drew the Solar-era terracotta
+    accent line + an emerald CTA glow (now derived from `SHARE_CARD.brand`
+    via new `withAlpha()` in `lib/palette.ts`); `TIER_COLOR.legendary` was
+    terracotta `#EE5125` (now deep lime-olive `#65A30D`); `starColor()`
+    amber (gold-adjacent, owner bans gold) → ember orange `#EA580C`/
+    `#FB923C`; `MicButton` + `ErrorBoundary` inline-style soup with
+    hardcoded `#dc2626`/`#666`/`#ccc` moved onto new `.mic-btn` /
+    `.error-boundary` classes; grotesk display rules had `serif` fallbacks
+    (FOUT mismatch) → `system-ui, sans-serif`; unused `.editorial-dropcap`
+    removed (concept is explicitly non-editorial). Refresh: radius scale
+    tightened one notch (10/14/18/22/28) for sharp-grid feel; script face
+    on `.quiz-sheet__title` + `.level-hero__name`; `.aurora-bg` finally
+    drifts (85s transform-only alternate loop, overscanned inset, frozen
+    on mid tier, hidden on low, killed under reduced-motion — the old
+    comment promised motion the code never had). Verified: tsc/lint/build
+    clean, verify:quiz + verify:achievements pass.
