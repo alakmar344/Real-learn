@@ -11,6 +11,7 @@ import LiveRegion from "@/components/shared/LiveRegion";
 import ReadingProgressBar from "@/components/shared/ReadingProgressBar";
 import Footer from "@/components/shared/Footer";
 import FeedbackGate from "@/components/shared/FeedbackGate";
+import MathText from "@/components/shared/MathText";
 import { showToast } from "@/components/shared/ToastContainer";
 import { useLessonStore } from "@/store/lessonStore";
 import { usePreferenceStore } from "@/store/preferenceStore";
@@ -426,7 +427,7 @@ export default function LearnPage() {
             {/* The lesson question is the page's h1 (WCAG 1.3.1/2.4.6) —
                 visually styled as the compact header line it always was. */}
             <h1 className="learn-topbar__question" title={lesson.question ?? lesson.topic ?? ""}>
-              {lesson.question ?? lesson.topic ?? ""}
+              <MathText text={lesson.question ?? lesson.topic ?? ""} />
             </h1>
           </div>
         </div>

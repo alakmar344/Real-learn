@@ -1620,6 +1620,33 @@ a:active {
   font-size: 1.15em;
 }
 
+/* MathText component — inline math in questions, quiz text, etc. */
+.math-inline-katex {
+  display: inline;
+  vertical-align: baseline;
+  padding: 0 2px;
+}
+
+.math-inline-katex .katex {
+  font-size: 1.05em;
+}
+
+.math-display-inline {
+  display: inline-block;
+  margin: 4px 0;
+  padding: 4px 10px;
+  background: var(--bg-solid);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  vertical-align: middle;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.math-display-inline .katex {
+  font-size: 1.1em;
+}
+
 .markdown-content .katex {
   font-size: 1.05em;
   color: var(--text-primary);

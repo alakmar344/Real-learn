@@ -11,6 +11,7 @@ import { levelInfo } from "@/lib/achievements";
 import { useMounted } from "@/hooks/useMounted";
 import { Skeleton } from "@/components/shared/Skeleton";
 import { Icon } from "@/components/shared/icons";
+import MathText from "@/components/shared/MathText";
 
 interface Props {
   onStartTopic: (topic: string) => void;
@@ -85,7 +86,7 @@ export default function HomeStats({ onStartTopic }: Props) {
           </span>
           <span className="resume-card__text">
             <span className="resume-card__kicker">pick up where you left off</span>
-            <span className="resume-card__question">{inProgress.question}</span>
+            <span className="resume-card__question"><MathText text={inProgress.question} /></span>
           </span>
           <span className="resume-card__cta">resume →</span>
         </button>

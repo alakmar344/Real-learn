@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useLessonStore } from "@/store/lessonStore";
 import { Icon } from "@/components/shared/icons";
+import MathText from "@/components/shared/MathText";
 
 // Each step "completes" once the real progress passes its threshold. The
 // thresholds are spread across the whole 0–100 range (no two steps share a
@@ -124,7 +125,7 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
       <div className="loading-cinematic__stage">
         <p className="loading-cinematic__question">
           <span className="loading-cinematic__quote">&ldquo;</span>
-          {question}
+          <MathText text={question} />
           <span className="loading-cinematic__quote">&rdquo;</span>
         </p>
 

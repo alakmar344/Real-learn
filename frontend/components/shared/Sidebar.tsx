@@ -14,6 +14,7 @@ import { useShallow } from "zustand/shallow";
 import { SavedJourney } from "@/types";
 import { Icon } from "@/components/shared/icons";
 import BrandMark from "@/components/shared/BrandMark";
+import MathText from "@/components/shared/MathText";
 
 // Lazy-load modals — they are only needed when the user clicks to open them.
 // This removes both components (and their deps, e.g. focus-trap hooks) from
@@ -188,7 +189,7 @@ export default function Sidebar({ open, onClose }: Props) {
                     title={journey.question}
                     className="journey-item__open"
                   >
-                    <span className="journey-item__q">{journey.question}</span>
+                    <span className="journey-item__q"><MathText text={journey.question} /></span>
                     <span className="journey-item__meta">
                       {journey.language} · {journey.level} · {journey.totalScore}/{
                         (journey.lesson?.parts ?? []).reduce((sum, p) => sum + (p.quiz?.length ?? 2), 0) ||
