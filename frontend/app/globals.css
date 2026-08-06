@@ -1711,7 +1711,9 @@ a:active {
 }
 .app-footer__row--links { margin-top: 6px; gap: 6px; }
 .app-footer__brand {
-  font-weight: 800;
+  font-family: var(--font-script), cursive;
+  font-size: 19px;
+  font-weight: 600;
   color: var(--accent);
   cursor: pointer;
   user-select: none;
@@ -2434,10 +2436,12 @@ p {
   color: var(--text-primary);
 }
 .navbar-wordmark {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 28px;
-  letter-spacing: -0.5px;
+  /* Brand wordmark rides the script face — the signature frenzy gesture. */
+  font-family: var(--font-script), cursive;
+  font-weight: 600;
+  font-size: 32px;
+  letter-spacing: 0;
+  line-height: 1;
 }
 .navbar-wordmark__real { color: var(--text-primary); }
 .navbar-wordmark__learn {
@@ -3033,15 +3037,16 @@ p {
 /* Ghost numeral — oversized, clipped, purely atmospheric. */
 .part-card__num {
   position: absolute;
-  top: -14px;
+  top: -18px;
   right: 6px;
-  font-family: var(--font-display);
-  font-size: clamp(96px, 18vw, 160px);
-  font-weight: 800;
+  font-family: var(--font-script), cursive;
+  font-size: clamp(104px, 19vw, 172px);
+  font-weight: 600;
   line-height: 1;
-  letter-spacing: -0.06em;
+  letter-spacing: 0;
   color: transparent;
-  -webkit-text-stroke: 1.5px color-mix(in srgb, var(--accent) 22%, transparent);
+  -webkit-text-stroke: 1.5px color-mix(in srgb, var(--accent) 24%, transparent);
+  transform: rotate(-4deg);
   pointer-events: none;
   user-select: none;
   z-index: 0;
@@ -4289,11 +4294,15 @@ p {
 }
 .completion__title {
   margin: 0;
-  font-family: var(--font-display);
-  font-size: clamp(26px, 5vw, 32px);
-  font-weight: 800;
-  letter-spacing: var(--tracking-tight);
+  font-family: var(--font-script), cursive;
+  font-size: clamp(36px, 7vw, 46px);
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1;
   color: var(--text-primary);
+  transform: rotate(-1.5deg);
+  transform-origin: left bottom;
+  display: inline-block;
 }
 .completion__subtitle {
   margin-top: 6px;
@@ -4642,11 +4651,14 @@ p {
 }
 .page-hero__title {
   margin: 0;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: clamp(28px, 5vw, 38px);
-  letter-spacing: -0.02em;
-  line-height: 1.1;
+  font-family: var(--font-script), cursive;
+  font-weight: 600;
+  font-size: clamp(38px, 7vw, 52px);
+  letter-spacing: 0;
+  line-height: 1;
+  transform: rotate(-1deg);
+  transform-origin: left bottom;
+  display: inline-block;
 }
 .page-hero__sub {
   display: flex;
@@ -5123,10 +5135,13 @@ p {
 }
 .not-found__title {
   margin: var(--space-md) 0 var(--space-sm);
-  font-family: var(--font-display);
-  font-size: 24px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-family: var(--font-script), cursive;
+  font-size: 34px;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1;
+  transform: rotate(-1.5deg);
+  display: inline-block;
 }
 .not-found__sub {
   margin: 0 0 var(--space-lg);
@@ -5167,11 +5182,13 @@ p {
   text-align: center;
 }
 .learn-empty__title {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 700;
-  font-size: 26px;
-  margin: 0 0 8px;
+  font-family: var(--font-script), cursive;
+  font-weight: 600;
+  font-size: 34px;
+  line-height: 1;
+  margin: 0 0 10px;
+  transform: rotate(-1deg);
+  display: inline-block;
 }
 .learn-empty__sub {
   color: var(--text-secondary);
@@ -5297,10 +5314,11 @@ p {
   color: var(--text-primary);
 }
 .app-sidebar__wordmark {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 22px;
-  letter-spacing: -0.5px;
+  font-family: var(--font-script), cursive;
+  font-weight: 600;
+  font-size: 27px;
+  letter-spacing: 0;
+  line-height: 1;
   color: var(--text-primary);
 }
 .app-sidebar__wordmark em {

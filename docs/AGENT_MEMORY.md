@@ -33,10 +33,13 @@ reserved for CTAs and display text, emerald (`#10B981` / `#059669`) for
 success, a dopamine subject-color spectrum for chips, plus airy
 transform-only ambient auroras (perf-tier gated). The "frenzy" is kinetic
 composition: oversized Caveat script (`--font-script`) tilted over stark
-geometric containers (hero greeting, `.page-hero__glyph` ghosts, the
-homepage `.hero-ticker` marquee) — script is decorative-Latin-only and
-NEVER used for buttons, nav, metrics, or lesson prose (12-language
-coverage lives in Inter). CRITICAL: in dark mode `--on-accent` is ink
+geometric containers — the hero greeting, brand wordmarks (navbar,
+sidebar, footer), page titles (`.page-hero__title`), the completion
+headline, 404/empty-state titles, `.page-hero__glyph` +
+`.part-card__num` stroke ghosts, and the homepage `.hero-ticker`
+marquee. Script is decorative-Latin-only and NEVER used for buttons,
+nav links, metrics, or lesson prose (12-language coverage lives in
+Inter). CRITICAL: in dark mode `--on-accent` is ink
 `#121510`, not white — white on lime fails contrast. Body text is Inter
 400 (bold is for headings/labels only), lesson prose never drops below
 16px on phones, every color pairing is WCAG-AA-verified, and there is NO
@@ -584,3 +587,10 @@ this protocol. No exceptions.**
     share card), `lib/themes.ts`, `ThemeApplier` fallback, pre-paint
     theme-color script + viewport themeColor, `manifest.json`. Verified:
     tsc/lint/build clean, verify:quiz + verify:achievements pass.
+- 2026-08-06 (later) — **Script face expanded (owner request).** Caveat now
+    also carries the brand wordmarks (navbar/sidebar/footer), page-hero
+    titles, completion headline, 404 + learn-empty titles, and the
+    part-card ghost numerals (script stroke, −4° tilt). Sizes +20–30% vs
+    the sans they replaced (Caveat runs compact), weight 600 throughout.
+    Functional UI and lesson prose unchanged. Verified: tsc/lint/build
+    clean.
