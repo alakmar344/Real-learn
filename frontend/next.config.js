@@ -19,6 +19,8 @@ const nextConfig = {
     optimizePackageImports: [
       "react-markdown",
       "remark-gfm",
+      "remark-math",
+      "rehype-katex",
       "lodash-es",
       "canvas-confetti",
       "@clerk/nextjs",
