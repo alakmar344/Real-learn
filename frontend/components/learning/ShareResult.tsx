@@ -5,7 +5,7 @@ import { useProgressStore } from "@/store/progressStore";
 import { levelInfo, levelTitle } from "@/lib/achievements";
 import { useMounted } from "@/hooks/useMounted";
 import { showToast } from "@/components/shared/ToastContainer";
-import { SHARE_CARD } from "@/lib/palette";
+import { SHARE_CARD, withAlpha } from "@/lib/palette";
 
 interface Props {
   question: string;
@@ -91,9 +91,9 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
 
       // Decorative accent line
       const lineGrad = ctx.createLinearGradient(80, 0, W - 80, 0);
-      lineGrad.addColorStop(0, "rgba(238, 81, 37, 0)");
-      lineGrad.addColorStop(0.5, "rgba(238, 81, 37, 0.55)");
-      lineGrad.addColorStop(1, "rgba(238, 81, 37, 0)");
+      lineGrad.addColorStop(0, withAlpha(SHARE_CARD.brand, 0));
+      lineGrad.addColorStop(0.5, withAlpha(SHARE_CARD.brand, 0.55));
+      lineGrad.addColorStop(1, withAlpha(SHARE_CARD.brand, 0));
       ctx.strokeStyle = lineGrad;
       ctx.lineWidth = 4;
       ctx.beginPath();
@@ -230,7 +230,7 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
       // CTA band — prominent but structured
       const ctaY = H - 130;
       ctx.fillStyle = SHARE_CARD.brand;
-      ctx.shadowColor = "rgba(4, 120, 87, 0.35)";
+      ctx.shadowColor = withAlpha(SHARE_CARD.brand, 0.35);
       ctx.shadowBlur = 35;
       ctx.beginPath();
       ctx.roundRect(72, ctaY, W - 144, 100, 18);

@@ -33,9 +33,16 @@ export function celebrationColors(theme: ThemeName = activeTheme()): string[] {
   return CELEBRATION[theme];
 }
 
-/** Rating stars / streak flames — warm glow. */
+/** Rating stars — warm ember glow (amber retired: gold is banned). */
 export function starColor(theme: ThemeName = activeTheme()): string {
-  return theme === "dark" ? "#FBBF24" : "#D97706";
+  return theme === "dark" ? "#FB923C" : "#EA580C";
+}
+
+/** rgba() from a #RRGGBB hex — for canvas gradients/shadows that need
+    translucent brand colors without hardcoding a second palette. */
+export function withAlpha(hex: string, alpha: number): string {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
 }
 
 /**

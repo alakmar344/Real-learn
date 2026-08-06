@@ -55,20 +55,8 @@ export default function MicButton({ language, onTranscript, onInterim, size = 40
         disabled
         aria-label="Voice input not supported in this browser"
         title="Voice input requires Chrome, Edge, or Safari"
-        style={{
-          width: size,
-          height: size,
-          minWidth: size,
-          borderRadius: "50%",
-          border: "1px solid var(--border-subtle)",
-          background: "transparent",
-          color: "var(--text-tertiary)",
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          cursor: "not-allowed",
-          opacity: 0.45,
-        }}
+        className="mic-btn mic-btn--unsupported"
+        style={{ width: size, height: size, minWidth: size }}
       >
         {micIcon}
       </button>
@@ -82,21 +70,8 @@ export default function MicButton({ language, onTranscript, onInterim, size = 40
       aria-pressed={listening}
       aria-label={listening ? "Stop voice input" : "Ask with your voice"}
       title={listening ? "Stop voice input" : "Ask with your voice"}
-      style={{
-        width: size,
-        height: size,
-        minWidth: size,
-        borderRadius: "50%",
-        border: listening ? "1.5px solid #dc2626" : "1px solid var(--border-default)",
-        background: listening ? "color-mix(in srgb, var(--wrong) 12%, transparent)" : "transparent",
-        color: listening ? "#dc2626" : "var(--text-secondary)",
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        cursor: "pointer",
-        transition: "all 200ms var(--ease-color)",
-        boxShadow: listening ? "0 0 0 4px color-mix(in srgb, var(--wrong) 12%, transparent)" : "none",
-      }}
+      className={listening ? "mic-btn mic-btn--listening" : "mic-btn"}
+      style={{ width: size, height: size, minWidth: size }}
     >
       {micIcon}
     </button>

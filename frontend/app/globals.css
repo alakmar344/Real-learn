@@ -79,11 +79,13 @@
   --subject-history: #FB7185;
   --subject-general: #A4C639;
 
-  --radius-sm: 12px;
-  --radius-md: 16px;
-  --radius-lg: 20px;
-  --radius-xl: 26px;
-  --radius-2xl: 32px;
+  /* Tightened one notch for the Olive Frenzy "sharp grid boundaries" feel —
+     still friendly, no neo-brutalist corners. */
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 22px;
+  --radius-2xl: 28px;
   --radius-pill: 9999px;
 
   /* Translucent surfaces — panels float over the aurora instead of sitting
@@ -298,7 +300,8 @@ body {
    subliminal: the page feels alive and warm without ever pulling focus. */
 .aurora-bg {
   position: fixed;
-  inset: 0;
+  /* overscan so the drift never exposes a hard edge */
+  inset: -12%;
   z-index: -1;
   pointer-events: none;
   overflow: hidden;
@@ -309,6 +312,15 @@ body {
     radial-gradient(55vmax 55vmax at 50% 50%, var(--aurora-3), transparent 70%),
     radial-gradient(60vmax 50vmax at 85% 12%, var(--aurora-4), transparent 72%);
   opacity: 1;
+  /* the drift the comment always promised — transform-only, alternate loop */
+  animation: auroraDrift 85s ease-in-out infinite alternate;
+}
+@keyframes auroraDrift {
+  from { transform: translate3d(-1.5%, -1%, 0) scale(1); }
+  to { transform: translate3d(1.5%, 1.5%, 0) scale(1.05); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aurora-bg { animation: none; }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -526,18 +538,6 @@ html[data-theme="dark"] h4 {
   border-left: 4px solid var(--brand) !important;
   padding-left: var(--space-md);
   position: relative;
-}
-
-/* ── Editorial drop-cap effect ── */
-.editorial-dropcap::first-letter {
-  float: left;
-  font-family: var(--font-display), Georgia, serif;
-  font-size: 3.2em;
-  line-height: 0.8;
-  padding-right: 8px;
-  padding-top: 4px;
-  color: var(--brand);
-  font-weight: 800;
 }
 
 .ink-stain {
@@ -1805,9 +1805,10 @@ html[data-perf="low"][data-theme="light"] {
   --bg-glass: #FFFFFF;
 }
 
-/* MID tier: keep the aurora blobs but freeze their animation (the infinite
+/* MID tier: keep the aurora wash but freeze its drift (the infinite
    transform loop keeps a compositor layer alive and burns battery on
    mid-range mobile GPUs). The static gradient wash still gives warmth. */
+html[data-perf="mid"] .aurora-bg,
 html[data-perf="mid"] .aurora-blob {
   animation: none !important;
 }
@@ -2500,7 +2501,7 @@ p {
    signature. Renders as a small letter-spaced accent label. */
 .section-overline {
   display: inline-block;
-  font-family: var(--font-display), serif;
+  font-family: var(--font-display), system-ui, sans-serif;
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.22em;
@@ -2522,7 +2523,7 @@ p {
   transform: translateY(-1px);
 }
 .section-header__symbol {
-  font-family: var(--font-display), serif;
+  font-family: var(--font-display), system-ui, sans-serif;
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.18em;
@@ -3614,11 +3615,15 @@ p {
 }
 .quiz-sheet__title {
   margin: 0;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 22px;
-  letter-spacing: var(--tracking-tight);
+  font-family: var(--font-script), cursive;
+  font-weight: 600;
+  font-size: 30px;
+  letter-spacing: 0;
+  line-height: 1;
   color: var(--text-primary);
+  transform: rotate(-1deg);
+  transform-origin: left bottom;
+  display: inline-block;
 }
 .quiz-sheet__subtitle {
   margin-top: 6px;
@@ -4705,10 +4710,14 @@ p {
   min-width: 220px;
 }
 .level-hero__name {
-  font-size: 21px;
-  font-weight: 800;
-  font-family: var(--font-display);
-  letter-spacing: -0.01em;
+  font-size: 30px;
+  font-weight: 600;
+  font-family: var(--font-script), cursive;
+  letter-spacing: 0;
+  line-height: 1;
+  transform: rotate(-1deg);
+  transform-origin: left bottom;
+  display: inline-block;
 }
 .level-hero__name em {
   font-style: normal;
@@ -5993,4 +6002,71 @@ h3,
 }
 html[data-perf="low"] .hero-ticker__track {
   animation: none;
+}
+
+/* Mic button — round voice-input key beside the question box. */
+.mic-btn {
+  border-radius: 50%;
+  border: 1px solid var(--border-default);
+  background: transparent;
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 200ms var(--ease-color), color 200ms var(--ease-color),
+    background 200ms var(--ease-color), box-shadow 200ms var(--ease-color);
+}
+.mic-btn--listening {
+  border: 1.5px solid var(--wrong);
+  color: var(--wrong);
+  background: color-mix(in srgb, var(--wrong) 12%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--wrong) 12%, transparent);
+}
+.mic-btn--unsupported {
+  border-color: var(--border-subtle);
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+/* Error boundary fallback — last-resort surface, so it leans on tokens only. */
+.error-boundary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  padding: var(--space-breath);
+  text-align: center;
+}
+.error-boundary__title {
+  margin: 0 0 var(--space-md);
+  font-family: var(--font-script), cursive;
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1;
+  transform: rotate(-1deg);
+}
+.error-boundary__message {
+  margin: 0 0 var(--space-base);
+  color: var(--text-secondary);
+  max-width: 46ch;
+}
+.error-boundary__retry {
+  padding: 10px 24px;
+  min-height: 44px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-default);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 200ms var(--ease-color), background 200ms var(--ease-color);
+}
+.error-boundary__retry:hover,
+.error-boundary__retry:focus-visible {
+  border-color: var(--accent);
+  background: var(--bg-card-hover);
 }
