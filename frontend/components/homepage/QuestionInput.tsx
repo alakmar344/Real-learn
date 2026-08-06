@@ -7,9 +7,12 @@ import ExampleQuestions from "@/components/homepage/ExampleQuestions";
 import MicButton from "@/components/shared/MicButton";
 import { usePreferenceStore } from "@/store/preferenceStore";
 import { useMounted } from "@/hooks/useMounted";
-import { LessonMode } from "@/types";
+import { LessonMode, Language } from "@/types";
 
 const MAX_QUESTION_LENGTH = 1000;
+
+const URDU_PLACEHOLDER = "یہاں اپنا سوال لکھیں...";
+const RTL_LANGUAGES: Language[] = ["Urdu"];
 
 const MODES: { value: LessonMode; label: string; hint: string }[] = [
   { value: "fast", label: "TL;DR", hint: "Straight answer, zero fluff" },
@@ -102,17 +105,24 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
   };
 
   const activeIndex = MODES.findIndex((m) => m.value === mode);
+  const isRtl = RTL_LANGUAGES.includes(language);
 
   return (
     <form
       onSubmit={handleSubmit}
       aria-label="Ask a question"
-      className={`q-form${focused ? " q-form--focused" : ""}`}
+      className={`q-form${focused ? " q-form--focused" : ""}${isRtl ? " q-form--rtl" : ""}`}
     >
       <div className="q-form__body">
         <label htmlFor="question-input" className="sr-only">
           What do you want to understand today?
         </label>
+        {isRtl && (
+          <div className="q-form__urdu-badge" aria-hidden="true">
+            <span className="q-form__urdu-badge-dot" />
+            Urdu mode
+          </div>
+        )}
         <textarea
           id="question-input"
           ref={textareaRef}
@@ -122,9 +132,10 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           onBlur={() => { setFocused(false); window.setTimeout(() => setShowHint(false), 2000); }}
           onKeyDown={handleKeyDown}
           maxLength={MAX_QUESTION_LENGTH}
-          placeholder="ask literally anything, no cap"
+          placeholder={isRtl ? URDU_PLACEHOLDER : "ask literally anything, no cap"}
           aria-label="Your question"
-          className="q-form__textarea"
+          dir={isRtl ? "rtl" : "ltr"}
+          className={`q-form__textarea${isRtl ? " q-form__textarea--rtl" : ""}`}
         />
         {interimSpeech ? (
           <p aria-live="polite" className="q-form__listening">

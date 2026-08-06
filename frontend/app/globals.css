@@ -258,6 +258,13 @@ html {
   /* Reserve the scrollbar lane so short→long page transitions don't shift
      the whole layout sideways. */
   scrollbar-gutter: stable;
+  /* Hide the main page scrollbar — content still scrolls, but the
+     browser chrome scrollbar track is invisible. Internal scroll areas
+     (sidebar, quiz sheet) keep their own styled scrollbars. */
+  scrollbar-width: none;
+}
+html::-webkit-scrollbar {
+  display: none;
 }
 
 * {
@@ -1112,12 +1119,15 @@ a:active {
   margin: 0;
   font-family: var(--font-script), cursive;
   font-weight: 600;
-  line-height: 1;
+  line-height: 1.15;
   letter-spacing: 0;
   font-size: clamp(44px, 9vw, 68px);
   color: var(--text-primary);
   transform: rotate(-1.5deg);
   transform-origin: left bottom;
+  overflow: visible;
+  white-space: normal;
+  word-break: break-word;
 }
 @media (min-width: 1024px) {
   .hero__title {
@@ -3004,6 +3014,46 @@ p {
     justify-content: flex-end;
     width: 100%;
   }
+}
+
+/* ── Urdu / RTL input mode ── */
+.q-form--rtl {
+  border-color: var(--accent-dim);
+}
+.q-form--rtl.q-form--focused {
+  border-color: var(--accent);
+}
+.q-form__textarea--rtl {
+  direction: rtl;
+  text-align: right;
+  font-family: var(--font-inter), "Noto Nastaliq Urdu", "Noto Sans Arabic", system-ui, sans-serif;
+  line-height: 1.8;
+}
+.q-form__textarea--rtl::placeholder {
+  font-family: "Noto Nastaliq Urdu", "Noto Sans Arabic", system-ui, sans-serif;
+  font-size: 18px;
+  color: var(--text-tertiary);
+  opacity: 0.7;
+}
+.q-form__urdu-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.q-form__urdu-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulseDot 1.6s ease-in-out infinite;
 }
 
 
