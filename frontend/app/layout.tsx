@@ -56,10 +56,14 @@ export const metadata: Metadata = {
     template: "%s | RealLearn",
   },
   description:
-    "RealLearn is an AI learning sidekick that turns any question into a 3-part lesson with quizes, streaks, achievements, and text-to-speech. Ask anything, learn everything.",
+    "RealLearn is an AI learning sidekick that turns any question into a 3-part lesson with quizzes, streaks, achievements, and text-to-speech. Ask anything, learn everything.",
+  applicationName: "RealLearn",
+  category: "education",
   keywords: [
     "RealLearn",
     "reallan",
+    "real learn",
+    "reallearn ai",
     "RealLearn AI",
     "AI learning platform",
     "interactive education",
@@ -99,6 +103,10 @@ export const metadata: Metadata = {
     telephone: false,
   },
   metadataBase: new URL("https://reallearn.site"),
+  // NOTE: `alternates` is inherited by every child segment that doesn't
+  // define its own — so each public page (sign-in, sign-up, legal/*) MUST set
+  // its own canonical, or Google would treat them all as duplicates of "/".
+  // Those overrides live in the per-route layout.tsx / page.tsx metadata.
   alternates: {
     canonical: "/",
   },
@@ -185,7 +193,7 @@ export default async function RootLayout({
               "@context": "https://schema.org",
               "@type": "WebApplication",
               name: "RealLearn",
-              alternateName: ["reallan", "RealLearn AI"],
+              alternateName: ["reallan", "real learn", "RealLearn AI", "reallearn ai"],
               description:
                 "AI-powered interactive learning platform that transforms any question into a structured 3-part lesson with quizzes, progress tracking, achievements, and text-to-speech.",
               url: "https://reallearn.site",
@@ -227,11 +235,11 @@ export default async function RootLayout({
               "@context": "https://schema.org",
               "@type": "Organization",
               name: "RealLearn",
-              alternateName: ["reallan", "RealLearn AI"],
+              alternateName: ["reallan", "real learn", "RealLearn AI", "reallearn ai"],
               url: "https://reallearn.site",
               logo: "https://reallearn.site/logo.svg",
               sameAs: [
-                "https://github.com/alakmar344/reallearn",
+                "https://github.com/alakmar344/Real-learn",
               ],
               slogan: "The World Is Your Textbook.",
               description:
@@ -246,7 +254,7 @@ export default async function RootLayout({
               "@context": "https://schema.org",
               "@type": "WebSite",
               name: "RealLearn",
-              alternateName: "reallan",
+              alternateName: ["reallan", "real learn", "RealLearn AI"],
               url: "https://reallearn.site",
               potentialAction: {
                 "@type": "SearchAction",
