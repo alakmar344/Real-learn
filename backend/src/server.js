@@ -811,9 +811,15 @@ function securityHeaders(req, res, next) {
 app.use(securityHeaders);
 
 // PERFORMANCE: expose Server-Timing so devtools can break down where time
-// is spent (DB, AI, Serper). Harmless in production.
+// is spent (DB, AI, Serper). SECURITY: scoped to the CORS allowlist instead
+// of "*" — a wildcard would let ANY cross-origin page read fine-grained
+// resource-timing for our API responses (a timing side-channel), while only
+// our own frontend actually needs it.
 app.use((req, res, next) => {
-  res.setHeader("Timing-Allow-Origin", "*");
+  const origin = req.headers.origin;
+  if (isOriginAllowed(origin)) {
+    res.setHeader("Timing-Allow-Origin", origin);
+  }
   next();
 });
 

@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 import Footer from "@/components/shared/Footer";
 import DailyGoalRing from "@/components/shared/DailyGoalRing";
 import { useProgressStore } from "@/store/progressStore";
-import { levelInfo, levelTitle, dayKey, daysBetween, ProgressSnapshot } from "@/lib/achievements";
+import { levelInfo, levelTitle, dayKey, displayableStreak, ProgressSnapshot } from "@/lib/achievements";
 import { useMounted } from "@/hooks/useMounted";
 import { useShallow } from "zustand/shallow";
 import { Skeleton, SkeletonCard, SkeletonTile } from "@/components/shared/Skeleton";
@@ -79,16 +79,12 @@ export default function ProgressPage() {
   const goalMetToday = mounted && s.dailyGoalMetDay === dayKey();
 
   // The stored streak only updates when a part is passed, so a lapsed streak
-  // would display as alive forever. Show it as dead once the last activity is
-  // more than a day old (unless a single missed day is still freeze-savable).
-  const streakGap =
-    mounted && s.lastActiveDay ? daysBetween(dayKey(), s.lastActiveDay) : null;
-  const displayStreak =
-    streakGap === null
-      ? 0
-      : streakGap <= 1 || (streakGap === 2 && s.streakFreezes > 0)
-        ? s.streak
-        : 0;
+  // would display as alive forever. displayableStreak shows it as dead once
+  // the last activity is more than a day old (unless freeze-savable) — the
+  // same check ProgressHub and HomeStats use.
+  const displayStreak = mounted
+    ? displayableStreak(s.streak, s.lastActiveDay, s.streakFreezes)
+    : 0;
 
   const snapshot: ProgressSnapshot = {
     xp: s.xp,

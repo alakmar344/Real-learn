@@ -147,6 +147,24 @@ export function resolveStreak(
   return { streak: 1, freezesUsed: 0, advanced: true, broken: true };
 }
 
+/**
+ * The persisted `streak` only changes when a part is passed, so a lapsed
+ * streak would otherwise display as "alive" forever. Every surface that shows
+ * the streak (navbar hub, home strip, progress dashboard) must render it
+ * through this: alive when the last activity was today/yesterday, or exactly
+ * one missed day with a freeze in the bank — dead (0) otherwise.
+ */
+export function displayableStreak(
+  streak: number,
+  lastActiveDay: string | null,
+  freezes: number,
+  today: string = dayKey()
+): number {
+  if (!lastActiveDay) return 0;
+  const gap = daysBetween(today, lastActiveDay);
+  return gap <= 1 || (gap === 2 && freezes > 0) ? streak : 0;
+}
+
 /* ─────────────────────────── Achievements ─────────────────────────── */
 
 export type BadgeTier = "bronze" | "silver" | "gold" | "legendary";

@@ -3,7 +3,7 @@
 import { memo } from "react";
 import { useRouter } from "next/navigation";
 import { useProgressStore } from "@/store/progressStore";
-import { levelInfo, dayKey } from "@/lib/achievements";
+import { levelInfo, dayKey, displayableStreak } from "@/lib/achievements";
 import { useMounted } from "@/hooks/useMounted";
 import { Icon } from "@/components/shared/icons";
 
@@ -19,12 +19,19 @@ function ProgressHubImpl() {
   const router = useRouter();
 
   const xp = useProgressStore((s) => s.xp);
-  const streak = useProgressStore((s) => s.streak);
+  const rawStreak = useProgressStore((s) => s.streak);
+  const lastActiveDay = useProgressStore((s) => s.lastActiveDay);
+  const streakFreezes = useProgressStore((s) => s.streakFreezes);
   const dailyGoal = useProgressStore((s) => s.dailyGoal);
   const dailyCount = useProgressStore((s) => s.dailyCount);
   const dailyCountDay = useProgressStore((s) => s.dailyCountDay);
 
   const info = levelInfo(xp);
+  // Render the streak through the lapse check — the raw persisted value stays
+  // "alive" forever after the user stops coming back (see displayableStreak).
+  const streak = mounted
+    ? displayableStreak(rawStreak, lastActiveDay, streakFreezes)
+    : 0;
   const todayCount = mounted && dailyCountDay === dayKey() ? dailyCount : 0;
   const pct = Math.round(info.progress * 100);
 

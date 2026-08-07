@@ -41,8 +41,14 @@ export default function Sidebar({ open, onClose }: Props) {
     }))
   );
   const { generateLesson } = useLesson();
-  const theme = usePreferenceStore((s) => s.theme);
+  const persistedTheme = usePreferenceStore((s) => s.theme);
   const setTheme = usePreferenceStore((s) => s.setTheme);
+  // Hydration guard: the store hydrates from localStorage synchronously on
+  // the client, but SSR always renders the "dark" default — so a light-theme
+  // user would get a hydration mismatch on the switch label/aria-checked.
+  // Render the server default until mounted (same pattern as the rest of the
+  // theme-dependent surfaces).
+  const theme = mounted ? persistedTheme : "dark";
 
   const [journeyToRemove, setJourneyToRemove] = useState<string | null>(null);
   const [search, setSearch] = useState("");
