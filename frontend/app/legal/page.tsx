@@ -1,6 +1,6 @@
-import PrivacyPolicy from "../legal/privacy/page";
-import TermsOfService from "../legal/terms/page";
-import CookiePolicy from "../legal/cookies/page";
+import { PrivacyPolicyContent } from "../legal/privacy/content";
+import { TermsOfServiceContent } from "../legal/terms/content";
+import { CookiePolicyContent } from "../legal/cookies/content";
 import { Suspense } from "react";
 import { Metadata } from "next";
 
@@ -110,7 +110,13 @@ export default async function LegalPage({ searchParams }: { searchParams: Search
             id={`legal-panel-${tab}`}
             aria-label={tab === "cookies" ? "Cookie Policy" : tab === "terms" ? "Terms of Service" : "Privacy Policy"}
           >
-            {tab === "cookies" ? <CookiePolicy /> : tab === "terms" ? <TermsOfService /> : <PrivacyPolicy />}
+            {tab === "cookies" ? (
+              <CookiePolicyContent embedded />
+            ) : tab === "terms" ? (
+              <TermsOfServiceContent embedded />
+            ) : (
+              <PrivacyPolicyContent embedded />
+            )}
           </div>
         </Suspense>
       </div>

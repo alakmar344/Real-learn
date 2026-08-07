@@ -38,8 +38,6 @@ export default function HomePage() {
   const { generateLesson } = useLesson();
   const { isSignedIn, getToken } = useAuth();
   const { user } = useUser();
-  const primaryEmail = user?.primaryEmailAddress?.emailAddress || "";
-  const fallbackEmail = user?.emailAddresses?.[0]?.emailAddress || "";
   const firstName = user?.firstName || "";
 
   useEffect(() => {
@@ -85,7 +83,7 @@ export default function HomePage() {
       }
     };
     syncLegalConsent();
-  }, [isSignedIn, getToken, user?.id, primaryEmail, fallbackEmail]);
+  }, [isSignedIn, getToken, user?.id]);
 
   const submit = async (override?: string) => {
     const normalized = (override ?? question).trim();

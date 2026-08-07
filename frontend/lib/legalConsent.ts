@@ -10,7 +10,7 @@
 
 export const LEGAL_CONSENT_KEY = "reallearn-legal-consent";
 export const COOKIE_CONSENT_KEY = "reallearn-cookie-consent";
-export const CURRENT_PRIVACY_VERSION = "2.9";
+export const CURRENT_PRIVACY_VERSION = "3.0";
 export const CURRENT_TERMS_VERSION = "2.7";
 /** Bumping this re-prompts everyone for cookie/analytics consent. */
 export const CURRENT_COOKIE_VERSION = "2.3";
@@ -166,14 +166,14 @@ export function isConsentCurrent(state: LegalConsentState | null): boolean {
  * that EXISTING explicit consent to their account instead of re-prompting.
  *
  * Best-effort: returns true on success. The backend derives privacyVersion /
- * termsVersion from its own constants, but it relies on the request body for
- * the email (Clerk JWTs carry no email claim), so we forward `email` here —
- * otherwise the consent record is stored with an empty email.
+ * termsVersion from its own constants and keys the record to the verified
+ * Clerk ID. No email is sent: the backend never trusted or stored a
+ * body-supplied email (attacker-controlled), so transmitting it was pure
+ * data-transfer overhead — removed for data minimization (privacy v3.0).
  */
 export async function syncLegalConsentToBackend(
   getToken: () => Promise<string | null>,
-  state: LegalConsentState | null,
-  email = ""
+  state: LegalConsentState | null
 ): Promise<boolean> {
   if (!state?.accepted) return false;
   try {
@@ -193,7 +193,6 @@ export async function syncLegalConsentToBackend(
       body: JSON.stringify({
         accepted: true,
         timestamp: state.timestamp,
-        email,
         privacyVersion: state.privacyVersion,
         termsVersion: state.termsVersion,
       }),

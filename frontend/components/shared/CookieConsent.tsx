@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useAuth, useUser } from "@clerk/nextjs";
+import { useAuth } from "@clerk/nextjs";
 import {
   COOKIE_CONSENT_ACCEPTED_EVENT,
   COOKIE_CONSENT_REVOKED_EVENT,
@@ -27,7 +27,6 @@ import {
  */
 export default function CookieConsent() {
   const { isSignedIn, getToken } = useAuth();
-  const { user } = useUser();
   const [showBanner, setShowBanner] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -115,20 +114,16 @@ export default function CookieConsent() {
         headers["Authorization"] = `Bearer ${token}`;
       }
 
-      // Note: the backend derives identity (clerkId) exclusively from
-      // the verified token and records req.ip itself — the client sends
-      // the choice, timestamp, and email (for the consent record).
-      const email =
-        user?.primaryEmailAddress?.emailAddress ||
-        user?.emailAddresses?.[0]?.emailAddress ||
-        "";
+      // The backend derives identity (clerkId) exclusively from the verified
+      // token and records req.ip itself — the client sends only the choice
+      // and timestamp. No email: the backend never stored a client-supplied
+      // email (data minimization, privacy v3.0).
       const response = await fetch(`${backendUrl}/api/agreement`, {
         method: "POST",
         headers,
         body: JSON.stringify({
           accepted,
           timestamp: consent.timestamp,
-          email,
         }),
       });
 
