@@ -8,12 +8,15 @@ interface Props {
   value: Level;
   onChange: (value: Level) => void;
   compact?: boolean;
+  /** Lets an external visible <label htmlFor> bind to the select. */
+  id?: string;
 }
 
-export default function LevelSelector({ value, onChange, compact = false }: Props) {
+export default function LevelSelector({ value, onChange, compact = false, id }: Props) {
   return (
     <label style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
       <select
+        id={id}
         aria-label="Learning level"
         value={value}
         onChange={(e) => onChange(e.target.value as Level)}

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { LessonJourney } from "@/types";
 import { Icon } from "@/components/shared/icons";
+import { contentLangAttrs } from "@/lib/locale";
 
 interface Props {
   lesson: LessonJourney;
@@ -113,6 +114,7 @@ export default function QuickSummaryCards({ lesson }: Props) {
               lineHeight: 1.6,
               margin: 0,
             }}
+            {...contentLangAttrs(lesson.language)}
           >
             {currentTakeaway}
           </p>

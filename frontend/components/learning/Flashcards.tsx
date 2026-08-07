@@ -15,6 +15,7 @@ import removeMarkdown from "remove-markdown";
 import { LessonJourney } from "@/types";
 import { triggerHaptic } from "@/lib/haptics";
 import { Icon } from "@/components/shared/icons";
+import { contentLangAttrs } from "@/lib/locale";
 
 interface Card {
   front: string;
@@ -51,6 +52,7 @@ interface Props {
 
 export default function Flashcards({ lesson }: Props) {
   const baseCards = useMemo(() => buildFlashcards(lesson), [lesson]);
+  const langAttrs = contentLangAttrs(lesson.language);
   const [order, setOrder] = useState<number[] | null>(null);
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -191,14 +193,14 @@ export default function Flashcards({ lesson }: Props) {
           >
             <span className="flashcard__face flashcard__face--front" aria-hidden="true">
               <span className="flashcard__tag">{card.hint}</span>
-              <span className="flashcard__text">{card.front}</span>
+              <span className="flashcard__text" {...langAttrs}>{card.front}</span>
               <span className="flashcard__flip-hint">
                 tap to flip <Icon name="refresh" size={11} style={{ verticalAlign: "-1px" }} />
               </span>
             </span>
             <span className="flashcard__face flashcard__face--back" aria-hidden="true">
               <span className="flashcard__tag flashcard__tag--answer">answer</span>
-              <span className="flashcard__text flashcard__text--answer">{card.back}</span>
+              <span className="flashcard__text flashcard__text--answer" {...langAttrs}>{card.back}</span>
               <span className="flashcard__flip-hint">
                 tap to flip back <Icon name="refresh" size={11} style={{ verticalAlign: "-1px" }} />
               </span>

@@ -198,7 +198,8 @@ export default function AchievementsGrid({ unlocked, snapshot }: Props) {
           marginBottom: 10,
         }}
       >
-        <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>Achievements</h4>
+        {/* h2: only mounted on /progress, directly under its h1 page hero. */}
+        <h2 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>Achievements</h2>
         <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
           {earnedCount}/{BADGES.length} unlocked
         </span>

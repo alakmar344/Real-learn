@@ -8,27 +8,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { LRUCache } from "lru-cache";
 import { useAuth } from "@clerk/nextjs";
-import { Language } from "@/types";
 
-/** BCP-47 speech codes for every supported app language. */
-export const SPEECH_LANG_CODES: Record<Language, string> = {
-  English: "en-IN",
-  Hindi: "hi-IN",
-  Gujarati: "gu-IN",
-  Tamil: "ta-IN",
-  Bengali: "bn-IN",
-  Marathi: "mr-IN",
-  Telugu: "te-IN",
-  Kannada: "kn-IN",
-  Malayalam: "ml-IN",
-  Punjabi: "pa-IN",
-  Urdu: "ur-IN",
-  Odia: "or-IN",
-};
-
-export function speechLangFor(language?: string): string {
-  return SPEECH_LANG_CODES[(language as Language) ?? "English"] ?? "en-IN";
-}
+// The language map lives in lib/locale.ts (shared with the DOM lang/dir
+// attributes on lesson content); these re-exports keep existing imports alive.
+export { LANG_CODES as SPEECH_LANG_CODES, bcp47For as speechLangFor } from "@/lib/locale";
 
 import removeMarkdown from "remove-markdown";
 

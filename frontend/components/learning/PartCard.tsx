@@ -12,6 +12,7 @@ import SourceTag from "@/components/shared/SourceTag";
 import ListenButton from "@/components/shared/ListenButton";
 import { Icon } from "@/components/shared/icons";
 import { useLessonStore } from "@/store/lessonStore";
+import { contentLangAttrs } from "@/lib/locale";
 
 // Security: links inside AI-generated markdown are untrusted. react-markdown's
 // default urlTransform already strips javascript:/data: schemes; this override
@@ -158,7 +159,9 @@ const PartCardBase = ({
           ) : null}
         </div>
 
-        <h2 className="part-card__title">{part.title}</h2>
+        <h2 className="part-card__title" {...contentLangAttrs(lessonLanguage)}>
+          {part.title}
+        </h2>
 
         {/* Intent line — tells the learner what this part's JOB is
             (structural, honest) rather than pretending to summarize content
@@ -167,7 +170,9 @@ const PartCardBase = ({
           {PART_INTENT[part.partNumber - 1] ?? PART_INTENT[0]}
         </p>
 
-        <div className="markdown-content part-card__prose">
+        {/* lang/dir so screen readers voice generated prose in the lesson
+            language (WCAG 3.1.2) — UI chrome around it stays English. */}
+        <div className="markdown-content part-card__prose" {...contentLangAttrs(lessonLanguage)}>
           <ReactMarkdown
             remarkPlugins={[remarkGfm, remarkMath]}
             rehypePlugins={[rehypeKatex]}
