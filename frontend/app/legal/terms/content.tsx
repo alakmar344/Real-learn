@@ -27,7 +27,7 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         Terms of Service
       </Title>
       <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
-        Last updated: August 5, 2026 (version 2.7)
+        Last updated: August 7, 2026 (version 2.8)
       </p>
 
       <section style={{ marginBottom: 28 }}>
@@ -66,7 +66,7 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
       </section>
 
       <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>3. Eligibility</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>3. Eligibility and Age Requirements</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           You must be at least <strong>13 years old</strong> to use this Service (or older where your
           jurisdiction sets a higher minimum digital-consent age). By using RealLearn, you represent
@@ -74,7 +74,17 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
           have your parent or guardian&apos;s permission — and, where the law requires verifiable
           parental consent for minors (for example, under India&apos;s DPDP Act or COPPA), that such
           consent has been given. We do not knowingly allow children under 13 to create accounts or
-          use this Service. See Section 19 of our Privacy Policy for how we handle children&apos;s data.
+          use this Service.
+        </p>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+          During onboarding we collect only an age bracket (under 13, 13–17, or 18+), not your exact
+          date of birth. Users aged 13–17 must confirm that a parent or legal guardian has reviewed
+          and approved their use of RealLearn. Parents or guardians may review the minor&apos;s data,
+          revoke consent, request correction or deletion, or raise concerns by contacting us at{" "}
+          <a href="mailto:esamzai365@gmail.com" style={{ color: "var(--accent)" }}>
+            esamzai365@gmail.com
+          </a>
+          . See Section 19 of our Privacy Policy for how we handle children&apos;s data.
         </p>
       </section>
 
@@ -99,9 +109,12 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
           <li style={{ marginBottom: 4 }}>To interfere with or disrupt the integrity or performance of the Service.</li>
           <li style={{ marginBottom: 4 }}>To attempt to gain unauthorized access to the Service or related systems.</li>
           <li style={{ marginBottom: 4 }}>To reverse engineer, decompile, or attempt to extract the source code of the Service.</li>
-          <li>
+          <li style={{ marginBottom: 4 }}>
             To use scripts, bots, automation, or other artificial means to inflate or manipulate
             engagement metrics such as XP, levels, streaks, daily goals, or achievement badges.
+          </li>
+          <li>
+            In any manner that violates export-control or sanctions laws (see Section 16).
           </li>
         </ul>
       </section>
@@ -143,12 +156,22 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
       </section>
 
       <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>8. Termination</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>8. Account Suspension and Termination</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
-          We may terminate or suspend your access to the Service immediately, without prior notice
-          or liability, for any reason, including if you breach these Terms. Upon termination, your
-          right to use the Service will immediately cease. You may also terminate your account at
-          any time using the &quot;Delete My Data&quot; feature.
+          We may <strong>suspend</strong> your access to the Service at any time, including while we
+          investigate suspected violations of these Terms, security incidents, or abusive behavior.
+          Suspension may be temporary and may occur without prior notice where necessary to protect
+          the Service or other users. We will use reasonable efforts to inform you of the reason for
+          suspension unless prohibited by law or safety concerns.
+        </p>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+          We may <strong>terminate</strong> or suspend your access to the Service immediately, without
+          prior notice or liability, for any reason, including if you breach these Terms. Upon
+          termination, your right to use the Service will immediately cease. You may also terminate
+          your account at any time using the &quot;Delete My Data&quot; feature. Sections of these
+          Terms that by their nature should survive termination (including intellectual property,
+          disclaimer of warranties, limitation of liability, indemnification, governing law, and
+          dispute resolution) will survive.
         </p>
       </section>
 
@@ -182,7 +205,18 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
       </section>
 
       <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>11. Content Moderation and Guardrails</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>11. Indemnification</h3>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+          You agree to defend, indemnify, and hold harmless RealLearn, its operator, affiliates,
+          officers, agents, and employees from and against any claims, liabilities, damages,
+          losses, and expenses (including reasonable legal fees) arising out of or in any way
+          connected with your access to or use of the Service, your violation of these Terms, your
+          violation of any third-party right, or your violation of any applicable law or regulation.
+        </p>
+      </section>
+
+      <section style={{ marginBottom: 28 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>12. Content Moderation and Guardrails</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           We employ automated content filtering — a rule-based (pattern-matching) safety classifier
           that runs on our own servers, with no third-party AI call and no human in the loop at the
@@ -211,16 +245,81 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
       </section>
 
       <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>12. Governing Law</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>13. Governing Law</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           These Terms shall be governed by and construed in accordance with the laws of India,
-          without regard to its conflict of law provisions. Any disputes arising from these Terms
-          or your use of the Service shall be resolved in the courts located in India.
+          without regard to its conflict of law provisions.
         </p>
       </section>
 
       <section style={{ marginBottom: 28 }}>
-         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>13. Changes to Terms</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>14. Dispute Resolution</h3>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 8 }}>
+          We hope to resolve any concerns informally. If a dispute arises out of or relates to these
+          Terms or your use of the Service, the party raising the dispute must first send written
+          notice to the other party describing the dispute in reasonable detail. The parties will
+          then negotiate in good faith for at least <strong>30 days</strong> (the &quot;Informal
+          Resolution Period&quot;) before commencing any formal proceedings.
+        </p>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+          If the dispute is not resolved informally, the parties agree to attempt to resolve the
+          dispute through non-binding mediation in <strong>Mandsaur, Madhya Pradesh, India</strong>,
+          conducted in English or Hindi, in accordance with the laws of India.
+        </p>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+          If mediation does not resolve the dispute, either party may pursue final resolution
+          through binding arbitration or litigation, at the initiating party&apos;s election,
+          exclusively in the courts or arbitration forum located in{" "}
+          <strong>Mandsaur, Madhya Pradesh, India</strong>. Any arbitration shall be conducted under
+          the Arbitration and Conciliation Act, 1996, by a single arbitrator appointed in accordance
+          with that Act. Judgment on any arbitration award may be entered in any court having
+          jurisdiction. You agree that any formal dispute-resolution proceedings will be conducted
+          only on an individual basis and not as a class, consolidated, or representative action.
+        </p>
+      </section>
+
+      <section style={{ marginBottom: 28 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>15. Force Majeure</h3>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+          RealLearn will not be liable or responsible to you, nor be treated as having breached these
+          Terms, for any failure or delay in performing our obligations under these Terms to the
+          extent the failure or delay is caused by events beyond our reasonable control, including
+          but not limited to acts of God, war, terrorism, riots, embargoes, acts of civil or military
+          authorities, fire, floods, earthquakes, accidents, strikes or shortages of transportation,
+          facilities, fuel, energy, labor, or materials, failure of telecommunications or internet
+          services, or governmental action.
+        </p>
+      </section>
+
+      <section style={{ marginBottom: 28 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>16. Export Control and Sanctions</h3>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+          You may use the Service only in compliance with all applicable export-control and economic
+          sanctions laws and regulations, including those of India, the United States, the United
+          Nations, the European Union, and any other jurisdiction that applies to you. You may not
+          use the Service if you are located in, ordinarily resident in, or under the control of a
+          country or territory that is subject to comprehensive sanctions, or if you are listed on
+          any prohibited or restricted-party list. You may not use the Service for any end use that
+          is prohibited by applicable export or sanctions laws, including nuclear, chemical, or
+          biological weapons proliferation, or the development of missile technology.
+        </p>
+      </section>
+
+      <section style={{ marginBottom: 28 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>17. Service Availability</h3>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+          We aim to keep RealLearn available, but the Service is provided on a best-effort basis and
+          we do not guarantee uninterrupted, timely, secure, or error-free operation. The Service may
+          be unavailable from time to time for maintenance, upgrades, or reasons outside our control.
+          We may change, suspend, or discontinue any feature or AI provider (including our use of
+          Cerebras Cloud, NVIDIA NIM, or Cloudflare Workers AI) at any time without notice or
+          liability. We reserve the right to modify or remove features based on usage, cost,
+          availability, safety, or legal considerations.
+        </p>
+      </section>
+
+      <section style={{ marginBottom: 28 }}>
+         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>18. Changes to Terms</h3>
          <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
            We reserve the right to modify or replace these Terms at any time. If a revision is
            material, we will provide at least 30 days&apos; notice prior to any new terms taking effect.
@@ -229,7 +328,16 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
            to be bound by the updated terms.
          </p>
            <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
-             <strong>Version 2.5 (effective July 22, 2026).</strong> This update adds Section 23
+             <strong>Version 2.8 (effective August 7, 2026).</strong> This update adds Section 14
+             (Dispute Resolution), Section 15 (Force Majeure), Section 16 (Export Control and
+             Sanctions), Section 17 (Service Availability), Section 11 (Indemnification), and Section
+             29 (Severability). It also expands Section 3 (Eligibility and Age Requirements) and
+             Section 8 (Account Suspension and Termination) to make suspension distinct from
+             termination. Because these are material changes, we are re-prompting all users to review
+             and re-accept these Terms and the updated Privacy Policy before continuing.
+           </p>
+           <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+             <strong>Version 2.5 (effective July 22, 2026).</strong> This update adds Section 28
              (&quot;Optional Learning Personalization&quot;), describing the new optional feature that
              lets signed-in users choose learning-style preferences and add free-text notes (capped
              at 500 characters) stored only on their device. These preferences are included with each
@@ -238,7 +346,7 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
              re-accept both documents before continuing.
            </p>
            <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
-             <strong>Version 2.4 (effective July 17, 2026).</strong> This update adds Section 22
+             <strong>Version 2.4 (effective July 17, 2026).</strong> This update adds Section 27
              (&quot;Optional Feedback&quot;), describing the new optional, anonymous review feature
              offered soon after a user&apos;s first completed lesson. The review is submitted with
              no account identity and stores only the rating and review text — never an IP address,
@@ -246,35 +354,35 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
              a transparency update; because it introduces no new required data and no new third
              parties, existing consent remains valid.
            </p>
+           <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+             <strong>Version 2.3 (effective July 14, 2026).</strong> This update describes where your
+            saved lesson history is stored: the full content of every saved lesson (chat) now lives
+            in your browser&apos;s <strong>IndexedDB</strong> on your own device (with only a
+            lightweight history index in localStorage), and never on our servers. Clearing your
+            browser&apos;s site data removes your saved lessons and we cannot restore them.
+            Because our Privacy Policy changed alongside this (version 2.4), we are re-prompting
+            all users to review and re-accept both documents before continuing.
+          </p>
           <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
-            <strong>Version 2.3 (effective July 14, 2026).</strong> This update describes where your
-           saved lesson history is stored: the full content of every saved lesson (chat) now lives
-           in your browser&apos;s <strong>IndexedDB</strong> on your own device (with only a
-           lightweight history index in localStorage), and never on our servers. Clearing your
-           browser&apos;s site data removes your saved lessons and we cannot restore them.
-           Because our Privacy Policy changed alongside this (version 2.4), we are re-prompting
-           all users to review and re-accept both documents before continuing.
-         </p>
-         <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
-           <strong>Version 2.7 (effective August 5, 2026).</strong> This update adds
-           <strong> NVIDIA NIM</strong> as the automatic AI fallback after Cerebras and moves
-           <strong> Cloudflare Workers AI</strong> to a last-resort provider role. Because this is a
-           material provider-routing change, we are re-prompting all users to review and re-accept
-           these Terms and the updated Privacy Policy before continuing.
-         </p>
-         <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
-           <strong>Version 2.2 (effective July 13, 2026).</strong> This update clarifies our AI
-           inference providers: our <strong>primary</strong> provider is now{" "}
-           <strong>Cerebras Cloud</strong> (running Google&apos;s Gemma 4 31B), with{" "}
-           <strong>Cloudflare Workers AI</strong> (Gemma) as an automatic fallback. Because this is a
-           material change, we are re-prompting all users to review and re-accept these Terms (and
-           our Privacy Policy) before continuing. Lesson generation and account features that
-           require current consent will be paused until you re-accept.
-         </p>
-       </section>
+            <strong>Version 2.7 (effective August 5, 2026).</strong> This update adds
+            <strong> NVIDIA NIM</strong> as the automatic AI fallback after Cerebras and moves
+            <strong> Cloudflare Workers AI</strong> to a last-resort provider role. Because this is a
+            material provider-routing change, we are re-prompting all users to review and re-accept
+            these Terms and the updated Privacy Policy before continuing.
+          </p>
+          <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+            <strong>Version 2.2 (effective July 13, 2026).</strong> This update clarifies our AI
+            inference providers: our <strong>primary</strong> provider is now{" "}
+            <strong>Cerebras Cloud</strong> (running Google&apos;s Gemma 4 31B), with{" "}
+            <strong>Cloudflare Workers AI</strong> (Gemma) as an automatic fallback. Because this is a
+            material change, we are re-prompting all users to review and re-accept these Terms (and
+            our Privacy Policy) before continuing. Lesson generation and account features that
+            require current consent will be paused until you re-accept.
+          </p>
+        </section>
 
-      <section>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>14. Contact Information</h3>
+      <section style={{ marginBottom: 28 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>19. Contact Information</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           If you have any questions about these Terms of Service or our legal policies, please
           contact us at{" "}
@@ -291,8 +399,8 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </p>
       </section>
 
-      <section style={{ marginTop: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>15. Copyright and Trademark</h3>
+      <section style={{ marginBottom: 28 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>20. Copyright and Trademark</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           RealLearn, the RealLearn logo, and all related names, logos, and slogans are the
           intellectual property of alakmar344 (the operator of RealLearn), to the extent such
@@ -302,8 +410,8 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </p>
       </section>
 
-      <section style={{ marginTop: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>16. Data Retention and Deletion</h3>
+      <section style={{ marginBottom: 28 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>21. Data Retention and Deletion</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           We retain your account and conversation data only as long as necessary to provide the
           service or comply with legal obligations. When you delete your account, we delete your
@@ -316,8 +424,8 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </p>
       </section>
 
-      <section style={{ marginTop: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>17. Accessibility</h3>
+      <section style={{ marginBottom: 28 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>22. Accessibility</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           We strive to make our Service accessible to all users and aim to conform to WCAG 2.1
           Level AA standards. If you experience any accessibility issues, please contact us and
@@ -325,8 +433,8 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </p>
       </section>
 
-      <section style={{ marginTop: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>18. Gamification &amp; Virtual Rewards</h3>
+      <section style={{ marginBottom: 28 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>23. Gamification &amp; Virtual Rewards</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           The Service offers engagement features including experience points (XP), levels, daily
           streaks, streak freezes, daily goals, and achievement badges (collectively,
@@ -343,8 +451,8 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </p>
       </section>
 
-      <section style={{ marginTop: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>19. Voice Features</h3>
+      <section style={{ marginBottom: 28 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>24. Voice Features</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           The Service offers optional voice input (speech-to-text) and &quot;Listen&quot; read-aloud
           (text-to-speech) features. <strong>Voice input</strong> relies on your browser&apos;s
@@ -364,9 +472,9 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </p>
       </section>
 
-      <section style={{ marginTop: 28 }}>
+      <section style={{ marginBottom: 28 }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
-          20. AI Safety and User Responsibility
+          25. AI Safety and User Responsibility
         </h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           RealLearn includes automated safety filters, but no automated system is perfect. You agree
@@ -377,9 +485,9 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </p>
       </section>
 
-      <section style={{ marginTop: 28 }}>
+      <section style={{ marginBottom: 28 }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
-          21. Privacy Rights and Compliance
+          26. Privacy Rights and Compliance
         </h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           Your privacy rights are described in our Privacy Policy, including rights available under
@@ -390,9 +498,9 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </p>
       </section>
 
-      <section style={{ marginTop: 28 }}>
+      <section style={{ marginBottom: 28 }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
-          22. Optional Feedback
+          27. Optional Feedback
         </h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           Soon after you complete your first learning journey, RealLearn may invite you to leave
@@ -408,9 +516,9 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </p>
       </section>
 
-      <section style={{ marginTop: 28 }}>
+      <section style={{ marginBottom: 28 }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
-          23. Optional Learning Personalization
+          28. Optional Learning Personalization
         </h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           RealLearn offers optional learning personalization for signed-in users. You may select
@@ -422,6 +530,16 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
           capped at 500 characters. You can change or clear your preferences anytime in Settings, and
           &quot;Delete My Data&quot; removes them. Personalization is optional: declining or leaving
           it blank does not limit your access to any feature.
+        </p>
+      </section>
+
+      <section style={{ marginBottom: 28 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>29. Severability</h3>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+          If any provision of these Terms is held to be invalid, illegal, or unenforceable by a court
+          of competent jurisdiction, that provision will be modified to the minimum extent necessary
+          to make it valid and enforceable, or if not possible, severed from these Terms; the
+          remaining provisions will continue in full force and effect.
         </p>
       </section>
     </article>
