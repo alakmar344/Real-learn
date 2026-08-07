@@ -19,6 +19,8 @@ import {
   COOKIE_CONSENT_ACCEPTED_EVENT,
   COOKIE_CONSENT_REVOKED_EVENT,
   COOKIE_SETTINGS_OPEN_EVENT,
+  CURRENT_PRIVACY_VERSION,
+  CURRENT_TERMS_VERSION,
   fetchCookieConsentStatus,
   readCookieConsent,
 } from "@/lib/legalConsent";
@@ -611,6 +613,57 @@ export default function SettingsPage() {
               </span>
               <span className="settings-action__note">Permanent</span>
             </button>
+          </div>
+        </section>
+
+        {/* Legal Section */}
+        <section className="settings-panel-glass">
+          <h2 className="settings-title">Legal</h2>
+          <p className="settings-sub">
+            Review our policies, exercise your privacy rights, or contact our grievance officer.
+          </p>
+
+          <div className="option-stack option-stack--loose">
+            <a
+              href="/legal?tab=privacy"
+              className="settings-action"
+              onClick={(e) => {
+                e.preventDefault();
+                router.push("/legal?tab=privacy");
+              }}
+            >
+              <span className="settings-action__label">
+                <Icon name="book-open" size={18} />
+                Privacy Policy
+              </span>
+              <span className="settings-action__note">v{CURRENT_PRIVACY_VERSION}</span>
+            </a>
+
+            <a
+              href="/legal?tab=terms"
+              className="settings-action"
+              onClick={(e) => {
+                e.preventDefault();
+                router.push("/legal?tab=terms");
+              }}
+            >
+              <span className="settings-action__label">
+                <Icon name="book-open" size={18} />
+                Terms of Service
+              </span>
+              <span className="settings-action__note">v{CURRENT_TERMS_VERSION}</span>
+            </a>
+
+            <a
+              href="mailto:esamzai365@gmail.com?subject=Parental%20consent%20%2F%20data%20request"
+              className="settings-action"
+            >
+              <span className="settings-action__label">
+                <Icon name="message-circle" size={18} />
+                Parent/guardian request
+              </span>
+              <span className="settings-action__note">Email grievance officer</span>
+            </a>
           </div>
         </section>
       </div>

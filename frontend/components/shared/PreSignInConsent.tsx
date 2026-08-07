@@ -21,12 +21,12 @@ const ALLOWED_PATHS_WHEN_DECLINED = ["/sign-in", "/sign-up", "/legal"];
 // When the legal versions change, update these bullets and the verification
 // subtests in scripts/verify-reconsent-copy.mjs together.
 const POLICY_CHANGES = [
-  "Privacy Policy updated to version 3.0: RealLearn now discloses its hosting infrastructure providers — Vercel (serves the web app) and Render (hosts the backend API) — which transiently process network request data such as IP addresses to deliver the service.",
-  "The policy also corrects where your email address lives: it is held by Clerk, our authentication provider, and our database stores the verified email from your authenticated session alongside consent records. The app no longer transmits your email address in request bodies — the server reads it directly from your verified authentication token (data minimization).",
+  "Privacy Policy updated to version 3.1: we have expanded children's privacy protections and parental controls, added an explicit GDPR legal-bases section, listed DPDP Act rights (access, correction, erasure, grievance redressal, nomination, and consent withdrawal), strengthened the security section with specific technical and organizational measures, and added a dedicated grievance-officer contact.",
+  "The policy continues to disclose Vercel and Render as hosting infrastructure providers and confirms that your email address is held by Clerk; our database keys consent records to your Clerk account ID.",
 ];
 
 const TERMS_CHANGES = [
-  "Terms of Service are unchanged (still version 2.7, which lists NVIDIA NIM as the automatic AI fallback after Cerebras and Cloudflare Workers AI as the last-resort provider). You are re-accepting them alongside the updated Privacy Policy.",
+  "Terms of Service updated to version 2.8: we have added dispute resolution (informal negotiation, mediation, and litigation/arbitration in Mandsaur, Madhya Pradesh, India), a force majeure clause, export-control and sanctions compliance, service-availability expectations, a clear distinction between account suspension and termination, an indemnification clause, and a severability clause. We have also expanded the eligibility/age-requirements section.",
 ];
 
 // Build year/month options once
@@ -533,6 +533,10 @@ export default function PreSignInConsent() {
   }
 
   if (visible && showReacceptConsent) {
+    const storedAgeBracket = readLegalConsent()?.ageBracket;
+    const isMinorReaccept = storedAgeBracket === "13-17";
+    const canReaccept = !isMinorReaccept || parentalAck;
+
     return (
       <div
         role="dialog"
@@ -623,6 +627,39 @@ export default function PreSignInConsent() {
                 Terms of Service
               </a>.
             </p>
+
+            {isMinorReaccept && (
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 8,
+                  marginTop: 14,
+                  fontSize: 13,
+                  color: "var(--text-secondary)",
+                  lineHeight: 1.5,
+                  cursor: "pointer",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={parentalAck}
+                  onChange={(e) => setParentalAck(e.target.checked)}
+                  style={{ marginTop: 3, flexShrink: 0 }}
+                />
+                <span>
+                  I confirm that my parent or guardian has reviewed and approved my continued use of
+                  RealLearn, in accordance with the updated{" "}
+                  <a href="/legal?tab=privacy" style={{ color: "var(--accent)" }} onClick={(e) => e.stopPropagation()}>
+                    Privacy Policy
+                  </a>{" "}
+                  and{" "}
+                  <a href="/legal?tab=terms" style={{ color: "var(--accent)" }} onClick={(e) => e.stopPropagation()}>
+                    Terms of Service
+                  </a>.
+                </span>
+              </label>
+            )}
           </div>
 
           <div style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>
@@ -649,7 +686,7 @@ export default function PreSignInConsent() {
             <button
               type="button"
               onClick={() => saveConsent(true)}
-              disabled={loading}
+              disabled={loading || !canReaccept}
               style={{
                 border: "none",
                 borderRadius: "var(--radius-md)",
@@ -658,8 +695,8 @@ export default function PreSignInConsent() {
                 fontWeight: 600,
                 color: "var(--on-accent)",
                 background: "var(--accent)",
-                cursor: loading ? "not-allowed" : "pointer",
-                opacity: loading ? 0.6 : 1,
+                cursor: loading || !canReaccept ? "not-allowed" : "pointer",
+                opacity: loading || !canReaccept ? 0.5 : 1,
                 minHeight: 44,
               }}
             >

@@ -27,7 +27,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
         Privacy Policy
       </Title>
       <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
-        Last updated: August 7, 2026 (version 3.0)
+        Last updated: August 7, 2026 (version 3.1)
       </p>
 
       <section style={{ marginBottom: 28 }}>
@@ -85,7 +85,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Consent Records:</strong> Timestamps of when you accepted our Privacy Policy
-            (version 3.0), Terms of Service (version 2.7), and cookie/analytics consent, together
+            (version 3.1), Terms of Service (version 2.8), and cookie/analytics consent, together
             with the policy version, an <strong>anonymized (truncated) device IP</strong>, and a
             hashed User-Agent, kept as proof of consent.
           </li>
@@ -206,24 +206,76 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
       </section>
 
       <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>4. Data Storage and Security</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>4. Legal Bases for Processing (GDPR)</h3>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 8 }}>
+          For users in the European Economic Area and other jurisdictions that require a specified
+          legal basis, we process personal data only where we have a valid legal basis. The table
+          below lists the main categories of processing and the basis that applies:
+        </p>
+        <ul style={{ fontSize: 14, color: "var(--text-secondary)", paddingLeft: 20, margin: 0 }}>
+          <li style={{ marginBottom: 4 }}>
+            <strong>Performance of a contract / taking steps at your request:</strong> account
+            creation and authentication, generating the lessons and read-aloud audio you request,
+            and providing the core Service features tied to your account.
+          </li>
+          <li style={{ marginBottom: 4 }}>
+            <strong>Consent:</strong> optional Google Analytics cookies and usage analytics,
+            optional anonymous feedback, and optional learning personalization (learning-style
+            checklist and free-text notes). You can withdraw consent anytime in Settings or through
+            your browser&apos;s cookie controls.
+          </li>
+          <li style={{ marginBottom: 4 }}>
+            <strong>Legitimate interests:</strong> keeping the Service secure, preventing abuse and
+            fraud, rate limiting, transient IP and request-header processing by our hosting
+            infrastructure (Vercel and Render) to deliver pages and API responses, pseudonymized
+            moderation logging to enforce our content rules, anonymous lesson/audio caching for
+            performance, and local gamification data stored on your device. We balance these
+            interests against your privacy rights and keep data minimization in mind.
+          </li>
+          <li>
+            <strong>Legal obligation:</strong> retaining proof of your acceptance of the Privacy
+            Policy and Terms of Service, preserving records required by applicable law, responding
+            to lawful requests from public authorities, and retaining moderation data where
+            necessary to comply with legal or regulatory requirements.
+          </li>
+        </ul>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+          Where we rely on consent, you have the right to withdraw it at any time. Withdrawing consent
+          will not affect the lawfulness of processing carried out before the withdrawal.
+        </p>
+      </section>
+
+      <section style={{ marginBottom: 28 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>5. Data Storage and Security</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           Your consent records are stored securely in MongoDB, keyed to your Clerk account ID
           (your email address is held by Clerk, our authentication provider). Your saved
           lessons, preferences, and all learning-progress and achievement data (XP, level, streaks,
           daily goals, activity history, and badges) are stored in your browser&apos;s local storage
           areas on your own device — full lesson content in IndexedDB, and the history index,
-          preferences, and progress data in localStorage — and never leave it. We use industry-standard
-          security measures including Clerk for authentication with cryptographically verified
-          session tokens, encrypted connections (HTTPS with HSTS), strict browser security headers,
-          request rate limiting, size limits and validation on all input, and automated content
-          moderation. However, no method of electronic storage is 100% secure, and we cannot
-          guarantee absolute security.
+          preferences, and progress data in localStorage — and never leave it.
+        </p>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+          We apply a defense-in-depth approach to security. Measures that are in place include:
+          Clerk-managed authentication with cryptographically verified JWT session tokens and
+          rotating signing keys; encrypted network connections using HTTPS with HSTS; per-request
+          Content-Security-Policy nonces and strict browser security headers (including
+          X-Frame-Options, X-Content-Type-Options, Referrer-Policy, and Cross-Origin-Opener-Policy);
+          request rate limiting backed by both per-user and per-IP ceilings with token-spray
+          protection; strict input validation and size limits on every API endpoint; automated,
+          rule-based content moderation on user inputs and AI outputs; IDOR-resistant data access
+          keyed only to the verified Clerk identity; salted one-way hashing of device
+          User-Agents; truncation of IP addresses before storage; API keys and secrets kept in
+          environment variables rather than client code; and MongoDB Atlas managed hosting with
+          encryption in transit and at rest. We also maintain an incident-response process to
+          investigate, contain, and notify affected users and regulators of confirmed personal-data
+          breaches as required by law. However, no method of electronic storage is 100% secure, and
+          we cannot guarantee absolute security.
         </p>
       </section>
 
       <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>5. AI-Generated Content</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>6. AI-Generated Content</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           RealLearn generates content using Google&apos;s Gemma 4 open AI model. Our primary
           inference provider is <strong>Cerebras Cloud</strong> (running Gemma 4 31B); if Cerebras is
@@ -273,7 +325,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
       </section>
 
       <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>6. Cookies and Local Storage</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>7. Cookies and Local Storage</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           We use browser localStorage to store your consent preferences, theme settings, your
           saved-lesson history index, your learning-progress and achievement data (XP, level,
@@ -292,28 +344,54 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
       </section>
 
       <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>7. Your Rights</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>8. Your Rights and Choices</h3>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 8 }}>
+          Depending on where you live, you may have the following rights regarding your personal data:
+        </p>
         <ul style={{ fontSize: 14, color: "var(--text-secondary)", paddingLeft: 20, margin: 0 }}>
           <li style={{ marginBottom: 4 }}>
-            <strong>Access:</strong> You can export all your data using the &quot;Export My Data&quot; feature.
+            <strong>Access:</strong> You can request a copy of the personal data we hold about you
+            using the &quot;Export My Data&quot; feature.
           </li>
           <li style={{ marginBottom: 4 }}>
-            <strong>Deletion:</strong> You can delete your account and all associated data using
-            the &quot;Delete My Data&quot; feature. This removes your MongoDB records, Clerk account,
-            and all local data.
+            <strong>Correction / Rectification:</strong> You can update your email through your Clerk
+            account settings and correct locally-stored preferences directly in Settings.
           </li>
           <li style={{ marginBottom: 4 }}>
-            <strong>Rectification:</strong> You can update your email through your Clerk account settings.
+            <strong>Erasure (&quot;right to be forgotten&quot;):</strong> You can delete your account
+            and all associated data using the &quot;Delete My Data&quot; feature. This removes your
+            MongoDB records, Clerk account, and all local data.
+          </li>
+          <li style={{ marginBottom: 4 }}>
+            <strong>Objection / Restriction:</strong> You may object to certain processing based on
+            legitimate interests or ask us to restrict processing in specific circumstances.
+          </li>
+          <li style={{ marginBottom: 4 }}>
+            <strong>Data portability:</strong> You can receive your data in a structured, commonly
+            used format through the export tool.
+          </li>
+          <li style={{ marginBottom: 4 }}>
+            <strong>Withdraw consent:</strong> Where we rely on consent, you can withdraw it at any
+            time from Settings → Privacy or through your browser&apos;s cookie controls. Previously
+            collected data may remain until deletion.
           </li>
           <li>
-            <strong>Objection:</strong> You may decline consent, which will prevent us from storing
-            new data, though previously stored data may remain until deletion.
+            <strong>Lodge a complaint:</strong> You have the right to complain to a data-protection
+            supervisory authority in your country or region.
           </li>
         </ul>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+          To exercise any of these rights, use the in-product tools or contact us at{" "}
+          <a href="mailto:esamzai365@gmail.com" style={{ color: "var(--accent)" }}>
+            esamzai365@gmail.com
+          </a>
+          . We will verify your identity through your authenticated account before acting on your
+          request.
+        </p>
       </section>
 
       <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>8. Third-Party Services</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>9. Third-Party Services</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           We use the following third-party services:
         </p>
@@ -347,7 +425,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
             <strong>MongoDB Atlas</strong> (mongodb.com) — Managed database hosting. Stores your
             consent records (keyed to your Clerk account ID — your email address is held by Clerk,
             not in our database), moderation logs, and anonymous feedback as described in Section
-            4, encrypted in transit and at rest. MongoDB acts as our storage processor and does not
+            5, encrypted in transit and at rest. MongoDB acts as our storage processor and does not
             use your data for its own purposes.
           </li>
           <li style={{ marginBottom: 4 }}>
@@ -361,7 +439,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
             generate lessons, save consent, or use read-aloud pass through Render&apos;s
             infrastructure, which transiently processes network request data (such as your IP
             address) to route and serve those requests. Our own application code truncates IPs
-            before anything is stored (see Section 9).
+            before anything is stored (see Section 2).
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Google Analytics</strong> — Website analytics to understand usage patterns
@@ -393,7 +471,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
       </section>
 
       <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>9. Data Retention</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>10. Data Retention</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 8 }}>
           We keep personal data only as long as needed for the purpose it was collected:
         </p>
@@ -433,7 +511,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
       </section>
 
       <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>10. International Transfers</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>11. International Transfers</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           RealLearn relies on global service providers (including Clerk, Cloudflare, Microsoft,
           Google, MongoDB Atlas, Serper, Vercel, and Render), so your data may be processed in countries other than
@@ -447,12 +525,21 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
       </section>
 
       <section style={{ marginBottom: 28 }}>
-         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>11. Changes to This Policy</h3>
+         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>12. Changes to This Policy</h3>
          <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
            We may update this Privacy Policy from time to time. We will notify you of any changes
            by posting the new policy on this page and updating the &quot;Last updated&quot; date.
            Continued use of the service after changes constitutes acceptance of the updated policy.
          </p>
+          <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+            <strong>Version 3.1 (effective August 7, 2026).</strong> This update expands our
+            children&apos;s privacy disclosures and parental controls, adds an explicit GDPR legal
+            bases section, expands the DPDP Act rights list, strengthens the security section with
+            specific technical and organizational measures, and adds a dedicated grievance-officer
+            contact. Because these are material legal changes, we are re-prompting all users to
+            review and re-accept this Privacy Policy and the updated Terms of Service before
+            continuing.
+          </p>
           <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
             <strong>Version 3.0 (effective August 7, 2026).</strong> This update discloses our
             hosting infrastructure providers — <strong>Vercel</strong> (serves the web app) and{" "}
@@ -542,7 +629,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
        </section>
 
       <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>12. Contact Us</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>13. Contact Us</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           If you have questions about this Privacy Policy or your data, please contact us at{" "}
           <a href="mailto:esamzai365@gmail.com" style={{ color: "var(--accent)" }}>
@@ -558,18 +645,6 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
         </p>
       </section>
 
-      <section>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>13. GDPR (European Users)</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
-          If you are in the European Economic Area, you have the right to access, rectify,
-          erase, restrict, or object to processing of your personal data. You also have the
-          right to data portability and to lodge a complaint with a supervisory authority.
-          Our lawful basis for processing your data is your consent and our legitimate interest
-          in providing the educational service. You can exercise these rights through the
-          &quot;Export My Data&quot; and &quot;Delete My Data&quot; features, or by contacting us.
-        </p>
-      </section>
-
       <section style={{ marginBottom: 28 }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>14. Accessibility</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
@@ -579,7 +654,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
         </p>
       </section>
 
-      <section>
+      <section style={{ marginBottom: 28 }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>15. Sharing Your Results</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           When you finish a learning journey, RealLearn lets you optionally share a result card.
@@ -593,7 +668,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
         </p>
       </section>
 
-      <section style={{ marginTop: 28 }}>
+      <section style={{ marginBottom: 28 }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
           16. Voice Features (Microphone &amp; Read-Aloud)
         </h3>
@@ -625,23 +700,23 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
         </ul>
       </section>
 
-      <section style={{ marginTop: 28 }}>
+      <section style={{ marginBottom: 28 }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
-          17. Legal Bases and Regional Rights
+          17. Automated Content Generation &amp; Moderation
         </h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
-          Where required by law, we process personal data under one or more lawful bases: your
-          consent (for optional analytics and policy acceptance records), our contract with you
-          (to provide account access and learning features), and our legitimate interests (to keep
-          the service secure, prevent abuse, and improve reliability). Depending on your region
-          (including the EEA/UK and California), you may have rights to access, delete, correct,
-          port, or restrict processing of your personal data, and to appeal where legally available.
-          You can exercise available rights using in-product tools (&quot;Export My Data&quot;,
-          &quot;Delete My Data&quot;) or by contacting us.
+          Lessons are produced by an automated AI system, and both your inputs and the generated
+          outputs pass through automated, rule-based (pattern-matching) safety filters that run on
+          our own servers — not a third-party AI classifier — before or shortly after content is
+          shown. These processes are used solely to generate educational content and to keep the
+          Service safe — they do not make legal, financial, or similarly significant decisions about
+          you, and no automated profiling is used for advertising. Because the filters are automated
+          and rule-based, they are imperfect and may occasionally over- or under-block; you remain
+          responsible for verifying AI-generated information (see Section 6).
         </p>
       </section>
 
-      <section style={{ marginTop: 28 }}>
+      <section style={{ marginBottom: 28 }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
           18. Security Events and Incident Response
         </h3>
@@ -654,35 +729,55 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
         </p>
       </section>
 
-      <section style={{ marginTop: 28 }}>
+      <section style={{ marginBottom: 28 }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
           19. Children&apos;s Privacy
         </h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 8 }}>
-          RealLearn is intended for learners aged 13 and older, and our content covers school-level
-          topics. We do not knowingly create accounts for, or collect personal data from, children
-          under 13 (or under the minimum digital-consent age in your jurisdiction — for example, 16
-          in parts of the EEA, or 18 for certain processing under India&apos;s DPDP Act without
-          verifiable parental consent).
+          RealLearn is intended for learners aged <strong>13 and older</strong>. We do not knowingly
+          create accounts for, or collect personal data from, children under 13. If your
+          jurisdiction sets a higher minimum digital-consent age (for example, 16 in parts of the
+          EEA, or 18 under India&apos;s DPDP Act for certain processing without verifiable parental
+          consent), the same age-gating and parental-involvement requirements apply.
         </p>
         <ul style={{ fontSize: 14, color: "var(--text-secondary)", paddingLeft: 20, margin: "0 0 8px" }}>
           <li style={{ marginBottom: 4 }}>
-            If you are below the applicable minimum age, please use RealLearn only with the
-            involvement and consent of a parent or legal guardian.
+            <strong>Age gating:</strong> During onboarding we ask for your date of birth and do not
+            allow account creation for users who tell us they are under 13. We store only an age
+            bracket (under 13, 13–17, or 18+), never your exact date of birth.
           </li>
           <li style={{ marginBottom: 4 }}>
-            For learners aged 13&ndash;17, we require an explicit confirmation during onboarding
-            that a parent or guardian has reviewed and approved their use of RealLearn. This is a
-            self-attested confirmation — we do not currently operate an independent
-            identity-verification process for parents.
+            <strong>Parental approval for minors:</strong> If you are 13–17, you must check a box
+            confirming that a parent or legal guardian has reviewed and approved your use of
+            RealLearn. This is a self-attested confirmation; we do not currently require
+            independent identity verification of the parent or guardian.
           </li>
           <li style={{ marginBottom: 4 }}>
-            We do not knowingly serve targeted advertising to children and do not sell or
-            &quot;share&quot; children&apos;s personal information.
+            <strong>What data we collect from minors:</strong> We collect the same limited categories
+            described in Section 2. We do not knowingly collect precise geolocation, government
+            identifiers, or other sensitive personal data from children beyond what is necessary to
+            provide the Service.
+          </li>
+          <li style={{ marginBottom: 4 }}>
+            <strong>No ads or behavioral tracking:</strong> We do not serve targeted advertising to
+            children and do not sell or &quot;share&quot; children&apos;s personal information for
+            behavioral advertising. Analytics cookies are loaded only with consent.
+          </li>
+          <li style={{ marginBottom: 4 }}>
+            <strong>Parent/guardian controls:</strong> A parent or legal guardian may review the
+            personal data we hold about a minor, revoke consent, request correction or deletion of
+            the minor&apos;s account and data, or raise any concern by contacting us at{" "}
+            <a href="mailto:esamzai365@gmail.com" style={{ color: "var(--accent)" }}>
+              esamzai365@gmail.com
+            </a>
+            . We will respond promptly and take reasonable steps to verify the requestor&apos;s
+            relationship to the child before acting.
           </li>
           <li>
-            Parents or guardians who believe a child has provided us personal data without proper
-            consent may contact us to have it reviewed and deleted, and we will act promptly.
+            <strong>If a child under 13 signs up:</strong> If we learn that we have collected
+            personal data from a child under 13 without appropriate parental consent, we will delete
+            that data promptly. Parents or guardians who believe a child has provided us personal
+            data without proper consent may contact us at the email above.
           </li>
         </ul>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
@@ -692,7 +787,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
         </p>
       </section>
 
-      <section style={{ marginTop: 28 }}>
+      <section style={{ marginBottom: 28 }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
           20. Your California Privacy Rights (CCPA/CPRA)
         </h3>
@@ -721,17 +816,41 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
         </p>
       </section>
 
-      <section style={{ marginTop: 28 }}>
+      <section style={{ marginBottom: 28 }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
           21. India — Digital Personal Data Protection Act, 2023
         </h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 8 }}>
           If you are in India, we process your personal data as a Data Fiduciary on the basis of
-          your consent and for the legitimate uses permitted under the DPDP Act. You have the right
-          to access, correct, and erase your personal data, to withdraw consent, to nominate another
-          person to exercise your rights in the event of death or incapacity, and to a readily
-          available grievance-redressal mechanism.
+          your consent and for the legitimate uses permitted under the DPDP Act. The DPDP Act grants
+          you the following rights:
         </p>
+        <ul style={{ fontSize: 14, color: "var(--text-secondary)", paddingLeft: 20, margin: "0 0 8px" }}>
+          <li style={{ marginBottom: 4 }}>
+            <strong>Right to access:</strong> obtain confirmation and a copy of the personal data we
+            process about you.
+          </li>
+          <li style={{ marginBottom: 4 }}>
+            <strong>Right to correction:</strong> request correction of inaccurate or misleading
+            personal data.
+          </li>
+          <li style={{ marginBottom: 4 }}>
+            <strong>Right to erasure:</strong> request deletion of your personal data, subject to
+            applicable exceptions.
+          </li>
+          <li style={{ marginBottom: 4 }}>
+            <strong>Right to grievance redressal:</strong> raise a complaint with our grievance
+            officer if you are unhappy with how we handle your data.
+          </li>
+          <li style={{ marginBottom: 4 }}>
+            <strong>Right to nominate:</strong> nominate another person to exercise your rights in
+            the event of your death or incapacity.
+          </li>
+          <li>
+            <strong>Right to withdraw consent:</strong> withdraw your consent at any time, with the
+            ease of doing so being comparable to the ease of giving consent.
+          </li>
+        </ul>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           <strong>Grievance Officer:</strong> you may raise any grievance regarding the processing
           of your personal data by writing to our grievance officer at{" "}
@@ -746,19 +865,21 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
         </p>
       </section>
 
-      <section style={{ marginTop: 28 }}>
+      <section style={{ marginBottom: 28 }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
-          22. Automated Content Generation &amp; Moderation
+          22. Grievance Officer
         </h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
-          Lessons are produced by an automated AI system, and both your inputs and the generated
-          outputs pass through automated, rule-based (pattern-matching) safety filters that run on
-          our own servers — not a third-party AI classifier — before or shortly after content is
-          shown. These processes are used solely to generate educational content and to keep the
-          Service safe — they do not make legal, financial, or similarly significant decisions about
-          you, and no automated profiling is used for advertising. Because the filters are automated
-          and rule-based, they are imperfect and may occasionally over- or under-block; you remain
-          responsible for verifying AI-generated information (see Section 5).
+          For users in India and any other jurisdiction that requires a designated grievance officer,
+          our grievance officer is the privacy contact listed in Section 13. You may contact the
+          grievance officer at{" "}
+          <a href="mailto:esamzai365@gmail.com" style={{ color: "var(--accent)" }}>
+            esamzai365@gmail.com
+          </a>
+          . We will acknowledge your grievance promptly and use reasonable efforts to resolve it
+          within the timeframes required by applicable law. If you are not satisfied with our
+          response, you have the right to escalate the matter to the relevant data-protection
+          regulator or supervisory authority.
         </p>
       </section>
     </article>
