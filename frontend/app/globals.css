@@ -66,10 +66,22 @@
   --text-tertiary: #7E8471;
   --text-accent-strong: #C3E85B;
 
-  --correct: #10B981;
-  --correct-bg: rgba(16, 185, 129, 0.15);
-  --wrong: #FB7185;
-  --wrong-bg: rgba(251, 113, 133, 0.15);
+  /* Semantic state layer — the canonical state colors. Components should
+     reach for these (or the quiz-domain aliases below) instead of hex.
+     Every text pairing is AA-checked against --bg-primary/--bg-card. */
+  --success: #10B981;
+  --success-bg: rgba(16, 185, 129, 0.15);
+  --danger: #FB7185;
+  --danger-bg: rgba(251, 113, 133, 0.15);
+  --warning: #FBBF24;
+  --warning-bg: rgba(251, 191, 36, 0.14);
+  --info: #38BDF8;
+  --info-bg: rgba(56, 189, 248, 0.14);
+  /* Quiz-domain aliases — existing component classes consume these. */
+  --correct: var(--success);
+  --correct-bg: var(--success-bg);
+  --wrong: var(--danger);
+  --wrong-bg: var(--danger-bg);
   --locked: #565B4A;
 
   --subject-physics: #38BDF8;
@@ -214,10 +226,20 @@ html[data-theme="light"] {
   --text-tertiary: #6E7460;
   --text-accent-strong: #46591F;
 
-  --correct: #059669;
-  --correct-bg: rgba(5, 150, 105, 0.1);
-  --wrong: #DC2626;
-  --wrong-bg: rgba(220, 38, 38, 0.1);
+  /* Semantic state layer (light). Warning/info run one shade deeper than the
+     subject-chip ambers/skies so they hold ≥4.5:1 as text on warm cream. */
+  --success: #059669;
+  --success-bg: rgba(5, 150, 105, 0.1);
+  --danger: #DC2626;
+  --danger-bg: rgba(220, 38, 38, 0.1);
+  --warning: #A16207;
+  --warning-bg: rgba(161, 98, 7, 0.1);
+  --info: #0369A1;
+  --info-bg: rgba(3, 105, 161, 0.1);
+  --correct: var(--success);
+  --correct-bg: var(--success-bg);
+  --wrong: var(--danger);
+  --wrong-bg: var(--danger-bg);
   --locked: #A6AA96;
 
   --subject-physics: #0284C7;
@@ -1357,17 +1379,8 @@ a:active {
   display: none;
 }
 
-/* ── Respect reduced motion ── */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
+/* (Reduced-motion global kill-switch lives once, in the perf-tier section —
+   the duplicate copy that used to sit here was removed.) */
 
 /* ── Markdown content — ink on paper, generous breathing room ── */
 .markdown-content {
@@ -2638,10 +2651,10 @@ p {
 /* Danger variant for clear/delete controls. */
 .btn-icon--danger:hover,
 .btn-icon--danger:focus-visible {
-  border-color: var(--wrong);
-  color: var(--wrong);
-  background: var(--wrong-bg);
-  box-shadow: 0 0 16px var(--wrong-bg);
+  border-color: var(--danger);
+  color: var(--danger);
+  background: var(--danger-bg);
+  box-shadow: 0 0 16px var(--danger-bg);
 }
 
 /* ── Nav link ── the navigation pill. Calm at rest, lifts and gains a
@@ -3220,7 +3233,7 @@ p {
   color: var(--text-tertiary);
   transition: color 200ms ease;
 }
-.q-form__count--near { color: var(--wrong); font-weight: 600; }
+.q-form__count--near { color: var(--danger); font-weight: 600; }
 .q-form__kbd {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -5437,12 +5450,12 @@ p {
   color: currentColor;
 }
 .settings-action--danger {
-  background: var(--wrong-bg);
-  color: var(--wrong);
+  background: var(--danger-bg);
+  color: var(--danger);
   font-weight: 600;
 }
 .settings-action--danger:hover {
-  color: var(--wrong);
+  color: var(--danger);
 }
 .settings-action--danger .settings-action__note {
   color: currentColor;
@@ -5861,7 +5874,7 @@ p {
   transition: color var(--dur-fast) var(--ease-color);
 }
 .journey-item__remove:hover {
-  color: var(--wrong);
+  color: var(--danger);
 }
 
 /* ── Physical theme switch (sidebar) ─────────────────────────────
@@ -6128,7 +6141,7 @@ p {
     box-shadow:
       var(--key-bevel-soft),
       0 3px 0 var(--edge-neutral),
-      0 0 14px var(--wrong-bg);
+      0 0 14px var(--danger-bg);
   }
 }
 .btn-icon:active,
@@ -6388,10 +6401,10 @@ html[data-perf="low"] .hero-ticker__track {
     background 200ms var(--ease-color), box-shadow 200ms var(--ease-color);
 }
 .mic-btn--listening {
-  border: 1.5px solid var(--wrong);
-  color: var(--wrong);
-  background: color-mix(in srgb, var(--wrong) 12%, transparent);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--wrong) 12%, transparent);
+  border: 1.5px solid var(--danger);
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--danger) 12%, transparent);
 }
 .mic-btn--unsupported {
   border-color: var(--border-subtle);

@@ -220,7 +220,7 @@ export default function PersonalizationGate() {
           <p
             style={{
               fontSize: 12,
-              color: notesRemaining < 0 ? "var(--wrong)" : "var(--text-tertiary)",
+              color: notesRemaining < 0 ? "var(--danger)" : "var(--text-tertiary)",
               marginTop: 6,
               textAlign: "right",
             }}
