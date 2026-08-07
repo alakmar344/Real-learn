@@ -114,10 +114,9 @@ export default function CookieConsent() {
         headers["Authorization"] = `Bearer ${token}`;
       }
 
-      // The backend derives identity (clerkId) exclusively from the verified
-      // token and records req.ip itself — the client sends only the choice
-      // and timestamp. No email: the backend never stored a client-supplied
-      // email (data minimization, privacy v3.0).
+      // The backend derives identity (clerkId) and email exclusively from the
+      // verified Clerk JWT token and records req.ip itself — the client sends
+      // only the choice and timestamp.
       const response = await fetch(`${backendUrl}/api/agreement`, {
         method: "POST",
         headers,

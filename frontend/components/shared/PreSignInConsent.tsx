@@ -22,7 +22,7 @@ const ALLOWED_PATHS_WHEN_DECLINED = ["/sign-in", "/sign-up", "/legal"];
 // subtests in scripts/verify-reconsent-copy.mjs together.
 const POLICY_CHANGES = [
   "Privacy Policy updated to version 3.0: RealLearn now discloses its hosting infrastructure providers — Vercel (serves the web app) and Render (hosts the backend API) — which transiently process network request data such as IP addresses to deliver the service.",
-  "The policy also corrects where your email address lives: it is held by Clerk, our authentication provider — our own database keys consent records to your account ID and stores no email. The app no longer transmits your email address with consent submissions (data minimization).",
+  "The policy also corrects where your email address lives: it is held by Clerk, our authentication provider, and our database stores the verified email from your authenticated session alongside consent records. The app no longer transmits your email address in request bodies — the server reads it directly from your verified authentication token (data minimization).",
 ];
 
 const TERMS_CHANGES = [
@@ -277,8 +277,8 @@ export default function PreSignInConsent() {
         const response = await fetch(`${backendUrl}/api/legal-consent`, {
           method: "POST",
           headers,
-          // No email in the body: the backend keys the record to the verified
-          // Clerk ID and never stored a client-supplied email (data minimization).
+          // No email in the body: the backend reads the verified email
+          // directly from the Clerk JWT token (data minimization).
           body: JSON.stringify({
             accepted: true,
             timestamp: consent.timestamp,

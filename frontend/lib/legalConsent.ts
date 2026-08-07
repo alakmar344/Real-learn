@@ -167,9 +167,8 @@ export function isConsentCurrent(state: LegalConsentState | null): boolean {
  *
  * Best-effort: returns true on success. The backend derives privacyVersion /
  * termsVersion from its own constants and keys the record to the verified
- * Clerk ID. No email is sent: the backend never trusted or stored a
- * body-supplied email (attacker-controlled), so transmitting it was pure
- * data-transfer overhead — removed for data minimization (privacy v3.0).
+ * Clerk ID. The backend reads the email directly from the verified Clerk JWT
+ * token — no email is transmitted in the request body (data minimization).
  */
 export async function syncLegalConsentToBackend(
   getToken: () => Promise<string | null>,
