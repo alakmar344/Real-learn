@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
+import { useModalSlot } from "@/hooks/useModalSlot";
 import { usePreferenceStore } from "@/store/preferenceStore";
 import {
   MAX_PERSONALIZATION_NOTES_CHARS,
@@ -36,7 +37,10 @@ export default function PersonalizationGate() {
 
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<LearningPreferences>(personalization);
-  const trapRef = useFocusTrap<HTMLDivElement>(open);
+  // Serialize with consent/tour/preference dialogs — the 600 ms delay below is
+  // only a heuristic; this is the hard guarantee against stacked modals.
+  const visible = useModalSlot("personalization-gate", open);
+  const trapRef = useFocusTrap<HTMLDivElement>(visible);
 
   const notesRemaining = useMemo(
     () => MAX_PERSONALIZATION_NOTES_CHARS - draft.notes.length,
@@ -55,11 +59,11 @@ export default function PersonalizationGate() {
   // Sync store → draft only when the modal OPENS, not on every personalization
   // change. The old effect overwrote user edits while the modal was open.
   useEffect(() => {
-    if (open) {
+    if (visible) {
       setDraft(personalization);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  }, [visible]);
 
   const toggleChecklist = (option: string) => {
     setDraft((prev) => {
@@ -85,7 +89,7 @@ export default function PersonalizationGate() {
     setOpen(false);
   };
 
-  if (!open) return null;
+  if (!visible) return null;
 
   return (
     <div

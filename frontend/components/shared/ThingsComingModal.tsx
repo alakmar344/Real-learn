@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
+import { useModalSlot } from "@/hooks/useModalSlot";
 import { Icon, type IconName } from "@/components/shared/icons";
 
 interface Props {
@@ -64,7 +65,11 @@ const STEPS: {
 
 export default function ThingsComingModal({ open, onClose }: Props) {
   const [currentStep, setCurrentStep] = useState(0);
-  const trapRef = useFocusTrap<HTMLDivElement>(open);
+  // Mutual exclusion with the other blocking dialogs (consent, preferences,
+  // personalization) — without this they stack scrims + focus traps on a
+  // first visit. Denied → we wait; the slot re-grants when the winner closes.
+  const visible = useModalSlot("things-coming", open);
+  const trapRef = useFocusTrap<HTMLDivElement>(visible);
 
   const handleDismiss = useCallback(() => {
     try {
@@ -76,13 +81,13 @@ export default function ThingsComingModal({ open, onClose }: Props) {
   }, [onClose]);
 
   useEffect(() => {
-    if (open) {
+    if (visible) {
       setCurrentStep(0);
     }
-  }, [open]);
+  }, [visible]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!visible) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         handleDismiss();
@@ -94,7 +99,7 @@ export default function ThingsComingModal({ open, onClose }: Props) {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, currentStep, handleDismiss]);
+  }, [visible, currentStep, handleDismiss]);
 
   const handleNext = () => {
     if (currentStep < STEPS.length - 1) {
@@ -110,7 +115,7 @@ export default function ThingsComingModal({ open, onClose }: Props) {
     }
   };
 
-  if (!open) return null;
+  if (!visible) return null;
 
   const step = STEPS[currentStep];
 

@@ -18,7 +18,8 @@ function notify() {
 
 /** Returns true if the modal was granted, false if another is already active. */
 export function requestModal(id: string): boolean {
-  if (activeModal && activeModal !== id) return false;
+  if (activeModal === id) return true; // already ours — no state change, no notify
+  if (activeModal) return false;
   activeModal = id;
   notify();
   return true;
@@ -38,5 +39,7 @@ export function isModalActive(): boolean {
 /** Subscribe to modal state changes. Returns an unsubscribe function. */
 export function onModalChange(fn: () => void): () => void {
   listeners.add(fn);
-  return () => listeners.delete(fn);
+  return () => {
+    listeners.delete(fn);
+  };
 }

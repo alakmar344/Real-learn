@@ -7,7 +7,7 @@ import { useProgressStore } from "@/store/progressStore";
 import { useSavedJourneysStore } from "@/store/savedJourneysStore";
 import { useLessonStore } from "@/store/lessonStore";
 import { getArchivedLesson } from "@/lib/lessonArchive";
-import { levelInfo } from "@/lib/achievements";
+import { levelInfo, displayableStreak } from "@/lib/achievements";
 import { useMounted } from "@/hooks/useMounted";
 import { Skeleton } from "@/components/shared/Skeleton";
 import { Icon } from "@/components/shared/icons";
@@ -26,7 +26,11 @@ export default function HomeStats({ onStartTopic }: Props) {
   const { isSignedIn } = useAuth();
 
   const xp = useProgressStore((s) => s.xp);
-  const streak = useProgressStore((s) => s.streak);
+  const rawStreak = useProgressStore((s) => s.streak);
+  const lastActiveDay = useProgressStore((s) => s.lastActiveDay);
+  const streakFreezes = useProgressStore((s) => s.streakFreezes);
+  // Lapse-checked streak — the raw persisted value never decays on its own.
+  const streak = displayableStreak(rawStreak, lastActiveDay, streakFreezes);
 
   const journeys = useSavedJourneysStore((s) => s.journeys);
   const loadJourney = useLessonStore((s) => s.loadJourney);

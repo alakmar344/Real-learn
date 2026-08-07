@@ -223,8 +223,10 @@ export const useProgressStore = create<ProgressState>()(
           // `score` is the FIRST-ATTEMPT quiz score (see QuizSheet): passing
           // always ends with a perfect run, so without first-attempt tracking
           // this flag would be unconditionally true and the "perfect" badges
-          // meaningless. Perfect = aced on the first try.
-          const isPerfect = score >= maxPerPart;
+          // meaningless. Perfect = aced on the first try. A part with no quiz
+          // at all (maxPerPart 0 — e.g. truncated backend output) can never be
+          // "perfect": 0 >= 0 would otherwise credit an unanswered quiz.
+          const isPerfect = maxPerPart > 0 && score >= maxPerPart;
 
           const { dailyCount: baseDaily } = normalizeDaily(prev, today);
           const nextDailyCount = baseDaily + 1;

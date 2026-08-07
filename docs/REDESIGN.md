@@ -378,3 +378,23 @@ The owner's "frenzy in minimalism" concept, mediated for this product:
   card), `lib/themes.ts`, `ThemeApplier` fallback, pre-paint theme-color
   script, `viewport.themeColor`, `manifest.json`, tactile key edge tokens
   (`--edge-accent` `#38471A` light / `#66801F` dark), auroras, focus rings.
+
+## Addendum — 2026-08-07: Olive Frenzy doubled down (token amplification)
+
+Same design, dials turned — a token-level pass over `globals.css` only:
+
+- **Sharper grid** — radii tightened a second notch
+  (`--radius-sm/md/lg/xl/2xl` → 8/12/14/18/22): drafted edges, a whisper
+  of brutalism; pills stay pills. Section-header accent bar and the
+  scrollbar thumb squared off; how-it-works numbers are grid beads
+  instead of bubbles; `.rl-card` hover restrained to a −2px lift +
+  `shadow-md`.
+- **Quieter glow** — accent glow + glow shadows trimmed in both modes and
+  the aurora breathing layer quieted ~25%: glow is an accent, not an
+  atmosphere; content owns the frame.
+- **Mono technical voice** — one coherent "technical label" voice
+  (JetBrains Mono, uppercase, letter-spaced) across every annotating
+  surface: section overlines (squared drafting-mark bead replaces the
+  brush dash), stat-tile labels (both generations), part-card tags, quiz
+  meta, flashcard tags, sidebar list titles, resume-card kicker, hero
+  ticker. New `.micro-label` utility for future surfaces.

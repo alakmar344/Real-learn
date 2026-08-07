@@ -8,6 +8,16 @@ interface Props {
   className?: string;
 }
 
+/** HTML-escape a string so it is safe inside dangerouslySetInnerHTML. */
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function renderMath(latex: string, displayMode: boolean): string {
   try {
     return katex.renderToString(latex, {
@@ -18,7 +28,12 @@ function renderMath(latex: string, displayMode: boolean): string {
       output: "html",
     });
   } catch {
-    return latex;
+    // SECURITY: the result of this function is injected via
+    // dangerouslySetInnerHTML, and `latex` originates from AI-generated
+    // (user-steerable, cached-and-shared) lesson content. Returning the raw
+    // string here would be a stored-XSS sink if KaTeX ever throws a
+    // non-ParseError. Escape the fallback so it degrades to visible text.
+    return escapeHtml(latex);
   }
 }
 

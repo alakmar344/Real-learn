@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
+import { useModalSlot } from "@/hooks/useModalSlot";
 import {
   CURRENT_PRIVACY_VERSION,
   CURRENT_TERMS_VERSION,
@@ -75,11 +76,24 @@ export default function PreSignInConsent() {
   const [dobMonth, setDobMonth] = useState<number>(0);
   const [dobDay, setDobDay] = useState<number>(0);
   const [parentalAck, setParentalAck] = useState(false);
+  // Mutual exclusion with the other first-visit dialogs (tour, preferences,
+  // personalization): one shared slot via lib/modalManager so scrims and
+  // focus traps never stack. Consent requests the slot synchronously at
+  // mount, so it naturally goes first; the others queue behind it.
+  // The declined wall doesn't render on ALLOWED_PATHS_WHEN_DECLINED (the user
+  // must be able to read the legal docs), so don't hold the slot there either.
+  const onDeclineAllowedPath = ALLOWED_PATHS_WHEN_DECLINED.some((p) =>
+    pathname?.startsWith(p)
+  );
+  const visible = useModalSlot(
+    "legal-consent",
+    showConsent || showReacceptConsent || (declined && !onDeclineAllowedPath)
+  );
   // A11y: this component renders blocking dialogs — keyboard focus must stay
   // inside them (one trap per possible dialog; only one is open at a time).
-  const consentTrapRef = useFocusTrap<HTMLDivElement>(showConsent);
-  const reacceptTrapRef = useFocusTrap<HTMLDivElement>(showReacceptConsent);
-  const declinedTrapRef = useFocusTrap<HTMLDivElement>(declined && !showConsent && !showReacceptConsent);
+  const consentTrapRef = useFocusTrap<HTMLDivElement>(visible && showConsent);
+  const reacceptTrapRef = useFocusTrap<HTMLDivElement>(visible && showReacceptConsent);
+  const declinedTrapRef = useFocusTrap<HTMLDivElement>(visible && declined && !showConsent && !showReacceptConsent);
 
   const ageStatus = useMemo(() => computeAgeStatus(dobYear, dobMonth, dobDay), [dobYear, dobMonth, dobDay]);
   const dayOptions = useMemo(() => {
@@ -293,7 +307,7 @@ export default function PreSignInConsent() {
     }
   };
 
-  if (showConsent) {
+  if (visible && showConsent) {
     const canAccept = ageStatus === "adult" || (ageStatus === "minor" && parentalAck);
     const selectStyle: React.CSSProperties = {
       border: "1px solid var(--border-default)",
@@ -523,7 +537,7 @@ export default function PreSignInConsent() {
     );
   }
 
-  if (showReacceptConsent) {
+  if (visible && showReacceptConsent) {
     return (
       <div
         role="dialog"
@@ -662,7 +676,7 @@ export default function PreSignInConsent() {
     );
   }
 
-  if (declined) {
+  if (visible && declined) {
     const isAllowedPath = ALLOWED_PATHS_WHEN_DECLINED.some((p) =>
       pathname?.startsWith(p)
     );

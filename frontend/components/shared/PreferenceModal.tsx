@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Language, Level } from "@/types";
 import { usePreferenceStore } from "@/store/preferenceStore";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
+import { useModalSlot } from "@/hooks/useModalSlot";
 import { THEME_OPTIONS } from "@/lib/themes";
 import { Icon } from "@/components/shared/icons";
 
@@ -40,7 +41,9 @@ export default function PreferenceModal({ open, onClose }: Props) {
   const setLevel = usePreferenceStore((s) => s.setLevel);
 
   const [saving, setSaving] = useState(false);
-  const trapRef = useFocusTrap<HTMLDivElement>(open);
+  // Serialize with the other first-visit dialogs — see lib/modalManager.
+  const visible = useModalSlot("preference-modal", open);
+  const trapRef = useFocusTrap<HTMLDivElement>(visible);
 
   const handleSave = useCallback(() => {
     setSaving(true);
@@ -53,7 +56,7 @@ export default function PreferenceModal({ open, onClose }: Props) {
   }, [onClose]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!visible) return;
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         // Consume the event so AppShell's window-level Escape handler doesn't
@@ -78,9 +81,9 @@ export default function PreferenceModal({ open, onClose }: Props) {
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
-  }, [open, onClose, handleSave]);
+  }, [visible, onClose, handleSave]);
 
-  if (!open) return null;
+  if (!visible) return null;
 
   return (
     <div

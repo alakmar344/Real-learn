@@ -10,6 +10,11 @@ export const metadata: Metadata = {
   title: "Legal — Privacy, Terms, and Cookie Policy",
   description:
     "Read RealLearn's privacy policy, terms of service, and cookie policy.",
+  // Override the root layout's inherited canonical "/" — without this Google
+  // treats the legal hub as a duplicate of the homepage.
+  alternates: {
+    canonical: "/legal/",
+  },
 };
 
 export default async function LegalPage({ searchParams }: { searchParams: SearchParams }) {
