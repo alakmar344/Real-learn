@@ -217,7 +217,7 @@ export default function ProgressPage() {
 
             {/* Lifetime stats */}
             <Card className="flow-gap">
-              <h3 className="flow-card__title">Lifetime stats</h3>
+              <h2 className="flow-card__title">Lifetime stats</h2>
               <div className="stat-band">
                 <StatTile label="Journeys" value={s.lessonsCompleted} accent />
                 <StatTile label="Quizzes passed" value={s.partsPassed} />
@@ -231,7 +231,7 @@ export default function ProgressPage() {
             {/* Activity */}
             <div className="flow-gap progress-activity">
               <Card>
-                <h3 className="flow-card__title">Activity</h3>
+                <h2 className="flow-card__title">Activity</h2>
                 <ActivityHeatmap history={s.history} />
               </Card>
             </div>

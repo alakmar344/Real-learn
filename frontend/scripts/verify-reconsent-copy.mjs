@@ -11,21 +11,20 @@ function extractArray(name) {
 }
 
 test("re-consent change summary", async (t) => {
-  await t.test("privacy re-consent lists only the current NVIDIA provider-routing change", () => {
+  await t.test("privacy re-consent lists only the current v3.0 hosting/data-minimization changes", () => {
     const policy = extractArray("POLICY_CHANGES");
-    assert.match(policy, /version 2\.9/i);
-    assert.match(policy, /NVIDIA NIM/);
-    assert.match(policy, /Cerebras/);
-    assert.match(policy, /Cloudflare Workers AI/);
-    assert.doesNotMatch(policy, /version 2\.8|since v2\.4|since v2\.3|feedback|personalization|MongoDB Atlas|IP addresses are anonymized/i);
+    assert.match(policy, /version 3\.0/i);
+    assert.match(policy, /Vercel/);
+    assert.match(policy, /Render/);
+    assert.match(policy, /data minimization/i);
+    // Stale bullets from earlier bumps must not linger.
+    assert.doesNotMatch(policy, /version 2\.9|version 2\.8|since v2\.4|since v2\.3|feedback|personalization|MongoDB Atlas|IP addresses are anonymized/i);
   });
 
-  await t.test("terms re-consent lists only the current NVIDIA provider-routing change", () => {
+  await t.test("terms re-consent states the ToS are unchanged at v2.7", () => {
     const terms = extractArray("TERMS_CHANGES");
     assert.match(terms, /version 2\.7/i);
-    assert.match(terms, /NVIDIA NIM/);
-    assert.match(terms, /Cerebras/);
-    assert.match(terms, /Cloudflare Workers AI/);
+    assert.match(terms, /unchanged/i);
     assert.doesNotMatch(terms, /version 2\.6|Version 2\.5|feedback|personalization|saved lesson history/i);
   });
 });

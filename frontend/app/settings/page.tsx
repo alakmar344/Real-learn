@@ -446,13 +446,17 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label className="flow-label">Language</label>
-              <LanguageSelector value={language} onChange={setLanguage} />
+              <label className="flow-label" htmlFor="settings-language">
+                Language
+              </label>
+              <LanguageSelector id="settings-language" value={language} onChange={setLanguage} />
             </div>
 
             <div>
-              <label className="flow-label">Learning level</label>
-              <LevelSelector value={level} onChange={setLevel} />
+              <label className="flow-label" htmlFor="settings-level">
+                Learning level
+              </label>
+              <LevelSelector id="settings-level" value={level} onChange={setLevel} />
             </div>
 
             <div>

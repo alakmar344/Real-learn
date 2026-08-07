@@ -21,11 +21,12 @@ const ALLOWED_PATHS_WHEN_DECLINED = ["/sign-in", "/sign-up", "/legal"];
 // When the legal versions change, update these bullets and the verification
 // subtests in scripts/verify-reconsent-copy.mjs together.
 const POLICY_CHANGES = [
-  "Privacy Policy updated to version 2.9: RealLearn now lists NVIDIA NIM as the automatic AI fallback after Cerebras, with Cloudflare Workers AI moved to a last-resort provider role. Because this is a material provider-routing disclosure change, all users are re-prompted to review and re-accept.",
+  "Privacy Policy updated to version 3.0: RealLearn now discloses its hosting infrastructure providers — Vercel (serves the web app) and Render (hosts the backend API) — which transiently process network request data such as IP addresses to deliver the service.",
+  "The policy also corrects where your email address lives: it is held by Clerk, our authentication provider, and our database stores the verified email from your authenticated session alongside consent records. The app no longer transmits your email address in request bodies — the server reads it directly from your verified authentication token (data minimization).",
 ];
 
 const TERMS_CHANGES = [
-  "Terms of Service updated to version 2.7: RealLearn now lists NVIDIA NIM as the automatic AI fallback after Cerebras, with Cloudflare Workers AI moved to a last-resort provider role. Because this is a material provider-routing change, all users are re-prompted to review and re-accept.",
+  "Terms of Service are unchanged (still version 2.7, which lists NVIDIA NIM as the automatic AI fallback after Cerebras and Cloudflare Workers AI as the last-resort provider). You are re-accepting them alongside the updated Privacy Policy.",
 ];
 
 // Build year/month options once
@@ -191,11 +192,7 @@ export default function PreSignInConsent() {
             // signed in). The DB has no record yet because that anonymous save
             // couldn't POST without auth. Tie that EXISTING explicit consent to
             // the account instead of re-prompting for the same version.
-            const email =
-              user?.primaryEmailAddress?.emailAddress ||
-              user?.emailAddresses?.[0]?.emailAddress ||
-              "";
-            const ok = await syncLegalConsentToBackend(getToken, parsed, email);
+            const ok = await syncLegalConsentToBackend(getToken, parsed);
             if (cancelled) return;
             if (ok && user?.id) {
               writeLegalConsent({
@@ -280,13 +277,11 @@ export default function PreSignInConsent() {
         const response = await fetch(`${backendUrl}/api/legal-consent`, {
           method: "POST",
           headers,
+          // No email in the body: the backend reads the verified email
+          // directly from the Clerk JWT token (data minimization).
           body: JSON.stringify({
             accepted: true,
             timestamp: consent.timestamp,
-            email:
-              user?.primaryEmailAddress?.emailAddress ||
-              user?.emailAddresses?.[0]?.emailAddress ||
-              "",
             privacyVersion: CURRENT_PRIVACY_VERSION,
             termsVersion: CURRENT_TERMS_VERSION,
           }),
@@ -437,7 +432,7 @@ export default function PreSignInConsent() {
               </select>
             </div>
             {ageStatus === "under13" && (
-              <p style={{ margin: "10px 0 0", fontSize: 13, color: "var(--wrong)", lineHeight: 1.5 }}>
+              <p style={{ margin: "10px 0 0", fontSize: 13, color: "var(--danger)", lineHeight: 1.5 }}>
                 RealLearn is designed for learners aged 13 and older. We cannot create
                 an account for you at this time. Thank you for your interest!
               </p>

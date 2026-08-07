@@ -52,9 +52,9 @@ export default function ToastContainer() {
   // Only the toast items themselves come and go.
   const accentFor = (type: Toast["type"]) =>
     type === "success"
-      ? "var(--correct)"
+      ? "var(--success)"
       : type === "error"
-        ? "var(--wrong)"
+        ? "var(--danger)"
         : "var(--accent)";
 
   return (
@@ -74,7 +74,8 @@ export default function ToastContainer() {
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          role="status"
+          // Errors interrupt (assertive); success/info wait their turn.
+          role={toast.type === "error" ? "alert" : "status"}
           style={{
             padding: "10px 16px",
             borderRadius: "var(--radius-md)",

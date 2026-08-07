@@ -143,11 +143,11 @@ export default function ConfirmModal({
             onClick={onConfirm}
             style={{
               border: destructive
-                ? "1px solid var(--wrong)"
+                ? "1px solid var(--danger)"
                 : "1px solid var(--accent)",
               borderRadius: "var(--radius-md)",
-              background: destructive ? "var(--wrong-bg)" : "var(--accent)",
-              color: destructive ? "var(--wrong)" : "var(--on-accent)",
+              background: destructive ? "var(--danger-bg)" : "var(--accent)",
+              color: destructive ? "var(--danger)" : "var(--on-accent)",
               padding: "10px 18px",
               cursor: "pointer",
               fontSize: 14,

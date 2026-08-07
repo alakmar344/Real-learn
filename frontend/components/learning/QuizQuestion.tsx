@@ -3,6 +3,8 @@
 import { useCallback, useRef, memo } from "react";
 import { QuizQuestion as Question } from "@/types";
 import MathText from "@/components/shared/MathText";
+import { useLessonStore } from "@/store/lessonStore";
+import { contentLangAttrs } from "@/lib/locale";
 
 interface Props {
   question: Question;
@@ -27,6 +29,10 @@ const QuizQuestionBase = ({
   onSelect,
 }: Props) => {
   const optionRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  // Quiz text is model-generated in the lesson language — mark it so screen
+  // readers switch voices (WCAG 3.1.2). Surrounding UI chrome stays English.
+  const lessonLanguage = useLessonStore((s) => s.lesson?.language);
+  const langAttrs = contentLangAttrs(lessonLanguage);
 
   const options = question.options ?? [];
   const optionCount = options.length;
@@ -75,8 +81,8 @@ const QuizQuestionBase = ({
       <p className="quiz-question__meta">
         Question {index + 1} of {totalQuestions}
       </p>
-      <p className="quiz-question__text"><MathText text={question.question} /></p>
-      <div role="radiogroup" aria-label="Answer options" className="quiz-question__options">
+      <p className="quiz-question__text" {...langAttrs}><MathText text={question.question} /></p>
+      <div role="radiogroup" aria-label="Answer options" className="quiz-question__options" {...langAttrs}>
         {options.map((option, optionIndex) => {
           const isSelected = selectedIndex === optionIndex;
           const isCorrect = question.correctIndex === optionIndex;
@@ -119,6 +125,7 @@ const QuizQuestionBase = ({
         <div
           className={`quiz-question__explanation ${explanationState} animate-fade-up`}
           role="alert"
+          {...langAttrs}
         >
           <MathText text={question.explanation} />
         </div>

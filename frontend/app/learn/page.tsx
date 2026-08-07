@@ -400,7 +400,7 @@ export default function LearnPage() {
         <main className="flow-page">
           <Navbar />
           <div className="learn-empty">
-            <h2 className="learn-empty__title">No lesson loaded yet</h2>
+            <h1 className="learn-empty__title">No lesson loaded yet</h1>
             <p className="learn-empty__sub">
               Head back home and ask a question to start learning.
             </p>

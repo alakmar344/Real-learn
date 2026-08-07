@@ -21,9 +21,11 @@ interface Props {
   value: Language;
   onChange: (value: Language) => void;
   compact?: boolean;
+  /** Lets an external visible <label htmlFor> bind to the select. */
+  id?: string;
 }
 
-export default function LanguageSelector({ value, onChange, compact = false }: Props) {
+export default function LanguageSelector({ value, onChange, compact = false, id }: Props) {
   return (
     <label
       style={{
@@ -33,6 +35,7 @@ export default function LanguageSelector({ value, onChange, compact = false }: P
       }}
     >
       <select
+        id={id}
         aria-label="Language"
         value={value}
         onChange={(e) => onChange(e.target.value as Language)}

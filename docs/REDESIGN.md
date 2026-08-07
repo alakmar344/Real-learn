@@ -398,3 +398,21 @@ Same design, dials turned — a token-level pass over `globals.css` only:
   brush dash), stat-tile labels (both generations), part-card tags, quiz
   meta, flashcard tags, sidebar list titles, resume-card kicker, hero
   ticker. New `.micro-label` utility for future surfaces.
+
+## Addendum — 2026-08-07: Semantic state token layer
+
+The state colors got a proper semantic API in `globals.css`:
+
+- **New tokens (both themes)** — `--success`, `--danger`, `--warning`,
+  `--info`, each with a `-bg` wash. Dark values reuse the established
+  emerald/rose plus sky `#38BDF8` and amber `#FBBF24`; light-mode warning
+  `#A16207` and info `#0369A1` run one shade deeper than the subject-chip
+  ambers/skies so they hold ≥4.5:1 as text on warm cream `#FAF9F3`.
+- **Quiz aliases** — `--correct`/`--wrong` (and `-bg`) are now defined as
+  `var(--success)`/`var(--danger)` aliases. Quiz/journey surfaces keep the
+  domain names; every non-quiz consumer (danger buttons, error toasts,
+  mic-recording state, char-count warning, goal-met ring) was moved onto
+  the semantic names.
+- **Housekeeping** — the duplicated global `prefers-reduced-motion`
+  kill-switch block was removed; the canonical copy lives in the perf-tier
+  section.

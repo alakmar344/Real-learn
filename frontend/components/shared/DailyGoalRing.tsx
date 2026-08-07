@@ -39,7 +39,7 @@ export default function DailyGoalRing({
           cy={size / 2}
           r={r}
           fill="none"
-          stroke={met ? "var(--correct)" : "var(--accent)"}
+          stroke={met ? "var(--success)" : "var(--accent)"}
           strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={c}
@@ -57,7 +57,7 @@ export default function DailyGoalRing({
             placeItems: "center",
             fontSize: size * 0.3,
             fontWeight: 700,
-            color: met ? "var(--correct)" : "var(--text-primary)",
+            color: met ? "var(--success)" : "var(--text-primary)",
             lineHeight: 1,
           }}
         >

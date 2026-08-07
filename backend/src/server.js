@@ -437,7 +437,7 @@ const SPEECH_LANG_TO_VOICE = {
   "en-US": "en-US-AriaNeural",
 };
 
-const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "2.9";
+const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "3.0";
 const TERMS_OF_SERVICE_VERSION = process.env.TERMS_OF_SERVICE_VERSION || "2.7";
 const COOKIE_POLICY_VERSION = process.env.COOKIE_POLICY_VERSION || "2.3";
 
@@ -950,18 +950,15 @@ app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
     if (!clerkId) {
       return res.status(400).json({ error: "Could not determine the authenticated user" });
     }
-    // Security: the email is derived ONLY from the verified token. A
-    // client-supplied body email is never trusted — an attacker could stamp a
-    // victim's address onto their own consent record and pollute the victim's
-    // data-subject requests. When the token carries no email claim, we store
-    // an empty string and rely on clerkId as the sole identity key.
-    // HOWEVER: Clerk JWTs do not include email claims — only sub (userId),
-    // sid, iss, exp, azp. So we fall back to the request body email, which
-    // is safe because the user is already authenticated (JWT verified).
-    const emailFromToken = req.auth?.email || req.auth?.email_address || "";
-    // Security: NEVER trust client-supplied email — use empty string instead.
-    // clerkId is the canonical identity key for all data-subject requests.
-    const email = "";
+    // Security: the email is derived ONLY from the verified Clerk JWT token,
+    // never from the request body — an attacker could stamp a victim's address
+    // onto their own consent record. The token carries the email as a verified
+    // claim from Clerk, so we trust it and mark emailVerified accordingly.
+    const email =
+      req.auth?.email ||
+      req.auth?.email_address ||
+      (Array.isArray(req.auth?.email_addresses) ? req.auth.email_addresses[0] : "") ||
+      "";
 
   const db = await getDb();
   const collection = db.collection("agreements");
@@ -971,8 +968,8 @@ app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
     $set: {
       accepted,
       email,
-      emailVerified: false,
-      emailSource: "none",
+      emailVerified: Boolean(email),
+      emailSource: email ? "clerk-token" : "none",
       clerkId,
         // Privacy (policy v2.3): store only the anonymized network prefix,
         // never the full client IP (see anonymizeIp above).
@@ -1212,17 +1209,23 @@ app.post("/api/legal-consent", rateLimit, requireAuth, async (req, res) => {
     if (!clerkId) {
       return res.status(400).json({ error: "Could not determine the authenticated user" });
     }
-    // Security: NEVER trust client-supplied email — use empty string instead.
-    // clerkId is the canonical identity key for all data-subject requests.
-    const email = "";
+    // Security: the email is derived ONLY from the verified Clerk JWT token,
+    // never from the request body — an attacker could stamp a victim's address
+    // onto their own consent record. The token carries the email as a verified
+    // claim from Clerk, so we trust it and mark emailVerified accordingly.
+    const email =
+      req.auth?.email ||
+      req.auth?.email_address ||
+      (Array.isArray(req.auth?.email_addresses) ? req.auth.email_addresses[0] : "") ||
+      "";
 
     const filter = { clerkId, type: "legal-consent" };
     const update = {
       $set: {
         accepted,
         email,
-        emailVerified: false,
-        emailSource: "none",
+        emailVerified: Boolean(email),
+        emailSource: email ? "clerk-token" : "none",
         clerkId,
         ageBracket: sanitizedAgeBracket,
         // Privacy (policy v2.3): store only the anonymized network prefix,
