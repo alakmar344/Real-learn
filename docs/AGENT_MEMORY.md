@@ -192,6 +192,12 @@ Available component classes (already implemented — use them):
   letter-spaced; the same voice worn by section overlines, stat-tile labels,
   part-card tags, quiz meta, and sidebar list titles)
 
+- Semantic state tokens: `--success`/`--danger`/`--warning`/`--info`
+  (+ `-bg` washes) are the canonical state colors in both themes; the
+  quiz-domain `--correct`/`--wrong` are aliases of `--success`/`--danger`
+  and are reserved for quiz/journey surfaces. Non-quiz error/success UI
+  must use the semantic names.
+
 **Rules:**
 - New layout = add a class to `globals.css`, then use it. Do not inline a
   15-property style object.
@@ -260,6 +266,12 @@ Target: WCAG 2.1 AA. Non-negotiables:
 - Live regions (`aria-live`) for toasts, loading, quiz feedback.
 - `prefers-reduced-motion` respected everywhere.
 - Skip-to-content link present.
+- Generated lesson text (12 languages) carries `lang` + `dir` attributes via
+  `lib/locale.ts` (`contentLangAttrs()`, `dir="rtl"` for Urdu) — apply it to
+  any NEW surface that renders model-generated content (WCAG 3.1.2).
+- One `h1` per page, no skipped heading levels. The standalone legal routes
+  render their title as `h1`; the `/legal` hub embeds the same content at
+  `h2` via the `embedded` prop on `app/legal/*/content.tsx`.
 
 ---
 
@@ -653,3 +665,20 @@ this protocol. No exceptions.**
     how-it-works numbers become grid beads, `.rl-card` hover restrained
     to a -2px lift. Verified: tsc/lint/build clean, verify:quiz +
     verify:achievements pass, backend tests 35/35.
+- 2026-08-07 — **Semantic color layer + a11y compliance pass + Privacy v3.0
+    reconsent.** New semantic state tokens `--success`/`--danger`/`--warning`/
+    `--info` (+ `-bg`) in both themes; `--correct`/`--wrong` became aliases and
+    all non-quiz consumers moved to the semantic names (§5 updated). A11y:
+    generated lesson text now carries `lang`/`dir` via new `lib/locale.ts`
+    (shared with useSpeech; PartCard, quiz, flashcards, summary cards); legal
+    routes gained real `h1`s (content split to `app/legal/*/content.tsx` with
+    an `embedded` prop for the hub); progress/learn heading levels fixed;
+    settings selector labels `htmlFor`-bound; error toasts `role="alert"`;
+    duplicate reduced-motion block removed (§8 updated). Legal: Privacy Policy
+    v3.0 discloses Vercel + Render as hosting processors, corrects that our DB
+    stores no email (Clerk holds it), and the frontend stopped transmitting
+    email with consent POSTs (backend always discarded it);
+    `CURRENT_PRIVACY_VERSION` 3.0 frontend + backend → all users re-prompted;
+    Terms stay v2.7, Cookie Policy stays v2.3 (no cookie re-prompt);
+    verify:reconsent updated. Verified: tsc/lint/build clean, all verify
+    scripts pass, backend tests 35/35.
