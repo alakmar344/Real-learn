@@ -982,6 +982,12 @@ vendors). All of these live between `2b239b5` (start) and now:
 
 
 
+- 2026-08-08 — **Dead-code and dependency cleanup (production audit).** Removed confirmed unused code and packages after exhaustive cross-reference audit:
+  - Backend: deleted `backend/src/lib/lruCache.js` (`createLruCache` was defined but never imported); removed unused `validator` package from `backend/package.json`; removed deprecated `callFallbackAI` export from `lib/gemma.js` (alias for `callCloudflareAI`, never called); deleted `/api/auth-debug` endpoint (debug-only token inspection, no consumer); deleted `/api/search-lessons` endpoint (no frontend consumer). Cleaned up now-unused imports (`inspectToken`, `verifyClerkToken`, `searchCachedLessons`, `sanitizeSearchQuery`) from `server.js`.
+  - Frontend: removed unused `lodash-es` + `@types/lodash-es` from `frontend/package.json` (zero imports in source).
+  - Misc: deleted orphaned `file_0000000078787207a9fa12684651e2b4.png` from repo root; removed unauthenticated `/api/webhooks(.*)` pattern from `frontend/middleware.ts` (no backend webhook handler exists).
+  - Docs: `llms-full.txt` and `docs/AGENT_MEMORY.md` were updated during cleanup to drop references to the removed endpoint and file, then restored to their original state on request so the documentation continues to reflect the full API surface. Verified: `node --check` clean on all modified backend/frontend source files.
+
 - 2026-07-30 — **Cyber Aqua Gen Z Redesign & Security Fixes.** Fixed CORS null-origin bypass (rejected null origins instead of allowing them). Removed client-supplied email fallback — `clerkId` is now the sole identity key. Replaced purple/violet palette (violated owner's rule) with electric cyan (`#06B6D4`)/teal (`#0891B2`) primary, hot pink (`#EC4899`) energy companion, emerald success, deep space dark mode default. Purple/violet purged from all 12 files: globals.css, themes.ts, palette.ts, layout.tsx, ThemeApplier.tsx, page.tsx, and components. Updated README and AGENT_MEMORY.md. No gold (per user request). Verified: tsc clean, lint clean, build clean.
 - 2026-07-31 — **Docs accuracy cleanup.** Scanned every doc against the codebase and corrected all stale facts:
   - README: backend default port `5000` → `10000`.
