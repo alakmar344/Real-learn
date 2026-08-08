@@ -174,8 +174,10 @@ RealLearn AI/
 | `/api/legal-consent/status` | GET | Check current legal consent status (authenticated) |
 | `/api/export-data` | GET | Export all of a user's stored data as JSON (authenticated) |
 | `/api/account` | DELETE | Permanently delete a user's data and Clerk account (authenticated) |
+| `/api/search-lessons` | GET | Search previously cached lessons (authenticated, rate-limited) |
 | `/api/tts` | POST | Server-side text-to-speech synthesis (authenticated, rate-limited) |
 | `/api/feedback` | POST | Store an anonymous review (public, tightly rate-limited) |
+| `/api/auth-debug` | GET | Diagnostic token inspection — requires auth, production-gated (rate-limited) |
 | `/health` | GET | Operational health check |
 
 ---
