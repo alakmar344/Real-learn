@@ -344,14 +344,16 @@ body {
     radial-gradient(65vmax 65vmax at 10% 10%, var(--aurora-1), transparent 70%),
     radial-gradient(75vmax 65vmax at 90% 90%, var(--aurora-2), transparent 75%),
     radial-gradient(55vmax 55vmax at 50% 50%, var(--aurora-3), transparent 70%),
-    radial-gradient(60vmax 50vmax at 85% 12%, var(--aurora-4), transparent 72%);
+    radial-gradient(60vmax 50vmax at 85% 12%, var(--aurora-4), transparent 72%),
+    /* A focused accent spotlight adds depth behind the hero card. */
+    radial-gradient(50vmax 50vmax at 50% 35%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 65%);
   opacity: 1;
   /* the drift the comment always promised — transform-only, alternate loop */
-  animation: auroraDrift 85s ease-in-out infinite alternate;
+  animation: auroraDrift 120s var(--ease-elegant) infinite alternate;
 }
 @keyframes auroraDrift {
-  from { transform: translate3d(-1.5%, -1%, 0) scale(1); }
-  to { transform: translate3d(1.5%, 1.5%, 0) scale(1.05); }
+  from { transform: translate3d(-2%, -1.5%, 0) scale(1); }
+  to { transform: translate3d(2%, 1.5%, 0) scale(1.06); }
 }
 @media (prefers-reduced-motion: reduce) {
   .aurora-bg { animation: none; }
@@ -1829,7 +1831,7 @@ a:active {
   }
   .app-sidebar {
     transform: translateX(-100%);
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-elegant-lg);
     visibility: hidden;
     transition:
       transform 400ms var(--ease-reveal),
@@ -4066,6 +4068,30 @@ p {
   box-shadow: var(--shadow-float), var(--shadow-glow-accent);
 }
 
+/* ── Quiz progress dots ── elegant step indicator above the question. */
+.quiz-progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.quiz-progress__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--border-default);
+  transition: background 250ms var(--ease-color), transform 250ms var(--ease-spring);
+}
+.quiz-progress__dot--answered {
+  background: var(--accent);
+}
+.quiz-progress__dot--current {
+  background: var(--accent);
+  transform: scale(1.4);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
 /* ── Quiz question ── option rows, letter chips, explanation. */
 .quiz-question__meta {
   margin: 0 0 8px;
@@ -4244,7 +4270,7 @@ p {
   background: var(--surface-glass);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-  box-shadow: var(--shadow-float);
+  box-shadow: var(--shadow-elegant-lg);
 }
 .flashcards__head {
   display: flex;
@@ -4648,7 +4674,7 @@ p {
   padding: clamp(28px, 5vw, 48px);
   position: relative;
   overflow: hidden;
-  box-shadow: var(--shadow-float);
+  box-shadow: var(--shadow-elegant-lg);
 }
 .completion__hero {
   display: flex;
@@ -6210,11 +6236,13 @@ h3,
 @keyframes rise-in {
   from {
     opacity: 0;
-    translate: 0 14px;
+    translate: 0 18px;
+    scale: 0.99;
   }
   to {
     opacity: 1;
     translate: 0 0;
+    scale: 1;
   }
 }
 @supports (animation-timeline: view()) {
@@ -6223,10 +6251,13 @@ h3,
     html:not([data-perf="low"]) .stat-tile,
     html:not([data-perf="low"]) .stat-tile-2026,
     html:not([data-perf="low"]) .part-card,
-    html:not([data-perf="low"]) .resume-card {
+    html:not([data-perf="low"]) .resume-card,
+    html:not([data-perf="low"]) .flashcards,
+    html:not([data-perf="low"]) .hero-glass-card,
+    html:not([data-perf="low"]) .progress-hero-card {
       animation: rise-in linear both;
       animation-timeline: view();
-      animation-range: entry 0% entry 35%;
+      animation-range: entry 0% entry 30%;
     }
   }
 }
@@ -6304,6 +6335,227 @@ h3,
 }
 
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Elegant Modern UI Refinements
+   A cohesive polish pass: softer shadows, refined focus rings, calmer
+   motion curves, and subtle atmospheric depth. All values derive from the
+   Olive Frenzy token set so the redesign stays maintainable and theme-safe.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Elegant shadow + glow tokens ── */
+:root {
+  /* Deeper, diffused shadows for floating glass cards */
+  --shadow-elegant-sm: 0 1px 2px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-elegant-md: 0 4px 6px rgba(0, 0, 0, 0.06), 0 12px 32px rgba(0, 0, 0, 0.12);
+  --shadow-elegant-lg: 0 12px 24px rgba(0, 0, 0, 0.08), 0 32px 64px rgba(0, 0, 0, 0.14);
+
+  /* Soft accent glows that bloom behind focused/elevated surfaces */
+  --glow-soft: 0 0 24px var(--accent-glow);
+  --glow-strong: 0 0 48px color-mix(in srgb, var(--accent) 24%, transparent);
+
+  /* A calm, luxurious easing curve for large surfaces */
+  --ease-elegant: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html[data-theme="light"] {
+  --shadow-elegant-sm: 0 1px 2px rgba(31, 35, 24, 0.04), 0 4px 12px rgba(31, 35, 24, 0.05);
+  --shadow-elegant-md: 0 4px 6px rgba(31, 35, 24, 0.03), 0 12px 32px rgba(31, 35, 24, 0.07);
+  --shadow-elegant-lg: 0 12px 24px rgba(31, 35, 24, 0.04), 0 32px 64px rgba(31, 35, 24, 0.08);
+}
+
+/* ── Atmospheric spotlight ── a single, slow-moving radial wash that gives
+   the page quiet depth without competing with content. Transform-only. */
+.ambient-spotlight {
+  position: fixed;
+  inset: -20%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(80vmax 80vmax at 20% 20%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 65%),
+    radial-gradient(70vmax 70vmax at 80% 80%, color-mix(in srgb, var(--accent-companion) 6%, transparent), transparent 60%);
+  opacity: 0.8;
+  animation: spotlightDrift 60s ease-in-out infinite alternate;
+  contain: layout style paint;
+}
+@keyframes spotlightDrift {
+  from { transform: translate3d(-2%, -2%, 0) scale(1); }
+  to { transform: translate3d(2%, 2%, 0) scale(1.06); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ambient-spotlight { animation: none; }
+}
+html[data-perf="low"] .ambient-spotlight { display: none; }
+
+/* ── Refined focus ring ── consistent, calm, accessible across all themes. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+  transition: outline-offset 120ms var(--ease-color);
+}
+
+/* ── Primary button polish ── inner sheen + refined press. */
+.btn-primary {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    var(--shadow-glow-accent);
+}
+.btn-primary:hover,
+.btn-primary:focus-visible {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    var(--shadow-elegant-md),
+    var(--glow-soft);
+  filter: brightness(1.05);
+}
+.btn-primary:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.18),
+    0 1px 2px rgba(0, 0, 0, 0.1);
+  transition: transform 90ms var(--ease-color), box-shadow 90ms var(--ease-color);
+}
+
+/* ── Ghost button polish ── softer lift and glow on hover. */
+.btn-ghost:hover,
+.btn-ghost:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-elegant-sm), 0 0 20px var(--accent-glow);
+}
+
+/* ── Hero greeting entrance ── the script title drifts in gently. */
+.hero__title {
+  animation: greetingEnter 900ms var(--ease-elegant) both;
+}
+@keyframes greetingEnter {
+  from {
+    opacity: 0;
+    transform: rotate(-2.5deg) translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(-1.5deg) translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero__title { animation: none; }
+}
+
+/* ── Question input polish ── calmer focus glow and elegant hover. */
+.q-form {
+  box-shadow: var(--shadow-elegant-lg);
+}
+.q-form--focused {
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--border-glow));
+  box-shadow:
+    var(--shadow-elegant-lg),
+    0 0 0 3px var(--accent-glow),
+    var(--glow-soft);
+  transform: translateY(-3px);
+}
+.q-form__textarea::placeholder {
+  color: var(--text-tertiary);
+  opacity: 0.65;
+  transition: opacity 200ms var(--ease-color);
+}
+.q-form--focused .q-form__textarea::placeholder {
+  opacity: 0.4;
+}
+
+/* ── Mode glider polish ── subtle inner glow behind the sliding pill. */
+.mode-glider {
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+.mode-glider__pill {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+/* ── Part card polish ── refined hover lift and soft inner accent line. */
+.part-card {
+  box-shadow: var(--shadow-elegant-lg);
+}
+.part-card:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    var(--shadow-elegant-lg),
+    var(--glow-soft);
+}
+.part-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 24px;
+  right: 24px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-glow), transparent);
+  opacity: 0;
+  transition: opacity 400ms var(--ease-color);
+}
+.part-card:hover::before {
+  opacity: 1;
+}
+
+/* ── Quiz sheet polish ── centered panel with refined depth. */
+.quiz-sheet__panel {
+  box-shadow:
+    var(--shadow-elegant-lg),
+    0 0 0 1px var(--border-subtle);
+}
+.quiz-sheet__accent {
+  height: 4px;
+  filter: brightness(1.1);
+}
+.quiz-sheet__close {
+  border: 1px solid var(--border-subtle);
+}
+
+/* ── Quiz option polish ── refined selected state. */
+.quiz-question__option {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+.quiz-question__option:hover:not(:disabled),
+.quiz-question__option:focus-visible:not(:disabled) {
+  box-shadow: 0 0 0 3px var(--accent-glow), var(--shadow-elegant-sm);
+}
+
+/* ── Card / glass hover polish ── unify large floating surfaces. */
+.hero-glass-card,
+.progress-hero-card,
+.settings-panel-glass,
+.not-found-canvas,
+.auth-glass-card {
+  box-shadow: var(--shadow-elegant-lg);
+}
+.hero-glass-card:hover {
+  box-shadow: var(--shadow-elegant-lg), var(--glow-soft);
+}
+
+/* ── Resume card polish ── consistent with part-card hover language. */
+.resume-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-elegant-md), var(--glow-soft);
+}
+
+/* ── Navbar polish ── softer glass edge and subtle shadow. */
+.navbar {
+  box-shadow:
+    var(--glass-edge),
+    var(--shadow-elegant-sm);
+}
+.navbar--home {
+  box-shadow: var(--shadow-elegant-sm);
+}
+
+/* ── Sidebar polish ── refined list hover. */
+.journey-item__open:hover,
+.journey-item__open:focus-visible {
+  background: var(--bg-card-hover);
+  transform: translateX(3px);
+}
 
 /* ── Olive Frenzy — script accents + kinetic ticker ─────────────────────
    The "frenzy" is kinetic composition: oversized script cutting through
