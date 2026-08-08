@@ -76,7 +76,7 @@ Real-learn/
 │       ├── lib/prompts.js     GENERATE_LESSON_PROMPT + GENERATE_FAST_ANSWER_PROMPT
 │       ├── lib/serper.js      live news grounding
 │       ├── lib/moderation.js  regex + LLM moderation
-│       ├── lib/lessonCache.js + lruCache.js   two-tier caching
+│       ├── lib/lessonCache.js   two-tier caching
 │       ├── lib/auth.js        Clerk JWT verify (jose)
 │       └── lib/mongodb.js
 └── docs/, *.md         this file + README, GEMINI.md, AGENT_INSTRUCTIONS.md,
