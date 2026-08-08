@@ -1,6 +1,5 @@
 import crypto from "node:crypto";
 import { Address4, Address6 } from "ip-address";
-import isEmail from "validator/lib/isEmail.js";
 import compression from "compression";
 import cors from "cors";
 import express from "express";
@@ -149,17 +148,6 @@ function anonymizeIp(ip) {
   }
 }
 
-// Security: consent endpoints fall back to a body-supplied email (Clerk JWTs
-// carry no email claim). That value is attacker-controlled, so accept it only
-// when it looks like a real address (single @, no whitespace, dotted domain,
-// RFC 3696 max of 320 chars) — anything else is stored as "".
-function sanitizeClientEmail(raw) {
-  if (typeof raw !== "string") return "";
-  const email = raw.trim();
-  if (email.length === 0 || email.length > 320) return "";
-  return isEmail(email) ? email : "";
-}
-
 // One-time cleanup (policy v2.3): earlier releases stored the RAW client IP
 // in consent records. Retroactively anonymize every stored deviceIp so no
 // full IP address remains anywhere in the agreements collection. Runs in the
@@ -201,6 +189,38 @@ async function scrubStoredConsentIps() {
     // Non-fatal: the scrub retries on next boot; new writes are already
     // anonymized at the source.
     console.error("[privacy] Failed to scrub legacy consent IPs", error?.message);
+  }
+}
+
+// One-time cleanup (policy v3.2): earlier releases stored the verified Clerk
+// email (plus emailVerified/emailSource) on consent records, contradicting
+// the Privacy Policy statement that the email address is held only by Clerk.
+// Retroactively remove the fields from every record; new writes no longer
+// include them (and actively $unset them). Runs in the background at
+// startup; safe to run repeatedly (a no-op once the fields are gone).
+async function scrubStoredConsentEmails() {
+  try {
+    const db = await getDb();
+    const collection = db.collection("agreements");
+    const result = await collection.updateMany(
+      {
+        $or: [
+          { email: { $exists: true } },
+          { emailVerified: { $exists: true } },
+          { emailSource: { $exists: true } },
+        ],
+      },
+      { $unset: { email: "", emailVerified: "", emailSource: "" } }
+    );
+    if (result.modifiedCount > 0) {
+      console.log(
+        `[privacy] Removed stored email fields from ${result.modifiedCount} legacy consent record(s)`
+      );
+    }
+  } catch (error) {
+    // Non-fatal: the scrub retries on next boot; new writes no longer
+    // persist the email at the source.
+    console.error("[privacy] Failed to scrub legacy consent emails", error?.message);
   }
 }
 
@@ -437,8 +457,8 @@ const SPEECH_LANG_TO_VOICE = {
   "en-US": "en-US-AriaNeural",
 };
 
-const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "3.1";
-const TERMS_OF_SERVICE_VERSION = process.env.TERMS_OF_SERVICE_VERSION || "2.8";
+const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "3.2";
+const TERMS_OF_SERVICE_VERSION = process.env.TERMS_OF_SERVICE_VERSION || "2.9";
 const COOKIE_POLICY_VERSION = process.env.COOKIE_POLICY_VERSION || "2.3";
 
 // ── Input validation limits (security: bound prompt size and lock free-text
@@ -950,16 +970,6 @@ app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
     if (!clerkId) {
       return res.status(400).json({ error: "Could not determine the authenticated user" });
     }
-    // Security: the email is derived ONLY from the verified Clerk JWT token,
-    // never from the request body — an attacker could stamp a victim's address
-    // onto their own consent record. The token carries the email as a verified
-    // claim from Clerk, so we trust it and mark emailVerified accordingly.
-    const email =
-      req.auth?.email ||
-      req.auth?.email_address ||
-      (Array.isArray(req.auth?.email_addresses) ? req.auth.email_addresses[0] : "") ||
-      "";
-
   const db = await getDb();
   const collection = db.collection("agreements");
 
@@ -967,9 +977,6 @@ app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
   const update = {
     $set: {
       accepted,
-      email,
-      emailVerified: Boolean(email),
-      emailSource: email ? "clerk-token" : "none",
       clerkId,
         // Privacy (policy v2.3): store only the anonymized network prefix,
         // never the full client IP (see anonymizeIp above).
@@ -985,6 +992,12 @@ app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
         cookieVersion: COOKIE_POLICY_VERSION,
         updatedAt: new Date(),
       },
+      // Privacy (policy v3.2): consent records must NOT contain the email —
+      // it lives only with Clerk, our authentication provider. The record is
+      // keyed to the verified clerkId, which is all deletion/export need.
+      // $unset also scrubs the legacy fields off any pre-v3.2 record the
+      // next time the user re-consents.
+      $unset: { email: "", emailVerified: "", emailSource: "" },
       $setOnInsert: {
         type: "cookie-consent",
         createdAt: new Date(),
@@ -1209,23 +1222,10 @@ app.post("/api/legal-consent", rateLimit, requireAuth, async (req, res) => {
     if (!clerkId) {
       return res.status(400).json({ error: "Could not determine the authenticated user" });
     }
-    // Security: the email is derived ONLY from the verified Clerk JWT token,
-    // never from the request body — an attacker could stamp a victim's address
-    // onto their own consent record. The token carries the email as a verified
-    // claim from Clerk, so we trust it and mark emailVerified accordingly.
-    const email =
-      req.auth?.email ||
-      req.auth?.email_address ||
-      (Array.isArray(req.auth?.email_addresses) ? req.auth.email_addresses[0] : "") ||
-      "";
-
     const filter = { clerkId, type: "legal-consent" };
     const update = {
       $set: {
         accepted,
-        email,
-        emailVerified: Boolean(email),
-        emailSource: email ? "clerk-token" : "none",
         clerkId,
         ageBracket: sanitizedAgeBracket,
         // Privacy (policy v2.3): store only the anonymized network prefix,
@@ -1242,6 +1242,10 @@ app.post("/api/legal-consent", rateLimit, requireAuth, async (req, res) => {
         termsVersion: TERMS_OF_SERVICE_VERSION,
         updatedAt: new Date(),
       },
+      // Privacy (policy v3.2): consent records must NOT contain the email —
+      // it lives only with Clerk. $unset scrubs the legacy fields off any
+      // pre-v3.2 record the next time the user re-consents.
+      $unset: { email: "", emailVerified: "", emailSource: "" },
       $setOnInsert: {
         createdAt: new Date(),
       },
@@ -1730,23 +1734,29 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
   };
 
   try {
-    // Run LLM input moderation concurrently with the real-world context fetch
-    // so the safety check adds no latency in the common (allowed) case.
-    // The Serper fetch runs in both fast and explain modes so even quick
-    // answers can benefit from current-events context when available.
+    // Run local rule-based input moderation concurrently with the real-world
+    // context fetch so the safety check adds no latency in the common
+    // (allowed) case.
+    // Privacy (policy v3.2): the Serper fetch runs ONLY in explain mode —
+    // the Privacy Policy promises that Fast-mode questions are never sent to
+    // the search service, so fast mode must not call Serper.
     sendEvent("progress", { stage: "starting", percent: 5 });
     const inputModerationPromise = moderateText(question, "input");
-    console.log("[Serper] Context fetch start", { requestId, mode });
+    if (mode === "explain") {
+      console.log("[Serper] Context fetch start", { requestId, mode });
+    }
     sendEvent("progress", { stage: "searching", percent: 15 });
     const [inputModeration, newsContextResult] = await Promise.all([
       inputModerationPromise,
-      fetchRealWorldContext(question, language).catch((error) => {
-        console.warn("[Serper] Context fetch failed, continuing without context", {
-          requestId,
-          error,
-        });
-        return null;
-      }),
+      mode === "explain"
+        ? fetchRealWorldContext(question, language).catch((error) => {
+            console.warn("[Serper] Context fetch failed, continuing without context", {
+              requestId,
+              error,
+            });
+            return null;
+          })
+        : Promise.resolve(null),
     ]);
     const newsContext = newsContextResult;
     const trimmedNewsContext =
@@ -2317,6 +2327,9 @@ try {
     // Privacy (policy v2.3): retroactively anonymize raw IPs stored by
     // earlier releases. Fire-and-forget; errors are logged, not fatal.
     void scrubStoredConsentIps();
+    // Privacy (policy v3.2): retroactively remove stored emails from consent
+    // records — the email lives only with Clerk. Fire-and-forget.
+    void scrubStoredConsentEmails();
     // DoS hardening: index the per-user query paths. Fire-and-forget.
     void ensureUserDataIndexes();
   });

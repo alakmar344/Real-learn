@@ -4,7 +4,8 @@
 // Tier 2: MongoDB with a TTL index — survives restarts and is shared across
 //         instances, so any server in the fleet benefits from any other's work.
 //
-// A cached lesson was already moderated (regex + LLM) and schema-validated the
+// A cached lesson was already moderated (local rule-based filters — no
+// third-party moderation call, see lib/moderation.js) and schema-validated the
 // first time it was generated, so a cache hit legitimately skips Serper, the
 // Gemma generation call, AND both moderation passes — turning a ~20-60s
 // pipeline into a single lookup.
