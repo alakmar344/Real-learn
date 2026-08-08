@@ -27,7 +27,7 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         Terms of Service
       </Title>
       <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
-        Last updated: August 7, 2026 (version 2.8)
+        Last updated: August 8, 2026 (version 2.9)
       </p>
 
       <section style={{ marginBottom: 28 }}>
@@ -131,8 +131,10 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
           still be generated. All responses are <strong>not reviewed by humans before being shown</strong>.
           To keep the Service reliable, if the primary provider is temporarily slow or unavailable,
           the same request is automatically retried and may be routed to NVIDIA or, if needed, the
-          Cloudflare last-resort provider; the model and content characteristics are equivalent,
-          and no human is involved in any path.
+          Cloudflare last-resort provider. The primary and NVIDIA paths run the same Gemma 4 31B
+          model; the Cloudflare last-resort path may run a <strong>smaller Gemma model variant</strong>,
+          so the style, depth, and quality of a lesson may vary between paths. No human is involved
+          in any path.
           Lessons are intentionally written in a warm, natural, conversational style that may feel
           like a human tutor — but every lesson, quiz, and explanation is machine-generated, and
           no human is involved in the conversation.
@@ -198,9 +200,13 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
           To the maximum extent permitted by law, RealLearn shall not be liable for any indirect,
           incidental, special, consequential, or punitive damages, or any loss of profits, data,
           or goodwill, arising out of or in connection with your use of the Service. Our total
-          liability to you for any claim arising out of these Terms shall not exceed the amount
-          you paid us in the twelve months prior to the event giving rise to the claim (which is
-          zero for our free service).
+          aggregate liability to you for all claims arising out of or relating to these Terms or
+          the Service shall not exceed the greater of (a) the amount you paid us in the twelve
+          months prior to the event giving rise to the claim (which is zero for our free service)
+          and (b) one thousand Indian Rupees (₹1,000). The Service is provided free of charge, and
+          you acknowledge that these limitations are a reasonable allocation of risk that reflects
+          the free nature of the Service. Nothing in this section limits liability that cannot
+          lawfully be limited.
         </p>
       </section>
 
@@ -322,11 +328,27 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
          <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>18. Changes to Terms</h3>
          <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
            We reserve the right to modify or replace these Terms at any time. If a revision is
-           material, we will provide at least 30 days&apos; notice prior to any new terms taking effect.
-           What constitutes a material change will be determined at our sole discretion. By
-           continuing to access or use the Service after any revisions become effective, you agree
-           to be bound by the updated terms.
+           material, we will notify you — typically by requiring you to review and re-accept the
+           updated Terms in the app before continuing, and/or by an updated notice on this page.
+           Revisions take effect when posted unless a later effective date is stated. What
+           constitutes a material change will be determined at our sole discretion. By continuing
+           to access or use the Service after any revisions become effective, you agree to be
+           bound by the updated Terms; if you do not agree, you must stop using the Service.
          </p>
+           <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+             <strong>Version 2.9 (effective August 8, 2026).</strong> This update aligns the Terms
+             with the way the Service actually operates and adds standard protective clauses. It
+             (1) clarifies in Section 6 that the Cloudflare last-resort AI provider may run a
+             smaller Gemma model variant, so output quality can vary between provider paths;
+             (2) replaces the fixed 30-day advance-notice commitment in Section 18 with in-app
+             notice and re-consent for material changes; (3) restates the accessibility statement
+             (Section 22) without claiming conformance with a formal standard; (4) strengthens the
+             limitation of liability (Section 10) with an aggregate cap reflecting the free nature
+             of the Service; and (5) adds Sections 30–34 (Entire Agreement, No Waiver, Assignment,
+             No Third-Party Beneficiaries, and Time Limit on Claims). Because these are material
+             changes, we are re-prompting all users to review and re-accept these Terms and the
+             updated Privacy Policy before continuing.
+           </p>
            <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
              <strong>Version 2.8 (effective August 7, 2026).</strong> This update adds Section 14
              (Dispute Resolution), Section 15 (Force Majeure), Section 16 (Export Control and
@@ -427,9 +449,10 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
       <section style={{ marginBottom: 28 }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>22. Accessibility</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
-          We strive to make our Service accessible to all users and aim to conform to WCAG 2.1
-          Level AA standards. If you experience any accessibility issues, please contact us and
-          we will make reasonable efforts to address them.
+          We try to make the Service usable by as many learners as possible and follow common
+          accessibility practices where we can. We do not represent or warrant conformance with
+          WCAG or any other formal accessibility standard. If you experience accessibility issues,
+          please contact us and we will make reasonable efforts to address them.
         </p>
       </section>
 
@@ -540,6 +563,59 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
           of competent jurisdiction, that provision will be modified to the minimum extent necessary
           to make it valid and enforceable, or if not possible, severed from these Terms; the
           remaining provisions will continue in full force and effect.
+        </p>
+      </section>
+
+      <section style={{ marginBottom: 28 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>30. Entire Agreement</h3>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+          These Terms, together with the Privacy Policy and Cookie Policy, constitute the entire
+          agreement between you and RealLearn regarding the Service and supersede all prior or
+          contemporaneous understandings, communications, or agreements, whether written or oral,
+          regarding the Service. No statement made in marketing material, app-store listings,
+          social media, or informal communications forms part of this agreement or creates any
+          warranty or commitment.
+        </p>
+      </section>
+
+      <section style={{ marginBottom: 28 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>31. No Waiver</h3>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+          Our failure to enforce any right or provision of these Terms will not be considered a
+          waiver of that right or provision. Any waiver must be in writing to be effective, and a
+          waiver on one occasion does not waive the same or any other provision on a future
+          occasion.
+        </p>
+      </section>
+
+      <section style={{ marginBottom: 28 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>32. Assignment</h3>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+          You may not assign or transfer these Terms, or any rights or obligations under them,
+          without our prior written consent; any attempted assignment in violation of this section
+          is void. We may assign these Terms without restriction — for example, in connection with
+          a transfer of the Service to a new operator — and these Terms will bind and benefit any
+          permitted successors and assigns.
+        </p>
+      </section>
+
+      <section style={{ marginBottom: 28 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>33. No Third-Party Beneficiaries</h3>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+          These Terms are for the benefit of you and RealLearn only. Nothing in these Terms is
+          intended to confer any right or remedy on any other person or entity, including our
+          third-party service providers.
+        </p>
+      </section>
+
+      <section style={{ marginBottom: 28 }}>
+        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>34. Time Limit on Claims</h3>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+          To the extent permitted by applicable law, any claim arising out of or relating to these
+          Terms or the Service must be commenced within <strong>twelve (12) months</strong> after
+          the cause of action accrues; otherwise, the claim is permanently barred. This section
+          does not apply where prohibited by law or to rights that cannot lawfully be limited in
+          time.
         </p>
       </section>
     </article>

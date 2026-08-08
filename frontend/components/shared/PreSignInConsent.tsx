@@ -21,12 +21,12 @@ const ALLOWED_PATHS_WHEN_DECLINED = ["/sign-in", "/sign-up", "/legal"];
 // When the legal versions change, update these bullets and the verification
 // subtests in scripts/verify-reconsent-copy.mjs together.
 const POLICY_CHANGES = [
-  "Privacy Policy updated to version 3.1: we have expanded children's privacy protections and parental controls, added an explicit GDPR legal-bases section, listed DPDP Act rights (access, correction, erasure, grievance redressal, nomination, and consent withdrawal), strengthened the security section with specific technical and organizational measures, and added a dedicated grievance-officer contact.",
-  "The policy continues to disclose Vercel and Render as hosting infrastructure providers and confirms that your email address is held by Clerk; our database keys consent records to your Clerk account ID.",
+  "Privacy Policy updated to version 3.2: consent records no longer store your email address in our own database (it is held only by Clerk, our authentication provider), and email fields on older records have been removed; web-search context (Serper) is now used only in Explain mode, so Fast-mode questions are never sent to the search service; and we clarified that questions or notes blocked by our safety filters are kept briefly in pseudonymous moderation logs (auto-deleted within 90 days).",
+  "We also aligned the policy with what we actually do as a small, independently operated service: international data-transfer language now points to our processors' own published safeguards, the security-incident section describes our real capabilities, and the accessibility statement no longer claims conformance with a formal standard.",
 ];
 
 const TERMS_CHANGES = [
-  "Terms of Service updated to version 2.8: we have added dispute resolution (informal negotiation, mediation, and litigation/arbitration in Mandsaur, Madhya Pradesh, India), a force majeure clause, export-control and sanctions compliance, service-availability expectations, a clear distinction between account suspension and termination, an indemnification clause, and a severability clause. We have also expanded the eligibility/age-requirements section.",
+  "Terms of Service updated to version 2.9: clarified that the last-resort AI provider may run a smaller Gemma model variant so output quality can vary; replaced the fixed 30-day advance-notice promise for material changes with in-app notice and re-consent; softened the accessibility statement; and added standard protective clauses — entire agreement, no waiver, assignment, no third-party beneficiaries, and a 12-month time limit for bringing claims.",
 ];
 
 // Build year/month options once

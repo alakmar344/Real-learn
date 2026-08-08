@@ -27,7 +27,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
         Privacy Policy
       </Title>
       <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
-        Last updated: August 7, 2026 (version 3.1)
+        Last updated: August 8, 2026 (version 3.2)
       </p>
 
       <section style={{ marginBottom: 28 }}>
@@ -85,9 +85,12 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Consent Records:</strong> Timestamps of when you accepted our Privacy Policy
-            (version 3.1), Terms of Service (version 2.8), and cookie/analytics consent, together
+            (version 3.2), Terms of Service (version 2.9), and cookie/analytics consent, together
             with the policy version, an <strong>anonymized (truncated) device IP</strong>, and a
-            hashed User-Agent, kept as proof of consent.
+            hashed User-Agent, kept as proof of consent. These records are keyed to your Clerk
+            account ID and <strong>do not contain your email address</strong> — it is held only by
+            Clerk, our authentication provider. Email fields written to consent records by older
+            versions of the app have been removed from our database.
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Cached Lessons (temporary, not linked to you):</strong> To make the Service
@@ -158,17 +161,19 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
             stored only on your device, can be changed or cleared anytime in Settings, and are{" "}
             <strong>not stored on our servers</strong>; they are simply included with each lesson-
             generation request so the AI can tailor its response. We cap the free-text notes at 500
-            characters. If you are signed in, your first name (provided by Clerk) may be displayed in
+            characters. One narrow exception: if your free-text notes are blocked by our safety
+            filters, the blocked text is recorded in a pseudonymous moderation log (see
+            &quot;Moderation Logs&quot; below) and is not sent to the AI. If you are signed in, your first name (provided by Clerk) may be displayed in
             an on-screen greeting — this happens entirely in your browser. None of this information is{" "}
             <strong>transmitted to or stored on our servers</strong> (except the learning preferences,
             which are sent only with the lesson request and then discarded), and clearing your browser
             data or using &quot;Delete My Data&quot; removes it.
           </li>
           <li>
-            <strong>Moderation Logs:</strong> When a question you submit or an AI response is
-            blocked by our safety filters, we record a moderation log entry containing the reason
-            the content was flagged, the question that triggered the flag (limited to the first 500
-            characters), and a pseudonymous account identifier. These logs never contain your email,
+            <strong>Moderation Logs:</strong> When a question you submit, a personalization note,
+            or an AI response is blocked by our safety filters, we record a moderation log entry
+            containing the reason the content was flagged, the text that triggered the flag
+            (limited to the first 500 characters), and a pseudonymous account identifier. These logs never contain your email,
             IP address, or other personal identifying information, and never contain internal error
             details. They are <strong>automatically and permanently deleted after 90 days</strong>{" "}
             by a database-level expiry rule, or immediately when you delete your account —
@@ -267,10 +272,12 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
           keyed only to the verified Clerk identity; salted one-way hashing of device
           User-Agents; truncation of IP addresses before storage; API keys and secrets kept in
           environment variables rather than client code; and MongoDB Atlas managed hosting with
-          encryption in transit and at rest. We also maintain an incident-response process to
-          investigate, contain, and notify affected users and regulators of confirmed personal-data
-          breaches as required by law. However, no method of electronic storage is 100% secure, and
-          we cannot guarantee absolute security.
+          encryption in transit and at rest. If we confirm a personal-data breach affecting your
+          information, we will investigate, take reasonable containment steps, and notify affected
+          users and regulators where and as required by applicable law. RealLearn is a small,
+          independently operated service: we do not operate an enterprise 24/7 security operations
+          center, and no method of electronic storage is 100% secure — we cannot guarantee absolute
+          security.
         </p>
       </section>
 
@@ -306,7 +313,10 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
           of your question and the generated lesson is performed locally on our own servers using
           rule-based pattern matching — your question is <strong> not</strong> sent to any third
           party just for moderation. We do not store your questions or generated lessons in a form
-          linked to your account. To improve speed, a generated lesson may be kept in a short-lived
+          linked to your account, with one narrow exception: if a question (or personalization
+          note) is blocked by our safety filters, the flagged text — capped at 500 characters — is
+          recorded in a pseudonymous moderation log that is automatically deleted within 90 days
+          (see Sections 2 and 10). To improve speed, a generated lesson may be kept in a short-lived
           server-side cache keyed by a one-way hash of the question text (not by your identity) and
           is deleted automatically when it expires. However, please note that your questions are
           transmitted to these providers&apos; APIs, and their own terms may govern how they handle
@@ -514,13 +524,16 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>11. International Transfers</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           RealLearn relies on global service providers (including Clerk, Cloudflare, Microsoft,
-          Google, MongoDB Atlas, Serper, Vercel, and Render), so your data may be processed in countries other than
-          your own, including the United States. Where personal data is transferred out of the
-          EEA, UK, or other regions with transfer restrictions, we rely on lawful transfer
-          mechanisms — such as the European Commission&apos;s Standard Contractual Clauses (and the
-          UK Addendum), adequacy decisions where available, and the safeguards our processors
-          themselves maintain. You may contact us to ask about the safeguards applicable to a
-          specific transfer.
+          Google, MongoDB Atlas, Serper, Vercel, and Render), so your data may be processed in
+          countries other than your own, including the United States. RealLearn is a small,
+          independently operated service and does not negotiate bespoke data-transfer agreements
+          of its own. Where personal data is transferred out of the EEA, UK, or other regions
+          with transfer restrictions, we rely on the lawful transfer mechanisms our processors
+          themselves publish and maintain — such as their standard data-processing terms
+          (which typically incorporate the European Commission&apos;s Standard Contractual
+          Clauses) and adequacy decisions where available. You may contact us to ask which
+          provider processes a given category of data, and we will point you to that
+          provider&apos;s published safeguards.
         </p>
       </section>
 
@@ -531,6 +544,24 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
            by posting the new policy on this page and updating the &quot;Last updated&quot; date.
            Continued use of the service after changes constitutes acceptance of the updated policy.
          </p>
+          <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+            <strong>Version 3.2 (effective August 8, 2026).</strong> This update aligns the policy
+            with the way the Service actually operates. (1){" "}
+            <strong>Email removed from consent records</strong> — our database no longer stores
+            your email address on consent records (it is held only by Clerk, our authentication
+            provider), and email fields written by older versions have been removed from all
+            existing records. (2) <strong>Web-search scope narrowed</strong> — the Serper
+            news-context service is now used only in Explain mode; Fast-mode questions are never
+            sent to it. (3) <strong>Moderation-log clarification</strong> — we clarify that
+            questions and personalization notes blocked by our safety filters are recorded in
+            pseudonymous moderation logs (capped at 500 characters, auto-deleted within 90 days).
+            (4) <strong>Right-sized commitments</strong> — as a small, independently operated
+            service, we have rewritten the international-transfer, security-incident, and
+            accessibility sections to describe only the safeguards and processes we actually
+            maintain, rather than enterprise-level programs we do not. Because these are material
+            changes, we are re-prompting all users to review and re-accept this Privacy Policy and
+            the updated Terms of Service before continuing.
+          </p>
           <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
             <strong>Version 3.1 (effective August 7, 2026).</strong> This update expands our
             children&apos;s privacy disclosures and parental controls, adds an explicit GDPR legal
@@ -648,9 +679,11 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
       <section style={{ marginBottom: 28 }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>14. Accessibility</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
-          We are committed to making our Service accessible to all users. We aim to conform to
-          WCAG 2.1 Level AA standards. If you encounter any accessibility barriers, please
-          contact us and we will work to address them.
+          We try to make the Service usable by as many learners as possible and follow common
+          accessibility practices where we can. As a small service, we do not represent or warrant
+          conformance with WCAG or any other formal accessibility standard. If you encounter an
+          accessibility barrier, please contact us and we will make reasonable efforts to address
+          it.
         </p>
       </section>
 
@@ -721,11 +754,11 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
           18. Security Events and Incident Response
         </h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
-          We maintain technical and organizational safeguards such as token verification, strict
-          input validation, rate limiting, and hardened security headers. If we confirm a personal
-          data breach affecting your information, we will investigate promptly, take containment and
-          remediation actions, and provide legally required notifications to users and regulators
-          within applicable timelines.
+          We maintain technical safeguards such as token verification, strict input validation,
+          rate limiting, and hardened security headers. If we confirm a personal data breach
+          affecting your information, we will investigate, take reasonable containment and
+          remediation actions, and provide notifications to users and regulators where and as
+          required by applicable law.
         </p>
       </section>
 
@@ -742,9 +775,10 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
         </p>
         <ul style={{ fontSize: 14, color: "var(--text-secondary)", paddingLeft: 20, margin: "0 0 8px" }}>
           <li style={{ marginBottom: 4 }}>
-            <strong>Age gating:</strong> During onboarding we ask for your date of birth and do not
-            allow account creation for users who tell us they are under 13. We store only an age
-            bracket (under 13, 13–17, or 18+), never your exact date of birth.
+            <strong>Age gating:</strong> During onboarding we ask for your date of birth, and users
+            who tell us they are under 13 cannot accept the consents required to use RealLearn —
+            the Service is blocked for them. We store only an age bracket (under 13, 13–17, or
+            18+), never your exact date of birth.
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Parental approval for minors:</strong> If you are 13–17, you must check a box
