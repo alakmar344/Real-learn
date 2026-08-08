@@ -38,8 +38,6 @@ import { getDb, closeMongo } from "./lib/mongodb.js";
 import {
   requireAuth,
   extractBearerToken,
-  inspectToken,
-  verifyClerkToken,
 } from "./lib/auth.js";
 import { filterUserInput } from "./lib/contentGuard.js";
 import { moderateText } from "./lib/moderation.js";
@@ -54,7 +52,7 @@ import {
   getCachedLesson,
   setCachedLesson,
 } from "./lib/lessonCache.js";
-import { searchCachedLessons, ensureLessonSearchIndexes, sanitizeSearchQuery } from "./lib/searchIndex.js";
+import { ensureLessonSearchIndexes } from "./lib/searchIndex.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -917,35 +915,7 @@ app.get("/health", healthRateLimiter, healthHandler);
 app.get("/api/health", healthRateLimiter, healthHandler);
 
 // Diagnostic endpoint: send the Clerk token as a Bearer header and it reports
-// exactly why verification passes/fails (issuer, expiry, trust). No secrets
-// leaked — only non-sensitive claim metadata. Security: disabled in
-// production unless AUTH_DEBUG_ENABLED=true (it is an unauthenticated
-// token-verification oracle), and always rate limited.
-app.get("/api/auth-debug", rateLimit, requireAuth, async (req, res) => {
-  // Security: this is a token-verification oracle. It must
-  // be OFF unless explicitly enabled or running in local development —
-  // "NODE_ENV !== production" left it wide open on any host that forgot to
-  // set NODE_ENV. Even when enabled, it requires authentication to prevent
-  // anonymous token probing.
-  const authDebugEnabled =
-    process.env.AUTH_DEBUG_ENABLED === "true" ||
-    process.env.NODE_ENV === "development";
-  if (!authDebugEnabled) {
-    return res.status(404).json({ error: "Not found" });
-  }
-  const token = extractBearerToken(req);
-  if (!token) {
-    return res.status(400).json({ error: "No Bearer token provided" });
-  }
-  const inspection = inspectToken(token);
-  const verification = await verifyClerkToken(token);
-  res.json({
-    token: inspection,
-    verified: verification.valid,
-    verifyError: verification.valid ? null : verification.error,
-  });
-});
-
+// Diagnostic endpoint removed: /api/auth-debug was debug-only and unused.
 app.post("/api/agreement", rateLimit, requireAuth, async (req, res) => {
   try {
     const { accepted, timestamp } = req.body;
@@ -1348,26 +1318,6 @@ app.get("/api/export-data", rateLimit, requireAuth, async (req, res) => {
   }
 });
 
-
-// Search over already-validated cached lessons stored in MongoDB. Results are
-// intentionally summaries, not full lessons, so this endpoint is cheap, safe
-// to cache briefly, and useful for discovery without regenerating AI content.
-app.get("/api/search-lessons", rateLimit, requireAuth, async (req, res) => {
-  try {
-    const query = sanitizeSearchQuery(req.query?.q);
-    if (!query || query.length < 2) {
-      return res.status(400).json({ error: "Search query must be at least 2 characters." });
-    }
-
-    const limit = req.query?.limit;
-    const result = await searchCachedLessons(query, { limit });
-    res.setHeader("Cache-Control", "private, max-age=60, stale-while-revalidate=300");
-    res.json(result);
-  } catch (error) {
-    console.error("[api/search-lessons] Search failed", error);
-    res.status(500).json({ error: "Failed to search lessons" });
-  }
-});
 
 // Security: TTS requires auth like every other data endpoint — it drives an
 // external synthesis service (network/CPU/disk cost) and fills an in-memory

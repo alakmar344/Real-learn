@@ -863,11 +863,6 @@ export async function callCloudflareAI(model, body, signal) {
   return callWorkersAI(accountId, preferred || model, body, signal, {});
 }
 
-/** @deprecated Renamed to callCloudflareAI. Kept for compatibility. */
-export async function callFallbackAI(model, body, signal) {
-  return callCloudflareAI(model, body, signal);
-}
-
 // Cloudflare Workers AI can report a mid-stream failure (e.g. 408 "error in
 // input stream") as an error payload INSIDE the SSE stream rather than as an
 // HTTP error status. Detect it and throw a retryable GemmaApiError instead of
