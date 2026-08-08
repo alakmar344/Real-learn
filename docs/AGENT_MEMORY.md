@@ -191,6 +191,13 @@ Available component classes (already implemented — use them):
   `.micro-label` (mono uppercase technical-label voice — JetBrains Mono,
   letter-spaced; the same voice worn by section overlines, stat-tile labels,
   part-card tags, quiz meta, and sidebar list titles)
+- Elegant Modern Refinements (2026-08-08): new shadow/glow tokens
+  (`--shadow-elegant-*`, `--glow-soft`, `--glow-strong`, `--ease-elegant`),
+  `.ambient-spotlight` utility, `.quiz-progress` (+ `__dot`, `--current`,
+  `--answered`, `--pending`) quiz step indicator, refined focus ring,
+  enhanced `.aurora-bg` drift, and polished hover/lift shadows on
+  `.btn-primary`, `.btn-ghost`, `.q-form`, `.part-card`, `.quiz-sheet__panel`,
+  `.completion`, `.flashcards`, `.hero-glass-card`, and `.navbar`.
 
 - Semantic state tokens: `--success`/`--danger`/`--warning`/`--info`
   (+ `-bg` washes) are the canonical state colors in both themes; the
@@ -682,3 +689,24 @@ this protocol. No exceptions.**
     Terms stay v2.7, Cookie Policy stays v2.3 (no cookie re-prompt);
     verify:reconsent updated. Verified: tsc/lint/build clean, all verify
     scripts pass, backend tests 35/35.
+- 2026-08-08 — **Elegant Modern UI polish pass.** Added a cohesive refinement
+    layer to the Olive Frenzy design system: new shadow/glow tokens
+    (`--shadow-elegant-*`, `--glow-soft`, `--glow-strong`, `--ease-elegant`);
+    enhanced ambient aurora with a focused accent spotlight and a slower,
+    calmer drift curve; refined global focus rings; polished primary/ghost
+    button press and glow states; elevated the question input, part cards,
+    quiz sheet, completion screen, flashcards, and navbar with softer,
+    diffused shadows and subtle accent glows on hover/focus; added a script
+    entrance animation to the hero greeting; added a quiz progress-dot
+    indicator (`components/learning/QuizSheet.tsx` + `.quiz-progress` CSS) so
+    learners see their position in the quiz at a glance. All changes stay
+    within the existing token system and respect `prefers-reduced-motion` +
+    `data-perf="low"`. Verified: `tsc --noEmit` clean, `next lint` clean,
+    `next build` clean, `verify:quiz` + `verify:achievements` pass, backend
+    tests 35/35.
+
+
+
+
+
+

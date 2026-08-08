@@ -206,6 +206,21 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
         <p className="quiz-sheet__subtitle">
           {totalQuestions} question{totalQuestions === 1 ? "" : "s"} about what you just read
         </p>
+
+        {/* Progress dots — show where you are in the quiz at a glance. */}
+        <div className="quiz-progress" aria-hidden="true">
+          {quizQuestions.map((_, i) => {
+            const state =
+              i === current ? "current" : answers[i] !== null ? "answered" : "pending";
+            return (
+              <span
+                key={i}
+                className={`quiz-progress__dot quiz-progress__dot--${state}`}
+              />
+            );
+          })}
+        </div>
+
         <div className="quiz-sheet__divider" />
 
         {shuffledHint ? (
