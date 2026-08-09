@@ -790,7 +790,7 @@ export const BADGE_BY_ID: Record<string, Badge> = BADGES.reduce(
 export const TIER_COLOR: Record<BadgeTier, string> = {
   bronze: "#a9713b",
   silver: "#8a8f98",
-  gold: "#c9a227",
+  gold: "#8AAD26",
   // legendary outranks gold in the brand's own voice: deep lime-olive
   // (#EE5125 was a Solar Terracotta-era leftover)
   legendary: "#65A30D",
