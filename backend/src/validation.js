@@ -212,8 +212,13 @@ export function normalizeJourney(data, mode = "explain") {
         ...part,
         quiz: Array.isArray(part.quiz)
           ? part.quiz
-              .filter(isValidQuizQuestion)
+              // Align BEFORE validating: alignQuizCorrectIndex repairs the
+              // string/letter ("A"/"3") and out-of-range correctIndex forms the
+              // model sometimes emits. Filtering first discarded those salvageable
+              // questions — and in fast mode, dropping the only question
+              // invalidated the whole lesson and forced a repair round-trip.
               .map(alignQuizCorrectIndex)
+              .filter(isValidQuizQuestion)
               .slice(0, 2)
           : [],
       }))

@@ -98,3 +98,34 @@ test("normalizeJourney: normalizes and aligns quiz questions in journey parts", 
   const normalized = normalizeJourney(journeyData, "fast");
   assert.equal(normalized.parts[0].quiz[0].correctIndex, 0);
 });
+
+test("normalizeJourney: salvages a question whose correctIndex is a letter string", () => {
+  // Regression: alignQuizCorrectIndex now runs BEFORE the validity filter, so a
+  // model that emits correctIndex: "B" (instead of an integer) is repaired to
+  // index 1 rather than being dropped — which, in fast mode, would have
+  // invalidated the whole single-part lesson.
+  const journeyData = {
+    topic: "Photosynthesis",
+    parts: [
+      {
+        partNumber: 1,
+        title: "Foundation",
+        content: "Plants convert light energy into chemical energy.",
+        sources: [],
+        quiz: [
+          {
+            question: "Which gas do plants absorb during photosynthesis?",
+            options: ["Oxygen", "Carbon dioxide", "Nitrogen", "Hydrogen"],
+            correctIndex: "B",
+            explanation: "Plants absorb carbon dioxide.",
+          },
+        ],
+      },
+    ],
+  };
+
+  const normalized = normalizeJourney(journeyData, "fast");
+  assert.equal(normalized.parts.length, 1);
+  assert.equal(normalized.parts[0].quiz.length, 1);
+  assert.equal(normalized.parts[0].quiz[0].correctIndex, 1);
+});

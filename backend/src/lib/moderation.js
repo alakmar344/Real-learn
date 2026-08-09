@@ -4,12 +4,6 @@ import { Filter } from "bad-words";
 import { filterText } from "better-profane-words";
 import { containsHarmfulContent } from "./contentGuard.js";
 
-const DEFAULT_MODERATION_TIMEOUT_MS = 8000;
-const configuredTimeoutMs = Number(process.env.MODERATION_TIMEOUT_MS);
-const MODERATION_TIMEOUT_MS =
-  Number.isFinite(configuredTimeoutMs) && configuredTimeoutMs > 0
-    ? configuredTimeoutMs
-    : DEFAULT_MODERATION_TIMEOUT_MS;
 const MAX_MODERATION_INPUT_CHARS = 12000;
 const MAX_MODERATION_OUTPUT_CHARS = 60000;
 
@@ -121,21 +115,34 @@ function isNonTopicMatch(match) {
 }
 
 // ── LAYER 4: Harmful Intent & Profanity Verification ────────────────────────
-function containsUnsafeContent(text) {
+// `kind` distinguishes user INPUT from AI OUTPUT. `canonical: true` skips a
+// redundant canonicalize pass when the caller already canonicalized the text.
+function containsUnsafeContent(text, { kind = "input", canonical = false } = {}) {
   if (!text || typeof text !== "string") return false;
-  const canonicalized = canonicalizeText(text);
+  const canonicalized = canonical ? text : canonicalizeText(text);
 
   // LAYER 4A: Intent-based zero-tolerance harmful-content check (weapons recipes, CSAM, threats)
   if (containsHarmfulContent(canonicalized)) return true;
 
-  // LAYER 3 FAST-PATH: If this is an educational inquiry frame matching an educational domain,
-  // bypass broad topic-based profanity heuristics (while zero-tolerance harmful content above still ran).
-  if (isEducationalInquiryFrame(canonicalized) && isEducationalDomain(canonicalized)) {
+  const educationalFrame =
+    isEducationalInquiryFrame(canonicalized) && isEducationalDomain(canonicalized);
+
+  // LAYER 3 FAST-PATH: an educational inquiry frame bypasses the broad
+  // profanity heuristic — but ONLY for user INPUT. AI OUTPUT is cached and
+  // served to every future learner, so it must never skip the slur dictionary
+  // (LAYER 4B below); a generated WWII/biology lesson matches the educational
+  // frame yet could still emit an actual slur.
+  if (kind === "input" && educationalFrame) {
     return false;
   }
 
-  // LAYER 4B: Profanity / slurs (two independent dictionaries for offensive non-topic slurs).
-  if (profanityFilter.isProfane(canonicalized)) return true;
+  // LAYER 4B (broad, false-positive-prone): bad-words. Skipped for educational
+  // output to avoid flagging legitimate sensitive-topic lessons.
+  if (!educationalFrame && profanityFilter.isProfane(canonicalized)) return true;
+
+  // LAYER 4B (targeted slurs): always runs on output. isNonTopicMatch already
+  // excludes topic-only categories (violence/drug) and educational vocabulary,
+  // so real slurs are caught without blocking on-topic educational language.
   const result = filterText(canonicalized, { minIntensity: TEEN_MIN_INTENSITY });
   return result.matched.some(isNonTopicMatch);
 }
@@ -195,7 +202,7 @@ export async function moderateText(text, kind = "input") {
       }
     }
 
-    const blocked = containsUnsafeContent(canonicalized);
+    const blocked = containsUnsafeContent(canonicalized, { kind, canonical: true });
     const reason = kind === "output" ? getAIResponseBlockReason() : getUserInputBlockReason();
 
     if (blocked) {

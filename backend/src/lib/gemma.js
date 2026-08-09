@@ -601,8 +601,15 @@ async function fetchChatCompletion(url, headers, payload, signal, opts = {}) {
 
     const data = await response.json();
     if (data.error) {
+      // Some providers put a non-numeric string in error.code. Coerce to a
+      // finite number (falling back to 500) so the retry/rotation/circuit
+      // classifiers — which compare status against 408/429/>=500 — see a real
+      // status instead of a string that fails every comparison and makes a
+      // transient error look non-retryable.
+      const rawCode = Number(data.error.code);
+      const statusCode = Number.isFinite(rawCode) ? rawCode : 500;
       throw new GemmaApiError(
-        data.error.code || 500,
+        statusCode,
         "APIError",
         data.error.message || JSON.stringify(data.error),
         parseRetryAfterMs(response)

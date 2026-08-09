@@ -151,9 +151,35 @@ function anonymizeIp(ip) {
 // full IP address remains anywhere in the agreements collection. Runs in the
 // background at startup; safe to run repeatedly (already-anonymized values
 // re-anonymize to themselves and are skipped).
+// One-time-migration bookkeeping. The consent scrubs below are correctness-safe
+// to re-run, but each does an unindexed full scan of the `agreements`
+// collection, so re-running on every boot means every restart pays a scan that
+// grows with the collection. A tiny sentinel in `migrations` lets a completed
+// migration no-op on subsequent boots (new writes are already clean at source).
+async function isMigrationComplete(db, id) {
+  try {
+    return Boolean(await db.collection("migrations").findOne({ _id: id }));
+  } catch {
+    return false;
+  }
+}
+
+async function markMigrationComplete(db, id) {
+  try {
+    await db.collection("migrations").updateOne(
+      { _id: id },
+      { $setOnInsert: { completedAt: new Date() } },
+      { upsert: true }
+    );
+  } catch {
+    // Non-fatal: worst case the migration runs (harmlessly) again next boot.
+  }
+}
+
 async function scrubStoredConsentIps() {
   try {
     const db = await getDb();
+    if (await isMigrationComplete(db, "scrub-consent-ips-v1")) return;
     const collection = db.collection("agreements");
     const cursor = collection.find(
       { deviceIp: { $type: "string", $nin: ["", "unknown"] } },
@@ -183,6 +209,7 @@ async function scrubStoredConsentIps() {
     if (scrubbed > 0) {
       console.log(`[privacy] Anonymized stored IPs on ${scrubbed} legacy consent record(s)`);
     }
+    await markMigrationComplete(db, "scrub-consent-ips-v1");
   } catch (error) {
     // Non-fatal: the scrub retries on next boot; new writes are already
     // anonymized at the source.
@@ -199,6 +226,7 @@ async function scrubStoredConsentIps() {
 async function scrubStoredConsentEmails() {
   try {
     const db = await getDb();
+    if (await isMigrationComplete(db, "scrub-consent-emails-v1")) return;
     const collection = db.collection("agreements");
     const result = await collection.updateMany(
       {
@@ -215,6 +243,7 @@ async function scrubStoredConsentEmails() {
         `[privacy] Removed stored email fields from ${result.modifiedCount} legacy consent record(s)`
       );
     }
+    await markMigrationComplete(db, "scrub-consent-emails-v1");
   } catch (error) {
     // Non-fatal: the scrub retries on next boot; new writes no longer
     // persist the email at the source.
