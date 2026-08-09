@@ -1,11 +1,17 @@
 "use client";
 
-import React, { memo, useState } from "react";
+import React, { memo, useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
+
+// Hoisted to module scope so their identity is stable across renders — new
+// array literals each render defeat react-markdown's internal memoization and
+// force a full markdown+KaTeX re-parse on every parent re-render.
+const REMARK_PLUGINS = [remarkGfm, remarkMath];
+const REHYPE_PLUGINS = [rehypeKatex];
 import { useReadingTimer } from "@/hooks/useReadingTimer";
 import { LessonPart } from "@/types";
 import SourceTag from "@/components/shared/SourceTag";
@@ -79,6 +85,22 @@ const PartCardBase = ({
   const contentId = `part-${part.partNumber}-content`;
   const lessonLanguage = useLessonStore((s) => s.lesson?.language);
   const subjectColor = subjectColors[part.subject] ?? "var(--subject-general)";
+
+  // The reading timer re-renders this card ~50× while the learner reads. Memoize
+  // the rendered prose on `part.content` alone so those ticks don't re-parse
+  // markdown and re-run KaTeX on every frame.
+  const renderedProse = useMemo(
+    () => (
+      <ReactMarkdown
+        remarkPlugins={REMARK_PLUGINS}
+        rehypePlugins={REHYPE_PLUGINS}
+        components={markdownComponents}
+      >
+        {part.content}
+      </ReactMarkdown>
+    ),
+    [part.content]
+  );
 
   const handleCopyText = async () => {
     try {
@@ -173,13 +195,7 @@ const PartCardBase = ({
         {/* lang/dir so screen readers voice generated prose in the lesson
             language (WCAG 3.1.2) — UI chrome around it stays English. */}
         <div className="markdown-content part-card__prose" {...contentLangAttrs(lessonLanguage)}>
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm, remarkMath]}
-            rehypePlugins={[rehypeKatex]}
-            components={markdownComponents}
-          >
-            {part.content}
-          </ReactMarkdown>
+          {renderedProse}
         </div>
 
         {(part.sources ?? []).length > 0 ? (

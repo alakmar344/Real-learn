@@ -18,6 +18,10 @@ import "./globals.css";
 // Self-hosted fonts via next/font: subsetted, cached immutably, zero
 // render-blocking requests — and, unlike the old Google Fonts @import, not
 // blocked by our own CSP (style-src/font-src are 'self').
+// Body text — the only face on the critical render path, so it's the only one
+// we preload. The rest use `display: "swap"` and load on demand; preloading all
+// six faces (Lora ships normal + italic) spent the preload budget on decorative
+// type that never appears above the fold.
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
@@ -28,6 +32,7 @@ const lora = Lora({
   style: ["normal", "italic"],
   variable: "--font-lora",
   display: "swap",
+  preload: false,
 });
 // Display face: Space Grotesk — a working designer's grotesk (quirky enough to
 // have personality, disciplined enough to never read as a template).
@@ -35,11 +40,13 @@ const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
   variable: "--font-display",
   display: "swap",
+  preload: false,
 });
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
   display: "swap",
+  preload: false,
 });
 // Script face: Caveat — the expressive layer of the Olive Frenzy system.
 // Decorative Latin-only moments (hero greeting, ghost glyphs) — never
@@ -48,6 +55,7 @@ const caveat = Caveat({
   subsets: ["latin"],
   variable: "--font-script",
   display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {

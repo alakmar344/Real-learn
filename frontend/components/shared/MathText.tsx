@@ -1,7 +1,22 @@
 "use client";
 
-import { useMemo, memo } from "react";
-import katex from "katex";
+import { useMemo, memo, useEffect, useState } from "react";
+
+// KaTeX (~270 kB min) is loaded on demand, not statically. MathText is
+// imported by always-mounted chrome (Sidebar → AppShell → root layout), so a
+// static `import katex` dragged the whole library into the shared, every-route
+// bundle even on pages that never render math. Lazy-loading keeps it out of
+// First Load JS; math renders as plain text for the one tick before the
+// library resolves (and never renders at all when the text has no math).
+type KatexModule = typeof import("katex")["default"];
+
+let katexPromise: Promise<KatexModule> | null = null;
+function loadKatex(): Promise<KatexModule> {
+  if (!katexPromise) {
+    katexPromise = import("katex").then((m) => m.default);
+  }
+  return katexPromise;
+}
 
 interface Props {
   text: string;
@@ -18,7 +33,7 @@ function escapeHtml(value: string): string {
     .replace(/'/g, "&#39;");
 }
 
-function renderMath(latex: string, displayMode: boolean): string {
+function renderMath(katex: KatexModule, latex: string, displayMode: boolean): string {
   try {
     return katex.renderToString(latex, {
       displayMode,
@@ -76,10 +91,29 @@ function parseMathText(text: string): Array<{ type: "text" | "math-inline" | "ma
 
 function MathTextBase({ text, className }: Props) {
   const parts = useMemo(() => parseMathText(text), [text]);
+  const hasMath = useMemo(() => parts.some((p) => p.type !== "text"), [parts]);
+  const [katex, setKatex] = useState<KatexModule | null>(null);
 
-  const hasMath = parts.some((p) => p.type !== "text");
+  useEffect(() => {
+    if (!hasMath || katex) return;
+    let active = true;
+    loadKatex().then((mod) => {
+      if (active) setKatex(mod);
+    });
+    return () => {
+      active = false;
+    };
+  }, [hasMath, katex]);
+
   if (!hasMath) {
     return <>{text}</>;
+  }
+
+  // Until KaTeX resolves, show the raw text so the layout is stable and no
+  // content is hidden (delimiters are briefly visible on the rare surfaces
+  // that contain math outside the /learn route).
+  if (!katex) {
+    return <span className={className}>{text}</span>;
   }
 
   return (
@@ -88,10 +122,7 @@ function MathTextBase({ text, className }: Props) {
         if (part.type === "text") {
           return <span key={i}>{part.content}</span>;
         }
-        const html = renderMath(
-          part.content,
-          part.type === "math-display"
-        );
+        const html = renderMath(katex, part.content, part.type === "math-display");
         return (
           <span
             key={i}

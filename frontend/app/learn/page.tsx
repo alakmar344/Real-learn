@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
 import Navbar from "@/components/shared/Navbar";
 import ProgressRail from "@/components/learning/ProgressRail";
-import PartCard from "@/components/learning/PartCard";
 import QuizSheet from "@/components/learning/QuizSheet";
 import LoadingCinematic from "@/components/shared/LoadingCinematic";
 import ErrorState from "@/components/shared/ErrorState";
@@ -25,6 +24,11 @@ import { LessonJourney, LessonPart } from "@/types";
 import { useShallow } from "zustand/shallow";
 import { celebrationColors } from "@/lib/palette";
 
+// PartCard pulls in the full react-markdown + remark/rehype + KaTeX toolchain
+// (the bulk of the /learn route JS). Code-splitting it keeps that chain out of
+// the learn shell — the loading cinematic, error and empty states hydrate
+// without it, and the chunk streams in alongside the lesson content.
+const PartCard = lazy(() => import("@/components/learning/PartCard"));
 const CompletionScreen = lazy(() => import("@/components/learning/CompletionScreen"));
 const Flashcards = lazy(() => import("@/components/learning/Flashcards"));
 const FollowUpBox = lazy(() => import("@/components/learning/FollowUpBox"));
@@ -239,10 +243,12 @@ export default function LearnPage() {
   const handlePartPass = useCallback(
     (part: LessonPart, score: number) => {
       if (!lesson) return;
-      console.log("[frontend][LearnPage] quiz passed", {
-        part: part.partNumber,
-        score,
-      });
+      if (process.env.NODE_ENV !== "production") {
+        console.log("[frontend][LearnPage] quiz passed", {
+          part: part.partNumber,
+          score,
+        });
+      }
       triggerHaptic("success");
       loadConfetti().then((confetti) =>
         confetti({
@@ -435,18 +441,28 @@ export default function LearnPage() {
         <div className="learn-container">
           <ProgressRail unlockedPart={unlockedPart} completedParts={completedParts} totalParts={totalParts} />
 
-          {lesson.parts.map((part) => (
-            <PartCard
-              key={part.partNumber}
-              part={part}
-              isUnlocked={part.partNumber <= unlockedPart}
-              isCompleted={completedParts.includes(part.partNumber)}
-              isCollapsed={collapsedParts.includes(part.partNumber)}
-              score={partScores[part.partNumber]}
-              onStartQuiz={handleStartQuiz}
-              onToggleCollapse={handleToggleCollapse}
-            />
-          ))}
+          <Suspense
+            fallback={
+              <>
+                <SkeletonCard height={180} />
+                <SkeletonCard height={180} />
+                <SkeletonCard height={180} />
+              </>
+            }
+          >
+            {lesson.parts.map((part) => (
+              <PartCard
+                key={part.partNumber}
+                part={part}
+                isUnlocked={part.partNumber <= unlockedPart}
+                isCompleted={completedParts.includes(part.partNumber)}
+                isCollapsed={collapsedParts.includes(part.partNumber)}
+                score={partScores[part.partNumber]}
+                onStartQuiz={handleStartQuiz}
+                onToggleCollapse={handleToggleCollapse}
+              />
+            ))}
+          </Suspense>
 
           {/* Flashcards appear as soon as the lesson generates — a spaced-
               repetition style recap built from the lesson's key takeaways. */}
@@ -481,13 +497,9 @@ export default function LearnPage() {
               </div>
               <FollowUpBox
                 onSubmit={async (nextQuestion) => {
-                  console.log("[frontend][LearnPage] follow-up submit", {
-                    nextQuestionLength: nextQuestion.length,
-                  });
                   const ok = await generateLesson(nextQuestion, false);
                   if (ok) recordFollowUp();
                   scrollToTop();
-                  console.log("[frontend][LearnPage] follow-up completed + scrolled");
                 }}
               />
             </Suspense>
