@@ -216,14 +216,16 @@ function isRetryableError(error: unknown, idleTimedOut: boolean) {
 export function useLesson() {
   const router = useRouter();
   const { getToken } = useAuth();
-  const {
-    setQuestion,
-    startLoading,
-    setProgress,
-    setLesson,
-    setError,
-    resetForNextQuestion,
-  } = useLessonStore();
+  // Select the store ACTIONS individually. Actions have stable identities, so
+  // these subscriptions never fire — whereas calling useLessonStore() with no
+  // selector re-rendered every consumer (incl. the always-mounted Sidebar) on
+  // every streaming `setProgress` tick.
+  const setQuestion = useLessonStore((s) => s.setQuestion);
+  const startLoading = useLessonStore((s) => s.startLoading);
+  const setProgress = useLessonStore((s) => s.setProgress);
+  const setLesson = useLessonStore((s) => s.setLesson);
+  const setError = useLessonStore((s) => s.setError);
+  const resetForNextQuestion = useLessonStore((s) => s.resetForNextQuestion);
   const language = usePreferenceStore((s) => s.language);
   const level = usePreferenceStore((s) => s.level);
   const mode = usePreferenceStore((s) => s.mode);

@@ -704,6 +704,29 @@ this protocol. No exceptions.**
     `data-perf="low"`. Verified: `tsc --noEmit` clean, `next lint` clean,
     `next build` clean, `verify:quiz` + `verify:achievements` pass, backend
     tests 35/35.
+- 2026-08-09 — **Performance + backend correctness pass.** Frontend perf:
+    `MathText` lazy-imports KaTeX (was static, so it sat in the shared
+    every-route bundle via Sidebar→AppShell→root layout) and `PartCard` is now
+    `lazy()`-code-split from the learn shell — First Load JS dropped `/learn`
+    397→185 kB and `/` 263→187 kB. `PartCard` markdown is memoized on
+    `part.content` with hoisted plugin arrays (reading-timer ticks no longer
+    re-parse), `useLesson()` selects store actions individually (no cascade
+    re-render on SSE progress), fonts preload Inter only, stray `console.log`s
+    gated on `NODE_ENV`. Backend fixes: quiz normalization aligns
+    `correctIndex` before validating (salvages letter/out-of-range indices;
+    +1 regression test, tests 35→36); `gemma.js` coerces non-numeric provider
+    `error.code` so retry/rotation/circuit classifiers work; `moderation.js`
+    gates the educational fast-path to INPUT only so AI OUTPUT always runs the
+    targeted slur check (topic/educational vocab still excluded via
+    `isNonTopicMatch`; broad `bad-words` still skipped for educational output),
+    de-dupes the double `canonicalizeText`, and drops the dead
+    `MODERATION_TIMEOUT_MS`; startup consent-scrub migrations record a
+    `migrations` sentinel and no-op after completing once instead of
+    re-scanning `agreements` every boot. Flagged (not changed): the
+    `ensureLessonSearchIndexes` `$text` index is maintained on every cache
+    upsert but never queried — owner to wire `searchCachedLessons` or drop it.
+    Verified: `tsc --noEmit` clean, `next lint` clean, `next build` clean,
+    backend tests 36/36.
 
 
 
