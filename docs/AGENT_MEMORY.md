@@ -727,6 +727,58 @@ this protocol. No exceptions.**
     upsert but never queried — owner to wire `searchCachedLessons` or drop it.
     Verified: `tsc --noEmit` clean, `next lint` clean, `next build` clean,
     backend tests 36/36.
+- 2026-08-10 — **Find → lightweight quiz-driven personalization layer
+  (end-to-end).** Replaced the standalone "Find" page (a browsable
+  knowledge-frontier map) with an internal, background-only personalization
+  system: quiz results → on-device learning profile → topic-relevant context
+  snippet → personalized AI answer. New `frontend/lib/learningProfile.ts`
+  (pure, deterministic): `buildLearningProfile` classifies each saved journey
+  into four proficiency buckets (well-understood / partially-understood /
+  struggling / low-confidence) using a strength formula that mirrors
+  knowledgeFrontier's `toNode` (0.4 × completion + 0.6 × quiz score);
+  `buildLearningContext` generates a tiny char-budgeted (≤480 chars),
+  topic-relevant prose snippet (only areas relevant to the current question
+  are surfaced; null on cold start) so the AI gets just enough verified
+  knowledge to adapt its answer — never the whole profile or raw quiz data.
+  `frontend/hooks/useLesson.ts` computes this per request and attaches
+  `learningContext` to the `/api/generate-lesson` body alongside the existing
+  personalization payload. Backend `personalization.js` adds
+  `sanitizeLearningContext` + `formatLearningContextForPrompt` (fenced
+  `<<<LEARNER_CONTEXT … END_LEARNER_CONTEXT>>>`, neutralized, framed as
+  DESCRIPTIVE DATA — same trust model as learner notes);
+  `FENCE_MARKER_PATTERN` extended to include `LEARNER_CONTEXT`. `server.js`
+  content-filters the field through `filterUserInput` (moderation parity with
+  notes — blocked context is logged as a "learning-context-blocked" event and
+  dropped), injects it after the LEARNER PROFILE block, and includes it in
+  `lessonCacheKey` (via new `normalizeLearningContext`) so knowledge-tailored
+  lessons are distinct per learner profile. The raw context is never
+  persisted — the cache stores only `{key hash, lesson, ttl}`. Frontend
+  cleanup: deleted `app/find/page.tsx` + `layout.tsx` (entire `/find` dir),
+  `hooks/useFrontier.ts` (page hook); removed `/find` from Navbar NAV_ITEMS
+  and `robots.ts` disallow. `knowledgeFrontier.ts` engine retained (reused by
+  learningProfile.ts). Backend cleanup: removed the `/api/find` endpoint +
+  its `frontier.js` import from `server.js`; deleted `backend/src/lib/frontier.js`
+  (dead code) + `backend/test/frontier.test.js`; removed the now-unused
+  `searchCachedLessons` import (kept `ensureLessonSearchIndexes` for DB init).
+  Data protection: the profile is architecturally protected — no backend
+  endpoint exposes it (it lives on-device only); `/api/export-data` exports
+  only agreements + moderation logs (no quiz/profile data); `learningContext`
+  is ephemeral. Added a `.protected-learning-data` CSS utility
+  (`user-select: none`) for any future surface, documented as a frontend
+  convenience only (real protection is architectural). Legal: Privacy Policy
+  v3.3 → v3.4, Terms of Service v3.0 → v3.1 — both updated to describe the
+  personalization layer (on-device profile, compact context sent with lesson
+  requests, not stored server-side, one-way hash for cache key, no separate
+  page, automatic background operation). Version constants bumped in
+  `frontend/lib/legalConsent.ts` + backend `server.js` defaults (aligned:
+  3.4 / 3.1). `PreSignInConsent.tsx` reconsent bullets updated.
+  `verify-reconsent-copy.mjs` rewritten for the new bullets. New
+  `backend/test/learningContext.test.js` (9 tests: sanitize, neutralize,
+  fence, truncate, forge-prevention). New
+  `frontend/scripts/verify-learning-profile.mjs` (20 checks) + `verify:profile`
+  npm script. Verified: `tsc --noEmit` clean, `next lint` clean, `next build`
+  clean (13 pages, no `/find` route), `verify:frontier` 28/28,
+  `verify:profile` 20/20, `verify:reconsent` 3/3, backend tests 45/45.
 
 
 

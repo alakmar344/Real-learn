@@ -22,7 +22,8 @@
     "verify:quiz": "node scripts/verify-quiz-shuffle.mjs",
     "verify:achievements": "node scripts/verify-achievements.mjs",
     "verify:reconsent": "node scripts/verify-reconsent-copy.mjs",
-    "verify:frontier": "node scripts/verify-frontier.mjs"
+    "verify:frontier": "node scripts/verify-frontier.mjs",
+    "verify:profile": "node scripts/verify-learning-profile.mjs"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.5.9",

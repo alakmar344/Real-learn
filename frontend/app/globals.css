@@ -2106,6 +2106,23 @@ a:active {
   user-select: auto;
 }
 
+/* ── Copy-protection for sensitive learning-derived data ───────────────
+   The learner's quiz-derived proficiency profile is personal data. It is never
+   surfaced on a standalone page (the old /find page was removed), but any
+   element that does display learning-derived insights should opt into this
+   utility so the text cannot be casually selected/copied from the UI. This is a
+   FRONTEND convenience only — the real protection is architectural: the profile
+   lives on-device, no backend endpoint exposes it, and only a compact,
+   topic-relevant context snippet is sent per lesson request (never stored
+   server-side). Do NOT rely on this class for security. */
+.protected-learning-data {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-touch-callout: none;
+}
+
 /* ── LOW tier: maximum smoothness & compatibility ── */
 /* Backdrop blurs (sticky navbar, modals, quiz sheet, overlays) are
    re-composited on every scroll frame — the single biggest lag source on

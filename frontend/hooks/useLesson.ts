@@ -6,8 +6,11 @@ import { createParser, type EventSourceMessage } from "eventsource-parser";
 import { useAuth } from "@clerk/nextjs";
 import { useLessonStore } from "@/store/lessonStore";
 import { usePreferenceStore } from "@/store/preferenceStore";
+import { useSavedJourneysStore } from "@/store/savedJourneysStore";
+import { useProgressStore } from "@/store/progressStore";
 import { LessonJourney } from "@/types";
 import { type LearningPreferences } from "@/lib/personalization";
+import { buildLearningContext } from "@/lib/learningProfile";
 
 const trimmedBackendUrl = (
   process.env.NEXT_PUBLIC_BACKEND_URL ||
@@ -230,6 +233,12 @@ export function useLesson() {
   const level = usePreferenceStore((s) => s.level);
   const mode = usePreferenceStore((s) => s.mode);
   const personalization = usePreferenceStore((s) => s.personalization);
+  // Learning profile data stays on-device; only a tiny, topic-relevant context
+  // snippet is computed per request and sent with the lesson body. Selecting the
+  // raw journeys/subjects arrays here re-renders this hook only when the saved
+  // history or subjects actually change — cheap and rare.
+  const journeys = useSavedJourneysStore((s) => s.journeys);
+  const subjectsSeen = useProgressStore((s) => s.subjectsSeen);
 
   const generateLesson = useCallback(
     // Returns true when a lesson was successfully generated and applied,
@@ -298,6 +307,18 @@ export function useLesson() {
           const prefsPayload: LearningPreferences | null =
             personalization.onboarded ? personalization : null;
 
+          // Compute a tiny, topic-relevant learning-context snippet from the
+          // on-device quiz history. null on cold start (no saved journeys) so
+          // the field is simply omitted — the backend treats its absence as
+          // "no profile yet" and answers generically. This is deliberately
+          // computed inside the retry loop so a freshly-saved journey taken
+          // between attempts is reflected, and it never blocks the request.
+          const learningContext = buildLearningContext(
+            journeys,
+            subjectsSeen,
+            normalized
+          );
+
           const response = await fetch(`${trimmedBackendUrl}/api/generate-lesson`, {
             method: "POST",
             headers,
@@ -308,6 +329,7 @@ export function useLesson() {
               level,
               mode,
               personalization: prefsPayload,
+              learningContext,
             }),
             cache: "no-store",
           });
@@ -513,7 +535,7 @@ export function useLesson() {
       setError(humanizeErrorMessage(lastError));
       return false;
     },
-    [getToken, language, level, mode, personalization, router, setError, setLesson, setProgress, setQuestion, startLoading]
+    [getToken, language, level, mode, personalization, journeys, subjectsSeen, router, setError, setLesson, setProgress, setQuestion, startLoading]
   );
 
   const restart = useCallback(() => {
