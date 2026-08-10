@@ -27,7 +27,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
         Privacy Policy
       </Title>
       <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
-        Last updated: August 8, 2026 (version 3.2)
+        Last updated: August 10, 2026 (version 3.3)
       </p>
 
       <section style={{ marginBottom: 28 }}>
@@ -58,7 +58,12 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
           <strong>NVIDIA NIM</strong> (Gemma 4 31B) configured as the automatic fallback and{" "}
           <strong>Cloudflare Workers AI</strong> (Gemma) as a last-resort fallback so lessons can
           still be generated if the primary and fallback are slow or unavailable. This is designed to
-          help students learn through interactive quizzes and structured content.
+          help students learn through interactive quizzes and structured content. RealLearn also
+          offers a <strong>&quot;Find&quot;</strong> feature that maps the concepts you have proven you
+          know (by passing lesson quizzes) and recommends what to learn next. This mastery map is
+          computed <strong>on your device</strong> from data already stored locally in your browser —
+          see &quot;Cookies and Local Storage&quot; below for exactly what is used and what, if
+          anything, is sent to our servers.
         </p>
       </section>
 
@@ -85,7 +90,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Consent Records:</strong> Timestamps of when you accepted our Privacy Policy
-            (version 3.2), Terms of Service (version 2.9), and cookie/analytics consent, together
+            (version 3.3), Terms of Service (version 3.0), and cookie/analytics consent, together
             with the policy version, an <strong>anonymized (truncated) device IP</strong>, and a
             hashed User-Agent, kept as proof of consent. These records are keyed to your Clerk
             account ID and <strong>do not contain your email address</strong> — it is held only by
@@ -351,6 +356,18 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
           You can clear your localStorage and IndexedDB at any time through your browser settings
           or by using the &quot;Delete My Data&quot; feature in the app, which clears both.
         </p>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 12 }}>
+          <strong>The &quot;Find&quot; feature (your knowledge frontier):</strong> Find builds your
+          personalized &quot;proven map&quot; entirely on your device from the saved-lesson history
+          index and progress data already described above — no lesson content is uploaded and the map
+          is never stored on our servers. When you use Find&apos;s optional &quot;discover related
+          lessons&quot; search, we send only your short goal text and coarse topic labels (for
+          example, &quot;gravity&quot;, &quot;photosynthesis&quot;) with a rough mastery strength, in
+          order to search our shared, anonymized cache of previously generated lessons and suggest
+          topics you have not yet mastered. This request is processed in memory to build your results
+          and is <strong>not stored, logged with any identifier, or linked to you</strong>. If you
+          are offline or the search is unavailable, Find still works using only your on-device map.
+        </p>
       </section>
 
       <section style={{ marginBottom: 28 }}>
@@ -544,6 +561,16 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
            by posting the new policy on this page and updating the &quot;Last updated&quot; date.
            Continued use of the service after changes constitutes acceptance of the updated policy.
          </p>
+          <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+            <strong>Version 3.3 (effective August 10, 2026).</strong> This update adds the new{" "}
+            <strong>&quot;Find&quot;</strong> feature. Find builds a personalized map of the concepts
+            you have proven you know (by passing lesson quizzes) <strong>entirely on your device</strong>{" "}
+            — no lesson content is uploaded and the map is never stored on our servers. Find&apos;s
+            optional &quot;discover related lessons&quot; search sends only your short goal text and
+            coarse topic labels with a rough mastery strength to search our shared, anonymous lesson
+            cache; that request is processed in memory to build your results and is not stored, logged
+            with any identifier, or linked to you. No new categories of personal data are collected.
+          </p>
           <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
             <strong>Version 3.2 (effective August 8, 2026).</strong> This update aligns the policy
             with the way the Service actually operates. (1){" "}

@@ -21,12 +21,12 @@ const ALLOWED_PATHS_WHEN_DECLINED = ["/sign-in", "/sign-up", "/legal"];
 // When the legal versions change, update these bullets and the verification
 // subtests in scripts/verify-reconsent-copy.mjs together.
 const POLICY_CHANGES = [
-  "Privacy Policy updated to version 3.2: consent records no longer store your email address in our own database (it is held only by Clerk, our authentication provider), and email fields on older records have been removed; web-search context (Serper) is now used only in Explain mode, so Fast-mode questions are never sent to the search service; and we clarified that questions or notes blocked by our safety filters are kept briefly in pseudonymous moderation logs (auto-deleted within 90 days).",
-  "We also aligned the policy with what we actually do as a small, independently operated service: international data-transfer language now points to our processors' own published safeguards, the security-incident section describes our real capabilities, and the accessibility statement no longer claims conformance with a formal standard.",
+  "Privacy Policy updated to version 3.3: we added the new “Find” feature, which builds a personalized map of the concepts you have proven you know (by passing lesson quizzes) entirely on your device — no lesson content is uploaded and the map is never stored on our servers.",
+  "When you use Find’s optional “discover related lessons” search, we send only your short goal text and coarse topic labels with a rough mastery strength to search our shared, anonymous lesson cache; that request is processed in memory to build your results and is not stored, logged with any identifier, or linked to you.",
 ];
 
 const TERMS_CHANGES = [
-  "Terms of Service updated to version 2.9: clarified that the last-resort AI provider may run a smaller Gemma model variant so output quality can vary; replaced the fixed 30-day advance-notice promise for material changes with in-app notice and re-consent; softened the accessibility statement; and added standard protective clauses — entire agreement, no waiver, assignment, no third-party beneficiaries, and a 12-month time limit for bringing claims.",
+  "Terms of Service updated to version 3.0: we added the new “Find” feature, which builds a personalized map of what you have proven you know (computed on your device) and recommends what to learn next; its optional “discover related lessons” search sends only short topic labels and your goal text to our shared, anonymous lesson cache and is not stored or linked to you. Find’s recommendations are suggestions only and are provided “as is” without any guarantee of accuracy, completeness, or suitability.",
 ];
 
 // Build year/month options once

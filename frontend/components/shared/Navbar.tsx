@@ -17,6 +17,7 @@ interface Props {
 const NAV_ITEMS = [
   { href: "/", label: "Home" },
   { href: "/learn", label: "Learn" },
+  { href: "/find", label: "Find" },
   { href: "/progress", label: "Stats" },
 ];
 
