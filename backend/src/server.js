@@ -52,7 +52,8 @@ import {
   getCachedLesson,
   setCachedLesson,
 } from "./lib/lessonCache.js";
-import { ensureLessonSearchIndexes } from "./lib/searchIndex.js";
+import { ensureLessonSearchIndexes, searchCachedLessons } from "./lib/searchIndex.js";
+import { buildFindResponse, buildDiscoverQuery, sanitizeMasteryTopics } from "./lib/frontier.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -1099,6 +1100,67 @@ app.post("/api/feedback", feedbackRateLimiter, async (req, res) => {
   } catch (error) {
     console.error("[api/feedback] Failed to store feedback", error);
     return res.status(500).json({ error: "Failed to save feedback" });
+  }
+});
+
+// ── "Find" — the personalized learning-frontier discovery endpoint ──
+//
+// This powers RealLearn's uncopyable differentiator. The learner's private
+// mastery graph is computed on-device (frontend/lib/knowledgeFrontier.ts); this
+// route provides the OPTIONAL "discover related" enrichment: given the learner's
+// coarse proven-topic labels + an optional goal, it activates the lesson text
+// index (searchIndex.js) to surface things OTHER learners explored that this
+// learner has NOT yet proven, then filters out already-mastered ground.
+//
+// PRIVACY: we accept only short topic labels + an optional goal string, store
+// NOTHING, and log no identifiers. A missing/broken DB degrades gracefully to an
+// empty discover list so the client's on-device frontier stays authoritative.
+app.post("/api/find", rateLimit, requireAuth, async (req, res) => {
+  try {
+    const { goal, mastered, limit } = req.body ?? {};
+
+    // Moderate the free-text goal exactly like a question — the same intent
+    // filter that guards /api/generate-lesson.
+    const rawGoal = typeof goal === "string" ? goal : "";
+    const guard = filterUserInput(rawGoal);
+    if (!guard.allowed) {
+      return res.status(400).json({ error: guard.reason });
+    }
+    const cleanGoal = (guard.filtered ?? "").slice(0, 160);
+
+    const masteredTopics = sanitizeMasteryTopics(mastered);
+
+    // Activate the (previously dormant) lesson text index to discover related
+    // lessons. Wrapped defensively: the feature must work even with no DB.
+    let searchResults = [];
+    try {
+      const query = buildDiscoverQuery(cleanGoal, masteredTopics);
+      if (query) {
+        const found = await searchCachedLessons(query, { limit: 25 });
+        searchResults = Array.isArray(found?.results) ? found.results : [];
+      }
+    } catch (searchError) {
+      console.warn("[api/find] discovery search unavailable", searchError?.message ?? searchError);
+    }
+
+    const payload = buildFindResponse({
+      goal: cleanGoal,
+      masteredTopics,
+      searchResults,
+      limit,
+    });
+
+    // PRIVACY: log only coarse, non-identifying counts.
+    console.log("[api/find] discovery served", {
+      provenTopics: payload.provenTopics,
+      discovered: payload.discover.length,
+      hasGoal: Boolean(cleanGoal),
+    });
+
+    return res.json(payload);
+  } catch (error) {
+    console.error("[api/find] Failed to build discovery", error);
+    return res.status(500).json({ error: "Failed to find recommendations" });
   }
 });
 
