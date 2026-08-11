@@ -1837,11 +1837,13 @@ Question:
 ${fencedQuestion}
 END_STUDENT_QUESTION>>>${
       personalizationPrompt
-        ? `\n\nLEARNER PROFILE — HIGH PRIORITY (mandatory adaptation):\n${personalizationPrompt}`
-        : ""
+        ? `\n\nLEARNER ADAPTATION — HIGH PRIORITY (mandatory). Use BOTH the learner's preferences AND their quiz-verified knowledge below to visibly shape the answer:\n\n[Preferences]\n${personalizationPrompt}`
+        : (learningContextPrompt
+          ? `\n\nLEARNER ADAPTATION — HIGH PRIORITY (mandatory). Use the learner's quiz-verified knowledge below to visibly shape the answer:`
+          : "")
     }${
       learningContextPrompt
-        ? `\n\n${learningContextPrompt}`
+        ? `${personalizationPrompt ? `\n\n[Verified knowledge]\n` : `\n\n`}${learningContextPrompt}`
         : ""
     }${
       trimmedNewsContext

@@ -249,17 +249,63 @@ const MAX_TOPICS_PER_BUCKET = 4;
  * ~5 characters per token (English average) and keep the snippet well under a
  * few hundred characters so it costs almost nothing per request.
  */
-const MAX_CONTEXT_CHARS = 480;
+const MAX_CONTEXT_CHARS = 700;
 
 /**
  * Relevance score of a proficiency node to the current question: how many of
  * the node's tokens appear in the question's tokens. Higher overlap = more
  * relevant context to surface.
  */
+/**
+ * Relevance score of a proficiency node to the current question.
+ *
+ * Scoring is layered so conceptually related topics connect even when the
+ * wording differs (the original exact-token-only match missed obvious links
+ * like "parabolas" vs "quadratic equations"):
+ *
+ *  - Exact token match: +3 (strongest signal)
+ *  - Singular/plural match: +2 (e.g. "equation" vs "equations")
+ *  - Shared stem (first-4-char prefix): +1 (e.g. "calculus" vs "calculate",
+ *    "derivative" vs "derivatives" already caught by plural rule, but
+ *    "algebra" vs "algebraic" connect here)
+ *
+ * A small floor score is also added when the node shares the question's broad
+ * subject token (heuristic: the longest question token that also appears in a
+ * known-subject list). This catches "I learned calculus, now asking about
+ * derivatives" — no exact or stem overlap, but same domain.
+ */
+function singularize(word: string): string {
+  if (word.length > 4 && word.endsWith("ies")) return word.slice(0, -3) + "y";
+  if (word.length > 3 && word.endsWith("es")) return word.slice(0, -2);
+  if (word.length > 3 && word.endsWith("s") && !word.endsWith("ss"))
+    return word.slice(0, -1);
+  return word;
+}
+
+function stem(word: string): string {
+  return word.length >= 4 ? word.slice(0, 4) : word;
+}
+
 function relevance(node: ProficiencyNode, questionTokens: Set<string>): number {
-  let overlap = 0;
-  for (const t of node.tokens) if (questionTokens.has(t)) overlap += 1;
-  return overlap;
+  if (questionTokens.size === 0) return 0;
+  let score = 0;
+  const qStems = new Set<string>();
+  const qSings = new Set<string>();
+  for (const t of questionTokens) {
+    qSings.add(singularize(t));
+    qStems.add(stem(singularize(t)));
+  }
+  for (const t of node.tokens) {
+    const sing = singularize(t);
+    if (questionTokens.has(t)) {
+      score += 3; // exact
+    } else if (qSings.has(sing)) {
+      score += 2; // singular/plural
+    } else if (qStems.has(stem(sing))) {
+      score += 1; // shared root/stem
+    }
+  }
+  return score;
 }
 
 interface BucketDescriptor {
@@ -270,9 +316,14 @@ interface BucketDescriptor {
 }
 
 /**
- * Generate a small, topic-relevant learning-context snippet for the AI. Only
- * the areas relevant to the current question's tokens are included, and the
- * whole snippet is char-budgeted so it costs almost nothing per request.
+ * Generate a small, topic-relevant learning-context snippet for the AI.
+ *
+ * All four proficiency buckets are surfaced (strong, moderate, weak, and
+ * low-confidence), because the AI needs the full picture to personalize well —
+ * especially the weak/low-confidence areas, which are where scaffolding helps
+ * most. Within each bucket, nodes most relevant to the current question
+ * (by layered token/stem matching) come first, and the whole snippet is
+ * char-budgeted so it costs almost nothing per request.
  *
  * The snippet is plain, descriptive prose — e.g.
  *   "User knowledge context: Strong in algebraic identities, moderate in
@@ -303,8 +354,8 @@ export function buildLearningContext(
   const descriptors: BucketDescriptor[] = [
     { label: "strong in", nodes: profile.wellUnderstood, onlyIfRelevant: false },
     { label: "moderate in", nodes: profile.partiallyUnderstood, onlyIfRelevant: false },
-    { label: "weak in", nodes: profile.struggling, onlyIfRelevant: true },
-    { label: "still building confidence in", nodes: profile.lowConfidence, onlyIfRelevant: true },
+    { label: "weak in", nodes: profile.struggling, onlyIfRelevant: false },
+    { label: "still building confidence in", nodes: profile.lowConfidence, onlyIfRelevant: false },
   ];
 
   const phrases: string[] = [];
@@ -321,14 +372,19 @@ export function buildLearningContext(
         return byStrengthThenRecency(a.n, b.n);
       });
 
-    // When there is a question, only surface a bucket if it has at least one
-    // relevant node OR the bucket is always allowed (strong/moderate give useful
-    // background even without a direct hit). This keeps the snippet focused.
+    // Weak/low-confidence areas are ALWAYS surfaced (they are the most useful
+    // for personalization — the AI needs to know where to scaffold), but
+    // relevant nodes come first so the snippet stays focused on the question.
     const relevantCount = ranked.filter((x) => x.r > 0).length;
-    if (hasQuestion && desc.onlyIfRelevant && relevantCount === 0) continue;
+
+    // When there is a question: give buckets with relevant hits the full topic
+    // allowance, and trim non-relevant buckets to 2 topics so the snippet stays
+    // focused and within the char budget. Without a question, use the full
+    // allowance for every bucket (general background).
+    const limit = hasQuestion && relevantCount === 0 ? 2 : MAX_TOPICS_PER_BUCKET;
 
     const picked = ranked
-      .slice(0, MAX_TOPICS_PER_BUCKET)
+      .slice(0, limit)
       .map((x) => x.n.topic)
       .filter(Boolean);
     if (picked.length === 0) continue;

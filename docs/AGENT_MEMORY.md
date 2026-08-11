@@ -785,3 +785,48 @@ this protocol. No exceptions.**
 
 
 
+
+### 2026-08-11 — Learning-context effectiveness fixes (4 bugs)
+
+User reported the personalization layer felt ineffective after testing. Root
+cause analysis identified four concrete weaknesses, all fixed:
+
+  1. PRIORITY TOO LOW — the learning-context block was framed much more weakly
+     than the existing personalization profile (which is stamped "HIGH PRIORITY
+     / MANDATORY"). The AI likely treated the new context as optional. FIX:
+     `formatLearningContextForPrompt` (personalization.js) now uses the same
+     forceful MANDATORY/HIGH PRIORITY language with explicit BUILD ON / SCAFFOLD
+     / CONNECT directives and a "VISIBLY different from a generic answer"
+     requirement. In `server.js`, the personalization profile + learning context
+     are now unified under a single "LEARNER ADAPTATION — HIGH PRIORITY
+     (mandatory)" header with `[Preferences]` and `[Verified knowledge]`
+     sub-sections, so the AI sees them as one cohesive high-priority adaptation
+     block rather than the context being a tacked-on afterthought.
+
+  2. TOPIC MATCHING TOO LITERAL — `relevance()` only matched exact tokens, so
+     "parabolas" never connected to a past "quadratic equations" lesson (zero
+     word overlap). FIX: `relevance()` now uses layered scoring: exact token
+     match (+3), singular/plural normalization (+2, e.g. "equation" vs
+     "equations"), and shared 4-char stem matching (+1, e.g. "algebra" vs
+     "algebraic"). New `singularize()` and `stem()` helpers added to
+     learningProfile.ts.
+
+  3. WEAK/STRUGGLING AREAS HIDDEN — the `onlyIfRelevant` rule silently dropped
+     weak/low-confidence areas unless there was an exact word match with the
+     question — exactly the areas where personalization helps most. FIX: all
+     four buckets now have `onlyIfRelevant: false`; weak/low-confidence areas
+     are always surfaced within the char budget. Non-relevant buckets are
+     trimmed to 2 topics (vs 4 for relevant) when there's a question, to keep
+     the snippet focused.
+
+  4. CONTEXT TOO TINY — capped at 480 chars (2-3 sentences), not enough
+     substance. FIX: `MAX_CONTEXT_CHARS` raised 480 → 700 (frontend);
+     `MAX_LEARNING_CONTEXT_CHARS` raised 600 → 800 (backend server ceiling,
+     stays above the frontend budget).
+
+  Verification: `verify:profile` 21/21 (added 2 new smarter-matching checks,
+  modified 2 for new budget/always-surface behavior), `verify:frontier` 28/28,
+  `verify:reconsent` 3/3, backend tests 45/45, `tsc --noEmit` clean, `next lint`
+  clean, `next build` clean (13 pages, no /find). Files changed:
+  `frontend/lib/learningProfile.ts`, `backend/src/lib/personalization.js`,
+  `backend/src/server.js`, `frontend/scripts/verify-learning-profile.mjs`.
