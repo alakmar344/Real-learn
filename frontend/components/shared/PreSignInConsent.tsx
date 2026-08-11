@@ -21,12 +21,12 @@ const ALLOWED_PATHS_WHEN_DECLINED = ["/sign-in", "/sign-up", "/legal"];
 // When the legal versions change, update these bullets and the verification
 // subtests in scripts/verify-reconsent-copy.mjs together.
 const POLICY_CHANGES = [
-  "Privacy Policy updated to version 3.3: we added the new “Find” feature, which builds a personalized map of the concepts you have proven you know (by passing lesson quizzes) entirely on your device — no lesson content is uploaded and the map is never stored on our servers.",
-  "When you use Find’s optional “discover related lessons” search, we send only your short goal text and coarse topic labels with a rough mastery strength to search our shared, anonymous lesson cache; that request is processed in memory to build your results and is not stored, logged with any identifier, or linked to you.",
+  "Privacy Policy updated to version 3.4: we replaced the standalone “Find” page with an internal, quiz-driven personalization layer. RealLearn now builds a compact learning profile from your quiz results entirely on your device — no lesson content is uploaded and the profile is never stored on our servers.",
+  "When you ask a question, a small, topic-relevant learning-context summary (short labels for concepts you are strong in, moderate in, or weak in) is generated on your device and attached to that lesson request so the AI can personalize the answer; this summary is processed in memory and is not stored, logged with any identifier, or linked to you — only a one-way hash is used to key the shared, anonymous lesson cache. There is no separate page to browse or manage this profile.",
 ];
 
 const TERMS_CHANGES = [
-  "Terms of Service updated to version 3.0: we added the new “Find” feature, which builds a personalized map of what you have proven you know (computed on your device) and recommends what to learn next; its optional “discover related lessons” search sends only short topic labels and your goal text to our shared, anonymous lesson cache and is not stored or linked to you. Find’s recommendations are suggestions only and are provided “as is” without any guarantee of accuracy, completeness, or suitability.",
+  "Terms of Service updated to version 3.1: we replaced the standalone “Find” feature with an internal, quiz-driven personalization layer. RealLearn now builds a compact learning profile from your quiz results on your device and attaches a small, topic-relevant learning-context summary to each lesson request so the AI can personalize the answer; this summary is not stored on our servers. The separate “Find” page and its “discover related lessons” search have been removed. The AI’s personalized responses are provided “as is” without any guarantee of accuracy, completeness, or suitability.",
 ];
 
 // Build year/month options once

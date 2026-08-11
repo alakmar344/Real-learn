@@ -45,6 +45,7 @@ import { evaluateAndFix } from "./lib/qualityGate.js";
 import {
   sanitizePersonalization,
   formatPersonalizationForPrompt,
+  formatLearningContextForPrompt,
   neutralizePromptFences,
 } from "./lib/personalization.js";
 import {
@@ -52,8 +53,7 @@ import {
   getCachedLesson,
   setCachedLesson,
 } from "./lib/lessonCache.js";
-import { ensureLessonSearchIndexes, searchCachedLessons } from "./lib/searchIndex.js";
-import { buildFindResponse, buildDiscoverQuery, sanitizeMasteryTopics } from "./lib/frontier.js";
+import { ensureLessonSearchIndexes } from "./lib/searchIndex.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -485,8 +485,8 @@ const SPEECH_LANG_TO_VOICE = {
   "en-US": "en-US-AriaNeural",
 };
 
-const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "3.2";
-const TERMS_OF_SERVICE_VERSION = process.env.TERMS_OF_SERVICE_VERSION || "2.9";
+const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "3.4";
+const TERMS_OF_SERVICE_VERSION = process.env.TERMS_OF_SERVICE_VERSION || "3.1";
 const COOKIE_POLICY_VERSION = process.env.COOKIE_POLICY_VERSION || "2.3";
 
 // ── Input validation limits (security: bound prompt size and lock free-text
@@ -1103,66 +1103,13 @@ app.post("/api/feedback", feedbackRateLimiter, async (req, res) => {
   }
 });
 
-// ── "Find" — the personalized learning-frontier discovery endpoint ──
-//
-// This powers RealLearn's uncopyable differentiator. The learner's private
-// mastery graph is computed on-device (frontend/lib/knowledgeFrontier.ts); this
-// route provides the OPTIONAL "discover related" enrichment: given the learner's
-// coarse proven-topic labels + an optional goal, it activates the lesson text
-// index (searchIndex.js) to surface things OTHER learners explored that this
-// learner has NOT yet proven, then filters out already-mastered ground.
-//
-// PRIVACY: we accept only short topic labels + an optional goal string, store
-// NOTHING, and log no identifiers. A missing/broken DB degrades gracefully to an
-// empty discover list so the client's on-device frontier stays authoritative.
-app.post("/api/find", rateLimit, requireAuth, async (req, res) => {
-  try {
-    const { goal, mastered, limit } = req.body ?? {};
-
-    // Moderate the free-text goal exactly like a question — the same intent
-    // filter that guards /api/generate-lesson.
-    const rawGoal = typeof goal === "string" ? goal : "";
-    const guard = filterUserInput(rawGoal);
-    if (!guard.allowed) {
-      return res.status(400).json({ error: guard.reason });
-    }
-    const cleanGoal = (guard.filtered ?? "").slice(0, 160);
-
-    const masteredTopics = sanitizeMasteryTopics(mastered);
-
-    // Activate the (previously dormant) lesson text index to discover related
-    // lessons. Wrapped defensively: the feature must work even with no DB.
-    let searchResults = [];
-    try {
-      const query = buildDiscoverQuery(cleanGoal, masteredTopics);
-      if (query) {
-        const found = await searchCachedLessons(query, { limit: 25 });
-        searchResults = Array.isArray(found?.results) ? found.results : [];
-      }
-    } catch (searchError) {
-      console.warn("[api/find] discovery search unavailable", searchError?.message ?? searchError);
-    }
-
-    const payload = buildFindResponse({
-      goal: cleanGoal,
-      masteredTopics,
-      searchResults,
-      limit,
-    });
-
-    // PRIVACY: log only coarse, non-identifying counts.
-    console.log("[api/find] discovery served", {
-      provenTopics: payload.provenTopics,
-      discovered: payload.discover.length,
-      hasGoal: Boolean(cleanGoal),
-    });
-
-    return res.json(payload);
-  } catch (error) {
-    console.error("[api/find] Failed to build discovery", error);
-    return res.status(500).json({ error: "Failed to find recommendations" });
-  }
-});
+// NOTE: The standalone "Find" discovery endpoint (/api/find) was removed when
+// the Find feature became an internal, quiz-driven personalization layer. The
+// learner's mastery graph is now computed on-device (frontend/lib/
+// knowledgeFrontier.ts + learningProfile.ts) and a compact, topic-relevant
+// context snippet is attached to each /api/generate-lesson request instead of
+// being surfaced on a separate page. The lesson text index (searchIndex.js) is
+// retained for cache retrieval but is no longer wired to a discovery route.
 
 // Delete every server-side trace of the authenticated user: their MongoDB
 // cookie-consent records AND their Clerk account. The frontend handles clearing
@@ -1562,6 +1509,31 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
     }
   }
   const personalizationPrompt = formatPersonalizationForPrompt(personalization);
+  // Learning context: a compact, topic-relevant snippet derived on-device from
+  // the learner's quiz-verified knowledge (see frontend/lib/learningProfile.ts).
+  // It is plain, descriptive prose treated as DESCRIPTIVE DATA — fenced and
+  // neutralized exactly like learner notes. Run it through the SAME content
+  // filter as the question/notes so the field cannot be a moderation bypass.
+  let learningContextRaw = typeof req.body?.learningContext === "string" ? req.body.learningContext : "";
+  if (learningContextRaw) {
+    const contextFilter = filterUserInput(learningContextRaw);
+    if (!contextFilter.allowed) {
+      const contextModerationEvent = buildModerationEvent({
+        requestId,
+        clerkId: req.auth?.userId,
+        type: "learning-context-blocked",
+        reason: contextFilter.reason,
+        question: learningContextRaw,
+      });
+      console.warn(
+        "[moderation] Learning context blocked; continuing without it",
+        redactModerationEvent(contextModerationEvent)
+      );
+      void logModerationEvent(contextModerationEvent);
+      learningContextRaw = "";
+    }
+  }
+  const learningContextPrompt = formatLearningContextForPrompt(learningContextRaw);
   console.log("[generate-lesson] Incoming request", {
     requestId,
     questionLength: question?.length ?? 0,
@@ -1570,6 +1542,7 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
     mode,
     activeLessonRequests,
     hasPersonalization: Boolean(personalizationPrompt),
+    hasLearningContext: Boolean(learningContextPrompt),
   });
 
   if (!question) {
@@ -1616,7 +1589,7 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
   // rule-based moderation (the cached lesson already passed every check when it was
   // first generated). Cache hits also bypass the concurrency gate because they
   // cost almost nothing.
-  const cacheKey = lessonCacheKey(question, language, level, mode, personalization);
+  const cacheKey = lessonCacheKey(question, language, level, mode, personalization, learningContextRaw);
   const cachedLesson = await getCachedLesson(cacheKey);
   if (cachedLesson) {
     // Reliability: this branch runs OUTSIDE the main try/finally below. If the
@@ -1865,6 +1838,10 @@ ${fencedQuestion}
 END_STUDENT_QUESTION>>>${
       personalizationPrompt
         ? `\n\nLEARNER PROFILE — HIGH PRIORITY (mandatory adaptation):\n${personalizationPrompt}`
+        : ""
+    }${
+      learningContextPrompt
+        ? `\n\n${learningContextPrompt}`
         : ""
     }${
       trimmedNewsContext

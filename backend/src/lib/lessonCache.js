@@ -75,6 +75,17 @@ function normalizePersonalization(personalization) {
 }
 
 /**
+ * Normalize the learning-context snippet for the cache key. The context is a
+ * compact, topic-relevant summary of the learner's quiz-verified knowledge. It
+ * is included in the cache key so two learners (or the same learner at a
+ * different point in their journey) with different knowledge profiles get
+ * distinct, knowledge-tailored lessons even when the question + prefs match.
+ */
+function normalizeLearningContext(learningContext) {
+  return String(learningContext ?? "").trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+/**
  * Deterministic cache key for a lesson request. Case and extra whitespace in
  * the question don't change the key, so trivially different phrasings of the
  * exact same question still hit the cache. Personalization is included so that
@@ -86,13 +97,14 @@ export function lessonCacheKey(
   language,
   level,
   mode = "explain",
-  personalization = null
+  personalization = null,
+  learningContext = ""
 ) {
   const normalizedQuestion = String(question ?? "")
     .trim()
     .toLowerCase()
     .replace(/\s+/g, " ");
-  const material = `${normalizedQuestion}|${language ?? ""}|${level ?? ""}|${mode ?? "explain"}|${normalizePersonalization(personalization)}`;
+  const material = `${normalizedQuestion}|${language ?? ""}|${level ?? ""}|${mode ?? "explain"}|${normalizePersonalization(personalization)}|${normalizeLearningContext(learningContext)}`;
   return crypto.createHash("sha256").update(material).digest("hex");
 }
 

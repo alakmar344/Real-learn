@@ -27,7 +27,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
         Privacy Policy
       </Title>
       <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
-        Last updated: August 10, 2026 (version 3.3)
+        Last updated: August 11, 2026 (version 3.4)
       </p>
 
       <section style={{ marginBottom: 28 }}>
@@ -59,11 +59,15 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
           <strong>Cloudflare Workers AI</strong> (Gemma) as a last-resort fallback so lessons can
           still be generated if the primary and fallback are slow or unavailable. This is designed to
           help students learn through interactive quizzes and structured content. RealLearn also
-          offers a <strong>&quot;Find&quot;</strong> feature that maps the concepts you have proven you
-          know (by passing lesson quizzes) and recommends what to learn next. This mastery map is
-          computed <strong>on your device</strong> from data already stored locally in your browser —
-          see &quot;Cookies and Local Storage&quot; below for exactly what is used and what, if
-          anything, is sent to our servers.
+          builds a <strong>personalized learning profile</strong> from your quiz results: a compact,
+          on-device map of the concepts you have proven you know (by passing lesson quizzes) and
+          where you are still building confidence. This profile is computed <strong>on your
+          device</strong> from data already stored locally in your browser and is used internally to
+          personalize each AI answer — a small, topic-relevant summary of your verified knowledge is
+          attached to your lesson request so the AI can build on your strengths and give extra care
+          to areas you find hard. The profile is not shown on a separate page and is not stored on
+          our servers — see &quot;Cookies and Local Storage&quot; below for exactly what is used and
+          what, if anything, is sent to our servers.
         </p>
       </section>
 
@@ -90,7 +94,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Consent Records:</strong> Timestamps of when you accepted our Privacy Policy
-            (version 3.3), Terms of Service (version 3.0), and cookie/analytics consent, together
+            (version 3.4), Terms of Service (version 3.1), and cookie/analytics consent, together
             with the policy version, an <strong>anonymized (truncated) device IP</strong>, and a
             hashed User-Agent, kept as proof of consent. These records are keyed to your Clerk
             account ID and <strong>do not contain your email address</strong> — it is held only by
@@ -166,13 +170,22 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
             stored only on your device, can be changed or cleared anytime in Settings, and are{" "}
             <strong>not stored on our servers</strong>; they are simply included with each lesson-
             generation request so the AI can tailor its response. We cap the free-text notes at 500
-            characters. One narrow exception: if your free-text notes are blocked by our safety
+            characters. In addition, RealLearn derives a <strong>compact learning-context
+          summary</strong> from your on-device quiz history — a short, topic-relevant description of
+          the concepts you have proven strong in, are moderate in, or are weak in (for example,
+          &quot;strong in algebraic identities, moderate in factorisation, weak in quadratic
+          equations&quot;). This summary is generated on your device from your saved quiz results,
+          is <strong>not stored on our servers</strong>, and is included only with the lesson-
+          generation request it personalizes; it is then discarded. We cap this summary at a small
+          fixed length. One narrow exception: if your free-text notes or learning-context summary
+          are blocked by our safety
             filters, the blocked text is recorded in a pseudonymous moderation log (see
             &quot;Moderation Logs&quot; below) and is not sent to the AI. If you are signed in, your first name (provided by Clerk) may be displayed in
             an on-screen greeting — this happens entirely in your browser. None of this information is{" "}
-            <strong>transmitted to or stored on our servers</strong> (except the learning preferences,
-            which are sent only with the lesson request and then discarded), and clearing your browser
-            data or using &quot;Delete My Data&quot; removes it.
+            <strong>transmitted to or stored on our servers</strong> (except the learning preferences
+            and the compact learning-context summary, which are sent only with the lesson request and
+            then discarded), and clearing your browser
+            data or using &quot;Delete My Data&quot; removes the on-device profile.
           </li>
           <li>
             <strong>Moderation Logs:</strong> When a question you submit, a personalization note,
@@ -357,16 +370,19 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
           or by using the &quot;Delete My Data&quot; feature in the app, which clears both.
         </p>
         <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 12 }}>
-          <strong>The &quot;Find&quot; feature (your knowledge frontier):</strong> Find builds your
-          personalized &quot;proven map&quot; entirely on your device from the saved-lesson history
-          index and progress data already described above — no lesson content is uploaded and the map
-          is never stored on our servers. When you use Find&apos;s optional &quot;discover related
-          lessons&quot; search, we send only your short goal text and coarse topic labels (for
-          example, &quot;gravity&quot;, &quot;photosynthesis&quot;) with a rough mastery strength, in
-          order to search our shared, anonymized cache of previously generated lessons and suggest
-          topics you have not yet mastered. This request is processed in memory to build your results
-          and is <strong>not stored, logged with any identifier, or linked to you</strong>. If you
-          are offline or the search is unavailable, Find still works using only your on-device map.
+          <strong>Personalized learning profile (your knowledge context):</strong> RealLearn builds
+          a compact proficiency profile entirely on your device from the saved-lesson history index
+          and progress data already described above — no lesson content is uploaded and the profile
+          is never stored on our servers. When you ask a question, a small, topic-relevant
+          learning-context summary (short labels for concepts you are strong in, moderate in, or
+          weak in, capped at a fixed length) is generated on your device and attached to that
+          lesson-generation request so the AI can personalize the answer. This summary is processed
+          in memory to tailor the response and is <strong>not stored, logged with any identifier, or
+          linked to you</strong>; only a one-way hash of the summary is used to key the shared,
+          anonymous lesson cache so that two learners with different knowledge profiles receive
+          distinct, tailored answers. There is no separate page to browse or manage this profile —
+          it works automatically in the background from your quiz results. If you are offline, the
+          AI still answers; the summary is simply omitted.
         </p>
       </section>
 
@@ -561,6 +577,23 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
            by posting the new policy on this page and updating the &quot;Last updated&quot; date.
            Continued use of the service after changes constitutes acceptance of the updated policy.
          </p>
+          <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+            <strong>Version 3.4 (effective August 11, 2026).</strong> This update replaces the
+            standalone &quot;Find&quot; page with an internal, quiz-driven personalization layer.
+            RealLearn now builds a compact <strong>learning profile</strong> from your quiz results
+            entirely <strong>on your device</strong> — no lesson content is uploaded and the profile
+            is never stored on our servers. When you ask a question, a small, topic-relevant
+            learning-context summary (short labels for concepts you are strong in, moderate in, or
+            weak in, capped at a fixed length) is generated on your device and attached to that
+            lesson request so the AI can personalize the answer; the summary is processed in memory
+            and is not stored, logged with any identifier, or linked to you — only a one-way hash is
+            used to key the shared, anonymous lesson cache. The separate &quot;Find&quot; page and
+            its &quot;discover related lessons&quot; search have been removed; the optional
+            learning-context summary replaces that data flow. No new categories of personal data are
+            collected, and no additional data leaves your device beyond the summary described here.
+            Because this is a material change to how your learning data is used, we are re-prompting
+            all users to review and re-accept this Privacy Policy before continuing.
+          </p>
           <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
             <strong>Version 3.3 (effective August 10, 2026).</strong> This update adds the new{" "}
             <strong>&quot;Find&quot;</strong> feature. Find builds a personalized map of the concepts

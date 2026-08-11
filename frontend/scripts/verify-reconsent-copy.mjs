@@ -11,24 +11,31 @@ function extractArray(name) {
 }
 
 test("re-consent change summary", async (t) => {
-  await t.test("privacy re-consent lists only the current v3.3 Find-feature changes", () => {
+  await t.test("privacy re-consent lists only the current v3.4 personalization-layer changes", () => {
     const policy = extractArray("POLICY_CHANGES");
-    assert.match(policy, /version 3\.3/i);
-    assert.match(policy, /\bFind\b/);
+    assert.match(policy, /version 3\.4/i);
+    assert.match(policy, /personalization layer|learning profile|learning-context/i);
     assert.match(policy, /on your device/i);
-    assert.match(policy, /discover related lessons|topic labels/i);
     assert.match(policy, /not stored|never stored/i);
+    assert.match(policy, /one-way hash|hash/i);
     // Stale bullets from earlier bumps must not linger.
-    assert.doesNotMatch(policy, /version 3\.2|version 3\.1|version 3\.0|version 2\.9|email address|Serper|moderation logs|transfer|safeguards|feedback/i);
+    assert.doesNotMatch(
+      policy,
+      /version 3\.3|version 3\.2|version 3\.1(?!\d)|version 3\.0|version 2\.9|email address|Serper|moderation logs|transfer|safeguards|feedback|discover related lessons/i
+    );
   });
 
-  await t.test("terms re-consent lists the current v3.0 Find-feature changes", () => {
+  await t.test("terms re-consent lists the current v3.1 personalization-layer changes", () => {
     const terms = extractArray("TERMS_CHANGES");
-    assert.match(terms, /version 3\.0/i);
-    assert.match(terms, /\bFind\b/);
-    assert.match(terms, /discover related lessons|topic labels/i);
+    assert.match(terms, /version 3\.1/i);
+    assert.match(terms, /personalization layer|learning profile|learning-context/i);
     assert.match(terms, /as is|suggestions only/i);
     // Stale bullets from earlier bumps must not linger.
-    assert.doesNotMatch(terms, /version 2\.9|version 2\.8|version 2\.7|last-resort|Gemma model|30-day|entire agreement|no waiver|third-party beneficiaries|force majeure/i);
+    // NOTE: "discover related lessons" is intentionally allowed here because the
+    // v3.1 bullet legitimately references the removed Find search by name.
+    assert.doesNotMatch(
+      terms,
+      /version 3\.0|version 2\.9|version 2\.8|version 2\.7|last-resort|Gemma model|30-day|entire agreement|no waiver|third-party beneficiaries|force majeure/i
+    );
   });
 });
