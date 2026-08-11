@@ -270,7 +270,10 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
         a.href = url;
         a.download = "reallearn-result.png";
         a.click();
-        URL.revokeObjectURL(url);
+        // Some browsers start the blob download asynchronously after click();
+        // revoking on the same tick can abort it. Defer the revoke so the
+        // download reliably lands, while still freeing the object URL.
+        setTimeout(() => URL.revokeObjectURL(url), 60_000);
         showToast("Result card downloaded", "success");
       }
     } catch (err) {

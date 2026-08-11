@@ -47,6 +47,7 @@ import {
   formatPersonalizationForPrompt,
   formatLearningContextForPrompt,
   neutralizePromptFences,
+  MAX_LEARNING_CONTEXT_CHARS,
 } from "./lib/personalization.js";
 import {
   lessonCacheKey,
@@ -1514,7 +1515,17 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
   // It is plain, descriptive prose treated as DESCRIPTIVE DATA — fenced and
   // neutralized exactly like learner notes. Run it through the SAME content
   // filter as the question/notes so the field cannot be a moderation bypass.
-  let learningContextRaw = typeof req.body?.learningContext === "string" ? req.body.learningContext : "";
+  // SECURITY (DoS): cap the raw context to the same ceiling the prompt
+  // formatter enforces BEFORE running the content-filter regexes. The `question`
+  // (≤1000) and `notes` (≤500) fields are already bounded before filtering;
+  // learningContext previously reached `filterUserInput` at its full body size
+  // (up to the 100kb JSON limit), so a ~96kb payload of a trigger word plus
+  // whitespace could drive the unbounded `[\w\s]*` hate-content pattern into
+  // quadratic backtracking and stall the event loop.
+  let learningContextRaw =
+    typeof req.body?.learningContext === "string"
+      ? req.body.learningContext.slice(0, MAX_LEARNING_CONTEXT_CHARS)
+      : "";
   if (learningContextRaw) {
     const contextFilter = filterUserInput(learningContextRaw);
     if (!contextFilter.allowed) {

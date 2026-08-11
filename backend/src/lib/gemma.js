@@ -847,6 +847,21 @@ async function callCerebras(model, body, signal, opts) {
   }
 }
 
+// RELIABILITY: the direct fallback rungs (called from server.js when the
+// primary circuit is open) previously ran with empty opts, disabling the
+// first-byte + stall watchdogs. A provider that accepts the stream and then
+// goes silent without closing the socket would hang until undici's default
+// body timeout (~5 min), holding a global + per-user concurrency slot the whole
+// time. Give these rungs the SAME watchdog budget the primary path uses so a
+// silent upstream is aborted in seconds and the ladder moves on.
+function fallbackWatchdogOpts() {
+  const config = getEngineConfig();
+  return {
+    firstByteTimeoutMs: config.firstByteTimeoutMs,
+    stallTimeoutMs: config.stallTimeoutMs,
+  };
+}
+
 /**
  * Direct call to the NVIDIA fallback provider.
  * Public because server.js uses it for circuit-independent fallback rungs.
@@ -855,7 +870,7 @@ async function callCerebras(model, body, signal, opts) {
 export async function callNvidiaFallbackAI(model, body, signal) {
   const models = getNvidiaModels();
   const preferred = models[providerHealth.nvidia.modelIndex % models.length];
-  return callNvidiaAI(preferred || model, body, signal, {});
+  return callNvidiaAI(preferred || model, body, signal, fallbackWatchdogOpts());
 }
 
 export async function callCloudflareAI(model, body, signal) {
@@ -867,7 +882,7 @@ export async function callCloudflareAI(model, body, signal) {
   }
   const models = getCloudflareModels();
   const preferred = models[providerHealth.cloudflare.modelIndex % models.length];
-  return callWorkersAI(accountId, preferred || model, body, signal, {});
+  return callWorkersAI(accountId, preferred || model, body, signal, fallbackWatchdogOpts());
 }
 
 // Cloudflare Workers AI can report a mid-stream failure (e.g. 408 "error in

@@ -830,3 +830,28 @@ cause analysis identified four concrete weaknesses, all fixed:
   clean, `next build` clean (13 pages, no /find). Files changed:
   `frontend/lib/learningProfile.ts`, `backend/src/lib/personalization.js`,
   `backend/src/server.js`, `frontend/scripts/verify-learning-profile.mjs`.
+- 2026-08-11 — **Security + reliability hardening (backend) + two frontend
+  correctness fixes.** SECURITY (ReDoS/DoS): `/api/generate-lesson` passed the
+  `learningContext` field to the `filterUserInput` content-filter regexes at its
+  full body size (up to the 100 kb JSON cap) — unlike `question` (≤1000) and
+  personalization `notes` (≤500), which are bounded before filtering. The
+  hate-content pattern in `contentGuard.js` has an unbounded `[\w\s]*`, so a
+  ~96 kb payload of a trigger word plus whitespace could drive quadratic
+  backtracking and stall the event loop. `server.js` now slices
+  `learningContextRaw` to the existing `MAX_LEARNING_CONTEXT_CHARS` (800) BEFORE
+  filtering (constant now imported from `personalization.js`). RELIABILITY: the
+  direct NVIDIA/Cloudflare fallback rungs (`callNvidiaFallbackAI`/
+  `callCloudflareAI` in `gemma.js`), used when the primary circuit is open, ran
+  with empty opts that disabled the first-byte + stall watchdogs — a silent-but-
+  open upstream would hang until undici's ~5-min body timeout, holding a global +
+  per-user concurrency slot the whole time. New `fallbackWatchdogOpts()` sources
+  `{ firstByteTimeoutMs, stallTimeoutMs }` from `getEngineConfig()` so these rungs
+  get the same watchdog budget as the primary path. FRONTEND: `/learn` reveal
+  effect no longer replays the 420 ms loading cinematic on reload of a persisted
+  lesson (`revealedLessonRef` now initializes from the hydrated `lesson`, like
+  `prevLessonRef`); `ShareResult` download fallback defers `URL.revokeObjectURL`
+  so async blob downloads aren't aborted. Verified: `tsc --noEmit` clean,
+  `next lint` clean, `next build` clean, `verify:quiz` + `verify:achievements`
+  pass, backend tests 45/45. Files changed: `backend/src/server.js`,
+  `backend/src/lib/gemma.js`, `frontend/app/learn/page.tsx`,
+  `frontend/components/learning/ShareResult.tsx`.
