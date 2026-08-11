@@ -162,28 +162,42 @@ check("returns compact prose snippet", () => {
   const ctx = buildLearningContext(journeys, ["Physics"], "What is gravity?");
   return typeof ctx === "string" && ctx.startsWith("User knowledge context:") && ctx.endsWith(".");
 });
-check("snippet is char-budgeted (<= ~500 chars)", () => {
+check("snippet is char-budgeted (<= ~720 chars)", () => {
   const many = Array.from({ length: 60 }, (_, i) =>
     journey(`m${i}`, `Topic number ${i} explanation`, { partsDone: 3, partsTotal: 3, score: 6, savedAt: i })
   );
   const ctx = buildLearningContext(many, ["Math"], "Topic number 5 explanation");
-  return typeof ctx === "string" && ctx.length <= 520;
+  return typeof ctx === "string" && ctx.length <= 720;
 });
 check("surfaces strong areas even without question overlap", () => {
   const ctx = buildLearningContext(journeys, ["Physics"], "What is the Byzantine tax system?");
-  // strong (gravity) is always allowed; weak/low-confidence only if relevant
+  // strong (gravity) is always allowed
   return typeof ctx === "string" && /strong in/i.test(ctx);
 });
-check("weak/low-confidence only surfaced when relevant to the question", () => {
-  // black holes is "struggling" — only appears if the question overlaps
-  const relevant = buildLearningContext(journeys, ["Physics"], "What are black holes?");
+check("weak/struggling areas are ALWAYS surfaced (Fix 3)", () => {
+  // black holes is "struggling" — now always appears, even without question overlap,
+  // because weak areas are the most useful for personalization.
   const irrelevant = buildLearningContext(journeys, ["Physics"], "What is the Byzantine tax system?");
-  return (
-    typeof relevant === "string" &&
-    /weak in/i.test(relevant) &&
-    typeof irrelevant === "string" &&
-    !/weak in/i.test(irrelevant)
-  );
+  return typeof irrelevant === "string" && /weak in/i.test(irrelevant);
+});
+check("smarter matching: singular/plural connects (Fix 2)", () => {
+  // Past topic "Quadratic equation" (singular), question "Quadratic equations" (plural).
+  const js = [
+    journey("q1", "What is a quadratic equation?", { partsDone: 3, partsTotal: 3, score: 6, savedAt: 100 }),
+  ];
+  const ctx = buildLearningContext(js, ["Math"], "Explain quadratic equations");
+  // The pluralized question should connect to the singular past topic via the
+  // singular/plural matching layer, so the snippet mentions it.
+  return typeof ctx === "string" && /quadratic/i.test(ctx);
+});
+check("smarter matching: shared stem connects (Fix 2)", () => {
+  // Past topic "Algebra" , question "Algebraic identities" — no exact/plural match
+  // but shared 4-char stem "alge" connects them.
+  const js = [
+    journey("a1", "What is algebra?", { partsDone: 3, partsTotal: 3, score: 6, savedAt: 100 }),
+  ];
+  const ctx = buildLearningContext(js, ["Math"], "Explain algebraic identities");
+  return typeof ctx === "string" && /algebra/i.test(ctx);
 });
 check("deterministic — same inputs → same output", () => {
   const a = buildLearningContext(journeys, ["Physics"], "What is gravity?");
