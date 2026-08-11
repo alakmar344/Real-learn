@@ -66,10 +66,6 @@ export default function LearnPage() {
   const [showUnlockFx, setShowUnlockFx] = useState(false);
   const [isRevealing, setIsRevealing] = useState(false);
   const unlockTimeoutRef = useRef<number | null>(null);
-  // Guards the reveal so it fires exactly once per lesson. Keying it on the
-  // lesson object (not a boolean) also prevents the reveal effect from
-  // re-arming on unrelated re-renders.
-  const revealedLessonRef = useRef<LessonJourney | null>(null);
 
   const {
     question,
@@ -104,6 +100,14 @@ export default function LearnPage() {
       showFollowUp: state.showFollowUp,
     }))
   );
+
+  // Guards the reveal so it fires exactly once per lesson. Keying it on the
+  // lesson object (not a boolean) also prevents the reveal effect from
+  // re-arming on unrelated re-renders. Initialized from the CURRENT (already-
+  // hydrated) lesson so reloading a persisted lesson does NOT re-play the
+  // 420ms loading/reveal cinematic — the reveal is armed only when a lesson
+  // transitions in during this session.
+  const revealedLessonRef = useRef<LessonJourney | null>(lesson);
 
   const language = usePreferenceStore((s) => s.language);
   const level = usePreferenceStore((s) => s.level);
