@@ -96,7 +96,19 @@ const FENCE_MARKER_PATTERN =
 
 export function neutralizePromptFences(text) {
   if (typeof text !== "string") return "";
+  // SECURITY (NFKC normalization): fold Unicode to compatibility form BEFORE
+  // pattern matching so homoglyphs collapse to ASCII. Without this, fullwidth
+  // characters like <U+FF1C>, > (U+FF1E), and fullwidth marker text
+  // (e.g. U+FF25U+FF2EU+FF24_...) survive the ASCII-only FENCE_MARKER_PATTERN
+  // and angle-bracket patterns. An attacker could place a fullwidth fence
+  // delimiter inside notes/context that the content filter allows (it is not
+  // banned content, just Unicode text) but that a capable LLM may interpret as
+  // a real fence delimiter, breaking out of the "descriptive data, never
+  // instructions" framing. NFKC maps fullwidth to ASCII so the existing
+  // patterns catch them. This mirrors the canonicalization that contentGuard.js
+  // and moderation.js already apply to their pattern-matching inputs.
   return text
+    .normalize("NFKC")
     .replace(INVISIBLE_CHARS_PATTERN, "")
     .replace(/<{2,}|>{2,}/g, "")
     .replace(FENCE_MARKER_PATTERN, "");
