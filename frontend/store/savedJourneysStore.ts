@@ -40,6 +40,16 @@ export function journeySignature(question: string, firstPartTitle?: string): str
 // new device).
 export const MAX_SAVED_JOURNEYS = 100;
 
+// PERF: a lesson body is immutable across a session — only progress metadata
+// (scores, unlocked/completed parts) changes as the learner passes quizzes.
+// The persist effect re-runs saveJourney on EVERY part pass, so without this
+// guard the full lesson would be JSON.stringify'd + gzip'd + written to
+// IndexedDB 3-6 times per session for content that never changed. Track the
+// last-archived lesson reference per id and skip the redundant re-encode; a
+// genuinely NEW generation produces a new lesson object reference and is
+// re-archived correctly.
+const archivedLessonRefs = new Map<string, object>();
+
 /**
  * Condense a journey to its lightweight index entry, stashing the heavy
  * lesson body in the IndexedDB archive so it can be reloaded for free.
@@ -47,9 +57,10 @@ export const MAX_SAVED_JOURNEYS = 100;
 function toIndexEntry(journey: SavedJourney): SavedJourney {
   if (journey.archived && !journey.lesson) return journey;
   const parts = journey.lesson?.parts ?? [];
-  if (journey.lesson) {
+  if (journey.lesson && archivedLessonRefs.get(journey.id) !== journey.lesson) {
     // Fire-and-forget: if the write fails (private mode, quota) the entry
     // still degrades gracefully to regenerate-on-open.
+    archivedLessonRefs.set(journey.id, journey.lesson);
     void saveArchivedLesson(journey.id, journey.lesson);
   }
   const { lesson: _lesson, ...rest } = journey;
@@ -67,7 +78,10 @@ function toIndexEntry(journey: SavedJourney): SavedJourney {
 function applyRetention(journeys: SavedJourney[]): SavedJourney[] {
   // Entries pushed past the hard cap leave history entirely — clean up their
   // archived lesson bodies too so IndexedDB doesn't accumulate orphans.
-  journeys.slice(MAX_SAVED_JOURNEYS).forEach((j) => void deleteArchivedLesson(j.id));
+  journeys.slice(MAX_SAVED_JOURNEYS).forEach((j) => {
+    void deleteArchivedLesson(j.id);
+    archivedLessonRefs.delete(j.id);
+  });
   return journeys.slice(0, MAX_SAVED_JOURNEYS).map(toIndexEntry);
 }
 
@@ -97,6 +111,7 @@ export const useSavedJourneysStore = create<SavedJourneysStore>()(
           journeyLog("removeJourney", { id });
           // Also drop the archived lesson body so deletion really deletes.
           void deleteArchivedLesson(id);
+          archivedLessonRefs.delete(id);
           return { journeys: state.journeys.filter((j) => j.id !== id) };
         }),
     }),
