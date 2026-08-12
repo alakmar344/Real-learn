@@ -118,7 +118,8 @@ npm test                  # node --test: personalization + learning-context +
 > `ERR_UNKNOWN_FILE_EXTENSION`.
 
 **Baseline recorded 2026-08-12:** `tsc --noEmit` clean, `next lint` clean,
-`npm run build` clean (13 pages), backend `npm test` 52/52,
+`npm run build` clean (13 pages), backend `npm test` 88/88
+(54 functional + 34 offensive-audit exploit probes),
 `verify:quiz` / `verify:achievements` / `verify:frontier` /
 `verify:profile` / `verify:reconsent` / `verify:personalization` all pass.
 
@@ -967,3 +968,66 @@ cause analysis identified four concrete weaknesses, all fixed:
   `frontend/hooks/useLesson.ts`, `frontend/components/shared/PersonalizationGate.tsx`,
   `frontend/package.json`, `frontend/scripts/verify-personalization.mjs`,
   `docs/AGENT_MEMORY.md`, `change-made-after-submission.md`.
+
+### 2026-08-12 — Offensive security audit: 34 exploit probes, 1 confirmed vuln fixed
+
+Acting as an adversary, I read every untrusted-input boundary in the backend
+(`server.js` route handlers, `auth.js` JWT verification, `contentGuard.js`
+banned-pattern filter, `moderation.js` profanity + educational fast-path,
+`personalization.js` fence neutralization + sanitizers, `gemma.js` JSON
+parsing + provider calls, `serper.js` news fetch, `lessonCache.js` cache-key
+derivation, `validation.js` journey/schema/sources sanitization) and wrote a
+dedicated exploit-probe suite — `backend/test/offensive-audit.test.js`, 34
+tests across 15 attack categories: (A) prompt-injection fence escape, (B)
+moderation bypass via Unicode/canonicalization, (C) personalization field
+injection, (D) ReDoS / input-length abuse, (E) AI-output JSON smuggling,
+(F) rate-limit key evasion, (G) cache poisoning, (H) SSML injection, (I)
+header injection / CRLF, (J) prototype pollution, (K) IDOR / auth boundary,
+(L) educational-whitelist abuse, (M) parseJSON repair-overreach, (N)
+fence-marker pattern coverage, (O) fence integrity under newlines.
+
+**CONFIRMED VULNERABILITY (A2 — fullwidth/homoglyph fence escape):**
+`neutralizePromptFences()` in `personalization.js` applied its three
+stripping patterns (`INVISIBLE_CHARS_PATTERN`, `/<{2,}|>{2,}/g`,
+`FENCE_MARKER_PATTERN`) to raw untrusted text WITHOUT first normalizing
+Unicode. All three patterns are ASCII-only. An attacker could place fullwidth
+characters (U+FF1C `＜`, U+FF1E `＞`, fullwidth marker text
+`ＥＮＤ_ＬＥＡＲＮＥＲ_ＮＯＴＥＳ`) inside `notes` / `goals` /
+`learningContext`. These pass `filterUserInput` (not banned content), survive
+`neutralizePromptFences` (ASCII patterns don't match fullwidth), and land
+inside the `<<<LEARNER_NOTES … END_LEARNER_NOTES>>>` fence block in the LLM
+prompt. A capable LLM may interpret the fullwidth brackets as a fence
+delimiter, breaking out of "descriptive data, never instructions" framing.
+Every untrusted-text → prompt path (question, newsContext, learningContext,
+notes, goals) flows through `neutralizePromptFences`, so exposure was broad.
+
+**Fix:** Added `.normalize("NFKC")` as the first step in the
+`neutralizePromptFences` chain — folds fullwidth/homoglyphs to ASCII so the
+existing patterns catch them. Mirrors the canonicalization that
+`contentGuard.js` (`matchesBannedPattern`) and `moderation.js`
+(`canonicalizeText`) already apply; `personalization.js` was the only
+sanitizer with the gap. No other NFKC-gap variants found (audited
+`qualityGate.js` — operates on already-moderated AI output, no
+security-relevant pattern matching; `searchIndex.js` — `sanitizeSearchQuery`
+feeds MongoDB text search, not prompt injection, and the search route is
+unwired).
+
+**FALSE POSITIVES triaged:** (I1) Content-Disposition CRLF — the defense
+(`replace(/[^\w.-]/g, "_")`) correctly strips CR/LF; test assertion was too
+strict. (M2) parseJSON garbage — `jsonrepair` "repairs" non-JSON but
+downstream `isValidJourney` catches junk; test expectation was wrong. Both
+test assertions corrected.
+
+**31 of 34 probes confirmed defenses hold:** fence markers case-insensitive;
+content filter + moderation both NFKC-normalize (fullwidth banned words ARE
+caught); notes/goals/context length-capped before filtering (ReDoS-safe);
+`sanitizeSources` rejects `javascript:`/`data:` schemes; `sanitizeChecklist`
+validates against 10 known options only; AI output always moderated (no
+output fast-path); rate limiter collapses IPv6 to /64 + detects token spray;
+cache key includes personalization + goals + learningContext; TTS input
+SSML-escaped; auth identity pinned last in `req.auth` (IDOR-safe); JSON body
+rejects `__proto__`; educational fast-path can't skip harmful-content check;
+fence integrity holds under embedded newlines.
+
+VERIFIED: backend `npm test` 88/88 (54 functional + 34 offensive). Files
+changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.test.js` (new).
