@@ -1509,6 +1509,31 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
       personalization.notes = "";
     }
   }
+  // SECURITY: the learner's stated GOAL is the single highest-authority signal
+  // in the adaptation plan (it is framed to the model as the "north star").
+  // Like notes, it is free text flowing into the prompt, so it MUST clear the
+  // same banned-content filter — otherwise it is a moderation bypass with even
+  // more leverage than notes. Blocked goals are dropped (the lesson still
+  // generates) and the drop happens BEFORE the cache key so a blocked goal
+  // cannot create a poisoned per-goal cache entry.
+  if (personalization.goals) {
+    const goalsFilter = filterUserInput(personalization.goals);
+    if (!goalsFilter.allowed) {
+      const moderationEvent = buildModerationEvent({
+        requestId,
+        clerkId: req.auth?.userId,
+        type: "personalization-goals-blocked",
+        reason: goalsFilter.reason,
+        question: personalization.goals,
+      });
+      console.warn(
+        "[moderation] Personalization goals blocked; continuing without them",
+        redactModerationEvent(moderationEvent)
+      );
+      void logModerationEvent(moderationEvent);
+      personalization.goals = "";
+    }
+  }
   // Learning context: a compact, topic-relevant snippet derived on-device from
   // the learner's quiz-verified knowledge (see frontend/lib/learningProfile.ts).
   // It is plain, descriptive prose treated as DESCRIPTIVE DATA — fenced and
