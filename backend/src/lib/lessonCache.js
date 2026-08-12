@@ -71,7 +71,12 @@ function normalizePersonalization(personalization) {
     ? personalization.checklist.slice().sort().join(",")
     : "";
   const notes = String(personalization.notes ?? "").trim().toLowerCase().replace(/\s+/g, " ");
-  return `${checklist}|${notes}`;
+  // Goals are high-authority explicit signals — two learners with identical
+  // checklist/notes but different goals must get distinct cache keys, otherwise
+  // the goal (the highest-authority directive) would be silently ignored on a
+  // cache hit.
+  const goals = String(personalization.goals ?? "").trim().toLowerCase().replace(/\s+/g, " ");
+  return `${checklist}|${notes}|${goals}`;
 }
 
 /**

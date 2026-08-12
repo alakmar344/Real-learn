@@ -313,10 +313,13 @@ export function useLesson() {
           // "no profile yet" and answers generically. This is deliberately
           // computed inside the retry loop so a freshly-saved journey taken
           // between attempts is reflected, and it never blocks the request.
+          // The learner's explicit goal is appended so the backend decision
+          // engine can extract it as the highest-authority signal.
           const learningContext = buildLearningContext(
             journeys,
             subjectsSeen,
-            normalized
+            normalized,
+            prefsPayload?.goals ?? ""
           );
 
           const response = await fetch(`${trimmedBackendUrl}/api/generate-lesson`, {

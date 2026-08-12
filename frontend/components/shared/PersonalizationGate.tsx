@@ -7,9 +7,11 @@ import { useModalSlot } from "@/hooks/useModalSlot";
 import { usePreferenceStore } from "@/store/preferenceStore";
 import {
   MAX_PERSONALIZATION_NOTES_CHARS,
+  MAX_LEARNER_GOALS_CHARS,
   PERSONALIZATION_CHECKLIST_OPTIONS,
   sanitizeChecklist,
   sanitizeNotes,
+  sanitizeLearnerGoals,
   type LearningPreferences,
 } from "@/lib/personalization";
 
@@ -47,6 +49,11 @@ export default function PersonalizationGate() {
     [draft.notes]
   );
 
+  const goalsRemaining = useMemo(
+    () => MAX_LEARNER_GOALS_CHARS - draft.goals.length,
+    [draft.goals]
+  );
+
   useEffect(() => {
     if (!isSignedIn) return;
     if (personalization.onboarded) return;
@@ -76,6 +83,10 @@ export default function PersonalizationGate() {
 
   const handleNotesChange = (value: string) => {
     setDraft((prev) => ({ ...prev, notes: sanitizeNotes(value) }));
+  };
+
+  const handleGoalsChange = (value: string) => {
+    setDraft((prev) => ({ ...prev, goals: sanitizeLearnerGoals(value) }));
   };
 
   const handleSave = () => {
@@ -141,6 +152,50 @@ export default function PersonalizationGate() {
           Optional: tell us how you learn best. This helps RealLearn tailor explanations to you.
           Everything here stays on this device.
         </p>
+
+        <div style={{ marginBottom: 20 }}>
+          <label
+            htmlFor="personalization-goals"
+            style={{
+              display: "block",
+              fontSize: 13,
+              fontWeight: 600,
+              color: "var(--text-secondary)",
+              marginBottom: 8,
+            }}
+          >
+            What&apos;s your main learning goal?
+          </label>
+          <textarea
+            id="personalization-goals"
+            value={draft.goals}
+            onChange={(e) => handleGoalsChange(e.target.value)}
+            placeholder="For example: Crack JEE Physics, understand the 2008 financial crisis for my essay, or just get confident with fractions..."
+            rows={2}
+            style={{
+              width: "100%",
+              padding: 12,
+              borderRadius: "var(--radius-md)",
+              border: "1px solid var(--border-default)",
+              background: "var(--bg-surface)",
+              color: "var(--text-primary)",
+              fontSize: 14,
+              lineHeight: 1.6,
+              resize: "vertical",
+              minHeight: 60,
+            }}
+          />
+          <p
+            style={{
+              fontSize: 12,
+              color: goalsRemaining < 0 ? "var(--danger)" : "var(--text-tertiary)",
+              marginTop: 6,
+              textAlign: "right",
+            }}
+          >
+            {draft.goals.length}/{MAX_LEARNER_GOALS_CHARS}
+          </p>
+        </div>
 
         <fieldset style={{ border: "none", padding: 0, margin: "0 0 20px" }}>
           <legend

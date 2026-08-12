@@ -337,7 +337,8 @@ interface BucketDescriptor {
 export function buildLearningContext(
   journeys: SavedJourney[] = [],
   subjectsSeen: string[] = [],
-  currentQuestion: string = ""
+  currentQuestion: string = "",
+  goals: string = ""
 ): string | null {
   const profile = buildLearningProfile(journeys, subjectsSeen);
 
@@ -346,7 +347,7 @@ export function buildLearningContext(
     profile.partiallyUnderstood.length +
     profile.struggling.length +
     profile.lowConfidence.length;
-  if (total === 0) return null;
+  if (total === 0 && !goals.trim()) return null;
 
   const questionTokens = new Set(tokenize(normalizeTopic(currentQuestion) || currentQuestion));
   const hasQuestion = questionTokens.size > 0;
@@ -390,6 +391,30 @@ export function buildLearningContext(
     if (picked.length === 0) continue;
 
     phrases.push(`${desc.label} ${joinTopics(picked)}`);
+  }
+
+  // RECENT BEHAVIOR: surface the topics the learner engaged with most recently
+  // (last ~3 sessions). This is a distinct signal from strength/weakness — it
+  // tells the model what is fresh in the learner's mind so it can bridge from
+  // it or add a quick refresher. Recency is derived from savedAt.
+  const RECENT_WINDOW_MS = 1000 * 60 * 60 * 24 * 3; // 3 days
+  const recentCutoff = Date.now() - RECENT_WINDOW_MS;
+  const recentTopics = journeys
+    .filter((j) => j.savedAt >= recentCutoff)
+    .sort((a, b) => b.savedAt - a.savedAt)
+    .slice(0, 3)
+    .map((j) => normalizeTopic(j.question))
+    .filter(Boolean);
+  if (recentTopics.length > 0) {
+    phrases.push(`recently studied ${joinTopics(recentTopics)}`);
+  }
+
+  // EXPLICIT GOAL: append the learner's stated goal so the backend decision
+  // engine's parseLearningContext can extract it as the highest-authority
+  // signal. Truncated to fit the char budget.
+  const trimmedGoals = goals.trim();
+  if (trimmedGoals) {
+    phrases.push(`goals: ${trimmedGoals}`);
   }
 
   if (phrases.length === 0) return null;
