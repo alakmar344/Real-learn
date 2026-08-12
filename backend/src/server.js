@@ -45,7 +45,7 @@ import { evaluateAndFix } from "./lib/qualityGate.js";
 import {
   sanitizePersonalization,
   formatPersonalizationForPrompt,
-  formatLearningContextForPrompt,
+  parseLearningContext,
   neutralizePromptFences,
   MAX_LEARNING_CONTEXT_CHARS,
 } from "./lib/personalization.js";
@@ -1509,7 +1509,6 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
       personalization.notes = "";
     }
   }
-  const personalizationPrompt = formatPersonalizationForPrompt(personalization);
   // Learning context: a compact, topic-relevant snippet derived on-device from
   // the learner's quiz-verified knowledge (see frontend/lib/learningProfile.ts).
   // It is plain, descriptive prose treated as DESCRIPTIVE DATA — fenced and
@@ -1544,7 +1543,18 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
       learningContextRaw = "";
     }
   }
-  const learningContextPrompt = formatLearningContextForPrompt(learningContextRaw);
+  // DECISION ENGINE: parse the quiz-verified context into structured signals
+  // (strengths / weaknesses / recent / goals), then build ONE ranked
+  // adaptation plan that treats the 10 checklist options as CANDIDATES and
+  // lets explicit preferences + quiz evidence + goals carry the authority.
+  // The parsed context feeds BOTH the ranked directives (evidence outranks
+  // the static checklist) and the verified-knowledge state shown to the model.
+  const parsedContext = parseLearningContext(learningContextRaw);
+  const personalizationPrompt = formatPersonalizationForPrompt(
+    personalization,
+    parsedContext,
+    level
+  );
   console.log("[generate-lesson] Incoming request", {
     requestId,
     questionLength: question?.length ?? 0,
@@ -1553,7 +1563,15 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
     mode,
     activeLessonRequests,
     hasPersonalization: Boolean(personalizationPrompt),
-    hasLearningContext: Boolean(learningContextPrompt),
+    hasLearningContext: parsedContext.hasSignal,
+    adaptationSignals: {
+      strengths: parsedContext.strengths.length,
+      weaknesses: parsedContext.weaknesses.length,
+      recent: parsedContext.recent.length,
+      goals: parsedContext.goals.length,
+      checklist: personalization.checklist.length,
+      notes: Boolean(personalization.notes),
+    },
   });
 
   if (!question) {
@@ -1848,13 +1866,7 @@ Question:
 ${fencedQuestion}
 END_STUDENT_QUESTION>>>${
       personalizationPrompt
-        ? `\n\nLEARNER ADAPTATION — HIGH PRIORITY (mandatory). Use BOTH the learner's preferences AND their quiz-verified knowledge below to visibly shape the answer:\n\n[Preferences]\n${personalizationPrompt}`
-        : (learningContextPrompt
-          ? `\n\nLEARNER ADAPTATION — HIGH PRIORITY (mandatory). Use the learner's quiz-verified knowledge below to visibly shape the answer:`
-          : "")
-    }${
-      learningContextPrompt
-        ? `${personalizationPrompt ? `\n\n[Verified knowledge]\n` : `\n\n`}${learningContextPrompt}`
+        ? `\n\n${personalizationPrompt}`
         : ""
     }${
       trimmedNewsContext
