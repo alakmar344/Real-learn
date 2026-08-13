@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { showToast } from "./ToastContainer";
 import { celebrationColors } from "@/lib/palette";
 import { Icon } from "@/components/shared/icons";
+import { specialDayFor } from "@/lib/specialDays";
 
 /**
  * Hidden delights, none of them announced, all of them findable:
@@ -12,8 +13,9 @@ import { Icon } from "@/components/shared/icons";
  *  2. Typing "magic" or "love" anywhere outside an input → floating hearts.
  *  3. Clicking the RealLearn wordmark in the footer 5× → heart burst
  *     (Footer dispatches a `reallearn:egg` CustomEvent; we listen here).
- *  4. Quiet once-per-day moments: night-owl / early-bird greetings and a few
- *     special dates. Guarded by localStorage so they never nag.
+ *  4. Quiet once-per-day moments: night-owl / early-bird greetings and
+ *     special-date greetings (catalog in lib/specialDays.ts). Guarded by
+ *     localStorage so they never nag.
  *
  * Everything renders pointer-events:none and cleans itself up, so eggs can
  * never block the actual learning.
@@ -225,20 +227,16 @@ export default function EasterEggs() {
       const month = now.getMonth() + 1;
       const day = now.getDate();
 
-      if (month === 1 && day === 1) {
-        onceToday("newyear", () => {
-          fireBurst("confetti");
-          showToast("Happy New Year! A whole year of curiosity awaits.", "success");
+      const special = specialDayFor(month, day);
+      if (special) {
+        onceToday(`special-${special.id}`, () => {
+          if (special.confetti) fireBurst("confetti");
+          showToast(special.greeting, special.confetti ? "success" : "info");
         });
-      } else if (month === 11 && day === 14) {
-        onceToday("childrensday", () =>
-          showToast("Happy Children's Day! Stay curious forever.", "info")
-        );
-      } else if (month === 9 && day === 5) {
-        onceToday("teachersday", () =>
-          showToast("Happy Teachers' Day — today, the world is your teacher.", "info")
-        );
-      } else if (h >= 0 && h < 4) {
+        return;
+      }
+
+      if (h >= 0 && h < 4) {
         onceToday("nightowl", () =>
           showToast("Night owl! The quietest hours make the deepest thoughts.", "info")
         );
