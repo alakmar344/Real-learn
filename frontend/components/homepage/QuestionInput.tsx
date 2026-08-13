@@ -28,6 +28,7 @@ interface Props {
 export default function QuestionInput({ question, setQuestion, onSubmit }: Props) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const initialQuestionRef = useRef(question);
+  const hintTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [focused, setFocused] = useState(false);
   const [interimSpeech, setInterimSpeech] = useState("");
   const [showHint, setShowHint] = useState(false);
@@ -85,6 +86,14 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
     }
   }, [question, mounted]);
 
+  // Clear the hint-hide timer on unmount so it can't setState after teardown.
+  useEffect(
+    () => () => {
+      if (hintTimer.current) clearTimeout(hintTimer.current);
+    },
+    []
+  );
+
   const handleSubmit = (e?: FormEvent) => {
     e?.preventDefault();
     if (!isSignedIn) return;
@@ -128,8 +137,16 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           ref={textareaRef}
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
-          onFocus={() => { setFocused(true); setShowHint(true); }}
-          onBlur={() => { setFocused(false); window.setTimeout(() => setShowHint(false), 2000); }}
+          onFocus={() => {
+            setFocused(true);
+            setShowHint(true);
+            if (hintTimer.current) clearTimeout(hintTimer.current);
+          }}
+          onBlur={() => {
+            setFocused(false);
+            if (hintTimer.current) clearTimeout(hintTimer.current);
+            hintTimer.current = setTimeout(() => setShowHint(false), 2000);
+          }}
           onKeyDown={handleKeyDown}
           maxLength={MAX_QUESTION_LENGTH}
           placeholder={isRtl ? URDU_PLACEHOLDER : "ask literally anything, no cap"}

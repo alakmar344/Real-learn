@@ -112,8 +112,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <button
         type="button"
         className="app-sidebar-toggle"
-        aria-label="Open menu"
-        onClick={() => setOpen(true)}
+        aria-label={open ? "Close menu" : "Open menu"}
+        aria-expanded={open}
+        aria-controls="app-sidebar"
+        onClick={() => setOpen((v) => !v)}
       >
         <Icon name="menu" size={20} />
       </button>
