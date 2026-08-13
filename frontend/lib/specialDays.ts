@@ -67,7 +67,7 @@ export const SPECIAL_DAYS: SpecialDay[] = [
   { id: "technologyday", month: 5, day: 11, name: "National Technology Day", greeting: "National Technology Day — keep building the future with your questions." },
   { id: "telecomday", month: 5, day: 17, name: "World Telecommunication Day", greeting: "World Telecommunication Day — ideas connected are ideas multiplied." },
   { id: "diversityday", month: 5, day: 21, name: "World Day for Cultural Diversity", greeting: "Cultural Diversity Day — every culture is a new lens on the world." },
-  { id: "geekprideday", month: 5, day: 25, name: "Geek Pride Day", hero: "Happy Geek Pride Day", greeting: "Geek Pride Day — being curious is the coolest thing there is." },
+  { id: "towelday", month: 5, day: 25, name: "Towel Day", hero: "Happy Towel Day", greeting: "Towel Day — always know where your towel is, and never stop asking questions." },
 
   // ── June ──
   { id: "environmentday", month: 6, day: 5, name: "World Environment Day", greeting: "Environment Day — every green question plants a better future." },
