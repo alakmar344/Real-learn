@@ -100,6 +100,8 @@ npm run verify:profile        # learning-profile / context-builder sanity check
 npm run verify:reconsent      # reconsent copy sanity check
 npm run verify:personalization # personalization layer (goals, checklist dedup,
                                #   fence neutralization, prompt formatting)
+npm run verify:special-days    # special-day greeting catalog (unique ids,
+                               #   real calendar dates, no duplicate dates)
 
 # Backend (from /backend)
 npm install
@@ -1031,3 +1033,20 @@ fence integrity holds under embedded newlines.
 
 VERIFIED: backend `npm test` 88/88 (54 functional + 34 offensive). Files
 changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.test.js` (new).
+- 2026-08-13 — **Special-day greeting catalog (53 fixed-date observances).** Grew
+  the once-per-day special-date greetings from 3 (New Year, Children's Day,
+  Teachers' Day) into a shared catalog of **53 fixed-date observances** (50 new +
+  the original 3) in new `frontend/lib/specialDays.ts` — the single source of
+  truth for both the homepage hero and the `EasterEggs` toasts. Each entry:
+  `id` / `month` / `day` / `name` / `greeting` / optional `hero` / optional
+  `confetti`. `EasterEggs.tsx` now looks the day up in the catalog instead of the
+  hardcoded if/else chain (big days fire a confetti burst + success toast, the
+  rest a quiet info toast, all still once-per-day via the existing localStorage
+  guard). The homepage hero greeting in `app/page.tsx` swaps the time-of-day line
+  for the day's `hero` copy on the 19 celebratory days, composing "Happy {Day},
+  {firstName}!" without punctuation duplication (awareness days keep the
+  time-of-day hero and only toast). New `npm run verify:special-days`
+  (`scripts/verify-special-days.mjs`): unique ids, no duplicate dates, real
+  calendar dates, required fields, punctuation-free hero lines (§3 updated).
+  Verified: `tsc --noEmit` clean, `next lint` clean, `next build` clean (13
+  pages), all verify scripts pass.

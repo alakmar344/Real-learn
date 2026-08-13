@@ -11,6 +11,7 @@ import dynamic from "next/dynamic";
 import { useLesson } from "@/hooks/useLesson";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { isConsentCurrent, readLegalConsent, writeLegalConsent } from "@/lib/legalConsent";
+import { specialDayFor } from "@/lib/specialDays";
 import { Skeleton } from "@/components/shared/Skeleton";
 
 const Footer = dynamic(() => import("@/components/shared/Footer"), {
@@ -35,13 +36,16 @@ export default function HomePage() {
   const [question, setQuestion] = useState("");
   const [loadingQuestion, setLoadingQuestion] = useState<string | null>(null);
   const [greeting, setGreeting] = useState("");
+  const [specialDay, setSpecialDay] = useState<string | null>(null);
   const { generateLesson } = useLesson();
   const { isSignedIn, getToken } = useAuth();
   const { user } = useUser();
   const firstName = user?.firstName || "";
 
   useEffect(() => {
-    setGreeting(greetingForHour(new Date().getHours()));
+    const now = new Date();
+    setSpecialDay(specialDayFor(now.getMonth() + 1, now.getDate())?.hero ?? null);
+    setGreeting(greetingForHour(now.getHours()));
   }, []);
 
   // One-time sync of locally-stored legal consent to the backend once we know
@@ -102,7 +106,18 @@ export default function HomePage() {
         <section className="hero">
           <div className="hero__stage">
             <div className="hero-greeting hero__greeting">
-              {greeting ? (
+              {specialDay ? (
+                <h1 className="hero__title" suppressHydrationWarning>
+                  {specialDay}
+                  {firstName ? (
+                    <>
+                      ,{" "}
+                      <span className="hero__title-name">{firstName}</span>
+                    </>
+                  ) : null}
+                  {"!"}
+                </h1>
+              ) : greeting ? (
                 <h1 className="hero__title" suppressHydrationWarning>
                   {greeting}
                   {firstName ? (
