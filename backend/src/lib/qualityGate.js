@@ -165,40 +165,16 @@ const SIMPLIFICATION_MAP = new Map([
   ["globalization", "how the world's countries become more connected"],
 ]);
 
-// Additional hard words that should be flagged even if not in the map above.
-// Organized by syllable count for quick lookup.
-const HARD_WORD_PATTERNS = [
-  // 4+ syllable words that are often jargon
-  /characterization/i,
-  /institutional/i,
-  /comprehensive/i,
-  /infrastructure/i,
-  /responsibility/i,
-  /communication/i,
-  /implementation/i,
-  /environmental/i,
-  /electromagnetic/i,
-  /photosynthesis/i,
-  /constitutional/i,
-  /interpretation/i,
-  /investigation/i,
-  /demonstration/i,
-  /representation/i,
-  /transformation/i,
-  /determination/i,
-  /administration/i,
-  /accomplishment/i,
-  /sophisticated/i,
-  /approximately/i,
-  /simultaneously/i,
-  /philosophical/i,
-  /technological/i,
-  /mathematical/i,
-  /psychological/i,
-  /bibliography/i,
-  /microorganism/i,
-  /thermodynamics/i,
-];
+// Precompiled whole-word replacement patterns for SIMPLIFICATION_MAP. Compiled
+// ONCE at module load rather than rebuilding ~71 RegExp objects on every
+// simplifyText() call (which runs per part + per quiz question/option/
+// explanation on the gated Class 6-8 generation path — thousands of compiles
+// per lesson otherwise). String.prototype.replace resets a global regex's
+// lastIndex on each call, so reusing these shared instances is safe.
+const SIMPLIFICATION_PATTERNS = Array.from(SIMPLIFICATION_MAP, ([complex, simple]) => ({
+  pattern: new RegExp(`\\b${escapeRegex(complex)}\\b`, "gi"),
+  simple,
+}));
 
 /**
  * Detect words that are too complex for a given level.
@@ -377,9 +353,8 @@ function simplifyText(text, level, language = "English") {
 
   // Replace known complex words/phrases (English only)
   if (language === "English") {
-    for (const [complex, simple] of SIMPLIFICATION_MAP) {
+    for (const { pattern, simple } of SIMPLIFICATION_PATTERNS) {
       // Case-insensitive whole-word replacement
-      const pattern = new RegExp(`\\b${escapeRegex(complex)}\\b`, "gi");
       result = result.replace(pattern, (match) => {
         // Preserve original casing for the first letter
         if (match[0] === match[0].toUpperCase()) {

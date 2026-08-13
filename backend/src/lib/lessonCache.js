@@ -66,7 +66,15 @@ function memorySet(key, lesson, expiresAt) {
 }
 
 function normalizePersonalization(personalization) {
-  if (!personalization?.onboarded) return "";
+  // SECURITY: do NOT gate on `onboarded`. `buildAdaptationPlan`
+  // (personalization.js) applies notes/goals/checklist to the prompt
+  // UNCONDITIONALLY — it never checks `onboarded`. If the cache key ignored
+  // personalization for `onboarded:false` requests, an attacker could send
+  // `onboarded:false` + crafted goals/notes and have the resulting shaped
+  // lesson cached under the SAME key as every no-personalization request for
+  // that (question, language, level, mode), poisoning the default cohort
+  // fleet-wide. Any input that shapes the prompt MUST contribute to the key.
+  if (!personalization || typeof personalization !== "object") return "";
   const checklist = Array.isArray(personalization.checklist)
     ? personalization.checklist.slice().sort().join(",")
     : "";
@@ -76,6 +84,11 @@ function normalizePersonalization(personalization) {
   // the goal (the highest-authority directive) would be silently ignored on a
   // cache hit.
   const goals = String(personalization.goals ?? "").trim().toLowerCase().replace(/\s+/g, " ");
+  // Collapse a genuinely-empty payload to "" (same key as a null personalization)
+  // so the default no-personalization cohort keeps sharing one cache entry. Any
+  // NON-empty field still produces a distinct, content-bound key — which is what
+  // closes the poisoning vector, independent of the `onboarded` flag.
+  if (!checklist && !notes && !goals) return "";
   return `${checklist}|${notes}|${goals}`;
 }
 

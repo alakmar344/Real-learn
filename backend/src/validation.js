@@ -2,6 +2,22 @@ const REQUIRED_QUIZ_OPTIONS_COUNT = 4;
 const MAX_SOURCES_PER_PART = 5;
 const MAX_SOURCE_URL_LENGTH = 500;
 
+// Hoisted to module scope: this 70-word set is a pure constant. Rebuilding it
+// from a literal on every quiz question (via alignQuizCorrectIndex, which runs
+// for each question during normalizeJourney AND on the quality-gate
+// re-validation path) was needless per-question allocation.
+const QUIZ_STOP_WORDS = new Set([
+  "the", "a", "an", "is", "are", "was", "were", "be", "been", "being",
+  "have", "has", "had", "do", "does", "did", "to", "from", "in", "out",
+  "on", "off", "over", "under", "again", "further", "then", "once", "here",
+  "there", "when", "where", "why", "how", "all", "any", "both", "each",
+  "few", "more", "most", "other", "some", "such", "no", "nor", "not",
+  "only", "own", "same", "so", "than", "too", "very", "can", "will",
+  "just", "should", "now", "it", "its", "this", "that", "these", "those",
+  "and", "but", "or", "if", "because", "as", "until", "while", "of", "at",
+  "by", "for", "with", "about", "against", "between", "into", "through",
+]);
+
 // SECURITY: the model's `sources` array is attacker-influenceable output that
 // is cached and served to EVERY future user asking the same question. Only
 // well-formed http(s) URLs may pass — a `javascript:`/`data:` scheme (or any
@@ -88,27 +104,17 @@ export function alignQuizCorrectIndex(q) {
   const explanation = typeof q.explanation === "string" ? q.explanation.toLowerCase() : "";
 
   if (explanation && (correctIndex < 0 || correctIndex >= options.length || (typeof q.correctAnswer !== "string" && correctIndex > 0))) {
-    const stopWords = new Set([
-      "the", "a", "an", "is", "are", "was", "were", "be", "been", "being",
-      "have", "has", "had", "do", "does", "did", "to", "from", "in", "out",
-      "on", "off", "over", "under", "again", "further", "then", "once", "here",
-      "there", "when", "where", "why", "how", "all", "any", "both", "each",
-      "few", "more", "most", "other", "some", "such", "no", "nor", "not",
-      "only", "own", "same", "so", "than", "too", "very", "can", "will",
-      "just", "should", "now", "it", "its", "this", "that", "these", "those",
-      "and", "but", "or", "if", "because", "as", "until", "while", "of", "at",
-      "by", "for", "with", "about", "against", "between", "into", "through"
-    ]);
-
     const getSignificantTokens = (text) => {
       return text
         .toLowerCase()
         .replace(/[^\w\s]/g, " ")
         .split(/\s+/)
-        .filter((w) => w.length > 2 && !stopWords.has(w));
+        .filter((w) => w.length > 2 && !QUIZ_STOP_WORDS.has(w));
     };
 
-    const expTokens = getSignificantTokens(explanation);
+    // Set for O(1) membership — the inner loop below tested `expTokens.includes`
+    // (linear scan) for every option token, making the match O(options × optTokens × expTokens).
+    const expTokens = new Set(getSignificantTokens(explanation));
 
     const scores = options.map((opt) => {
       if (typeof opt !== "string") return 0;
@@ -124,7 +130,7 @@ export function alignQuizCorrectIndex(q) {
 
       let tokenMatches = 0;
       for (const t of optTokens) {
-        if (expTokens.includes(t) || explanation.includes(t)) {
+        if (expTokens.has(t) || explanation.includes(t)) {
           tokenMatches += 1;
         }
       }
