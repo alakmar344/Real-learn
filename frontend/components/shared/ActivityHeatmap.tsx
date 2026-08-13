@@ -48,9 +48,20 @@ export default function ActivityHeatmap({ history, weeks = 14 }: Props) {
     columns.push(cells.slice(w * 7, w * 7 + 7));
   }
 
+  // The grid is decorative for assistive tech (title tooltips are mouse-only);
+  // expose a single summarizing label so screen-reader/keyboard users get the
+  // gist without wading through hundreds of unlabeled cells.
+  const activeDays = cells.filter((c) => !c.future && c.count > 0).length;
+  const totalParts = cells.reduce((sum, c) => (c.future ? sum : sum + c.count), 0);
+
   return (
-    <div>
-      <div style={{ display: "flex", gap: 3, overflowX: "auto", paddingBottom: 4 }}>
+    <div
+      role="img"
+      aria-label={`Study activity over the last ${weeks} weeks: ${activeDays} active ${
+        activeDays === 1 ? "day" : "days"
+      }, ${totalParts} part${totalParts === 1 ? "" : "s"} completed.`}
+    >
+      <div aria-hidden="true" style={{ display: "flex", gap: 3, overflowX: "auto", paddingBottom: 4 }}>
         {columns.map((col, ci) => (
           <div key={ci} style={{ display: "flex", flexDirection: "column", gap: 3 }}>
             {col.map((cell) => (
@@ -70,7 +81,7 @@ export default function ActivityHeatmap({ history, weeks = 14 }: Props) {
           </div>
         ))}
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, fontSize: 11, color: "var(--text-tertiary)" }}>
+      <div aria-hidden="true" style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, fontSize: 11, color: "var(--text-tertiary)" }}>
         <span>Less</span>
         {[0, 1, 2, 4, 6].map((n) => (
           <span

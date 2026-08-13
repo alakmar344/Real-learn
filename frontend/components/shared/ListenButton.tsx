@@ -78,7 +78,7 @@ export default function ListenButton({ text, language, label = "Listen to this s
           gap: 6,
           borderRadius: "var(--radius-sm)",
           border: speaking ? "1px solid var(--accent)" : showError ? "1px solid var(--danger)" : "1px solid var(--border-default)",
-          background: speaking ? "var(--accent-dim)" : showError ? "rgba(185, 28, 28, 0.08)" : "transparent",
+          background: speaking ? "var(--accent-dim)" : showError ? "var(--danger-bg)" : "transparent",
           color: speaking ? "var(--accent)" : showError ? "var(--danger)" : "var(--text-secondary)",
           padding: "4px 10px",
           fontSize: 12,

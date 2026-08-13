@@ -111,13 +111,12 @@ function CenterCard({
       role="status"
       aria-live="polite"
       onClick={onDismiss}
-      className="animate-overlay-fade"
+      className="animate-overlay-fade celebration-scrim"
       style={{
         position: "fixed",
         inset: 0,
         zIndex: 96,
         background: "var(--scrim, rgba(20,17,12,0.5))",
-        backdropFilter: "blur(var(--blur-sm, 4px))",
         display: "grid",
         placeItems: "center",
         padding: 24,

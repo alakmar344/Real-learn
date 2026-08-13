@@ -388,6 +388,19 @@ html::before {
   -webkit-backdrop-filter: none;
 }
 
+/* Celebration / level-up scrim. The blur lives here (not inline) so the
+   perf-tier rule below can drop it on low-end devices — an inline
+   backdrop-filter can't be reached by CSS and would jank the overlay. */
+.celebration-scrim {
+  -webkit-backdrop-filter: blur(var(--blur-sm, 4px));
+  backdrop-filter: blur(var(--blur-sm, 4px));
+}
+
+[data-perf="low"] .celebration-scrim {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
 /* Stronger frost for overlays / modals / sheets. */
 .glass-strong {
   background: var(--bg-glass);

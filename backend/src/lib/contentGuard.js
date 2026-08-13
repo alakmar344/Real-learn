@@ -82,8 +82,13 @@ function containsBannedUserInput(text) {
   return matchesBannedPattern(text, BANNED_PATTERNS);
 }
 
+// Union of the input + response pattern sets, built ONCE at module load rather
+// than spread-allocating a fresh ~57-element array on every moderation call
+// (containsHarmfulContent runs on every input and every output pass).
+const HARMFUL_PATTERNS = [...BANNED_PATTERNS, ...BANNED_RESPONSE_PATTERNS];
+
 function containsBannedAIResponse(text) {
-  return matchesBannedPattern(text, [...BANNED_PATTERNS, ...BANNED_RESPONSE_PATTERNS]);
+  return matchesBannedPattern(text, HARMFUL_PATTERNS);
 }
 
 // Shared, INTENT-BASED harmful-content check (the union of the input + response
@@ -94,7 +99,7 @@ function containsBannedAIResponse(text) {
 // how the immune system kills bacteria) must stay answerable; only harmful
 // INTENT is blocked.
 export function containsHarmfulContent(text) {
-  return matchesBannedPattern(text, [...BANNED_PATTERNS, ...BANNED_RESPONSE_PATTERNS]);
+  return matchesBannedPattern(text, HARMFUL_PATTERNS);
 }
 
 export function filterUserInput(question) {

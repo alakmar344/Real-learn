@@ -16,7 +16,7 @@ interface Props {
   size?: number;
 }
 
-export default function MicButton({ language, onTranscript, onInterim, size = 40 }: Props) {
+export default function MicButton({ language, onTranscript, onInterim, size = 44 }: Props) {
   const { supported, listening, interimTranscript, toggle } = useSpeechRecognition({
     lang: speechLangFor(language),
     onResult: onTranscript,

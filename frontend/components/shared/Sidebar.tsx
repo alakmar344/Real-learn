@@ -103,6 +103,7 @@ export default function Sidebar({ open, onClose }: Props) {
         aria-hidden="true"
       />
       <aside
+        id="app-sidebar"
         className={`app-sidebar${open ? " open" : ""}`}
         aria-label="Sidebar"
       >
