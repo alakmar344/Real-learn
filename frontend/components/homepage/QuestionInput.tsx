@@ -104,6 +104,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
       aria-label="Ask a question"
       className={`q-form${focused ? " q-form--focused" : ""}${isRtl ? " q-form--rtl" : ""}`}
     >
+      {/* 1. Textarea Body */}
       <div className="q-form__body">
         <label htmlFor="question-input" className="sr-only">
           What do you want to understand today?
@@ -138,44 +139,46 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
         ) : null}
       </div>
 
-      <div className="q-form__bar">
-        {/* Left: Mode toggle */}
-        <div className="q-form__bar-left">
-          <div role="radiogroup" aria-label="Answer mode" className="mode-glider">
-            <span
-              aria-hidden="true"
-              className="mode-glider__pill"
-              style={{
-                width: `calc((100% - 8px) / ${MODES.length})`,
-                transform: `translateX(calc(${activeIndex} * 100%))`,
-              }}
-            />
-            {MODES.map((opt) => {
-              const active = mode === opt.value;
-              return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  role="radio"
-                  aria-checked={active}
-                  title={opt.hint}
-                  onClick={() => setMode(opt.value)}
-                  className={`mode-glider__option${active ? " mode-glider__option--active" : ""}`}
-                >
-                  {opt.label}
-                </button>
-              );
-            })}
-          </div>
-          <span className="q-form__mode-hint">{activeMode.hint}</span>
+      {/* 2. Bigger, prominent Mode Toggle Row */}
+      <div className="q-form__modes">
+        <div role="radiogroup" aria-label="Answer mode" className="mode-glider">
+          <span
+            aria-hidden="true"
+            className="mode-glider__pill"
+            style={{
+              width: `calc((100% - 8px) / ${MODES.length})`,
+              transform: `translateX(calc(${activeIndex} * 100%))`,
+            }}
+          />
+          {MODES.map((opt) => {
+            const active = mode === opt.value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                title={opt.hint}
+                onClick={() => setMode(opt.value)}
+                className={`mode-glider__option${active ? " mode-glider__option--active" : ""}`}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
         </div>
+        <span className="q-form__mode-hint">{activeMode.hint}</span>
+      </div>
 
-        {/* Right: Tools & Enter Button */}
-        <div className="q-form__bar-right">
+      {/* 3. Bottom Actions & Enter Button */}
+      <div className="q-form__actions">
+        <div className="q-form__actions-left">
           <ExampleQuestions onPick={(q) => {
             setQuestion(q);
             textareaRef.current?.focus();
           }} />
+        </div>
+        <div className="q-form__actions-right">
           <MicButton
             language={language}
             onTranscript={(text) =>
