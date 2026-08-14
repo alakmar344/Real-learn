@@ -16,8 +16,8 @@ const URDU_PLACEHOLDER = "یہاں اپنا سوال لکھیں...";
 const RTL_LANGUAGES: Language[] = ["Urdu"];
 
 const MODES: { value: LessonMode; label: string; hint: string }[] = [
-  { value: "fast", label: "Fast Summary", hint: "Direct, concise answer in seconds" },
-  { value: "explain", label: "3-Step Deep Dive", hint: "Foundation → Mechanism → Real World with quizzes" },
+  { value: "fast", label: "Explain", hint: "Quick, simple explanation in 1 part" },
+  { value: "explain", label: "Fast", hint: "Deep, detailed explanation in 3 parts" },
 ];
 
 interface Props {
@@ -29,33 +29,27 @@ interface Props {
 export default function QuestionInput({ question, setQuestion, onSubmit }: Props) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const initialQuestionRef = useRef(question);
-  const hintTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [focused, setFocused] = useState(false);
   const [interimSpeech, setInterimSpeech] = useState("");
-  const [showHint, setShowHint] = useState(false);
   const { isSignedIn } = useAuth();
   const language = usePreferenceStore((s) => s.language);
   const persistedMode = usePreferenceStore((s) => s.mode);
   const setMode = usePreferenceStore((s) => s.setMode);
-  // mode is persisted; keep SSR default until mounted to avoid hydration mismatch.
   const mounted = useMounted();
   const mode = mounted ? persistedMode : "fast";
   const activeMode = MODES.find((m) => m.value === mode) ?? MODES[0];
   const charCount = question.length;
-  const nearLimit = charCount >= MAX_QUESTION_LENGTH * 0.9;
-  const hintShow = showHint || focused;
+  const isRtl = RTL_LANGUAGES.includes(language);
+  const activeIndex = MODES.findIndex((m) => m.value === mode);
 
   useLayoutEffect(() => {
     const textarea = textareaRef.current;
     if (!textarea) return;
     textarea.style.height = "auto";
-    textarea.style.height = `${Math.min(textarea.scrollHeight, 160)}px`;
+    textarea.style.height = `${Math.min(textarea.scrollHeight, 180)}px`;
   }, [question]);
 
-  // Invisible UX: Restore draft question from sessionStorage on mount if empty.
-  // Must run ONCE on mount — re-running on every empty value re-injected the
-  // saved draft the instant the user deleted their text, so the field could
-  // never be fully cleared.
+  // Restore draft question on mount
   useEffect(() => {
     if (!mounted) return;
     try {
@@ -63,17 +57,15 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
       if (savedDraft && !initialQuestionRef.current) {
         setQuestion(savedDraft);
       }
-      // Smart desktop auto-focus: on non-mobile screens, focus input automatically
       if (window.innerWidth >= 768 && textareaRef.current) {
         textareaRef.current.focus();
       }
     } catch {
-      // Best-effort storage
+      // Best-effort
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mounted]);
+  }, [mounted, setQuestion]);
 
-  // Invisible UX: Persist typed question as draft in sessionStorage
+  // Persist draft question
   useEffect(() => {
     if (!mounted) return;
     try {
@@ -83,21 +75,13 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
         sessionStorage.removeItem("reallearn_draft_question");
       }
     } catch {
-      // Best-effort storage
+      // Best-effort
     }
   }, [question, mounted]);
 
-  // Clear the hint-hide timer on unmount so it can't setState after teardown.
-  useEffect(
-    () => () => {
-      if (hintTimer.current) clearTimeout(hintTimer.current);
-    },
-    []
-  );
-
   const handleSubmit = (e?: FormEvent) => {
     e?.preventDefault();
-    if (!isSignedIn) return;
+    if (!isSignedIn || !question.trim()) return;
     try {
       sessionStorage.removeItem("reallearn_draft_question");
     } catch {
@@ -107,15 +91,12 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    // Ctrl/Cmd + Enter submits; Enter alone adds a newline.
-    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+    // Standard chat behavior: Enter submits, Shift+Enter creates a new line
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
     }
   };
-
-  const activeIndex = MODES.findIndex((m) => m.value === mode);
-  const isRtl = RTL_LANGUAGES.includes(language);
 
   return (
     <form
@@ -141,17 +122,11 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           onFocus={() => {
             warmupBackend();
             setFocused(true);
-            setShowHint(true);
-            if (hintTimer.current) clearTimeout(hintTimer.current);
           }}
-          onBlur={() => {
-            setFocused(false);
-            if (hintTimer.current) clearTimeout(hintTimer.current);
-            hintTimer.current = setTimeout(() => setShowHint(false), 2000);
-          }}
+          onBlur={() => setFocused(false)}
           onKeyDown={handleKeyDown}
           maxLength={MAX_QUESTION_LENGTH}
-          placeholder={isRtl ? URDU_PLACEHOLDER : "Ask any concept, mechanism, or topic (e.g. CRISPR, Black Holes, Inflation)..."}
+          placeholder={isRtl ? URDU_PLACEHOLDER : "Ask anything you want to understand..."}
           aria-label="Your question"
           dir={isRtl ? "rtl" : "ltr"}
           className={`q-form__textarea${isRtl ? " q-form__textarea--rtl" : ""}`}
@@ -161,67 +136,49 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
             Listening — {interimSpeech}
           </p>
         ) : null}
-        <div className="q-form__footer">
-          <span className={`q-form__hint${hintShow ? " q-form__hint--show" : ""}`}>
-            Press{" "}
-            <kbd className="q-form__kbd">
-              {/* Render neutral "Ctrl" until mounted; navigator.platform differs
-                  between server and a Mac client (hydration mismatch). */}
-              {mounted && /Mac|iPod|iPhone|iPad/.test(navigator.platform) ? "⌘" : "Ctrl"}
-              +Enter
-            </kbd>{" "}
-            to submit
-          </span>
-          <span
-            aria-live="polite"
-            className={`q-form__count${nearLimit ? " q-form__count--near" : ""}`}
-          >
-            {charCount}/{MAX_QUESTION_LENGTH}
-          </span>
-        </div>
       </div>
 
-      {/* Answer-mode toggle: Fast (1 direct part) vs Explain (3-part journey). */}
-      <div className="q-form__modes">
-        <div role="radiogroup" aria-label="Answer mode" className="mode-glider">
-          <span
-            aria-hidden="true"
-            className="mode-glider__pill"
-            style={{
-              width: `calc((100% - 8px) / ${MODES.length})`,
-              transform: `translateX(calc(${activeIndex} * 100%))`,
-            }}
-          />
-          {MODES.map((opt) => {
-            const active = mode === opt.value;
-            return (
-              <button
-                key={opt.value}
-                type="button"
-                role="radio"
-                aria-checked={active}
-                title={opt.hint}
-                onClick={() => setMode(opt.value)}
-                className={`mode-glider__option${active ? " mode-glider__option--active" : ""}`}
-              >
-                {opt.label}
-              </button>
-            );
-          })}
+      <div className="q-form__bar">
+        {/* Left: Mode toggle */}
+        <div className="q-form__bar-left">
+          <div role="radiogroup" aria-label="Answer mode" className="mode-glider">
+            <span
+              aria-hidden="true"
+              className="mode-glider__pill"
+              style={{
+                width: `calc((100% - 8px) / ${MODES.length})`,
+                transform: `translateX(calc(${activeIndex} * 100%))`,
+              }}
+            />
+            {MODES.map((opt) => {
+              const active = mode === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  title={opt.hint}
+                  onClick={() => setMode(opt.value)}
+                  className={`mode-glider__option${active ? " mode-glider__option--active" : ""}`}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+          <span className="q-form__mode-hint">{activeMode.hint}</span>
         </div>
-        <span className="q-form__mode-hint">{activeMode.hint}</span>
-      </div>
 
-      <div className="q-form__actions">
-        <ExampleQuestions onPick={(q) => {
-          setQuestion(q);
-          textareaRef.current?.focus();
-        }} />
-        <div className="q-form__actions-right">
+        {/* Right: Tools & Submit */}
+        <div className="q-form__bar-right">
+          <ExampleQuestions onPick={(q) => {
+            setQuestion(q);
+            textareaRef.current?.focus();
+          }} />
           <MicButton
             language={language}
             onTranscript={(text) =>
-              // Voice transcripts bypass the textarea maxLength — clamp to the backend limit.
               setQuestion(
                 (question.trim() ? `${question.trim()} ${text}` : text).slice(0, MAX_QUESTION_LENGTH)
               )
@@ -234,21 +191,35 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
               aria-label="Clear question"
               title="Clear"
               className="btn-icon btn-icon--danger"
-              onClick={() => { setQuestion(""); textareaRef.current?.focus(); }}
+              onClick={() => {
+                setQuestion("");
+                textareaRef.current?.focus();
+              }}
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                 <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
               </svg>
             </button>
           )}
           {isSignedIn ? (
-            <button type="submit" disabled={!question.trim()} aria-label="Start learning" className="btn-primary">
-              {mode === "fast" ? "Get Fast Summary →" : "Start 3-Step Journey →"}
+            <button
+              type="submit"
+              disabled={!question.trim()}
+              aria-label="Ask question"
+              className="btn-primary q-form__submit-btn"
+            >
+              <span>Ask</span>
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M3.333 8h9.334M8.667 4l4 4-4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </button>
           ) : (
             <SignInButton mode="modal">
-              <button type="button" aria-label="Sign in to start learning" className="btn-primary">
-                Sign in to Learn →
+              <button type="button" aria-label="Sign in to ask" className="btn-primary q-form__submit-btn">
+                <span>Sign in to Ask</span>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M3.333 8h9.334M8.667 4l4 4-4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
               </button>
             </SignInButton>
           )}
@@ -257,4 +228,3 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
     </form>
   );
 }
-

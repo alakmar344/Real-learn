@@ -40,13 +40,13 @@ const THEMES = THEME_OPTIONS;
 const MODES: { value: LessonMode; label: string; hint: string }[] = [
   {
     value: "fast",
-    label: "Fast",
-    hint: "One instant, direct answer — quick like a chat reply",
+    label: "Explain",
+    hint: "Quick, simple explanation in 1 part",
   },
   {
     value: "explain",
-    label: "Explain",
-    hint: "Deep 3-part journey with quizzes and real-world context",
+    label: "Fast",
+    hint: "Deep, detailed explanation in 3 parts",
   },
 ];
 

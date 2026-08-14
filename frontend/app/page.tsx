@@ -132,9 +132,6 @@ export default function HomePage() {
               ) : (
                 <div className="hero__spacer" aria-hidden="true" />
               )}
-              <p className="hero__subtitle">
-                Structured 3-step learning backed by real-world facts and active recall quizzes.
-              </p>
             </div>
 
             <div className="hero__input-row">

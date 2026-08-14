@@ -4,7 +4,7 @@ import { Fragment } from "react";
 // (aria-hidden); pauses on hover, static under reduced-motion / low perf.
 const SEQUENCE: Array<{ text: string; script?: boolean }> = [
   { text: "master concepts", script: true },
-  { text: "3-step clarity" },
+  { text: "clear explanations" },
   { text: "active recall", script: true },
   { text: "12 languages" },
   { text: "curriculum aligned", script: true },

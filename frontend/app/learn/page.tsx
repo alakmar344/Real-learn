@@ -433,7 +433,7 @@ export default function LearnPage() {
         <div className="learn-topbar">
           <Navbar compact />
           <div className="learn-topbar__row">
-            <span className="learn-topbar__mode">{isFastMode ? "FAST" : "GUIDED"}</span>
+            <span className="learn-topbar__mode">{isFastMode ? "EXPLAIN" : "FAST"}</span>
             {/* The lesson question is the page's h1 (WCAG 1.3.1/2.4.6) —
                 visually styled as the compact header line it always was. */}
             <h1 className="learn-topbar__question" title={lesson.question ?? lesson.topic ?? ""}>
