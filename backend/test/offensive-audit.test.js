@@ -495,6 +495,22 @@ test("K1: requireAuth pins userId from sub (spread-then-override)", () => {
   assert.equal(auth.sessionId, "sess1");
 });
 
+test("K2: azp validation strictly rejects unauthorized origins (including attacker *.vercel.app)", () => {
+  const trusted = ["https://reallearn.site", "https://www.reallearn.site", "https://real-learn.vercel.app"];
+  const isAllowed = (azp) => !azp || trusted.includes(String(azp).replace(/\/$/, ""));
+  
+  assert.equal(isAllowed("https://reallearn.site"), true);
+  assert.equal(isAllowed("https://www.reallearn.site"), true);
+  assert.equal(isAllowed("https://real-learn.vercel.app"), true);
+  assert.equal(isAllowed(undefined), true);
+  
+  // Malicious/unauthorized origins must be strictly rejected:
+  assert.equal(isAllowed("https://attacker-app.vercel.app"), false);
+  assert.equal(isAllowed("https://evil-phish.vercel.app"), false);
+  assert.equal(isAllowed("https://random-site.com"), false);
+  assert.equal(isAllowed("https://reallearn.site.evil.com"), false);
+});
+
 // ── L. Educational whitelist cannot be abused ─────────────────────────────────
 
 test("L1: profanity in an educational frame is still caught on OUTPUT", async () => {

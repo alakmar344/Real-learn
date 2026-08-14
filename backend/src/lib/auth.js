@@ -115,37 +115,41 @@ function isTrustedIssuer(issuer) {
   }
 }
 
-// SECURITY (defense in depth): optionally pin the token's authorized party
+// SECURITY (defense in depth): strictly pin the token's authorized party
 // (azp = the frontend origin the token was minted for). Without this, any
-// valid token from the same Clerk instance — even one issued to a different
-// app sharing the issuer — is accepted. Opt-in via env so existing deploys
-// aren't broken: CLERK_AUTHORIZED_PARTIES=https://reallearn.site,https://www.reallearn.site
+// valid token from the same Clerk instance — even one issued to an attacker's
+// distinct app — could be accepted. No wildcard domains (*.vercel.app) are
+// allowed. Configure custom origins via CLERK_AUTHORIZED_PARTIES.
 const CONFIGURED_AUTHORIZED_PARTIES = (process.env.CLERK_AUTHORIZED_PARTIES || "")
   .split(",")
   .map((party) => party.trim().replace(/\/$/, ""))
   .filter(Boolean);
-// Security: in production, an unset CLERK_AUTHORIZED_PARTIES must not mean
-// "accept any azp" — default to the known frontend origins. The env var,
-// when set, still wins; non-production keeps the permissive behavior.
+
+const DEFAULT_PRODUCTION_AUTHORIZED_PARTIES = [
+  "https://reallearn.site",
+  "https://www.reallearn.site",
+  "https://real-learn.vercel.app",
+];
+
+const DEFAULT_DEV_AUTHORIZED_PARTIES = [
+  ...DEFAULT_PRODUCTION_AUTHORIZED_PARTIES,
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://127.0.0.1:3000",
+];
+
 const AUTHORIZED_PARTIES =
   CONFIGURED_AUTHORIZED_PARTIES.length > 0
     ? CONFIGURED_AUTHORIZED_PARTIES
     : process.env.NODE_ENV === "production"
-      ? [
-          "https://reallearn.site",
-          "https://www.reallearn.site",
-          "https://real-learn.vercel.app",
-        ]
-      : [];
+      ? DEFAULT_PRODUCTION_AUTHORIZED_PARTIES
+      : DEFAULT_DEV_AUTHORIZED_PARTIES;
 
 function isAuthorizedParty(azp) {
   if (AUTHORIZED_PARTIES.length === 0) return true; // not configured → skip
   if (!azp) return true; // token didn't specify azp claim — signature validity from Clerk JWKS is authoritative
   const normalized = String(azp).replace(/\/$/, "");
-  return (
-    AUTHORIZED_PARTIES.includes(normalized) ||
-    normalized.endsWith(".vercel.app")
-  );
+  return AUTHORIZED_PARTIES.includes(normalized);
 }
 
 export async function verifyClerkToken(token) {
