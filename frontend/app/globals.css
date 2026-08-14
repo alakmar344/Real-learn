@@ -3227,7 +3227,7 @@ p {
    Replaces the inline-style form in QuestionInput.tsx. */
 .q-form {
   margin-top: 20px;
-  max-width: 680px;
+  max-width: 720px;
   width: 100%;
   position: relative;
   border-radius: var(--radius-2xl);
@@ -3237,27 +3237,29 @@ p {
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   box-shadow: var(--shadow-float);
   transition: border-color 200ms ease, box-shadow 250ms ease, transform 250ms ease;
+  box-sizing: border-box;
 }
 @media (min-width: 1024px) {
   .q-form {
-    max-width: 840px;
+    max-width: 860px;
     margin-top: 24px;
   }
 }
 .q-form__body {
   position: relative;
-  padding: 20px 24px 8px;
+  padding: 20px 24px 10px;
+  box-sizing: border-box;
 }
 .q-form--focused {
   border-color: var(--border-glow);
   box-shadow: var(--shadow-float), 0 0 0 3px var(--accent-glow), 0 0 36px var(--accent-dim);
 }
 @media (min-width: 1024px) {
-  .q-form__body { padding: 22px 28px 10px; }
+  .q-form__body { padding: 24px 28px 12px; }
 }
 .q-form__textarea {
   width: 100%;
-  min-height: 52px;
+  min-height: 56px;
   max-height: 180px;
   resize: none;
   border: none;
@@ -3267,68 +3269,51 @@ p {
   font-size: 16px;
   line-height: 1.5;
   font-family: var(--font-inter), sans-serif;
+  box-sizing: border-box;
 }
 @media (min-width: 1024px) {
   .q-form__textarea {
-    font-size: 17px;
+    font-size: 18px;
     line-height: 1.55;
-    min-height: 58px;
+    min-height: 60px;
   }
 }
 .q-form__listening {
-  margin: 4px 0 0;
+  margin: 6px 0 0;
   font-size: 13px;
   color: var(--accent);
   font-style: italic;
 }
-.q-form__bar {
-  padding: 8px 18px 16px;
+
+/* ── Answer-mode toggle row (BIGGER, CLEARER, TACTILE) ── */
+.q-form__modes {
+  padding: 4px 24px 14px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 14px;
+  flex-wrap: wrap;
+  box-sizing: border-box;
 }
 @media (min-width: 1024px) {
-  .q-form__bar {
-    padding: 8px 24px 18px;
+  .q-form__modes {
+    padding: 6px 28px 16px;
+    gap: 16px;
   }
 }
-.q-form__bar-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.q-form__bar-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.q-form__mode-hint {
-  font-size: 12px;
-  color: var(--text-tertiary);
-  font-weight: 500;
-}
-@media (max-width: 768px) {
-  .q-form__mode-hint {
-    display: none;
-  }
-}
-
-/* Answer-mode toggle */
 .mode-glider {
   position: relative;
   display: inline-flex;
-  padding: 3px;
-  gap: 0;
+  padding: 4px;
+  gap: 2px;
   border-radius: var(--radius-pill);
   background: var(--bg-solid);
+  border: 1px solid var(--border-subtle);
 }
 .mode-glider__pill {
   position: absolute;
-  top: 3px;
-  bottom: 3px;
-  left: 3px;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
   border-radius: var(--radius-pill);
   background: var(--accent-gradient);
   box-shadow: var(--shadow-glow-accent);
@@ -3340,51 +3325,135 @@ p {
   z-index: 1;
   border: none;
   border-radius: 999px;
-  padding: 6px 14px;
-  font-size: 13px;
-  font-weight: 600;
+  padding: 9px 24px;
+  font-size: 15px;
+  font-weight: 700;
   cursor: pointer;
-  min-height: 32px;
+  min-height: 42px;
+  min-width: 110px;
   text-align: center;
   background: transparent;
   color: var(--text-secondary);
   transition: color 200ms var(--ease-color);
+  white-space: nowrap;
+  user-select: none;
 }
-.mode-glider__option--active { color: var(--on-accent); }
+.mode-glider__option--active {
+  color: var(--on-accent);
+}
+.q-form__mode-hint {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+  line-height: 1.4;
+}
 
-.q-form__submit-btn {
+/* ── Actions Row (Suggestions + Controls + Enter) ── */
+.q-form__actions {
+  padding: 8px 24px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-sizing: border-box;
+}
+@media (min-width: 1024px) {
+  .q-form__actions {
+    padding: 10px 28px 22px;
+  }
+}
+.q-form__actions-left {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  flex: 1;
+}
+.q-form__actions-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.q-form__enter-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 18px;
-  font-size: 14px;
-  font-weight: 600;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 22px;
+  font-size: 15px;
+  font-weight: 700;
   border-radius: var(--radius-pill);
-  min-height: 36px;
+  min-height: 42px;
   cursor: pointer;
+  background: var(--accent-gradient);
+  color: var(--on-accent);
+  box-shadow: var(--shadow-glow-accent);
   transition: transform 150ms ease, box-shadow 200ms ease, opacity 150ms ease;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
-.q-form__submit-btn:disabled {
+.q-form__enter-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-glow-accent), 0 0 16px var(--accent-glow);
+}
+.q-form__enter-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+.q-form__enter-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+.q-form__enter-symbol {
+  font-family: var(--font-mono), monospace;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1;
+  display: inline-block;
 }
 
+/* ── Mobile Friendly Enhancements ── */
 @media (max-width: 640px) {
   .q-form__body {
     padding: 16px 16px 6px;
   }
-  .q-form__bar {
-    padding: 6px 14px 14px;
-    flex-wrap: wrap;
-    gap: 10px;
+  .q-form__modes {
+    padding: 4px 16px 12px;
+    gap: 8px;
   }
-  .q-form__bar-left {
+  .mode-glider {
     width: 100%;
-    justify-content: flex-start;
   }
-  .q-form__bar-right {
+  .mode-glider__option {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 14px;
+    font-size: 14px;
+    min-height: 44px;
+  }
+  .q-form__mode-hint {
+    font-size: 12px;
     width: 100%;
-    justify-content: space-between;
+  }
+  .q-form__actions {
+    padding: 8px 16px 16px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .q-form__actions-left {
+    width: 100%;
+  }
+  .q-form__actions-right {
+    width: 100%;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  .q-form__enter-btn {
+    flex: 1;
+    min-height: 44px;
   }
 }
 
@@ -4893,6 +4962,7 @@ p {
   color: var(--accent);
   margin: 0;
   min-width: 0;
+  max-width: min(100%, 340px);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
