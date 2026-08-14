@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import {
   COOKIE_CONSENT_ACCEPTED_EVENT,
@@ -27,6 +28,7 @@ import {
  */
 export default function CookieConsent() {
   const { isSignedIn, getToken } = useAuth();
+  const pathname = usePathname();
   const [showBanner, setShowBanner] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -141,6 +143,11 @@ export default function CookieConsent() {
   };
 
   if (!showBanner) return null;
+
+  // The onboarding wizard keeps each slide to ONE action — hold the banner
+  // until the user lands in the app (analytics never load without consent
+  // anyway, so deferring the prompt is compliant-by-default).
+  if (pathname?.startsWith("/onboarding")) return null;
 
   return (
     <div

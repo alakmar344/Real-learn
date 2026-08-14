@@ -6,6 +6,11 @@ const isPublicRoute = createRouteMatcher([
   "/sign-in(.*)",
   "/sign-up(.*)",
   "/legal(.*)",
+  // The first-time wizard: its first slides (welcome, legal+age) happen
+  // BEFORE account creation, and its OAuth callback must stay reachable
+  // mid-handshake. Signed-in users may also legitimately be here (the
+  // personalization slide), so it is never treated as an auth route.
+  "/onboarding(.*)",
 ]);
 
 const isAuthRoute = createRouteMatcher(["/sign-in(.*)", "/sign-up(.*)"]);
