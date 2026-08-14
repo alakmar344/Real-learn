@@ -24,12 +24,12 @@ const FeedbackGate = dynamic(() => import("@/components/shared/FeedbackGate"), {
 });
 
 function greetingForHour(h: number): string {
-  if (h < 4) return "still up?";
-  if (h < 7) return "early bird";
-  if (h < 12) return "morning glow";
-  if (h < 17) return "hey you";
-  if (h < 21) return "evening vibes";
-  return "night owl mode";
+  if (h < 4) return "learn deeply";
+  if (h < 7) return "think clearly";
+  if (h < 12) return "master anything";
+  if (h < 17) return "explore concepts";
+  if (h < 21) return "understand faster";
+  return "stay curious";
 }
 
 export default function HomePage() {
@@ -131,6 +131,9 @@ export default function HomePage() {
               ) : (
                 <div className="hero__spacer" aria-hidden="true" />
               )}
+              <p className="hero__subtitle">
+                Structured 3-step learning backed by real-world facts and active recall quizzes.
+              </p>
             </div>
 
             <div className="hero__input-row">

@@ -15,8 +15,8 @@ const URDU_PLACEHOLDER = "یہاں اپنا سوال لکھیں...";
 const RTL_LANGUAGES: Language[] = ["Urdu"];
 
 const MODES: { value: LessonMode; label: string; hint: string }[] = [
-  { value: "fast", label: "TL;DR", hint: "Straight answer, zero fluff" },
-  { value: "explain", label: "Deep Dive", hint: "Full 3-part with quizzes" },
+  { value: "fast", label: "Fast Summary", hint: "Direct, concise answer in seconds" },
+  { value: "explain", label: "3-Step Deep Dive", hint: "Foundation → Mechanism → Real World with quizzes" },
 ];
 
 interface Props {
@@ -149,7 +149,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           }}
           onKeyDown={handleKeyDown}
           maxLength={MAX_QUESTION_LENGTH}
-          placeholder={isRtl ? URDU_PLACEHOLDER : "ask literally anything, no cap"}
+          placeholder={isRtl ? URDU_PLACEHOLDER : "Ask any concept, mechanism, or topic (e.g. CRISPR, Black Holes, Inflation)..."}
           aria-label="Your question"
           dir={isRtl ? "rtl" : "ltr"}
           className={`q-form__textarea${isRtl ? " q-form__textarea--rtl" : ""}`}
@@ -241,7 +241,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           )}
           {isSignedIn ? (
             <button type="submit" disabled={!question.trim()} aria-label="Start learning" className="btn-primary">
-              {mode === "fast" ? "Gimme the tea →" : "Teach me →"}
+              {mode === "fast" ? "Get Fast Summary →" : "Start 3-Step Journey →"}
             </button>
           ) : (
             <SignInButton mode="modal">

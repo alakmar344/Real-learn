@@ -99,20 +99,40 @@ export default function HomeStats({ onStartTopic }: Props) {
       {/* First visit: a quiet mental model of the product — ask, learn in
           three parts, pass each gate. Disappears once there's any activity. */}
       {!hasActivity && (
-        <ol className="how-strip" aria-label="How RealLearn works">
-          <li className="how-strip__step">
-            <span className="how-strip__num" aria-hidden="true">1</span>
-            Ask any question
-          </li>
-          <li className="how-strip__step">
-            <span className="how-strip__num" aria-hidden="true">2</span>
-            Learn it in three parts
-          </li>
-          <li className="how-strip__step">
-            <span className="how-strip__num" aria-hidden="true">3</span>
-            Pass each quiz to advance
-          </li>
-        </ol>
+        <div className="home-first-visit">
+          <ol className="how-strip" aria-label="How RealLearn works">
+            <li className="how-strip__step">
+              <span className="how-strip__num" aria-hidden="true">1</span>
+              Ask any question in 12 languages
+            </li>
+            <li className="how-strip__step">
+              <span className="how-strip__num" aria-hidden="true">2</span>
+              Learn step-by-step with real-world facts
+            </li>
+            <li className="how-strip__step">
+              <span className="how-strip__num" aria-hidden="true">3</span>
+              Lock in memory with instant quizzes
+            </li>
+          </ol>
+          <div className="trust-strip" aria-label="Trust and platform standards">
+            <span className="trust-badge">
+              <span className="trust-badge__dot" aria-hidden="true" />
+              12 Indian Languages
+            </span>
+            <span className="trust-badge">
+              <span className="trust-badge__dot" aria-hidden="true" />
+              Class 6 to College Level
+            </span>
+            <span className="trust-badge">
+              <span className="trust-badge__dot" aria-hidden="true" />
+              Live Fact Grounding
+            </span>
+            <span className="trust-badge">
+              <span className="trust-badge__dot" aria-hidden="true" />
+              Zero Ads &amp; Private
+            </span>
+          </div>
+        </div>
       )}
 
       {/* Light-touch link to the full dashboard */}
