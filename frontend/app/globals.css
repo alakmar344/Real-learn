@@ -1182,17 +1182,6 @@ a:active {
   white-space: normal;
   word-break: break-word;
 }
-.hero__subtitle {
-  margin: 8px auto 14px;
-  font-family: var(--font-sans), system-ui, sans-serif;
-  font-size: clamp(14px, 1.8vw, 16px);
-  font-weight: 400;
-  color: var(--text-secondary);
-  text-align: center;
-  max-width: 540px;
-  line-height: 1.45;
-  letter-spacing: -0.01em;
-}
 @media (min-width: 1024px) {
   .hero__title {
     font-size: clamp(56px, 5.5vw, 80px);
@@ -3247,33 +3236,29 @@ p {
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   box-shadow: var(--shadow-float);
-  transition: border-color 250ms var(--ease-color), box-shadow 350ms var(--ease-color), transform 350ms var(--ease-spring);
+  transition: border-color 200ms ease, box-shadow 250ms ease, transform 250ms ease;
 }
 @media (min-width: 1024px) {
   .q-form {
-    max-width: 880px;
-    margin-top: 28px;
+    max-width: 840px;
+    margin-top: 24px;
   }
 }
 .q-form__body {
   position: relative;
-  padding: 22px 24px 12px;
-}
-.q-form__body::before {
-  display: none !important;
+  padding: 20px 24px 8px;
 }
 .q-form--focused {
   border-color: var(--border-glow);
-  box-shadow: var(--shadow-float), 0 0 0 3px var(--accent-glow), 0 0 44px var(--accent-dim);
-  transform: translateY(-2px);
+  box-shadow: var(--shadow-float), 0 0 0 3px var(--accent-glow), 0 0 36px var(--accent-dim);
 }
 @media (min-width: 1024px) {
-  .q-form__body { padding: 24px 28px 16px; }
+  .q-form__body { padding: 22px 28px 10px; }
 }
 .q-form__textarea {
   width: 100%;
-  min-height: 56px;
-  max-height: 160px;
+  min-height: 52px;
+  max-height: 180px;
   resize: none;
   border: none;
   outline: none;
@@ -3285,85 +3270,69 @@ p {
 }
 @media (min-width: 1024px) {
   .q-form__textarea {
-    font-size: 18px;
-    line-height: 1.5;
-    min-height: 64px;
-    max-height: 200px;
+    font-size: 17px;
+    line-height: 1.55;
+    min-height: 58px;
   }
 }
 .q-form__listening {
-  margin: 6px 0 0;
+  margin: 4px 0 0;
   font-size: 13px;
   color: var(--accent);
   font-style: italic;
 }
-.q-form__footer {
+.q-form__bar {
+  padding: 8px 18px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 10px;
-  min-height: 24px;
-}
-.q-form__hint {
-  font-size: 12px;
-  color: var(--text-tertiary);
-  opacity: 0;
-  transform: translateY(4px);
-  transition: opacity 200ms ease, transform 200ms ease;
-}
-.q-form__hint--show { opacity: 1; transform: translateY(0); }
-.q-form__count {
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
-  color: var(--text-tertiary);
-  transition: color 200ms ease;
-}
-.q-form__count--near { color: var(--danger); font-weight: 600; }
-.q-form__kbd {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  padding: 2px 5px;
-  border-radius: var(--radius-sm);
-  background: var(--bg-surface);
-  border: 1px solid var(--border-default);
-  color: var(--text-secondary);
-}
-.q-form__modes {
-  padding: 0 20px 16px;
-  display: flex;
-  align-items: center;
   gap: 12px;
-  flex-wrap: wrap;
 }
 @media (min-width: 1024px) {
-  .q-form__modes {
-    padding: 0 24px 18px;
+  .q-form__bar {
+    padding: 8px 24px 18px;
   }
 }
+.q-form__bar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.q-form__bar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 .q-form__mode-hint {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-tertiary);
   font-weight: 500;
 }
+@media (max-width: 768px) {
+  .q-form__mode-hint {
+    display: none;
+  }
+}
 
-/* Answer-mode toggle: a sliding gradient pill that glides between Fast / Explain. */
+/* Answer-mode toggle */
 .mode-glider {
   position: relative;
   display: inline-flex;
-  padding: 4px;
+  padding: 3px;
   gap: 0;
   border-radius: var(--radius-pill);
   background: var(--bg-solid);
 }
 .mode-glider__pill {
   position: absolute;
-  top: 4px;
-  bottom: 4px;
-  left: 4px;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
   border-radius: var(--radius-pill);
   background: var(--accent-gradient);
   box-shadow: var(--shadow-glow-accent);
-  transition: transform 300ms var(--ease-spring);
+  transition: transform 250ms var(--ease-spring);
   will-change: transform;
 }
 .mode-glider__option {
@@ -3371,55 +3340,51 @@ p {
   z-index: 1;
   border: none;
   border-radius: 999px;
-  padding: 10px 20px;
-  font-size: 14px;
+  padding: 6px 14px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  min-height: 40px;
-  min-width: 104px;
+  min-height: 32px;
   text-align: center;
   background: transparent;
   color: var(--text-secondary);
-  transition: color 320ms var(--ease-color);
+  transition: color 200ms var(--ease-color);
 }
 .mode-glider__option--active { color: var(--on-accent); }
 
-.q-form__actions {
-  padding: 6px 24px 22px;
-  display: flex;
+.q-form__submit-btn {
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 14px;
+  gap: 6px;
+  padding: 8px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--radius-pill);
+  min-height: 36px;
+  cursor: pointer;
+  transition: transform 150ms ease, box-shadow 200ms ease, opacity 150ms ease;
 }
-@media (min-width: 1024px) {
-  .q-form__actions {
-    padding: 8px 32px 26px;
-  }
+.q-form__submit-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
-.q-form__actions-right { display: flex; align-items: center; gap: 10px; }
 
 @media (max-width: 640px) {
   .q-form__body {
-    padding: 24px 16px 12px;
+    padding: 16px 16px 6px;
   }
-  .q-form__body::before {
-    left: 16px;
+  .q-form__bar {
+    padding: 6px 14px 14px;
+    flex-wrap: wrap;
+    gap: 10px;
   }
-  .q-form__modes {
-    padding: 0 16px 14px;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-  .q-form__actions {
-    padding: 14px 16px;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-  }
-  .q-form__actions-right {
-    justify-content: flex-end;
+  .q-form__bar-left {
     width: 100%;
+    justify-content: flex-start;
+  }
+  .q-form__bar-right {
+    width: 100%;
+    justify-content: space-between;
   }
 }
 
