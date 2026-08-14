@@ -763,18 +763,20 @@ const configuredOrigins =
     ?.split(",")
     .map((origin) => origin.trim())
     .filter(Boolean) ?? [];
+// Hard allowlist: the ONLY browser origins allowed to call this API are the
+// reallearn.site frontend hosts. The backend's own origin
+// (real-learn.onrender.com) and every other site are rejected with 403.
 const allowedOrigins =
   configuredOrigins.length > 0
     ? configuredOrigins
     : [
         "https://reallearn.site",
-        "https://real-learn.onrender.com",
+        "https://www.reallearn.site",
       ];
 
-// Allowed Origin means the exact browser Origin header is either listed in
-// FRONTEND_ORIGIN (comma-separated) or, by default, the production frontend
-// and Render preview origins above. Requests without an Origin header are
-// non-browser/server-to-server traffic and are handled by CORS separately.
+// Allowed Origin means the exact browser Origin header is exactly one of the
+// frontend origins above. Anything else — a different site, the backend's own
+// domain, or no Origin header at all — is treated as unverified.
 function isOriginAllowed(origin) {
   return !!origin && allowedOrigins.includes(origin);
 }
@@ -784,9 +786,9 @@ function isOriginAllowed(origin) {
 app.use(
   cors({
     origin: (origin, callback) => {
-      // No Origin header = non-browser client (uptime monitor, curl,
-      // server-to-server). CORS is a browser mechanism; auth still applies,
-      // so let those through without CORS headers instead of 403ing them.
+      // No Origin header (curl, uptime monitor, server-to-server) is not a
+      // browser request, so CORS needs to set no headers for it — originGuard
+      // is the actual gate and rejects such traffic on non-/health routes.
       if (!origin || isOriginAllowed(origin)) {
         return callback(null, true);
       }
@@ -803,9 +805,15 @@ app.use(
 // fields). 100kb still leaves huge headroom while blunting memory abuse.
 app.use(express.json({ limit: "100kb" }));
 
+// Only the reallearn.site frontend may call this API. Requests with no Origin
+// header (curl, uptime monitors, server-to-server) are unverifiable and get
+// 403 — except the deliberately-public, rate-limited /health endpoints that
+// operators' uptime monitors and load balancers hit without one.
 function originGuard(req, res, next) {
   const origin = req.headers.origin;
-  if (origin && !isOriginAllowed(origin)) {
+  const isPublicHealth =
+    req.path === "/health" || req.path === "/api/health";
+  if (!isPublicHealth && !isOriginAllowed(origin)) {
     console.warn("[origin] denied", { origin, path: req.path });
     return res.status(403).json({ error: "Origin not allowed." });
   }
