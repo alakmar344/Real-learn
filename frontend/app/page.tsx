@@ -8,7 +8,7 @@ import HeroTicker from "@/components/homepage/HeroTicker";
 import LoadingCinematic from "@/components/shared/LoadingCinematic";
 import LiveRegion from "@/components/shared/LiveRegion";
 import dynamic from "next/dynamic";
-import { useLesson } from "@/hooks/useLesson";
+import { useLesson, warmupBackend } from "@/hooks/useLesson";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { isConsentCurrent, readLegalConsent, writeLegalConsent } from "@/lib/legalConsent";
 import { specialDayFor } from "@/lib/specialDays";
@@ -43,6 +43,7 @@ export default function HomePage() {
   const firstName = user?.firstName || "";
 
   useEffect(() => {
+    warmupBackend();
     const now = new Date();
     setSpecialDay(specialDayFor(now.getMonth() + 1, now.getDate())?.hero ?? null);
     setGreeting(greetingForHour(now.getHours()));

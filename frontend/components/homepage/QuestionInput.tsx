@@ -7,6 +7,7 @@ import ExampleQuestions from "@/components/homepage/ExampleQuestions";
 import MicButton from "@/components/shared/MicButton";
 import { usePreferenceStore } from "@/store/preferenceStore";
 import { useMounted } from "@/hooks/useMounted";
+import { warmupBackend } from "@/hooks/useLesson";
 import { LessonMode, Language } from "@/types";
 
 const MAX_QUESTION_LENGTH = 1000;
@@ -138,6 +139,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           onFocus={() => {
+            warmupBackend();
             setFocused(true);
             setShowHint(true);
             if (hintTimer.current) clearTimeout(hintTimer.current);

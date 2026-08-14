@@ -22,12 +22,10 @@ const STREAM_IDLE_TIMEOUT_MS =
   Number.isFinite(configuredStreamIdleTimeoutMs) && configuredStreamIdleTimeoutMs > 0
     ? configuredStreamIdleTimeoutMs
     : DEFAULT_STREAM_IDLE_TIMEOUT_MS;
-// RELIABILITY: 3 total attempts. The previous default of 1 meant the retry
-// loop below NEVER actually retried — every transient hiccup (server busy,
-// dropped stream, timeout) went straight to the error screen and the user had
-// to press "Try Again" themselves. Retries happen silently behind the loading
-// screen; only a genuinely unrecoverable failure surfaces.
-const DEFAULT_GENERATE_RETRY_ATTEMPTS = 3;
+// RELIABILITY: 5 total attempts with exponential backoff.
+// Handles Render free-tier cold starts (~30-45s) and upstream inference latencies
+// completely silently behind the loading cinematic.
+const DEFAULT_GENERATE_RETRY_ATTEMPTS = 5;
 const configuredGenerateRetryAttempts = Number(
   process.env.NEXT_PUBLIC_GENERATE_RETRY_ATTEMPTS
 );
@@ -35,7 +33,7 @@ const GENERATE_RETRY_ATTEMPTS =
   Number.isFinite(configuredGenerateRetryAttempts) && configuredGenerateRetryAttempts > 0
     ? Math.floor(configuredGenerateRetryAttempts)
     : DEFAULT_GENERATE_RETRY_ATTEMPTS;
-const DEFAULT_GENERATE_RETRY_DELAY_MS = 1500;
+const DEFAULT_GENERATE_RETRY_DELAY_MS = 2000;
 const configuredGenerateRetryDelayMs = Number(
   process.env.NEXT_PUBLIC_GENERATE_RETRY_DELAY_MS
 );
@@ -43,11 +41,9 @@ const GENERATE_RETRY_DELAY_MS =
   Number.isFinite(configuredGenerateRetryDelayMs) && configuredGenerateRetryDelayMs > 0
     ? configuredGenerateRetryDelayMs
     : DEFAULT_GENERATE_RETRY_DELAY_MS;
-const MAX_GENERATE_RETRY_DELAY_MS = 8000;
-// BANDWIDTH: 429 is deliberately NOT retryable — automatically re-sending a
-// request the server just told us to slow down on doubles traffic exactly when
-// the server is overloaded.
-const RETRYABLE_STATUS_CODES = [408, 425, 500, 502, 503, 504];
+const MAX_GENERATE_RETRY_DELAY_MS = 10000;
+// 401 is retryable once on cold token resolution; 429 is deliberately NOT retryable.
+const RETRYABLE_STATUS_CODES = [401, 408, 425, 500, 502, 503, 504];
 
 // Module-scoped "latest request wins" state. Only one lesson generation is
 // meaningful at a time (there is a single global lesson store), so a newer
@@ -60,6 +56,21 @@ export function cancelActiveLessonRequest() {
   activeRequestSeq += 1;
   activeController?.abort();
   activeController = null;
+}
+
+/** Non-blocking warmup ping to wake up sleeping Render backend instances on page load. */
+export function warmupBackend() {
+  if (typeof window === "undefined") return;
+  try {
+    fetch(`${trimmedBackendUrl}/health`, {
+      method: "GET",
+      mode: "cors",
+      cache: "no-store",
+      signal: AbortSignal.timeout(6000),
+    }).catch(() => {});
+  } catch {
+    // Best-effort non-blocking warmup
+  }
 }
 
 type StreamEvent = EventSourceMessage;
@@ -297,7 +308,18 @@ export function useLesson() {
           refreshIdleTimeout();
 
           logLessonDebug("sending POST /api/generate-lesson", { requestId, attempt });
-          const token = await getToken();
+          let token: string | null = null;
+          try {
+            token = await getToken({ skipCache: attempt > 1 });
+            if (!token && attempt === 1) {
+              // Cold start: give Clerk session a tiny 350ms grace period if restoring
+              await sleep(350);
+              token = await getToken();
+            }
+          } catch {
+            token = null;
+          }
+
           const headers: Record<string, string> = {
             "Content-Type": "application/json",
           };

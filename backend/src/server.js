@@ -768,7 +768,11 @@ const allowedOrigins =
     ? configuredOrigins
     : [
         "https://reallearn.site",
+        "https://www.reallearn.site",
         "https://real-learn.onrender.com",
+        ...(process.env.NODE_ENV !== "production"
+          ? ["http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:3000"]
+          : []),
       ];
 
 // Allowed Origin means the exact browser Origin header is either listed in

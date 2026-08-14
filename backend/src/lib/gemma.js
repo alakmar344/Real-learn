@@ -68,10 +68,10 @@ const DEFAULT_HEDGE_DELAY_MS = 12000;
 // Streaming watchdogs. Responses are streamed so a hung request is detected
 // by silence, not by burning the whole per-attempt timeout (production logs
 // showed 45s wasted per hang):
-//  - first byte: cold starts legitimately take 10-30s, so allow 20s
+//  - first byte: cold starts legitimately take 10-30s, so allow 35s
 //  - between chunks: a generating model emits tokens continuously; 15s of
 //    mid-stream silence means the request is dead
-const DEFAULT_FIRST_BYTE_TIMEOUT_MS = 20000;
+const DEFAULT_FIRST_BYTE_TIMEOUT_MS = 35000;
 const DEFAULT_STALL_TIMEOUT_MS = 15000;
 const PARSE_JSON_LOG_PREVIEW_CHARS = 300;
 
