@@ -7,6 +7,7 @@ import Sidebar from "@/components/shared/Sidebar";
 import ScrollToTop from "@/components/shared/ScrollToTop";
 import ErrorBoundary from "@/components/shared/ErrorBoundary";
 import { Icon } from "@/components/shared/icons";
+import OnboardingRedirect from "@/components/onboarding/OnboardingRedirect";
 import dynamic from "next/dynamic";
 
 const PreferenceModal = dynamic(() => import("@/components/shared/PreferenceModal"), {
@@ -26,7 +27,7 @@ const KeyboardShortcuts = dynamic(() => import("@/components/shared/KeyboardShor
   loading: () => null,
 });
 
-const HIDE_SIDEBAR_PREFIXES = ["/sign-in", "/sign-up"];
+const HIDE_SIDEBAR_PREFIXES = ["/sign-in", "/sign-up", "/onboarding"];
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -36,6 +37,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [showThingsComing, setShowThingsComing] = useState(false);
 
   const hideSidebar = HIDE_SIDEBAR_PREFIXES.some((p) => pathname?.startsWith(p));
+  // The linear onboarding wizard owns the whole first-time experience — the
+  // legacy first-run modals must never fire on top of it (the wizard marks
+  // their localStorage flags done, so they also stay quiet afterwards).
+  const onOnboarding = pathname?.startsWith("/onboarding") ?? false;
 
   useEffect(() => {
     setOpen(false);
@@ -46,7 +51,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     let timer: ReturnType<typeof setTimeout> | null = null;
     try {
       const seen = localStorage.getItem("reallearn-things-coming-seen");
-      if (!seen) {
+      if (!seen && !onOnboarding) {
         timer = setTimeout(() => setShowThingsComing(true), 400);
       }
     } catch {
@@ -60,11 +65,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       if (timer !== null) clearTimeout(timer);
       window.removeEventListener("reallearn:open-things-coming", handleOpenEvent);
     };
-  }, []);
+  }, [onOnboarding]);
 
   useEffect(() => {
     if (!isLoaded) return;
     if (!isSignedIn) return;
+    if (onOnboarding) return;
     let timer: ReturnType<typeof setTimeout> | null = null;
     try {
       const done = localStorage.getItem("reallearn-preferences-onboarding");
@@ -77,7 +83,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     return () => {
       if (timer !== null) clearTimeout(timer);
     };
-  }, [isLoaded, isSignedIn]);
+  }, [isLoaded, isSignedIn, onOnboarding]);
 
   useEffect(() => {
     if (!open) return;
@@ -101,6 +107,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <div id="main-content">
           <ErrorBoundary>{children}</ErrorBoundary>
         </div>
+        <OnboardingRedirect />
         <PreferenceModal open={showFirstPrefs} onClose={() => setShowFirstPrefs(false)} />
         <ThingsComingModal open={showThingsComing} onClose={() => setShowThingsComing(false)} />
       </>
@@ -109,6 +116,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="app-shell">
+      <OnboardingRedirect />
       <button
         type="button"
         className="app-sidebar-toggle"

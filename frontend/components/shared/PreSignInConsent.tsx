@@ -86,9 +86,13 @@ export default function PreSignInConsent() {
   const onDeclineAllowedPath = ALLOWED_PATHS_WHEN_DECLINED.some((p) =>
     pathname?.startsWith(p)
   );
+  // The /onboarding wizard collects this exact consent on its own slide —
+  // never stack the legacy modal on top of it.
+  const onOnboardingPath = pathname?.startsWith("/onboarding") ?? false;
   const visible = useModalSlot(
     "legal-consent",
-    showConsent || showReacceptConsent || (declined && !onDeclineAllowedPath)
+    !onOnboardingPath &&
+      (showConsent || showReacceptConsent || (declined && !onDeclineAllowedPath))
   );
   // A11y: this component renders blocking dialogs — keyboard focus must stay
   // inside them (one trap per possible dialog; only one is open at a time).
@@ -112,7 +116,11 @@ export default function PreSignInConsent() {
     const applyLocalRecord = (parsed: LegalConsentState | null) => {
       if (cancelled) return;
       if (!parsed) {
-        setShowConsent(true);
+        // No record at all → a brand-new visitor. The /onboarding wizard now
+        // owns the first-time consent prompt for anonymous newcomers (they
+        // are redirected into it from the home page), so only signed-in
+        // users with a missing record still get the legacy modal.
+        if (isSignedIn) setShowConsent(true);
       } else if (isConsentCurrent(parsed)) {
         setShowConsent(false);
       } else if (parsed.accepted) {

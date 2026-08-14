@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
+import { usePathname } from "next/navigation";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { useModalSlot } from "@/hooks/useModalSlot";
 import { usePreferenceStore } from "@/store/preferenceStore";
@@ -33,6 +34,7 @@ function saveSkipped(skipped: boolean): void {
 
 export default function PersonalizationGate() {
   const { isSignedIn } = useAuth();
+  const pathname = usePathname();
   const personalization = usePreferenceStore((s) => s.personalization);
   const setPersonalization = usePreferenceStore((s) => s.setPersonalization);
   const markPersonalizationOnboarded = usePreferenceStore((s) => s.markPersonalizationOnboarded);
@@ -58,10 +60,13 @@ export default function PersonalizationGate() {
     if (!isSignedIn) return;
     if (personalization.onboarded) return;
     if (loadWasSkipped()) return;
+    // The /onboarding wizard has its own personalization slide — don't pop
+    // this modal on top of it (the wizard marks `onboarded` when done).
+    if (pathname?.startsWith("/onboarding")) return;
     // Wait a moment so the legal-consent modal has a chance to finish first.
     const timer = setTimeout(() => setOpen(true), 600);
     return () => clearTimeout(timer);
-  }, [isSignedIn, personalization.onboarded]);
+  }, [isSignedIn, personalization.onboarded, pathname]);
 
   // Sync store → draft only when the modal OPENS, not on every personalization
   // change. The old effect overwrote user edits while the modal was open.
