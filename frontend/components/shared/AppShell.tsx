@@ -14,10 +14,6 @@ const PreferenceModal = dynamic(() => import("@/components/shared/PreferenceModa
   ssr: false,
   loading: () => null,
 });
-const ThingsComingModal = dynamic(() => import("@/components/shared/ThingsComingModal"), {
-  ssr: false,
-  loading: () => null,
-});
 const EngagementLayer = dynamic(() => import("@/components/shared/EngagementLayer"), {
   ssr: false,
   loading: () => null,
@@ -34,7 +30,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const { isLoaded, isSignedIn } = useAuth();
   const [open, setOpen] = useState(false);
   const [showFirstPrefs, setShowFirstPrefs] = useState(false);
-  const [showThingsComing, setShowThingsComing] = useState(false);
 
   const hideSidebar = HIDE_SIDEBAR_PREFIXES.some((p) => pathname?.startsWith(p));
   // The linear onboarding wizard owns the whole first-time experience — the
@@ -46,26 +41,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     setOpen(false);
   }, [pathname]);
 
-  // Check for first-login onboarding modal "Things Coming"
-  useEffect(() => {
-    let timer: ReturnType<typeof setTimeout> | null = null;
-    try {
-      const seen = localStorage.getItem("reallearn-things-coming-seen");
-      if (!seen && !onOnboarding) {
-        timer = setTimeout(() => setShowThingsComing(true), 400);
-      }
-    } catch {
-      // ignore
-    }
 
-    const handleOpenEvent = () => setShowThingsComing(true);
-    window.addEventListener("reallearn:open-things-coming", handleOpenEvent);
-
-    return () => {
-      if (timer !== null) clearTimeout(timer);
-      window.removeEventListener("reallearn:open-things-coming", handleOpenEvent);
-    };
-  }, [onOnboarding]);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -109,7 +85,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </div>
         <OnboardingRedirect />
         <PreferenceModal open={showFirstPrefs} onClose={() => setShowFirstPrefs(false)} />
-        <ThingsComingModal open={showThingsComing} onClose={() => setShowThingsComing(false)} />
       </>
     );
   }
@@ -135,7 +110,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <EngagementLayer />
       <KeyboardShortcuts />
       <PreferenceModal open={showFirstPrefs} onClose={() => setShowFirstPrefs(false)} />
-      <ThingsComingModal open={showThingsComing} onClose={() => setShowThingsComing(false)} />
     </div>
   );
 }
