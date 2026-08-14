@@ -282,7 +282,7 @@ try {
   console.error("[tts] Failed to load node-edge-tts via ESM import", error);
 }
 
-const TTS_TEMP_DIR = path.join("/tmp", "reallearn-tts");
+const TTS_TEMP_DIR = path.join(os.tmpdir(), "reallearn-tts");
 if (!fs.existsSync(TTS_TEMP_DIR)) {
   fs.mkdirSync(TTS_TEMP_DIR, { recursive: true });
 }

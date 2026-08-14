@@ -69,6 +69,7 @@ export async function fetchCookieConsentStatus(
     const response = await fetch(`${backendUrl}/api/agreement/status`, {
       method: "GET",
       headers,
+      signal: AbortSignal.timeout(3500),
     });
     if (!response.ok) return null;
 
@@ -189,6 +190,7 @@ export async function syncLegalConsentToBackend(
     const res = await fetch(`${backendUrl}/api/legal-consent`, {
       method: "POST",
       headers,
+      signal: AbortSignal.timeout(3500),
       body: JSON.stringify({
         accepted: true,
         timestamp: state.timestamp,

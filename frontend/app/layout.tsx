@@ -322,11 +322,13 @@ export default async function RootLayout({
             auth handshakes, and analytics avoid extra DNS+TCP round-trips. */}
         <link rel="preconnect" href={process.env.NEXT_PUBLIC_BACKEND_URL?.replace(/\/$/, "") || "https://real-learn.onrender.com"} crossOrigin="anonymous" />
         <link rel="preconnect" href="https://img.clerk.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://clerk.reallearn.site" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://api.clerk.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://clerk.reallearn.site" />
+        <link rel="dns-prefetch" href="https://api.clerk.com" />
+        <link rel="dns-prefetch" href="https://accounts.clerk.com" />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
-        <link rel="dns-prefetch" href="https://*.clerk.accounts.dev" />
-        <link rel="dns-prefetch" href="https://*.clerk.com" />
         {/* PERFORMANCE: critical fonts are self-hosted via next/font, which
             injects the correct <link rel="preload" as="font"> tags (with its
             immutable hashed /_next/static/media/*.woff2 URLs) automatically in
