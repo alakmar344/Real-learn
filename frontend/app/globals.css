@@ -1161,11 +1161,9 @@ a:active {
 .hero__greeting {
   margin-top: 16px;
   order: 2;
-  /* script overlaps the stark input card below — controlled-chaos layering */
   position: relative;
   z-index: 2;
-  margin-bottom: -10px;
-  pointer-events: none;
+  margin-bottom: 0;
 }
 /* Olive Frenzy: the greeting is the expressive script moment — oversized
    cursive tilted against the razor-straight input card below it. Script is
@@ -1184,6 +1182,17 @@ a:active {
   white-space: normal;
   word-break: break-word;
 }
+.hero__subtitle {
+  margin: 8px auto 14px;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: clamp(14px, 1.8vw, 16px);
+  font-weight: 400;
+  color: var(--text-secondary);
+  text-align: center;
+  max-width: 540px;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+}
 @media (min-width: 1024px) {
   .hero__title {
     font-size: clamp(56px, 5.5vw, 80px);
@@ -1193,7 +1202,7 @@ a:active {
   .hero__greeting {
     order: 1;
     margin-top: 0;
-    margin-bottom: -16px;
+    margin-bottom: 0;
   }
   .hero__input-row {
     order: 2;
@@ -1278,6 +1287,50 @@ a:active {
     gap: 8px;
     margin-inline: auto;
     width: fit-content;
+  }
+}
+
+.home-first-visit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.trust-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px 18px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border-subtle);
+  width: 100%;
+}
+
+.trust-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.trust-badge__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: inline-block;
+  opacity: 0.85;
+}
+
+@media (max-width: 640px) {
+  .trust-strip {
+    gap: 8px 12px;
   }
 }
 

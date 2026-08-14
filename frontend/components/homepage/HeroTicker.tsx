@@ -3,13 +3,13 @@ import { Fragment } from "react";
 // Kinetic ticker — the moving line of the Olive Frenzy hero. Decorative
 // (aria-hidden); pauses on hover, static under reduced-motion / low perf.
 const SEQUENCE: Array<{ text: string; script?: boolean }> = [
-  { text: "ask anything", script: true },
-  { text: "3-part lessons" },
-  { text: "quiz to unlock", script: true },
+  { text: "master concepts", script: true },
+  { text: "3-step clarity" },
+  { text: "active recall", script: true },
   { text: "12 languages" },
-  { text: "level up", script: true },
-  { text: "live news grounding" },
-  { text: "streaks + xp" },
+  { text: "curriculum aligned", script: true },
+  { text: "live fact grounding" },
+  { text: "zero ads & private" },
 ];
 
 function Track() {

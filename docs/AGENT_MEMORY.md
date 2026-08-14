@@ -1057,3 +1057,17 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
   - **Cross-Platform Security & Reliability**: Replaced hardcoded `/tmp/reallearn-tts` with `path.join(os.tmpdir(), "reallearn-tts")` in `backend/src/server.js` and `backend/src/routes/tts.js`. Updated backend test script to `node --test --test-concurrency=1` for isolated sequential mock execution.
   - **Node ESM & TypeScript Verification**: Added `allowImportingTsExtensions: true` in `frontend/tsconfig.json` and adjusted relative imports in `learningProfile.ts` and `onboarding.ts` so `npm run verify:profile` and all frontend test suites run with 100% pass in Node.
   - **Verification**: `npx tsc --noEmit` 0 errors, backend `npm test` 89/89 passed, all 8 frontend verify suites (`verify:quiz`, `verify:achievements`, `verify:frontier`, `verify:profile`, `verify:reconsent`, `verify:special-days`, `verify:personalization`, `verify:onboarding`) passed 100%.
+- 2026-08-14 — **Trust Signals & Positioning Simplification Pass**:
+  - **2-Word Hero Tagline**: Replaced ambiguous time-of-day greetings with empowering 2-word learning cues (`"learn deeply"`, `"think clearly"`, `"master anything"`, `"explore concepts"`, `"understand faster"`, `"stay curious"`).
+  - **Pedagogical Clarity & Subtitle**: Added clear hero subtitle (`"Structured 3-step learning backed by real-world facts and active recall quizzes."`) directly below the greeting.
+  - **Slang Elimination & Trust Wording**: Replaced confusing slang in `QuestionInput.tsx` (`"no cap"`, `"Gimme the tea →"`) with crisp, high-trust text (`"Ask any concept, mechanism, or topic..."`, `"Get Fast Summary →"`, `"Start 3-Step Journey →"`, `"Fast Summary"`, `"3-Step Deep Dive"`).
+  - **Trust Markers & Kinetic Ticker**: Added a dedicated high-integrity trust strip to `HomeStats.tsx` for new visitors (12 Indian Languages, Class 6 to College Level, Live Fact Grounding, Zero Ads & Private) and upgraded `HeroTicker.tsx` with outcomes-based chips (`master concepts`, `3-step clarity`, `active recall`, `curriculum aligned`, `live fact grounding`, `zero ads & private`).
+- 2026-08-14 — **First-Question Reliability & Cold-Start Generation Failure Root Cause Fix**:
+  - **Root Cause**: Two compounding failure points caused the initial question on cold load to fail: (1) Render free-tier instance takes 30-45s to wake up and returns 502/503/504 while booting, but `useLesson.ts` only retried 3 times with short 1.5s/3s delays (exhausting all attempts in ~6s); (2) Clerk token resolution on cold mount could return null or expired tokens, triggering an un-retryable 401 response; (3) AI provider watchdog in `gemma.js` had a tight 20s `DEFAULT_FIRST_BYTE_TIMEOUT_MS` that aborted first-time model inferences.
+  - **Fixes Applied**:
+    - Added proactive `warmupBackend()` non-blocking `GET /health` ping on page load and textarea focus.
+    - Expanded `useLesson.ts` retry budget to 5 attempts with 2s-10s exponential backoff curve covering the full ~45s cold start window.
+    - Added cold-session token settlement grace period and allowed 401 retry with fresh `getToken({ skipCache: true })`.
+    - Increased `gemma.js` first-byte watchdog timeout from 20s to 35s.
+    - Added `www.reallearn.site` and local origins to default `allowedOrigins` in `server.js`.
+
