@@ -10,7 +10,7 @@
 // blocked localStorage (private mode, "Block all cookies") can never crash
 // the app.
 
-import { safeGetItem, safeSetItem } from "@/lib/legalConsent";
+import { safeGetItem, safeSetItem } from "./legalConsent.ts";
 
 export const ONBOARDING_COMPLETE_KEY = "reallearn-onboarding-complete";
 export const ONBOARDING_STEP_KEY = "reallearn-onboarding-step";

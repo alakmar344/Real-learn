@@ -29,8 +29,8 @@
 //    answer; the backend treats it as DESCRIPTIVE DATA (never instructions) and
 //    fences + neutralizes it exactly like learner notes.
 
-import { tokenize, normalizeTopic } from "@/lib/knowledgeFrontier";
-import type { SavedJourney } from "@/types";
+import { tokenize, normalizeTopic } from "./knowledgeFrontier.ts";
+import type { SavedJourney } from "../types";
 
 /* ─────────────────────────────────────────────────────────────── Types ──── */
 

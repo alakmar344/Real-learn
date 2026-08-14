@@ -173,6 +173,7 @@ export default function PreSignInConsent() {
         const response = await fetch(`${backendUrl}/api/legal-consent/status`, {
           method: "GET",
           headers,
+          signal: AbortSignal.timeout(3500),
         });
         if (cancelled) return;
 

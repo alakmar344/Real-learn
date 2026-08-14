@@ -70,6 +70,7 @@ export default function HomePage() {
         const res = await fetch(`${backendUrl}/api/legal-consent`, {
           method: "POST",
           headers,
+          signal: AbortSignal.timeout(3500),
           body: JSON.stringify({
             accepted: true,
             timestamp: parsed.timestamp,
