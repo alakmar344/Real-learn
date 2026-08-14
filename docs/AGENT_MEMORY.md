@@ -1075,4 +1075,7 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
     - Added cold-session token settlement grace period and allowed 401 retry with fresh `getToken({ skipCache: true })`.
     - Increased `gemma.js` first-byte watchdog timeout from 20s to 35s.
     - Added `www.reallearn.site` and local origins to default `allowedOrigins` in `server.js`.
-
+- 2026-08-14 — **Security Hardening: Strict Authorized Party (AZP) Validation & Elimination of Wildcard Vercel Allowance**:
+  - **Vulnerability Remediated**: `isAuthorizedParty(azp)` previously allowed suffix matches ending with `.vercel.app`, creating a potential vulnerability where any third-party app deployed on Vercel could be accepted if it shared an issuer.
+  - **Remediation**: Completely eliminated all wildcard suffix checking. Replaced with strict exact allowlist matching against `DEFAULT_PRODUCTION_AUTHORIZED_PARTIES` (`https://reallearn.site`, `https://www.reallearn.site`, `https://real-learn.vercel.app`) or explicitly configured `CLERK_AUTHORIZED_PARTIES`. In local development, explicitly allowlisted local origins (`localhost:3000`, `localhost:3001`, `127.0.0.1:3000`). Added offensive probe `K2` in `backend/test/offensive-audit.test.js` asserting malicious/unauthorized `*.vercel.app` origins are strictly rejected.
+  - **Verification**: 90/90 backend tests passing, 0 security bypasses.
