@@ -91,7 +91,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    // Standard chat behavior: Enter submits, Shift+Enter creates a new line
+    // Enter submits; Shift+Enter inserts a new line
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
@@ -170,7 +170,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           <span className="q-form__mode-hint">{activeMode.hint}</span>
         </div>
 
-        {/* Right: Tools & Submit */}
+        {/* Right: Tools & Enter Button */}
         <div className="q-form__bar-right">
           <ExampleQuestions onPick={(q) => {
             setQuestion(q);
@@ -205,21 +205,21 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
             <button
               type="submit"
               disabled={!question.trim()}
-              aria-label="Ask question"
-              className="btn-primary q-form__submit-btn"
+              aria-label="Enter question"
+              className="btn-primary q-form__enter-btn"
             >
-              <span>Ask</span>
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path d="M3.333 8h9.334M8.667 4l4 4-4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <span>Enter</span>
+              <span className="q-form__enter-symbol" aria-hidden="true">↵</span>
             </button>
           ) : (
             <SignInButton mode="modal">
-              <button type="button" aria-label="Sign in to ask" className="btn-primary q-form__submit-btn">
-                <span>Sign in to Ask</span>
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                  <path d="M3.333 8h9.334M8.667 4l4 4-4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+              <button
+                type="button"
+                aria-label="Sign in to Enter"
+                className="btn-primary q-form__enter-btn"
+              >
+                <span>Sign in</span>
+                <span className="q-form__enter-symbol" aria-hidden="true">↵</span>
               </button>
             </SignInButton>
           )}

@@ -3352,21 +3352,38 @@ p {
 }
 .mode-glider__option--active { color: var(--on-accent); }
 
-.q-form__submit-btn {
+.q-form__enter-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   padding: 8px 18px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   border-radius: var(--radius-pill);
-  min-height: 36px;
+  min-height: 38px;
   cursor: pointer;
+  background: var(--accent-gradient);
+  color: var(--on-accent);
+  box-shadow: var(--shadow-glow-accent);
   transition: transform 150ms ease, box-shadow 200ms ease, opacity 150ms ease;
 }
-.q-form__submit-btn:disabled {
+.q-form__enter-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-glow-accent), 0 0 16px var(--accent-glow);
+}
+.q-form__enter-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+.q-form__enter-symbol {
+  font-family: var(--font-mono), monospace;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1;
+  display: inline-block;
+  opacity: 0.9;
 }
 
 @media (max-width: 640px) {
