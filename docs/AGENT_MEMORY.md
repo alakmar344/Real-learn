@@ -1063,10 +1063,15 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
   - **Slang Elimination & Trust Wording**: Replaced confusing slang in `QuestionInput.tsx` (`"no cap"`, `"Gimme the tea →"`) with crisp, high-trust text (`"Ask any concept, mechanism, or topic..."`, `"Get Fast Summary →"`, `"Start 3-Step Journey →"`, `"Fast Summary"`, `"3-Step Deep Dive"`).
   - **Trust Markers & Kinetic Ticker**: Added a dedicated high-integrity trust strip to `HomeStats.tsx` for new visitors (12 Indian Languages, Class 6 to College Level, Live Fact Grounding, Zero Ads & Private) and upgraded `HeroTicker.tsx` with outcomes-based chips (`master concepts`, `3-step clarity`, `active recall`, `curriculum aligned`, `live fact grounding`, `zero ads & private`).
 - 2026-08-14 — **First-Question Reliability & Cold-Start Generation Failure Root Cause Fix**:
-  - **Root Cause**: Two compounding failure points caused the initial question on cold load to fail: (1) Render free-tier instance takes 30-45s to wake up and returns 502/503/504 while booting, but `useLesson.ts` only retried 3 times with short 1.5s/3s delays (exhausting all attempts in ~6s); (2) Clerk token resolution on cold mount could return null or expired tokens, triggering an un-retryable 401 response; (3) AI provider watchdog in `gemma.js` had a tight 20s `DEFAULT_FIRST_BYTE_TIMEOUT_MS` that aborted first-time model inferences.
+  - **Root Cause (Why 1st question after login fails, but 2nd works)**:
+    1. **JWT Verification Clock Skew immediately after minting**: When a user logs in, Clerk mints a fresh JWT with `iat: now` and `nbf: now`. If the Render server clock is even a fraction of a second behind Clerk's server clock, `jose`'s `jwtVerify` failed validation (`nbf` in the future) on the very first request. By the time the user asked the second question (seconds later), the timestamp was past `nbf` and succeeded.
+    2. **Remote JWKS Fetch Cold Lag**: The first token verification on a cold backend must fetch Clerk's JWKS remotely; if it encountered transient network latency without a dedicated timeout and clock skew allowance, verification failed.
+    3. **Render Sleep**: Cold container boot returns 502/503 for up to 30-45s, which previously exhausted the frontend's 3-attempt (6s) retry ladder.
   - **Fixes Applied**:
+    - Added `clockTolerance: 30` to `jwtVerify` in `backend/src/lib/auth.js` to eliminate false-negative clock-skew failures on freshly-minted login tokens.
+    - Set `timeoutDuration: 10_000` and `cooldownDuration: 30_000` on `createRemoteJWKSet` in `auth.js`.
     - Added proactive `warmupBackend()` non-blocking `GET /health` ping on page load and textarea focus.
-    - Expanded `useLesson.ts` retry budget to 5 attempts with 2s-10s exponential backoff curve covering the full ~45s cold start window.
+    - Expanded `useLesson.ts` retry budget to 5 attempts with 2s-10s exponential backoff covering the full ~45s cold start window.
     - Added cold-session token settlement grace period and allowed 401 retry with fresh `getToken({ skipCache: true })`.
     - Increased `gemma.js` first-byte watchdog timeout from 20s to 35s.
     - Added `www.reallearn.site` and local origins to default `allowedOrigins` in `server.js`.

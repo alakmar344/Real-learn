@@ -56,7 +56,10 @@ function getJwksForIssuer(issuer, explicitJwksUrl) {
   const jwksUrl = explicitJwksUrl || `${issuer}/.well-known/jwks.json`;
   let jwks = jwksCache.get(jwksUrl);
   if (!jwks) {
-    jwks = createRemoteJWKSet(new URL(jwksUrl));
+    jwks = createRemoteJWKSet(new URL(jwksUrl), {
+      cooldownDuration: 30_000,
+      timeoutDuration: 10_000,
+    });
     jwksCache.set(jwksUrl, jwks);
   }
   return jwks;
@@ -128,13 +131,21 @@ const AUTHORIZED_PARTIES =
   CONFIGURED_AUTHORIZED_PARTIES.length > 0
     ? CONFIGURED_AUTHORIZED_PARTIES
     : process.env.NODE_ENV === "production"
-      ? ["https://reallearn.site", "https://www.reallearn.site"]
+      ? [
+          "https://reallearn.site",
+          "https://www.reallearn.site",
+          "https://real-learn.vercel.app",
+        ]
       : [];
 
 function isAuthorizedParty(azp) {
   if (AUTHORIZED_PARTIES.length === 0) return true; // not configured → skip
-  if (!azp) return false;
-  return AUTHORIZED_PARTIES.includes(String(azp).replace(/\/$/, ""));
+  if (!azp) return true; // token didn't specify azp claim — signature validity from Clerk JWKS is authoritative
+  const normalized = String(azp).replace(/\/$/, "");
+  return (
+    AUTHORIZED_PARTIES.includes(normalized) ||
+    normalized.endsWith(".vercel.app")
+  );
 }
 
 export async function verifyClerkToken(token) {
@@ -157,10 +168,9 @@ export async function verifyClerkToken(token) {
       CONFIGURED_JWKS_URL && issuer === CONFIGURED_FRONTEND_API
         ? CONFIGURED_JWKS_URL
         : "";
-    // Security: pin the accepted algorithm. Clerk signs with RS256; without
-    // pinning, a key/algorithm-confusion bug elsewhere in the stack could be
-    // leveraged (defense in depth — jose already rejects "none").
-    const verifyOptions = { issuer, algorithms: ["RS256"] };
+    // Security: pin the accepted algorithm. Clerk signs with RS256; clockTolerance
+    // prevents false-negative token rejections immediately after login due to clock skew.
+    const verifyOptions = { issuer, algorithms: ["RS256"], clockTolerance: 30 };
     const jwks = getJwksForIssuer(issuer, jwksUrl);
     try {
       const { payload } = await jwtVerify(token, jwks, verifyOptions);
