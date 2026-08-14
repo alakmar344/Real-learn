@@ -771,6 +771,10 @@ const allowedOrigins =
         "https://real-learn.onrender.com",
       ];
 
+// Allowed Origin means the exact browser Origin header is either listed in
+// FRONTEND_ORIGIN (comma-separated) or, by default, the production frontend
+// and Render preview origins above. Requests without an Origin header are
+// non-browser/server-to-server traffic and are handled by CORS separately.
 function isOriginAllowed(origin) {
   return !!origin && allowedOrigins.includes(origin);
 }
@@ -798,6 +802,17 @@ app.use(
 // Every legitimate request body here is tiny (a question + a few enum
 // fields). 100kb still leaves huge headroom while blunting memory abuse.
 app.use(express.json({ limit: "100kb" }));
+
+function originGuard(req, res, next) {
+  const origin = req.headers.origin;
+  if (origin && !isOriginAllowed(origin)) {
+    console.warn("[origin] denied", { origin, path: req.path });
+    return res.status(403).json({ error: "Origin not allowed." });
+  }
+  next();
+}
+
+app.use(originGuard);
 // BANDWIDTH: compress every compressible response. compression@1.8 natively
 // negotiates Brotli first (falling back to gzip/deflate), which shrinks
 // lesson JSON ~80% — critical for staying under the monthly transfer cap.

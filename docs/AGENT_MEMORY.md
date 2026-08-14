@@ -1050,3 +1050,5 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
   calendar dates, required fields, punctuation-free hero lines (§3 updated).
   Verified: `tsc --noEmit` clean, `next lint` clean, `next build` clean (13
   pages), all verify scripts pass.
+- 2026-08-14 — Security/UX audit pass: backend rejects browser requests from disallowed Origins before routes run, onboarding is a focused 5-step setup with no text-only explainer/final screens, and homepage newcomer clutter was trimmed.
+- 2026-08-14 — Removed the legacy Things Coming 4-step text tour from AppShell and restored the onboarding wizard to its pre-audit 5-slide shape; first-time setup should not be preceded by a separate text-only explainer.
