@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 
-// Security: the Content-Security-Policy is set per-request in middleware.ts
+// Security: the Content-Security-Policy is set per-request in proxy.ts
 // (NOT here) so every response carries a fresh script nonce — see the
 // commentary there. Static security headers stay in this file.
 
@@ -21,7 +21,6 @@ const nextConfig = {
       "remark-gfm",
       "remark-math",
       "rehype-katex",
-      "lodash-es",
       "canvas-confetti",
       "@clerk/nextjs",
     ],
@@ -57,51 +56,10 @@ const nextConfig = {
           },
         ],
       },
-      {
-        source: "/_next/static/:path*",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=31536000, immutable",
-          },
-        ],
-      },
-      {
-        source: "/fonts/:path*",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=31536000, immutable",
-          },
-        ],
-      },
-      {
-        source: "/crayon-bg.svg",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=86400, stale-while-revalidate=604800",
-          },
-        ],
-      },
-      {
-        source: "/crayon-bg-mobile.svg",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=86400, stale-while-revalidate=604800",
-          },
-        ],
-      },
-      {
-        source: "/logo.svg",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=86400, stale-while-revalidate=604800",
-          },
-        ],
-      },
+      // /_next/static is fingerprinted and served immutable by Next itself —
+      // a custom rule there is redundant and triggers a build warning. The
+      // old /fonts/ and /crayon-bg*.svg rules pointed at assets that no
+      // longer exist, and /logo.svg is covered by the *.svg rule above.
       {
         source: "/(.*)",
         headers: [
@@ -121,7 +79,7 @@ const nextConfig = {
             value: "max-age=63072000; includeSubDomains; preload",
           },
           // Content-Security-Policy is set per-request (with a nonce) in
-          // middleware.ts.
+          // proxy.ts.
         ],
       },
       {

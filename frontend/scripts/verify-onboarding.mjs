@@ -11,7 +11,7 @@ const read = (p) => readFile(new URL(p, import.meta.url), "utf8");
 const wizard = await read("../components/onboarding/OnboardingWizard.tsx");
 const redirect = await read("../components/onboarding/OnboardingRedirect.tsx");
 const onboardingLib = await read("../lib/onboarding.ts");
-const middleware = await read("../middleware.ts");
+const middleware = await read("../proxy.ts");
 const appShell = await read("../components/shared/AppShell.tsx");
 const preSignIn = await read("../components/shared/PreSignInConsent.tsx");
 const personalizationGate = await read("../components/shared/PersonalizationGate.tsx");

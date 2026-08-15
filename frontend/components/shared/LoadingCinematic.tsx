@@ -64,7 +64,9 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
   const [factIndex, setFactIndex] = useState(0);
   const [takingLonger, setTakingLonger] = useState(false);
   const displayRef = useRef(0);
-  const startTimeRef = useRef(Date.now());
+  // 0 sentinel — stamped with the real start time in the [question] effect
+  // below (Date.now() must not run during render; render must stay pure).
+  const startTimeRef = useRef(0);
 
   useEffect(() => {
     const id = window.setTimeout(() => setTakingLonger(true), PATIENCE_MESSAGE_AFTER_MS);

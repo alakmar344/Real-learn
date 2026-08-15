@@ -1,11 +1,8 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 /* Fonts are self-hosted via next/font in app/layout.tsx, which defines
-   --font-inter / --font-lora / --font-display / --font-mono. The old Google
-   Fonts @import was placed after the Tailwind directives (making it invalid
-   CSS) AND blocked by our CSP — so remote fonts never actually loaded. */
+   --font-inter / --font-lora / --font-display / --font-mono.
+   NOTE: Tailwind was removed 2026-08-15 — it was configured but had no
+   postcss.config, so its directives never compiled and no utility it
+   generates was ever in use. Every class in this app is hand-defined here. */
 :root {
   color-scheme: dark;
 

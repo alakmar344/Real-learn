@@ -179,7 +179,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // CSP: per-request script nonce generated in middleware.ts. Only scripts
+  // CSP: per-request script nonce generated in proxy.ts. Only scripts
   // stamped with this nonce may execute — the price is dynamic rendering
   // (headers() opts every route out of static generation), which this
   // Clerk-authenticated app effectively pays already.

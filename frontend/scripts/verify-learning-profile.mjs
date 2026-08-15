@@ -85,9 +85,8 @@ check("completed + strong → well-understood", () => {
   return classifyBucket(j, 1) === "well-understood";
 });
 check("completed + moderate (0.4-0.7) → partially-understood", () => {
-  const j = journey("j", "What is gravity?", { partsDone: 3, partsTotal: 3, score: 4, quizCount: 6 });
-  // strength = 0.4*1 + 0.6*(4/6) = 0.4 + 0.4 = 0.8 → actually well-understood
-  // Use a lower score to force partially-understood: score 2/6 → 0.4+0.2=0.6
+  // strength = 0.4*1 + 0.6*(score/6); score 2/6 → 0.4+0.2=0.6 → partially-understood
+  // (score 4/6 would give 0.8 → well-understood, so it must stay at 2/6 here)
   const j2 = journey("j", "What is gravity?", { partsDone: 3, partsTotal: 3, score: 2, quizCount: 6 });
   return classifyBucket(j2, 0.6) === "partially-understood";
 });

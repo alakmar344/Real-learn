@@ -23,7 +23,9 @@ export default function MicButton({ language, onTranscript, onInterim, size = 44
   });
 
   const onInterimRef = useRef(onInterim);
-  onInterimRef.current = onInterim;
+  useEffect(() => {
+    onInterimRef.current = onInterim;
+  }, [onInterim]);
   useEffect(() => {
     onInterimRef.current?.(listening ? interimTranscript : "");
   }, [listening, interimTranscript]);
