@@ -149,10 +149,6 @@ const PartCardBase = ({
       aria-label={`Part ${part.partNumber}: ${part.title}`}
       id={`part-${part.partNumber}`}
     >
-      <span className="part-card__num" aria-hidden="true">
-        {String(part.partNumber).padStart(2, "0")}
-      </span>
-
       {/* Locked-state obfuscation lives in globals.css (.part-locked-content)
           so low-end devices can swap the expensive 12px blur for a cheap fade
           via the data-perf tier. */}

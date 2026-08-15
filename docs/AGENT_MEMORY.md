@@ -30,22 +30,23 @@ family — rich olive `#556B2F` on warm cream `#FAF9F3` by day, glowing
 lime-olive `#A4C639` on olive-black `#121510` by night (default) — with
 single-family olive gradients (`--accent-gradient` / `--text-pop-gradient`)
 reserved for CTAs and display text, emerald (`#10B981` / `#059669`) for
-success, a dopamine subject-color spectrum for chips, plus airy
-transform-only ambient auroras (perf-tier gated). The "frenzy" is kinetic
-composition: oversized Caveat script (`--font-script`) tilted over stark
-geometric containers — the hero greeting, brand wordmarks (navbar,
-sidebar, footer), page titles (`.page-hero__title`), the completion
-headline, 404/empty-state titles, `.page-hero__glyph` +
-`.part-card__num` stroke ghosts, and the homepage `.hero-ticker`
-marquee. Script is decorative-Latin-only and NEVER used for buttons,
-nav links, metrics, or lesson prose (12-language coverage lives in
-Inter). CRITICAL: in dark mode `--on-accent` is ink
+success, a dopamine subject-color spectrum for chips, plus a STATIC
+ambient wash (`.aurora-bg`, no animation — the old drift loop was cut for
+scroll/battery headroom). As of 2026-08-15 the display layer is calm and
+mature: the Caveat script face is RETIRED (childish read; extra font
+download) — every heading, wordmark and title rides Space Grotesk
+(`--font-display`) at weight 700 with tight letter-spacing, level (no
+rotation). The tilted ghost glyphs (`.part-card__num`,
+`.page-hero__glyph`), the homepage `.hero-ticker` marquee, all DOM/canvas
+confetti, and the neon `.glow-text` are all removed. Feedback comes from
+~150–180ms transitions and one honest shadow step — no glow blooms.
+CRITICAL: in dark mode `--on-accent` is ink
 `#121510`, not white — white on lime fails contrast. Body text is Inter
 400 (bold is for headings/labels only), lesson prose never drops below
 16px on phones, every color pairing is WCAG-AA-verified, and there is NO
-gold and NO purple/violet (owner's rule). JS-side colors (confetti, share
-card) come from `frontend/lib/palette.ts` — never hardcode brand hexes in
-components. Prior design iterations (Evergreen, Solar Terracotta/"Sunset
+gold and NO purple/violet (owner's rule). JS-side colors (share card,
+rating stars) come from `frontend/lib/palette.ts` — never hardcode brand
+hexes in components. Prior design iterations (Evergreen, Solar Terracotta/"Sunset
 Pop", Cyber Aqua) are recorded in `docs/REDESIGN.md` for history only —
 this §1 is the canonical spec. Frontend: Next.js 16 + React 19 +
 TypeScript + Clerk + Zustand — styling is the hand-rolled design system in
@@ -162,7 +163,8 @@ Available component classes (already implemented — use them):
 - Headers: `.section-header`, `.section-overline`, `.section-header__kanji`,
   `.section-header__title`, `.section-header__subtitle`
 - Cards: `.rl-card`, `.stat-tile`
-- Learning: `.part-card` (+ `.part-card__num/meta/tag/tool/title/intent/prose/footer/reading-*/veil/lock`),
+- Learning: `.part-card` (+ `.part-card__meta/tag/tool/title/intent/prose/footer/reading-*/veil/lock`;
+  the `__num` ghost numeral was removed 2026-08-15),
   `.part-cta`, `.part-done-bar`, `.journey-rail` (+ `__step`, `__node`, `__connector`, `--solo`),
   `.learn-topbar`, `.followup`, `.completion` (+ `.suggest-pill`), `.progress-hub`
 - Quiz: `.quiz-sheet`, `.quiz-sheet__panel`, `.quiz-sheet__close`, `.quiz-sheet__action`,
@@ -207,15 +209,15 @@ Available component classes (already implemented — use them):
   inventing their own hover/press states.
 - Icons: ALL UI icons come from `components/shared/icons.tsx` (`<Icon name=.../>`,
   stroke-based, currentColor, `label` prop for accessible name). Helpers:
-  `.settings-action__label`, `.app-sidebar__foot-label`, `.page-hero__glyph--icon`
-- Olive Frenzy: `.hero-ticker`
-  (+ `__track`, `__word`, `__word--script`, `__tick`) kinetic marquee,
+  `.settings-action__label`, `.app-sidebar__foot-label`
+- Olive Frenzy: `.hero-ticker` marquee and the `.page-hero__glyph` ghosts were
+  removed 2026-08-15 (decorative noise; see §13).
   `.mic-btn` (+ `--listening`, `--unsupported`) voice-input key,
   `.error-boundary` (+ `__title`, `__message`, `__retry`) render-error fallback
   (`.script-display` and `.micro-label` were removed 2026-08-15 as unused —
   the technical-label voice lives directly in the component classes that
   wear it: section overlines, stat-tile labels, part-card tags, quiz meta)
-- Celebrations: `.celebration-scrim/chip-wrap/chip/burst`, `.celebration-card`
+- Celebrations: `.celebration-scrim/chip-wrap/chip`, `.celebration-card`
   (+ `__dismiss`, `__icon`, `__badge-disc`, `__kicker`, `__title`,
   `__title--tight`, `__sub`), `.celebration-summary` (+ `__row`, `__plus`) —
   the EngagementLayer XP chip / center card / batch summary anatomy
@@ -223,7 +225,7 @@ Available component classes (already implemented — use them):
   (`--shadow-elegant-*`, `--glow-soft`, `--glow-strong`, `--ease-elegant`),
   `.quiz-progress` (+ `__dot`, `--current`,
   `--answered`, `--pending`) quiz step indicator, refined focus ring,
-  enhanced `.aurora-bg` drift, and polished hover/lift shadows on
+  and polished hover/lift shadows on
   `.btn-primary`, `.btn-ghost`, `.q-form`, `.part-card`, `.quiz-sheet__panel`,
   `.completion`, `.flashcards`, `.hero-glass-card`, and `.navbar`.
 
@@ -1107,3 +1109,9 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
   - **CSS pruned:** ~150 lines of verified-unused utilities and orphaned keyframes removed (`.kusari`, `.liquid-sheen`, `.micro-label`, `.script-display`, `.ambient-spotlight`, `.texture-dots/lines` no-ops, 8 unused `animate-*` classes, `heartFloat`, `spotlightDrift`).
   - **Integration smoke test repaired + `output: "standalone"` removed:** `scripts-smoke/integration-smoke.sh` was stale — it asserted the removed "/Find" feature (`/api/find` 401, `/find` route, "Find" in the privacy policy) and hardcoded legal-doc versions 3.3/3.0 (now 3.4/3.1). It now checks `/api/generate-lesson` auth, reads the current versions from `lib/legalConsent.ts` (so they can't go stale again), boots the frontend with `next start` on port 3907 (3000 was silently occupied by the sandbox proxy, so the checks probed a foreign server), and never passes `-H 127.0.0.1` (an explicit loopback bind breaks Next 16's internal route dispatch — app routes hang). `output: "standalone"` was removed from `next.config.js`: Vercel ignores it, it slowed every build with a traced node_modules copy, and its Next 16 self-hosted server mis-proxied app routes. Smoke result: 7/7 PASS.
   - **Verified:** `tsc --noEmit` clean, `npm run lint` 0 errors, `npm run build` clean (14 routes, zero warnings), production server smoke-tested (/, /legal, /onboarding, robots 200; corrected mode labels confirmed in SSR output), backend `npm test` 90/90, all eight `verify:*` scripts pass. Updated docs: `docs/AGENT_MEMORY.md` (§1 stack, §2 layout, §3 commands + baseline, §5 class lists, §11 verify step, §13 changelog), `README.md`, `GEMINI.md`, `llms.txt`, `llms-full.txt`, `change-made-after-submission.md`.
+
+- 2026-08-15 (later) — **De-childish design pass + fast-scroll performance overhaul.**
+  - **Decoration retired:** Caveat script face removed from `layout.tsx` (one fewer font download) — hero greeting, navbar/sidebar/footer wordmarks, page/completion/quiz-sheet/404/empty/error titles now ride Space Grotesk at weight 700, tighter sizes, level (all `rotate(-1…-1.5deg)` tilts removed). Deleted `HeroTicker.tsx` + its CSS (kinetic marquee), the `.part-card__num` and `.page-hero__glyph` tilted stroke-ghost glyphs (markup + CSS), the neon `.glow-text`, and ALL confetti: `canvas-confetti` dependency + `@types` uninstalled, the 50-particle DOM `Confetti` in `CompletionScreen`, the 16-particle `Burst` in `EngagementLayer`, `celebrationColors()`/`CELEBRATION` in `palette.ts`, `.celebration-burst` + `confettiFall`/`gradientShift` keyframes, and the unused `.float-up`/`.bounce-in-gentle`/`.particle-burst` helpers. Celebration cards, XP chips, haptics and the score ring remain — feedback without the party supplies. Infinite ambient animations cut: `flameFlicker` (streak flames now still), `iconFloat` (greeting icon waves once), the 120s `auroraDrift` (`.aurora-bg` is now a static wash; dead `.aurora-blob` divs removed from `AmbientBackground`), and the `.texture-noise` mix-blend SVG-turbulence grain.
+  - **Buttons / UX laws:** `.btn-primary` 15px×28px/52px/800 → 12px×24px/48px/700 (+`-0.01em` tracking); `.btn-ghost` min-height 44px (touch-target floor kept per Fitts); `.btn-icon` no hover scale-up (controls don't wander under the cursor). All interaction transitions compressed from 300–420ms springs to 150–180ms (Doherty threshold); hover lifts capped at 1px; every glow bloom (`0 0 16–32px var(--accent-glow)`, `--shadow-glow-accent` on keys, `--glow-soft` card halos) replaced with one honest shadow step. The tactile key system (bevel + hard edge + press) is kept, glow-free. Large in-flow cards (`.part-card`, `.hero-glass-card`) no longer translate on hover.
+  - **Fast-scroll fix:** new last-in-file override strips `backdrop-filter` from all SCROLLED content surfaces (`.part-card`, `.flashcards`, `.followup`, `.completion`, `.resume-card`, `.q-form`, `.journey-rail`, `.hero-glass-card`, `.stat-tile-2026`, `.progress-hub`, `.progress-hero-card`, `.settings-panel-glass`, `.auth-glass-card`, `.glass/-card/-panel`) — the per-card, per-frame re-composite was the fast-scroll stutter; fixed chrome (navbar, learn-topbar, sidebar, bottom-nav, quiz sheet, modals, scrims) keeps frost at reduced radii (`--glass-blur` 16→10px, `--glass-blur-strong` 24→16px, saturate 140→120%). Scroll-driven `rise-in` view-timeline entrances on every card removed (continuous re-raster during fast scrolls). Perf-tier/Firefox rules for now-dead layers (aurora drift freeze, blend-mode grain, flame) pruned.
+  - **Verified:** `tsc --noEmit` clean, lint 0 errors (18 pre-existing warnings), `next build` clean (14 routes), all eight `verify:*` scripts pass. Updated docs: `docs/AGENT_MEMORY.md` (§1 design language, §5 class lists, §13), `docs/REDESIGN.md`, `change-made-after-submission.md`.

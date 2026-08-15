@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { useProgressStore, Celebration } from "@/store/progressStore";
 import { BADGE_BY_ID, TIER_COLOR, levelTitle } from "@/lib/achievements";
 import { useMounted } from "@/hooks/useMounted";
-import { celebrationColors } from "@/lib/palette";
 import { Icon, type IconName } from "@/components/shared/icons";
 
 /* Duration each celebration type stays on screen.
@@ -17,41 +16,6 @@ const DURATION: Record<Celebration["kind"], number> = {
   streak: 2000,
   "daily-goal": 2000,
 };
-
-function Burst() {
-  // Resolve colors at burst time so they track the active theme. The
-  // per-piece geometry is random data, so it stays inline by design.
-  const [pieces] = useState(() => {
-    const colors = celebrationColors();
-    return Array.from({ length: 16 }, (_, i) => ({
-      id: i,
-      left: 50 + (Math.random() * 30 - 15),
-      delay: Math.random() * 0.2,
-      size: 5 + Math.random() * 5,
-      color: colors[i % colors.length],
-      duration: 1.2 + Math.random() * 0.8,
-    }));
-  });
-  return (
-    <div aria-hidden="true" className="celebration-burst">
-      {pieces.map((p) => (
-        <div
-          key={p.id}
-          style={{
-            position: "absolute",
-            top: "38%",
-            left: `${p.left}%`,
-            width: p.size,
-            height: p.size,
-            borderRadius: "50%",
-            background: p.color,
-            animation: `confettiFall ${p.duration}s ${p.delay}s var(--ease-reveal) both`,
-          }}
-        />
-      ))}
-    </div>
-  );
-}
 
 /** Small non-blocking XP chip that floats up near the top. */
 function XpChip({ label }: { label: string }) {
@@ -91,7 +55,6 @@ function CenterCard({
       onClick={onDismiss}
       className="animate-overlay-fade celebration-scrim"
     >
-      <Burst />
       <div className="animate-level-burst celebration-card">
         {children}
         <button
@@ -364,7 +327,7 @@ export default function EngagementLayer() {
   if (current.kind === "streak") {
     return (
       <CenterCard onDismiss={dequeue}>
-        <div className="flame-flicker celebration-card__icon">
+        <div className="celebration-card__icon">
           <Icon name="flame" size={60} />
         </div>
         <h3 className="celebration-card__title">{current.streak}-day streak!</h3>

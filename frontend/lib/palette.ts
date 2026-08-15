@@ -23,16 +23,6 @@ export function activeTheme(): ThemeName {
   return "light";
 }
 
-/** Confetti / particle-burst colors — olive + lime + emerald celebration */
-const CELEBRATION: Record<ThemeName, string[]> = {
-  light: ["#556B2F", "#6B8236", "#A4C639", "#84CC16", "#3F6212", "#D9F99D", "#059669", "#34D399", "#FFFFFF"],
-  dark: ["#A4C639", "#C3E85B", "#D9F99D", "#84CC16", "#65A30D", "#F5F3E8", "#10B981", "#34D399", "#FAF9F3"],
-};
-
-export function celebrationColors(theme: ThemeName = activeTheme()): string[] {
-  return CELEBRATION[theme];
-}
-
 /** Rating stars — warm ember glow (amber retired: gold is banned). */
 export function starColor(theme: ThemeName = activeTheme()): string {
   return theme === "dark" ? "#FB923C" : "#EA580C";

@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import {
-  Caveat,
   Inter,
   JetBrains_Mono,
   Lora,
@@ -48,15 +47,9 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
   preload: false,
 });
-// Script face: Caveat — the expressive layer of the Olive Frenzy system.
-// Decorative Latin-only moments (hero greeting, ghost glyphs) — never
-// functional UI, never lesson prose (12-language coverage lives in Inter).
-const caveat = Caveat({
-  subsets: ["latin"],
-  variable: "--font-script",
-  display: "swap",
-  preload: false,
-});
+// The Caveat script face is retired: handwriting display type read as
+// juvenile and cost an extra font download. Headings now ride the same
+// disciplined grotesk as the rest of the display layer.
 
 export const metadata: Metadata = {
   title: {
@@ -168,7 +161,7 @@ export default async function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${inter.variable} ${lora.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} ${caveat.variable}`}
+      className={`${inter.variable} ${lora.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable}`}
     >
       <head>
         <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeInitScript }} />
