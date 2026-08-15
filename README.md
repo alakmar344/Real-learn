@@ -25,7 +25,7 @@ When a learner asks a question:
 
 | Layer | Technologies |
 |---|---|
-| **Frontend** | Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS, Clerk Auth, Zustand state management |
+| **Frontend** | Next.js 16 (App Router, Turbopack), React 19, TypeScript, hand-rolled CSS design system (globals.css), Clerk Auth, Zustand state management |
 | **Backend** | Node.js, Express API, Server-Sent Events (SSE) streaming |
 | **AI Inference Engine** | Google Gemma 4 (Cerebras Cloud primary, NVIDIA NIM fallback, Cloudflare Workers AI last-resort fallback with circuit-breaker) |
 | **Live Grounding** | Serper API for live news and web context |
@@ -36,7 +36,7 @@ When a learner asks a question:
 ## 🚀 Quick Start
 
 ### 1. Prerequisites
-- Node.js 18+ and npm installed
+- Node.js 24+ (LTS) and npm installed (see `.nvmrc`)
 
 ### 2. Frontend Setup
 ```bash
@@ -63,7 +63,7 @@ Always verify changes locally before pushing:
 ```bash
 # Frontend Verification (from /frontend)
 npx tsc --noEmit          # TypeScript check (must be 0 errors)
-npx next lint             # Next.js lint check
+npm run lint              # ESLint (flat config — Next 16 removed `next lint`)
 npm run build             # Production Next.js build verification
 
 # Backend Verification (from /backend)

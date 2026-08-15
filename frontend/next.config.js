@@ -8,7 +8,11 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   trailingSlash: true,
-  output: "standalone",
+  // NOTE: `output: "standalone"` was removed 2026-08-15. The frontend deploys
+  // to Vercel, which ignores it — it only slowed builds (extra traced copy of
+  // node_modules) and, under Next 16, its self-hosted server mis-proxied
+  // app routes (self-proxy loop / ECONNREFUSED on the smoke test). The smoke
+  // script now boots `next start` instead.
   compress: true,
   images: {
     remotePatterns: [{ protocol: "https", hostname: "img.clerk.com" }],
