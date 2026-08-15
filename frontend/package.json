@@ -30,7 +30,6 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^7.7.6",
-    "canvas-confetti": "^1.9.4",
     "cookie": "^2.0.1",
     "eventsource-parser": "^4.0.0",
     "idb": "^8.0.3",
@@ -47,7 +46,6 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
-    "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",

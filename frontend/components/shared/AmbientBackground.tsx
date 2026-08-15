@@ -1,20 +1,13 @@
 "use client";
 
 /**
- * The app's ambient backdrop — a single GPU-cheap layer:
- * `.aurora-bg` holds huge radial-gradient washes drifting on 70–110s loops
- * (transform-only animation, no blur filters, no repaints). It gives the
- * page a soft "breathing" depth without ever pulling focus — the Still Ink
- * design keeps the backdrop to paper, air and light.
- * Hidden on the low performance tier and frozen under
- * prefers-reduced-motion (see globals.css).
+ * The app's ambient backdrop — a single static layer of soft radial-gradient
+ * washes painted once by the compositor. No animation: a permanently-running
+ * transform loop on a full-viewport fixed layer keeps a GPU layer alive and
+ * costs battery/scroll headroom for a subliminal effect. The static wash
+ * gives the same warmth for free. Hidden on the low performance tier
+ * (see globals.css).
  */
 export default function AmbientBackground() {
-  return (
-    <div aria-hidden className="aurora-bg">
-      <div className="aurora-blob aurora-a" />
-      <div className="aurora-blob aurora-b" />
-      <div className="aurora-blob aurora-c" />
-    </div>
-  );
+  return <div aria-hidden className="aurora-bg" />;
 }

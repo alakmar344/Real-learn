@@ -416,3 +416,26 @@ The state colors got a proper semantic API in `globals.css`:
 - **Housekeeping** — the duplicated global `prefers-reduced-motion`
   kill-switch block was removed; the canonical copy lives in the perf-tier
   section.
+
+---
+
+## 2026-08-15 — Calm Grotesk pass (de-childish + snappy)
+
+Design state: **Olive Frenzy Minimal, matured.** The olive palette, glass
+chrome and tactile key system stay; the "frenzy" ornament layer is retired.
+
+- **Type** — Caveat script face removed entirely (font no longer loaded).
+  Hero greeting, wordmarks, page/completion/quiz/404/empty/error titles all
+  use Space Grotesk `--font-display`, weight 700, tightened sizes
+  (hero clamp 32–56px), `-0.01/-0.02em` tracking, zero rotation.
+- **Ornament** — HeroTicker marquee, `.part-card__num` / `.page-hero__glyph`
+  tilted stroke ghosts, `.glow-text` neon, `.texture-noise` SVG grain, and
+  every confetti system (canvas + DOM particles) removed. Celebration cards,
+  XP chips and the score ring remain as feedback.
+- **Motion** — interaction transitions 300–420ms → 150–180ms; hover lifts
+  ≤1px; no hover scale on controls; infinite ambient loops (aurora drift,
+  flame flicker, icon float) and scroll-driven card entrances removed.
+- **Depth** — glow blooms replaced with single shadow steps;
+  `--glass-blur` 16→10px, `--glass-blur-strong` 24→16px, saturate 140→120%.
+  `backdrop-filter` now lives ONLY on fixed chrome; scrolled content
+  surfaces are tinted but unblurred (the fast-scroll fix).

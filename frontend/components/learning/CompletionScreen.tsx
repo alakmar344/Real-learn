@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { LessonJourney } from "@/types";
 import ShareResult from "@/components/learning/ShareResult";
 import FeedbackGate from "@/components/shared/FeedbackGate";
 import QuickSummaryCards from "@/components/learning/QuickSummaryCards";
-import { celebrationColors } from "@/lib/palette";
 
 interface Props {
   lesson: LessonJourney;
@@ -35,50 +34,8 @@ function generateFollowUpSuggestions(lesson: LessonJourney): string[] {
   return suggestions.slice(0, 3);
 }
 
-function Confetti() {
-  const [particles] = useState(() => {
-    const colors = celebrationColors();
-    return Array.from({ length: 50 }, (_, i) => ({
-      id: i,
-      left: Math.random() * 100,
-      delay: Math.random() * 1.5,
-      size: 6 + Math.random() * 8,
-      color: colors[i % colors.length],
-      duration: 2 + Math.random() * 2,
-      rotation: Math.random() * 360,
-    }));
-  });
-
-  return (
-    <div aria-hidden="true" style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 1 }}>
-      {particles.map((p) => (
-        <div
-          key={p.id}
-          style={{
-            position: "absolute",
-            top: -20,
-            left: `${p.left}%`,
-            width: p.size,
-            height: p.size,
-            borderRadius: p.id % 3 === 0 ? "50%" : p.id % 3 === 1 ? "2px" : "0",
-            background: p.color,
-            animation: `confettiFall ${p.duration}s ${p.delay}s var(--ease-reveal) both`,
-            transform: `rotate(${p.rotation}deg)`,
-          }}
-        />
-      ))}
-    </div>
-  );
-}
-
 export default function CompletionScreen({ lesson, totalScore, onRestart, onRetake }: Props) {
-  const [showConfetti, setShowConfetti] = useState(true);
   const sectionRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    const id = setTimeout(() => setShowConfetti(false), 4000);
-    return () => clearTimeout(id);
-  }, []);
 
   // Max score = the ACTUAL number of quiz questions — salvaged quizzes can
   // have 1 question, so hardcoding 2 per part made perfection unreachable.
@@ -101,8 +58,6 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
 
   return (
     <section ref={sectionRef} className="completion animate-fade-up" aria-label="Journey complete">
-      {showConfetti && <Confetti />}
-
       {/* Score ring */}
       <div className="completion__hero">
         <div className="completion__ring" aria-hidden="true">

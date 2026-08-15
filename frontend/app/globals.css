@@ -34,9 +34,11 @@
   --border-accent: #A4C639;
   --border-glow: rgba(164, 198, 57, 0.35);
 
-  --glass-blur: 16px;
-  --glass-blur-strong: 24px;
-  --glass-saturate: 140%;
+  /* Kept modest on purpose: backdrop blur cost scales with radius × area,
+     and it re-composites on every scroll frame under sticky/fixed surfaces. */
+  --glass-blur: 10px;
+  --glass-blur-strong: 16px;
+  --glass-saturate: 120%;
   --glass-highlight: rgba(255, 255, 255, 0.05);
   --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 0 1px rgba(60, 66, 48, 0.6);
@@ -325,35 +327,22 @@ body {
   overflow-x: clip;
 }
 
-/* ── Ambient aurora — the page's quiet "breathing" layer.
-   Two enormous radial-gradient blobs drift on 70–90s loops using ONLY
-   transform (compositor-cheap, no blur filters, no repaints). The effect is
-   subliminal: the page feels alive and warm without ever pulling focus. */
+/* ── Ambient wash — a STATIC backdrop of soft radial gradients.
+   The old 120s infinite "aurora drift" kept a full-viewport compositor
+   layer permanently alive (battery + scroll-headroom cost) for an effect
+   nobody consciously saw. Painted once, it gives the same warmth free. */
 .aurora-bg {
   position: fixed;
-  /* overscan so the drift never exposes a hard edge */
-  inset: -12%;
+  inset: 0;
   z-index: -1;
   pointer-events: none;
-  overflow: hidden;
-  contain: layout style paint;
+  contain: strict;
   background:
     radial-gradient(65vmax 65vmax at 10% 10%, var(--aurora-1), transparent 70%),
     radial-gradient(75vmax 65vmax at 90% 90%, var(--aurora-2), transparent 75%),
     radial-gradient(55vmax 55vmax at 50% 50%, var(--aurora-3), transparent 70%),
-    radial-gradient(60vmax 50vmax at 85% 12%, var(--aurora-4), transparent 72%),
     /* A focused accent spotlight adds depth behind the hero card. */
     radial-gradient(50vmax 50vmax at 50% 35%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 65%);
-  opacity: 1;
-  /* the drift the comment always promised — transform-only, alternate loop */
-  animation: auroraDrift 120s var(--ease-elegant) infinite alternate;
-}
-@keyframes auroraDrift {
-  from { transform: translate3d(-2%, -1.5%, 0) scale(1); }
-  to { transform: translate3d(2%, 1.5%, 0) scale(1.06); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .aurora-bg { animation: none; }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -428,12 +417,6 @@ html::before {
   font-size: 14px;
   box-shadow: var(--shadow-sm);
   white-space: nowrap;
-}
-.celebration-burst {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
 }
 .celebration-card {
   position: relative;
@@ -530,14 +513,13 @@ html::before {
 /* Smooth hover lift — calm, considered micro-interaction (not bouncy). */
 .glass-card,
 .glass-panel {
-  transition: box-shadow 320ms var(--ease-color), transform 320ms var(--ease-reveal),
-    border-color 320ms var(--ease-color), background 320ms var(--ease-color);
+  transition: box-shadow 160ms var(--ease-color),
+    border-color 160ms var(--ease-color), background 160ms var(--ease-color);
 }
 .glass-card:hover,
 .glass-panel:hover {
   border-color: var(--border-glow);
-  box-shadow: var(--shadow-lg), var(--glass-edge);
-  transform: translateY(-2px);
+  box-shadow: var(--shadow-md), var(--glass-edge);
 }
 
 /* Glass frosting is applied EXPLICITLY via .glass / .glass-card / .glass-panel
@@ -566,21 +548,10 @@ body::before {
   display: none !important;
 }
 
-/* Micro-noise overlay — a finer, higher-frequency grain that gives interactive
-   surfaces a "tactile" feel, like premium paper or a well-worn object.
-   Applied selectively via .texture-noise on cards, buttons, inputs. */
-.texture-noise::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.04;
-  mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
-  background-size: 100px 100px;
-}
+/* Micro-noise overlay — RETIRED. The mix-blend-mode SVG-turbulence grain
+   forced an expensive readback wherever it painted, for a 4%-opacity effect.
+   The class remains a structural no-op so existing markup keeps its
+   stacking context. */
 .texture-noise > * {
   position: relative;
   z-index: 1;
@@ -886,17 +857,6 @@ a:active {
   to { transform: rotate(360deg); }
 }
 
-@keyframes confettiFall {
-  0% { transform: translateY(-10vh) rotate(0deg) scale(1); opacity: 1; }
-  100% { transform: translateY(110vh) rotate(720deg) scale(0.5); opacity: 0; }
-}
-
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
 /* NOTE: a second, redundant copy of the keyframes above (slideFromBottom,
    accentFlash, unlockPop, shake, correctPulse, progressFill, shimmer, spin,
    confettiFall, bounceIn, float, gradientShift, glowPulse, slideIn) used to
@@ -999,7 +959,7 @@ a:active {
   border-radius: 999px;
   background: var(--border-subtle);
   margin: 0 12px;
-  transition: background 600ms var(--ease-color);
+  transition: background 160ms var(--ease-color);
 }
 .journey-rail__connector.is-filled {
   background: var(--accent-gradient);
@@ -1017,7 +977,7 @@ a:active {
   transition: background var(--dur-base) var(--ease-color),
               color var(--dur-base) var(--ease-color),
               box-shadow var(--dur-base) var(--ease-color),
-              transform 400ms var(--ease-spring);
+              transform 180ms var(--ease-spring);
 }
 
 .journey-rail__step-text {
@@ -1152,9 +1112,11 @@ a:active {
   animation: fadeUp 800ms var(--ease-reveal) both;
 }
 
+/* One friendly wave on load, then still — a perpetual float reads as
+   restless, and every infinite animation keeps a compositor layer warm. */
 .hero-greeting-icon {
   display: inline-block;
-  animation: gentleWave 1.8s ease-in-out, iconFloat 4s ease-in-out 1.8s infinite;
+  animation: gentleWave 1.8s ease-in-out;
   transform-origin: 70% 70%;
 }
 
@@ -1203,27 +1165,24 @@ a:active {
   z-index: 2;
   margin-bottom: 0;
 }
-/* Olive Frenzy: the greeting is the expressive script moment — oversized
-   cursive tilted against the razor-straight input card below it. Script is
-   decorative-Latin-only; functional UI stays on the geometric sans. */
+/* The greeting — a confident, level display heading. (The old oversized
+   tilted-cursive treatment is retired with the script face.) */
 .hero__title {
   margin: 0;
-  font-family: var(--font-script), cursive;
-  font-weight: 600;
-  line-height: 1.15;
-  letter-spacing: 0;
-  font-size: clamp(44px, 9vw, 68px);
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-size: clamp(32px, 6vw, 48px);
   color: var(--text-primary);
-  transform: rotate(-1.5deg);
-  transform-origin: left bottom;
   overflow: visible;
   white-space: normal;
   word-break: break-word;
 }
 @media (min-width: 1024px) {
   .hero__title {
-    font-size: clamp(56px, 5.5vw, 80px);
-    line-height: 1;
+    font-size: clamp(40px, 4vw, 56px);
+    line-height: 1.05;
   }
   /* Desktop: Greeting H1 (order: 1), question input (order: 2), HomeStats spark below (order: 3) */
   .hero__greeting {
@@ -1267,11 +1226,6 @@ a:active {
   margin-top: 20px;
   order: 3;
 }
-@keyframes iconFloat {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-6px) rotate(4deg); }
-}
-
 /* ── How-it-works strip ── the newcomer's mental model in one quiet line:
    ask → learn in three parts → pass each gate. Shown only until the first
    activity; numbered beads keep it scannable without stealing the hero. */
@@ -1373,7 +1327,7 @@ a:active {
 
 /* Interactive lift — spring-based hover with a soft accent glow */
 .interactive-lift {
-  transition: transform 420ms var(--ease-spring), box-shadow 420ms var(--ease-spring), border-color 320ms var(--ease-color);
+  transition: transform 180ms var(--ease-spring), box-shadow 180ms var(--ease-color), border-color 160ms var(--ease-color);
 }
 .interactive-lift:hover {
   transform: translateY(-3px) scale(1.01);
@@ -1389,7 +1343,7 @@ a:active {
 
 /* Glow accent hover — soft accent glow on interactive elements */
 .glow-accent {
-  transition: box-shadow 400ms var(--ease-spring), border-color 400ms var(--ease-color), background 400ms var(--ease-color);
+  transition: box-shadow 180ms var(--ease-color), border-color 160ms var(--ease-color), background 160ms var(--ease-color);
 }
 .glow-accent:hover {
   box-shadow: var(--shadow-lg), var(--glass-edge), 0 0 24px var(--accent-glow), 0 0 48px var(--cobalt-wash);
@@ -1403,14 +1357,11 @@ a:active {
   overflow: hidden;
 }
 
-/* ── Engagement animations — refined, Apple-style ── */
-@keyframes flameFlicker {
-  0%, 100% { transform: scale(1) rotate(0deg); filter: brightness(1); }
-  25% { transform: scale(1.06) rotate(1deg); filter: brightness(1.1); }
-  50% { transform: scale(0.97) rotate(-1deg); filter: brightness(0.95); }
-  75% { transform: scale(1.03) rotate(0.5deg); filter: brightness(1.05); }
-}
-.flame-flicker { animation: flameFlicker 2s ease-in-out infinite; transform-origin: 50% 80%; }
+/* ── Engagement animations — refined, Apple-style ──
+   The infinite flame "flicker" (scale + rotate + brightness filter, forever)
+   was retired: perpetual animation on always-visible streak flames burned
+   paint time and read as gimmicky. The flame is now a still, confident mark. */
+.flame-flicker { transform-origin: 50% 80%; }
 
 @keyframes xpPopIn {
   0% { opacity: 0; transform: translateY(12px) scale(0.85); }
@@ -1447,7 +1398,7 @@ a:active {
   from { opacity: 0; }
   to { opacity: 1; }
 }
-.animate-overlay-fade { animation: overlayFade 300ms var(--ease-color) both; }
+.animate-overlay-fade { animation: overlayFade 160ms var(--ease-color) both; }
 
 .animate-sheen::after {
   display: none;
@@ -1861,7 +1812,7 @@ a:active {
   flex-direction: column;
   background: var(--bg-glass);
   border-right: 1px solid var(--border-subtle);
-  transition: transform 400ms var(--ease-reveal);
+  transition: transform 180ms var(--ease-reveal);
   -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
   backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
   box-shadow: var(--glass-edge);
@@ -1906,13 +1857,13 @@ a:active {
     box-shadow: var(--shadow-elegant-lg);
     visibility: hidden;
     transition:
-      transform 400ms var(--ease-reveal),
+      transform 180ms var(--ease-reveal),
       visibility 0s linear 400ms;
   }
   .app-sidebar.open {
     transform: translateX(0);
     visibility: visible;
-    transition: transform 400ms var(--ease-reveal);
+    transition: transform 180ms var(--ease-reveal);
   }
   .app-sidebar-backdrop.open {
     display: block;
@@ -2110,9 +2061,10 @@ a:active {
 }
 .app-footer__row--links { margin-top: 6px; gap: 6px; }
 .app-footer__brand {
-  font-family: var(--font-script), cursive;
-  font-size: 19px;
-  font-weight: 600;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
   color: var(--accent);
   cursor: pointer;
   user-select: none;
@@ -2221,25 +2173,9 @@ html[data-perf="low"][data-theme="light"] {
   --bg-glass: #FFFFFF;
 }
 
-/* MID tier: keep the aurora wash but freeze its drift (the infinite
-   transform loop keeps a compositor layer alive and burns battery on
-   mid-range mobile GPUs). The static gradient wash still gives warmth. */
-html[data-perf="mid"] .aurora-bg,
-html[data-perf="mid"] .aurora-blob {
-  animation: none !important;
-}
-/* MID tier: drop the mix-blend-mode paper textures — blend modes force a
-   full-viewport readback on every paint, which is the #1 jank source on
-   mid-tier mobile. A flat tinted background keeps the warmth without the
-   compositing cost. */
-html[data-perf="mid"] body::after {
-  content: none;
-}
-html[data-perf="mid"] body::before {
-  content: none;
-}
-/* Ambient always-running animations (flame, pulsing dots). */
-html[data-perf="low"] .flame-flicker,
+/* MID tier: nothing extra to strip anymore — the ambient wash is static
+   for everyone and the blend-mode paper textures are retired. */
+/* Ambient always-running animations (pulsing dots). */
 html[data-perf="low"] .accent-pulse-dot {
   animation: none !important;
 }
@@ -2266,18 +2202,6 @@ html[data-browser="firefox"] *::before,
 html[data-browser="firefox"] *::after {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-}
-/* Don't pin enormous (72vmax) aurora blobs to their own GPU layer forever —
-   let Gecko composite them on demand instead of overflowing texture memory. */
-html[data-browser="firefox"] .aurora-blob {
-  will-change: auto;
-}
-/* Grain + mottle: plain low-opacity overlays instead of blend modes that force
-   a full-viewport readback on every paint in Firefox. */
-html[data-browser="firefox"] body::after,
-html[data-browser="firefox"] body::before {
-  mix-blend-mode: normal;
-  opacity: 0.035;
 }
 
 /* ── HIGH tier: refined depth for powerful devices ── */
@@ -2408,9 +2332,9 @@ p {
   font-family: inherit;
   color: inherit;
   transition:
-    transform 320ms var(--ease-spring),
-    box-shadow 320ms var(--ease-color),
-    border-color 320ms var(--ease-color);
+    transform 180ms var(--ease-spring),
+    box-shadow 160ms var(--ease-color),
+    border-color 160ms var(--ease-color);
 }
 .badge-tile__inner {
   position: relative;
@@ -2424,7 +2348,7 @@ p {
 }
 .badge-tile--earned:hover,
 .badge-tile--earned.badge-tile--open {
-  box-shadow: var(--shadow-md), 0 0 18px var(--accent-glow);
+  box-shadow: var(--shadow-lg);
 }
 
 /* The story card. Sits above the tile; fades/rises in on hover, focus or tap. */
@@ -2455,7 +2379,7 @@ p {
   transform: translateY(6px) scale(0.97);
   transition:
     opacity 180ms var(--ease-reveal),
-    transform 220ms var(--ease-spring);
+    transform 180ms var(--ease-spring);
 }
 /* Little paper arrow pointing at the badge. Horizontal position is set
    inline by JS (it aligns to the badge centre). The vertical side (top or
@@ -2569,7 +2493,7 @@ p {
   border-radius: 2px;
   transform: scaleX(0);
   transform-origin: left;
-  transition: transform 280ms var(--ease-spring);
+  transition: transform 180ms var(--ease-spring);
 }
 .brush-underline:hover::after {
   transform: scaleX(1);
@@ -2609,8 +2533,10 @@ p {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* ── Primary button ── one confident press of the accent ink.
-   Springy, tactile, with a soft glow that blooms on hover/focus and a
-   satisfying press. Used for the main CTA on every page. */
+   Sized to the 44–48px touch-target floor (Fitts), weight 700 for hierarchy
+   without shouting, and ~150ms feedback (Doherty threshold: response under
+   ~400ms feels instant; long springs read as lag). No glow bloom — depth
+   comes from one honest shadow step. */
 .btn-primary {
   position: relative;
   display: inline-flex;
@@ -2619,12 +2545,12 @@ p {
   gap: 8px;
   border: none;
   border-radius: var(--radius-lg);
-  padding: 15px 28px;
-  min-height: 52px;
+  padding: 12px 24px;
+  min-height: 48px;
   font-family: var(--font-display), system-ui, sans-serif;
-  font-size: 16px;
-  font-weight: 800;
-  letter-spacing: 0.02em;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
   color: var(--on-accent);
   /* One confident accent press — structured olive-family gradient with a
      solid accent underneath as the paint fallback. No transparent border
@@ -2632,12 +2558,12 @@ p {
   background-color: var(--accent);
   background-image: var(--accent-gradient);
   cursor: pointer;
-  box-shadow: var(--shadow-glow-accent);
+  box-shadow: var(--shadow-sm);
   overflow: hidden;
   transition:
-    transform 420ms var(--ease-spring),
-    box-shadow 420ms var(--ease-spring),
-    filter 320ms var(--ease-color);
+    transform 150ms var(--ease-color),
+    box-shadow 150ms var(--ease-color),
+    filter 150ms var(--ease-color);
   isolation: isolate;
 }
 .btn-primary::after {
@@ -2646,13 +2572,13 @@ p {
 .btn-primary > * { position: relative; z-index: 2; }
 .btn-primary:hover,
 .btn-primary:focus-visible {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: var(--shadow-lg), 0 0 28px var(--accent-glow);
-  filter: brightness(1.06);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+  filter: brightness(1.05);
 }
 .btn-primary:active {
-  transform: translateY(0) scale(0.97);
-  transition: transform 120ms var(--ease-color);
+  transform: translateY(0) scale(0.98);
+  transition: transform 80ms var(--ease-color);
 }
 /* Disabled — a calm, faded pigment wash instead of a broken-looking gray box. */
 .btn-primary:disabled,
@@ -2678,30 +2604,29 @@ p {
   border-radius: var(--radius-lg);
   background: var(--bg-card);
   color: var(--text-primary);
-  padding: 11px 20px;
-  min-height: 48px;
+  padding: 10px 18px;
+  min-height: 44px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   box-shadow: var(--glass-edge);
   transition:
-    transform 380ms var(--ease-spring),
-    border-color 320ms var(--ease-color),
-    background 320ms var(--ease-color),
-    box-shadow 320ms var(--ease-color),
-    color 320ms var(--ease-color);
+    transform 150ms var(--ease-color),
+    border-color 150ms var(--ease-color),
+    background 150ms var(--ease-color),
+    box-shadow 150ms var(--ease-color),
+    color 150ms var(--ease-color);
 }
 .btn-ghost:hover,
 .btn-ghost:focus-visible {
   border-color: var(--border-accent);
   background: var(--bg-card-hover);
   color: var(--accent);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md), var(--glass-edge), 0 0 18px var(--accent-glow);
+  box-shadow: var(--shadow-sm), var(--glass-edge);
 }
 .btn-ghost:active {
-  transform: translateY(0) scale(0.97);
-  transition: transform 120ms var(--ease-color);
+  transform: scale(0.98);
+  transition: transform 80ms var(--ease-color);
 }
 
 /* ── Round icon button ── for mic, clear, close, scroll-to-top. */
@@ -2716,23 +2641,20 @@ p {
   color: var(--text-secondary);
   cursor: pointer;
   transition:
-    transform 380ms var(--ease-spring),
-    border-color 320ms var(--ease-color),
-    color 320ms var(--ease-color),
-    background 320ms var(--ease-color),
-    box-shadow 320ms var(--ease-color);
+    transform 150ms var(--ease-color),
+    border-color 150ms var(--ease-color),
+    color 150ms var(--ease-color),
+    background 150ms var(--ease-color);
 }
 .btn-icon:hover,
 .btn-icon:focus-visible {
-  transform: scale(1.1);
   border-color: var(--border-accent);
   color: var(--accent);
   background: var(--accent-dim);
-  box-shadow: 0 0 16px var(--accent-glow);
 }
 .btn-icon:active {
-  transform: scale(0.92);
-  transition: transform 120ms var(--ease-color);
+  transform: scale(0.94);
+  transition: transform 80ms var(--ease-color);
 }
 /* Danger variant for clear/delete controls. */
 .btn-icon--danger:hover,
@@ -2740,7 +2662,6 @@ p {
   border-color: var(--danger);
   color: var(--danger);
   background: var(--danger-bg);
-  box-shadow: 0 0 16px var(--danger-bg);
 }
 
 /* ── Nav link ── the navigation pill. Calm at rest, lifts and gains a
@@ -2760,10 +2681,10 @@ p {
   background: transparent;
   border: 1px solid transparent;
   transition:
-    color 300ms var(--ease-color),
-    background 300ms var(--ease-color),
-    border-color 300ms var(--ease-color),
-    transform 300ms var(--ease-spring);
+    color 160ms var(--ease-color),
+    background 160ms var(--ease-color),
+    border-color 160ms var(--ease-color),
+    transform 180ms var(--ease-spring);
 }
 .nav-link:hover,
 .nav-link:focus-visible {
@@ -2848,11 +2769,10 @@ p {
   color: var(--text-primary);
 }
 .navbar-wordmark {
-  /* Brand wordmark rides the script face — the signature frenzy gesture. */
-  font-family: var(--font-script), cursive;
-  font-weight: 600;
-  font-size: 32px;
-  letter-spacing: 0;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: -0.01em;
   line-height: 1;
 }
 .navbar-wordmark__real { color: var(--text-primary); }
@@ -2876,10 +2796,10 @@ p {
   cursor: pointer;
   text-decoration: none;
   transition:
-    border-color 320ms var(--ease-color),
-    background 320ms var(--ease-color),
-    color 320ms var(--ease-color),
-    transform 320ms var(--ease-spring);
+    border-color 160ms var(--ease-color),
+    background 160ms var(--ease-color),
+    color 160ms var(--ease-color),
+    transform 180ms var(--ease-spring);
 }
 .chip:hover,
 .chip:focus-visible {
@@ -2980,10 +2900,10 @@ p {
   background: var(--bg-card);
   box-shadow: var(--shadow-sm);
   transition:
-    transform 380ms var(--ease-spring),
-    box-shadow 380ms var(--ease-color),
-    border-color 320ms var(--ease-color),
-    background 320ms var(--ease-color);
+    transform 180ms var(--ease-spring),
+    box-shadow 160ms var(--ease-color),
+    border-color 160ms var(--ease-color),
+    background 160ms var(--ease-color);
 }
 .rl-card:hover,
 .rl-card:focus-within {
@@ -3001,9 +2921,9 @@ p {
   padding: 16px 12px;
   text-align: center;
   transition:
-    transform 380ms var(--ease-spring),
-    border-color 320ms var(--ease-color),
-    box-shadow 320ms var(--ease-color);
+    transform 180ms var(--ease-spring),
+    border-color 160ms var(--ease-color),
+    box-shadow 160ms var(--ease-color);
 }
 .stat-tile:hover {
   transform: translateY(-2px);
@@ -3051,24 +2971,24 @@ p {
   visibility: hidden;
   transform: translateY(16px) scale(0.8);
   transition:
-    opacity 320ms var(--ease-color),
+    opacity 160ms var(--ease-color),
     visibility 0s linear 320ms,
-    transform 420ms var(--ease-spring),
-    box-shadow 320ms var(--ease-color);
+    transform 180ms var(--ease-spring),
+    box-shadow 160ms var(--ease-color);
 }
 .scroll-top.is-visible {
   opacity: 1;
   visibility: visible;
   transform: translateY(0) scale(1);
   transition:
-    opacity 320ms var(--ease-color),
-    transform 420ms var(--ease-spring),
-    box-shadow 320ms var(--ease-color);
+    opacity 160ms var(--ease-color),
+    transform 180ms var(--ease-spring),
+    box-shadow 160ms var(--ease-color);
 }
 .scroll-top:hover,
 .scroll-top:focus-visible {
-  transform: translateY(-3px) scale(1.08);
-  box-shadow: var(--shadow-lg), 0 0 32px var(--accent-glow);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }
 .scroll-top:active {
   transform: translateY(0) scale(0.94);
@@ -3106,9 +3026,9 @@ p {
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   box-shadow: var(--glass-edge);
-  transition: transform 400ms var(--ease-spring),
-              border-color 300ms var(--ease-color),
-              box-shadow 400ms var(--ease-spring);
+  transition: transform 180ms var(--ease-spring),
+              border-color 160ms var(--ease-color),
+              box-shadow 180ms var(--ease-color);
 }
 .progress-hub:hover {
   transform: translateY(-1px);
@@ -3137,8 +3057,8 @@ p {
   letter-spacing: 0.01em;
   cursor: pointer;
   box-shadow: var(--shadow-glow-accent);
-  transition: transform 300ms var(--ease-spring),
-              box-shadow 300ms var(--ease-spring),
+  transition: transform 180ms var(--ease-spring),
+              box-shadow 180ms var(--ease-color),
               filter 200ms var(--ease-color);
 }
 .part-cta:hover {
@@ -3170,8 +3090,8 @@ p {
   cursor: pointer;
   font-weight: 600;
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--correct) 22%, transparent);
-  transition: transform 250ms var(--ease-spring),
-              box-shadow 250ms var(--ease-spring);
+  transition: transform 180ms var(--ease-spring),
+              box-shadow 180ms var(--ease-color);
 }
 .part-done-bar:hover {
   transform: translateY(-1px);
@@ -3192,10 +3112,10 @@ p {
   cursor: pointer;
   min-height: 48px;
   font-weight: 600;
-  transition: transform 300ms var(--ease-spring),
-              border-color 250ms var(--ease-color),
-              color 250ms var(--ease-color),
-              background 250ms var(--ease-color);
+  transition: transform 180ms var(--ease-spring),
+              border-color 160ms var(--ease-color),
+              color 160ms var(--ease-color),
+              background 160ms var(--ease-color);
 }
 .btn-toggle:hover {
   border-color: var(--border-accent);
@@ -3237,7 +3157,7 @@ p {
 }
 .q-form--focused {
   border-color: var(--border-glow);
-  box-shadow: var(--shadow-float), 0 0 0 3px var(--accent-glow), 0 0 36px var(--accent-dim);
+  box-shadow: var(--shadow-float), 0 0 0 3px var(--accent-glow);
 }
 @media (min-width: 1024px) {
   .q-form__body { padding: 24px 28px 12px; }
@@ -3302,7 +3222,7 @@ p {
   border-radius: var(--radius-pill);
   background: var(--accent-gradient);
   box-shadow: var(--shadow-glow-accent);
-  transition: transform 250ms var(--ease-spring);
+  transition: transform 180ms var(--ease-spring);
   will-change: transform;
 }
 .mode-glider__option {
@@ -3380,7 +3300,7 @@ p {
 }
 .q-form__enter-btn:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: var(--shadow-glow-accent), 0 0 16px var(--accent-glow);
+  box-shadow: var(--shadow-md);
 }
 .q-form__enter-btn:active:not(:disabled) {
   transform: translateY(0);
@@ -3499,9 +3419,9 @@ p {
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   box-shadow: var(--shadow-float);
   padding: clamp(28px, 6vw, 52px);
-  transition: transform 500ms var(--ease-spring),
-              border-color 400ms var(--ease-color),
-              box-shadow 500ms var(--ease-spring);
+  transition: transform 180ms var(--ease-spring),
+              border-color 160ms var(--ease-color),
+              box-shadow 180ms var(--ease-color);
 }
 .part-card:hover {
   transform: translateY(-3px);
@@ -3511,25 +3431,9 @@ p {
   border-color: var(--border-glow);
 }
 
-/* Ghost numeral — oversized, clipped, purely atmospheric. */
-.part-card__num {
-  position: absolute;
-  top: -18px;
-  right: 6px;
-  font-family: var(--font-script), cursive;
-  font-size: clamp(104px, 19vw, 172px);
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: 0;
-  color: transparent;
-  -webkit-text-stroke: 1.5px color-mix(in srgb, var(--accent) 24%, transparent);
-  transform: rotate(-4deg);
-  pointer-events: none;
-  user-select: none;
-  z-index: 0;
-}
+/* The oversized tilted "ghost numeral" doodle is retired — the part number
+   already lives in the meta strip, and giant outlined glyphs read as noise. */
 .part-card > * { position: relative; z-index: 1; }
-.part-card > .part-card__num { z-index: 0; }
 
 .part-card__meta {
   display: flex;
@@ -3588,7 +3492,7 @@ p {
   cursor: pointer;
   transition: color var(--dur-base) var(--ease-color),
               background var(--dur-base) var(--ease-color),
-              transform 300ms var(--ease-spring);
+              transform 180ms var(--ease-spring);
 }
 .part-card__tool:hover {
   color: var(--accent);
@@ -3770,7 +3674,7 @@ p {
   font-weight: 700;
   cursor: pointer;
   min-height: 44px;
-  transition: transform 300ms var(--ease-spring), box-shadow 300ms var(--ease-spring);
+  transition: transform 180ms var(--ease-spring), box-shadow 180ms var(--ease-color);
 }
 .error-state__btn:hover,
 .error-state__btn:focus-visible {
@@ -3924,7 +3828,7 @@ p {
   font-weight: 600;
   color: var(--text-tertiary);
   opacity: 0.45;
-  transition: opacity 400ms ease, border-color 400ms ease, color 400ms ease, transform 500ms var(--ease-spring);
+  transition: opacity 400ms ease, border-color 400ms ease, color 400ms ease, transform 180ms var(--ease-spring);
 }
 .loading-cinematic__part.is-building {
   opacity: 1;
@@ -3993,7 +3897,7 @@ p {
   font-size: 15px;
   font-weight: 600;
   min-height: 50px;
-  transition: transform 500ms var(--ease-spring), border-color 300ms var(--ease-color), color 300ms var(--ease-color), background 300ms var(--ease-color);
+  transition: transform 180ms var(--ease-spring), border-color 160ms var(--ease-color), color 160ms var(--ease-color), background 160ms var(--ease-color);
 }
 .loading-cinematic__cancel:hover,
 .loading-cinematic__cancel:focus-visible {
@@ -4082,7 +3986,7 @@ p {
   color: var(--text-secondary);
   cursor: pointer;
   font-size: 14px;
-  transition: transform 400ms var(--ease-spring), background 300ms var(--ease-color), color 300ms var(--ease-color);
+  transition: transform 180ms var(--ease-spring), background 160ms var(--ease-color), color 160ms var(--ease-color);
 }
 .quiz-sheet__close:hover,
 .quiz-sheet__close:focus-visible {
@@ -4092,14 +3996,12 @@ p {
 }
 .quiz-sheet__title {
   margin: 0;
-  font-family: var(--font-script), cursive;
-  font-weight: 600;
-  font-size: 30px;
-  letter-spacing: 0;
-  line-height: 1;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
   color: var(--text-primary);
-  transform: rotate(-1deg);
-  transform-origin: left bottom;
   display: inline-block;
 }
 .quiz-sheet__subtitle {
@@ -4149,7 +4051,7 @@ p {
   font-weight: 600;
   cursor: pointer;
   min-height: 52px;
-  transition: transform 400ms var(--ease-spring), border-color 300ms var(--ease-color), color 300ms var(--ease-color), box-shadow 300ms var(--ease-spring), background 300ms var(--ease-color);
+  transition: transform 180ms var(--ease-spring), border-color 160ms var(--ease-color), color 160ms var(--ease-color), box-shadow 180ms var(--ease-color), background 160ms var(--ease-color);
 }
 .quiz-sheet__action:hover,
 .quiz-sheet__action:focus-visible {
@@ -4183,7 +4085,7 @@ p {
   height: 7px;
   border-radius: 50%;
   background: var(--border-default);
-  transition: background 250ms var(--ease-color), transform 250ms var(--ease-spring);
+  transition: background 160ms var(--ease-color), transform 180ms var(--ease-spring);
 }
 .quiz-progress__dot--answered {
   background: var(--accent);
@@ -4230,7 +4132,7 @@ p {
   transition: border-color 150ms var(--ease-color),
               background 150ms var(--ease-color),
               box-shadow 200ms var(--ease-color),
-              transform 250ms var(--ease-spring);
+              transform 180ms var(--ease-spring);
   display: flex;
   align-items: center;
   gap: 14px;
@@ -4356,10 +4258,7 @@ p {
   border: 0;
 }
 
-/* ── Gen Z Neon Glow Text ── */
-.glow-text {
-  text-shadow: 0 0 20px var(--accent-glow), 0 0 40px var(--accent-glow), 0 0 60px var(--accent-glow);
-}
+/* Neon glow text — retired; headings carry hierarchy through weight, not glow. */
 
 /* ── Flashcards ── classic internet-style 3D flip cards below the lesson.
    Scene provides perspective; the card is a button that rotates 180° on the
@@ -4437,7 +4336,7 @@ p {
   cursor: pointer;
   border-radius: var(--radius-xl);
   transform-style: preserve-3d;
-  transition: transform 560ms var(--ease-spring);
+  transition: transform 180ms var(--ease-spring);
   text-align: center;
   -webkit-tap-highlight-color: transparent;
 }
@@ -4509,7 +4408,7 @@ p {
 }
 .flashcard:hover .flashcard__face {
   border-color: var(--border-accent);
-  box-shadow: var(--shadow-md), 0 0 18px var(--accent-glow);
+  box-shadow: var(--shadow-lg);
 }
 .flashcards__dots {
   display: flex;
@@ -4526,9 +4425,9 @@ p {
   border: 1px solid var(--border-default);
   background: transparent;
   cursor: pointer;
-  transition: background 240ms var(--ease-color),
-              border-color 240ms var(--ease-color),
-              transform 240ms var(--ease-spring);
+  transition: background 160ms var(--ease-color),
+              border-color 160ms var(--ease-color),
+              transform 180ms var(--ease-spring);
 }
 .flashcards__dot--seen {
   background: var(--accent-dim);
@@ -4572,7 +4471,7 @@ p {
   background: var(--accent-gradient);
   z-index: -1;
   opacity: 0.5;
-  transition: opacity 300ms var(--ease-color);
+  transition: opacity 160ms var(--ease-color);
 }
 .gradient-border:hover::before {
   opacity: 1;
@@ -4619,48 +4518,8 @@ p {
   animation: skeletonPulse 1.5s ease-in-out infinite;
 }
 
-/* ── Float up entrance animation ── */
-.float-up {
-  animation: floatUp 600ms var(--ease-spring) both;
-}
-.float-up-d1 { animation-delay: 100ms; }
-.float-up-d2 { animation-delay: 200ms; }
-.float-up-d3 { animation-delay: 300ms; }
-.float-up-d4 { animation-delay: 400ms; }
-@keyframes floatUp {
-  from { opacity: 0; transform: translateY(30px) scale(0.95); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-/* ── Bounce entrance ── */
-.bounce-in-gentle {
-  animation: bounceInGentle 700ms var(--ease-spring) both;
-}
-@keyframes bounceInGentle {
-  0% { opacity: 0; transform: scale(0.85) translateY(20px); }
-  50% { opacity: 1; transform: scale(1.03) translateY(-4px); }
-  70% { transform: scale(0.98) translateY(2px); }
-  100% { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-/* ── Particle burst for correct answers ── */
-.particle-burst {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  overflow: hidden;
-}
-.particle-burst__dot {
-  position: absolute;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  animation: particleFly 800ms var(--ease-spring) forwards;
-}
-@keyframes particleFly {
-  0% { opacity: 1; transform: translate(0, 0) scale(1); }
-  100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0); }
-}
+/* float-up / bounce-in-gentle / particle-burst entrance-and-burst helpers
+   were verified unused and removed with the rest of the confetti layer. */
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Learn top bar — the compact lesson header under the navbar. One quiet line:
@@ -4721,7 +4580,7 @@ p {
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   box-shadow: var(--shadow-float);
   padding: 24px clamp(20px, 4vw, 28px);
-  transition: border-color 250ms var(--ease-color), box-shadow 350ms var(--ease-color);
+  transition: border-color 160ms var(--ease-color), box-shadow 160ms var(--ease-color);
 }
 .followup:focus-within {
   border-color: var(--border-glow);
@@ -4802,14 +4661,12 @@ p {
 }
 .completion__title {
   margin: 0;
-  font-family: var(--font-script), cursive;
-  font-size: clamp(36px, 7vw, 46px);
-  font-weight: 600;
-  letter-spacing: 0;
-  line-height: 1;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: clamp(26px, 5vw, 32px);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
   color: var(--text-primary);
-  transform: rotate(-1.5deg);
-  transform-origin: left bottom;
   display: inline-block;
 }
 .completion__subtitle {
@@ -4852,7 +4709,7 @@ p {
   min-height: 44px;
   transition: border-color 200ms var(--ease-color),
               background 200ms var(--ease-color),
-              transform 300ms var(--ease-spring);
+              transform 180ms var(--ease-spring);
 }
 .suggest-pill:hover {
   border-color: var(--border-accent);
@@ -4883,9 +4740,9 @@ p {
   box-shadow: var(--shadow-md);
   color: var(--text-primary);
   cursor: pointer;
-  transition: border-color 250ms var(--ease-color),
-              transform 350ms var(--ease-spring),
-              box-shadow 350ms var(--ease-spring);
+  transition: border-color 160ms var(--ease-color),
+              transform 180ms var(--ease-spring),
+              box-shadow 180ms var(--ease-color);
 }
 .resume-card:hover {
   border-color: var(--border-glow);
@@ -4977,7 +4834,7 @@ p {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-2xl);
   box-shadow: var(--shadow-float);
-  transition: border-color 300ms var(--ease-color), box-shadow 300ms var(--ease-reveal);
+  transition: border-color 160ms var(--ease-color), box-shadow 160ms var(--ease-color);
 }
 .hero-glass-card:hover {
   border-color: var(--border-accent);
@@ -4994,7 +4851,7 @@ p {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  transition: transform 300ms var(--ease-spring), border-color 300ms var(--ease-color);
+  transition: transform 180ms var(--ease-spring), border-color 160ms var(--ease-color);
 }
 .stat-tile-2026:hover {
   transform: translateY(-3px);
@@ -5027,7 +4884,7 @@ p {
   border-radius: var(--radius-2xl);
   padding: clamp(20px, 4vw, 32px);
   box-shadow: var(--shadow-float);
-  transition: border-color 300ms var(--ease-color);
+  transition: border-color 160ms var(--ease-color);
 }
 .progress-hero-card:hover {
   border-color: var(--border-accent);
@@ -5042,7 +4899,7 @@ p {
   padding: clamp(20px, 3vw, 28px);
   margin-bottom: 24px;
   box-shadow: var(--shadow-sm);
-  transition: border-color 300ms var(--ease-color), box-shadow 300ms var(--ease-reveal);
+  transition: border-color 160ms var(--ease-color), box-shadow 160ms var(--ease-color);
 }
 .settings-panel-glass:hover {
   border-color: var(--border-default);
@@ -5132,8 +4989,8 @@ p {
   margin-top: 14px;
 }
 
-/* Page hero — overline + display title + gradient-tick subline, with an
-   optional ghost glyph floating behind (mirrors .part-card__num). */
+/* Page hero — overline + display title + subline. The floating tilted
+   "ghost glyph" behind it is retired along with the other doodles. */
 .page-hero {
   position: relative;
   margin-bottom: 28px;
@@ -5142,36 +4999,13 @@ p {
   position: relative;
   z-index: 1;
 }
-.page-hero__glyph {
-  position: absolute;
-  top: -34px;
-  right: -4px;
-  z-index: 0;
-  font-family: var(--font-script), cursive;
-  font-size: clamp(90px, 18vw, 160px);
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: 0;
-  color: transparent;
-  -webkit-text-stroke: 1.5px color-mix(in srgb, var(--accent) 22%, transparent);
-  transform: rotate(-5deg);
-  pointer-events: none;
-  user-select: none;
-}
-/* SVG variant of the ghost glyph — text-stroke doesn't apply to SVG. */
-.page-hero__glyph--icon {
-  color: color-mix(in srgb, var(--accent) 18%, transparent);
-  -webkit-text-stroke: 0;
-}
 .page-hero__title {
   margin: 0;
-  font-family: var(--font-script), cursive;
-  font-weight: 600;
-  font-size: clamp(38px, 7vw, 52px);
-  letter-spacing: 0;
-  line-height: 1;
-  transform: rotate(-1deg);
-  transform-origin: left bottom;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: clamp(28px, 5vw, 38px);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
   display: inline-block;
 }
 .page-hero__sub {
@@ -5219,13 +5053,11 @@ p {
   min-width: 220px;
 }
 .level-hero__name {
-  font-size: 30px;
-  font-weight: 600;
-  font-family: var(--font-script), cursive;
-  letter-spacing: 0;
-  line-height: 1;
-  transform: rotate(-1deg);
-  transform-origin: left bottom;
+  font-size: 24px;
+  font-weight: 700;
+  font-family: var(--font-display), system-ui, sans-serif;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
   display: inline-block;
 }
 .level-hero__name em {
@@ -5342,7 +5174,7 @@ p {
   transition: color var(--dur-base) var(--ease-color),
               background var(--dur-base) var(--ease-color),
               border-color var(--dur-base) var(--ease-color),
-              transform 300ms var(--ease-spring);
+              transform 180ms var(--ease-spring);
 }
 .goal-chip:hover {
   transform: translateY(-1px);
@@ -5389,7 +5221,7 @@ p {
   font-weight: 500;
   cursor: pointer;
   margin-bottom: 12px;
-  transition: color var(--dur-base) var(--ease-color), transform 300ms var(--ease-spring);
+  transition: color var(--dur-base) var(--ease-color), transform 180ms var(--ease-spring);
 }
 .settings-back:hover {
   color: var(--accent);
@@ -5447,7 +5279,7 @@ p {
   line-height: 1.4;
   transition: background var(--dur-base) var(--ease-color),
               border-color var(--dur-base) var(--ease-color),
-              transform 300ms var(--ease-spring);
+              transform 180ms var(--ease-spring);
 }
 .option-row:hover {
   background: var(--bg-solid);
@@ -5507,7 +5339,7 @@ p {
 .option-row__check svg {
   opacity: 0;
   transform: scale(0.4);
-  transition: opacity var(--dur-base) var(--ease-color), transform 300ms var(--ease-spring);
+  transition: opacity var(--dur-base) var(--ease-color), transform 180ms var(--ease-spring);
 }
 .option-row--active .option-row__check svg {
   opacity: 1;
@@ -5541,7 +5373,7 @@ p {
   cursor: pointer;
   transition: background var(--dur-base) var(--ease-color),
               color var(--dur-base) var(--ease-color),
-              transform 300ms var(--ease-spring);
+              transform 180ms var(--ease-spring);
 }
 .settings-action:hover {
   transform: translateY(-1px);
@@ -5653,12 +5485,11 @@ p {
 }
 .not-found__title {
   margin: var(--space-md) 0 var(--space-sm);
-  font-family: var(--font-script), cursive;
-  font-size: 34px;
-  font-weight: 600;
-  letter-spacing: 0;
-  line-height: 1;
-  transform: rotate(-1.5deg);
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
   display: inline-block;
 }
 .not-found__sub {
@@ -5700,12 +5531,12 @@ p {
   text-align: center;
 }
 .learn-empty__title {
-  font-family: var(--font-script), cursive;
-  font-weight: 600;
-  font-size: 34px;
-  line-height: 1;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 26px;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
   margin: 0 0 10px;
-  transform: rotate(-1deg);
   display: inline-block;
 }
 .learn-empty__sub {
@@ -5736,7 +5567,7 @@ p {
   font-size: 13px;
   color: var(--text-tertiary);
   text-decoration: none;
-  transition: transform 300ms var(--ease-spring);
+  transition: transform 180ms var(--ease-spring);
 }
 .mini-progress-link:hover {
   transform: translateY(-1px);
@@ -5839,10 +5670,10 @@ p {
   color: var(--text-primary);
 }
 .app-sidebar__wordmark {
-  font-family: var(--font-script), cursive;
-  font-weight: 600;
-  font-size: 27px;
-  letter-spacing: 0;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 19px;
+  letter-spacing: -0.01em;
   line-height: 1;
   color: var(--text-primary);
 }
@@ -5970,7 +5801,7 @@ p {
   color: var(--text-primary);
   padding: 12px 38px 12px 12px;
   cursor: pointer;
-  transition: background var(--dur-fast) var(--ease-color), transform 300ms var(--ease-spring);
+  transition: background var(--dur-fast) var(--ease-color), transform 180ms var(--ease-spring);
 }
 .journey-item__open:hover,
 .journey-item__open:focus-visible {
@@ -6088,7 +5919,7 @@ p {
     0 1px 2px rgba(0, 0, 0, 0.35),
     0 2px 6px rgba(0, 0, 0, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  transition: transform 380ms var(--ease-spring),
+  transition: transform 180ms var(--ease-spring),
               width 160ms ease;
 }
 .theme-switch--on .theme-switch__thumb {
@@ -6132,7 +5963,7 @@ p {
     var(--key-bevel),
     inset 0 -1px 0 rgba(0, 0, 0, 0.18),
     0 3px 0 var(--edge-accent),
-    var(--shadow-glow-accent);
+    var(--shadow-sm);
 }
 /* Hover lifts only exist on devices that can hover — a tapped key on a
    touch screen must never stay stuck in its raised state. */
@@ -6147,7 +5978,7 @@ p {
       var(--key-bevel),
       inset 0 -1px 0 rgba(0, 0, 0, 0.18),
       0 4px 0 var(--edge-accent),
-      0 8px 24px var(--accent-glow);
+      var(--shadow-md);
   }
   .scroll-top:hover {
     transform: translateY(-1px) scale(1.04);
@@ -6155,7 +5986,7 @@ p {
       var(--key-bevel),
       inset 0 -1px 0 rgba(0, 0, 0, 0.18),
       0 4px 0 var(--edge-accent),
-      0 8px 24px var(--accent-glow);
+      var(--shadow-md);
   }
 }
 .btn-primary:active,
@@ -6168,7 +5999,7 @@ p {
   box-shadow:
     var(--key-pressed),
     0 0 0 var(--edge-accent),
-    0 1px 6px var(--accent-glow);
+    0 1px 4px rgba(0, 0, 0, 0.15);
   transition:
     transform 90ms var(--ease-color),
     box-shadow 90ms var(--ease-color),
@@ -6196,12 +6027,12 @@ p {
     0 2px 0 var(--edge-neutral),
     var(--shadow-sm);
   transition:
-    transform 300ms var(--ease-spring),
-    box-shadow 300ms var(--ease-spring),
-    border-color 250ms var(--ease-color),
-    background 250ms var(--ease-color),
-    color 250ms var(--ease-color),
-    filter 250ms var(--ease-color);
+    transform 180ms var(--ease-spring),
+    box-shadow 180ms var(--ease-color),
+    border-color 160ms var(--ease-color),
+    background 160ms var(--ease-color),
+    color 160ms var(--ease-color),
+    filter 160ms var(--ease-color);
 }
 @media (hover: hover) {
   .btn-ghost:hover,
@@ -6258,26 +6089,23 @@ p {
     0 2px 0 var(--edge-neutral);
 }
 .quiz-sheet__close:focus-visible {
-  transform: translateY(-1px) scale(1.04);
+  transform: translateY(-1px);
   box-shadow:
     var(--key-bevel-soft),
-    0 3px 0 var(--edge-neutral),
-    0 0 14px var(--accent-glow);
+    0 3px 0 var(--edge-neutral);
 }
 @media (hover: hover) {
   .btn-icon:hover,
   .quiz-sheet__close:hover {
-    transform: translateY(-1px) scale(1.04);
+    transform: translateY(-1px);
     box-shadow:
       var(--key-bevel-soft),
-      0 3px 0 var(--edge-neutral),
-      0 0 14px var(--accent-glow);
+      0 3px 0 var(--edge-neutral);
   }
   .btn-icon--danger:hover {
     box-shadow:
       var(--key-bevel-soft),
-      0 3px 0 var(--edge-neutral),
-      0 0 14px var(--danger-bg);
+      0 3px 0 var(--edge-neutral);
   }
 }
 .btn-icon:active,
@@ -6337,40 +6165,10 @@ h3,
   font-variant-numeric: tabular-nums;
 }
 
-/* Scroll-driven card entrances — cards rise gently as they enter the
-   viewport. Pure CSS (animation-timeline), compositor-only properties,
-   gated on hardware tier and motion preference; browsers without
-   scroll-driven animations simply show the cards static. `translate` (the
-   individual property) composes with the hover `transform` lifts instead
-   of fighting them. */
-@keyframes rise-in {
-  from {
-    opacity: 0;
-    translate: 0 18px;
-    scale: 0.99;
-  }
-  to {
-    opacity: 1;
-    translate: 0 0;
-    scale: 1;
-  }
-}
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    html:not([data-perf="low"]) .rl-card,
-    html:not([data-perf="low"]) .stat-tile,
-    html:not([data-perf="low"]) .stat-tile-2026,
-    html:not([data-perf="low"]) .part-card,
-    html:not([data-perf="low"]) .resume-card,
-    html:not([data-perf="low"]) .flashcards,
-    html:not([data-perf="low"]) .hero-glass-card,
-    html:not([data-perf="low"]) .progress-hero-card {
-      animation: rise-in linear both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 30%;
-    }
-  }
-}
+/* Scroll-driven card entrances were removed: animating opacity/translate/
+   scale on every card as it enters the viewport forces continuous
+   re-rasterization during fast scrolls (especially over frosted surfaces)
+   and reads as lag, not delight. Content is simply there — instantly. */
 
 /* ── Respect reduced motion for the new component system ── */
 @media (prefers-reduced-motion: reduce) {
@@ -6482,48 +6280,48 @@ html[data-theme="light"] {
   transition: outline-offset 120ms var(--ease-color);
 }
 
-/* ── Primary button polish ── inner sheen + refined press. */
+/* ── Primary button polish ── inner sheen + refined press.
+   One honest shadow step, no glow bloom, no bouncy scale: feedback lands
+   in ~150ms and the button never wanders under the cursor. */
 .btn-primary {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.18),
-    var(--shadow-glow-accent);
+    var(--shadow-sm);
 }
 .btn-primary:hover,
 .btn-primary:focus-visible {
-  transform: translateY(-2px) scale(1.02);
+  transform: translateY(-1px);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.22),
-    var(--shadow-elegant-md),
-    var(--glow-soft);
+    var(--shadow-md);
   filter: brightness(1.05);
 }
 .btn-primary:active {
-  transform: translateY(1px) scale(0.98);
+  transform: translateY(0) scale(0.98);
   box-shadow:
     inset 0 2px 6px rgba(0, 0, 0, 0.18),
     0 1px 2px rgba(0, 0, 0, 0.1);
-  transition: transform 90ms var(--ease-color), box-shadow 90ms var(--ease-color);
+  transition: transform 80ms var(--ease-color), box-shadow 80ms var(--ease-color);
 }
 
-/* ── Ghost button polish ── softer lift and glow on hover. */
+/* ── Ghost button polish ── quiet border/shadow shift, no lift or glow. */
 .btn-ghost:hover,
 .btn-ghost:focus-visible {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-elegant-sm), 0 0 20px var(--accent-glow);
+  box-shadow: var(--shadow-sm), var(--glass-edge);
 }
 
-/* ── Hero greeting entrance ── the script title drifts in gently. */
+/* ── Hero greeting entrance ── a brief, level fade-up. */
 .hero__title {
-  animation: greetingEnter 900ms var(--ease-elegant) both;
+  animation: greetingEnter 400ms var(--ease-reveal) both;
 }
 @keyframes greetingEnter {
   from {
     opacity: 0;
-    transform: rotate(-2.5deg) translateY(16px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
-    transform: rotate(-1.5deg) translateY(0);
+    transform: translateY(0);
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -6538,9 +6336,7 @@ html[data-theme="light"] {
   border-color: color-mix(in srgb, var(--accent) 50%, var(--border-glow));
   box-shadow:
     var(--shadow-elegant-lg),
-    0 0 0 3px var(--accent-glow),
-    var(--glow-soft);
-  transform: translateY(-3px);
+    0 0 0 3px var(--accent-glow);
 }
 .q-form__textarea::placeholder {
   color: var(--text-tertiary);
@@ -6566,10 +6362,7 @@ html[data-theme="light"] {
   box-shadow: var(--shadow-elegant-lg);
 }
 .part-card:hover {
-  transform: translateY(-4px);
-  box-shadow:
-    var(--shadow-elegant-lg),
-    var(--glow-soft);
+  box-shadow: var(--shadow-elegant-lg);
 }
 .part-card::before {
   content: "";
@@ -6580,7 +6373,7 @@ html[data-theme="light"] {
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--border-glow), transparent);
   opacity: 0;
-  transition: opacity 400ms var(--ease-color);
+  transition: opacity 160ms var(--ease-color);
 }
 .part-card:hover::before {
   opacity: 1;
@@ -6618,13 +6411,13 @@ html[data-theme="light"] {
   box-shadow: var(--shadow-elegant-lg);
 }
 .hero-glass-card:hover {
-  box-shadow: var(--shadow-elegant-lg), var(--glow-soft);
+  box-shadow: var(--shadow-elegant-lg);
 }
 
 /* ── Resume card polish ── consistent with part-card hover language. */
 .resume-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-elegant-md), var(--glow-soft);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-elegant-md);
 }
 
 /* ── Navbar polish ── softer glass edge and subtle shadow. */
@@ -6642,79 +6435,6 @@ html[data-theme="light"] {
 .journey-item__open:focus-visible {
   background: var(--bg-card-hover);
   transform: translateX(3px);
-}
-
-/* ── Olive Frenzy — script accents + kinetic ticker ─────────────────────
-   The "frenzy" is kinetic composition: oversized script cutting through
-   rigid geometry, one moving ticker line, asymmetric tilt. The minimalism
-   survives because everything functional stays on the geometric sans. */
-
-/* Kinetic ticker bar — a single thin motion line between stark dividers.
-   Transform-only marquee (cheap); duplicated track for a seamless loop. */
-.hero-ticker {
-  order: 4;
-  width: 100%;
-  margin-top: 28px;
-  padding: 10px 0;
-  border-top: 1px solid var(--border-subtle);
-  border-bottom: 1px solid var(--border-subtle);
-  overflow: hidden;
-  display: flex;
-  white-space: nowrap;
-  user-select: none;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-}
-.hero-ticker__track {
-  display: flex;
-  align-items: baseline;
-  gap: 28px;
-  padding-right: 28px;
-  flex-shrink: 0;
-  animation: tickerScroll 26s linear infinite;
-}
-.hero-ticker:hover .hero-ticker__track {
-  animation-play-state: paused;
-}
-.hero-ticker__word {
-  /* Mono ticker — reads like a departures board, the quiet brutalist beat
-     under the hero's script warmth. */
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text-tertiary);
-}
-.hero-ticker__word--script {
-  font-family: var(--font-script), cursive;
-  font-size: 19px;
-  font-weight: 600;
-  letter-spacing: 0;
-  text-transform: none;
-  color: var(--accent);
-}
-.hero-ticker__tick {
-  width: 5px;
-  height: 5px;
-  border-radius: 1px;
-  align-self: center;
-  background: var(--accent);
-  opacity: 0.55;
-  transform: rotate(45deg);
-  flex-shrink: 0;
-}
-@keyframes tickerScroll {
-  from { transform: translateX(0); }
-  to { transform: translateX(-100%); }
-}
-/* Static under reduced motion or the low perf tier — the line stays, the
-   motion goes. */
-@media (prefers-reduced-motion: reduce) {
-  .hero-ticker__track { animation: none !important; }
-}
-html[data-perf="low"] .hero-ticker__track {
-  animation: none;
 }
 
 /* Mic button — round voice-input key beside the question box. */
@@ -6755,11 +6475,11 @@ html[data-perf="low"] .hero-ticker__track {
 }
 .error-boundary__title {
   margin: 0 0 var(--space-md);
-  font-family: var(--font-script), cursive;
-  font-size: 32px;
-  font-weight: 600;
-  line-height: 1;
-  transform: rotate(-1deg);
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
 }
 .error-boundary__message {
   margin: 0 0 var(--space-base);
@@ -7565,4 +7285,38 @@ html[data-perf="low"] .hero-ticker__track {
   .onboarding-progress__seg {
     transition: none;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Scroll-path frost removal — the fast-scroll jank fix.
+   backdrop-filter must re-composite everything BEHIND a surface every frame
+   that surface (or the content under it) moves. On fixed chrome — navbar,
+   bottom nav, sidebar, quiz sheet, modals — that cost is bounded and worth
+   it. On the scrolled content itself (every lesson part card, the flashcard
+   deck, the completion panel, stat tiles…) it is paid per-card, per-frame,
+   and is exactly what made fast scrolling stutter.
+   These in-flow surfaces keep their translucent tint — the surface colors
+   are chosen to read correctly unblurred (see the perf-tier notes) — but
+   drop the live blur. This block intentionally sits last in the file so it
+   wins the cascade at equal specificity.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.glass,
+.glass-card,
+.glass-panel,
+.journey-rail,
+.q-form,
+.part-card,
+.flashcards,
+.followup,
+.completion,
+.resume-card,
+.hero-glass-card,
+.stat-tile-2026,
+.progress-hub,
+.progress-hero-card,
+.settings-panel-glass,
+.auth-glass-card,
+.not-found-canvas {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }

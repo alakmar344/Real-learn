@@ -352,12 +352,6 @@ export default function SettingsPage() {
         </button>
 
         <header className="page-hero">
-          <Icon
-            name="settings"
-            size={110}
-            strokeWidth={0.75}
-            className="page-hero__glyph page-hero__glyph--icon"
-          />
           <span className="section-overline">Make It Yours</span>
           <h1 className="page-hero__title">Settings</h1>
           <p className="page-hero__sub">Manage your account, data, and preferences.</p>
