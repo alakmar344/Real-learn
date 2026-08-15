@@ -9,7 +9,7 @@ export const dynamic = "force-static";
 const BASE_URL = "https://reallearn.site";
 
 // Crawler-visible routes only. Everything else (/learn, /progress, /settings)
-// sits behind Clerk auth in middleware.ts and would just 307 to /sign-in —
+// sits behind Clerk auth in proxy.ts and would just 307 to /sign-in —
 // listing those wastes crawl budget and pollutes the index.
 const STATIC_PUBLIC_ROUTES: {
   route: string;

@@ -134,13 +134,13 @@ Signed-in learners can set learning-style preferences (checklist) and free-text 
 ## Technology Stack
 
 ### Frontend (Vercel)
-- **Framework:** Next.js 15 (App Router)
+- **Framework:** Next.js 16 (App Router, Turbopack)
 - **UI:** React 19
 - **Language:** TypeScript
 - **Auth:** Clerk (`@clerk/nextjs`)
 - **State:** Zustand (4 stores with `persist` middleware for localStorage backing; saved journeys additionally archive to IndexedDB)
 - **Content:** React Markdown + `remark-gfm`
-- **Styling:** Tailwind CSS + custom CSS variables for the Olive Frenzy Minimal (Light/Dark) design system
+- **Styling:** hand-rolled CSS design system in globals.css (tokens + component classes) for the Olive Frenzy Minimal (Light/Dark) design system — Tailwind was removed 2026-08-15 (it never actually compiled; no postcss config existed)
 - **Speech:** Web Speech API (SpeechRecognition for input, speechSynthesis for read-aloud)
 - **Sharing:** Canvas API + Web Share API (1080x1920 result cards)
 

@@ -114,18 +114,13 @@ export default function HomeStats({ onStartTopic }: Props) {
               Lock in memory with instant quizzes
             </li>
           </ol>
+          {/* Only the claims the how-strip doesn't already make — languages
+              and fact grounding are stated two lines up (repeating them read
+              as filler, not trust). */}
           <div className="trust-strip" aria-label="Trust and platform standards">
             <span className="trust-badge">
               <span className="trust-badge__dot" aria-hidden="true" />
-              12 Indian Languages
-            </span>
-            <span className="trust-badge">
-              <span className="trust-badge__dot" aria-hidden="true" />
               Class 6 to College Level
-            </span>
-            <span className="trust-badge">
-              <span className="trust-badge__dot" aria-hidden="true" />
-              Live Fact Grounding
             </span>
             <span className="trust-badge">
               <span className="trust-badge__dot" aria-hidden="true" />

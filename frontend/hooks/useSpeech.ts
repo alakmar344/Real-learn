@@ -122,6 +122,25 @@ export function useEdgeTts() {
     setError(null);
   }, []);
 
+  const cleanupAudio = useCallback((objectUrl: string) => {
+    if (objectUrlRef.current === objectUrl) {
+      URL.revokeObjectURL(objectUrl);
+      objectUrlRef.current = null;
+    }
+    if (audioRef.current && audioRef.current.src && audioRef.current.src.includes(objectUrl)) {
+      // Detach handlers first: clearing src + load() runs the media failure
+      // steps and fires an `error` event, which (with the session still
+      // current, e.g. right after onended) showed "Audio playback failed"
+      // after every successfully completed playback.
+      audioRef.current.onended = null;
+      audioRef.current.onerror = null;
+      audioRef.current.pause();
+      audioRef.current.src = '';
+      audioRef.current.load();
+      audioRef.current = null;
+    }
+  }, []);
+
   const speak = useCallback(async (text: string, lang: string) => {
     if (typeof window === "undefined") return;
     // stop() bumps sessionRef to supersede the previous session, so the new
@@ -244,26 +263,7 @@ export function useEdgeTts() {
         controllerRef.current = null;
       }
     }
-  }, [stop, getToken]);
-
-  const cleanupAudio = useCallback((objectUrl: string) => {
-    if (objectUrlRef.current === objectUrl) {
-      URL.revokeObjectURL(objectUrl);
-      objectUrlRef.current = null;
-    }
-    if (audioRef.current && audioRef.current.src && audioRef.current.src.includes(objectUrl)) {
-      // Detach handlers first: clearing src + load() runs the media failure
-      // steps and fires an `error` event, which (with the session still
-      // current, e.g. right after onended) showed "Audio playback failed"
-      // after every successfully completed playback.
-      audioRef.current.onended = null;
-      audioRef.current.onerror = null;
-      audioRef.current.pause();
-      audioRef.current.src = '';
-      audioRef.current.load();
-      audioRef.current = null;
-    }
-  }, []);
+  }, [stop, getToken, cleanupAudio]);
 
   return { supported, speaking, loading, error, speak, stop, clearError };
 }
@@ -287,9 +287,13 @@ export function useSpeechRecognition({ lang, onResult }: UseSpeechRecognitionOpt
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
   const onResultRef = useRef(onResult);
-  onResultRef.current = onResult;
   const langRef = useRef(lang);
-  langRef.current = lang;
+  // "Latest ref" pattern — updated in an effect (not during render) so the
+  // component stays pure under the React 19 hooks rules.
+  useEffect(() => {
+    onResultRef.current = onResult;
+    langRef.current = lang;
+  }, [onResult, lang]);
 
   useEffect(() => {
     return () => {

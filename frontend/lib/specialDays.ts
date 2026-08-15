@@ -1,7 +1,7 @@
 /**
  * Special-day greetings: fixed-date observances that swap the ordinary
  * time-of-day greeting for something worth the moment. Kept here so the
- * homepage hero, the EasterEggs toasts, and the verify script share one
+ * homepage hero greeting and the verify script share one
  * source of truth.
  */
 

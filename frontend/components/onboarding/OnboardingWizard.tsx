@@ -262,19 +262,12 @@ export default function OnboardingWizard() {
       });
     } else {
       setPersonalization({ checklist: [], notes: "", goals: "", onboarded: true });
-      safeSetItem("reallearn-personalization-skipped", "true");
     }
-    // The wizard replaces the legacy first-login preference modal too.
-    safeSetItem("reallearn-preferences-onboarding", "true");
     goTo(5, "fwd");
   };
 
   const finish = () => {
     markOnboardingComplete();
-    // The welcome slide already introduced the product — don't stack the
-    // "what's coming" tour on top of a fresh user's first lesson. It stays
-    // available from Settings.
-    safeSetItem("reallearn-things-coming-seen", "true");
     router.push("/");
   };
 

@@ -18,7 +18,7 @@ Key facts:
 - Accessibility: WCAG 2.1 AA targeting with keyboard navigation, ARIA live regions, reduced-motion support.
 - Gamification: XP, levels, streaks, 56 achievements, activity heatmap, shareable result cards.
 - Learning personalization: optional checklist + free-text notes stored on-device and sent with each lesson request to tailor AI explanations (500-character cap).
-- Frontend: Next.js 15 + React 19 + TypeScript on Vercel.
+- Frontend: Next.js 16 + React 19 + TypeScript on Vercel.
 - Backend: Node.js + Express on Render.
 - Repository: https://github.com/alakmar344/Real-learn
 

@@ -11,10 +11,9 @@ const read = (p) => readFile(new URL(p, import.meta.url), "utf8");
 const wizard = await read("../components/onboarding/OnboardingWizard.tsx");
 const redirect = await read("../components/onboarding/OnboardingRedirect.tsx");
 const onboardingLib = await read("../lib/onboarding.ts");
-const middleware = await read("../middleware.ts");
+const middleware = await read("../proxy.ts");
 const appShell = await read("../components/shared/AppShell.tsx");
 const preSignIn = await read("../components/shared/PreSignInConsent.tsx");
-const personalizationGate = await read("../components/shared/PersonalizationGate.tsx");
 
 test("onboarding wizard", async (t) => {
   await t.test("has exactly 5 steps with a visible step indicator", () => {
@@ -57,10 +56,8 @@ test("onboarding wizard", async (t) => {
     assert.match(wizard, /redirectCallbackUrl: "\/onboarding\/sso-callback"/);
   });
 
-  await t.test("finishing marks every legacy first-run flag done (no modal pile-up)", () => {
+  await t.test("finishing marks onboarding complete (no modal pile-up)", () => {
     assert.match(wizard, /markOnboardingComplete\(\)/);
-    assert.match(wizard, /reallearn-preferences-onboarding/);
-    assert.match(wizard, /reallearn-things-coming-seen/);
     assert.match(wizard, /onboarded: true/);
   });
 });
@@ -79,9 +76,10 @@ test("routing and redirect", async (t) => {
     assert.match(redirect, /startsWith\("\/onboarding"\)\) return/);
   });
 
-  await t.test("wizard renders full-screen (no sidebar) and legacy modals stand down", () => {
+  await t.test("wizard renders full-screen (no sidebar) and the consent modal stands down", () => {
+    // The legacy PreferenceModal/PersonalizationGate backfill modals were
+    // removed 2026-08-15 — the wizard owns first-run and Settings owns edits.
     assert.match(appShell, /"\/onboarding"/);
     assert.match(preSignIn, /onOnboardingPath/);
-    assert.match(personalizationGate, /startsWith\("\/onboarding"\)\) return/);
   });
 });

@@ -19,7 +19,8 @@ const DURATION: Record<Celebration["kind"], number> = {
 };
 
 function Burst() {
-  // Resolve colors at burst time so they track the active theme.
+  // Resolve colors at burst time so they track the active theme. The
+  // per-piece geometry is random data, so it stays inline by design.
   const [pieces] = useState(() => {
     const colors = celebrationColors();
     return Array.from({ length: 16 }, (_, i) => ({
@@ -32,7 +33,7 @@ function Burst() {
     }));
   });
   return (
-    <div aria-hidden="true" style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
+    <div aria-hidden="true" className="celebration-burst">
       {pieces.map((p) => (
         <div
           key={p.id}
@@ -53,33 +54,10 @@ function Burst() {
 }
 
 /** Small non-blocking XP chip that floats up near the top. */
-function XpChip({ item }: { item: Extract<Celebration, { kind: "xp" }> }) {
+function XpChip({ label }: { label: string }) {
   return (
-    <div
-      style={{
-        position: "fixed",
-        top: 70,
-        left: "50%",
-        transform: "translateX(-50%)",
-        zIndex: 95,
-        pointerEvents: "none",
-      }}
-    >
-      <div
-        className="animate-xp-pop"
-        style={{
-          background: "var(--accent)",
-          color: "var(--on-accent)",
-          borderRadius: 999,
-          padding: "7px 16px",
-          fontWeight: 800,
-          fontSize: 14,
-          boxShadow: "var(--shadow-sm)",
-          whiteSpace: "nowrap",
-        }}
-      >
-        +{item.amount} XP · {item.reason}
-      </div>
+    <div className="celebration-chip-wrap">
+      <div className="animate-xp-pop celebration-chip">{label}</div>
     </div>
   );
 }
@@ -112,47 +90,15 @@ function CenterCard({
       aria-live="polite"
       onClick={onDismiss}
       className="animate-overlay-fade celebration-scrim"
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 96,
-        background: "var(--scrim, rgba(20,17,12,0.5))",
-        display: "grid",
-        placeItems: "center",
-        padding: 24,
-        cursor: "pointer",
-      }}
     >
       <Burst />
-      <div
-        className="animate-level-burst"
-        style={{
-          position: "relative",
-          background: "var(--bg-primary)",
-          border: "1px solid var(--border-default)",
-          borderRadius: "var(--radius-2xl)",
-          boxShadow: "var(--shadow-lg)",
-          padding: "28px 32px",
-          textAlign: "center",
-          maxWidth: 380,
-          width: "100%",
-        }}
-      >
+      <div className="animate-level-burst celebration-card">
         {children}
         <button
           ref={dismissRef}
           type="button"
           onClick={onDismiss}
-          style={{
-            marginTop: 14,
-            fontSize: 12,
-            color: "var(--text-tertiary)",
-            background: "transparent",
-            border: "none",
-            cursor: "pointer",
-            padding: "6px 10px",
-            minHeight: 32,
-          }}
+          className="celebration-card__dismiss"
         >
           Tap to continue
         </button>
@@ -223,7 +169,7 @@ function BatchCelebrationCard({
 
   // Build the hero icon based on the most important event
   let heroIcon: IconName = "sparkle";
-  let heroColor = "var(--accent)";
+  let heroColor: string | undefined;
   let heroTitle = "Great work!";
   let heroSub = "";
 
@@ -263,30 +209,17 @@ function BatchCelebrationCard({
   return (
     <CenterCard onDismiss={onDismiss}>
       <div
-        className="animate-badge-pop"
-        style={{ display: "flex", justifyContent: "center", lineHeight: 1, color: heroColor }}
+        className="animate-badge-pop celebration-card__icon"
+        style={heroColor ? { color: heroColor } : undefined}
       >
         <Icon name={heroIcon} size={56} />
       </div>
-      <h3
-        style={{
-          margin: "12px 0 4px",
-          fontSize: 24,
-          fontWeight: 800,
-          color: "var(--text-primary)",
-        }}
-      >
-        {heroTitle}
-      </h3>
+      <h3 className="celebration-card__title">{heroTitle}</h3>
       {heroSub && (
-        <p style={{ margin: 0, fontSize: 14, color: "var(--text-secondary)" }}>
+        <p className="celebration-card__sub">
           {hero.kind === "level-up" ? (
             <>
-              You&apos;re now a{" "}
-              <strong style={{ color: "var(--accent)" }}>
-                {levelTitle(hero.level)}
-              </strong>
-              . Keep going.
+              You&apos;re now a <strong>{levelTitle(hero.level)}</strong>. Keep going.
             </>
           ) : hero.kind === "badge" ? (
             <span style={{ color: TIER_COLOR[BADGE_BY_ID[hero.badgeId]?.tier ?? "bronze"] }}>
@@ -300,29 +233,10 @@ function BatchCelebrationCard({
 
       {/* Secondary event summary */}
       {summaryLines.length > 0 && (
-        <div
-          style={{
-            marginTop: 16,
-            padding: "10px 14px",
-            borderRadius: "var(--radius-md)",
-            background: "color-mix(in srgb, var(--accent) 5%, transparent)",
-            border: "1px solid color-mix(in srgb, var(--accent) 15%, transparent)",
-            textAlign: "left",
-          }}
-        >
+        <div className="celebration-summary">
           {summaryLines.map((line, i) => (
-            <div
-              key={i}
-              style={{
-                fontSize: 13,
-                color: "var(--text-secondary)",
-                padding: "3px 0",
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-              }}
-            >
-              <span style={{ color: "var(--accent)", fontWeight: 700 }}>+</span>
+            <div key={i} className="celebration-summary__row">
+              <span className="celebration-summary__plus">+</span>
               {line}
             </div>
           ))}
@@ -387,67 +301,40 @@ export default function EngagementLayer() {
       (sum, c) => (c.kind === "xp" ? sum + c.amount : sum),
       0
     );
-    return (
-      <div
-        style={{
-          position: "fixed",
-          top: 70,
-          left: "50%",
-          transform: "translateX(-50%)",
-          zIndex: 95,
-          pointerEvents: "none",
-        }}
-      >
-        <div
-          className="animate-xp-pop"
-          style={{
-            background: "var(--accent)",
-            color: "var(--on-accent)",
-            borderRadius: 999,
-            padding: "7px 16px",
-            fontWeight: 800,
-            fontSize: 14,
-            boxShadow: "var(--shadow-sm)",
-            whiteSpace: "nowrap",
-          }}
-        >
-          +{totalXp} XP earned
-        </div>
-      </div>
-    );
+    return <XpChip label={`+${totalXp} XP earned`} />;
   }
 
   // Batch mode with mixed celebrations: show summary card
   if (batchMode && celebrations.length >= 2) {
     const summary = summarizeBatch(celebrations);
     if (summary) {
-      return <BatchCelebrationCard summary={summary} onDismiss={() => {
-        clearAll();
-        setBatchMode(false);
-      }} />;
+      return (
+        <BatchCelebrationCard
+          summary={summary}
+          onDismiss={() => {
+            clearAll();
+            setBatchMode(false);
+          }}
+        />
+      );
     }
   }
 
   // Single XP celebration: floating chip
   if (current.kind === "xp") {
-    return <XpChip item={current} />;
+    return <XpChip label={`+${current.amount} XP · ${current.reason}`} />;
   }
 
   // Single non-XP celebration: normal center card
   if (current.kind === "level-up") {
     return (
       <CenterCard onDismiss={dequeue}>
-        <div
-          className="animate-badge-pop"
-          style={{ display: "flex", justifyContent: "center", lineHeight: 1, color: "var(--accent)" }}
-        >
+        <div className="animate-badge-pop celebration-card__icon">
           <Icon name="star" size={56} />
         </div>
-        <h3 style={{ margin: "12px 0 4px", fontSize: 24, fontWeight: 800, color: "var(--text-primary)" }}>
-          Level {current.level}!
-        </h3>
-        <p style={{ margin: 0, fontSize: 14, color: "var(--text-secondary)" }}>
-          You&apos;re now a <strong style={{ color: "var(--accent)" }}>{levelTitle(current.level)}</strong>. Keep going.
+        <h3 className="celebration-card__title">Level {current.level}!</h3>
+        <p className="celebration-card__sub">
+          You&apos;re now a <strong>{levelTitle(current.level)}</strong>. Keep going.
         </p>
       </CenterCard>
     );
@@ -456,30 +343,20 @@ export default function EngagementLayer() {
   if (current.kind === "badge") {
     const badge = BADGE_BY_ID[current.badgeId];
     if (!badge) return null;
+    const tierColor = TIER_COLOR[badge.tier];
     return (
       <CenterCard onDismiss={dequeue}>
         <div
-          className="animate-badge-pop"
-          style={{
-            width: 92,
-            height: 92,
-            margin: "0 auto",
-            borderRadius: "50%",
-            display: "grid",
-            placeItems: "center",
-            color: TIER_COLOR[badge.tier],
-            background: "var(--bg-card)",
-            border: `3px solid ${TIER_COLOR[badge.tier]}`,
-            boxShadow: "var(--shadow-md)",
-          }}
+          className="animate-badge-pop celebration-card__badge-disc"
+          style={{ color: tierColor, border: `3px solid ${tierColor}` }}
         >
           <Icon name={badge.icon} size={46} />
         </div>
-        <p style={{ margin: "12px 0 2px", fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: TIER_COLOR[badge.tier], fontWeight: 800 }}>
+        <p className="celebration-card__kicker" style={{ color: tierColor }}>
           {badge.tier} · Achievement unlocked
         </p>
-        <h3 style={{ margin: "0 0 4px", fontSize: 22, fontWeight: 800, color: "var(--text-primary)" }}>{badge.title}</h3>
-        <p style={{ margin: 0, fontSize: 14, color: "var(--text-secondary)" }}>{badge.description}</p>
+        <h3 className="celebration-card__title celebration-card__title--tight">{badge.title}</h3>
+        <p className="celebration-card__sub">{badge.description}</p>
       </CenterCard>
     );
   }
@@ -487,16 +364,11 @@ export default function EngagementLayer() {
   if (current.kind === "streak") {
     return (
       <CenterCard onDismiss={dequeue}>
-        <div
-          className="flame-flicker"
-          style={{ display: "flex", justifyContent: "center", lineHeight: 1, color: "var(--accent)" }}
-        >
+        <div className="flame-flicker celebration-card__icon">
           <Icon name="flame" size={60} />
         </div>
-        <h3 style={{ margin: "10px 0 4px", fontSize: 26, fontWeight: 800, color: "var(--text-primary)" }}>
-          {current.streak}-day streak!
-        </h3>
-        <p style={{ margin: 0, fontSize: 14, color: "var(--text-secondary)" }}>
+        <h3 className="celebration-card__title">{current.streak}-day streak!</h3>
+        <p className="celebration-card__sub">
           Showing up daily — that&apos;s how learning sticks.
         </p>
       </CenterCard>
@@ -506,16 +378,11 @@ export default function EngagementLayer() {
   if (current.kind === "daily-goal") {
     return (
       <CenterCard onDismiss={dequeue}>
-        <div
-          className="animate-badge-pop"
-          style={{ display: "flex", justifyContent: "center", lineHeight: 1, color: "var(--accent)" }}
-        >
+        <div className="animate-badge-pop celebration-card__icon">
           <Icon name="target" size={56} />
         </div>
-        <h3 style={{ margin: "12px 0 4px", fontSize: 24, fontWeight: 800, color: "var(--text-primary)" }}>
-          Daily goal complete!
-        </h3>
-        <p style={{ margin: 0, fontSize: 14, color: "var(--text-secondary)" }}>
+        <h3 className="celebration-card__title">Daily goal complete!</h3>
+        <p className="celebration-card__sub">
           {current.goal} parts studied today. Beautifully done.
         </p>
       </CenterCard>

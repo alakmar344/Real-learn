@@ -51,7 +51,6 @@ export function isValidChecklistValue(value: string): boolean {
 // typed and users could never type a space between words. Live sanitization
 // must not trim; the backend trims once at submit time.
 const INVISIBLE_CHARS_PATTERN =
-  // eslint-disable-next-line no-control-regex
   /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F\u200B-\u200F\u2028\u2029\u202A-\u202E\u2060-\u2064\uFEFF]/g;
 const FENCE_MARKER_PATTERN =
   /(?:END_)?(?:LEARNER_NOTES|LEARNER_CONTEXT|LEARNER_GOAL|STUDENT_QUESTION|EXTERNAL_CONTEXT|ADAPTATION_DIRECTIVE)/gi;

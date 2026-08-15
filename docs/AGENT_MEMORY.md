@@ -47,8 +47,11 @@ gold and NO purple/violet (owner's rule). JS-side colors (confetti, share
 card) come from `frontend/lib/palette.ts` — never hardcode brand hexes in
 components. Prior design iterations (Evergreen, Solar Terracotta/"Sunset
 Pop", Cyber Aqua) are recorded in `docs/REDESIGN.md` for history only —
-this §1 is the canonical spec. Frontend: Next.js 15 + React 19 +
-TypeScript + Tailwind + Clerk + Zustand. Backend: Node + Express.
+this §1 is the canonical spec. Frontend: Next.js 16 + React 19 +
+TypeScript + Clerk + Zustand — styling is the hand-rolled design system in
+globals.css (Tailwind was removed 2026-08-15: it never compiled — there was
+no postcss config — and no generated utility was in use). Backend: Node 24 +
+Express 5. Toolchain: Node 24 LTS (`.nvmrc` + engines).
 
 ---
 
@@ -56,7 +59,7 @@ TypeScript + Tailwind + Clerk + Zustand. Backend: Node + Express.
 
 ```
 Real-learn/
-├── frontend/          Next.js 15 app  (deploy: Vercel)
+├── frontend/          Next.js 16 app  (deploy: Vercel)
 │   ├── app/           App Router pages (page.tsx = home, learn, progress, settings, legal, sign-in/up)
 │   ├── components/
 │   │   ├── homepage/  QuestionInput, HomeStats, ExampleQuestions
@@ -91,8 +94,8 @@ Real-learn/
 # Frontend (from /frontend)
 npm install
 npx tsc --noEmit          # typecheck  — MUST be clean
-npx next lint             # lint       — MUST be clean (next lint is deprecated but still works)
-npm run build             # production build — MUST succeed before a PR
+npm run lint              # ESLint flat config — MUST be clean (Next 16 removed `next lint`)
+npm run build             # production build (Turbopack) — MUST succeed before a PR
 npm run verify:quiz           # Fisher-Yates shuffle sanity check
 npm run verify:achievements   # achievement catalogue sanity check
 npm run verify:frontier       # knowledge-frontier engine sanity check
@@ -102,6 +105,8 @@ npm run verify:personalization # personalization layer (goals, checklist dedup,
                                #   fence neutralization, prompt formatting)
 npm run verify:special-days    # special-day greeting catalog (unique ids,
                                #   real calendar dates, no duplicate dates)
+npm run verify:onboarding      # onboarding wizard invariants (step gating,
+                               #   redirect wiring, consent handoff)
 
 # Backend (from /backend)
 npm install
@@ -119,11 +124,11 @@ npm test                  # node --test: personalization + learning-context +
 > scripts are kept as `node` for portability; use `tsx` if you hit
 > `ERR_UNKNOWN_FILE_EXTENSION`.
 
-**Baseline recorded 2026-08-12:** `tsc --noEmit` clean, `next lint` clean,
-`npm run build` clean (13 pages), backend `npm test` 88/88
-(54 functional + 34 offensive-audit exploit probes),
-`verify:quiz` / `verify:achievements` / `verify:frontier` /
-`verify:profile` / `verify:reconsent` / `verify:personalization` all pass.
+**Baseline recorded 2026-08-15 (Node 24 / Next 16 / Express 5):**
+`tsc --noEmit` clean (TS 6.0.3), `npm run lint` clean (ESLint 9.39 flat
+config, 0 errors), `npm run build` clean (14 routes, Turbopack, zero
+warnings), backend `npm test` 90/90, `npm audit` 0 vulnerabilities in both
+workspaces, all eight `verify:*` scripts pass.
 
 ---
 
@@ -165,8 +170,9 @@ Available component classes (already implemented — use them):
 - Loading / error: `.loading-cinematic`, `.loading-cinematic__progress`, `.loading-cinematic__steps`,
   `.loading-cinematic__cancel`, `.error-state`, `.error-state__card`, `.error-state__btn`
 - Toggles: `.btn-toggle`, `.mode-glider`
-- Decorative: `.kusari` (chain divider), `.liquid-sheen`, `.engraved`,
-  `.identity-texture`, `.texture-noise`, `.texture-dots`
+- Decorative: `.engraved`, `.identity-texture`, `.texture-noise`
+  (`.kusari`, `.liquid-sheen`, `.texture-dots` were removed 2026-08-15 —
+  defined for months, never referenced by any component)
 - Misc: `.scroll-top`, `.hero-greeting`, `.hero-greeting-icon`, `.app-footer`
 - Page shells: `.flow-page` (+ `__inner`, `__inner--narrow`), `.page-column` (+ `--center`),
   `.flow-stack`, `.duo-grid`, `.stat-band`, `.flow-gap`, `.flow-gap-lg`, `.auth-canvas`,
@@ -202,16 +208,20 @@ Available component classes (already implemented — use them):
 - Icons: ALL UI icons come from `components/shared/icons.tsx` (`<Icon name=.../>`,
   stroke-based, currentColor, `label` prop for accessible name). Helpers:
   `.settings-action__label`, `.app-sidebar__foot-label`, `.page-hero__glyph--icon`
-- Olive Frenzy: `.script-display` (expressive script utility), `.hero-ticker`
+- Olive Frenzy: `.hero-ticker`
   (+ `__track`, `__word`, `__word--script`, `__tick`) kinetic marquee,
   `.mic-btn` (+ `--listening`, `--unsupported`) voice-input key,
-  `.error-boundary` (+ `__title`, `__message`, `__retry`) render-error fallback,
-  `.micro-label` (mono uppercase technical-label voice — JetBrains Mono,
-  letter-spaced; the same voice worn by section overlines, stat-tile labels,
-  part-card tags, quiz meta, and sidebar list titles)
+  `.error-boundary` (+ `__title`, `__message`, `__retry`) render-error fallback
+  (`.script-display` and `.micro-label` were removed 2026-08-15 as unused —
+  the technical-label voice lives directly in the component classes that
+  wear it: section overlines, stat-tile labels, part-card tags, quiz meta)
+- Celebrations: `.celebration-scrim/chip-wrap/chip/burst`, `.celebration-card`
+  (+ `__dismiss`, `__icon`, `__badge-disc`, `__kicker`, `__title`,
+  `__title--tight`, `__sub`), `.celebration-summary` (+ `__row`, `__plus`) —
+  the EngagementLayer XP chip / center card / batch summary anatomy
 - Elegant Modern Refinements (2026-08-08): new shadow/glow tokens
   (`--shadow-elegant-*`, `--glow-soft`, `--glow-strong`, `--ease-elegant`),
-  `.ambient-spotlight` utility, `.quiz-progress` (+ `__dot`, `--current`,
+  `.quiz-progress` (+ `__dot`, `--current`,
   `--answered`, `--pending`) quiz step indicator, refined focus ring,
   enhanced `.aurora-bg` drift, and polished hover/lift shadows on
   `.btn-primary`, `.btn-ghost`, `.q-form`, `.part-card`, `.quiz-sheet__panel`,
@@ -346,7 +356,7 @@ this protocol. No exceptions.**
 2. **Branch** off `main` (see §4).
 3. **Make the change.** Use the design system (§5), follow de-slop rules (§6)
    and UX principles (§7) for any UI work.
-4. **Verify:** `npx tsc --noEmit` + `npx next lint` + `npm run build` (frontend)
+4. **Verify:** `npx tsc --noEmit` + `npm run lint` + `npm run build` (frontend)
    or `npm test` (backend). All must pass.
 5. **Update the docs that the change affects:**
    - Always append a one-line entry to `change-made-after-submission.md`
@@ -1084,3 +1094,16 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
   - **Simplified Chat Modes**: Streamlined answer modes to two simple, immediately understandable choices: **Explain** (`value: "fast"`, "Quick, simple explanation in 1 part") and **Fast** (`value: "explain"`, "Deep, detailed explanation in 3 parts"). Synchronized labels across `QuestionInput.tsx`, `settings/page.tsx`, and `learn/page.tsx` topbar.
   - **Chat Box Redesign & Responsive Enter Action**: Redesigned `QuestionInput.tsx` into a robust 3-tier structure (`.q-form__body`, `.q-form__modes`, `.q-form__actions`), separating the larger **Explain** vs **Fast** tactile segment toggle (`padding: 9px 24px; min-height: 42px; font-size: 15px; font-weight: 700`) from the bottom action bar. Added an explicit, high-contrast **Enter ↵** action button (`.q-form__enter-btn` / `.q-form__enter-symbol`) with no text clipping, and made mobile layout 100% fluid with 44px touch targets.
   - **Verification**: `tsc --noEmit` clean, 90/90 backend tests passing, all frontend verify scripts passing.
+
+- 2026-08-15 — **Platform upgrade (Node 24 / Next 16 / Express 5) + frontend re-architecture pass.**
+  - **Toolchain:** Node 24.19.0 LTS (`.nvmrc` + `engines` in both package.json files). Frontend: Next.js 15 → 16.3.1 (Turbopack builds; `middleware.ts` renamed to `proxy.ts` per the Next 16 convention — CSP nonce logic unchanged, references in `sitemap.ts`/`layout.tsx`/`verify-onboarding.mjs` updated), React 19.2.8, TypeScript 6.0.3 (TS 7.0 rejected: typescript-eslint does not support it yet), ESLint 9.39.5 with flat config `eslint.config.mjs` (Next 16 removed `next lint`; `npm run lint` now runs ESLint directly; ESLint 10 blocked by eslint-config-next's bundled plugins), @clerk/nextjs 7.7.6, react-markdown 10, eventsource-parser 4, cookie 2. Backend: Express 4 → 5.2.1, express-rate-limit 8, mongodb 7.5, jose 6.2.8, ip-address 10.5 (clears three GHSA SSRF advisories). `npm audit`: 0 vulnerabilities in both workspaces.
+  - **Tailwind removed entirely** (tailwindcss + postcss + autoprefixer devDeps, `tailwind.config.js`, the three `@tailwind` directives): there was never a `postcss.config`, so Tailwind never compiled and no generated utility was in use — every class in the app is hand-defined in `globals.css`. Zero visual change, three fewer build deps.
+  - **BUG FIX — inverted mode labels:** both copies of the answer-mode list labeled `fast` as "Explain" and `explain` as "Fast", contradicting their own hints and §1's canonical model. One shared `lib/lessonModes.ts` now feeds `QuestionInput` + Settings; the `/learn` top-bar badge had the same inversion and is fixed.
+  - **Dead code removed:** `ThemeModal.tsx` (143 LOC) and `ThingsComingModal.tsx` (317 LOC) — never imported anywhere — plus their vestigial localStorage flag writes. `EasterEggs.tsx` (260 LOC) removed with its Footer click-trap dispatcher: the Konami/secret-word/heart-burst layer buffered every keystroke globally and duplicated the homepage special-day greeting (§6.6 "no celebration noise"); quiz-pass confetti and EngagementLayer moments remain. Footer microcopy de-slopped ("no cap, built different" → quiet human copy).
+  - **First-run modal stack collapsed:** `PreferenceModal.tsx` + `PersonalizationGate.tsx` (632 LOC) removed. The onboarding wizard owns the whole first-run experience; Settings is the single edit surface for theme/language/level and personalization. Legacy users no longer get a two-modal pile-up; the modalManager slot system stays (PreSignInConsent still uses it).
+  - **EngagementLayer moved onto design-system classes:** 31 inline style objects → `.celebration-*` anatomy in `globals.css` (§5 list updated); only data-driven tier colors and random confetti geometry stay inline. `ProgressHub`'s lone styled-jsx block moved into `globals.css`.
+  - **A11y/UX:** QuizSheet Escape now always closes (was blocked after an answer was selected — trapped keyboard users; backdrop stays guarded). FeedbackGate lazy-loaded on /learn to match the homepage. First-visit trust strip deduplicated (badges no longer repeat the how-strip's claims). React 19 hooks-rule fixes: latest-ref writes moved out of render (`MicButton`, `useSpeech`), impure `Date.now()` out of a `useRef` initializer (`LoadingCinematic`).
+  - **Metadata:** keyword list trimmed 28 → 6, "reallan" injections removed from human-facing OG/Twitter copy (structured data + redirects keep the misspelling recovery), default title restored to the brand tagline.
+  - **CSS pruned:** ~150 lines of verified-unused utilities and orphaned keyframes removed (`.kusari`, `.liquid-sheen`, `.micro-label`, `.script-display`, `.ambient-spotlight`, `.texture-dots/lines` no-ops, 8 unused `animate-*` classes, `heartFloat`, `spotlightDrift`).
+  - **Integration smoke test repaired + `output: "standalone"` removed:** `scripts-smoke/integration-smoke.sh` was stale — it asserted the removed "/Find" feature (`/api/find` 401, `/find` route, "Find" in the privacy policy) and hardcoded legal-doc versions 3.3/3.0 (now 3.4/3.1). It now checks `/api/generate-lesson` auth, reads the current versions from `lib/legalConsent.ts` (so they can't go stale again), boots the frontend with `next start` on port 3907 (3000 was silently occupied by the sandbox proxy, so the checks probed a foreign server), and never passes `-H 127.0.0.1` (an explicit loopback bind breaks Next 16's internal route dispatch — app routes hang). `output: "standalone"` was removed from `next.config.js`: Vercel ignores it, it slowed every build with a traced node_modules copy, and its Next 16 self-hosted server mis-proxied app routes. Smoke result: 7/7 PASS.
+  - **Verified:** `tsc --noEmit` clean, `npm run lint` 0 errors, `npm run build` clean (14 routes, zero warnings), production server smoke-tested (/, /legal, /onboarding, robots 200; corrected mode labels confirmed in SSR output), backend `npm test` 90/90, all eight `verify:*` scripts pass. Updated docs: `docs/AGENT_MEMORY.md` (§1 stack, §2 layout, §3 commands + baseline, §5 class lists, §11 verify step, §13 changelog), `README.md`, `GEMINI.md`, `llms.txt`, `llms-full.txt`, `change-made-after-submission.md`.

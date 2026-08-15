@@ -3,8 +3,8 @@
 /**
  * Modal mutual-exclusion guard.
  *
- * Multiple blocking modals (PreSignInConsent, PersonalizationGate,
- * PreferenceModal, ThemeModal) share the same z-index. Without coordination,
+ * Blocking modals (today only PreSignInConsent, historically several)
+ * share the same z-index. Without coordination,
  * two could render simultaneously. This module ensures only one is active at
  * a time.
  */
