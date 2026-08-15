@@ -35,10 +35,6 @@ const PreSignInConsent = dynamic(
   () => import("@/components/shared/PreSignInConsent"),
   { ssr: false, loading: () => null }
 );
-const PersonalizationGate = dynamic(
-  () => import("@/components/shared/PersonalizationGate"),
-  { ssr: false, loading: () => null }
-);
 
 export default function DeferredProviders() {
   return (
@@ -47,7 +43,6 @@ export default function DeferredProviders() {
       <GoogleAnalytics />
       <CookieConsent />
       <PreSignInConsent />
-      <PersonalizationGate />
     </>
   );
 }

@@ -398,6 +398,126 @@ html::before {
   backdrop-filter: none;
 }
 
+/* ── Celebration layer anatomy (EngagementLayer) ── the XP chip, the
+   center card, and the batch summary. Only data-driven values (tier
+   colors, random confetti geometry) stay inline in the component. */
+.celebration-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 96;
+  background: var(--scrim, rgba(20, 17, 12, 0.5));
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  cursor: pointer;
+}
+.celebration-chip-wrap {
+  position: fixed;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 95;
+  pointer-events: none;
+}
+.celebration-chip {
+  background: var(--accent);
+  color: var(--on-accent);
+  border-radius: 999px;
+  padding: 7px 16px;
+  font-weight: 800;
+  font-size: 14px;
+  box-shadow: var(--shadow-sm);
+  white-space: nowrap;
+}
+.celebration-burst {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.celebration-card {
+  position: relative;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-lg);
+  padding: 28px 32px;
+  text-align: center;
+  max-width: 380px;
+  width: 100%;
+}
+.celebration-card__dismiss {
+  margin-top: 14px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px 10px;
+  min-height: 32px;
+}
+.celebration-card__icon {
+  display: flex;
+  justify-content: center;
+  line-height: 1;
+  color: var(--accent);
+}
+.celebration-card__badge-disc {
+  width: 92px;
+  height: 92px;
+  margin: 0 auto;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--bg-card);
+  box-shadow: var(--shadow-md);
+}
+.celebration-card__kicker {
+  margin: 12px 0 2px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 800;
+}
+.celebration-card__title {
+  margin: 12px 0 4px;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.celebration-card__title--tight {
+  margin: 0 0 4px;
+  font-size: 22px;
+}
+.celebration-card__sub {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+.celebration-card__sub strong {
+  color: var(--accent);
+}
+.celebration-summary {
+  margin-top: 16px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 15%, transparent);
+  text-align: left;
+}
+.celebration-summary__row {
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding: 3px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.celebration-summary__plus {
+  color: var(--accent);
+  font-weight: 700;
+}
+
 /* Stronger frost for overlays / modals / sheets. */
 .glass-strong {
   background: var(--bg-glass);

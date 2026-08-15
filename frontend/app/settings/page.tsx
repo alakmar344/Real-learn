@@ -128,14 +128,6 @@ export default function SettingsPage() {
     };
   }, [isSignedIn, getToken]);
 
-  useEffect(() => {
-    try {
-      localStorage.setItem("reallearn-preferences-onboarding", "true");
-    } catch {
-      // ignore
-    }
-  }, []);
-
   // Navigation is a side effect — calling router.push during render is
   // illegal (React "Cannot update Router while rendering" error) and can
   // fire multiple times across re-renders.

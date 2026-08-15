@@ -262,10 +262,7 @@ export default function OnboardingWizard() {
       });
     } else {
       setPersonalization({ checklist: [], notes: "", goals: "", onboarded: true });
-      safeSetItem("reallearn-personalization-skipped", "true");
     }
-    // The wizard replaces the legacy first-login preference modal too.
-    safeSetItem("reallearn-preferences-onboarding", "true");
     goTo(5, "fwd");
   };
 
