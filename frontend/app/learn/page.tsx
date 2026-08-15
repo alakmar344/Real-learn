@@ -9,7 +9,6 @@ import ErrorState from "@/components/shared/ErrorState";
 import LiveRegion from "@/components/shared/LiveRegion";
 import ReadingProgressBar from "@/components/shared/ReadingProgressBar";
 import Footer from "@/components/shared/Footer";
-import FeedbackGate from "@/components/shared/FeedbackGate";
 import MathText from "@/components/shared/MathText";
 import { showToast } from "@/components/shared/ToastContainer";
 import { useLessonStore } from "@/store/lessonStore";
@@ -29,6 +28,9 @@ import { celebrationColors } from "@/lib/palette";
 // the learn shell — the loading cinematic, error and empty states hydrate
 // without it, and the chunk streams in alongside the lesson content.
 const PartCard = lazy(() => import("@/components/learning/PartCard"));
+// Same deferred treatment the homepage gives it — the gate is invisible on
+// first paint and shouldn't weigh down the learn shell bundle.
+const FeedbackGate = lazy(() => import("@/components/shared/FeedbackGate"));
 const CompletionScreen = lazy(() => import("@/components/learning/CompletionScreen"));
 const Flashcards = lazy(() => import("@/components/learning/Flashcards"));
 const FollowUpBox = lazy(() => import("@/components/learning/FollowUpBox"));
@@ -433,7 +435,7 @@ export default function LearnPage() {
         <div className="learn-topbar">
           <Navbar compact />
           <div className="learn-topbar__row">
-            <span className="learn-topbar__mode">{isFastMode ? "EXPLAIN" : "FAST"}</span>
+            <span className="learn-topbar__mode">{isFastMode ? "FAST" : "EXPLAIN"}</span>
             {/* The lesson question is the page's h1 (WCAG 1.3.1/2.4.6) —
                 visually styled as the compact header line it always was. */}
             <h1 className="learn-topbar__question" title={lesson.question ?? lesson.topic ?? ""}>
@@ -525,7 +527,11 @@ export default function LearnPage() {
           {/* Optional, anonymous review — appears the day after the first
               lesson on any return visit (not only at the moment of completion).
               Hidden while the completion screen is up to avoid a duplicate. */}
-          {!showCompletion && <FeedbackGate />}
+          {!showCompletion && (
+            <Suspense fallback={<SuspenseFallback />}>
+              <FeedbackGate />
+            </Suspense>
+          )}
         </div>
 
         {activePart ? (

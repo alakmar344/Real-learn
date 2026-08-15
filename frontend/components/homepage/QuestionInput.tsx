@@ -8,17 +8,13 @@ import MicButton from "@/components/shared/MicButton";
 import { usePreferenceStore } from "@/store/preferenceStore";
 import { useMounted } from "@/hooks/useMounted";
 import { warmupBackend } from "@/hooks/useLesson";
-import { LessonMode, Language } from "@/types";
+import { Language } from "@/types";
+import { LESSON_MODES as MODES } from "@/lib/lessonModes";
 
 const MAX_QUESTION_LENGTH = 1000;
 
 const URDU_PLACEHOLDER = "یہاں اپنا سوال لکھیں...";
 const RTL_LANGUAGES: Language[] = ["Urdu"];
-
-const MODES: { value: LessonMode; label: string; hint: string }[] = [
-  { value: "fast", label: "Explain", hint: "Quick, simple explanation in 1 part" },
-  { value: "explain", label: "Fast", hint: "Deep, detailed explanation in 3 parts" },
-];
 
 interface Props {
   question: string;

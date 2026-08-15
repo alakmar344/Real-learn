@@ -60,41 +60,21 @@ const caveat = Caveat({
 
 export const metadata: Metadata = {
   title: {
-    default: "RealLearn — vibe-check your knowledge, level up daily",
+    default: "RealLearn — The World Is Your Textbook",
     template: "%s | RealLearn",
   },
   description:
-    "RealLearn is an AI learning sidekick that turns any question into a 3-part lesson with quizzes, streaks, achievements, and text-to-speech. Ask anything, learn everything.",
+    "RealLearn turns any question into a structured 3-part lesson — Foundation, Mechanism, Real World — with quiz-gated progression, 12 Indian languages, and live news grounding.",
   applicationName: "RealLearn",
   category: "education",
+  // Kept deliberately short: search engines ignore stuffed keyword lists, and
+  // the "reallan" misspelling recovery lives in structured data + redirects.
   keywords: [
     "RealLearn",
-    "reallan",
-    "real learn",
-    "reallearn ai",
-    "RealLearn AI",
-    "AI learning platform",
-    "interactive education",
-    "personalized learning",
     "AI tutor",
-    "adaptive learning",
-    "knowledge discovery",
-    "quiz generator",
-    "progress tracking",
-    "educational technology",
-    "online learning",
-    "AI-powered education",
-    "lifelong learning",
-    "skill development",
-    "real-time feedback",
-    "gamified learning",
-    "achievement system",
-    "text-to-speech learning",
-    "accessible education",
-    "AI lesson generator",
-    "study assistant",
-    "Google Gemma 4 learning",
-    "multilingual AI tutor",
+    "AI learning platform",
+    "interactive lessons",
+    "quiz-gated learning",
     "Indian languages learning app",
   ],
   authors: [{ name: "RealLearn" }],
@@ -124,7 +104,7 @@ export const metadata: Metadata = {
     url: "https://reallearn.site",
     title: "RealLearn — AI-Powered Interactive Learning Platform",
     description:
-      "RealLearn (also found as 'reallan') transforms any question into a structured 3-part lesson with quizzes, progress tracking, achievements, and text-to-speech. Ask anything, learn everything.",
+      "RealLearn transforms any question into a structured 3-part lesson with quizzes, progress tracking, achievements, and text-to-speech. Ask anything, learn everything.",
     siteName: "RealLearn",
     images: [
       {
@@ -139,7 +119,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "RealLearn — AI-Powered Interactive Learning Platform",
     description:
-      "RealLearn (also found as 'reallan') transforms any question into a structured 3-part lesson with quizzes, progress tracking, achievements, and text-to-speech. Ask anything, learn everything.",
+      "RealLearn transforms any question into a structured 3-part lesson with quizzes, progress tracking, achievements, and text-to-speech. Ask anything, learn everything.",
     images: ["/og-image.png"],
   },
   robots: {

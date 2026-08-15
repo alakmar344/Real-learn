@@ -407,23 +407,6 @@ html::before {
   box-shadow: var(--glass-shadow), var(--glass-edge);
 }
 
-/* Specular sheen — signature liquid-glass light catch. */
-.liquid-sheen::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: var(--glass-sheen);
-  pointer-events: none;
-  z-index: 0;
-  mix-blend-mode: screen;
-}
-
-.liquid-sheen > * {
-  position: relative;
-  z-index: 1;
-}
-
 /* Smooth hover lift — calm, considered micro-interaction (not bouncy). */
 .glass-card,
 .glass-panel {
@@ -489,20 +472,10 @@ body::before {
    cards. Still Ink keeps surfaces quiet; these classes remain only so
    existing markup keeps valid stacking contexts.
    ═══════════════════════════════════════════════════════════════════════════ */
-.pattern-seigaiha,
-.pattern-asanoha,
-.pattern-shippo,
-.pattern-ichimatsu,
-.pattern-kikko,
-.shoji-screen {
+.pattern-seigaiha {
   position: relative;
 }
-.pattern-seigaiha > *,
-.pattern-asanoha > *,
-.pattern-shippo > *,
-.pattern-ichimatsu > *,
-.pattern-kikko > *,
-.shoji-screen > * {
+.pattern-seigaiha > * {
   position: relative;
   z-index: 1;
 }
@@ -567,18 +540,6 @@ html[data-theme="dark"] h4 {
 
 .cobalt-texture {
   position: relative;
-}
-
-/* ── Micro-label — the shared "technical voice" utility of the Olive Frenzy
-   amplification: mono, uppercase, letter-spaced. Use for kickers, meta rows,
-   counts, and any label that annotates rather than speaks. ── */
-.micro-label {
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-tertiary);
 }
 
 /* ── Ink border — solid bold border ── */
@@ -771,12 +732,6 @@ a:active {
   100% { opacity: 0; transform: scale(1.2); }
 }
 
-@keyframes unlockPop {
-   0% { transform: scale(0.7); }
-   50% { transform: scale(1.08); box-shadow: 0 0 40px var(--accent-glow); }
-   100% { transform: scale(1); }
- }
-
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
   15% { transform: translateX(-6px); }
@@ -816,32 +771,10 @@ a:active {
   100% { transform: translateY(110vh) rotate(720deg) scale(0.5); opacity: 0; }
 }
 
-@keyframes bounceIn {
-  0% { opacity: 0; transform: scale(0.3); }
-  50% { opacity: 1; transform: scale(1.08); }
-  70% { transform: scale(0.94); }
-  100% { opacity: 1; transform: scale(1); }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-12px); }
-}
-
 @keyframes gradientShift {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
-}
-
-@keyframes glowPulse {
-  0%, 100% { box-shadow: 0 0 12px var(--accent-glow), 0 0 24px var(--cobalt-wash); }
-  50% { box-shadow: 0 0 24px var(--accent-glow), 0 0 48px var(--cobalt-wash); }
-}
-
-@keyframes slideIn {
-  from { opacity: 0; transform: translateX(-24px); }
-  to { opacity: 1; transform: translateX(0); }
 }
 
 /* NOTE: a second, redundant copy of the keyframes above (slideFromBottom,
@@ -1088,22 +1021,10 @@ a:active {
   color: var(--wrong);
 }
 
-/* ── Easter-egg keyframes ── */
-@keyframes heartFloat {
-  0% { opacity: 0; transform: translateY(0) scale(0.5) rotate(0deg); }
-  12% { opacity: 1; }
-  100% { opacity: 0; transform: translateY(-55vh) scale(1.25) rotate(14deg); }
-}
-
 @keyframes gentleWave {
   0%, 100% { transform: rotate(0deg); }
   25% { transform: rotate(12deg); }
   75% { transform: rotate(-8deg); }
-}
-.animate-gentle-wave {
-  display: inline-block;
-  animation: gentleWave 1.6s ease-in-out;
-  transform-origin: 70% 70%;
 }
 
 /* ── Hero greeting — Apple-style, clean, confident ── */
@@ -1325,21 +1246,8 @@ a:active {
 .animate-slide-bottom { animation: slideFromBottom 500ms var(--ease-reveal) both; }
 .animate-accent-flash { animation: accentFlash 1000ms var(--ease-reveal) both; }
 .animate-glow-burst { animation: glowBurst 900ms var(--ease-reveal) both; }
-.animate-unlock-pop { animation: unlockPop 600ms var(--ease-spring) both; }
 .animate-shake { animation: shake 500ms var(--ease-reveal) both; }
 .animate-correct-pulse { animation: correctPulse 500ms var(--ease-spring) both; }
-.animate-bounce-in { animation: bounceIn 700ms var(--ease-spring) both; }
-.animate-float { animation: float 4s ease-in-out infinite; }
-.animate-glow-pulse { animation: glowPulse 3s ease-in-out infinite; }
-.animate-slide-in { animation: slideIn 500ms var(--ease-reveal) both; }
-.animate-gradient-shift {
-  background: var(--bg-card);
-}
-.animate-shimmer {
-  background: var(--bg-card);
-  animation: skeletonPulse 1.8s ease-in-out infinite;
-}
-.animate-spin { animation: spin 1.5s linear infinite; }
 
 /* ── Gen Z interaction utilities — springy, tactile, satisfying ── */
 
@@ -1373,14 +1281,6 @@ a:active {
 .ripple-container {
   position: relative;
   overflow: hidden;
-}
-
-/* Texture dots — subtle dot grid pattern for tactile feel */
-.texture-dots::before {
-  display: none;
-}
-.texture-lines::before {
-  display: none;
 }
 
 /* ── Engagement animations — refined, Apple-style ── */
@@ -2218,13 +2118,12 @@ html[data-perf="mid"] body::after {
 html[data-perf="mid"] body::before {
   content: none;
 }
-/* Ambient always-running animations (flame, pulsing dots, floats). */
+/* Ambient always-running animations (flame, pulsing dots). */
 html[data-perf="low"] .flame-flicker,
-html[data-perf="low"] .accent-pulse-dot,
-html[data-perf="low"] .animate-float,
-html[data-perf="low"] .animate-glow-pulse {
+html[data-perf="low"] .accent-pulse-dot {
   animation: none !important;
 }
+
 /* Locked-part obfuscation without the blur. */
 html[data-perf="low"] .part-locked-content {
   filter: none;
@@ -2311,10 +2210,6 @@ html[data-perf="high"] {
     scroll-behavior: auto !important;
   }
 }
-
-/* (heartFloat, gentleWave and .animate-gentle-wave are defined once, higher up
-   in the Easter-egg keyframes section — the redundant second copies that used
-   to sit here were removed.) */
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Typography & reading rhythm
@@ -3058,33 +2953,6 @@ p {
 .scroll-top:active {
   transform: translateY(0) scale(0.94);
   transition: transform 120ms var(--ease-color);
-}
-
-/* ── Kusari divider ── */
-.kusari {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  padding: var(--space-lg) 0;
-  color: var(--border-default);
-  border: none;
-  margin: 0;
-  background: transparent;
-}
-.kusari::before,
-.kusari::after {
-  content: "";
-  flex: 1;
-  height: 2px;
-  background: var(--border-default);
-}
-.kusari__bead {
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
-  background: var(--accent);
-  transform: rotate(45deg);
 }
 
 /* ── Focus ring parity ── ensure keyboard focus is always visible and
@@ -5825,6 +5693,13 @@ p {
 .progress-hub__daily--met {
   color: var(--correct);
 }
+/* On very small phones the streak + ring carry the story; the numeric
+   daily-goal chip is noise at that width (was a styled-jsx one-off). */
+@media (max-width: 420px) {
+  .progress-hub__daily {
+    display: none;
+  }
+}
 /* ── Sidebar anatomy — borderless drawer rows, CSS-only hover states ── */
 .app-sidebar__head {
   padding: 20px 20px 16px;
@@ -6479,29 +6354,6 @@ html[data-theme="light"] {
   --shadow-elegant-lg: 0 12px 24px rgba(31, 35, 24, 0.04), 0 32px 64px rgba(31, 35, 24, 0.08);
 }
 
-/* ── Atmospheric spotlight ── a single, slow-moving radial wash that gives
-   the page quiet depth without competing with content. Transform-only. */
-.ambient-spotlight {
-  position: fixed;
-  inset: -20%;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(80vmax 80vmax at 20% 20%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 65%),
-    radial-gradient(70vmax 70vmax at 80% 80%, color-mix(in srgb, var(--accent-companion) 6%, transparent), transparent 60%);
-  opacity: 0.8;
-  animation: spotlightDrift 60s ease-in-out infinite alternate;
-  contain: layout style paint;
-}
-@keyframes spotlightDrift {
-  from { transform: translate3d(-2%, -2%, 0) scale(1); }
-  to { transform: translate3d(2%, 2%, 0) scale(1.06); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .ambient-spotlight { animation: none; }
-}
-html[data-perf="low"] .ambient-spotlight { display: none; }
-
 /* ── Refined focus ring ── consistent, calm, accessible across all themes. */
 :focus-visible {
   outline: 2px solid var(--accent);
@@ -6676,15 +6528,6 @@ html[data-perf="low"] .ambient-spotlight { display: none; }
    The "frenzy" is kinetic composition: oversized script cutting through
    rigid geometry, one moving ticker line, asymmetric tilt. The minimalism
    survives because everything functional stays on the geometric sans. */
-
-/* Expressive script display — decorative Latin-only moments. Never use for
-   buttons, nav, metrics, or lesson prose (multilingual + legibility). */
-.script-display {
-  font-family: var(--font-script), cursive;
-  font-weight: 600;
-  letter-spacing: 0;
-  line-height: 1;
-}
 
 /* Kinetic ticker bar — a single thin motion line between stark dividers.
    Transform-only marquee (cheap); duplicated track for a seamless loop. */

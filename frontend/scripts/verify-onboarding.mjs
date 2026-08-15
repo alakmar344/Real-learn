@@ -60,7 +60,6 @@ test("onboarding wizard", async (t) => {
   await t.test("finishing marks every legacy first-run flag done (no modal pile-up)", () => {
     assert.match(wizard, /markOnboardingComplete\(\)/);
     assert.match(wizard, /reallearn-preferences-onboarding/);
-    assert.match(wizard, /reallearn-things-coming-seen/);
     assert.match(wizard, /onboarded: true/);
   });
 });

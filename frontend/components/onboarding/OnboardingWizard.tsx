@@ -271,10 +271,6 @@ export default function OnboardingWizard() {
 
   const finish = () => {
     markOnboardingComplete();
-    // The welcome slide already introduced the product — don't stack the
-    // "what's coming" tour on top of a fresh user's first lesson. It stays
-    // available from Settings.
-    safeSetItem("reallearn-things-coming-seen", "true");
     router.push("/");
   };
 

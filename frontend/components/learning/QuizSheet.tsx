@@ -115,14 +115,19 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
   }, [open, handleTabTrap]);
 
   /* ── Escape to close ── */
+  // Escape ALWAYS closes (standard dialog behavior — the × button already
+  // allows it at any time, so gating Escape on !answered only trapped
+  // keyboard users after they picked an answer). Backdrop clicks stay
+  // guarded once an answer is selected so a stray tap can't dismiss the
+  // feedback the learner is reading.
   useEffect(() => {
     if (!open) return;
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !answered) onClose();
+      if (e.key === "Escape") onClose();
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
-  }, [open, answered, onClose]);
+  }, [open, onClose]);
 
   if (!open || !currentQuestion) return null;
 

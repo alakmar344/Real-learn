@@ -87,9 +87,9 @@ function ProgressHubImpl() {
           <span className="progress-hub__ring-level">{info.level}</span>
         </span>
 
-        {/* Daily goal mini-progress (hidden on very small screens via title only) */}
+        {/* Daily goal mini-progress (hidden on very small screens in globals.css) */}
         <span
-          className={`progress-hub-daily progress-hub__daily${todayCount >= dailyGoal ? " progress-hub__daily--met" : ""}`}
+          className={`progress-hub__daily${todayCount >= dailyGoal ? " progress-hub__daily--met" : ""}`}
         >
           {todayCount >= dailyGoal ? (
             <>
@@ -102,14 +102,6 @@ function ProgressHubImpl() {
 
         <span className="sr-only">{pct}%</span>
       </button>
-
-      <style jsx>{`
-        @media (max-width: 420px) {
-          .progress-hub-daily {
-            display: none;
-          }
-        }
-      `}</style>
     </>
   );
 }

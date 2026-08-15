@@ -1,7 +1,7 @@
 import { Theme } from "@/types";
 
 /**
- * Single source of truth for theme pickers (ThemeModal, Settings).
+ * Single source of truth for theme pickers (PreferenceModal, Settings).
  * Two themes: Paper (bright day) and Ink (dark night).
  * `bg` mirrors each theme's --bg-primary (used for the browser theme-color);
  * `swatch`/`accent` drive the picker preview.

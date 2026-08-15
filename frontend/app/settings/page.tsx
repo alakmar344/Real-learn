@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { UserButton, useAuth, useClerk } from "@clerk/nextjs";
-import { LessonMode } from "@/types";
+import { LESSON_MODES } from "@/lib/lessonModes";
 import ConfirmModal from "@/components/shared/ConfirmModal";
 import { showToast } from "@/components/shared/ToastContainer";
 import { usePreferenceStore } from "@/store/preferenceStore";
@@ -37,18 +37,7 @@ import {
 
 const THEMES = THEME_OPTIONS;
 
-const MODES: { value: LessonMode; label: string; hint: string }[] = [
-  {
-    value: "fast",
-    label: "Explain",
-    hint: "Quick, simple explanation in 1 part",
-  },
-  {
-    value: "explain",
-    label: "Fast",
-    hint: "Deep, detailed explanation in 3 parts",
-  },
-];
+const MODES = LESSON_MODES;
 
 const BACKEND_URL = (
   process.env.NEXT_PUBLIC_BACKEND_URL || "https://real-learn.onrender.com"
