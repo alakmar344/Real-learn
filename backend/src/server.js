@@ -259,6 +259,39 @@ async function scrubStoredConsentEmails() {
 // weaponize via the authenticated status endpoints — as the collections grow.
 // Runs in the background at startup; failures are non-fatal (queries still
 // work, just unindexed until the next boot retries).
+// Anonymous feedback ages out via TTL so the one unauthenticated Mongo writer
+// (/api/feedback) can't grow storage without bound under distributed spam.
+const DEFAULT_FEEDBACK_TTL_DAYS = 730;
+const configuredFeedbackTtlDays = Number(process.env.FEEDBACK_TTL_DAYS);
+const FEEDBACK_TTL_DAYS =
+  Number.isFinite(configuredFeedbackTtlDays) && configuredFeedbackTtlDays > 0
+    ? configuredFeedbackTtlDays
+    : DEFAULT_FEEDBACK_TTL_DAYS;
+const FEEDBACK_TTL_SECONDS = Math.round(FEEDBACK_TTL_DAYS * 24 * 60 * 60);
+const FEEDBACK_TTL_INDEX_NAME = "feedbackTtl";
+
+async function ensureFeedbackTtlIndex(db) {
+  const collection = db.collection("feedback");
+  try {
+    await collection.createIndex(
+      { createdAt: 1 },
+      { expireAfterSeconds: FEEDBACK_TTL_SECONDS, name: FEEDBACK_TTL_INDEX_NAME }
+    );
+  } catch (error) {
+    // Index exists with a different TTL — recreate so a changed
+    // FEEDBACK_TTL_DAYS takes effect (same pattern as moderationLogs).
+    if (error?.code === 85 || error?.codeName === "IndexOptionsConflict") {
+      await collection.dropIndex(FEEDBACK_TTL_INDEX_NAME);
+      await collection.createIndex(
+        { createdAt: 1 },
+        { expireAfterSeconds: FEEDBACK_TTL_SECONDS, name: FEEDBACK_TTL_INDEX_NAME }
+      );
+    } else {
+      throw error;
+    }
+  }
+}
+
 async function ensureUserDataIndexes() {
   try {
     const db = await getDb();
@@ -266,9 +299,12 @@ async function ensureUserDataIndexes() {
       db.collection("agreements").createIndex({ clerkId: 1, type: 1 }),
       db.collection("moderationLogs").createIndex({ clerkId: 1 }),
       db.collection("feedback").createIndex({ createdAt: -1 }),
+      ensureFeedbackTtlIndex(db),
       ensureLessonSearchIndexes(db),
     ]);
-    console.log("[startup] User-data indexes ensured");
+    console.log(
+      `[startup] User-data indexes ensured (feedback TTL ${FEEDBACK_TTL_DAYS} days)`
+    );
   } catch (error) {
     console.error("[startup] Failed to ensure user-data indexes", error?.message);
   }
@@ -783,6 +819,13 @@ function isOriginAllowed(origin) {
   return !!origin && allowedOrigins.includes(origin);
 }
 
+// Log injection guard: rejected user-controlled strings (Origin header,
+// language/level fields) get logged for diagnostics — strip control chars
+// and cap length so they can't forge lines in a plaintext log sink.
+function cleanForLog(value, maxChars = 200) {
+  return String(value ?? "").replace(/[\u0000-\u001f\u007f]/g, "").slice(0, maxChars);
+}
+
 // CORS and JSON body parsing MUST be registered before any route so that every
 // endpoint (including /api/agreement) receives CORS headers and a parsed body.
 app.use(
@@ -794,7 +837,7 @@ app.use(
       if (!origin || isOriginAllowed(origin)) {
         return callback(null, true);
       }
-      console.warn("[CORS] origin denied", { origin });
+      console.warn("[CORS] origin denied", { origin: cleanForLog(origin) });
       return callback(new Error("CORS origin denied"));
     },
     methods: ["POST", "OPTIONS", "GET", "DELETE"],
@@ -810,7 +853,7 @@ app.use(express.json({ limit: "100kb" }));
 function originGuard(req, res, next) {
   const origin = req.headers.origin;
   if (origin && !isOriginAllowed(origin)) {
-    console.warn("[origin] denied", { origin, path: req.path });
+    console.warn("[origin] denied", { origin: cleanForLog(origin), path: req.path });
     return res.status(403).json({ error: "Origin not allowed." });
   }
   next();
@@ -1635,11 +1678,17 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
   // to the values the app actually offers so they can't be used to smuggle
   // arbitrary instructions (prompt injection) past the question filters.
   if (!ALLOWED_LANGUAGES.has(language)) {
-    console.warn("[generate-lesson] Invalid language", { requestId, language });
+    console.warn("[generate-lesson] Invalid language", {
+      requestId,
+      language: cleanForLog(language),
+    });
     return res.status(400).json({ error: "Unsupported language." });
   }
   if (!ALLOWED_LEVELS.has(level)) {
-    console.warn("[generate-lesson] Invalid level", { requestId, level });
+    console.warn("[generate-lesson] Invalid level", {
+      requestId,
+      level: cleanForLog(level),
+    });
     return res.status(400).json({ error: "Unsupported level." });
   }
 
