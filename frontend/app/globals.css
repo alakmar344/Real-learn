@@ -4523,7 +4523,7 @@ p {
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Learn top bar — the compact lesson header under the navbar. One quiet
-   line: just the question, no boxed chrome.
+   line: the question plus the compact Fast / Explain mode pill.
    ═══════════════════════════════════════════════════════════════════════════ */
 .learn-topbar {
   position: sticky;
@@ -4542,6 +4542,26 @@ p {
   align-items: center;
   gap: 10px;
   min-width: 0;
+}
+/* The Fast / Explain chooser stays put and never crowds the question. */
+.learn-topbar__mode {
+  flex-shrink: 0;
+}
+/* Compact topbar variant of the homepage mode-glider. */
+.mode-glider--compact {
+  padding: 3px;
+}
+.mode-glider--compact .mode-glider__pill {
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+}
+.mode-glider--compact .mode-glider__option {
+  padding: 6px 12px;
+  min-width: 80px;
+  min-height: 0;
+  font-size: 13px;
+  font-weight: 600;
 }
 .learn-topbar__question {
   margin: 0;
