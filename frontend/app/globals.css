@@ -4522,8 +4522,8 @@ p {
    were verified unused and removed with the rest of the confetti layer. */
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   Learn top bar — the compact lesson header under the navbar. One quiet line:
-   mode pill + question, no boxed chrome.
+   Learn top bar — the compact lesson header under the navbar. One quiet
+   line: just the question, no boxed chrome.
    ═══════════════════════════════════════════════════════════════════════════ */
 .learn-topbar {
   position: sticky;
@@ -4542,18 +4542,6 @@ p {
   align-items: center;
   gap: 10px;
   min-width: 0;
-}
-.learn-topbar__mode {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 12px;
-  border-radius: var(--radius-pill);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: var(--accent);
-  background: var(--accent-dim);
-  flex-shrink: 0;
 }
 .learn-topbar__question {
   margin: 0;
@@ -5027,6 +5015,33 @@ p {
   flex-shrink: 0;
 }
 
+/* Legal hub — underline tabs for Privacy / Terms / Cookies */
+.legal-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 32px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.legal-tab {
+  padding: 12px 18px;
+  margin-bottom: -1px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--text-secondary);
+  border-bottom: 2px solid transparent;
+  transition: color var(--dur-base) var(--ease-color),
+    border-color var(--dur-base) var(--ease-color);
+}
+.legal-tab:hover {
+  color: var(--text-primary);
+}
+.legal-tab--active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
 /* Level orb + XP track (progress hero) */
 .level-hero {
   display: flex;
@@ -5228,8 +5243,8 @@ p {
   transform: translateX(-2px);
 }
 .settings-back__arrow {
-  font-size: 18px;
-  line-height: 1;
+  display: inline-flex;
+  align-items: center;
 }
 .settings-title {
   margin: 0 0 4px;

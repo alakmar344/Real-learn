@@ -352,7 +352,6 @@ export default function SettingsPage() {
         </button>
 
         <header className="page-hero">
-          <span className="section-overline">Make It Yours</span>
           <h1 className="page-hero__title">Settings</h1>
           <p className="page-hero__sub">Manage your account, data, and preferences.</p>
         </header>

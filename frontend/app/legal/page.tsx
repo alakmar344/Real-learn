@@ -3,6 +3,7 @@ import { TermsOfServiceContent } from "../legal/terms/content";
 import { CookiePolicyContent } from "../legal/cookies/content";
 import { Suspense } from "react";
 import { Metadata } from "next";
+import Link from "next/link";
 
 type SearchParams = Promise<{ tab?: string }>;
 
@@ -17,99 +18,41 @@ export const metadata: Metadata = {
   },
 };
 
+const TABS = [
+  { id: "privacy", label: "Privacy Policy" },
+  { id: "terms", label: "Terms of Service" },
+  { id: "cookies", label: "Cookie Policy" },
+] as const;
+
 export default async function LegalPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
-  const tab = params.tab || "privacy";
+  const tab = params.tab === "terms" || params.tab === "cookies" ? params.tab : "privacy";
+  const activeLabel = TABS.find((t) => t.id === tab)!.label;
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        color: "var(--text-primary)",
-        padding: "40px 24px",
-      }}
-    >
-      <div style={{ maxWidth: 800, margin: "0 auto" }}>
-        <h1
-          style={{
-            fontFamily: "var(--font-display)",
-            fontWeight: 800,
-            fontSize: 32,
-            marginBottom: 8,
-          }}
-        >
-          Legal
-        </h1>
-        <p style={{ color: "var(--text-secondary)", marginBottom: 32, fontSize: 14 }}>
-          Please review our policies before using RealLearn.
-        </p>
+    <main className="flow-page">
+      <div className="flow-page__inner flow-page__inner--narrow">
+        <header className="page-hero">
+          <h1 className="page-hero__title">Legal</h1>
+          <p className="page-hero__sub">Please review our policies before using RealLearn.</p>
+        </header>
 
-        <nav
-          aria-label="Legal documents"
-          style={{
-            display: "flex",
-            gap: 8,
-            marginBottom: 32,
-            borderBottom: "1px solid var(--border-subtle)",
-            paddingBottom: 0,
-            flexWrap: "wrap",
-          }}
-        >
-          <a
-            id="legal-tab-privacy"
-            href="/legal?tab=privacy"
-            aria-current={tab === "privacy" ? "page" : undefined}
-            style={{
-              padding: "12px 20px",
-              textDecoration: "none",
-              fontWeight: 600,
-              fontSize: 14,
-              borderBottom: tab === "privacy" ? "2px solid var(--accent)" : "2px solid transparent",
-              color: tab === "privacy" ? "var(--accent)" : "var(--text-secondary)",
-              marginBottom: -1,
-            }}
-          >
-            Privacy Policy
-          </a>
-          <a
-            id="legal-tab-terms"
-            href="/legal?tab=terms"
-            aria-current={tab === "terms" ? "page" : undefined}
-            style={{
-              padding: "12px 20px",
-              textDecoration: "none",
-              fontWeight: 600,
-              fontSize: 14,
-              borderBottom: tab === "terms" ? "2px solid var(--accent)" : "2px solid transparent",
-              color: tab === "terms" ? "var(--accent)" : "var(--text-secondary)",
-              marginBottom: -1,
-            }}
-          >
-            Terms of Service
-          </a>
-          <a
-            id="legal-tab-cookies"
-            href="/legal?tab=cookies"
-            aria-current={tab === "cookies" ? "page" : undefined}
-            style={{
-              padding: "12px 20px",
-              textDecoration: "none",
-              fontWeight: 600,
-              fontSize: 14,
-              borderBottom: tab === "cookies" ? "2px solid var(--accent)" : "2px solid transparent",
-              color: tab === "cookies" ? "var(--accent)" : "var(--text-secondary)",
-              marginBottom: -1,
-            }}
-          >
-            Cookie Policy
-          </a>
+        <nav aria-label="Legal documents" className="legal-tabs">
+          {TABS.map((t) => (
+            <Link
+              key={t.id}
+              id={`legal-tab-${t.id}`}
+              href={`/legal?tab=${t.id}`}
+              aria-current={tab === t.id ? "page" : undefined}
+              className={`legal-tab${tab === t.id ? " legal-tab--active" : ""}`}
+            >
+              {t.label}
+            </Link>
+          ))}
         </nav>
 
-        <Suspense fallback={<p style={{ color: "var(--text-secondary)" }}>Loading...</p>}>
-          <div
-            id={`legal-panel-${tab}`}
-            aria-label={tab === "cookies" ? "Cookie Policy" : tab === "terms" ? "Terms of Service" : "Privacy Policy"}
-          >
+        <Suspense fallback={<p className="settings-sub">Loading policy…</p>}>
+          <div id={`legal-panel-${tab}`} aria-label={activeLabel}>
             {tab === "cookies" ? (
               <CookiePolicyContent embedded />
             ) : tab === "terms" ? (

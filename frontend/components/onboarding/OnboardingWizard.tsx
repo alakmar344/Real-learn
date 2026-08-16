@@ -34,7 +34,6 @@ import {
   CURRENT_TERMS_VERSION,
   isConsentCurrent,
   readLegalConsent,
-  safeSetItem,
   syncLegalConsentToBackend,
   writeLegalConsent,
   type LegalConsentState,
@@ -202,6 +201,17 @@ export default function OnboardingWizard() {
       cancelled = true;
     };
   }, [isSignedIn, user?.id, getToken]);
+
+  // Browser Back from the Google screen can restore this page from the
+  // back/forward cache with oauthBusy still true — the button would read
+  // "Opening Google…" forever. pageshow(persisted) is that exact signal.
+  useEffect(() => {
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) setOauthBusy(false);
+    };
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, []);
 
   const goTo = useCallback((next: number, dir: "fwd" | "back") => {
     setDirection(dir);
@@ -485,6 +495,15 @@ export default function OnboardingWizard() {
                   <Icon name="arrow-right" size={16} aria-hidden="true" />
                 </button>
               </div>
+              {!canAcceptLegal && ageStatus !== "under13" && (
+                <p className="onboarding-footnote" aria-live="polite">
+                  {ageStatus === "unknown"
+                    ? "Add your date of birth to continue."
+                    : ageStatus === "minor" && !parentalAck
+                      ? "Tick both boxes above to continue."
+                      : "Tick the agreement box to continue."}
+                </p>
+              )}
             </>
           )}
 

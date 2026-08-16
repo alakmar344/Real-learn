@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { Icon } from "@/components/shared/icons";
 
 export const metadata: Metadata = {
   title: "Page not found",
@@ -19,7 +20,7 @@ export default function NotFound() {
           The page you are looking for does not exist or has been shifted in the cosmos.
         </p>
         <Link href="/" className="btn-primary not-found__cta">
-          <span aria-hidden="true">←</span>
+          <Icon name="arrow-left" size={16} aria-hidden="true" />
           Return to RealLearn
         </Link>
       </div>

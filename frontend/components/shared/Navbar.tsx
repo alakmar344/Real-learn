@@ -23,6 +23,9 @@ const NAV_ITEMS = [
 export default function Navbar({ compact = false }: Props) {
   const pathname = usePathname();
   const isHome = pathname === "/";
+  // /progress restates the hub's streak/level/goal in its own hero, and
+  // clicking the hub there is a no-op — keep the slot, drop the duplicate.
+  const onProgress = pathname?.startsWith("/progress") ?? false;
 
   return (
     <header className={`navbar${compact ? " navbar--compact" : ""}${isHome ? " navbar--home" : ""}`}>
@@ -55,7 +58,11 @@ export default function Navbar({ compact = false }: Props) {
           })}
         </nav>
 
-        <ProgressHub />
+        {onProgress ? (
+          <div className="progress-hub-placeholder" aria-hidden="true" />
+        ) : (
+          <ProgressHub />
+        )}
       </div>
     </header>
   );
