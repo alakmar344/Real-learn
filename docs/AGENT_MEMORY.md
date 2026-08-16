@@ -166,10 +166,10 @@ Available component classes (already implemented — use them):
 - Learning: `.part-card` (+ `.part-card__meta/tag/tool/title/intent/prose/footer/reading-*/veil/lock`;
   the `__num` ghost numeral was removed 2026-08-15),
   `.part-cta`, `.part-done-bar`, `.journey-rail` (+ `__step`, `__node`, `__connector`, `--solo`),
-  `.learn-topbar` (+ `__row`, `__question`, and `__mode` — the compact
-  Fast/Explain choosing pill, re-added 2026-08-16 as an interactive
-  `.mode-glider--compact` wired to the preference store, not the old
-  read-only badge), `.followup`, `.completion`
+  `.learn-topbar` (+ `__row`, `__question` — the Fast/Explain mode pill was
+  trialed on /learn 2026-08-16 as `.learn-topbar__mode` /
+  `.mode-glider--compact`, then removed again the same session as
+  unnecessary clutter on the learn page), `.followup`, `.completion`
   (+ `.suggest-pill`), `.progress-hub`
 - Quiz: `.quiz-sheet`, `.quiz-sheet__panel`, `.quiz-sheet__close`, `.quiz-sheet__action`,
   `.quiz-question`, `.quiz-question__option`, `.quiz-question__badge`, `.quiz-question__explanation`
