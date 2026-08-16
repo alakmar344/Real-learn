@@ -166,7 +166,11 @@ Available component classes (already implemented — use them):
 - Learning: `.part-card` (+ `.part-card__meta/tag/tool/title/intent/prose/footer/reading-*/veil/lock`;
   the `__num` ghost numeral was removed 2026-08-15),
   `.part-cta`, `.part-done-bar`, `.journey-rail` (+ `__step`, `__node`, `__connector`, `--solo`),
-  `.learn-topbar`, `.followup`, `.completion` (+ `.suggest-pill`), `.progress-hub`
+  `.learn-topbar` (+ `__row`, `__question`, and `__mode` — the compact
+  Fast/Explain choosing pill, re-added 2026-08-16 as an interactive
+  `.mode-glider--compact` wired to the preference store, not the old
+  read-only badge), `.followup`, `.completion`
+  (+ `.suggest-pill`), `.progress-hub`
 - Quiz: `.quiz-sheet`, `.quiz-sheet__panel`, `.quiz-sheet__close`, `.quiz-sheet__action`,
   `.quiz-question`, `.quiz-question__option`, `.quiz-question__badge`, `.quiz-question__explanation`
 - Loading / error: `.loading-cinematic`, `.loading-cinematic__progress`, `.loading-cinematic__steps`,
@@ -175,7 +179,9 @@ Available component classes (already implemented — use them):
 - Decorative: `.engraved`, `.identity-texture`, `.texture-noise`
   (`.kusari`, `.liquid-sheen`, `.texture-dots` were removed 2026-08-15 —
   defined for months, never referenced by any component)
-- Misc: `.scroll-top`, `.hero-greeting`, `.hero-greeting-icon`, `.app-footer`
+- Misc: `.scroll-top`, `.hero-greeting`, `.hero-greeting-icon`, `.app-footer`,
+  `.legal-tabs` + `.legal-tab` (+ `--active`) — the /legal hub tab nav
+  (moved off inline styles 2026-08-16)
 - Page shells: `.flow-page` (+ `__inner`, `__inner--narrow`), `.page-column` (+ `--center`),
   `.flow-stack`, `.duo-grid`, `.stat-band`, `.flow-gap`, `.flow-gap-lg`, `.auth-canvas`,
   `.learn-container` (+ `--loading`), `.learn-empty` (+ `__title`, `__sub`)
@@ -1115,3 +1121,13 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
   - **Buttons / UX laws:** `.btn-primary` 15px×28px/52px/800 → 12px×24px/48px/700 (+`-0.01em` tracking); `.btn-ghost` min-height 44px (touch-target floor kept per Fitts); `.btn-icon` no hover scale-up (controls don't wander under the cursor). All interaction transitions compressed from 300–420ms springs to 150–180ms (Doherty threshold); hover lifts capped at 1px; every glow bloom (`0 0 16–32px var(--accent-glow)`, `--shadow-glow-accent` on keys, `--glow-soft` card halos) replaced with one honest shadow step. The tactile key system (bevel + hard edge + press) is kept, glow-free. Large in-flow cards (`.part-card`, `.hero-glass-card`) no longer translate on hover.
   - **Fast-scroll fix:** new last-in-file override strips `backdrop-filter` from all SCROLLED content surfaces (`.part-card`, `.flashcards`, `.followup`, `.completion`, `.resume-card`, `.q-form`, `.journey-rail`, `.hero-glass-card`, `.stat-tile-2026`, `.progress-hub`, `.progress-hero-card`, `.settings-panel-glass`, `.auth-glass-card`, `.glass/-card/-panel`) — the per-card, per-frame re-composite was the fast-scroll stutter; fixed chrome (navbar, learn-topbar, sidebar, bottom-nav, quiz sheet, modals, scrims) keeps frost at reduced radii (`--glass-blur` 16→10px, `--glass-blur-strong` 24→16px, saturate 140→120%). Scroll-driven `rise-in` view-timeline entrances on every card removed (continuous re-raster during fast scrolls). Perf-tier/Firefox rules for now-dead layers (aurora drift freeze, blend-mode grain, flame) pruned.
   - **Verified:** `tsc --noEmit` clean, lint 0 errors (18 pre-existing warnings), `next build` clean (14 routes), all eight `verify:*` scripts pass. Updated docs: `docs/AGENT_MEMORY.md` (§1 design language, §5 class lists, §13), `docs/REDESIGN.md`, `change-made-after-submission.md`.
+
+- 2026-08-16 — **Header declutter + security hardening pass.** §5 updated:
+  `.learn-topbar__mode` pill removed; `.legal-tabs`/`.legal-tab` added (the
+  /legal hub now rides the design system). The `.section-overline` labels
+  were dropped from the /progress and /settings page heroes (title + subline
+  only), and the Navbar renders the `progress-hub-placeholder` instead of
+  the ProgressHub widget on /progress (the page restates those stats in its
+  own hero). Backend: input moderation fails closed, `feedback` gets a TTL
+  index (`FEEDBACK_TTL_DAYS`, default 730), user-controlled log fields are
+  control-char-stripped (`cleanForLog`).

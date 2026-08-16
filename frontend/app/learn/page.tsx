@@ -21,6 +21,7 @@ import { Skeleton, SkeletonCard } from "@/components/shared/Skeleton";
 import { triggerHaptic } from "@/lib/haptics";
 import { LessonJourney, LessonPart } from "@/types";
 import { useShallow } from "zustand/shallow";
+import { LESSON_MODES as MODES } from "@/lib/lessonModes";
 
 // PartCard pulls in the full react-markdown + remark/rehype + KaTeX toolchain
 // (the bulk of the /learn route JS). Code-splitting it keeps that chain out of
@@ -108,6 +109,8 @@ export default function LearnPage() {
 
   const language = usePreferenceStore((s) => s.language);
   const level = usePreferenceStore((s) => s.level);
+  const prefMode = usePreferenceStore((s) => s.mode);
+  const setMode = usePreferenceStore((s) => s.setMode);
 
   const saveJourney = useSavedJourneysStore((s) => s.saveJourney);
 
@@ -118,7 +121,6 @@ export default function LearnPage() {
   const { generateLesson, restart } = useLesson();
 
   const totalParts = lesson?.parts?.length ?? 3;
-  const isFastMode = totalParts === 1;
 
   const totalScore = useMemo(() => {
     return Object.values(partScores).reduce<number>(
@@ -131,6 +133,12 @@ export default function LearnPage() {
   // client render mismatches the SSR HTML (which always has the defaults)
   // and triggers a React hydration failure. Gate on mount instead.
   const mounted = useMounted();
+
+  // The preference store is persisted: gate on mount like the rest of the
+  // page so the pill renders the SSR default ("fast") first, then settles on
+  // the user's saved choice without a hydration mismatch.
+  const mode = mounted ? prefMode : "fast";
+  const activeIndex = MODES.findIndex((m) => m.value === mode);
 
   useEffect(() => {
     if (!mounted) return;
@@ -420,7 +428,39 @@ export default function LearnPage() {
         <div className="learn-topbar">
           <Navbar compact />
           <div className="learn-topbar__row">
-            <span className="learn-topbar__mode">{isFastMode ? "FAST" : "EXPLAIN"}</span>
+            {/* Fast / Explain choosing pill — the same sliding glider as the
+                homepage, compacted for the topbar (WCAG 1.3.1/4.1.2). Selecting
+                a mode here is persisted and steers the next lesson. */}
+            <div
+              role="radiogroup"
+              aria-label="Answer mode"
+              className="mode-glider mode-glider--compact learn-topbar__mode"
+            >
+              <span
+                aria-hidden="true"
+                className="mode-glider__pill"
+                style={{
+                  width: `calc((100% - 6px) / ${MODES.length})`,
+                  transform: `translateX(calc(${activeIndex} * 100%))`,
+                }}
+              />
+              {MODES.map((opt) => {
+                const active = mode === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    title={opt.hint}
+                    onClick={() => setMode(opt.value)}
+                    className={`mode-glider__option${active ? " mode-glider__option--active" : ""}`}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
             {/* The lesson question is the page's h1 (WCAG 1.3.1/2.4.6) —
                 visually styled as the compact header line it always was. */}
             <h1 className="learn-topbar__question" title={lesson.question ?? lesson.topic ?? ""}>

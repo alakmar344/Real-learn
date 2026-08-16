@@ -222,21 +222,20 @@ export async function moderateText(text, kind = "input") {
     verdictCacheSet(cacheKey, allowedResult);
     return allowedResult;
   } catch (error) {
-    if (kind === "output") {
-      console.error("[moderation] Output check error; failing closed", {
-        kind,
-        error: error?.message,
-      });
-      return {
-        allowed: false,
-        reason: "Safety review could not be completed. Please try again.",
-      };
-    }
-    console.warn("[moderation] Input check error; failing open", {
+    // Fail closed on BOTH paths. The checks here are synchronous library
+    // calls, so an error is a deterministic bug for this specific text —
+    // blocking it beats silently admitting unmoderated input to the model.
+    console.error("[moderation] Check error; failing closed", {
       kind,
       error: error?.message,
     });
-    return { allowed: true };
+    return {
+      allowed: false,
+      reason:
+        kind === "output"
+          ? "Safety review could not be completed. Please try again."
+          : "Safety review could not be completed. Please try rephrasing your question.",
+    };
   }
 }
 

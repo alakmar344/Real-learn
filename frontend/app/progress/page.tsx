@@ -108,7 +108,6 @@ export default function ProgressPage() {
 
       <div className="flow-page__inner">
         <header className="page-hero">
-          <span className="section-overline">Your Journey</span>
           <h1 className="page-hero__title">Progress</h1>
           <p className="page-hero__sub">Every quiz you pass builds this — at your own pace.</p>
         </header>
