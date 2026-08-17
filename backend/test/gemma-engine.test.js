@@ -117,7 +117,7 @@ test("healthy primary wins without touching the fallback", async () => {
     fallbackCalls += 1;
     return okResponse("fallback-answer");
   };
-  const text = await callGemma("sys", "user", false, 0.5, 5000);
+  const text = await callGemma("sys", "user", 0.5, 5000);
   assert.equal(text, "primary-answer");
   assert.equal(fallbackCalls, 0);
 });
@@ -141,7 +141,7 @@ test("slow primary is hedged: nvidia launches in parallel and wins", async () =>
       }
     });
   const startedAt = Date.now();
-  const text = await callGemma("sys", "user", false, 0.5, 5000);
+  const text = await callGemma("sys", "user", 0.5, 5000);
   assert.equal(text, "fast-nvidia");
   // hedge delay (300ms) + nvidia latency (20ms) + slack — never the 3s primary
   assert.ok(Date.now() - startedAt < 1000);
@@ -153,7 +153,7 @@ test("failing primary triggers immediate fail-fast nvidia (no hedge wait)", asyn
     if (isNvidia) return okResponse("nvidia-answer");
     return okResponse("cloudflare-answer");
   };
-  const text = await callGemma("sys", "user", false, 0.5, 5000);
+  const text = await callGemma("sys", "user", 0.5, 5000);
   assert.equal(text, "nvidia-answer");
 });
 
@@ -169,7 +169,7 @@ test("nvidia rotates to the next model on 429", async () => {
     }
     return okResponse("rotated-answer");
   };
-  const text = await callGemma("sys", "user", false, 0.5, 5000);
+  const text = await callGemma("sys", "user", 0.5, 5000);
   assert.equal(text, "rotated-answer");
   assert.deepEqual(seenModels, [
     "google/gemma-4-31b-it",
@@ -181,7 +181,7 @@ test("nvidia rotates to the next model on 429", async () => {
 
 test("total outage opens both circuits and surfaces a retryable error", async () => {
   scenario = async () => jsonResponse({ errors: [{ message: "dead" }] }, 500);
-  await assert.rejects(() => callGemma("sys", "user", false, 0.5, 5000));
+  await assert.rejects(() => callGemma("sys", "user", 0.5, 5000));
   const snapshot = getProviderHealthSnapshot();
   assert.equal(snapshot.cerebras.circuitOpen, true);
   assert.equal(snapshot.nvidia.circuitOpen, true);
@@ -190,7 +190,7 @@ test("total outage opens both circuits and surfaces a retryable error", async ()
 
 test("open circuits still half-open-probe instead of refusing outright", async () => {
   scenario = async () => jsonResponse({ errors: [{ message: "dead" }] }, 500);
-  await assert.rejects(() => callGemma("sys", "user", false, 0.5, 5000));
+  await assert.rejects(() => callGemma("sys", "user", 0.5, 5000));
 
   // Provider recovers — the next call must probe it, not throw CircuitOpen.
   let probed = 0;
@@ -198,7 +198,7 @@ test("open circuits still half-open-probe instead of refusing outright", async (
     probed += 1;
     return sseResponse(null, [{ at: 0, data: sseChunk("recovered") }]);
   };
-  const text = await callGemma("sys", "user", false, 0.5, 5000);
+  const text = await callGemma("sys", "user", 0.5, 5000);
   assert.equal(text, "recovered");
   assert.equal(probed, 1);
 });
@@ -217,7 +217,7 @@ test("hedge is SKIPPED while the leader is streaming (no fallback spend)", async
     fallbackCalls += 1;
     return okResponse("should-never-run");
   };
-  const text = await callGemma("sys", "user", false, 0.5, 5000);
+  const text = await callGemma("sys", "user", 0.5, 5000);
   assert.equal(text, "slow but alive");
   assert.equal(fallbackCalls, 0);
 });
@@ -230,7 +230,7 @@ test("silence watchdog kills a stalled stream fast (retryable 408)", async () =>
       // One chunk, then silence forever — never closes.
       sseResponse(opts.signal, [{ at: 5, data: sseChunk("hi") }], { close: false });
     const startedAt = Date.now();
-    await assert.rejects(() => callGemma("sys", "user", false, 0.5, 60000));
+    await assert.rejects(() => callGemma("sys", "user", 0.5, 60000));
     // Both providers × 2 attempts, each killed by the ~100ms watchdog plus
     // small backoffs — nowhere near the 60s per-attempt timeout.
     assert.ok(Date.now() - startedAt < 5000, "watchdog should fire in ms, not seconds");
@@ -255,7 +255,7 @@ test("thinking knob is passed to nvidia by default", async () => {
       payloads.nvidia = body;
       return okResponse("fast-answer");
     };
-    const text = await callGemma("sys", "user", false, 0.5, 5000);
+    const text = await callGemma("sys", "user", 0.5, 5000);
     assert.equal(text, "fast-answer");
     assert.equal(payloads.cerebras.chat_template_kwargs, undefined);
     assert.deepEqual(payloads.nvidia.chat_template_kwargs, {
@@ -280,7 +280,7 @@ test("caller abort propagates as AbortError", async () => {
   const controller = new AbortController();
   setTimeout(() => controller.abort(), 30);
   await assert.rejects(
-    () => callGemma("sys", "user", false, 0.5, 5000, controller.signal),
+    () => callGemma("sys", "user", 0.5, 5000, controller.signal),
     (error) => error.name === "AbortError"
   );
 });

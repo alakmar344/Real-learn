@@ -37,6 +37,12 @@ interface ProgressState {
   dailyCountDay: string | null;
   dailyGoalsMet: number;
   dailyGoalMetDay: string | null;
+  /**
+   * Length of the current run of CONSECUTIVE days the daily goal was reached
+   * (a freeze-bridged day breaks this run even though the streak survives).
+   * Drives streak-freeze replenishment — see recordPartPassed.
+   */
+  goalDayRun: number;
 
   lessonsCompleted: number;
   /** Epoch ms of the user's very first completed lesson (set once, never moved). */
@@ -137,17 +143,27 @@ function normalizeDaily(s: ProgressState, today: string): { dailyCount: number }
   return { dailyCount: s.dailyCount };
 }
 
+/**
+ * Streak-freeze economy: users start with (and can bank at most) 2 freezes.
+ * EARN RULE: +1 freeze — capped at this max — for every 7 consecutive days
+ * the daily goal is reached, so the "streak freeze protects you" promise
+ * doesn't permanently break once the starting pair is spent.
+ */
+const MAX_STREAK_FREEZES = 2;
+const FREEZE_EARN_RUN_DAYS = 7;
+
 const initialEngagement = {
   xp: 0,
   streak: 0,
   longestStreak: 0,
   lastActiveDay: null as string | null,
-  streakFreezes: 2,
+  streakFreezes: MAX_STREAK_FREEZES,
   dailyGoal: 3,
   dailyCount: 0,
   dailyCountDay: null as string | null,
   dailyGoalsMet: 0,
   dailyGoalMetDay: null as string | null,
+  goalDayRun: 0,
   lessonsCompleted: 0,
   firstLessonCompletedAt: null as number | null,
   partsPassed: 0,
@@ -262,7 +278,21 @@ export const useProgressStore = create<ProgressState>()(
             const streakRes = resolveStreak(prev.lastActiveDay, prev.streak, prev.streakFreezes, today);
             draft.streak = streakRes.streak;
             draft.longestStreak = Math.max(prev.longestStreak, streakRes.streak);
-            draft.streakFreezes = prev.streakFreezes - streakRes.freezesUsed;
+            // Consecutive-goal-day run: extends only on a clean day-over-day
+            // advance. A broken streak OR a freeze-bridged gap means the goal
+            // was NOT reached every day, so the earn run restarts at 1 (today).
+            const cleanAdvance =
+              streakRes.advanced && !streakRes.broken && streakRes.freezesUsed === 0 && prev.lastActiveDay !== null;
+            draft.goalDayRun = streakRes.advanced ? (cleanAdvance ? prev.goalDayRun + 1 : 1) : prev.goalDayRun;
+            // EARN RULE: every FREEZE_EARN_RUN_DAYS consecutive goal days
+            // replenishes one streak freeze, capped at MAX_STREAK_FREEZES.
+            // Gated on `advanced` so a non-advancing day (clock skew) can
+            // never re-award for the same run length.
+            let nextFreezes = prev.streakFreezes - streakRes.freezesUsed;
+            if (streakRes.advanced && draft.goalDayRun % FREEZE_EARN_RUN_DAYS === 0) {
+              nextFreezes = Math.min(MAX_STREAK_FREEZES, nextFreezes + 1);
+            }
+            draft.streakFreezes = nextFreezes;
             draft.lastActiveDay = today;
             draft.dailyGoalsMet = prev.dailyGoalsMet + 1;
             draft.dailyGoalMetDay = today;
@@ -349,7 +379,17 @@ export const useProgressStore = create<ProgressState>()(
     }),
     {
       name: "reallearn-progress",
-      version: 1,
+      version: 2,
+      // v1 → v2: adds the `goalDayRun` counter behind freeze replenishment.
+      // Existing users start the earn run fresh (0) — we can't reconstruct
+      // which past streak days were freeze-bridged.
+      migrate: (persisted) => {
+        const state = persisted as Partial<ProgressState> | undefined;
+        return {
+          ...state,
+          goalDayRun: typeof state?.goalDayRun === "number" ? state.goalDayRun : 0,
+        } as Omit<ProgressState, "celebrations">;
+      },
       // Perf: defer serialization + write off the click path (see lib/debouncedStorage).
       storage: createDebouncedStorage<Omit<ProgressState, "celebrations">>(),
       // Never persist the transient celebration queue.

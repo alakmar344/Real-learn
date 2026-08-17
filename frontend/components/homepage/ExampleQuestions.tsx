@@ -3,19 +3,20 @@
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/shared/icons";
 
-/* Questions from THEIR world — algorithms, games, money, brains, internet
-   culture — each one a real lesson in disguise (CS, econ, bio, physics…). */
+/* Questions from the learner's world — algorithms, games, money, brains,
+   internet culture — each one a real lesson in disguise (CS, econ, bio,
+   physics…). Plain, curious phrasing; no slang, no textbook titles. */
 const RECOMMENDATIONS = [
-  "how does the FYP know me better than my bestie?",
-  "why is everything so expensive rn?",
-  "can AI actually think or is it just guessing?",
-  "what does doomscrolling do to my brain?",
-  "how do black holes bend time?",
-  "how do speedrunners break games with physics?",
-  "why do memes spread like viruses?",
-  "what happens in my brain at 3am?",
-  "how do sneaker resellers make bank from hype?",
-  "why can't we just print more money?",
+  "How does my feed decide what I see?",
+  "Why does everything keep getting more expensive?",
+  "Can AI actually think, or is it just predicting words?",
+  "What does endless scrolling do to my brain?",
+  "How do black holes bend time?",
+  "How do speedrunners break games with physics?",
+  "Why do memes spread like viruses?",
+  "What happens in my brain at 3am?",
+  "Why do limited-edition sneakers sell for so much?",
+  "Why can't we just print more money?",
 ];
 
 interface Props {

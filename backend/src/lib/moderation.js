@@ -5,7 +5,11 @@ import { filterText } from "better-profane-words";
 import { containsHarmfulContent } from "./contentGuard.js";
 
 const MAX_MODERATION_INPUT_CHARS = 12000;
-const MAX_MODERATION_OUTPUT_CHARS = 60000;
+// Moderation is synchronous regex/dictionary work that runs on the event
+// loop, so this cap bounds how long one pass can block it. A full lesson is
+// only a few KB of text; 20k chars comfortably covers the largest legitimate
+// output while keeping a pathological payload's scan time bounded.
+const MAX_MODERATION_OUTPUT_CHARS = 20000;
 
 const DEFAULT_MODERATION_CACHE_TTL_MS = 15 * 60 * 1000;
 const configuredCacheTtlMs = Number(process.env.MODERATION_CACHE_TTL_MS);
@@ -147,23 +151,12 @@ function containsUnsafeContent(text, { kind = "input", canonical = false } = {})
   return result.matched.some(isNonTopicMatch);
 }
 
-function sanitizeContent(text) {
-  if (!text || typeof text !== "string") return text;
-  let cleaned = profanityFilter.clean(text);
-  cleaned = filterText(cleaned, { minIntensity: TEEN_MIN_INTENSITY }).clean;
-  return cleaned;
-}
-
 function getUserInputBlockReason() {
   return "Your question appears to contain content that violates our community guidelines. Please rephrase your request.";
 }
 
 function getAIResponseBlockReason() {
   return "The generated content was flagged for review. Please try a different question or rephrase your request.";
-}
-
-export function sanitizeText(text) {
-  return sanitizeContent(text);
 }
 
 // ── Main Entry Point ────────────────────────────────────────────────────────

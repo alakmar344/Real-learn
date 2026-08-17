@@ -779,18 +779,9 @@ a:active {
   to { transform: translateY(0) scale(1); }
 }
 
-@keyframes accentFlash {
-  0% { background: transparent; box-shadow: 0 0 0 transparent; }
-  50% { background: var(--accent-dim); box-shadow: 0 0 60px var(--accent-glow); }
-  100% { background: transparent; box-shadow: 0 0 0 transparent; }
-}
-
-@keyframes glowBurst {
-  0% { opacity: 0; transform: scale(0.6); }
-  30% { opacity: 0.45; transform: scale(1); }
-  60% { opacity: 0.2; transform: scale(1.1); }
-  100% { opacity: 0; transform: scale(1.2); }
-}
+/* accentFlash + glowBurst (the full-viewport quiz-pass flashes) were removed
+   2026-08-17 — a 1s whole-screen accent strobe was a WCAG 2.3.1 concern.
+   The unlock celebration is now the localized .unlock-fx (see its section). */
 
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
@@ -1148,11 +1139,6 @@ a:active {
   white-space: normal;
   word-break: break-word;
 }
-/* The hero greeting is centered — center its chapter-marker bar too (the
-   block-level ::after otherwise pins to the stage's far left edge). */
-.hero__title::after {
-  margin-inline: auto;
-}
 @media (min-width: 1024px) {
   .hero__title {
     font-size: clamp(40px, 4vw, 56px);
@@ -1292,8 +1278,6 @@ a:active {
 /* ── Animation utilities — Apple-style, smooth, springy ── */
 .animate-fade-up { animation: fadeUp 600ms var(--ease-reveal) both; }
 .animate-slide-bottom { animation: slideFromBottom 500ms var(--ease-reveal) both; }
-.animate-accent-flash { animation: accentFlash 1000ms var(--ease-reveal) both; }
-.animate-glow-burst { animation: glowBurst 900ms var(--ease-reveal) both; }
 .animate-shake { animation: shake 500ms var(--ease-reveal) both; }
 .animate-correct-pulse { animation: correctPulse 500ms var(--ease-spring) both; }
 
@@ -1405,11 +1389,6 @@ a:active {
   letter-spacing: var(--tracking-tight);
   border-bottom: 2px solid var(--border-glow);
   padding-bottom: 10px;
-}
-/* The border-bottom above IS this heading's rule — the global h2::after
-   chapter marker doubled it up. */
-.markdown-content h2::after {
-  display: none;
 }
 
 .markdown-content h3 {
@@ -2235,13 +2214,18 @@ html[data-perf="high"] {
    Typography & reading rhythm
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Editorial heading treatment — a thin accent rule sits just
-   below the text like a chapter marker in a hand-bound book, with generous
-   breathing room for a considered reading pace. */
+/* Editorial heading treatment — a thin accent rule sits just below the text
+   like a chapter marker. Opt-in: the old bare h1/h2 rule stamped EVERY
+   heading app-wide (settings sections, legal pages, onboarding titles) and
+   forced opt-outs. Apply .heading-rule, or ride one of the page-title
+   classes below that want it by design. */
 h1, h2, h3 {
   position: relative;
 }
-h1::after, h2::after {
+.heading-rule::after,
+.hero__title::after,
+.page-hero__title::after,
+.part-card__title::after {
   content: "";
   display: block;
   width: 40px;
@@ -2250,8 +2234,19 @@ h1::after, h2::after {
   border-radius: 2px;
   margin-top: 10px;
 }
-h1::after { width: 56px; margin-top: 12px; opacity: 0.85; }
-h3::after { display: none; }
+/* h1-scale page titles carry a slightly longer bar. */
+h1.heading-rule::after,
+.hero__title::after,
+.page-hero__title::after {
+  width: 56px;
+  margin-top: 12px;
+  opacity: 0.85;
+}
+/* Centered headings center their bar (a block ::after pins left otherwise). */
+.heading-rule--center::after,
+.hero__title::after {
+  margin-inline: auto;
+}
 
 h1, h2 {
   letter-spacing: var(--tracking-tight);
@@ -2528,6 +2523,7 @@ p {
   font-weight: 700;
   letter-spacing: 0.01em;
   color: var(--on-accent);
+  text-decoration: none; /* also worn by links */
   /* One confident accent press — structured olive-family gradient with a
      solid accent underneath as the paint fallback. No transparent border
      rim: the gradient paints edge-to-edge so the sides stay clean. */
@@ -2584,6 +2580,7 @@ p {
   min-height: 44px;
   font-size: 14px;
   font-weight: 600;
+  text-decoration: none; /* also worn by links */
   cursor: pointer;
   box-shadow: var(--glass-edge);
   transition:
@@ -2969,6 +2966,13 @@ p {
 .scroll-top:active {
   transform: translateY(0) scale(0.94);
   transition: transform 120ms var(--ease-color);
+}
+/* Below 900px the bottom tab bar owns the bottom edge — lift the button
+   clear of it (must sit after the base .scroll-top rule to win the cascade). */
+@media (max-width: 900px) {
+  .scroll-top {
+    bottom: calc(clamp(16px, 3vw, 32px) + 64px + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 /* ── Focus ring parity ── ensure keyboard focus is always visible and
@@ -3678,6 +3682,9 @@ p {
   display: grid;
   place-items: center;
   pointer-events: auto;
+  transition:
+    opacity 500ms var(--ease-reveal),
+    transform 500ms var(--ease-reveal);
 }
 .loading-cinematic.is-revealing {
   opacity: 0;
@@ -3779,6 +3786,12 @@ p {
 .loading-cinematic__step-marker.is-active {
   border: none;
   background: transparent;
+}
+.loading-cinematic__step-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
 }
 /* The three parts materializing — quiet frosted capsules that light up as
    generation reaches them. Replaces the boxed skeleton-card deck. */
@@ -3908,7 +3921,9 @@ p {
   border: 1px solid var(--border-subtle);
   border-bottom: none;
   border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
-  padding: 0 clamp(20px, 5vw, 40px) 48px;
+  /* Top padding replaces the removed fake drag handle (there was never a
+     swipe gesture — it was a false affordance). */
+  padding: 28px clamp(20px, 5vw, 40px) 48px;
   box-shadow: var(--shadow-float);
 }
 @media (min-width: 720px) {
@@ -3927,9 +3942,6 @@ p {
     border-bottom: 1px solid var(--border-subtle);
     animation: fadeUp 400ms var(--ease-reveal) both;
   }
-  .quiz-sheet__handle {
-    visibility: hidden;
-  }
 }
 .quiz-sheet__accent {
   position: absolute;
@@ -3939,13 +3951,6 @@ p {
   height: 3px;
   background: var(--accent-gradient);
   border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
-}
-.quiz-sheet__handle {
-  width: 44px;
-  height: 4px;
-  border-radius: 3px;
-  background: var(--border-default);
-  margin: 14px auto 20px;
 }
 .quiz-sheet__close {
   position: absolute;
@@ -6132,6 +6137,8 @@ p {
 .journey-item__open:active,
 .option-row:active,
 .resume-card:active,
+.listen-btn:active,
+.summary-dot:active,
 .bottom-nav__item:active {
   transform: translateY(1px) scale(0.98);
   transition: transform 90ms var(--ease-color);
@@ -7291,6 +7298,626 @@ html[data-theme="light"] {
   .onboarding-progress__seg {
     transition: none;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Modal scrim — the one shared backdrop for centered dialogs (confirm,
+   keyboard shortcuts, feedback). Composes with .modal-glass-surface panels.
+   z-map: sidebar 80, quiz sheet 90, loading 100, modals 200, toasts 300.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.modal-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: var(--scrim);
+  -webkit-backdrop-filter: blur(var(--blur-sm));
+  backdrop-filter: blur(var(--blur-sm));
+  /* Flex (not grid) centering: percentage panel widths resolve against the
+     scrim, so width:100% + max-width behaves predictably. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+/* Tall dialogs anchor near the top and scroll within the scrim. */
+.modal-scrim--top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 24px 16px;
+}
+/* Prompts that must clear other modal scrims (e.g. the feedback prompt). */
+.modal-scrim--high {
+  z-index: 300;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Confirm modal — small decision dialog. Buttons reuse .btn-primary /
+   .btn-ghost; the destructive confirm wears the danger wash.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.confirm-modal {
+  width: 100%;
+  max-width: 420px;
+  padding: 24px;
+}
+.confirm-modal__title {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.confirm-modal__message {
+  margin: 0 0 20px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  white-space: pre-line;
+}
+.confirm-modal__actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+.btn-ghost.confirm-modal__danger {
+  border-color: var(--danger);
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+.btn-ghost.confirm-modal__danger:hover,
+.btn-ghost.confirm-modal__danger:focus-visible {
+  border-color: var(--danger);
+  background: var(--danger-bg);
+  color: var(--danger);
+  filter: brightness(1.06);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Keyboard shortcuts overlay — the "?" reference card, plus the shared .kbd
+   keycap chip.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.shortcuts-modal {
+  width: 100%;
+  max-width: 400px;
+  padding: 24px 28px;
+  outline: none;
+}
+.shortcuts-modal__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.shortcuts-modal__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.shortcuts-modal__close {
+  flex-shrink: 0;
+}
+.shortcuts-modal__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.shortcut-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+.shortcut-row__action {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+.shortcut-row__keys {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 26px;
+  padding: 0 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-default);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-family: var(--font-mono), monospace;
+  font-weight: 600;
+  box-shadow: 0 1px 0 var(--border-default);
+}
+.kbd--inline {
+  min-width: 0;
+  height: auto;
+  padding: 1px 5px;
+  font-size: 11px;
+  box-shadow: none;
+}
+.shortcuts-modal__hint {
+  margin: 16px 0 0;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Feedback prompt — the optional anonymous review dialog. Escapable three
+   ways (Escape / backdrop / ×), all of which snooze rather than dismiss
+   forever. Textareas reuse .glass-textarea; buttons reuse .btn-primary /
+   .btn-ghost / .btn-icon.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.feedback-modal {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  margin-top: 8vh;
+  max-height: 84vh;
+  overflow-y: auto;
+  padding: clamp(24px, 4vw, 36px);
+  outline: none;
+}
+.feedback-modal__close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+}
+.feedback-modal__title {
+  margin: 0 0 4px;
+  /* Clear the absolutely-positioned × button. */
+  padding-right: 48px;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.feedback-modal__sub {
+  margin: 0 0 var(--space-md);
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+.feedback-modal__field {
+  margin-bottom: var(--space-md);
+}
+.feedback-modal__label {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+.feedback-modal__optional {
+  font-weight: 500;
+  color: var(--text-tertiary);
+}
+.feedback-modal__stars {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.feedback-star {
+  display: inline-flex;
+  background: none;
+  border: none;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px;
+  color: var(--border-accent);
+  transition:
+    transform 180ms var(--ease-spring),
+    color 150ms var(--ease-color);
+}
+.feedback-star.is-active {
+  transform: scale(1.15);
+}
+.feedback-star:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-sm);
+}
+.feedback-modal__score {
+  margin-left: 10px;
+  align-self: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+}
+.feedback-modal__actions {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  align-items: center;
+}
+.btn-ghost.feedback-modal__quiet {
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-tertiary);
+  box-shadow: none;
+}
+.btn-ghost.feedback-modal__quiet:hover,
+.btn-ghost.feedback-modal__quiet:focus-visible {
+  border-color: transparent;
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Toast — transient feedback stack, bottom-right, above every scrim (300).
+   Errors persist ~8s, others ~4s (timing lives in ToastContainer.tsx); the
+   timer pauses on hover/focus and every toast has a ≥44px dismiss target.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.toast-stack {
+  position: fixed;
+  bottom: max(16px, env(safe-area-inset-bottom, 16px));
+  right: 16px;
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+/* Clear the mobile bottom tab bar. */
+@media (max-width: 900px) {
+  .toast-stack {
+    bottom: calc(16px + 64px + env(safe-area-inset-bottom, 0px));
+  }
+}
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 48px;
+  max-width: 340px;
+  padding: 0 2px 0 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--accent);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1.4;
+  box-shadow: var(--shadow-md);
+  animation: toastIn 180ms var(--ease-reveal) both;
+  transition:
+    opacity 180ms var(--ease-color),
+    transform 180ms var(--ease-color);
+}
+.toast--success {
+  border-color: var(--success);
+}
+.toast--error {
+  border-color: var(--danger);
+}
+.toast.is-leaving {
+  opacity: 0;
+  transform: translateX(12px);
+  pointer-events: none;
+}
+.toast__message {
+  padding: 12px 0;
+}
+.toast__dismiss {
+  flex-shrink: 0;
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition:
+    color 150ms var(--ease-color),
+    background 150ms var(--ease-color);
+}
+.toast__dismiss:hover,
+.toast__dismiss:focus-visible {
+  color: var(--text-primary);
+  background: var(--bg-card-hover);
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Unlock celebration — localized quiz-pass beat. A soft ring sweeps out from
+   a small accent check disc at screen center; replaces the old full-viewport
+   accent flash (WCAG 2.3.1). Reduced motion neutralizes it entirely: the
+   global kill-switch snaps both animations to their final frame (opacity 0).
+   ═══════════════════════════════════════════════════════════════════════════ */
+.unlock-fx {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  z-index: 80;
+}
+.unlock-fx__ring,
+.unlock-fx__core {
+  grid-area: 1 / 1;
+  border-radius: 50%;
+}
+.unlock-fx__ring {
+  width: 96px;
+  height: 96px;
+  border: 2px solid var(--accent);
+  animation: ringSweep 900ms var(--ease-reveal) both;
+}
+.unlock-fx__core {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: var(--shadow-md);
+  animation: unlockCore 900ms var(--ease-spring) both;
+}
+@keyframes unlockCore {
+  0% { opacity: 0; transform: scale(0.5); }
+  25% { opacity: 1; transform: scale(1.06); }
+  45% { transform: scale(1); }
+  80% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.94); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   404 route links — home, lesson, progress. Centered on the glass canvas.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.not-found__links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-sm);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Quick summary deck — the takeaway card pager on the completion screen.
+   Dots stay visually small but every control is a ≥44px hit target.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.summary-deck {
+  margin-block: 24px;
+}
+.summary-deck__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.summary-deck__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-accent-strong);
+}
+.btn-ghost.summary-deck__copy {
+  padding: 8px 14px;
+  font-size: 13px;
+}
+.summary-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 120px;
+  padding: 24px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-glow);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+}
+.summary-card__tag {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+.summary-card__text {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+.summary-card__nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-subtle);
+}
+.summary-card__dots {
+  display: flex;
+  align-items: center;
+}
+.summary-card__arrows {
+  display: flex;
+  gap: 8px;
+}
+/* Pager dot — an 8px visual inside a tall, padded hit area. */
+.summary-dot {
+  display: grid;
+  place-items: center;
+  min-width: 28px;
+  height: 44px;
+  padding: 0 4px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+}
+.summary-dot::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--border-default);
+  transition:
+    width 180ms var(--ease-color),
+    background 150ms var(--ease-color);
+}
+.summary-dot:hover::after {
+  background: var(--text-tertiary);
+}
+.summary-dot:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+.summary-dot:active::after {
+  background: var(--accent);
+}
+.summary-dot--active::after {
+  width: 20px;
+  background: var(--accent);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Completion share actions
+   ═══════════════════════════════════════════════════════════════════════════ */
+.share-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Progress rail wrappers — both variants are non-interactive status readouts.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.rail-wrap {
+  margin-top: var(--space-lg);
+}
+.rail-wrap--solo {
+  display: flex;
+  justify-content: center;
+}
+.rail-wrap--steps {
+  max-width: 580px;
+  margin-inline: auto;
+  padding: 0 12px;
+}
+.journey-rail__pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Listen button — read-aloud control on lesson sections. Compact ghost key
+   with speaking (accent) and error (danger) states; ≥44px hit target.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.listen-wrap {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.listen-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    color 150ms var(--ease-color),
+    border-color 150ms var(--ease-color),
+    background 150ms var(--ease-color),
+    transform 150ms var(--ease-color);
+}
+.listen-btn:hover,
+.listen-btn:focus-visible {
+  border-color: var(--border-accent);
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+.listen-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+/* Press feel: joins the tactile "light press" group. */
+.listen-btn--speaking {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+.listen-btn--error {
+  border-color: var(--danger);
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+.listen-btn--error:hover,
+.listen-btn--error:focus-visible {
+  border-color: var(--danger);
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+.listen-btn--unsupported,
+.listen-btn--unsupported:hover {
+  opacity: 0.45;
+  color: var(--text-tertiary);
+  border-color: var(--border-subtle);
+  background: transparent;
+  cursor: not-allowed;
+}
+.listen-btn__icon {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  font-size: 13px;
+}
+.listen-btn__glyph {
+  display: block;
+}
+.listen-error {
+  font-size: 11px;
+  color: var(--danger);
+  line-height: 1.3;
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Activity heatmap scroller — the right-edge fade signals there is more
+   grid to scroll on narrow screens; it only bites once content actually
+   reaches the container edge, so desktop (which fits) is untouched.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.heatmap-scroll {
+  display: flex;
+  gap: 3px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 28px), transparent);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

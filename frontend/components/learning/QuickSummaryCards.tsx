@@ -41,135 +41,53 @@ export default function QuickSummaryCards({ lesson }: Props) {
   };
 
   return (
-    <div
-      className="quick-summary-deck"
-      style={{
-        marginTop: 24,
-        marginBottom: 24,
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <span
-          style={{
-            fontSize: 12,
-            fontWeight: 700,
-            textTransform: "uppercase",
-            letterSpacing: "0.08em",
-            color: "var(--text-accent-strong)",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-          }}
-        >
+    <div className="summary-deck">
+      <div className="summary-deck__head">
+        <span className="summary-deck__label">
           <Icon name="zap" size={14} /> Quick Takeaway Cards ({activeCardIndex + 1} of {totalCards})
         </span>
         <button
           type="button"
           onClick={handleCopyCard}
           aria-label="Copy summary card text"
-          className="btn-ghost"
-          style={{ fontSize: 12, padding: "4px 10px", minHeight: 28, display: "inline-flex", alignItems: "center", gap: 4 }}
+          className="btn-ghost summary-deck__copy"
         >
-          <Icon name={copied ? "check" : "clipboard-check"} size={12} />
+          <Icon name={copied ? "check" : "clipboard-check"} size={13} />
           {copied ? "Copied" : "Copy Card"}
         </button>
       </div>
 
-      <div
-        className="kinetic-card animate-fade-up"
-        style={{
-          background: "var(--bg-card)",
-          border: "1px solid var(--border-glow)",
-          borderRadius: "var(--radius-xl)",
-          padding: "24px 20px",
-          boxShadow: "var(--shadow-md)",
-          position: "relative",
-          minHeight: 120,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
-        }}
-      >
+      <div className="summary-card animate-fade-up">
         <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-            <span
-              className="chip__label"
-              style={{
-                fontSize: 11,
-                fontWeight: 700,
-                background: "var(--accent-dim)",
-                color: "var(--accent)",
-                padding: "2px 8px",
-                borderRadius: 10,
-              }}
-            >
-              {currentPart?.title ?? `Part ${activeCardIndex + 1}`}
-            </span>
-          </div>
-          <p
-            style={{
-              fontSize: 15,
-              fontWeight: 500,
-              color: "var(--text-primary)",
-              lineHeight: 1.6,
-              margin: 0,
-            }}
-            {...contentLangAttrs(lesson.language)}
-          >
+          <span className="summary-card__tag">
+            {currentPart?.title ?? `Part ${activeCardIndex + 1}`}
+          </span>
+          <p className="summary-card__text" {...contentLangAttrs(lesson.language)}>
             {currentTakeaway}
           </p>
         </div>
 
-        {/* Navigation Dots & Next/Prev Controls */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginTop: 18,
-            paddingTop: 12,
-            borderTop: "1px solid var(--border-subtle)",
-          }}
-        >
-          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+        {/* Navigation dots & next/prev controls */}
+        <div className="summary-card__nav">
+          <div className="summary-card__dots">
             {takeaways.map((_, idx) => (
               <button
                 key={idx}
                 type="button"
                 aria-label={`Go to card ${idx + 1}`}
+                aria-current={idx === activeCardIndex}
                 onClick={() => setActiveCardIndex(idx)}
-                style={{
-                  width: idx === activeCardIndex ? 20 : 8,
-                  height: 8,
-                  borderRadius: 4,
-                  background: idx === activeCardIndex ? "var(--accent)" : "var(--border-default)",
-                  border: "none",
-                  padding: 0,
-                  cursor: "pointer",
-                  transition: "all 200ms ease",
-                }}
+                className={`summary-dot${idx === activeCardIndex ? " summary-dot--active" : ""}`}
               />
             ))}
           </div>
 
-          <div style={{ display: "flex", gap: 8 }}>
-            <button
-              type="button"
-              onClick={handlePrev}
-              aria-label="Previous card"
-              className="btn-icon"
-              style={{ width: 30, height: 30, minHeight: "auto", fontSize: 12 }}
-            >
-              <Icon name="arrow-left" size={14} />
+          <div className="summary-card__arrows">
+            <button type="button" onClick={handlePrev} aria-label="Previous card" className="btn-icon">
+              <Icon name="arrow-left" size={15} />
             </button>
-            <button
-              type="button"
-              onClick={handleNext}
-              aria-label="Next card"
-              className="btn-icon"
-              style={{ width: 30, height: 30, minHeight: "auto", fontSize: 12 }}
-            >
-              <Icon name="arrow-right" size={14} />
+            <button type="button" onClick={handleNext} aria-label="Next card" className="btn-icon">
+              <Icon name="arrow-right" size={15} />
             </button>
           </div>
         </div>

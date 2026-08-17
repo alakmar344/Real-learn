@@ -13,9 +13,8 @@ const SHORTCUTS = [
   { keys: ["Ctrl", "Enter"], action: "Submit question / Start lesson" },
   { keys: ["?"], action: "Show keyboard shortcuts" },
   { keys: ["Esc"], action: "Close modal / quiz / sidebar" },
-  { keys: ["1-4"], action: "Select quiz answer (when quiz is open)" },
+  { keys: ["1-9"], action: "Select quiz answer (when quiz is open)" },
   { keys: ["→"], action: "Next quiz question (after answering)" },
-  { keys: ["⌘", "K"], action: "Focus search (on progress page)" },
 ];
 
 export default function KeyboardShortcuts() {
@@ -52,90 +51,33 @@ export default function KeyboardShortcuts() {
       aria-modal="true"
       aria-label="Keyboard shortcuts"
       onClick={() => setOpen(false)}
-      className="animate-overlay-fade"
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 200,
-        background: "var(--scrim, rgba(20,17,12,0.5))",
-        backdropFilter: "blur(var(--blur-sm, 4px))",
-        display: "grid",
-        placeItems: "center",
-        padding: 24,
-      }}
+      className="modal-scrim animate-overlay-fade"
     >
       <div
         ref={dialogRef}
         tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
-        className="animate-level-burst"
-        style={{
-          background: "var(--bg-primary)",
-          border: "1px solid var(--border-default)",
-          borderRadius: "var(--radius-2xl)",
-          boxShadow: "var(--shadow-lg)",
-          padding: "24px 28px",
-          maxWidth: 400,
-          width: "100%",
-          outline: "none",
-        }}
+        className="modal-glass-surface shortcuts-modal animate-fade-up"
       >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "var(--text-primary)" }}>
-            Keyboard Shortcuts
-          </h3>
+        <div className="shortcuts-modal__head">
+          <h3 className="shortcuts-modal__title">Keyboard Shortcuts</h3>
           <button
             type="button"
             onClick={() => setOpen(false)}
             aria-label="Close"
-            style={{
-              background: "transparent",
-              border: "none",
-              cursor: "pointer",
-              color: "var(--text-tertiary)",
-              display: "inline-flex",
-              padding: 4,
-            }}
+            className="btn-icon shortcuts-modal__close"
           >
             <Icon name="close" size={18} />
           </button>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <div className="shortcuts-modal__list">
           {SHORTCUTS.map((shortcut, i) => (
-            <div
-              key={i}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: 16,
-              }}
-            >
-              <span style={{ fontSize: 14, color: "var(--text-secondary)" }}>
-                {shortcut.action}
-              </span>
-              <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+            <div key={i} className="shortcut-row">
+              <span className="shortcut-row__action">{shortcut.action}</span>
+              <div className="shortcut-row__keys">
                 {shortcut.keys.map((key, j) => (
-                  <kbd
-                    key={j}
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      minWidth: 28,
-                      height: 26,
-                      padding: "0 6px",
-                      borderRadius: "var(--radius-sm)",
-                      border: "1px solid var(--border-default)",
-                      background: "var(--bg-surface)",
-                      color: "var(--text-primary)",
-                      fontSize: 12,
-                      fontFamily: "var(--font-mono, monospace)",
-                      fontWeight: 600,
-                      boxShadow: "0 1px 0 var(--border-default)",
-                    }}
-                  >
+                  <kbd key={j} className="kbd">
                     {key}
                   </kbd>
                 ))}
@@ -144,8 +86,8 @@ export default function KeyboardShortcuts() {
           ))}
         </div>
 
-        <p style={{ margin: "16px 0 0", fontSize: 12, color: "var(--text-tertiary)", textAlign: "center" }}>
-          Press <kbd style={{ padding: "1px 5px", borderRadius: 3, border: "1px solid var(--border-default)", fontSize: 11 }}>?</kbd> to toggle this overlay
+        <p className="shortcuts-modal__hint">
+          Press <kbd className="kbd kbd--inline">?</kbd> to toggle this overlay
         </p>
       </div>
     </div>

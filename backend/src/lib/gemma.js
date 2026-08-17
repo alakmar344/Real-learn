@@ -362,6 +362,17 @@ function isCircuitOpen(providerKey) {
   return providerHealth[providerKey].openUntil > Date.now();
 }
 
+/**
+ * True when EVERY configured provider's circuit is currently open — i.e. a
+ * total generation outage. Used by /health to report the service as degraded
+ * (503) so uptime monitors see the outage instead of a green Mongo ping.
+ */
+export function allCircuitsOpen() {
+  const providers = getProviders(true);
+  if (providers.length === 0) return false;
+  return providers.every((provider) => isCircuitOpen(provider.key));
+}
+
 /** Introspection for /health-style endpoints and tests. */
 export function getProviderHealthSnapshot() {
   const now = Date.now();
@@ -498,9 +509,13 @@ function orderProviders(providers) {
 
 function parseRetryAfterMs(response) {
   const header = response.headers.get("Retry-After");
-  if (typeof header !== "string") return undefined;
+  if (typeof header !== "string" || !header.trim()) return undefined;
   const parsed = Number(header);
   if (Number.isFinite(parsed) && parsed > 0) return parsed * 1000;
+  // RFC 7231 also allows an HTTP-date form ("Wed, 21 Oct 2015 07:28:00 GMT");
+  // convert it to a non-negative delay relative to now.
+  const dateMs = Date.parse(header);
+  if (Number.isFinite(dateMs)) return Math.max(0, dateMs - Date.now());
   return undefined;
 }
 
@@ -742,6 +757,28 @@ function wrapCerebrasError(error) {
   return error;
 }
 
+// Module-level Cerebras SDK client, created lazily and reused across calls —
+// constructing a fresh client (and its internal config/agent plumbing) on
+// every generation was pure per-request overhead. Keyed by API key so a
+// rotated CEREBRAS_API_KEY takes effect without a restart; the per-request
+// abort signal is still passed per call.
+let cerebrasClient = null;
+let cerebrasClientKey = null;
+function getCerebrasClient(apiKey) {
+  if (!cerebrasClient || cerebrasClientKey !== apiKey) {
+    cerebrasClient = new Cerebras({
+      apiKey,
+      maxRetries: 0,
+      timeout: 600000, // 10 minutes — the engine's own watchdogs + abort handle timeouts.
+      // Look up globalThis.fetch per request (not once at construction) so
+      // tests can intercept requests with a mock.
+      fetch: (...args) => globalThis.fetch(...args),
+    });
+    cerebrasClientKey = apiKey;
+  }
+  return cerebrasClient;
+}
+
 async function callCerebras(model, body, signal, opts) {
   const apiKey = process.env.CEREBRAS_API_KEY?.trim();
   if (!apiKey) {
@@ -780,13 +817,7 @@ async function callCerebras(model, body, signal, opts) {
 
   armWatchdog(firstByteTimeoutMs);
 
-  const cerebras = new Cerebras({
-    apiKey,
-    maxRetries: 0,
-    timeout: 600000, // 10 minutes — the engine's own watchdogs + abort handle timeouts.
-    // Use the global fetch so tests can intercept requests with a mock.
-    fetch: globalThis.fetch,
-  });
+  const cerebras = getCerebrasClient(apiKey);
 
   try {
     const payload = {
@@ -1265,7 +1296,6 @@ function hedgedRace(starters, hedgeDelayMs, onWinner, onHedgeSkipped) {
 export async function callGemma(
   systemPrompt,
   userMessage,
-  enableSearch = true,
   temperature = 0.7,
   timeoutMs = 30000,
   signal = null,
@@ -1278,11 +1308,6 @@ export async function callGemma(
   if (providers.length === 0) {
     throw new Error(
       "No AI provider is configured: set CEREBRAS_API_KEY, NVIDIA_API_KEY, or CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID"
-    );
-  }
-  if (enableSearch) {
-    console.warn(
-      "[AI] enableSearch requested but web-search grounding is not supported; continuing without it"
     );
   }
 

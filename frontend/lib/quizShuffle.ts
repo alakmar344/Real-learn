@@ -46,7 +46,10 @@ export function sanitizeQuestion(question: QuizQuestion): QuizQuestion {
   // 2. Integer or letter index
   if (correctIndex === -1 && typeof question.correctIndex === "number") {
     correctIndex = question.correctIndex;
-    if (correctIndex >= options.length && correctIndex === options.length) {
+    // A 1-based index appears here as exactly options.length (e.g. 4 with 4
+    // options) — clamp it onto the last valid 0-based slot. Larger values are
+    // genuinely bogus and fall through to the explanation-matching recovery.
+    if (correctIndex === options.length) {
       correctIndex = options.length - 1;
     }
   }

@@ -61,7 +61,7 @@ export default function ActivityHeatmap({ history, weeks = 14 }: Props) {
         activeDays === 1 ? "day" : "days"
       }, ${totalParts} part${totalParts === 1 ? "" : "s"} completed.`}
     >
-      <div aria-hidden="true" style={{ display: "flex", gap: 3, overflowX: "auto", paddingBottom: 4 }}>
+      <div aria-hidden="true" className="heatmap-scroll">
         {columns.map((col, ci) => (
           <div key={ci} style={{ display: "flex", flexDirection: "column", gap: 3 }}>
             {col.map((cell) => (

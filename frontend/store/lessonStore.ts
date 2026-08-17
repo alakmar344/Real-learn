@@ -3,11 +3,25 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { createDebouncedStorage } from "@/lib/debouncedStorage";
+import { getArchivedLesson } from "@/lib/lessonArchive";
+import { journeySignature } from "@/store/savedJourneysStore";
 import { LessonJourney } from "@/types";
 
 interface LessonStore {
   question: string;
   lesson: LessonJourney | null;
+  /**
+   * True while the persisted active lesson's BODY is being reloaded from the
+   * IndexedDB archive after rehydration (only metadata lives in localStorage
+   * — see partialize). /learn shows its skeleton shell during this window.
+   */
+  hydratingLesson: boolean;
+  /**
+   * Persistence-internal: the tiny metadata slice of the active lesson that
+   * IS persisted (see partialize). Only meaningful right after rehydration,
+   * when it drives the archive lookup that restores `lesson`.
+   */
+  lessonMeta: PersistedLessonMeta | null;
   isLoading: boolean;
   error: string | null;
   progressStage: string;
@@ -31,17 +45,55 @@ interface LessonStore {
   loadJourney: (journey: { question: string; lesson: LessonJourney; unlockedPart: number; completedParts: number[]; partScores: Record<number, number | null> }) => void;
 }
 
+/**
+ * The tiny slice of a lesson that localStorage keeps. Just enough to
+ * recompute the saved-journey/archive id so the full body can be reloaded
+ * from IndexedDB on the next visit — persisting the multi-KB body itself
+ * meant re-stringifying it on every quiz click AND duplicating what
+ * lib/lessonArchive already stores.
+ */
+interface PersistedLessonMeta {
+  lessonId?: string;
+  question?: string;
+  topic?: string;
+  firstPartTitle?: string;
+}
+
 type PersistedLessonState = Pick<
   LessonStore,
   | "question"
-  | "lesson"
+  | "lessonMeta"
   | "unlockedPart"
   | "completedParts"
   | "partScores"
   | "collapsedParts"
   | "showCompletion"
   | "showFollowUp"
->;
+> & {
+  /** Pre-v1 payloads persisted the full lesson body inline. */
+  lesson?: LessonJourney | null;
+};
+
+function toLessonMeta(lesson: LessonJourney | null): PersistedLessonMeta | null {
+  if (!lesson) return null;
+  return {
+    lessonId: lesson.lessonId,
+    question: lesson.question,
+    topic: lesson.topic,
+    firstPartTitle: lesson.parts?.[0]?.title,
+  };
+}
+
+/**
+ * The saved-journey (and therefore IndexedDB-archive) id for a lesson.
+ * Single source of truth shared with app/learn/page.tsx's persist effect —
+ * the two MUST stay in sync or rehydration misses the archived body.
+ */
+export function journeyIdForLesson(meta: PersistedLessonMeta): string {
+  const displayQuestion = meta.question ?? meta.topic ?? "";
+  const baseId = journeySignature(displayQuestion, meta.firstPartTitle);
+  return meta.lessonId ? `${baseId}::${meta.lessonId.slice(0, 8)}` : baseId;
+}
 
 function storeLog(action: string, details?: unknown) {
   if (process.env.NODE_ENV === "production") return;
@@ -68,6 +120,8 @@ function newLessonId(): string {
 const initialState = {
   question: "",
   lesson: null,
+  hydratingLesson: false,
+  lessonMeta: null as PersistedLessonMeta | null,
   isLoading: false,
   error: null,
   progressStage: "",
@@ -94,6 +148,8 @@ export const useLessonStore = create<LessonStore>()(
           isLoading: true,
           error: null,
           lesson: null,
+          // A user-started generation supersedes any pending archive restore.
+          hydratingLesson: false,
           progressStage: "",
           progressPercent: 0,
           unlockedPart: 1,
@@ -125,6 +181,7 @@ export const useLessonStore = create<LessonStore>()(
           lesson,
           question: lesson.question ?? lesson.topic ?? "",
           isLoading: false,
+          hydratingLesson: false,
           error: null,
           progressStage: "",
           progressPercent: 0,
@@ -176,6 +233,7 @@ export const useLessonStore = create<LessonStore>()(
         set({
           question,
           lesson: null,
+          hydratingLesson: false,
           isLoading: false,
           error: null,
           progressStage: "",
@@ -215,6 +273,7 @@ export const useLessonStore = create<LessonStore>()(
           lesson: journey.lesson,
           question: journey.question,
           isLoading: false,
+          hydratingLesson: false,
           error: null,
           unlockedPart,
           completedParts,
@@ -230,11 +289,16 @@ export const useLessonStore = create<LessonStore>()(
     }),
     {
       name: "reallearn-journey",
+      version: 1,
       // Perf: defer serialization + write off the click path (see lib/debouncedStorage).
       storage: createDebouncedStorage<PersistedLessonState>(),
+      // Persist lesson METADATA only: the multi-KB body already lives in the
+      // IndexedDB archive (saved by learn/page's persist effect), so writing
+      // it here too meant re-stringifying the whole lesson to localStorage on
+      // every quiz click. Rehydration restores the body from the archive.
       partialize: (state) => ({
         question: state.question,
-        lesson: state.lesson,
+        lessonMeta: toLessonMeta(state.lesson),
         unlockedPart: state.unlockedPart,
         completedParts: state.completedParts,
         partScores: state.partScores,
@@ -242,6 +306,56 @@ export const useLessonStore = create<LessonStore>()(
         showCompletion: state.showCompletion,
         showFollowUp: state.showFollowUp,
       }),
+      // v0 → v1: legacy payloads carry the full inline `lesson` body. Keep it
+      // — merge hydrates it directly (no archive round-trip needed) and the
+      // next write converts the entry to the metadata-only shape.
+      migrate: (persisted) => persisted as PersistedLessonState,
+      merge: (persisted, current) => {
+        const p = (persisted ?? {}) as Partial<PersistedLessonState>;
+        const { lesson: legacyLesson, ...rest } = p;
+        return {
+          ...current,
+          ...rest,
+          lesson: legacyLesson ?? null,
+          // Body must be fetched from the archive → gate /learn on the
+          // skeleton shell so there's no flash of the empty state (and no
+          // re-fired "lesson ready" side effects) while it loads.
+          hydratingLesson: !legacyLesson && Boolean(p.lessonMeta),
+        };
+      },
+      onRehydrateStorage: () => (state, error) => {
+        if (error || !state) return;
+        // Nothing to restore: no active lesson, or a legacy payload whose
+        // full body already hydrated inline.
+        if (state.lesson || !state.lessonMeta) return;
+        const meta = state.lessonMeta;
+        void (async () => {
+          const lesson = await getArchivedLesson(journeyIdForLesson(meta));
+          // `useLessonStore` is referenced only after the await: module
+          // evaluation has finished by then (sync-storage hydration runs
+          // during create()), so there is no TDZ hazard.
+          const current = useLessonStore.getState();
+          // A user action (new generation, opening a journey, reset) may have
+          // superseded the restore while the archive read was in flight.
+          if (!current.hydratingLesson || current.isLoading || current.lesson) {
+            if (current.hydratingLesson) {
+              useLessonStore.setState({ hydratingLesson: false });
+            }
+            return;
+          }
+          if (lesson) {
+            storeLog("rehydrated lesson body from archive", {
+              partsCount: lesson.parts?.length ?? 0,
+            });
+            useLessonStore.setState({ lesson, hydratingLesson: false });
+          } else {
+            // Archive copy is gone (cleared site data / new device): land on
+            // the clean empty state rather than a crashed half-lesson.
+            storeLog("archived lesson body missing — clearing active lesson");
+            useLessonStore.setState({ ...initialState });
+          }
+        })();
+      },
     }
   )
 );

@@ -42,7 +42,9 @@ const GENERATE_RETRY_DELAY_MS =
     ? configuredGenerateRetryDelayMs
     : DEFAULT_GENERATE_RETRY_DELAY_MS;
 const MAX_GENERATE_RETRY_DELAY_MS = 10000;
-// 401 is retryable once on cold token resolution; 429 is deliberately NOT retryable.
+// 401 is retryable ONCE on cold token resolution (enforced in the retry loop,
+// which also skips the backoff — token freshness, not server load);
+// 429 is deliberately NOT retryable.
 const RETRYABLE_STATUS_CODES = [401, 408, 425, 500, 502, 503, 504];
 
 // Module-scoped "latest request wins" state. Only one lesson generation is
@@ -112,9 +114,11 @@ function createSSEParser() {
   const queue: EventSourceMessage[] = [];
   const parser = createParser({
     onEvent: (msg) => {
-      // Skip the default "message" event name — our backend always sends an
-      // explicit `event:` field, which is what the original code keyed on.
-      if (msg.event) queue.push(msg);
+      // Per the SSE spec, frames without an `event:` field default to the
+      // "message" type. Our backend always names its events, but a proxy that
+      // strips the field must not silently cost us a frame — normalize and
+      // let the dispatch switch shape-sniff it.
+      queue.push(msg.event ? msg : { ...msg, event: "message" });
     },
   });
   return {
@@ -166,32 +170,41 @@ function isRetryableMessage(message: string) {
   );
 }
 
-// UX: raw technical errors (HTTP codes, keep-alive jargon, provider names)
-// must never reach the user. Server messages written for humans — moderation
-// reasons, "try a different question" guidance — pass through untouched;
-// anything that smells technical is replaced with warm, plain-language copy.
-const TECHNICAL_ERROR_FRAGMENTS = [
-  "timed out",
-  "timeout",
-  "keep-alive",
-  "fetch",
-  "network",
-  "stream",
-  "connection",
-  "gemma",
-  "api error",
-  "backend",
-  "unable to generate lesson",
-  "failed to parse",
-  "response format",
-  "aborted",
-  "json",
-  "parse",
-  "unexpected token",
-  "http",
-  "5xx",
-  "502",
-  "503",
+// UX: raw technical errors (stack traces, parser output, HTTP status dumps,
+// network errno strings, provider names) must never reach the user. Server
+// messages written for humans — moderation reasons, "try a different
+// question" guidance — pass through untouched, EVEN when they happen to
+// mention words like "network" or "connection"; only genuinely technical
+// patterns trigger the warm, plain-language replacement.
+const TECHNICAL_ERROR_PATTERNS: RegExp[] = [
+  // Parser / runtime error output
+  /\bJSON\.parse\b/i,
+  /\bunexpected token\b/i,
+  /\b(?:Syntax|Type|Reference|Range)Error\b/,
+  /\bfailed to parse\b/i,
+  /\bresponse format\b/i,
+  // Stack-trace frames ("at fn (file.js:1:2)")
+  /\bat\s+\S+\s+\(\S+:\d+:\d+\)/,
+  // Network-layer failures (browser + Node phrasings, errno codes)
+  /\b(?:failed to fetch|fetch failed|load failed)\b/i,
+  /\bNetworkError\b/,
+  /\bE(?:CONNREFUSED|CONNRESET|CONNABORTED|TIMEDOUT|PIPE|HOSTUNREACH|AI_AGAIN|NOTFOUND)\b/,
+  /\bsocket hang ?up\b/i,
+  /\bkeep-?alive\b/i,
+  /\bAbortError\b/,
+  /\baborted\b/i,
+  /\btimed? ?out\b/i,
+  // HTTP status dumps ("HTTP 502", "status code 503", "502 Bad Gateway", "5xx")
+  /\bHTTP(?:\/[\d.]+)?\s*[45]\d\d\b/i,
+  /\b(?:status(?:\s+code)?|error)[:\s]+[45]\d\d\b/i,
+  /\b[45]\d\d\s+(?:bad gateway|service unavailable|gateway time-?out|internal server error|too many requests)\b/i,
+  /\b[45]xx\b/i,
+  // Internal fallback copy / provider names that must not leak
+  /\bunable to generate lesson\b/i,
+  /\bno response stream\b/i,
+  /\bbackend closed connection\b/i,
+  /\bgemma\b/i,
+  /\bAPI error\b/i,
 ];
 
 // Robustness: SSE frames arrive over an unreliable network and are produced by
@@ -210,8 +223,7 @@ function safeParseEvent<T>(data: string): T | null {
 
 export function humanizeErrorMessage(error: unknown): string {
   const raw = error instanceof Error ? error.message : typeof error === "string" ? error : "";
-  const normalized = raw.toLowerCase();
-  if (!raw || TECHNICAL_ERROR_FRAGMENTS.some((fragment) => normalized.includes(fragment))) {
+  if (!raw || TECHNICAL_ERROR_PATTERNS.some((pattern) => pattern.test(raw))) {
     return "We couldn't finish crafting your lesson this time — nothing's wrong on your end. Give it another try and we'll pick right back up where you left off.";
   }
   return raw;
@@ -288,6 +300,28 @@ export function useLesson() {
       }
 
       let lastError: unknown = null;
+      // 401 is a token-freshness issue, not a server one: it earns exactly ONE
+      // retry (attempt 2 fetches a fresh token via skipCache) with no backoff.
+      let unauthorizedRetried = false;
+
+      const prefsPayload: LearningPreferences | null =
+        personalization.onboarded ? personalization : null;
+
+      // Compute a tiny, topic-relevant learning-context snippet from the
+      // on-device quiz history. null on cold start (no saved journeys) so
+      // the field is simply omitted — the backend treats its absence as
+      // "no profile yet" and answers generically. Hoisted OUT of the retry
+      // loop: journeys can't change mid-generation, and re-tokenizing up to
+      // 100 of them on every attempt was pure wasted main-thread work.
+      // The learner's explicit goal is appended so the backend decision
+      // engine can extract it as the highest-authority signal.
+      const learningContext = buildLearningContext(
+        journeys,
+        subjectsSeen,
+        normalized,
+        prefsPayload?.goals ?? "",
+        Date.now()
+      );
 
       for (let attempt = 1; attempt <= GENERATE_RETRY_ATTEMPTS; attempt += 1) {
         const controller = new AbortController();
@@ -326,24 +360,6 @@ export function useLesson() {
           if (token) {
             headers["Authorization"] = `Bearer ${token}`;
           }
-          const prefsPayload: LearningPreferences | null =
-            personalization.onboarded ? personalization : null;
-
-          // Compute a tiny, topic-relevant learning-context snippet from the
-          // on-device quiz history. null on cold start (no saved journeys) so
-          // the field is simply omitted — the backend treats its absence as
-          // "no profile yet" and answers generically. This is deliberately
-          // computed inside the retry loop so a freshly-saved journey taken
-          // between attempts is reflected, and it never blocks the request.
-          // The learner's explicit goal is appended so the backend decision
-          // engine can extract it as the highest-authority signal.
-          const learningContext = buildLearningContext(
-            journeys,
-            subjectsSeen,
-            normalized,
-            prefsPayload?.goals ?? ""
-          );
-
           const response = await fetch(`${trimmedBackendUrl}/api/generate-lesson`, {
             method: "POST",
             headers,
@@ -425,6 +441,34 @@ export function useLesson() {
               const payload = safeParseEvent<{ error?: string }>(entry.data);
               logLessonDebug("error event received", { requestId, attempt, payload });
               throw new Error(payload?.error || "Unable to generate lesson");
+            }
+            if (entry.event === "message") {
+              // Unnamed frame (spec default type). Our backend always names
+              // its events, but an intermediary that strips `event:` must not
+              // cost us the lesson — sniff the payload for a known shape and
+              // route it; otherwise ignore with a dev-only breadcrumb.
+              const payload = safeParseEvent<Record<string, unknown>>(entry.data);
+              if (payload && Array.isArray(payload.parts)) {
+                logLessonDebug("unnamed frame routed as lesson", { requestId, attempt });
+                return payload as unknown as LessonJourney;
+              }
+              if (
+                payload &&
+                typeof payload.stage === "string" &&
+                typeof payload.percent === "number"
+              ) {
+                logLessonDebug("unnamed frame routed as progress", { requestId, attempt, payload });
+                setProgress(payload.stage, payload.percent);
+                return null;
+              }
+              if (LESSON_DEBUG) {
+                console.debug("[frontend][useLesson] ignoring unnamed SSE frame", {
+                  requestId,
+                  attempt,
+                  payloadPreview: entry.data.slice(0, 120),
+                });
+              }
+              return null;
             }
             logLessonDebug("unknown SSE event received", {
               requestId,
@@ -508,7 +552,15 @@ export function useLesson() {
             logLessonDebug("stale request aborted", { requestId, attempt });
             return false;
           }
-          const canRetry = attempt < GENERATE_RETRY_ATTEMPTS && isRetryableError(error, idleTimedOut);
+          // 401 gets a single immediate retry (cold token resolution) instead
+          // of the full exponential-backoff schedule — a genuinely expired
+          // session must not hammer the backend for ~24s before failing.
+          const isUnauthorized = (error as RetryableError)?.status === 401;
+          let canRetry = attempt < GENERATE_RETRY_ATTEMPTS && isRetryableError(error, idleTimedOut);
+          if (isUnauthorized) {
+            canRetry = canRetry && !unauthorizedRetried;
+            unauthorizedRetried = true;
+          }
           logLessonDebug("attempt failed", {
             requestId,
             attempt,
@@ -518,14 +570,23 @@ export function useLesson() {
 
           if (canRetry) {
             const retryAfterMs = (error as RetryableError)?.retryAfterMs;
-            const waitMs = Math.min(
-              retryAfterMs ??
-                GENERATE_RETRY_DELAY_MS * Math.pow(2, attempt - 1),
-              MAX_GENERATE_RETRY_DELAY_MS
-            );
+            const waitMs = isUnauthorized
+              ? 0 // token freshness, not server load — no backoff needed
+              : Math.min(
+                  retryAfterMs ??
+                    GENERATE_RETRY_DELAY_MS * Math.pow(2, attempt - 1),
+                  MAX_GENERATE_RETRY_DELAY_MS
+                );
             await sleep(waitMs);
             if (isStale()) return false;
             continue;
+          }
+
+          if (isUnauthorized) {
+            setError(
+              "Your session has expired, so we couldn't start this lesson. Please sign in again and re-ask your question — we'll take it from there."
+            );
+            return false;
           }
 
           if (

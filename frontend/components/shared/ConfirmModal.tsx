@@ -72,88 +72,24 @@ export default function ConfirmModal({
       aria-label={title}
       aria-describedby="confirm-modal-description"
       onClick={onClose}
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 200,
-        background: "var(--scrim, rgba(0,0,0,0.45))",
-        backdropFilter: "blur(var(--blur-sm, 4px))",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 24,
-      }}
+      className="modal-scrim"
     >
       <div
-        className="animate-fade-up"
+        className="modal-glass-surface confirm-modal animate-fade-up"
         onClick={(e) => e.stopPropagation()}
-        style={{
-          width: "100%",
-          maxWidth: 420,
-          background: "var(--bg-card)",
-          border: "1px solid var(--border-default)",
-          borderRadius: "var(--radius-xl)",
-          boxShadow: "var(--shadow-lg)",
-          padding: 24,
-        }}
       >
-        <h3
-          style={{
-            margin: "0 0 8px",
-            fontSize: 18,
-            fontWeight: 700,
-            color: "var(--text-primary)",
-          }}
-        >
-          {title}
-        </h3>
-        <p
-          id="confirm-modal-description"
-          style={{
-            margin: "0 0 20px",
-            fontSize: 14,
-            color: "var(--text-secondary)",
-            lineHeight: 1.6,
-            whiteSpace: "pre-line",
-          }}
-        >
+        <h3 className="confirm-modal__title">{title}</h3>
+        <p id="confirm-modal-description" className="confirm-modal__message">
           {message}
         </p>
-        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-          <button
-            type="button"
-            ref={cancelRef}
-            onClick={onClose}
-            style={{
-              border: "1px solid var(--border-default)",
-              borderRadius: "var(--radius-md)",
-              background: "var(--bg-surface)",
-              color: "var(--text-secondary)",
-              padding: "10px 18px",
-              cursor: "pointer",
-              fontSize: 14,
-              fontWeight: 600,
-              minHeight: 44,
-            }}
-          >
+        <div className="confirm-modal__actions">
+          <button type="button" ref={cancelRef} onClick={onClose} className="btn-ghost">
             {cancelLabel}
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            style={{
-              border: destructive
-                ? "1px solid var(--danger)"
-                : "1px solid var(--accent)",
-              borderRadius: "var(--radius-md)",
-              background: destructive ? "var(--danger-bg)" : "var(--accent)",
-              color: destructive ? "var(--danger)" : "var(--on-accent)",
-              padding: "10px 18px",
-              cursor: "pointer",
-              fontSize: 14,
-              fontWeight: 700,
-              minHeight: 44,
-            }}
+            className={destructive ? "btn-ghost confirm-modal__danger" : "btn-primary"}
           >
             {confirmLabel}
           </button>

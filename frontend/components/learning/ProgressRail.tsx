@@ -34,11 +34,11 @@ export default function ProgressRail({ unlockedPart, completedParts, totalParts 
       <div
         role="status"
         aria-label={done ? "Quick answer mastered" : "Fast mode – one quick answer"}
-        style={{ marginTop: "var(--space-lg)", display: "flex", justifyContent: "center" }}
+        className="rail-wrap rail-wrap--solo"
       >
         <span className={`journey-rail journey-rail--solo${done ? " is-done" : ""}`}>
           <span className="journey-rail__node" aria-hidden="true">
-            {done ? <CheckIcon /> : <span className="accent-pulse-dot" style={{ width: 8, height: 8, borderRadius: "50%", background: "currentColor" }} />}
+            {done ? <CheckIcon /> : <span className="journey-rail__pulse accent-pulse-dot" />}
           </span>
           {done ? "Quick answer mastered" : "Fast mode — direct explanation"}
         </span>
@@ -49,10 +49,13 @@ export default function ProgressRail({ unlockedPart, completedParts, totalParts 
   const parts = Array.from({ length: totalParts }, (_, i) => i + 1);
   const completedCount = parts.filter((p) => completedParts.includes(p)).length;
 
+  // Not a nav landmark: the rail has no links — like fast mode it only
+  // reports progress, so both variants share the status role.
   return (
-    <nav
+    <div
+      role="status"
       aria-label="Learning progress"
-      style={{ marginTop: "var(--space-lg)", maxWidth: 580, marginInline: "auto", padding: "0 12px" }}
+      className="rail-wrap rail-wrap--steps"
     >
       <div className="journey-rail">
         <ol
@@ -92,6 +95,6 @@ export default function ProgressRail({ unlockedPart, completedParts, totalParts 
           })}
         </ol>
       </div>
-    </nav>
+    </div>
   );
 }

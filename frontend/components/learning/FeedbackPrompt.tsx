@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { showToast } from "@/components/shared/ToastContainer";
 import {
@@ -18,19 +18,13 @@ interface Props {
 const MAX_TEXT_LENGTH = 1000;
 
 /**
- * Optional, non-blocking review prompt shown as a centered modal that POPS UP
- * over the screen (with a scrim), so it is immediately visible and never
- * buried at the bottom of a long page. It appears the moment a user is eligible
- * (just after their first lesson) — including on a refresh / return visit.
- *
- * Asks three things only:
- *   - what they liked,
- *   - what we should improve, and
- *   - a 1–10 star rating.
+ * Optional, non-blocking review prompt shown as a centered modal over a scrim.
+ * Escapable three ways — Escape key, backdrop click, and the × button — all
+ * of which snooze ("ask later") rather than dismiss forever, so an accidental
+ * close never silences the prompt permanently.
  *
  * Privacy: every field is submitted anonymously (see lib/feedback.ts and the
  * backend /api/feedback route). No Clerk ID, email, or IP is ever attached.
- * The prompt can be skipped or permanently dismissed — it is never forced.
  */
 export default function FeedbackPrompt({ onDone }: Props) {
   const [rating, setRating] = useState(0);
@@ -83,106 +77,61 @@ export default function FeedbackPrompt({ onDone }: Props) {
     onDone?.();
   }
 
-  function handleSnooze() {
+  const handleSnooze = useCallback(() => {
     snoozeFeedback(7);
     showToast("We'll ask another time.", "info");
     onDone?.();
-  }
+  }, [onDone]);
 
-  const debouncedBtn: React.CSSProperties = {
-    border: "none",
-    borderRadius: "var(--radius-lg)",
-    background: "var(--accent)",
-    color: "var(--on-accent)",
-    padding: "13px 26px",
-    cursor: "pointer",
-    fontSize: 15,
-    fontWeight: 600,
-    minHeight: 50,
-    boxShadow: "var(--shadow-sm)",
-    transition: "all 500ms var(--ease-spring)",
-  };
-
-  const ghostBtn: React.CSSProperties = {
-    border: "1px solid var(--border-default)",
-    borderRadius: "var(--radius-lg)",
-    background: "transparent",
-    color: "var(--text-secondary)",
-    padding: "13px 20px",
-    cursor: "pointer",
-    fontSize: 14,
-    fontWeight: 600,
-    minHeight: 50,
-    transition: "all 500ms var(--ease-spring)",
-  };
+  // Escape = snooze. Capture + stopPropagation so shell-level Escape handlers
+  // (sidebar close, shortcuts overlay) don't also fire underneath.
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      e.stopPropagation();
+      handleSnooze();
+    };
+    document.addEventListener("keydown", handler, true);
+    return () => document.removeEventListener("keydown", handler, true);
+  }, [handleSnooze]);
 
   return (
     <div
       role="dialog"
       aria-modal="true"
       aria-label="How was your first lesson?"
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 300,
-        background: "var(--scrim, rgba(0,0,0,0.6))",
-        backdropFilter: "blur(var(--blur-sm, 4px))",
-        display: "flex",
-        alignItems: "flex-start",
-        justifyContent: "center",
-        padding: "24px 16px",
-        overflowY: "auto",
-      }}
+      className="modal-scrim modal-scrim--top modal-scrim--high"
+      onClick={handleSnooze}
     >
       <div
         ref={trapRef}
         tabIndex={-1}
-        className="animate-fade-up"
-        style={{
-          background: "var(--bg-card)",
-          borderRadius: "var(--radius-xl)",
-          padding: "clamp(24px, 4vw, 36px)",
-          width: "100%",
-          maxWidth: 520,
-          marginTop: "8vh",
-          maxHeight: "84vh",
-          overflowY: "auto",
-          border: "1px solid var(--border-subtle)",
-          boxShadow: "var(--shadow-lg)",
-          outline: "none",
-        }}
+        className="modal-glass-surface feedback-modal animate-fade-up"
+        onClick={(e) => e.stopPropagation()}
       >
-        <h3
-          style={{
-            margin: "0 0 4px",
-            fontSize: 22,
-            fontWeight: 800,
-            color: "var(--text-primary)",
-          }}
+        <button
+          type="button"
+          className="btn-icon feedback-modal__close"
+          aria-label="Close and ask later"
+          onClick={handleSnooze}
         >
-          How was your first lesson?
-        </h3>
-        <p style={{ marginTop: 0, marginBottom: "var(--space-md)", color: "var(--text-secondary)", fontSize: 14 }}>
+          <Icon name="close" size={16} />
+        </button>
+
+        <h3 className="feedback-modal__title">How was your first lesson?</h3>
+        <p className="feedback-modal__sub">
           A quick, optional review — no account needed and nothing tied to you. Takes under a minute.
         </p>
 
         {/* Star rating 1–10 */}
-        <div style={{ marginBottom: "var(--space-md)" }}>
-          <label
-            style={{
-              display: "block",
-              fontSize: 14,
-              fontWeight: 700,
-              color: "var(--text-primary)",
-              marginBottom: 8,
-            }}
-          >
+        <div className="feedback-modal__field">
+          <label className="feedback-modal__label">
             How would you rate RealLearn? (1–10 stars)
           </label>
           <div
             role="radiogroup"
             aria-label="Star rating from 1 to 10"
-            style={{ display: "flex", gap: 4, flexWrap: "wrap" }}
+            className="feedback-modal__stars"
             onMouseLeave={() => setHoverRating(0)}
           >
             {stars.map((n) => {
@@ -196,51 +145,25 @@ export default function FeedbackPrompt({ onDone }: Props) {
                   aria-label={`${n} star${n > 1 ? "s" : ""}`}
                   onClick={() => setRating(n)}
                   onMouseEnter={() => setHoverRating(n)}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    lineHeight: 1,
-                    padding: 2,
-                    display: "inline-flex",
-                    color: active ? starColor() : "var(--border-accent)",
-                    transition: "transform 200ms var(--ease-spring), color 200ms ease",
-                    transform: active ? "scale(1.15)" : "scale(1)",
-                  }}
+                  className={`feedback-star${active ? " is-active" : ""}`}
+                  // Star color comes from lib/palette.ts (the JS-side token
+                  // source) — genuinely dynamic, so inline is correct here.
+                  style={active ? { color: starColor() } : undefined}
                 >
                   <Icon name={active ? "star-solid" : "star"} size={28} />
                 </button>
               );
             })}
             {rating > 0 && (
-              <span
-                style={{
-                  marginLeft: 10,
-                  alignSelf: "center",
-                  fontSize: 14,
-                  fontWeight: 700,
-                  color: "var(--accent)",
-                }}
-              >
-                {rating}/10
-              </span>
+              <span className="feedback-modal__score">{rating}/10</span>
             )}
           </div>
         </div>
 
         {/* What they like */}
-        <div style={{ marginBottom: "var(--space-md)" }}>
-          <label
-            htmlFor="feedback-likes"
-            style={{
-              display: "block",
-              fontSize: 14,
-              fontWeight: 700,
-              color: "var(--text-primary)",
-              marginBottom: 8,
-            }}
-          >
-            What did you like? <span style={{ fontWeight: 500, color: "var(--text-tertiary)" }}>(optional)</span>
+        <div className="feedback-modal__field">
+          <label htmlFor="feedback-likes" className="feedback-modal__label">
+            What did you like? <span className="feedback-modal__optional">(optional)</span>
           </label>
           <textarea
             id="feedback-likes"
@@ -249,33 +172,14 @@ export default function FeedbackPrompt({ onDone }: Props) {
             onChange={(e) => setLikes(e.target.value)}
             rows={3}
             placeholder="The explanations, the quizzes, the vibe…"
-            style={{
-              width: "100%",
-              borderRadius: "var(--radius-md)",
-              border: "1px solid var(--border-default)",
-              background: "var(--bg-input)",
-              color: "var(--text-primary)",
-              padding: "12px 14px",
-              fontSize: 14,
-              resize: "vertical",
-              boxSizing: "border-box",
-            }}
+            className="glass-textarea"
           />
         </div>
 
         {/* What to improve */}
-        <div style={{ marginBottom: "var(--space-md)" }}>
-          <label
-            htmlFor="feedback-improvements"
-            style={{
-              display: "block",
-              fontSize: 14,
-              fontWeight: 700,
-              color: "var(--text-primary)",
-              marginBottom: 8,
-            }}
-          >
-            What should we improve? <span style={{ fontWeight: 500, color: "var(--text-tertiary)" }}>(optional)</span>
+        <div className="feedback-modal__field">
+          <label htmlFor="feedback-improvements" className="feedback-modal__label">
+            What should we improve? <span className="feedback-modal__optional">(optional)</span>
           </label>
           <textarea
             id="feedback-improvements"
@@ -284,32 +188,22 @@ export default function FeedbackPrompt({ onDone }: Props) {
             onChange={(e) => setImprovements(e.target.value)}
             rows={3}
             placeholder="Anything that felt slow, confusing, or missing…"
-            style={{
-              width: "100%",
-              borderRadius: "var(--radius-md)",
-              border: "1px solid var(--border-default)",
-              background: "var(--bg-input)",
-              color: "var(--text-primary)",
-              padding: "12px 14px",
-              fontSize: 14,
-              resize: "vertical",
-              boxSizing: "border-box",
-            }}
+            className="glass-textarea"
           />
         </div>
 
-        <div style={{ display: "flex", gap: "var(--space-sm)", flexWrap: "wrap", alignItems: "center" }}>
-          <button type="button" onClick={handleSubmit} disabled={submitting} style={debouncedBtn}>
+        <div className="feedback-modal__actions">
+          <button type="button" onClick={handleSubmit} disabled={submitting} className="btn-primary">
             {submitting ? "Sending…" : "Send feedback"}
           </button>
-          <button type="button" onClick={handleSnooze} disabled={submitting} style={ghostBtn}>
+          <button type="button" onClick={handleSnooze} disabled={submitting} className="btn-ghost">
             Ask later
           </button>
           <button
             type="button"
             onClick={handleNoThanks}
             disabled={submitting}
-            style={{ ...ghostBtn, borderColor: "transparent", color: "var(--text-tertiary)" }}
+            className="btn-ghost feedback-modal__quiet"
           >
             No thanks
           </button>

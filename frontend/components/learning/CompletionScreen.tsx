@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { LessonJourney } from "@/types";
 import ShareResult from "@/components/learning/ShareResult";
 import FeedbackGate from "@/components/shared/FeedbackGate";
@@ -36,6 +37,7 @@ function generateFollowUpSuggestions(lesson: LessonJourney): string[] {
 
 export default function CompletionScreen({ lesson, totalScore, onRestart, onRetake }: Props) {
   const sectionRef = useRef<HTMLElement>(null);
+  const router = useRouter();
 
   // Max score = the ACTUAL number of quiz questions — salvaged quizzes can
   // have 1 question, so hardcoding 2 per part made perfection unreachable.
@@ -120,7 +122,17 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
                     const event = new CustomEvent("reallearn:fillFollowUp", { detail: suggestion });
                     window.dispatchEvent(event);
                     setTimeout(() => followUpInput.focus(), 500);
+                    return;
                   }
+                  // FollowUpBox isn't mounted — hand the suggestion to the
+                  // homepage ask box via the sessionStorage draft it restores
+                  // on mount, so the tap always leads somewhere.
+                  try {
+                    sessionStorage.setItem("reallearn_draft_question", suggestion);
+                  } catch {
+                    // best-effort
+                  }
+                  router.push("/");
                 }}
               >
                 {suggestion}

@@ -298,25 +298,12 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
 
   if (!mounted) return null;
 
-  const btn = (primary: boolean): React.CSSProperties => ({
-    border: primary ? "none" : "1px solid var(--border-default)",
-    borderRadius: "var(--radius-md)",
-    background: primary ? "var(--accent)" : "transparent",
-    color: primary ? "var(--on-accent)" : "var(--text-secondary)",
-    padding: "10px 18px",
-    cursor: "pointer",
-    fontSize: 14,
-    fontWeight: primary ? 700 : 600,
-    minHeight: 44,
-    boxShadow: primary ? "var(--shadow-sm)" : "none",
-  });
-
   return (
-    <div style={{ marginTop: "var(--space-md)", display: "flex", gap: "var(--space-sm)", flexWrap: "wrap" }}>
-      <button type="button" onClick={handleShare} disabled={busy} style={btn(true)}>
+    <div className="share-actions">
+      <button type="button" onClick={handleShare} disabled={busy} className="btn-primary">
         {busy ? "Preparing…" : "Share result"}
       </button>
-      <button type="button" onClick={handleCopy} style={btn(false)}>
+      <button type="button" onClick={handleCopy} className="btn-ghost">
         Copy text
       </button>
     </div>

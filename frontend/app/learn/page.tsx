@@ -11,10 +11,10 @@ import ReadingProgressBar from "@/components/shared/ReadingProgressBar";
 import Footer from "@/components/shared/Footer";
 import MathText from "@/components/shared/MathText";
 import { showToast } from "@/components/shared/ToastContainer";
-import { useLessonStore } from "@/store/lessonStore";
+import { useLessonStore, journeyIdForLesson } from "@/store/lessonStore";
 import { usePreferenceStore } from "@/store/preferenceStore";
 import { useProgressStore } from "@/store/progressStore";
-import { useSavedJourneysStore, journeySignature } from "@/store/savedJourneysStore";
+import { useSavedJourneysStore } from "@/store/savedJourneysStore";
 import { useLesson } from "@/hooks/useLesson";
 import { useMounted } from "@/hooks/useMounted";
 import { Skeleton, SkeletonCard } from "@/components/shared/Skeleton";
@@ -75,6 +75,7 @@ export default function LearnPage() {
   const {
     question,
     lesson,
+    hydratingLesson,
     isLoading,
     error,
     unlockedPart,
@@ -91,6 +92,7 @@ export default function LearnPage() {
     useShallow((state) => ({
       question: state.question,
       lesson: state.lesson,
+      hydratingLesson: state.hydratingLesson,
       isLoading: state.isLoading,
       error: state.error,
       unlockedPart: state.unlockedPart,
@@ -113,6 +115,12 @@ export default function LearnPage() {
   // 420ms loading/reveal cinematic — the reveal is armed only when a lesson
   // transitions in during this session.
   const revealedLessonRef = useRef<LessonJourney | null>(lesson);
+
+  // Initialize from the CURRENT (already-hydrated) store values — the lesson
+  // store persists, so starting these at null/false made every reload of a
+  // persisted lesson re-fire "Lesson ready!" / "Journey complete!" toasts.
+  const prevLessonRef = useRef<LessonJourney | null>(lesson);
+  const prevCompletionRef = useRef(showCompletion);
 
   const language = usePreferenceStore((s) => s.language);
   const level = usePreferenceStore((s) => s.level);
@@ -146,6 +154,25 @@ export default function LearnPage() {
     };
   }, [mounted]);
 
+  // The persisted store keeps only lesson METADATA; the body arrives async
+  // from the IndexedDB archive (see lessonStore). When that restore lands,
+  // sync the once-per-lesson guard refs BEFORE the reveal/toast effects below
+  // run (declaration order = execution order), so reloading a persisted
+  // lesson still doesn't re-play the cinematic or re-fire "lesson ready".
+  const wasHydratingRef = useRef(hydratingLesson);
+  useEffect(() => {
+    if (hydratingLesson) {
+      wasHydratingRef.current = true;
+      return;
+    }
+    if (wasHydratingRef.current) {
+      wasHydratingRef.current = false;
+      revealedLessonRef.current = lesson;
+      prevLessonRef.current = lesson;
+      prevCompletionRef.current = showCompletion;
+    }
+  }, [hydratingLesson, lesson, showCompletion]);
+
   // When a lesson lands, fade the loading overlay out and reveal the lesson.
   // `isRevealing` is deliberately NOT in the dependency array: including it
   // made the effect's own setState re-run it synchronously, which cleared the
@@ -166,12 +193,6 @@ export default function LearnPage() {
   useEffect(() => {
     quizAttemptsRef.current = {};
   }, [lesson]);
-
-  // Initialize from the CURRENT (already-hydrated) store values — the lesson
-  // store persists, so starting these at null/false made every reload of a
-  // persisted lesson re-fire "Lesson ready!" / "Journey complete!" toasts.
-  const prevLessonRef = useRef<LessonJourney | null>(lesson);
-  const prevCompletionRef = useRef(showCompletion);
 
   useEffect(() => {
     if (lesson && prevLessonRef.current === null && !showCompletion) {
@@ -198,9 +219,18 @@ export default function LearnPage() {
     const lessonLevel = lesson.level ?? level;
     // Fold the per-instance lesson id into the saved-journey key so two
     // different generations of the same question never overwrite each other's
-    // history/archive entry (content signatures alone can collide).
-    const baseId = journeySignature(displayQuestion, lesson.parts[0]?.title);
-    const id = lesson.lessonId ? `${baseId}::${lesson.lessonId.slice(0, 8)}` : baseId;
+    // history/archive entry (content signatures alone can collide). Computed
+    // via the shared helper so lessonStore's rehydration finds the same
+    // archive entry.
+    const id = journeyIdForLesson({
+      lessonId: lesson.lessonId,
+      question: lesson.question,
+      topic: lesson.topic,
+      firstPartTitle: lesson.parts[0]?.title,
+    });
+    // savedAt below is only honored on FIRST save — the store preserves the
+    // original stamp on upserts, so progress updates and mere re-opens never
+    // rewrite history order or the learning-profile recency window.
     saveJourney({
       id,
       question: displayQuestion,
@@ -369,8 +399,9 @@ export default function LearnPage() {
     [collapsedParts, togglePartCollapse, totalParts]
   );
 
-  /* ── Hydration gate: neutral shell until the client has mounted ── */
-  if (!mounted) {
+  /* ── Hydration gate: neutral shell until the client has mounted AND any
+        persisted lesson body has been restored from the IndexedDB archive ── */
+  if (!mounted || hydratingLesson) {
     return (
       <>
         <LiveRegion />

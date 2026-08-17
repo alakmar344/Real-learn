@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, memo } from "react";
+import { useEffect, useMemo, useRef, useState, memo } from "react";
 import { QuizQuestion as Question } from "@/types";
 import QuizQuestion from "@/components/learning/QuizQuestion";
 import { reshuffleQuestion, sanitizeQuestion } from "@/lib/quizShuffle";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { Icon } from "@/components/shared/icons";
 
 /** In-flight attempt for one part, held by the parent across close/reopen so
@@ -62,9 +63,12 @@ const QuizSheetBase = ({ open, questions, initialState, onStateChange, onClose, 
   const [firstAttemptScore, setFirstAttemptScore] = useState<number | null>(
     () => resume?.firstAttemptScore ?? null
   );
-  const sheetRef = useRef<HTMLDivElement>(null);
+  // Shared focus trap (hooks/useFocusTrap): moves focus to the first
+  // focusable control on open, keeps Tab inside the panel, and restores
+  // focus to the opener on close — same contract the old hand-rolled trap
+  // provided, minus the 80ms setTimeout race.
+  const sheetRef = useFocusTrap<HTMLDivElement>(open);
   const actionRef = useRef<HTMLButtonElement>(null);
-  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
 
   // Reset to the original (unshuffled) questions only when the SOURCE changes
   // (a different part) — not on reopen, which must keep the banked attempt.
@@ -97,56 +101,6 @@ const QuizSheetBase = ({ open, questions, initialState, onStateChange, onClose, 
       ),
     [answers, quizQuestions]
   );
-
-  /* ── Focus trapping ── */
-  useEffect(() => {
-    if (!open) return;
-    previouslyFocusedRef.current = document.activeElement as HTMLElement;
-
-    const focusFirst = () => {
-      const focusable = sheetRef.current?.querySelectorAll<HTMLElement>(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-      );
-      if (focusable && focusable.length) focusable[0].focus();
-    };
-    /* Small delay so DOM renders first */
-    const id = setTimeout(focusFirst, 80);
-
-    return () => {
-      clearTimeout(id);
-      previouslyFocusedRef.current?.focus();
-    };
-  }, [open]);
-
-  const handleTabTrap = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key !== "Tab" || !sheetRef.current) return;
-      const focusable = sheetRef.current.querySelectorAll<HTMLElement>(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-      );
-      if (!focusable.length) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (e.shiftKey) {
-        if (document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        }
-      } else {
-        if (document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
-    },
-    []
-  );
-
-  useEffect(() => {
-    if (!open) return;
-    document.addEventListener("keydown", handleTabTrap);
-    return () => document.removeEventListener("keydown", handleTabTrap);
-  }, [open, handleTabTrap]);
 
   /* ── Escape to close ── */
   // Escape ALWAYS closes (standard dialog behavior — the × button already
@@ -182,7 +136,7 @@ const QuizSheetBase = ({ open, questions, initialState, onStateChange, onClose, 
         ?.querySelector<HTMLElement>(".quiz-question__option")
         ?.focus();
     }
-  }, [answered, current]);
+  }, [answered, current, sheetRef]);
 
   if (!open || !currentQuestion) return null;
 
@@ -253,9 +207,6 @@ const QuizSheetBase = ({ open, questions, initialState, onStateChange, onClose, 
       >
         {/* Top border accent */}
         <div className="quiz-sheet__accent" aria-hidden="true" />
-
-        {/* Drag handle */}
-        <div className="quiz-sheet__handle" />
 
         {/* Close button */}
         <button type="button" onClick={onClose} aria-label="Close quiz" className="quiz-sheet__close">

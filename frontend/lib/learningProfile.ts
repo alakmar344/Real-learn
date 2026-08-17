@@ -338,7 +338,11 @@ export function buildLearningContext(
   journeys: SavedJourney[] = [],
   subjectsSeen: string[] = [],
   currentQuestion: string = "",
-  goals: string = ""
+  goals: string = "",
+  // Injected so the function stays pure/deterministic (module contract above;
+  // scripts/verify-learning-profile.mjs relies on it) — callers pass a fixed
+  // timestamp, tests can pin it.
+  now: number = Date.now()
 ): string | null {
   const profile = buildLearningProfile(journeys, subjectsSeen);
 
@@ -398,8 +402,10 @@ export function buildLearningContext(
   // tells the model what is fresh in the learner's mind so it can bridge from
   // it or add a quick refresher. Recency is derived from savedAt.
   const RECENT_WINDOW_MS = 1000 * 60 * 60 * 24 * 3; // 3 days
-  const recentCutoff = Date.now() - RECENT_WINDOW_MS;
-  const recentTopics = journeys
+  const recentCutoff = now - RECENT_WINDOW_MS;
+  // Same defensive guard buildLearningProfile applies — a corrupt persisted
+  // value must not crash context generation.
+  const recentTopics = (Array.isArray(journeys) ? journeys : [])
     .filter((j) => j.savedAt >= recentCutoff)
     .sort((a, b) => b.savedAt - a.savedAt)
     .slice(0, 3)
