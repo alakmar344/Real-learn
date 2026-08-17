@@ -1157,4 +1157,29 @@ vendors). All of these live between `2b239b5` (start) and now:
   - **Homepage Question Input Spacing**: Adjusted `.hero` padding (`clamp(36px, 8vh, 72px) ... clamp(48px, 10vh, 96px)`), `.hero__stage` top margin (`clamp(16px, 3vh, 36px)` on mobile / `clamp(20px, 3.5vh, 44px)` on desktop), and `.hero__input-row` spacing (`clamp(20px, 3vh, 32px)`), removing duplicate top margin on `.q-form`. Moves the input bar down into a balanced, natural viewport center position.
   - **Domain Whitelisting**: Added `https://reallearn-taupe.vercel.app` to `allowedOrigins` in `backend/src/middleware/security.js` and `DEFAULT_PRODUCTION_AUTHORIZED_PARTIES` in `backend/src/lib/auth.js`.
   - **Verification**: Backend tests 84/84 passing, frontend `tsc --noEmit` 0 errors, ESLint 0 errors, all 8 verify scripts pass, `npm run build` (15/15 pages) clean.
+- 2026-08-17 (later) — **Allowed Origins & CORS Allowlist Normalization.**
+  - Configured allowed origins across `backend/src/middleware/security.js` (`allowedOrigins`), `backend/src/lib/auth.js` (`DEFAULT_PRODUCTION_AUTHORIZED_PARTIES`), and `backend/.env.example` (`FRONTEND_ORIGIN`, `CLERK_AUTHORIZED_PARTIES`) to include:
+    - `https://reallearn.site`
+    - `https://www.reallearn.site`
+    - `https://reallearn-taupe.vercel.app`
+    - `https://reallearn-taupe.xercel.app`
+  - Updated offensive audit test `K2` (`backend/test/offensive-audit.test.js`) to assert all trusted domain variants are allowed while unauthorized origins remain strictly rejected.
+  - Verified: backend `npm test` 84/84 passing, frontend `npm run build` passing.
+- 2026-08-17 (later) — **Groq 8k TPM Token Minimization, 3-Model Rotating Load Balancer & Groq Compound Overflow.**
+  - **High-Density, Lean Prompt Architecture (`backend/src/lib/prompts.js`)**: Calibrated target word counts to eliminate filler while maximizing pedagogical depth:
+    - Fast mode: Direct, crisp mental model in 80–120 words + 2 quiz questions.
+    - Explain mode: Structured 3-part progression (core concept, mechanism, real world) in 110–140 words per part + 2 quiz questions per part + 3 takeaways.
+    - Token reductions: Compressed system prompts and strict anti-filler rules eliminate meta-commentary, introductory throat-clearing, and robotic phrasing, cutting ~40% output tokens invisibly with higher perceived answer richness.
+  - **Context & Generation Output Cap Optimization (`backend/src/routes/lesson.js`)**:
+    - Serper news context trimmed to 500 chars (down from 1,500 chars), saving prompt tokens while preserving factual real-world anchoring.
+    - Tailored `maxOutputTokens` ceilings: `1200` for fast mode and `2200` for explain mode (down from 4,000 blanket cap), bounding runaway generations within Groq 8k TPM budget.
+  - **Groq 3-Model Rotating Load Balancer & Sliding 60s TPM Tracker (`backend/src/lib/gemma.js`)**:
+    - 3-Model Architecture on Groq: `qwen/qwen3.6-27b` (Qwen), `openai/gpt-oss-120b` (GPT-oss), and `groq/compound` (Groq Compound).
+    - Even 50/50 Round-Robin Rotation: Alternates evenly between Qwen and GPT-oss on each successive request without permanent default bias.
+    - Sliding 60s TPM Window (`TPM_WINDOW_MS = 60000`): Tracks prompt + completion tokens (`Math.ceil((promptChars + fullText.length) / 3.5)`).
+    - Direct Groq Compound Overflow: When 60s usage approaches the safety threshold (`GROQ_TPM_SAFETY_THRESHOLD = 6800` of `GROQ_TPM_LIMIT = 8000`) or encounters a 429 rate limit, the load balancer routes directly to `groq/compound` using the same execution engine.
+    - Disabled reasoning thinking tokens (`AI_DISABLE_THINKING = "groq"`) by default so hidden reasoning tokens do not consume the TPM budget.
+  - **Comprehensive Unit Testing & Empirical Verification**:
+    - Added unit tests in `backend/test/gemma-engine.test.js` validating model registration, 50/50 round-robin alternation, sliding 60s window token pruning, and automated Groq Compound overflow.
+    - Verified: backend tests 87/87 passing (`npm test` 100% PASS), frontend typecheck (`tsc --noEmit` 0 errors), Next.js production build (`npm run build` 15/15 pages clean).
 

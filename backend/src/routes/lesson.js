@@ -6,9 +6,13 @@
 import express from "express";
 import {
   callGemma,
+  formatAITimeoutMessage,
   formatGemmaTimeoutMessage,
+  AITimeoutError,
   GemmaTimeoutError,
+  AIApiError,
   GemmaApiError,
+  AICircuitOpenError,
   GemmaCircuitOpenError,
   parseJSON,
   callNvidiaFallbackAI,
@@ -17,7 +21,6 @@ import {
   isNvidiaFallbackConfigured,
   isCloudflareFallbackConfigured,
   extractTextFromResult,
-  GEMMA_MODEL,
 } from "../lib/gemma.js";
 import {
   GENERATE_LESSON_PROMPT,
@@ -54,6 +57,7 @@ import {
   ALLOWED_LANGUAGES,
   ALLOWED_LEVELS,
   LESSON_TIMEOUT_MS,
+  AI_CALL_TIMEOUT_MS,
   GEMMA_CALL_TIMEOUT_MS,
   HEARTBEAT_INTERVAL_MS,
   MAX_CONCURRENT_LESSON_REQUESTS,
@@ -599,8 +603,8 @@ router.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => 
           })
         : null;
     const trimmedNewsContext =
-      typeof newsContext === "string" && newsContext.length > 1500
-        ? newsContext.slice(0, 1500) + "\n\n[context truncated]"
+      typeof newsContext === "string" && newsContext.length > 500
+        ? newsContext.slice(0, 500) + "\n\n[context truncated]"
         : newsContext;
     console.log("[Serper] Context fetch end", {
       requestId,
@@ -657,22 +661,19 @@ END_EXTERNAL_CONTEXT>>>`
 
     const systemPrompt =
       mode === "fast" ? GENERATE_FAST_ANSWER_PROMPT : GENERATE_LESSON_PROMPT;
-    // IMPORTANT: max_tokens is a CEILING, not a target — a short fast answer
-    // still finishes early, so a tighter cap costs no latency. With thinking
-    // tokens disabled for the primary provider, the overhead is minimal, and
-    // these ceilings prevent runaway generation while leaving ample room for
-    // the structured JSON output.
-    // Both modes use the same ceiling: max_tokens is a ceiling, not a target,
-    // and Gemma's thinking overhead is constant. A larger cap prevents the
-    // JSON truncation that broke fast mode when the quiz was cut off mid-object.
-    const maxOutputTokens = 4000;
+    // TOKEN EFFICIENCY & 8K TPM OPTIMIZATION:
+    // Tailored max_tokens ceiling prevents runaway loops from consuming
+    // Groq's 8k TPM pool while providing ample headroom:
+    // - Fast mode (1 part + 2 quizzes): ~400-600 tokens -> 1,200 cap (2x headroom)
+    // - Explain mode (3 parts + 6 quizzes): ~700-1,100 tokens -> 2,200 cap (2x headroom)
+    const maxOutputTokens = mode === "fast" ? 1200 : 2200;
     // Fast mode uses a lower temperature for more focused, deterministic
     // output — less sampling overhead means faster generation.
     const temperature = mode === "fast" ? 0.2 : 0.6;
-    console.log("[Gemma] callGemma start", {
+    console.log("[AI] callAI start", {
       requestId,
       mode,
-      callTimeoutMs: GEMMA_CALL_TIMEOUT_MS,
+      callTimeoutMs: AI_CALL_TIMEOUT_MS,
       userPromptLength: userPrompt.length,
       hasNewsContext: Boolean(newsContext),
       maxOutputTokens,
@@ -723,13 +724,13 @@ END_EXTERNAL_CONTEXT>>>`
         });
       }, 1500));
 
-      console.log("[Gemma] generate start", {
+      console.log("[AI] generate start", {
         requestId,
         mode,
         provider: PROVIDER_LOG_LABELS[source] || PROVIDER_LOG_LABELS.primary,
         label,
         isRepairAttempt: Boolean(repairReason),
-        callTimeoutMs: GEMMA_CALL_TIMEOUT_MS,
+        callTimeoutMs: AI_CALL_TIMEOUT_MS,
         userPromptLength: attemptUserPrompt.length,
         hasNewsContext: Boolean(newsContext),
         maxOutputTokens,
@@ -741,7 +742,7 @@ END_EXTERNAL_CONTEXT>>>`
         if (source === "nvidia") {
           result = extractTextFromResult(
             await callNvidiaFallbackAI(
-              GEMMA_MODEL,
+              undefined,
               {
                 messages: [
                   { role: "system", content: systemPrompt },
@@ -758,7 +759,7 @@ END_EXTERNAL_CONTEXT>>>`
           // fallback is still reachable when the primary's circuit is open.
           result = extractTextFromResult(
             await callCloudflareAI(
-              GEMMA_MODEL,
+              undefined,
               {
                 messages: [
                   { role: "system", content: systemPrompt },
@@ -775,7 +776,7 @@ END_EXTERNAL_CONTEXT>>>`
             systemPrompt,
             attemptUserPrompt,
             attemptTemperature,
-            GEMMA_CALL_TIMEOUT_MS,
+            AI_CALL_TIMEOUT_MS,
             generateAbortSignal,
             maxOutputTokens
           );
@@ -784,7 +785,7 @@ END_EXTERNAL_CONTEXT>>>`
         const promptTokens = estimateTokenCount(systemPrompt) + estimateTokenCount(attemptUserPrompt);
         const completionTokens = estimateTokenCount(result);
         logTokenUsage(requestId, mode, source, promptTokens, completionTokens);
-        console.log("[Gemma] generate success", {
+        console.log("[AI] generate success", {
           requestId,
           provider: PROVIDER_LOG_LABELS[source] || PROVIDER_LOG_LABELS.primary,
           label,
@@ -796,7 +797,7 @@ END_EXTERNAL_CONTEXT>>>`
         return result;
       } catch (error) {
         clearInterval(attemptTicker);
-        console.error("[Gemma] generate failed", {
+        console.error("[AI] generate failed", {
           requestId,
           provider: PROVIDER_LOG_LABELS[source] || PROVIDER_LOG_LABELS.primary,
           label,
@@ -1084,23 +1085,23 @@ END_EXTERNAL_CONTEXT>>>`
       console.log("[generate-lesson] Request aborted", { requestId });
       return;
     }
-    const timeoutMessage = formatGemmaTimeoutMessage(LESSON_TIMEOUT_MS);
+    const timeoutMessage = formatAITimeoutMessage(LESSON_TIMEOUT_MS);
     const message =
-      lessonDeadlineHit || error instanceof GemmaTimeoutError
+      lessonDeadlineHit || error instanceof AITimeoutError || error instanceof GemmaTimeoutError
         ? timeoutMessage
-        : error instanceof GemmaCircuitOpenError
+        : error instanceof AICircuitOpenError || error instanceof GemmaCircuitOpenError
         ? error.message
-        : error instanceof GemmaApiError &&
+        : (error instanceof AIApiError || error instanceof GemmaApiError) &&
           (error.status === 408 ||
             error.status === 429 ||
             (error.status >= 500 && error.status < 600))
-        ? "Gemma service is temporarily unavailable. Please try again in a moment."
-        : // Security: NEVER echo GemmaApiError.message to clients — it embeds
-          // up to 500 chars of the raw upstream (Cloudflare) response body,
+        ? "AI service is temporarily unavailable. Please try again in a moment."
+        : // Security: NEVER echo AIApiError.message to clients — it embeds
+          // up to 500 chars of the raw upstream response body,
           // which can leak account/model/config internals. Same for any other
           // internal error (driver/infra messages can contain hostnames).
           // The full detail is still logged server-side below.
-          error instanceof GemmaApiError
+          error instanceof AIApiError || error instanceof GemmaApiError
         ? "The AI service could not process this request. Please try again."
         : "Failed to generate lesson. Please try again.";
 

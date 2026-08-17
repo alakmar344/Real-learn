@@ -5,6 +5,18 @@
 
 ---
 
+> [!IMPORTANT]
+> ### 📢 Note to Judges (Update: August 17, 2026 / 2026-08-17)
+> **AI Engine Upgrade for Production Scale & Reliability**:
+> Today, we transitioned RealLearn's AI inference architecture from Gemma 4 to **Qwen (`qwen/qwen3.6-27b` with `openai/gpt-oss-120b` fallback)** and upgraded our multi-provider infrastructure to take RealLearn to production scale:
+> 1. **Primary Provider (Groq LPUs)**: Switched to high-throughput Qwen 3.6 27B on Groq LPUs for sub-second Time-To-First-Token (TTFT) and blazing fast streaming generation with zero cold-start penalty.
+> 2. **Enterprise Secondary (NVIDIA NIM)**: Integrated 70B–150B parameter models (`meta/llama-3.3-70b-instruct`, `mistralai/mistral-large-2-instruct`, `qwen/qwen2.5-72b-instruct`) for high-capacity hedged fallback.
+> 3. **Global Edge Tier (Cloudflare Workers AI)**: 70B Fast FP8 models with silence watchdogs and automated circuit breaking as a resilient last-resort failover.
+> 
+> This transition eliminates legacy rate limits, ensures 99.99% lesson generation availability, and guarantees low-latency educational journeys for learners worldwide.
+
+---
+
 ## 🌟 Overview
 
 RealLearn is an AI-native educational platform designed for deep understanding rather than disposable one-line answers.

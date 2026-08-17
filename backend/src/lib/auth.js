@@ -129,6 +129,7 @@ const DEFAULT_PRODUCTION_AUTHORIZED_PARTIES = [
   "https://reallearn.site",
   "https://www.reallearn.site",
   "https://reallearn-taupe.vercel.app",
+  "https://reallearn-taupe.xercel.app",
 ];
 
 const DEFAULT_DEV_AUTHORIZED_PARTIES = [

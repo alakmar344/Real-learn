@@ -22,9 +22,18 @@ const {
   extractTextFromResult,
   getProviderHealthSnapshot,
   resetProviderHealth,
+  AIApiError,
   GemmaApiError,
   GEMMA_MODEL,
   PRIMARY_AI_MODEL,
+  GROQ_SECONDARY_MODEL,
+  GROQ_COMPOUND_MODEL,
+  getGroqModels,
+  selectNextGroqModel,
+  recordGroqTokens,
+  getRollingGroqTpmUsage,
+  isGroqTpmNearLimit,
+  resetGroqTokenLedger,
 } = await import("../src/lib/gemma.js");
 
 const originalFetch = globalThis.fetch;
@@ -302,4 +311,51 @@ test("extractTextFromResult rejects empty payloads", () => {
 test("parseJSON repairs fenced and truncated model output", () => {
   assert.deepEqual(parseJSON('```json\n{"a": 1}\n```'), { a: 1 });
   assert.deepEqual(parseJSON('{"a": [1, 2'), { a: [1, 2] });
+});
+
+test("Groq model list includes Qwen, GPT-oss, and Groq Compound", () => {
+  const models = getGroqModels();
+  assert.ok(models.includes("qwen/qwen3.6-27b"));
+  assert.ok(models.includes("openai/gpt-oss-120b"));
+  assert.ok(models.includes("groq/compound"));
+});
+
+test("Groq load balancer alternates 50/50 between Qwen and GPT-oss in round robin", () => {
+  resetGroqTokenLedger();
+  const first = selectNextGroqModel();
+  const second = selectNextGroqModel();
+  const third = selectNextGroqModel();
+  const fourth = selectNextGroqModel();
+
+  assert.equal(first.selectedModel, "qwen/qwen3.6-27b");
+  assert.equal(first.reason, "round_robin");
+  assert.equal(second.selectedModel, "openai/gpt-oss-120b");
+  assert.equal(second.reason, "round_robin");
+  assert.equal(third.selectedModel, "qwen/qwen3.6-27b");
+  assert.equal(third.reason, "round_robin");
+  assert.equal(fourth.selectedModel, "openai/gpt-oss-120b");
+  assert.equal(fourth.reason, "round_robin");
+});
+
+test("Groq sliding 60s TPM tracker overflows to Groq Compound when threshold is exceeded", () => {
+  resetGroqTokenLedger();
+  assert.equal(getRollingGroqTpmUsage(), 0);
+  assert.equal(isGroqTpmNearLimit(500), false);
+
+  // Record token usage approaching 8k TPM limit (safety threshold = 6800)
+  recordGroqTokens(6500);
+  assert.equal(getRollingGroqTpmUsage(), 6500);
+  assert.equal(isGroqTpmNearLimit(500), true);
+
+  const overflowSelection = selectNextGroqModel(500);
+  assert.equal(overflowSelection.selectedModel, "groq/compound");
+  assert.equal(overflowSelection.reason, "tpm_overflow");
+
+  // Reset ledger and verify it returns to normal round-robin rotation
+  resetGroqTokenLedger();
+  assert.equal(getRollingGroqTpmUsage(), 0);
+  assert.equal(isGroqTpmNearLimit(500), false);
+  const normalSelection = selectNextGroqModel(500);
+  assert.equal(normalSelection.selectedModel, "qwen/qwen3.6-27b");
+  assert.equal(normalSelection.reason, "round_robin");
 });
