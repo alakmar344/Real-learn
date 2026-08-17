@@ -5582,6 +5582,11 @@ p {
   padding: 8px 14px 12px;
   border-bottom: 1px solid var(--border-subtle);
 }
+@media (max-width: 900px) {
+  .app-sidebar__head {
+    border-bottom: none;
+  }
+}
 .app-sidebar__nav-link {
   display: flex;
   align-items: center;
