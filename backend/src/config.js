@@ -59,12 +59,12 @@ export const RATE_LIMIT_MAX_REQUESTS =
 const DEFAULT_LESSON_TIMEOUT_MS = 300000;
 const MIN_LESSON_TIMEOUT_MS = 30000;
 const MAX_LESSON_TIMEOUT_MS = 600000;
-// Per-call timeout for individual Gemma API requests. The lesson-level
+// Per-call timeout for individual AI provider API requests. The lesson-level
 // timeout (above) covers the full generation including retries and
 // validation; this shorter timeout ensures a single stuck request doesn't
 // eat the entire budget. 45s is enough for a warm model (~30-50s typical);
 // cold starts that exceed this will be retried with a delay.
-const DEFAULT_GEMMA_CALL_TIMEOUT_MS = 45000;
+const DEFAULT_AI_CALL_TIMEOUT_MS = 45000;
 const configuredLessonTimeoutMs = Number(process.env.LESSON_TIMEOUT_MS);
 export const LESSON_TIMEOUT_MS =
   Number.isFinite(configuredLessonTimeoutMs) && configuredLessonTimeoutMs > 0
@@ -90,11 +90,14 @@ if (
     `[config] LESSON_TIMEOUT_MS clamped from ${configuredLessonTimeoutMs}ms to maximum ${MAX_LESSON_TIMEOUT_MS}ms`
   );
 }
-const configuredGemmaCallTimeoutMs = Number(process.env.GEMMA_CALL_TIMEOUT_MS);
-export const GEMMA_CALL_TIMEOUT_MS =
-  Number.isFinite(configuredGemmaCallTimeoutMs) && configuredGemmaCallTimeoutMs > 0
-    ? configuredGemmaCallTimeoutMs
-    : DEFAULT_GEMMA_CALL_TIMEOUT_MS;
+const configuredAiCallTimeoutMs = Number(
+  process.env.AI_CALL_TIMEOUT_MS ?? process.env.GEMMA_CALL_TIMEOUT_MS
+);
+export const AI_CALL_TIMEOUT_MS =
+  Number.isFinite(configuredAiCallTimeoutMs) && configuredAiCallTimeoutMs > 0
+    ? configuredAiCallTimeoutMs
+    : DEFAULT_AI_CALL_TIMEOUT_MS;
+export const GEMMA_CALL_TIMEOUT_MS = AI_CALL_TIMEOUT_MS;
 const DEFAULT_HEARTBEAT_INTERVAL_MS = 15000;
 const MAX_HEARTBEAT_INTERVAL_MS = 55000;
 const configuredHeartbeatIntervalMs = Number(process.env.SSE_HEARTBEAT_INTERVAL_MS);

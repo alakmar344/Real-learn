@@ -35,9 +35,97 @@ import { Groq } from "groq-sdk";
 
 export const PRIMARY_AI_MODEL =
   process.env.GROQ_AI_MODEL ||
-  process.env.GEMMA_MODEL ||
+  process.env.AI_MODEL ||
   "qwen/qwen3.6-27b";
 export const GEMMA_MODEL = PRIMARY_AI_MODEL;
+export const GROQ_SECONDARY_MODEL =
+  process.env.GROQ_SECONDARY_MODEL || "openai/gpt-oss-120b";
+export const GROQ_COMPOUND_MODEL =
+  process.env.GROQ_COMPOUND_MODEL || "groq/compound";
+
+// ── Groq Sliding 60s TPM Tracker & 3-Model Load Balancer ──────────────────
+// Groq rate-limits primary tier traffic to 8,000 TPM.
+// We alternate 50/50 between Qwen 3.6 27B and GPT-OSS 120B (no permanent default).
+// A rolling 60s sliding window tracks estimated & consumed tokens.
+// When usage approaches the safety threshold (default: 6,800 tokens), requests
+// automatically overflow to Groq Compound without hitting 429 rate limits.
+
+const DEFAULT_GROQ_TPM_LIMIT = 8000;
+const DEFAULT_GROQ_TPM_SAFETY_THRESHOLD = 6800;
+const TPM_WINDOW_MS = 60000;
+
+const groqTokenLedger = [];
+let groqRotationCounter = 0;
+
+export function pruneGroqTokenLedger(now = Date.now()) {
+  const cutoff = now - TPM_WINDOW_MS;
+  while (groqTokenLedger.length > 0 && groqTokenLedger[0].timestamp < cutoff) {
+    groqTokenLedger.shift();
+  }
+}
+
+export function getRollingGroqTpmUsage(now = Date.now()) {
+  pruneGroqTokenLedger(now);
+  return groqTokenLedger.reduce((sum, entry) => sum + entry.tokens, 0);
+}
+
+export function recordGroqTokens(tokens, now = Date.now()) {
+  if (typeof tokens !== "number" || !Number.isFinite(tokens) || tokens <= 0) return;
+  pruneGroqTokenLedger(now);
+  groqTokenLedger.push({ timestamp: now, tokens: Math.round(tokens) });
+}
+
+export function resetGroqTokenLedger() {
+  groqTokenLedger.length = 0;
+  groqRotationCounter = 0;
+}
+
+export function isGroqTpmNearLimit(estimatedTokens = 600) {
+  const threshold = parsePositiveInt(
+    process.env.GROQ_TPM_SAFETY_THRESHOLD,
+    DEFAULT_GROQ_TPM_SAFETY_THRESHOLD
+  );
+  const currentUsage = getRollingGroqTpmUsage();
+  return (currentUsage + estimatedTokens) >= threshold;
+}
+
+export function selectNextGroqModel(estimatedTokens = 600) {
+  const currentUsage = getRollingGroqTpmUsage();
+  const nearLimit = isGroqTpmNearLimit(estimatedTokens);
+  const compoundModel = GROQ_COMPOUND_MODEL;
+
+  if (nearLimit) {
+    console.log("[AI] Groq 8k TPM window near limit — routing to Groq Compound", {
+      currentUsage,
+      threshold: parsePositiveInt(
+        process.env.GROQ_TPM_SAFETY_THRESHOLD,
+        DEFAULT_GROQ_TPM_SAFETY_THRESHOLD
+      ),
+      selectedModel: compoundModel,
+    });
+    return {
+      selectedModel: compoundModel,
+      reason: "tpm_overflow",
+      currentUsage,
+    };
+  }
+
+  const rotatingModels = [PRIMARY_AI_MODEL, GROQ_SECONDARY_MODEL];
+  const idx = groqRotationCounter++ % rotatingModels.length;
+  const selectedModel = rotatingModels[idx];
+
+  console.log("[AI] Groq load balancer selected model", {
+    selectedModel,
+    rotationIndex: idx,
+    currentUsage,
+  });
+
+  return {
+    selectedModel,
+    reason: "round_robin",
+    currentUsage,
+  };
+}
 
 // SECURITY: hard ceiling on accumulated streamed characters. Providers are
 // first-party and max_tokens bounds normal generation, but a misbehaving
@@ -80,40 +168,44 @@ const PARSE_JSON_LOG_PREVIEW_CHARS = 300;
 
 // ── Errors (public API — server.js maps these to friendly client messages) ──
 
-export function formatGemmaTimeoutMessage(timeoutMs) {
+export function formatAITimeoutMessage(timeoutMs) {
   const timeoutSeconds = timeoutMs / 1000;
-  return `Gemma API request timed out after ${timeoutSeconds} seconds`;
+  return `AI API request timed out after ${timeoutSeconds} seconds`;
 }
+export const formatGemmaTimeoutMessage = formatAITimeoutMessage;
 
-export class GemmaTimeoutError extends Error {
-  constructor(timeoutMs) {
-    super(formatGemmaTimeoutMessage(timeoutMs));
-    this.name = "GemmaTimeoutError";
-  }
-}
-
-export class GemmaApiError extends Error {
+export class AIApiError extends Error {
   constructor(status, statusText, details, retryAfterMs) {
-    super(`Gemma API error: ${status} ${statusText} - ${details}`);
-    this.name = "GemmaApiError";
+    super(`AI API error: ${status} ${statusText} - ${details}`);
+    this.name = "AIApiError";
     this.status = status;
     this.statusText = statusText;
     this.details = details;
     this.retryAfterMs = retryAfterMs;
   }
 }
+export class GemmaApiError extends AIApiError {}
 
-export class GemmaCircuitOpenError extends Error {
+export class AITimeoutError extends Error {
+  constructor(timeoutMs) {
+    super(formatAITimeoutMessage(timeoutMs));
+    this.name = "AITimeoutError";
+  }
+}
+export class GemmaTimeoutError extends AITimeoutError {}
+
+export class AICircuitOpenError extends Error {
   constructor(retryAfterMs) {
     const retryAfterSeconds = Math.ceil(retryAfterMs / 1000);
     const secondsLabel = retryAfterSeconds === 1 ? "second" : "seconds";
     super(
-      `Gemma service is temporarily paused after repeated timeouts. Retry in about ${retryAfterSeconds} ${secondsLabel}`
+      `AI service is temporarily paused after repeated timeouts. Retry in about ${retryAfterSeconds} ${secondsLabel}`
     );
-    this.name = "GemmaCircuitOpenError";
+    this.name = "AICircuitOpenError";
     this.retryAfterMs = retryAfterMs;
   }
 }
+export class GemmaCircuitOpenError extends AICircuitOpenError {}
 
 // ── Env helpers ──────────────────────────────────────────────────────────────
 
@@ -142,23 +234,25 @@ function parseModelList(value) {
 function getEngineConfig() {
   return {
     maxRetries: parseNonNegativeInt(
-      process.env.GEMMA_MAX_RETRIES,
+      process.env.AI_MAX_RETRIES ?? process.env.GEMMA_MAX_RETRIES,
       DEFAULT_MAX_RETRIES
     ),
     retryDelayMs: parseNonNegativeInt(
-      process.env.GEMMA_RETRY_DELAY_MS,
+      process.env.AI_RETRY_DELAY_MS ?? process.env.GEMMA_RETRY_DELAY_MS,
       DEFAULT_RETRY_DELAY_MS
     ),
     maxRetryDelayMs: parseNonNegativeInt(
-      process.env.GEMMA_MAX_RETRY_DELAY_MS,
+      process.env.AI_MAX_RETRY_DELAY_MS ?? process.env.GEMMA_MAX_RETRY_DELAY_MS,
       DEFAULT_MAX_RETRY_DELAY_MS
     ),
     circuitFailureThreshold: parsePositiveInt(
-      process.env.GEMMA_TIMEOUT_CIRCUIT_FAILURE_THRESHOLD,
+      process.env.AI_TIMEOUT_CIRCUIT_FAILURE_THRESHOLD ??
+        process.env.GEMMA_TIMEOUT_CIRCUIT_FAILURE_THRESHOLD,
       DEFAULT_CIRCUIT_FAILURE_THRESHOLD
     ),
     circuitCooldownMs: parsePositiveInt(
-      process.env.GEMMA_TIMEOUT_CIRCUIT_COOLDOWN_MS,
+      process.env.AI_TIMEOUT_CIRCUIT_COOLDOWN_MS ??
+        process.env.GEMMA_TIMEOUT_CIRCUIT_COOLDOWN_MS,
       DEFAULT_CIRCUIT_COOLDOWN_MS
     ),
     hedgeDelayMs: parseNonNegativeInt(
@@ -431,17 +525,20 @@ export function isNvidiaFallbackConfigured() {
   return isNvidiaConfigured();
 }
 
-function getGroqModels() {
-  const models = [
-    PRIMARY_AI_MODEL,
+export function getGroqModels() {
+  const rotating = [PRIMARY_AI_MODEL, GROQ_SECONDARY_MODEL];
+  const configured = [
     ...parseModelList(process.env.GROQ_AI_MODELS),
     ...parseModelList(process.env.GROQ_FALLBACK_MODELS),
-    ...parseModelList(process.env.GEMMA_FALLBACK_MODELS),
+    ...parseModelList(process.env.AI_FALLBACK_MODELS),
   ];
-  if (models.length === 0 || (models.length === 1 && !process.env.GROQ_AI_MODEL)) {
-    models.push("openai/gpt-oss-120b");
-  }
-  return [...new Set(models.filter(Boolean))];
+  const all = [
+    ...rotating,
+    GROQ_COMPOUND_MODEL,
+    ...configured,
+    "llama-3.3-70b-versatile",
+  ];
+  return [...new Set(all.filter(Boolean))];
 }
 
 function getNvidiaModels() {
@@ -688,8 +785,8 @@ async function fetchChatCompletion(url, headers, payload, signal, opts = {}) {
 // the extra field, it is opt-in per provider:
 //   AI_DISABLE_THINKING = off (default) | groq | nvidia | cloudflare | both/all
 function thinkingDisabledFor(providerKey) {
-  const mode = (process.env.AI_DISABLE_THINKING || "off").trim().toLowerCase();
-  return mode === "both" || mode === "all" || mode === providerKey;
+  const mode = (process.env.AI_DISABLE_THINKING || "groq").trim().toLowerCase();
+  return mode === "both" || mode === "all" || mode === "groq" || mode === providerKey;
 }
 
 async function callNvidiaAI(model, body, signal, opts) {
@@ -895,8 +992,23 @@ async function callGroq(model, body, signal, opts) {
       );
     }
 
+    const promptChars = body.messages.reduce(
+      (acc, m) => acc + (typeof m.content === "string" ? m.content.length : 0),
+      0
+    );
+    const estimatedTokensUsed = Math.ceil((promptChars + fullText.length) / 3.5);
+    recordGroqTokens(estimatedTokensUsed);
+
     return { choices: [{ message: { content: fullText } }] };
   } catch (error) {
+    if (
+      error?.status === 429 ||
+      error?.code === 429 ||
+      error?.message?.includes?.("rate_limit_exceeded")
+    ) {
+      recordGroqTokens(DEFAULT_GROQ_TPM_LIMIT);
+    }
+
     if (
       watchdogFired &&
       (isAbortError(error) ||
@@ -942,7 +1054,8 @@ function fallbackWatchdogOpts() {
 export async function callNvidiaFallbackAI(model, body, signal) {
   const models = getNvidiaModels();
   const preferred = models[providerHealth.nvidia.modelIndex % models.length];
-  return callNvidiaAI(preferred || model, body, signal, fallbackWatchdogOpts());
+  const targetModel = model && models.includes(model) ? model : (preferred || models[0]);
+  return callNvidiaAI(targetModel, body, signal, fallbackWatchdogOpts());
 }
 
 export async function callCloudflareAI(model, body, signal) {
@@ -954,7 +1067,8 @@ export async function callCloudflareAI(model, body, signal) {
   }
   const models = getCloudflareModels();
   const preferred = models[providerHealth.cloudflare.modelIndex % models.length];
-  return callWorkersAI(accountId, preferred || model, body, signal, fallbackWatchdogOpts());
+  const targetModel = model && models.includes(model) ? model : (preferred || models[0]);
+  return callWorkersAI(accountId, targetModel, body, signal, fallbackWatchdogOpts());
 }
 
 // Cloudflare Workers AI can report a mid-stream failure (e.g. 408 "error in
@@ -1085,7 +1199,7 @@ class ProviderExhaustedError extends Error {
 async function runProviderAttempts(provider, request, config, raceState) {
   const { messages, temperature, maxOutputTokens, timeoutMs, callId, parentSignal, raceSignal } = request;
   const health = providerHealth[provider.key];
-  const models = provider.models.length > 0 ? provider.models : [GEMMA_MODEL];
+  const models = provider.models.length > 0 ? provider.models : [PRIMARY_AI_MODEL];
   let lastError = null;
 
   for (let attempt = 0; attempt <= config.maxRetries; attempt++) {
@@ -1097,8 +1211,15 @@ async function runProviderAttempts(provider, request, config, raceState) {
 
     // Always use the provider's CURRENT preferred model — rotation on a
     // model-shaped failure advances it, and success pins it for next time.
-    const modelIndex = health.modelIndex % models.length;
-    const model = models[modelIndex];
+    let modelIndex = health.modelIndex % models.length;
+    let model = models[modelIndex];
+    if (provider.key === "groq" && attempt === 0) {
+      const selection = selectNextGroqModel();
+      if (selection?.selectedModel && models.includes(selection.selectedModel)) {
+        model = selection.selectedModel;
+        modelIndex = models.indexOf(model);
+      }
+    }
 
     const controller = new AbortController();
     let timeoutTriggered = false;
@@ -1552,7 +1673,7 @@ export function startPeriodicWarmUp(intervalMs) {
     Number.isFinite(intervalMs) && intervalMs > 0
       ? intervalMs
       : parsePositiveInt(
-          process.env.GEMMA_WARM_UP_INTERVAL_MS,
+          process.env.AI_WARM_UP_INTERVAL_MS ?? process.env.GEMMA_WARM_UP_INTERVAL_MS,
           DEFAULT_WARM_UP_INTERVAL_MS
         );
   const idleWindowMs = parsePositiveInt(
