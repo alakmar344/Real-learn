@@ -2,21 +2,37 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useLessonStore } from "@/store/lessonStore";
+import { usePreferenceStore } from "@/store/preferenceStore";
 import { Icon } from "@/components/shared/icons";
 import MathText from "@/components/shared/MathText";
 
-// Each step "completes" once the real progress passes its threshold. The
-// thresholds are spread across the whole 0–100 range (no two steps share a
-// value) so the checklist advances continuously alongside the bar instead of
-// two items lighting up at once and then stalling.
-const steps = [
-  { label: "Understanding your question", at: 5, stage: "starting" },
-  { label: "Researching real-world context", at: 15, stage: "searching" },
-  { label: "Writing the foundation", at: 40, stage: "generating" },
-  { label: "Explaining how it works", at: 62, stage: "generating" },
-  { label: "Connecting it to the real world", at: 85, stage: "generated" },
-  { label: "Crafting quiz questions", at: 95, stage: "validating" },
+// Each step "completes" once the displayed progress passes its threshold.
+// The final "quiz" step sits at 95 — past the auto-progress ceiling — so it
+// only lights up on real backend progress or the actual reveal, never from
+// the local timer pretending.
+const EXPLAIN_STEPS = [
+  { label: "Understanding your question", at: 5 },
+  { label: "Researching real-world context", at: 15 },
+  { label: "Writing the foundation", at: 40 },
+  { label: "Explaining how it works", at: 62 },
+  { label: "Connecting it to the real world", at: 85 },
+  { label: "Crafting quiz questions", at: 95 },
 ];
+
+// Fast mode generates a single direct answer + quiz — no 3-part journey.
+const FAST_STEPS = [
+  { label: "Understanding your question", at: 5 },
+  { label: "Writing a direct answer", at: 45 },
+  { label: "Crafting quiz questions", at: 95 },
+];
+
+const EXPLAIN_PARTS = [
+  { num: 1, title: "Foundation", at: 5 },
+  { num: 2, title: "Mechanism", at: 40 },
+  { num: 3, title: "Real World", at: 75 },
+];
+
+const FAST_PARTS = [{ num: 1, title: "Your Answer", at: 10 }];
 
 const facts = [
   "Short spaced sessions beat one giant cram — your brain saves in checkpoints, not one big file.",
@@ -51,15 +67,17 @@ interface Props {
 
 // After this long, show a gentle reassurance line — a slow generation should
 // feel deliberate ("we're taking care with your lesson"), never broken.
-const PATIENCE_MESSAGE_AFTER_MS = 30000;
+const PATIENCE_MESSAGE_AFTER_MS = 10000;
 
-// Auto-complete the counter to 100% in ~3.5s with an ease-out curve so it
-// always reaches full progress even when the backend only sends a handful of
-// progress events (e.g. fast-mode Cerebras can finish in 2-3s).
-const AUTO_COMPLETE_DURATION_MS = 3500;
+// The local timer only ever approaches this ceiling asymptotically; it can
+// never claim 100% on its own. Real backend progress can push past it, and
+// 100% is reserved for the actual completion/reveal signal.
+const AUTO_PROGRESS_CEILING = 90;
+const AUTO_PROGRESS_TAU_MS = 3000;
 
 export default function LoadingCinematic({ question, onCancel, isRevealing = false }: Props) {
   const progressPercent = useLessonStore((s) => s.progressPercent);
+  const mode = usePreferenceStore((s) => s.mode);
   const [displayProgress, setDisplayProgress] = useState(0);
   const [factIndex, setFactIndex] = useState(0);
   const [takingLonger, setTakingLonger] = useState(false);
@@ -68,12 +86,16 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
   // below (Date.now() must not run during render; render must stay pure).
   const startTimeRef = useRef(0);
 
+  const isFast = mode === "fast";
+  const steps = isFast ? FAST_STEPS : EXPLAIN_STEPS;
+  const parts = isFast ? FAST_PARTS : EXPLAIN_PARTS;
+
   useEffect(() => {
     const id = window.setTimeout(() => setTakingLonger(true), PATIENCE_MESSAGE_AFTER_MS);
     return () => window.clearTimeout(id);
   }, []);
 
-  // Reset the start time whenever a fresh question loads so the auto-complete
+  // Reset the start time whenever a fresh question loads so the auto-progress
   // curve always begins from zero.
   useEffect(() => {
     startTimeRef.current = Date.now();
@@ -81,25 +103,27 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
     setDisplayProgress(0);
   }, [question]);
 
-  // Smoothly animate the bar so it ALWAYS drifts forward. An ease-out curve
-  // auto-completes to 100% in ~3.5s, and any real server progress event leads
-  // the counter by a small margin so it never stalls. When the lesson arrives,
-  // the parent passes `isRevealing` and we fade out gracefully.
+  // Smoothly animate the bar so it always drifts forward — but honestly.
+  // The local curve saturates toward ~90% and stays there while generation is
+  // genuinely still running; real server progress events can lead it further,
+  // and only the reveal signal drives the bar to 100%.
   useEffect(() => {
     const id = window.setInterval(() => {
       const elapsed = Date.now() - startTimeRef.current;
-      const t = Math.min(elapsed / AUTO_COMPLETE_DURATION_MS, 1);
-      const autoProgress = 100 * (1 - Math.pow(1 - t, 3));
-      const realLead = progressPercent > 0 ? Math.min(progressPercent + 8, 100) : 0;
-      const target = Math.max(autoProgress, realLead);
-      const rate = 0.12;
+      const autoProgress =
+        AUTO_PROGRESS_CEILING * (1 - Math.exp(-elapsed / AUTO_PROGRESS_TAU_MS));
+      const realLead = progressPercent > 0 ? Math.min(progressPercent + 8, 99) : 0;
+      const target = isRevealing ? 100 : Math.min(Math.max(autoProgress, realLead), 99);
+      // The reveal window is short (~420ms) — complete the bar immediately so
+      // 100% coincides with the real completion signal, not after it.
+      const rate = isRevealing ? 1 : 0.12;
       const eased = displayRef.current + (target - displayRef.current) * rate;
       const next = Math.min(100, Math.max(displayRef.current, eased));
       displayRef.current = next;
       setDisplayProgress(next);
     }, 100);
     return () => window.clearInterval(id);
-  }, [progressPercent]);
+  }, [progressPercent, isRevealing]);
 
   // Rotate the encouraging facts so there's always something fresh to read.
   useEffect(() => {
@@ -115,13 +139,8 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
     <div
       role="status"
       aria-live="polite"
-      aria-label="Generating your lesson"
+      aria-label={isFast ? "Generating your answer" : "Generating your lesson"}
       className={`loading-cinematic${isRevealing ? " is-revealing" : ""}`}
-      style={{
-        opacity: isRevealing ? 0 : 1,
-        transform: isRevealing ? "scale(0.96)" : "scale(1)",
-        transition: "opacity 500ms var(--ease-reveal), transform 500ms var(--ease-reveal)",
-      }}
     >
       <div className="loading-cinematic__bg" />
       <div className="loading-cinematic__stage">
@@ -154,11 +173,9 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
 
         {/* Step checklist */}
         <ul className="loading-cinematic__steps">
-          {steps.map((step) => {
+          {steps.map((step, i) => {
             const done = displayProgress >= step.at;
-            const active =
-              !done &&
-              displayProgress >= (steps[steps.indexOf(step) - 1]?.at ?? 0);
+            const active = !done && displayProgress >= (steps[i - 1]?.at ?? 0);
             const stepState = done ? "is-done" : active ? "is-active" : "is-pending";
             return (
               <li
@@ -169,7 +186,7 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
                   {done ? (
                     <CheckIcon />
                   ) : active ? (
-                    <span className="accent-pulse-dot" style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--accent)" }} />
+                    <span className="accent-pulse-dot loading-cinematic__step-dot" />
                   ) : null}
                 </span>
                 {step.label}
@@ -178,16 +195,17 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
           })}
         </ul>
 
-        {/* The three parts materializing as generation reaches them */}
+        {/* The lesson parts materializing as generation reaches them —
+            three for an Explain journey, a single answer card in Fast mode. */}
         <div className="loading-cinematic__parts" aria-hidden="true">
-          {[
-            { num: 1, title: "Foundation", at: 5 },
-            { num: 2, title: "Mechanism", at: 40 },
-            { num: 3, title: "Real World", at: 75 },
-          ].map((part) => {
+          {parts.map((part) => {
             const building = displayProgress >= part.at;
-            const ready = displayProgress >= part.at + 30;
-            const fill = ready ? 100 : building ? Math.min(100, ((displayProgress - part.at) / 30) * 100) : 0;
+            const ready = isRevealing || displayProgress >= part.at + 30;
+            const fill = ready
+              ? 100
+              : building
+                ? Math.min(100, ((displayProgress - part.at) / 30) * 100)
+                : 0;
             return (
               <div
                 key={part.num}

@@ -779,18 +779,9 @@ a:active {
   to { transform: translateY(0) scale(1); }
 }
 
-@keyframes accentFlash {
-  0% { background: transparent; box-shadow: 0 0 0 transparent; }
-  50% { background: var(--accent-dim); box-shadow: 0 0 60px var(--accent-glow); }
-  100% { background: transparent; box-shadow: 0 0 0 transparent; }
-}
-
-@keyframes glowBurst {
-  0% { opacity: 0; transform: scale(0.6); }
-  30% { opacity: 0.45; transform: scale(1); }
-  60% { opacity: 0.2; transform: scale(1.1); }
-  100% { opacity: 0; transform: scale(1.2); }
-}
+/* accentFlash + glowBurst (the full-viewport quiz-pass flashes) were removed
+   2026-08-17 — a 1s whole-screen accent strobe was a WCAG 2.3.1 concern.
+   The unlock celebration is now the localized .unlock-fx (see its section). */
 
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
@@ -1292,8 +1283,6 @@ a:active {
 /* ── Animation utilities — Apple-style, smooth, springy ── */
 .animate-fade-up { animation: fadeUp 600ms var(--ease-reveal) both; }
 .animate-slide-bottom { animation: slideFromBottom 500ms var(--ease-reveal) both; }
-.animate-accent-flash { animation: accentFlash 1000ms var(--ease-reveal) both; }
-.animate-glow-burst { animation: glowBurst 900ms var(--ease-reveal) both; }
 .animate-shake { animation: shake 500ms var(--ease-reveal) both; }
 .animate-correct-pulse { animation: correctPulse 500ms var(--ease-spring) both; }
 
@@ -2970,6 +2959,13 @@ p {
   transform: translateY(0) scale(0.94);
   transition: transform 120ms var(--ease-color);
 }
+/* Below 900px the bottom tab bar owns the bottom edge — lift the button
+   clear of it (must sit after the base .scroll-top rule to win the cascade). */
+@media (max-width: 900px) {
+  .scroll-top {
+    bottom: calc(clamp(16px, 3vw, 32px) + 64px + env(safe-area-inset-bottom, 0px));
+  }
+}
 
 /* ── Focus ring parity ── ensure keyboard focus is always visible and
    beautiful, matching the brand. Overrides the thin default for our
@@ -3678,6 +3674,9 @@ p {
   display: grid;
   place-items: center;
   pointer-events: auto;
+  transition:
+    opacity 500ms var(--ease-reveal),
+    transform 500ms var(--ease-reveal);
 }
 .loading-cinematic.is-revealing {
   opacity: 0;
@@ -3779,6 +3778,12 @@ p {
 .loading-cinematic__step-marker.is-active {
   border: none;
   background: transparent;
+}
+.loading-cinematic__step-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
 }
 /* The three parts materializing — quiet frosted capsules that light up as
    generation reaches them. Replaces the boxed skeleton-card deck. */
@@ -3908,7 +3913,9 @@ p {
   border: 1px solid var(--border-subtle);
   border-bottom: none;
   border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
-  padding: 0 clamp(20px, 5vw, 40px) 48px;
+  /* Top padding replaces the removed fake drag handle (there was never a
+     swipe gesture — it was a false affordance). */
+  padding: 28px clamp(20px, 5vw, 40px) 48px;
   box-shadow: var(--shadow-float);
 }
 @media (min-width: 720px) {
@@ -3927,9 +3934,6 @@ p {
     border-bottom: 1px solid var(--border-subtle);
     animation: fadeUp 400ms var(--ease-reveal) both;
   }
-  .quiz-sheet__handle {
-    visibility: hidden;
-  }
 }
 .quiz-sheet__accent {
   position: absolute;
@@ -3939,13 +3943,6 @@ p {
   height: 3px;
   background: var(--accent-gradient);
   border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
-}
-.quiz-sheet__handle {
-  width: 44px;
-  height: 4px;
-  border-radius: 3px;
-  background: var(--border-default);
-  margin: 14px auto 20px;
 }
 .quiz-sheet__close {
   position: absolute;
@@ -7291,6 +7288,376 @@ html[data-theme="light"] {
   .onboarding-progress__seg {
     transition: none;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Modal scrim — the one shared backdrop for centered dialogs (confirm,
+   keyboard shortcuts, feedback). Composes with .modal-glass-surface panels.
+   z-map: sidebar 80, quiz sheet 90, loading 100, modals 200, toasts 300.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.modal-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: var(--scrim);
+  -webkit-backdrop-filter: blur(var(--blur-sm));
+  backdrop-filter: blur(var(--blur-sm));
+  /* Flex (not grid) centering: percentage panel widths resolve against the
+     scrim, so width:100% + max-width behaves predictably. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+/* Tall dialogs anchor near the top and scroll within the scrim. */
+.modal-scrim--top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 24px 16px;
+}
+/* Prompts that must clear other modal scrims (e.g. the feedback prompt). */
+.modal-scrim--high {
+  z-index: 300;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Confirm modal — small decision dialog. Buttons reuse .btn-primary /
+   .btn-ghost; the destructive confirm wears the danger wash.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.confirm-modal {
+  width: 100%;
+  max-width: 420px;
+  padding: 24px;
+}
+.confirm-modal__title {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.confirm-modal__message {
+  margin: 0 0 20px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  white-space: pre-line;
+}
+.confirm-modal__actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+.btn-ghost.confirm-modal__danger {
+  border-color: var(--danger);
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+.btn-ghost.confirm-modal__danger:hover,
+.btn-ghost.confirm-modal__danger:focus-visible {
+  border-color: var(--danger);
+  background: var(--danger-bg);
+  color: var(--danger);
+  filter: brightness(1.06);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Keyboard shortcuts overlay — the "?" reference card, plus the shared .kbd
+   keycap chip.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.shortcuts-modal {
+  width: 100%;
+  max-width: 400px;
+  padding: 24px 28px;
+  outline: none;
+}
+.shortcuts-modal__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.shortcuts-modal__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.shortcuts-modal__close {
+  flex-shrink: 0;
+}
+.shortcuts-modal__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.shortcut-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+.shortcut-row__action {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+.shortcut-row__keys {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 26px;
+  padding: 0 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-default);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-family: var(--font-mono), monospace;
+  font-weight: 600;
+  box-shadow: 0 1px 0 var(--border-default);
+}
+.kbd--inline {
+  min-width: 0;
+  height: auto;
+  padding: 1px 5px;
+  font-size: 11px;
+  box-shadow: none;
+}
+.shortcuts-modal__hint {
+  margin: 16px 0 0;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Feedback prompt — the optional anonymous review dialog. Escapable three
+   ways (Escape / backdrop / ×), all of which snooze rather than dismiss
+   forever. Textareas reuse .glass-textarea; buttons reuse .btn-primary /
+   .btn-ghost / .btn-icon.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.feedback-modal {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  margin-top: 8vh;
+  max-height: 84vh;
+  overflow-y: auto;
+  padding: clamp(24px, 4vw, 36px);
+  outline: none;
+}
+.feedback-modal__close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+}
+.feedback-modal__title {
+  margin: 0 0 4px;
+  /* Clear the absolutely-positioned × button. */
+  padding-right: 48px;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.feedback-modal__sub {
+  margin: 0 0 var(--space-md);
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+.feedback-modal__field {
+  margin-bottom: var(--space-md);
+}
+.feedback-modal__label {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+.feedback-modal__optional {
+  font-weight: 500;
+  color: var(--text-tertiary);
+}
+.feedback-modal__stars {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.feedback-star {
+  display: inline-flex;
+  background: none;
+  border: none;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px;
+  color: var(--border-accent);
+  transition:
+    transform 180ms var(--ease-spring),
+    color 150ms var(--ease-color);
+}
+.feedback-star.is-active {
+  transform: scale(1.15);
+}
+.feedback-star:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-sm);
+}
+.feedback-modal__score {
+  margin-left: 10px;
+  align-self: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+}
+.feedback-modal__actions {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  align-items: center;
+}
+.btn-ghost.feedback-modal__quiet {
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-tertiary);
+  box-shadow: none;
+}
+.btn-ghost.feedback-modal__quiet:hover,
+.btn-ghost.feedback-modal__quiet:focus-visible {
+  border-color: transparent;
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Toast — transient feedback stack, bottom-right, above every scrim (300).
+   Errors persist ~8s, others ~4s (timing lives in ToastContainer.tsx); the
+   timer pauses on hover/focus and every toast has a ≥44px dismiss target.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.toast-stack {
+  position: fixed;
+  bottom: max(16px, env(safe-area-inset-bottom, 16px));
+  right: 16px;
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+/* Clear the mobile bottom tab bar. */
+@media (max-width: 900px) {
+  .toast-stack {
+    bottom: calc(16px + 64px + env(safe-area-inset-bottom, 0px));
+  }
+}
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 48px;
+  max-width: 340px;
+  padding: 0 2px 0 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--accent);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1.4;
+  box-shadow: var(--shadow-md);
+  animation: toastIn 180ms var(--ease-reveal) both;
+  transition:
+    opacity 180ms var(--ease-color),
+    transform 180ms var(--ease-color);
+}
+.toast--success {
+  border-color: var(--success);
+}
+.toast--error {
+  border-color: var(--danger);
+}
+.toast.is-leaving {
+  opacity: 0;
+  transform: translateX(12px);
+  pointer-events: none;
+}
+.toast__message {
+  padding: 12px 0;
+}
+.toast__dismiss {
+  flex-shrink: 0;
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition:
+    color 150ms var(--ease-color),
+    background 150ms var(--ease-color);
+}
+.toast__dismiss:hover,
+.toast__dismiss:focus-visible {
+  color: var(--text-primary);
+  background: var(--bg-card-hover);
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Unlock celebration — localized quiz-pass beat. A soft ring sweeps out from
+   a small accent check disc at screen center; replaces the old full-viewport
+   accent flash (WCAG 2.3.1). Reduced motion neutralizes it entirely: the
+   global kill-switch snaps both animations to their final frame (opacity 0).
+   ═══════════════════════════════════════════════════════════════════════════ */
+.unlock-fx {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  z-index: 80;
+}
+.unlock-fx__ring,
+.unlock-fx__core {
+  grid-area: 1 / 1;
+  border-radius: 50%;
+}
+.unlock-fx__ring {
+  width: 96px;
+  height: 96px;
+  border: 2px solid var(--accent);
+  animation: ringSweep 900ms var(--ease-reveal) both;
+}
+.unlock-fx__core {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: var(--shadow-md);
+  animation: unlockCore 900ms var(--ease-spring) both;
+}
+@keyframes unlockCore {
+  0% { opacity: 0; transform: scale(0.5); }
+  25% { opacity: 1; transform: scale(1.06); }
+  45% { transform: scale(1); }
+  80% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.94); }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

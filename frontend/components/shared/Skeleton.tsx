@@ -28,8 +28,8 @@ export function Skeleton({
     width: width ?? "100%",
     height: height ?? "100%",
     borderRadius: borderRadius,
-    background: "var(--border-default, #E5DFC9)",
-    border: "1px solid var(--border-subtle, #EBE6DC)",
+    background: "var(--border-default)",
+    border: "1px solid var(--border-subtle)",
     ...style,
   };
 
@@ -86,11 +86,11 @@ export function SkeletonCard({
     <div
       className={`skeleton-card-container ${className}`.trim()}
       style={{
-        background: "var(--bg-card, #FFFDF8)",
-        border: "1px solid var(--border-subtle, #EBE6DC)",
-        borderRadius: "var(--radius-xl, 16px)",
+        background: "var(--bg-card)",
+        border: "1px solid var(--border-subtle)",
+        borderRadius: "var(--radius-xl)",
         padding: "clamp(16px, 3vw, 22px)",
-        boxShadow: "var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.04))",
+        boxShadow: "var(--shadow-sm)",
         height,
         display: "flex",
         flexDirection: "column",
@@ -124,9 +124,9 @@ export function SkeletonTile({
     <div
       className={`stat-tile ${className}`.trim()}
       style={{
-        background: "var(--bg-surface, #F4F0E8)",
-        border: "1px solid var(--border-subtle, #EBE6DC)",
-        borderRadius: "var(--radius-lg, 12px)",
+        background: "var(--bg-surface)",
+        border: "1px solid var(--border-subtle)",
+        borderRadius: "var(--radius-lg)",
         padding: "12px 14px",
         display: "flex",
         flexDirection: "column",
