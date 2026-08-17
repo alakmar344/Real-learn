@@ -21,12 +21,12 @@ const ALLOWED_PATHS_WHEN_DECLINED = ["/sign-in", "/sign-up", "/legal"];
 // When the legal versions change, update these bullets and the verification
 // subtests in scripts/verify-reconsent-copy.mjs together.
 const POLICY_CHANGES = [
-  "Privacy Policy updated to version 3.4: we replaced the standalone “Find” page with an internal, quiz-driven personalization layer. RealLearn now builds a compact learning profile from your quiz results entirely on your device — no lesson content is uploaded and the profile is never stored on our servers.",
-  "When you ask a question, a small, topic-relevant learning-context summary (short labels for concepts you are strong in, moderate in, or weak in) is generated on your device and attached to that lesson request so the AI can personalize the answer; this summary is processed in memory and is not stored, logged with any identifier, or linked to you — only a one-way hash is used to key the shared, anonymous lesson cache. There is no separate page to browse or manage this profile.",
+  "Privacy Policy updated to version 3.5: we upgraded RealLearn's core AI inference architecture to Groq Cloud LPUs as our ultra-low-latency primary provider (running Qwen 3.6 27B and GPT-OSS 120B), with NVIDIA NIM (70B–150B parameter models) as our secondary fallback, and Cloudflare Workers AI (70B Fast FP8) as our last-resort fallback.",
+  "Your questions and learning-context summaries are transmitted for one-time inference only with zero user identity attached, and no user data is ever used to train, fine-tune, or improve any AI model.",
 ];
 
 const TERMS_CHANGES = [
-  "Terms of Service updated to version 3.1: we replaced the standalone “Find” feature with an internal, quiz-driven personalization layer. RealLearn now builds a compact learning profile from your quiz results on your device and attaches a small, topic-relevant learning-context summary to each lesson request so the AI can personalize the answer; this summary is not stored on our servers. The separate “Find” page and its “discover related lessons” search have been removed. The AI’s personalized responses are provided “as is” without any guarantee of accuracy, completeness, or suitability.",
+  "Terms of Service updated to version 3.2: updated AI content disclaimer (Section 6) and service provider disclosures (Section 17) to reflect Groq Cloud LPUs as our primary inference provider (running Qwen 3.6 27B and GPT-OSS 120B), NVIDIA NIM as secondary fallback, and Cloudflare Workers AI as last resort. All lesson content remains machine-generated without human pre-review and is provided “as is” for educational purposes.",
 ];
 
 // Build year/month options once

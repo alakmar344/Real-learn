@@ -1,13 +1,12 @@
-import Cerebras from "@cerebras/cerebras_cloud_sdk";
+import { Groq } from "groq-sdk";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Multi-provider AI inference engine.
+// Multi-provider AI inference engine (Production Quality).
 //
 // Providers:
-//   • "cerebras"   — Cerebras Cloud SDK (Gemma 4 31B), the primary.
-//   • "nvidia"     — NVIDIA NIM OpenAI-compatible chat completions, the fallback.
-//   • "cloudflare" — Cloudflare Workers AI (Gemma), the last-resort provider.
-
+//   • "groq"       — Groq Cloud LPU SDK (Qwen 3.6 27B / GPT-OSS 120B), ultra-low-latency primary.
+//   • "nvidia"     — NVIDIA NIM OpenAI-compatible completions (70B-150B parameter models), high-capacity fallback.
+//   • "cloudflare" — Cloudflare Workers AI (Llama 3.3 70B FP8 fast), the last-resort provider.
 //
 // The providers are individually unreliable, so the engine is built around
 // three ideas that together give the fastest answer that actually succeeds:
@@ -25,7 +24,7 @@ import Cerebras from "@cerebras/cerebras_cloud_sdk";
 //      provider closest to recovery rather than failing the user outright.
 //
 //   3. MODEL ROTATION — each provider carries an ordered model list
-//      (GEMMA_MODEL + GEMMA_FALLBACK_MODELS). Free-tier or hosted models get
+//      (PRIMARY_AI_MODEL + fallback models). Free-tier or hosted models get
 //      rate-limited or removed without notice; on a model-shaped failure
 //      (404/400/429) the engine advances to the next model and REMEMBERS the
 //      working one for subsequent requests.
@@ -34,7 +33,11 @@ import Cerebras from "@cerebras/cerebras_cloud_sdk";
 // used to decide who starts first on the next request.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const GEMMA_MODEL = process.env.GEMMA_MODEL || "gemma-4-31b";
+export const PRIMARY_AI_MODEL =
+  process.env.GROQ_AI_MODEL ||
+  process.env.GEMMA_MODEL ||
+  "qwen/qwen3.6-27b";
+export const GEMMA_MODEL = PRIMARY_AI_MODEL;
 
 // SECURITY: hard ceiling on accumulated streamed characters. Providers are
 // first-party and max_tokens bounds normal generation, but a misbehaving
@@ -324,7 +327,7 @@ function newProviderHealth() {
 }
 
 const providerHealth = {
-  cerebras: newProviderHealth(),
+  groq: newProviderHealth(),
   cloudflare: newProviderHealth(),
   nvidia: newProviderHealth(),
 };
@@ -393,15 +396,15 @@ export function getProviderHealthSnapshot() {
 
 /** Test-only helper: reset all circuit/health state. */
 export function resetProviderHealth() {
-  providerHealth.cerebras = newProviderHealth();
+  providerHealth.groq = newProviderHealth();
   providerHealth.cloudflare = newProviderHealth();
   providerHealth.nvidia = newProviderHealth();
 }
 
 // ── Provider registry ────────────────────────────────────────────────────────
 
-function isCerebrasConfigured() {
-  return Boolean(process.env.CEREBRAS_API_KEY?.trim());
+function isGroqConfigured() {
+  return Boolean(process.env.GROQ_API_KEY?.trim());
 }
 
 function isCloudflareConfigured() {
@@ -428,9 +431,17 @@ export function isNvidiaFallbackConfigured() {
   return isNvidiaConfigured();
 }
 
-function getCerebrasModels() {
-  const models = [GEMMA_MODEL, ...parseModelList(process.env.GEMMA_FALLBACK_MODELS)];
-  return [...new Set(models)];
+function getGroqModels() {
+  const models = [
+    PRIMARY_AI_MODEL,
+    ...parseModelList(process.env.GROQ_AI_MODELS),
+    ...parseModelList(process.env.GROQ_FALLBACK_MODELS),
+    ...parseModelList(process.env.GEMMA_FALLBACK_MODELS),
+  ];
+  if (models.length === 0 || (models.length === 1 && !process.env.GROQ_AI_MODEL)) {
+    models.push("openai/gpt-oss-120b");
+  }
+  return [...new Set(models.filter(Boolean))];
 }
 
 function getNvidiaModels() {
@@ -438,7 +449,15 @@ function getNvidiaModels() {
     ...parseModelList(process.env.NVIDIA_AI_MODEL),
     ...parseModelList(process.env.NVIDIA_AI_MODELS),
   ];
-  if (models.length === 0) models.push("google/gemma-4-31b-it");
+  if (models.length === 0) {
+    models.push(
+      "meta/llama-3.3-70b-instruct",
+      "mistralai/mistral-large-2-instruct",
+      "nvidia/llama-3.1-nemotron-70b-instruct",
+      "qwen/qwen2.5-72b-instruct",
+      "meta/llama-3.1-70b-instruct"
+    );
+  }
   return [...new Set(models)];
 }
 
@@ -447,21 +466,28 @@ function getCloudflareModels() {
     ...parseModelList(process.env.CLOUDFLARE_AI_MODEL),
     ...parseModelList(process.env.CLOUDFLARE_AI_MODELS),
   ];
-  if (models.length === 0) models.push("@cf/google/gemma-4-26b-a4b-it");
+  if (models.length === 0) {
+    models.push(
+      "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+      "@cf/meta/llama-3.1-70b-instruct",
+      "@cf/deepseek-ai/deepseek-r1-distill-qwen-32b",
+      "@cf/qwen/qwen2.5-72b-instruct"
+    );
+  }
   return [...new Set(models)];
 }
 
 function getProviders(allowFallback) {
   const providers = [];
-  if (isCerebrasConfigured()) {
+  if (isGroqConfigured()) {
     providers.push({
-      key: "cerebras",
-      label: "Cerebras Cloud (Gemma 4 31B)",
+      key: "groq",
+      label: "Groq Cloud (Qwen 3.6 27B / GPT-OSS 120B)",
       // tier 0 = normal racing pool (ordered by health/latency within a tier)
       tier: 0,
-      models: getCerebrasModels(),
+      models: getGroqModels(),
       call: (model, body, signal, opts) =>
-        callCerebras(model, body, signal, opts),
+        callGroq(model, body, signal, opts),
     });
   }
   if (allowFallback && isNvidiaConfigured()) {
@@ -489,7 +515,7 @@ function getProviders(allowFallback) {
 
 // Healthiest first WITHIN a tier: closed circuits before open ones, then the
 // last-resort tier behind the normal pool, then lowest observed latency, then
-// registry order (Cerebras first) as a stable tiebreak.
+// registry order (Groq first) as a stable tiebreak.
 function orderProviders(providers) {
   return [...providers].sort((a, b) => {
     const openA = isCircuitOpen(a.key) ? 1 : 0;
@@ -654,13 +680,13 @@ async function fetchChatCompletion(url, headers, payload, signal, opts = {}) {
   }
 }
 
-// LATENCY: Gemma 4 is a reasoning model — it spends output tokens "thinking"
+// LATENCY: Models like Qwen / DeepSeek can spend output tokens "thinking"
 // before the answer (we strip those tags but still pay for the time). Most
 // hosts accept the vLLM-style `chat_template_kwargs: { enable_thinking:
 // false }` to turn that off, roughly halving wall-clock generation for
 // structured-output workloads like ours. Because not every host tolerates
 // the extra field, it is opt-in per provider:
-//   AI_DISABLE_THINKING = off (default) | cerebras | nvidia | cloudflare | both/all
+//   AI_DISABLE_THINKING = off (default) | groq | nvidia | cloudflare | both/all
 function thinkingDisabledFor(providerKey) {
   const mode = (process.env.AI_DISABLE_THINKING || "off").trim().toLowerCase();
   return mode === "both" || mode === "all" || mode === providerKey;
@@ -722,12 +748,9 @@ async function callWorkersAI(accountId, model, body, signal, opts) {
   );
 }
 
-function wrapCerebrasError(error) {
+function wrapGroqError(error) {
   // The SDK surfaces caller aborts as APIUserAbortError. Convert to a real
   // AbortError so the rest of the engine treats it as a cancellation.
-  // Must be checked BEFORE isAbortError() because the transpiled SDK error
-  // has name 'Error' and message 'Request was aborted.', which the broad
-  // isAbortError() regex would otherwise treat as an abort.
   if (
     error?.name === "APIUserAbortError" ||
     error?.constructor?.name === "APIUserAbortError"
@@ -743,7 +766,7 @@ function wrapCerebrasError(error) {
   if (Number.isFinite(status)) {
     return new GemmaApiError(
       status,
-      error.name || "CerebrasError",
+      error.name || "GroqError",
       error.message || String(error),
       undefined
     );
@@ -757,32 +780,29 @@ function wrapCerebrasError(error) {
   return error;
 }
 
-// Module-level Cerebras SDK client, created lazily and reused across calls —
-// constructing a fresh client (and its internal config/agent plumbing) on
-// every generation was pure per-request overhead. Keyed by API key so a
-// rotated CEREBRAS_API_KEY takes effect without a restart; the per-request
-// abort signal is still passed per call.
-let cerebrasClient = null;
-let cerebrasClientKey = null;
-function getCerebrasClient(apiKey) {
-  if (!cerebrasClient || cerebrasClientKey !== apiKey) {
-    cerebrasClient = new Cerebras({
+// Module-level Groq SDK client, created lazily and reused across calls —
+// constructing a fresh client on every generation is wasteful. Keyed by API
+// key so a rotated GROQ_API_KEY takes effect without a restart; the per-request
+// abort signal is passed per call.
+let groqClient = null;
+let groqClientKey = null;
+function getGroqClient(apiKey) {
+  if (!groqClient || groqClientKey !== apiKey) {
+    groqClient = new Groq({
       apiKey,
       maxRetries: 0,
       timeout: 600000, // 10 minutes — the engine's own watchdogs + abort handle timeouts.
-      // Look up globalThis.fetch per request (not once at construction) so
-      // tests can intercept requests with a mock.
       fetch: (...args) => globalThis.fetch(...args),
     });
-    cerebrasClientKey = apiKey;
+    groqClientKey = apiKey;
   }
-  return cerebrasClient;
+  return groqClient;
 }
 
-async function callCerebras(model, body, signal, opts) {
-  const apiKey = process.env.CEREBRAS_API_KEY?.trim();
+async function callGroq(model, body, signal, opts) {
+  const apiKey = process.env.GROQ_API_KEY?.trim();
   if (!apiKey) {
-    throw new Error("CEREBRAS_API_KEY is not configured");
+    throw new Error("GROQ_API_KEY is not configured");
   }
 
   const { firstByteTimeoutMs = 0, stallTimeoutMs = 0, onActivity } = opts;
@@ -817,7 +837,7 @@ async function callCerebras(model, body, signal, opts) {
 
   armWatchdog(firstByteTimeoutMs);
 
-  const cerebras = getCerebrasClient(apiKey);
+  const groq = getGroqClient(apiKey);
 
   try {
     const payload = {
@@ -825,13 +845,15 @@ async function callCerebras(model, body, signal, opts) {
       messages: body.messages,
       temperature: body.temperature,
       max_completion_tokens: body.max_tokens,
-      stream: true,
       top_p: 0.95,
+      stream: true,
+      reasoning_effort: "none",
+      stop: null,
     };
-    if (thinkingDisabledFor("cerebras")) {
+    if (thinkingDisabledFor("groq")) {
       payload.chat_template_kwargs = { enable_thinking: false };
     }
-    const stream = await cerebras.chat.completions.create(
+    const stream = await groq.chat.completions.create(
       payload,
       { signal: controller.signal }
     );
@@ -843,7 +865,7 @@ async function callCerebras(model, body, signal, opts) {
       if (streamError) {
         throw new GemmaApiError(408, "StreamError", streamError);
       }
-      const token = chunk.choices?.[0]?.delta?.content ?? "";
+      const token = chunk.choices?.[0]?.delta?.content || "";
       fullText += token;
       if (fullText.length > MAX_STREAM_CHARS) {
         // 408 keeps this on the retryable path (see isRetryableGemmaError).
@@ -855,17 +877,7 @@ async function callCerebras(model, body, signal, opts) {
       }
     }
 
-    if (!fullText.trim()) {
-      throw new GemmaApiError(
-        502,
-        "EmptyResponse",
-        "Cerebras returned an empty response body"
-      );
-    }
-
-    return { choices: [{ message: { content: fullText } }] };
-  } catch (error) {
-    if (watchdogFired && isAbortError(error)) {
+    if (watchdogFired) {
       const stallError = new GemmaApiError(
         408,
         "StallTimeout",
@@ -874,7 +886,33 @@ async function callCerebras(model, body, signal, opts) {
       stallError.receivedData = receivedData;
       throw stallError;
     }
-    throw wrapCerebrasError(error);
+
+    if (!fullText.trim()) {
+      throw new GemmaApiError(
+        502,
+        "EmptyResponse",
+        "Groq returned an empty response body"
+      );
+    }
+
+    return { choices: [{ message: { content: fullText } }] };
+  } catch (error) {
+    if (
+      watchdogFired &&
+      (isAbortError(error) ||
+        error?.name === "APIUserAbortError" ||
+        error?.constructor?.name === "APIUserAbortError" ||
+        error instanceof GemmaApiError)
+    ) {
+      const stallError = new GemmaApiError(
+        408,
+        "StallTimeout",
+        `provider sent no data for ${watchdogAtMs}ms (silence watchdog)`
+      );
+      stallError.receivedData = receivedData;
+      throw stallError;
+    }
+    throw wrapGroqError(error);
   } finally {
     disarmWatchdog();
     signal?.removeEventListener("abort", forwardAbort);
@@ -1307,7 +1345,7 @@ export async function callGemma(
 
   if (providers.length === 0) {
     throw new Error(
-      "No AI provider is configured: set CEREBRAS_API_KEY, NVIDIA_API_KEY, or CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID"
+      "No AI provider is configured: set GROQ_API_KEY, NVIDIA_API_KEY, or CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID"
     );
   }
 
@@ -1419,9 +1457,9 @@ export async function callGemma(
  * Cloudflare Workers AI unloads idle models quickly and can cold-start in
  * 10-30s, so we keep it warm with a tiny non-streaming ping.
  *
- * The PRIMARY (Cerebras) is intentionally NOT warmed: Cerebras has no
- * meaningful cold start, and pinging it 24/7 would only waste tokens for no
- * latency benefit.
+ * The PRIMARY (Groq) is intentionally NOT warmed: Groq LPUs have sub-second
+ * TTFT and no meaningful cold start, and pinging it 24/7 would only waste
+ * tokens for no latency benefit.
  */
 export async function warmUpModel() {
   const accountId = process.env.CLOUDFLARE_ACCOUNT_ID?.trim();

@@ -53,10 +53,10 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
           RealLearn is an AI-powered educational platform. Depending on the answer mode you choose,
           it generates either a quick single-part direct answer (&quot;Fast&quot; mode) or a 3-part
           learning journey (Foundation, Mechanism, Real World — &quot;Explain&quot; mode) for any
-          topic you ask about. It is powered by Google&apos;s Gemma 4 open model: our primary
-          inference provider is <strong>Cerebras Cloud</strong> (running Gemma 4 31B), with{" "}
-          <strong>NVIDIA NIM</strong> (Gemma 4 31B) configured as the automatic fallback and{" "}
-          <strong>Cloudflare Workers AI</strong> (Gemma) as a last-resort fallback so lessons can
+          topic you ask about. It is powered by high-performance open models: our primary
+          inference provider is <strong>Groq Cloud</strong> (running Qwen 3.6 27B and GPT-OSS 120B on LPUs), with{" "}
+          <strong>NVIDIA NIM</strong> (70B–150B parameter models) configured as the automatic fallback and{" "}
+          <strong>Cloudflare Workers AI</strong> (70B Fast FP8) as a last-resort fallback so lessons can
           still be generated if the primary and fallback are slow or unavailable. This is designed to
           help students learn through interactive quizzes and structured content. RealLearn also
           builds a <strong>personalized learning profile</strong> from your quiz results: a compact,
@@ -302,11 +302,11 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
       <section style={{ marginBottom: 28 }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>6. AI-Generated Content</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
-          RealLearn generates content using Google&apos;s Gemma 4 open AI model. Our primary
-          inference provider is <strong>Cerebras Cloud</strong> (running Gemma 4 31B); if Cerebras is
+          RealLearn generates content using high-performance open AI models. Our primary
+          inference provider is <strong>Groq Cloud</strong> (running Qwen 3.6 27B and GPT-OSS 120B on LPUs); if Groq is
           temporarily slow or unavailable, the request automatically falls back to{" "}
-          <strong>NVIDIA NIM</strong> (Gemma 4 31B), and may then use{" "}
-          <strong>Cloudflare Workers AI</strong> (Gemma) as a last-resort provider so your lesson can
+          <strong>NVIDIA NIM</strong> (70B–150B parameter models), and may then use{" "}
+          <strong>Cloudflare Workers AI</strong> (70B Fast FP8) as a last-resort provider so your lesson can
           still be generated. All
           lesson content (in both Fast and Explain modes), quizzes,
           and explanations are AI-generated and are <strong>not reviewed by humans before being shown</strong>.
@@ -322,9 +322,9 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
         </p>
         <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
           <strong>RealLearn does not use your data to train, fine-tune, or improve any AI model.</strong>{" "}
-          Your questions are sent to our primary inference provider, <strong>Cerebras Cloud</strong>{" "}
-          (which runs the Gemma model), for one-time inference only. If Cerebras is temporarily slow
-          or unavailable, the same request falls back to <strong>NVIDIA NIM</strong> (running Gemma),
+          Your questions are sent to our primary inference provider, <strong>Groq Cloud</strong>{" "}
+          (which runs open models on LPUs), for one-time inference only. If Groq is temporarily slow
+          or unavailable, the same request falls back to <strong>NVIDIA NIM</strong> (running 70B–150B models),
           and may then use <strong>Cloudflare Workers AI</strong> as a last-resort fallback for
           one-time inference so the lesson can still be generated; the same &quot;no training on your
           data&quot; commitment applies to all three providers. Safety moderation
@@ -339,14 +339,14 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
           is deleted automatically when it expires. However, please note that your questions are
           transmitted to these providers&apos; APIs, and their own terms may govern how they handle
           that data. We recommend reviewing{" "}
+          <a href="https://groq.com/privacy-policy/" style={{ color: "var(--accent)" }}>
+            Groq&apos;s Privacy Policy
+          </a>{", "}
           <a href="https://www.nvidia.com/en-us/about-nvidia/privacy-policy/" style={{ color: "var(--accent)" }}>
             NVIDIA&apos;s Privacy Policy
-          </a>{", "}
+          </a>{", and "}
           <a href="https://www.cloudflare.com/privacypolicy/" style={{ color: "var(--accent)" }}>
             Cloudflare&apos;s Privacy Policy
-          </a>{", and "}
-          <a href="https://www.cerebras.ai/privacy" style={{ color: "var(--accent)" }}>
-            Cerebras&apos;s Privacy Policy
           </a>{" "}
           for details on their data practices.
         </p>
@@ -443,23 +443,23 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
             <strong>Clerk</strong> (clerk.com) — Authentication and user management.
           </li>
           <li style={{ marginBottom: 4 }}>
-            <strong>Cerebras Cloud</strong> (cerebras.ai) — Our <strong>primary</strong> AI content
+            <strong>Groq Cloud</strong> (groq.com) — Our <strong>primary</strong> AI content
             generation provider. Your question, chosen language, and difficulty level are sent to
-            Cerebras&apos; API (which runs Google&apos;s Gemma 4 31B open model) for one-time
+            Groq&apos;s API (which runs open models Qwen 3.6 27B and GPT-OSS 120B on LPUs) for one-time
             inference (lesson generation only — safety moderation runs locally on our servers and is
-            not sent to Cerebras). No user identity is included in the API call. Cerebras&apos; own
+            not sent to Groq). No user identity is included in the API call. Groq&apos;s own
             data practices apply to API requests.
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>NVIDIA NIM</strong> (nvidia.com) — Our <strong>automatic fallback</strong> AI
-            provider. Used when Cerebras is temporarily slow or unavailable. NVIDIA receives the
+            provider. Used when Groq is temporarily slow or unavailable. NVIDIA receives the
             same question, language, and difficulty level for one-time inference with no user
             identity attached, and no user data is used for training.
           </li>
           <li style={{ marginBottom: 4 }}>
             <strong>Cloudflare Workers AI</strong> (cloudflare.com) — Our <strong>last-resort</strong>
             AI provider. Used only when the primary and NVIDIA fallback paths are temporarily slow
-            or unavailable, so lessons can still be generated. It runs Google&apos;s Gemma open model
+            or unavailable, so lessons can still be generated. It runs open models (such as Llama 3.3 70B FP8)
             hosted on Cloudflare&apos;s network. When invoked, the same question, language, and
             difficulty level are sent for one-time inference with no user identity attached, and no
             user data is used for training.
@@ -577,6 +577,17 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
            by posting the new policy on this page and updating the &quot;Last updated&quot; date.
            Continued use of the service after changes constitutes acceptance of the updated policy.
          </p>
+          <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+            <strong>Version 3.5 (effective August 17, 2026).</strong> This update upgrades our
+            core AI inference architecture: our <strong>primary</strong> model provider is now{" "}
+            <strong>Groq Cloud</strong> (running open models Qwen 3.6 27B and GPT-OSS 120B on LPUs),
+            with <strong>NVIDIA NIM</strong> (70B–150B parameter models) as our automatic secondary
+            fallback, and <strong>Cloudflare Workers AI</strong> (70B Fast FP8) as our last-resort
+            provider. All requests are sent for one-time inference only with zero user identity
+            attached, and no user data is used for training. Because this changes our primary AI
+            processor disclosure, we are re-prompting all users to review and re-accept this Privacy
+            Policy and our Terms of Service before continuing.
+          </p>
           <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
             <strong>Version 3.4 (effective August 11, 2026).</strong> This update replaces the
             standalone &quot;Find&quot; page with an internal, quiz-driven personalization layer.

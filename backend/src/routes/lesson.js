@@ -684,15 +684,15 @@ END_EXTERNAL_CONTEXT>>>`
     let generationPercent = 40;
 
     const PROVIDER_LOG_LABELS = {
-      primary: "Cerebras Cloud (Gemma 4 31B)",
+      primary: "Groq Cloud (Qwen 3.6 27B / GPT-OSS 120B)",
       nvidia: "NVIDIA NIM",
       cloudflare: "Cloudflare Workers AI",
     };
-    console.log("[Gemma] Provider plan", {
+    console.log("[AI] Provider plan", {
       requestId,
       mode,
       providerOrder: [
-        "cerebras",
+        "groq",
         ...(isNvidiaFallbackConfigured() ? ["nvidia"] : []),
         ...(isCloudflareFallbackConfigured() ? ["cloudflare"] : []),
       ],
@@ -900,7 +900,7 @@ END_EXTERNAL_CONTEXT>>>`
     // Reliability: direct fallback rungs call NVIDIA first, then Cloudflare as
     // the last-resort provider, WITHOUT going through callGemma's timeout
     // circuit breaker. This keeps a circuit-independent path reachable when
-    // Cerebras is degraded. Each rung only exists when its provider is
+    // Groq is degraded. Each rung only exists when its provider is
     // configured, so single-provider deployments are unaffected.
     const attemptPlan = [
       { source: "primary", label: "primary", repair: false },
