@@ -12,6 +12,7 @@ import { useProgressStore } from "@/store/progressStore";
 import { useSavedJourneysStore } from "@/store/savedJourneysStore";
 import { cancelPendingDebouncedWrites } from "@/lib/debouncedStorage";
 import { clearArchivedLessons } from "@/lib/lessonArchive";
+import { clearTtsCache } from "@/hooks/useSpeech";
 import { useMounted } from "@/hooks/useMounted";
 import { Icon } from "@/components/shared/icons";
 import { Skeleton, SkeletonCard } from "@/components/shared/Skeleton";
@@ -172,6 +173,8 @@ export default function SettingsPage() {
             }
           }
         } catch { /* ignore */ }
+        // Synthesized read-aloud audio blobs live in their own cache.
+        clearTtsCache();
         // Also wipe the IndexedDB lesson archive (full bodies of older
         // journeys live there, not in localStorage).
         await clearArchivedLessons().catch(() => { /* best-effort */ });
@@ -337,8 +340,17 @@ export default function SettingsPage() {
   }
 
   if (!isSignedIn) {
-    // The redirect is handled by the effect above.
-    return null;
+    // The redirect is handled by the effect above — show the same skeleton
+    // instead of a blank screen while it runs.
+    return (
+      <main className="flow-page" aria-label="Redirecting to sign-in…">
+        <div className="flow-page__inner flow-page__inner--narrow flow-stack">
+          <p className="settings-sub" role="status">Redirecting to sign-in…</p>
+          <SkeletonCard height={140} />
+          <SkeletonCard height={180} />
+        </div>
+      </main>
+    );
   }
 
   return (
@@ -368,16 +380,17 @@ export default function SettingsPage() {
               <h3 id="theme-heading" className="flow-label">
                 Theme
               </h3>
-              <div role="group" aria-labelledby="theme-heading" className="option-stack">
+              <div role="radiogroup" aria-labelledby="theme-heading" className="option-stack">
                 {THEMES.map((opt) => {
                   const active = theme === opt.value;
                   return (
                     <button
                       key={opt.value}
                       type="button"
+                      role="radio"
                       onClick={() => setTheme(opt.value)}
                       className={`option-row${active ? " option-row--active" : ""}`}
-                      aria-pressed={active}
+                      aria-checked={active}
                     >
                       <span
                         aria-hidden="true"
@@ -399,16 +412,17 @@ export default function SettingsPage() {
               <h3 id="answer-mode-heading" className="flow-label">
                 Answer mode
               </h3>
-              <div role="group" aria-labelledby="answer-mode-heading" className="option-stack">
+              <div role="radiogroup" aria-labelledby="answer-mode-heading" className="option-stack">
                 {MODES.map((opt) => {
                   const active = mode === opt.value;
                   return (
                     <button
                       key={opt.value}
                       type="button"
+                      role="radio"
                       onClick={() => setMode(opt.value)}
                       className={`option-row${active ? " option-row--active" : ""}`}
-                      aria-pressed={active}
+                      aria-checked={active}
                     >
                       <span className="option-row__body">
                         <span className="option-row__title">{opt.label}</span>
@@ -439,16 +453,17 @@ export default function SettingsPage() {
               <h3 id="perf-mode-heading" className="flow-label">
                 Visual performance
               </h3>
-              <div role="group" aria-labelledby="perf-mode-heading" className="option-stack">
+              <div role="radiogroup" aria-labelledby="perf-mode-heading" className="option-stack">
                 {PERF_MODE_OPTIONS.map((opt) => {
                   const active = perfMode === opt.value;
                   return (
                     <button
                       key={opt.value}
                       type="button"
+                      role="radio"
                       onClick={() => setPerfMode(opt.value)}
                       className={`option-row${active ? " option-row--active" : ""}`}
-                      aria-pressed={active}
+                      aria-checked={active}
                     >
                       <span className="option-row__body">
                         <span className="option-row__title">{opt.label}</span>

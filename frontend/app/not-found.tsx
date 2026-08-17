@@ -15,14 +15,25 @@ export default function NotFound() {
     <main className="page-column page-column--center">
       <div className="animate-fade-up not-found-canvas">
         <p aria-hidden="true" className="not-found__code">404</p>
-        <h1 className="not-found__title">Lost in space?</h1>
+        <h1 className="not-found__title heading-rule heading-rule--center">
+          This page isn&apos;t in the syllabus
+        </h1>
         <p className="not-found__sub">
-          The page you are looking for does not exist or has been shifted in the cosmos.
+          The address may have moved or never existed. Pick up where you left
+          off instead.
         </p>
-        <Link href="/" className="btn-primary not-found__cta">
-          <Icon name="arrow-left" size={16} aria-hidden="true" />
-          Return to RealLearn
-        </Link>
+        <div className="not-found__links">
+          <Link href="/" className="btn-primary not-found__cta">
+            <Icon name="sparkle" size={16} aria-hidden="true" />
+            Ask a question
+          </Link>
+          <Link href="/learn" className="btn-ghost">
+            Back to your lesson
+          </Link>
+          <Link href="/progress" className="btn-ghost">
+            See your progress
+          </Link>
+        </div>
       </div>
     </main>
   );

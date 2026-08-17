@@ -7,7 +7,7 @@ import { markdownToPlainText, speechLangFor, useEdgeTts } from "@/hooks/useSpeec
 
 function SpeakerIcon() {
   return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ display: "block" }}>
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="listen-btn__glyph">
       <path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4Z" fill="currentColor" />
       <path d="M15.5 9a4.5 4.5 0 0 1 0 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
       <path d="M18 6.5a8 8 0 0 1 0 11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
@@ -41,54 +41,32 @@ export default function ListenButton({ text, language, label = "Listen to this s
       <span
         aria-label="Read-aloud not supported in this browser"
         title="Read-aloud requires a modern browser"
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 6,
-          borderRadius: "var(--radius-sm)",
-          border: "1px solid var(--border-subtle)",
-          background: "transparent",
-          color: "var(--text-tertiary)",
-          padding: "4px 10px",
-          fontSize: 12,
-          fontWeight: 600,
-          opacity: 0.45,
-          cursor: "not-allowed",
-        }}
+        className="listen-btn listen-btn--unsupported"
       >
-        <span aria-hidden="true" style={{ lineHeight: 1 }}><SpeakerIcon /></span>
+        <span aria-hidden="true" className="listen-btn__icon"><SpeakerIcon /></span>
         Listen
       </span>
     );
   }
 
   const showError = Boolean(error);
+  const stateClass = speaking
+    ? " listen-btn--speaking"
+    : showError
+      ? " listen-btn--error"
+      : "";
 
   return (
-    <span style={{ display: "inline-flex", flexDirection: "column", gap: 4 }}>
+    <span className="listen-wrap">
       <button
         type="button"
         aria-pressed={speaking}
         aria-label={speaking ? "Stop reading aloud" : label}
         title={showError ? `${label} — ${error}` : speaking ? "Stop reading aloud" : label}
         onClick={handleClick}
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 6,
-          borderRadius: "var(--radius-sm)",
-          border: speaking ? "1px solid var(--accent)" : showError ? "1px solid var(--danger)" : "1px solid var(--border-default)",
-          background: speaking ? "var(--accent-dim)" : showError ? "var(--danger-bg)" : "transparent",
-          color: speaking ? "var(--accent)" : showError ? "var(--danger)" : "var(--text-secondary)",
-          padding: "4px 10px",
-          fontSize: 12,
-          fontWeight: 600,
-          cursor: "pointer",
-          minHeight: 32,
-          transition: "all 200ms var(--ease-color)",
-        }}
+        className={`listen-btn${stateClass}`}
       >
-        <span aria-hidden="true" style={{ fontSize: 13, lineHeight: 1, display: "inline-flex", alignItems: "center" }}>
+        <span aria-hidden="true" className="listen-btn__icon">
           {speaking ? (
             <span className="visual-waveform" aria-hidden="true">
               <span className="visual-waveform__bar" />
@@ -105,19 +83,7 @@ export default function ListenButton({ text, language, label = "Listen to this s
         {loading ? "Generating..." : speaking ? "Stop" : showError ? "Retry" : "Listen"}
       </button>
       {showError ? (
-        <span
-          role="alert"
-          style={{
-            fontSize: 11,
-            color: "var(--danger)",
-            lineHeight: 1.3,
-            maxWidth: 240,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}
-            title={error ?? undefined}
-        >
+        <span role="alert" className="listen-error" title={error ?? undefined}>
           {error}
         </span>
       ) : null}

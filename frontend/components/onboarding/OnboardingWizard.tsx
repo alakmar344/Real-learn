@@ -386,8 +386,41 @@ export default function OnboardingWizard() {
             </>
           )}
 
+          {/* ── 2 · Under-13 terminal state ── the DOB rules us out, so the
+              form is replaced with a clear, kind end point instead of a
+              stranded disabled slide. Back clears the day so a typo can be
+              fixed without retyping everything. */}
+          {step === 2 && ageStatus === "under13" && (
+            <>
+              <div className="onboarding-glyph" aria-hidden="true">
+                <Icon name="heart" size={26} />
+              </div>
+              <h1 className="onboarding-title">We&apos;ll see you at 13</h1>
+              <p className="onboarding-sub" role="alert">
+                RealLearn is designed for learners aged 13 and older, so we
+                can&apos;t create an account for you just yet. We&apos;d love
+                to welcome you back on your 13th birthday — the questions will
+                still be here.
+              </p>
+              <div className="onboarding-actions">
+                <button type="button" className="btn-ghost" onClick={() => setDobDay(0)}>
+                  <Icon name="arrow-left" size={16} aria-hidden="true" /> Back
+                </button>
+                {/* Mark the wizard done on this device, or OnboardingRedirect
+                    would bounce "/" straight back here. Signing in later still
+                    re-gates age + consent via the legacy consent flow. */}
+                <Link href="/" className="btn-primary" onClick={() => markOnboardingComplete()}>
+                  Back to home
+                </Link>
+              </div>
+              <p className="onboarding-footnote">
+                Picked the wrong date? Use Back to fix it.
+              </p>
+            </>
+          )}
+
           {/* ── 2 · Legal + Age ── */}
-          {step === 2 && (
+          {step === 2 && ageStatus !== "under13" && (
             <>
               <h1 className="onboarding-title">First, the basics</h1>
               <p className="onboarding-sub">
@@ -437,13 +470,6 @@ export default function OnboardingWizard() {
                     ))}
                   </select>
                 </div>
-                {ageStatus === "under13" && (
-                  <p className="onboarding-error" role="alert">
-                    RealLearn is designed for learners aged 13 and older, so we
-                    can&apos;t create an account for you just yet. Thanks so much
-                    for stopping by!
-                  </p>
-                )}
                 {ageStatus === "minor" && (
                   <label className="onboarding-check">
                     <input
@@ -495,7 +521,7 @@ export default function OnboardingWizard() {
                   <Icon name="arrow-right" size={16} aria-hidden="true" />
                 </button>
               </div>
-              {!canAcceptLegal && ageStatus !== "under13" && (
+              {!canAcceptLegal && (
                 <p className="onboarding-footnote" aria-live="polite">
                   {ageStatus === "unknown"
                     ? "Add your date of birth to continue."

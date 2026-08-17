@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState, useLayoutEffect } from "react";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, useClerk } from "@clerk/nextjs";
 import { SignInButton } from "@clerk/nextjs";
 import ExampleQuestions from "@/components/homepage/ExampleQuestions";
 import MicButton from "@/components/shared/MicButton";
@@ -28,6 +28,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
   const [focused, setFocused] = useState(false);
   const [interimSpeech, setInterimSpeech] = useState("");
   const { isSignedIn } = useAuth();
+  const { openSignIn } = useClerk();
   const language = usePreferenceStore((s) => s.language);
   const persistedMode = usePreferenceStore((s) => s.mode);
   const setMode = usePreferenceStore((s) => s.setMode);
@@ -77,7 +78,13 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
 
   const handleSubmit = (e?: FormEvent) => {
     e?.preventDefault();
-    if (!isSignedIn || !question.trim()) return;
+    if (!question.trim()) return;
+    if (!isSignedIn) {
+      // Enter is the primary gesture — open the same modal the Sign in
+      // button uses. The draft stays in sessionStorage for after sign-in.
+      openSignIn();
+      return;
+    }
     try {
       sessionStorage.removeItem("reallearn_draft_question");
     } catch {

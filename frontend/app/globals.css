@@ -1139,11 +1139,6 @@ a:active {
   white-space: normal;
   word-break: break-word;
 }
-/* The hero greeting is centered — center its chapter-marker bar too (the
-   block-level ::after otherwise pins to the stage's far left edge). */
-.hero__title::after {
-  margin-inline: auto;
-}
 @media (min-width: 1024px) {
   .hero__title {
     font-size: clamp(40px, 4vw, 56px);
@@ -1394,11 +1389,6 @@ a:active {
   letter-spacing: var(--tracking-tight);
   border-bottom: 2px solid var(--border-glow);
   padding-bottom: 10px;
-}
-/* The border-bottom above IS this heading's rule — the global h2::after
-   chapter marker doubled it up. */
-.markdown-content h2::after {
-  display: none;
 }
 
 .markdown-content h3 {
@@ -2224,13 +2214,18 @@ html[data-perf="high"] {
    Typography & reading rhythm
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Editorial heading treatment — a thin accent rule sits just
-   below the text like a chapter marker in a hand-bound book, with generous
-   breathing room for a considered reading pace. */
+/* Editorial heading treatment — a thin accent rule sits just below the text
+   like a chapter marker. Opt-in: the old bare h1/h2 rule stamped EVERY
+   heading app-wide (settings sections, legal pages, onboarding titles) and
+   forced opt-outs. Apply .heading-rule, or ride one of the page-title
+   classes below that want it by design. */
 h1, h2, h3 {
   position: relative;
 }
-h1::after, h2::after {
+.heading-rule::after,
+.hero__title::after,
+.page-hero__title::after,
+.part-card__title::after {
   content: "";
   display: block;
   width: 40px;
@@ -2239,8 +2234,19 @@ h1::after, h2::after {
   border-radius: 2px;
   margin-top: 10px;
 }
-h1::after { width: 56px; margin-top: 12px; opacity: 0.85; }
-h3::after { display: none; }
+/* h1-scale page titles carry a slightly longer bar. */
+h1.heading-rule::after,
+.hero__title::after,
+.page-hero__title::after {
+  width: 56px;
+  margin-top: 12px;
+  opacity: 0.85;
+}
+/* Centered headings center their bar (a block ::after pins left otherwise). */
+.heading-rule--center::after,
+.hero__title::after {
+  margin-inline: auto;
+}
 
 h1, h2 {
   letter-spacing: var(--tracking-tight);
@@ -2517,6 +2523,7 @@ p {
   font-weight: 700;
   letter-spacing: 0.01em;
   color: var(--on-accent);
+  text-decoration: none; /* also worn by links */
   /* One confident accent press — structured olive-family gradient with a
      solid accent underneath as the paint fallback. No transparent border
      rim: the gradient paints edge-to-edge so the sides stay clean. */
@@ -2573,6 +2580,7 @@ p {
   min-height: 44px;
   font-size: 14px;
   font-weight: 600;
+  text-decoration: none; /* also worn by links */
   cursor: pointer;
   box-shadow: var(--glass-edge);
   transition:
@@ -6129,6 +6137,8 @@ p {
 .journey-item__open:active,
 .option-row:active,
 .resume-card:active,
+.listen-btn:active,
+.summary-dot:active,
 .bottom-nav__item:active {
   transform: translateY(1px) scale(0.98);
   transition: transform 90ms var(--ease-color);
@@ -7658,6 +7668,256 @@ html[data-theme="light"] {
   45% { transform: scale(1); }
   80% { opacity: 1; transform: scale(1); }
   100% { opacity: 0; transform: scale(0.94); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   404 route links — home, lesson, progress. Centered on the glass canvas.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.not-found__links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-sm);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Quick summary deck — the takeaway card pager on the completion screen.
+   Dots stay visually small but every control is a ≥44px hit target.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.summary-deck {
+  margin-block: 24px;
+}
+.summary-deck__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.summary-deck__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-accent-strong);
+}
+.btn-ghost.summary-deck__copy {
+  padding: 8px 14px;
+  font-size: 13px;
+}
+.summary-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 120px;
+  padding: 24px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-glow);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+}
+.summary-card__tag {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+.summary-card__text {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+.summary-card__nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-subtle);
+}
+.summary-card__dots {
+  display: flex;
+  align-items: center;
+}
+.summary-card__arrows {
+  display: flex;
+  gap: 8px;
+}
+/* Pager dot — an 8px visual inside a tall, padded hit area. */
+.summary-dot {
+  display: grid;
+  place-items: center;
+  min-width: 28px;
+  height: 44px;
+  padding: 0 4px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+}
+.summary-dot::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--border-default);
+  transition:
+    width 180ms var(--ease-color),
+    background 150ms var(--ease-color);
+}
+.summary-dot:hover::after {
+  background: var(--text-tertiary);
+}
+.summary-dot:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+.summary-dot:active::after {
+  background: var(--accent);
+}
+.summary-dot--active::after {
+  width: 20px;
+  background: var(--accent);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Completion share actions
+   ═══════════════════════════════════════════════════════════════════════════ */
+.share-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Progress rail wrappers — both variants are non-interactive status readouts.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.rail-wrap {
+  margin-top: var(--space-lg);
+}
+.rail-wrap--solo {
+  display: flex;
+  justify-content: center;
+}
+.rail-wrap--steps {
+  max-width: 580px;
+  margin-inline: auto;
+  padding: 0 12px;
+}
+.journey-rail__pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Listen button — read-aloud control on lesson sections. Compact ghost key
+   with speaking (accent) and error (danger) states; ≥44px hit target.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.listen-wrap {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.listen-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    color 150ms var(--ease-color),
+    border-color 150ms var(--ease-color),
+    background 150ms var(--ease-color),
+    transform 150ms var(--ease-color);
+}
+.listen-btn:hover,
+.listen-btn:focus-visible {
+  border-color: var(--border-accent);
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+.listen-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+/* Press feel: joins the tactile "light press" group. */
+.listen-btn--speaking {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+.listen-btn--error {
+  border-color: var(--danger);
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+.listen-btn--error:hover,
+.listen-btn--error:focus-visible {
+  border-color: var(--danger);
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+.listen-btn--unsupported,
+.listen-btn--unsupported:hover {
+  opacity: 0.45;
+  color: var(--text-tertiary);
+  border-color: var(--border-subtle);
+  background: transparent;
+  cursor: not-allowed;
+}
+.listen-btn__icon {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  font-size: 13px;
+}
+.listen-btn__glyph {
+  display: block;
+}
+.listen-error {
+  font-size: 11px;
+  color: var(--danger);
+  line-height: 1.3;
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Activity heatmap scroller — the right-edge fade signals there is more
+   grid to scroll on narrow screens; it only bites once content actually
+   reaches the container edge, so desktop (which fits) is untouched.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.heatmap-scroll {
+  display: flex;
+  gap: 3px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 28px), transparent);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
