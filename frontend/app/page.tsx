@@ -137,9 +137,7 @@ export default function HomePage() {
               <QuestionInput question={question} setQuestion={setQuestion} onSubmit={submit} />
             </div>
 
-            <div className="hero__content hero-glass-card hero__panel">
-              <HomeStats onStartTopic={(topic) => submit(topic)} />
-            </div>
+            <HomeStats onStartTopic={(topic) => submit(topic)} />
           </div>
         </section>
 

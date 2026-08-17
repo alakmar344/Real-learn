@@ -1144,3 +1144,9 @@ vendors). All of these live between `2b239b5` (start) and now:
   - **Settings button:** Compact icon-only tactile key (`.app-sidebar__settings-btn`) with bespoke custom SVG gear artwork (no text label), styled hover tooltip (`.sidebar-tooltip`), accessible `aria-label`, and universal routing to `/settings`.
   - **Theme toggle:** Segmented physical tactile dual-key control (`.theme-toggle-segmented` + `.theme-toggle-btn`) with recessed track, raised active plate, lit top bevel, bottom edge, tactile press compression, and immediate visual communication via custom SVG Sun (radiant solar corona) and Moon (sculpted celestial crescent) glyphs.
   - Verified across light/dark themes, responsive viewports, and motion preferences.
+
+- 2026-08-17 (later) — **Homepage hero layout normalization & empty box removal.**
+  - Fixed mobile flexbox `order: 1` override on `.hero__content` that placed supporting content above the greeting headline.
+  - Unified hero layout to natural DOM order across all devices (Greeting H1 → Question Input → Supporting Content below).
+  - Updated `HomeStats.tsx` to return `null` when there are no active in-progress lessons or first-visit prompts, eliminating empty frosted glass container rendering.
+

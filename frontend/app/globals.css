@@ -1111,22 +1111,13 @@ a:active {
 .hero__stage::after {
   display: none !important;
 }
-/* Mobile default: Today's spark & stats on top (order: 1), greeting (order: 2), input (order: 3) */
-.hero__content {
-  position: relative;
-  z-index: 1;
-  order: 1;
-  margin-bottom: 12px;
-}
 .hero__greeting {
-  margin-top: 16px;
-  order: 2;
   position: relative;
   z-index: 2;
+  margin-top: 0;
   margin-bottom: 0;
 }
-/* The greeting — a confident, level display heading. (The old oversized
-   tilted-cursive treatment is retired with the script face.) */
+/* The greeting — a confident, level display heading. */
 .hero__title {
   margin: 0;
   font-family: var(--font-display), system-ui, sans-serif;
@@ -1144,26 +1135,11 @@ a:active {
     font-size: clamp(40px, 4vw, 56px);
     line-height: 1.05;
   }
-  /* Desktop: Greeting H1 (order: 1), question input (order: 2), HomeStats spark below (order: 3) */
-  .hero__greeting {
-    order: 1;
-    margin-top: 0;
-    margin-bottom: 0;
-  }
-  .hero__input-row {
-    order: 2;
-  }
-  .hero__content {
-    order: 3;
-    margin-top: 24px;
-    margin-bottom: 0;
-  }
 }
 .hero__title-name {
   color: var(--accent);
 }
-/* Gradient display text — the Gen Z "name in lights" moment. Solid accent
-   is the fallback; browsers with background-clip:text get the sunset run. */
+/* Gradient display text */
 .text-gradient,
 .hero__title-name {
   color: var(--accent);
@@ -1184,7 +1160,16 @@ a:active {
   display: flex;
   justify-content: center;
   margin-top: 20px;
-  order: 3;
+}
+.hero__content {
+  position: relative;
+  z-index: 1;
+  margin-top: 20px;
+}
+@media (min-width: 1024px) {
+  .hero__content {
+    margin-top: 24px;
+  }
 }
 /* ── How-it-works strip ── the newcomer's mental model in one quiet line:
    ask → learn in three parts → pass each gate. Shown only until the first
@@ -5427,8 +5412,7 @@ p {
 
 /* Home hero stats panel */
 .hero__panel {
-  margin-top: 28px;
-  padding: 20px 24px;
+  padding: 18px 24px;
 }
 
 /* ── Learn page shell ── */
