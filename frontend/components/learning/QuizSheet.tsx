@@ -6,14 +6,25 @@ import QuizQuestion from "@/components/learning/QuizQuestion";
 import { reshuffleQuestion, sanitizeQuestion } from "@/lib/quizShuffle";
 import { Icon } from "@/components/shared/icons";
 
+/** In-flight attempt for one part, held by the parent across close/reopen so
+ * banked correct answers survive AND a failed first attempt can't be laundered
+ * into a "perfect" one by reopening the sheet. Session-only, never persisted. */
+export interface QuizAttemptState {
+  questions: Question[];
+  answers: Array<number | null>;
+  firstAttemptScore: number | null;
+}
+
 interface Props {
   open: boolean;
   questions: Question[];
+  initialState?: QuizAttemptState | null;
+  onStateChange?: (state: QuizAttemptState) => void;
   onClose: () => void;
   onPass: (score: number) => void;
 }
 
-const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
+const QuizSheetBase = ({ open, questions, initialState, onStateChange, onClose, onPass }: Props) => {
   // Derive the quiz length from the actual questions instead of hardcoding 2.
   // The backend can legitimately deliver a salvaged single-question quiz
   // (e.g. when the model's output was truncated); with a hardcoded total of 2
@@ -21,34 +32,57 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
   const totalQuestions = Math.max(questions?.length ?? 0, 1);
   const perfectScore = totalQuestions;
 
-  const [current, setCurrent] = useState(0);
+  // Resume a previous attempt only if it matches this quiz's shape (a stale
+  // entry from another lesson would corrupt the score math).
+  const resume =
+    initialState && initialState.answers.length === totalQuestions ? initialState : null;
+
+  const [current, setCurrent] = useState(() => {
+    const firstUnanswered = resume ? resume.answers.findIndex((a) => a === null) : 0;
+    return firstUnanswered >= 0 ? firstUnanswered : 0;
+  });
   const [answers, setAnswers] = useState<Array<number | null>>(
-    Array.from({ length: totalQuestions }, () => null)
+    () => resume?.answers ?? Array.from({ length: totalQuestions }, () => null)
   );
   // Local working copy of the questions whose option order we control. On a
   // failed attempt the options are reshuffled so the learner has to find the
   // correct answer again.
   const [quizQuestions, setQuizQuestions] = useState<Question[]>(
-    (questions ?? []).map(sanitizeQuestion)
+    () => resume?.questions ?? (questions ?? []).map(sanitizeQuestion)
   );
-  const [shuffledHint, setShuffledHint] = useState(false);
+  // Resuming mid-retry (a full first pass already scored) → re-show the
+  // "correct answers are saved" status.
+  const [shuffledHint, setShuffledHint] = useState(
+    () => resume !== null && resume.firstAttemptScore !== null && resume.answers.some((a) => a !== null)
+  );
   // First-attempt score: passing requires a perfect run, so the score at the
   // moment of passing is ALWAYS perfect. "Perfect" stats/achievements only
   // mean something if they track whether the learner aced the quiz on the
   // FIRST try — capture that here and report it through onPass.
-  const [firstAttemptScore, setFirstAttemptScore] = useState<number | null>(null);
+  const [firstAttemptScore, setFirstAttemptScore] = useState<number | null>(
+    () => resume?.firstAttemptScore ?? null
+  );
   const sheetRef = useRef<HTMLDivElement>(null);
+  const actionRef = useRef<HTMLButtonElement>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
 
-  // Reset to the original (unshuffled) questions whenever the source changes
-  // (e.g. a new part) or the sheet is (re)opened.
+  // Reset to the original (unshuffled) questions only when the SOURCE changes
+  // (a different part) — not on reopen, which must keep the banked attempt.
+  const sourceRef = useRef(questions);
   useEffect(() => {
+    if (sourceRef.current === questions) return;
+    sourceRef.current = questions;
     setQuizQuestions((questions ?? []).map(sanitizeQuestion));
     setCurrent(0);
     setAnswers(Array.from({ length: Math.max(questions?.length ?? 0, 1) }, () => null));
     setShuffledHint(false);
     setFirstAttemptScore(null);
-  }, [questions, open]);
+  }, [questions]);
+
+  // Mirror the attempt up to the parent so it survives the sheet unmounting.
+  useEffect(() => {
+    onStateChange?.({ questions: quizQuestions, answers, firstAttemptScore });
+  }, [quizQuestions, answers, firstAttemptScore, onStateChange]);
 
   const currentQuestion = quizQuestions?.[current];
   const selected = answers[current];
@@ -128,6 +162,27 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
   }, [open, onClose]);
+
+  /* ── Keep focus inside the dialog as buttons disable/unmount ── */
+  // Selecting an answer disables every option (including the focused one), so
+  // the browser drops focus to <body> — past the tab trap. Move it to the
+  // action button; when the next/retry question renders (action button gone),
+  // return it to the first option. Skipped on mount so the existing
+  // initial-focus behavior is untouched.
+  const focusSyncArmedRef = useRef(false);
+  useEffect(() => {
+    if (!focusSyncArmedRef.current) {
+      focusSyncArmedRef.current = true;
+      return;
+    }
+    if (answered) {
+      actionRef.current?.focus();
+    } else {
+      sheetRef.current
+        ?.querySelector<HTMLElement>(".quiz-question__option")
+        ?.focus();
+    }
+  }, [answered, current]);
 
   if (!open || !currentQuestion) return null;
 
@@ -263,6 +318,7 @@ const QuizSheetBase = ({ open, questions, onClose, onPass }: Props) => {
 
         {answered ? (
           <button
+            ref={actionRef}
             type="button"
             onClick={nextAction}
             aria-label={

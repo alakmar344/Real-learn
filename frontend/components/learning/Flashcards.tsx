@@ -23,13 +23,54 @@ interface Card {
   back: string;
 }
 
+// First 1–2 sentences of a part's content, capped at ~220 chars and ending on
+// a sentence boundary where possible ("।" covers Devanagari-script lessons).
+function excerptFromContent(text: string, cap = 220): string {
+  const sentences = text.match(/[^.!?।]+[.!?।]+["')\]]*\s*/g) ?? [text];
+  let out = "";
+  for (const sentence of sentences.slice(0, 2)) {
+    if (out && (out + sentence).trim().length > cap) break;
+    out += sentence;
+  }
+  out = out.trim() || text.trim();
+  if (out.length > cap) {
+    const cut = out.slice(0, cap);
+    const lastSpace = cut.lastIndexOf(" ");
+    out = `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()}…`;
+  }
+  return out;
+}
+
 export function buildFlashcards(lesson: LessonJourney): Card[] {
   const takeaways = (lesson.keyTakeaways ?? [])
     .map((t) => removeMarkdown(String(t ?? "")).trim())
     .filter(Boolean);
-  if (takeaways.length === 0) return [];
 
   const parts = lesson.parts ?? [];
+
+  // Legacy cached/saved lessons can lack keyTakeaways — fall back to one card
+  // per part, built from the opening of the part's own content, so every
+  // lesson still gets a deck.
+  if (takeaways.length === 0) {
+    return parts
+      .map((part, i) => {
+        const content = removeMarkdown(String(part?.content ?? ""))
+          .replace(/\s+/g, " ")
+          .trim();
+        if (!content) return null;
+        const title = removeMarkdown(String(part?.title ?? lesson.topic ?? "")).trim();
+        return {
+          front: title || `Part ${i + 1}`,
+          hint:
+            parts.length > 1
+              ? `Part ${part?.partNumber ?? i + 1} · what's the key idea?`
+              : "Key idea · can you recall it?",
+          back: excerptFromContent(content),
+        };
+      })
+      .filter((card): card is Card => card !== null);
+  }
+
   return takeaways.map((back, i) => {
     // 3-part lessons have 3 takeaways that mirror the 3 parts; fast lessons
     // have 1 part and 2 takeaways — fall back to the last available part.

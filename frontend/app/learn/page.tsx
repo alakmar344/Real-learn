@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
 import Navbar from "@/components/shared/Navbar";
 import ProgressRail from "@/components/learning/ProgressRail";
-import QuizSheet from "@/components/learning/QuizSheet";
+import QuizSheet, { QuizAttemptState } from "@/components/learning/QuizSheet";
 import LoadingCinematic from "@/components/shared/LoadingCinematic";
 import ErrorState from "@/components/shared/ErrorState";
 import LiveRegion from "@/components/shared/LiveRegion";
@@ -60,9 +60,17 @@ function scrollToPart(partNumber: number) {
 
 export default function LearnPage() {
   const [quizPart, setQuizPart] = useState<number | null>(null);
+  // Snapshot of the resumed attempt for the part being opened — captured in
+  // the open handler because refs can't be read during render.
+  const [quizInitialState, setQuizInitialState] = useState<QuizAttemptState | null>(null);
   const [showUnlockFx, setShowUnlockFx] = useState(false);
   const [isRevealing, setIsRevealing] = useState(false);
   const unlockTimeoutRef = useRef<number | null>(null);
+  // Per-part in-flight quiz attempts, kept across sheet close/reopen so banked
+  // correct answers and the first-attempt score survive (closing the sheet
+  // must not launder a failed first try into a "perfect" one). Session-only:
+  // a ref, never persisted; cleared on new lesson, retake and part pass.
+  const quizAttemptsRef = useRef<Record<number, QuizAttemptState>>({});
 
   const {
     question,
@@ -154,6 +162,11 @@ export default function LearnPage() {
     }
   }, [isLoading, lesson]);
 
+  // New lesson (or loaded journey) → any in-flight quiz attempts are stale.
+  useEffect(() => {
+    quizAttemptsRef.current = {};
+  }, [lesson]);
+
   // Initialize from the CURRENT (already-hydrated) store values — the lesson
   // store persists, so starting these at null/false made every reload of a
   // persisted lesson re-fire "Lesson ready!" / "Journey complete!" toasts.
@@ -178,6 +191,11 @@ export default function LearnPage() {
   useEffect(() => {
     if (!lesson) return;
     const displayQuestion = lesson.question ?? lesson.topic ?? "";
+    // Attribute the journey to the lesson's OWN language/level — current prefs
+    // may have changed since generation, and reopening an old journey must not
+    // relabel it (preference values are a legacy-lesson fallback only).
+    const lessonLanguage = lesson.language ?? language;
+    const lessonLevel = lesson.level ?? level;
     // Fold the per-instance lesson id into the saved-journey key so two
     // different generations of the same question never overwrite each other's
     // history/archive entry (content signatures alone can collide).
@@ -186,8 +204,8 @@ export default function LearnPage() {
     saveJourney({
       id,
       question: displayQuestion,
-      language,
-      level,
+      language: lessonLanguage,
+      level: lessonLevel,
       lesson,
       partScores,
       totalScore,
@@ -251,18 +269,25 @@ export default function LearnPage() {
       }
       triggerHaptic("success");
       passPart(part.partNumber, score);
+      // The attempt is settled — a later reopen of this part starts clean.
+      delete quizAttemptsRef.current[part.partNumber];
 
+      // Credit is attributed to the lesson's OWN language, never current
+      // prefs: switching language in Settings must not mint new credit keys
+      // for the same instance (XP double-credit) or pollute languagesUsed.
+      // Preference value is only a fallback for legacy persisted lessons.
+      const lessonLanguage = lesson.language ?? language;
       // Include the per-instance lesson id: retaking a quiz on THIS
       // lesson stays idempotent (no XP farming), but generating a NEW
       // lesson for the same question tomorrow earns credit again —
       // previously the content-only key silently blocked all XP,
       // daily-goal and streak progress for repeat topics.
-      const lessonSignature = `${lesson.question ?? lesson.topic ?? ""}|${language}|${lesson.lessonId ?? ""}`;
+      const lessonSignature = `${lesson.question ?? lesson.topic ?? ""}|${lessonLanguage}|${lesson.lessonId ?? ""}`;
       const maxPerPart = part.quiz?.length ?? 2;
       recordPartPassed({
         score,
         maxPerPart,
-        language,
+        language: lessonLanguage,
         subject: part.subject,
         creditKey: `part|${lessonSignature}|${part.partNumber}`,
       });
@@ -282,7 +307,7 @@ export default function LearnPage() {
         recordLessonCompleted({
           totalScore: finalTotal,
           maxScore,
-          language,
+          language: lessonLanguage,
           creditKey: `lesson|${lessonSignature}`,
         });
       }
@@ -313,9 +338,17 @@ export default function LearnPage() {
         handlePartPass(part, 0);
         return;
       }
+      setQuizInitialState(quizAttemptsRef.current[part.partNumber] ?? null);
       setQuizPart(part.partNumber);
     },
     [handlePartPass]
+  );
+
+  const handleQuizStateChange = useCallback(
+    (state: QuizAttemptState) => {
+      if (quizPart !== null) quizAttemptsRef.current[quizPart] = state;
+    },
+    [quizPart]
   );
 
   const handleToggleCollapse = useCallback(
@@ -465,6 +498,7 @@ export default function LearnPage() {
                 lesson={lesson}
                 totalScore={totalScore}
                 onRetake={() => {
+                  quizAttemptsRef.current = {};
                   resetProgress();
                   scrollToTop();
                 }}
@@ -521,6 +555,8 @@ export default function LearnPage() {
           <QuizSheet
             open={quizPart !== null}
             questions={activePart.quiz ?? []}
+            initialState={quizInitialState}
+            onStateChange={handleQuizStateChange}
             onClose={() => setQuizPart(null)}
             onPass={(score) => handlePartPass(activePart, score)}
           />
