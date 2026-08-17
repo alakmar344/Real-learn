@@ -128,6 +128,7 @@ const CONFIGURED_AUTHORIZED_PARTIES = (process.env.CLERK_AUTHORIZED_PARTIES || "
 const DEFAULT_PRODUCTION_AUTHORIZED_PARTIES = [
   "https://reallearn.site",
   "https://www.reallearn.site",
+  "https://reallearn-taupe.vercel.app",
 ];
 
 const DEFAULT_DEV_AUTHORIZED_PARTIES = [
