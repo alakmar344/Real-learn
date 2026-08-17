@@ -36,19 +36,17 @@ import { Groq } from "groq-sdk";
 export const PRIMARY_AI_MODEL =
   process.env.GROQ_AI_MODEL ||
   process.env.AI_MODEL ||
-  "qwen/qwen3.6-27b";
+  "llama-3.3-70b-versatile";
 export const GEMMA_MODEL = PRIMARY_AI_MODEL;
 export const GROQ_SECONDARY_MODEL =
-  process.env.GROQ_SECONDARY_MODEL || "openai/gpt-oss-120b";
-export const GROQ_COMPOUND_MODEL =
-  process.env.GROQ_COMPOUND_MODEL || "groq/compound";
+  process.env.GROQ_SECONDARY_MODEL || "qwen/qwen3.6-27b";
+export const GROQ_TERTIARY_MODEL =
+  process.env.GROQ_TERTIARY_MODEL || "openai/gpt-oss-120b";
 
-// ── Groq Sliding 60s TPM Tracker & 3-Model Load Balancer ──────────────────
-// Groq rate-limits primary tier traffic to 8,000 TPM.
-// We alternate 50/50 between Qwen 3.6 27B and GPT-OSS 120B (no permanent default).
+// ── Groq Sliding 60s TPM Tracker & Load Balancer ─────────────────────────
+// Groq rate-limits free/standard tier traffic to TPM envelopes.
+// We alternate between high-speed versatile models (Llama 3.3 70B, Qwen 3.6 27B, GPT-OSS 120B).
 // A rolling 60s sliding window tracks estimated & consumed tokens.
-// When usage approaches the safety threshold (default: 6,800 tokens), requests
-// automatically overflow to Groq Compound without hitting 429 rate limits.
 
 const DEFAULT_GROQ_TPM_LIMIT = 8000;
 const DEFAULT_GROQ_TPM_SAFETY_THRESHOLD = 6800;
@@ -91,26 +89,12 @@ export function isGroqTpmNearLimit(estimatedTokens = 600) {
 
 export function selectNextGroqModel(estimatedTokens = 600) {
   const currentUsage = getRollingGroqTpmUsage();
-  const nearLimit = isGroqTpmNearLimit(estimatedTokens);
-  const compoundModel = GROQ_COMPOUND_MODEL;
-
-  if (nearLimit) {
-    console.log("[AI] Groq 8k TPM window near limit — routing to Groq Compound", {
-      currentUsage,
-      threshold: parsePositiveInt(
-        process.env.GROQ_TPM_SAFETY_THRESHOLD,
-        DEFAULT_GROQ_TPM_SAFETY_THRESHOLD
-      ),
-      selectedModel: compoundModel,
-    });
-    return {
-      selectedModel: compoundModel,
-      reason: "tpm_overflow",
-      currentUsage,
-    };
-  }
-
-  const rotatingModels = [PRIMARY_AI_MODEL, GROQ_SECONDARY_MODEL];
+  const rotatingModels = [
+    PRIMARY_AI_MODEL,
+    GROQ_SECONDARY_MODEL,
+    GROQ_TERTIARY_MODEL,
+    "llama-3.1-8b-instant",
+  ].filter(Boolean);
   const idx = groqRotationCounter++ % rotatingModels.length;
   const selectedModel = rotatingModels[idx];
 
@@ -155,7 +139,7 @@ const DEFAULT_CIRCUIT_COOLDOWN_MS = 60000;
 // has shown NO sign of life (no bytes received) by then — a healthy provider
 // that is merely generating never triggers the hedge, so the fallback's
 // free-tier limits and duplicate tokens are spent ONLY on rescues.
-const DEFAULT_HEDGE_DELAY_MS = 12000;
+const DEFAULT_HEDGE_DELAY_MS = 5000;
 // Streaming watchdogs. Responses are streamed so a hung request is detected
 // by silence, not by burning the whole per-attempt timeout (production logs
 // showed 45s wasted per hang):
@@ -436,6 +420,7 @@ function newProviderHealth() {
 
 const providerHealth = {
   groq: newProviderHealth(),
+  mistral: newProviderHealth(),
   cloudflare: newProviderHealth(),
   nvidia: newProviderHealth(),
 };
@@ -505,6 +490,7 @@ export function getProviderHealthSnapshot() {
 /** Test-only helper: reset all circuit/health state. */
 export function resetProviderHealth() {
   providerHealth.groq = newProviderHealth();
+  providerHealth.mistral = newProviderHealth();
   providerHealth.cloudflare = newProviderHealth();
   providerHealth.nvidia = newProviderHealth();
 }
@@ -513,6 +499,10 @@ export function resetProviderHealth() {
 
 function isGroqConfigured() {
   return Boolean(process.env.GROQ_API_KEY?.trim());
+}
+
+export function isMistralConfigured() {
+  return Boolean(process.env.MISTRAL_API_KEY?.trim());
 }
 
 function isCloudflareConfigured() {
@@ -528,7 +518,11 @@ function isNvidiaConfigured() {
 
 /** True when any non-primary provider is available. Kept for server.js compatibility. */
 export function isFallbackConfigured() {
-  return isNvidiaConfigured() || isCloudflareConfigured();
+  return isMistralConfigured() || isNvidiaConfigured() || isCloudflareConfigured();
+}
+
+export function isMistralFallbackConfigured() {
+  return isMistralConfigured();
 }
 
 export function isCloudflareFallbackConfigured() {
@@ -539,8 +533,25 @@ export function isNvidiaFallbackConfigured() {
   return isNvidiaConfigured();
 }
 
+export function getMistralModels() {
+  const configured = [
+    ...parseModelList(process.env.MISTRAL_AI_MODEL),
+    ...parseModelList(process.env.MISTRAL_AI_MODELS),
+  ];
+  if (configured.length === 0) {
+    configured.push(
+      "mistral-small-latest",
+      "mistral-large-latest",
+      "open-mistral-nemo",
+      "codestral-latest",
+      "pixtral-12b-2409"
+    );
+  }
+  return [...new Set(configured)];
+}
+
 export function getGroqModels() {
-  const rotating = [PRIMARY_AI_MODEL, GROQ_SECONDARY_MODEL];
+  const rotating = [PRIMARY_AI_MODEL, GROQ_SECONDARY_MODEL, GROQ_TERTIARY_MODEL];
   const configured = [
     ...parseModelList(process.env.GROQ_AI_MODELS),
     ...parseModelList(process.env.GROQ_FALLBACK_MODELS),
@@ -549,8 +560,9 @@ export function getGroqModels() {
   const all = [
     ...rotating,
     "llama-3.3-70b-versatile",
+    "qwen/qwen3.6-27b",
+    "openai/gpt-oss-120b",
     "llama-3.1-8b-instant",
-    GROQ_COMPOUND_MODEL,
     ...configured,
   ];
   return [...new Set(all.filter(Boolean))];
@@ -597,12 +609,22 @@ function getProviders(allowFallback) {
   if (isGroqConfigured()) {
     providers.push({
       key: "groq",
-      label: "Groq Cloud (Qwen 3.6 27B / GPT-OSS 120B)",
+      label: "Groq Cloud (Llama 3.3 70B / Qwen 3.6 27B / GPT-OSS 120B)",
       // tier 0 = normal racing pool (ordered by health/latency within a tier)
       tier: 0,
       models: getGroqModels(),
       call: (model, body, signal, opts) =>
         callGroq(model, body, signal, opts),
+    });
+  }
+  if (allowFallback && isMistralConfigured()) {
+    providers.push({
+      key: "mistral",
+      label: "Mistral AI (mistral-small / mistral-large / nemo)",
+      tier: 0,
+      models: getMistralModels(),
+      call: (model, body, signal, opts) =>
+        callMistralAI(model, body, signal, opts),
     });
   }
   if (allowFallback && isNvidiaConfigured()) {
@@ -804,6 +826,30 @@ function thinkingDisabledFor(providerKey) {
   const mode = (process.env.AI_DISABLE_THINKING || "off").trim().toLowerCase();
   if (mode === "off" || !mode) return false;
   return mode === "all" || mode === "both" || mode === providerKey;
+}
+
+async function callMistralAI(model, body, signal, opts) {
+  const apiKey = process.env.MISTRAL_API_KEY?.trim();
+  if (!apiKey) {
+    throw new Error("MISTRAL_API_KEY is not configured");
+  }
+  const payload = {
+    model,
+    messages: body.messages,
+    temperature: body.temperature,
+    max_tokens: body.max_tokens,
+    stream: true,
+  };
+  return fetchChatCompletion(
+    "https://api.mistral.ai/v1/chat/completions",
+    {
+      Authorization: `Bearer ${apiKey}`,
+      Accept: "text/event-stream",
+    },
+    payload,
+    signal,
+    opts
+  );
 }
 
 async function callNvidiaAI(model, body, signal, opts) {
@@ -1067,6 +1113,18 @@ function fallbackWatchdogOpts() {
     firstByteTimeoutMs: config.firstByteTimeoutMs,
     stallTimeoutMs: config.stallTimeoutMs,
   };
+}
+
+/**
+ * Direct call to the Mistral AI fallback provider.
+ * Public because routes use it for circuit-independent fallback rungs.
+ * Returns the raw completion payload — pass it through extractTextFromResult().
+ */
+export async function callMistralFallbackAI(model, body, signal) {
+  const models = getMistralModels();
+  const preferred = models[providerHealth.mistral.modelIndex % models.length];
+  const targetModel = model && models.includes(model) ? model : (preferred || models[0]);
+  return callMistralAI(targetModel, body, signal, fallbackWatchdogOpts());
 }
 
 /**
@@ -1499,7 +1557,7 @@ export async function callGemma(
 
   if (providers.length === 0) {
     throw new Error(
-      "No AI provider is configured: set GROQ_API_KEY, NVIDIA_API_KEY, or CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID"
+      "No AI provider is configured: set GROQ_API_KEY, MISTRAL_API_KEY, NVIDIA_API_KEY, or CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID"
     );
   }
 

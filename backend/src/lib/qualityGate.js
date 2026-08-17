@@ -91,86 +91,22 @@ function getThresholds(level) {
 
 // Words that are too advanced for Class 6-8 — mapped to simpler alternatives.
 const SIMPLIFICATION_MAP = new Map([
-  // Science / academic
-  ["photosynthesis", "how plants make food from sunlight"],
-  ["mitochondria", "tiny parts of cells that make energy"],
-  ["chromosome", "a thread-like part of a cell that carries genes"],
-  ["hypothesis", "a guess you can test"],
-  ["experiment", "a test to find out something"],
-  ["molecule", "a tiny particle of matter"],
-  ["atom", "the smallest piece of an element"],
-  ["ecosystem", "a community of living things and their environment"],
-  ["biodiversity", "the variety of living things in an area"],
-  ["evolution", "how living things change over a long time"],
-  ["gravity", "the force that pulls things toward Earth"],
-  ["friction", "the force that slows things down when they rub together"],
-  ["velocity", "speed in a certain direction"],
-  ["acceleration", "how fast something speeds up"],
-  ["equation", "a math statement with an equals sign"],
-  ["variable", "a letter that stands for a number we don't know yet"],
-  ["coefficient", "a number that multiplies a variable"],
-  ["denominator", "the bottom number in a fraction"],
-  ["numerator", "the top number in a fraction"],
-  ["perpendicular", "at a right angle to something"],
-  ["circumference", "the distance around a circle"],
-  ["diameter", "the distance across a circle through the center"],
-  ["radius", "the distance from the center of a circle to its edge"],
-  ["geography", "the study of the Earth's surface"],
-  ["civilization", "a society with its own culture and government"],
-  ["democracy", "a system where people vote to choose leaders"],
-  ["monarchy", "a system where a king or queen rules"],
-  ["economy", "how a country makes and uses money and goods"],
-  ["inflation", "when prices go up over time"],
-  ["recession", "when the economy slows down"],
-  ["parliament", "a group that makes laws for a country"],
-  ["constitution", "the set of rules a country is governed by"],
-  ["amendment", "a change or addition to a law or rule"],
-  ["legislation", "laws made by a government"],
-  ["photosynthetic", "related to how plants make food"],
-  ["thermodynamics", "the study of heat and energy"],
-  ["electromagnetic", "related to electric and magnetic forces"],
-  ["metamorphosis", "a big change in form, like a caterpillar becoming a butterfly"],
-  ["predator", "an animal that hunts other animals"],
-  ["prey", "an animal that is hunted by other animals"],
-  ["decomposition", "breaking down into smaller parts"],
-  ["sediment", "tiny bits of rock and dirt that settle at the bottom"],
-  ["erosion", "when wind or water slowly wears away rock or soil"],
-  ["tectonic", "related to the large plates that make up Earth's surface"],
-  ["convection", "heat moving through liquids or gases"],
-  ["conduction", "heat moving through a solid material"],
-  ["radiation", "energy that travels in waves"],
-  ["frequency", "how often something happens in a given time"],
-  ["amplitude", "the height of a wave"],
-  ["wavelength", "the distance between two wave peaks"],
-  ["catalyst", "something that speeds up a chemical reaction"],
-  ["oxidation", "when a substance reacts with oxygen"],
-  ["combustion", "burning"],
-  ["synthesis", "building something from parts"],
-  ["analytical", "carefully examining things"],
-  ["comprehensive", "covering everything"],
-  ["significant", "important or meaningful"],
-  ["fundamental", "basic and very important"],
-  ["phenomenon", "something that happens or can be seen"],
-  ["hypothesize", "make a guess you can test"],
-  ["correlation", "a connection between two things"],
-  ["implication", "a result or effect of something"],
-  ["methodology", "the way something is done"],
-  ["paradigm", "a way of thinking about something"],
-  ["infrastructure", "basic systems like roads and power that a place needs"],
-  ["bureaucracy", "a system with many rules and officials"],
-  ["sovereignty", "the right of a country to govern itself"],
-  ["colonialism", "when one country takes control of another"],
-  ["industrialization", "when a country builds lots of factories and machines"],
-  ["urbanization", "when more people move to cities"],
-  ["globalization", "how the world's countries become more connected"],
+  // Obscure / overly bureaucratic jargon
+  ["thermodynamics", "the science of heat and energy"],
+  ["metamorphosis", "transformation (like a caterpillar becoming a butterfly)"],
+  ["decomposition", "natural breaking down into simpler parts"],
+  ["infrastructure", "essential systems like roads, power, and networks"],
+  ["bureaucracy", "complex administrative systems and paperwork"],
+  ["sovereignty", "supreme power and self-governance"],
+  ["colonialism", "when one nation controls and exploits another"],
+  ["industrialization", "transition to large-scale factory production"],
+  ["urbanization", "the growth and expansion of cities"],
+  ["globalization", "worldwide interconnectedness and trade"],
+  ["methodology", "systematic way of doing something"],
+  ["paradigm", "standard model or worldview"],
 ]);
 
-// Precompiled whole-word replacement patterns for SIMPLIFICATION_MAP. Compiled
-// ONCE at module load rather than rebuilding ~71 RegExp objects on every
-// simplifyText() call (which runs per part + per quiz question/option/
-// explanation on the gated Class 6-8 generation path — thousands of compiles
-// per lesson otherwise). String.prototype.replace resets a global regex's
-// lastIndex on each call, so reusing these shared instances is safe.
+// Precompiled whole-word replacement patterns for SIMPLIFICATION_MAP.
 const SIMPLIFICATION_PATTERNS = Array.from(SIMPLIFICATION_MAP, ([complex, simple]) => ({
   pattern: new RegExp(`\\b${escapeRegex(complex)}\\b`, "gi"),
   simple,
@@ -364,9 +300,6 @@ function simplifyText(text, level, language = "English") {
       });
     }
   }
-
-  // Split very long sentences (> 25 words) at conjunctions (works for any language)
-  result = splitLongSentences(result, 25);
 
   return result;
 }

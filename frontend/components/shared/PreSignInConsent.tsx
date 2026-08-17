@@ -21,12 +21,12 @@ const ALLOWED_PATHS_WHEN_DECLINED = ["/sign-in", "/sign-up", "/legal"];
 // When the legal versions change, update these bullets and the verification
 // subtests in scripts/verify-reconsent-copy.mjs together.
 const POLICY_CHANGES = [
-  "Privacy Policy updated to version 3.5: we upgraded RealLearn's core AI inference architecture to Groq Cloud LPUs as our ultra-low-latency primary provider (running Qwen 3.6 27B and GPT-OSS 120B), with NVIDIA NIM (70B–150B parameter models) as our secondary fallback, and Cloudflare Workers AI (70B Fast FP8) as our last-resort fallback.",
+  "Privacy Policy updated to version 3.6: added Mistral AI (Mistral AI SAS, France/EU) as a fast fallback inference provider alongside Groq Cloud, NVIDIA NIM, and Cloudflare Workers AI.",
   "Your questions and learning-context summaries are transmitted for one-time inference only with zero user identity attached, and no user data is ever used to train, fine-tune, or improve any AI model.",
 ];
 
 const TERMS_CHANGES = [
-  "Terms of Service updated to version 3.2: updated AI content disclaimer (Section 6) and service provider disclosures (Section 17) to reflect Groq Cloud LPUs as our primary inference provider (running Qwen 3.6 27B and GPT-OSS 120B), NVIDIA NIM as secondary fallback, and Cloudflare Workers AI as last resort. All lesson content remains machine-generated without human pre-review and is provided “as is” for educational purposes.",
+  "Terms of Service updated to version 3.3: updated AI content disclaimer (Section 6) and service provider disclosures (Section 17) to reflect Mistral AI alongside Groq Cloud, NVIDIA NIM, and Cloudflare Workers AI. All lesson content remains machine-generated without human pre-review and is provided “as is” for educational purposes.",
 ];
 
 // Build year/month options once

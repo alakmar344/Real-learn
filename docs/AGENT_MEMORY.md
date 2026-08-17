@@ -1249,10 +1249,31 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
   - **NVIDIA NIM Free Tier Model Catalog & Schema Fixes (`backend/src/lib/gemma.js`)**:
     - Omitted unsupported kwargs on standard NVIDIA NIM chat completions calls so non-reasoning models (Llama 3.3, Nemotron, Mistral) do not fail schema validation.
     - Updated default NVIDIA NIM fallback catalog to verified active models: `meta/llama-3.3-70b-instruct`, `nvidia/llama-3.1-nemotron-70b-instruct`, `mistralai/mistral-large-2-instruct`, `mistralai/mixtral-8x7b-instruct-v0.1`, `mistralai/mistral-7b-instruct-v0.3`, `qwen/qwen2.5-72b-instruct`, `meta/llama-3.1-8b-instruct`, `google/gemma-2-27b-it`.
-    - Expanded `isModelRotationFailure` to classify HTTP 400, 401, 402, 403, 404, 422, and 429 errors as model-rotatable. If a model is forbidden on the current tier (403), out of credits (402), or deprecated (404), the engine immediately advances to the next model in the fallback roster with an ultra-low 50ms rotation delay instead of aborting.
-  - **Verification & Test Suite Updates**:
-    - Added test `chat_template_kwargs is never sent to Groq and omitted on standard NVIDIA calls` and test `nvidia rotates to the next model on 403 forbidden (not allowed on free tier)` in `backend/test/gemma-engine.test.js`.
-    - Verified: all 88 backend unit tests pass (`npm test`), frontend build and typechecks pass with 0 errors.
+- 2026-08-17 (later) — **MAJOR MILESTONE: Multi-Provider AI Reliability Architecture Restored (Mistral AI Integration, Pure Text Groq Rotation, Prompt Flair & Token Headroom Restoration, Legal Consent v3.6/v3.3 Bump).**
+  - **Integrated Mistral AI Provider (`backend/src/lib/gemma.js`, `backend/src/routes/lesson.js`)**:
+    - Added native `api.mistral.ai` OpenAI-compatible SSE streaming completion integration (`callMistralAI`, `callMistralFallbackAI`).
+    - Configured default Mistral models: `mistral-small-latest`, `mistral-large-latest`, `open-mistral-nemo`, `codestral-latest`, `pixtral-12b-2409`.
+    - Integrated Mistral into hedged racing ladder and direct circuit-independent fallback attempts (`attemptPlan`), providing near-zero cold-start latency (~350–500ms TTFT) and high reliability.
+    - Reduced `DEFAULT_HEDGE_DELAY_MS` from `12000` to `5000` ms for fast hedge launches when a primary stream is slow.
+  - **Removed Groq Compound & Restored Pure Text Model Rotation**:
+    - Decommissioned `groq/compound` (which was an agentic/tool-calling model causing timeouts and failures) from rotation and overflow.
+    - Pure text models configured on Groq: `llama-3.3-70b-versatile`, `qwen/qwen3.6-27b`, `openai/gpt-oss-120b`, `llama-3.1-8b-instant`.
+  - **Restored Answer Depth, Word Counts & Token Headroom (`backend/src/lib/prompts.js`, `backend/src/routes/lesson.js`)**:
+    - Expanded Fast mode target to 180–260 words and Explain mode target to 220–320 words per part with rich analogies, step-by-step mechanism breakdowns, and digital-native mental models.
+    - Restored token headroom: Fast mode `maxOutputTokens = 1800` (up from 1,200), Explain mode `maxOutputTokens = 4000` (up from 2,200), eliminating JSON cut-offs and `Part count mismatch` errors in Indic multilingual outputs.
+  - **Preserved Concept Vocabulary & Natural Grammar (`backend/src/lib/qualityGate.js`)**:
+    - Cleaned up `SIMPLIFICATION_MAP` to avoid replacing foundational scientific terms like *photosynthesis*, *mitochondria*, *evolution*, *democracy*, *gravity*, *friction*, *velocity*, *acceleration*, *equation*, *molecule*, *atom*.
+    - Removed destructive clause splitting at conjunctions in `splitLongSentences`.
+  - **Legal Policies & User Re-consent Modal Bump**:
+    - Bumped Privacy Policy to **v3.6** and Terms of Service to **v3.3** across backend (`backend/src/config.js`) and frontend (`frontend/lib/legalConsent.ts`, `frontend/components/shared/PreSignInConsent.tsx`, `frontend/app/legal/privacy/content.tsx`, `frontend/app/legal/terms/content.tsx`).
+    - Disclosed Mistral AI SAS (France/EU) as an AI subprocessor.
+    - Updated `frontend/scripts/verify-reconsent-copy.mjs` with assertions for v3.6 / v3.3.
+  - **Comprehensive Verification**:
+    - Backend test suite: 89/89 tests passing (`npm test` 100% PASS).
+    - Frontend verification suite: `verify:quiz`, `verify:achievements`, `verify:reconsent`, `verify:frontier`, `verify:profile`, `verify:personalization`, `verify:special-days`, `verify:onboarding` all 100% PASS.
+    - Frontend TypeScript check: `npx tsc --noEmit` 0 errors.
+    - Frontend ESLint check: `npm run lint` 0 errors.
+    - Frontend Next.js production build: `npm run build` 15/15 routes successfully built.
 
 
 
