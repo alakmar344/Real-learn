@@ -6,7 +6,6 @@ import { useSavedJourneysStore } from "@/store/savedJourneysStore";
 import { useLessonStore } from "@/store/lessonStore";
 import { getArchivedLesson } from "@/lib/lessonArchive";
 import { useMounted } from "@/hooks/useMounted";
-import { Skeleton } from "@/components/shared/Skeleton";
 import MathText from "@/components/shared/MathText";
 
 interface Props {
@@ -25,11 +24,7 @@ export default function HomeStats({ onStartTopic }: Props) {
   const loadJourney = useLessonStore((s) => s.loadJourney);
 
   if (!mounted) {
-    return (
-      <div className="home-strip home-strip--skeleton">
-        <Skeleton height={34} width={280} borderRadius={999} />
-      </div>
-    );
+    return null;
   }
 
   // Lesson bodies live in the IndexedDB archive (the store keeps only a
@@ -41,83 +36,80 @@ export default function HomeStats({ onStartTopic }: Props) {
   });
   const hasActivity = journeys.length > 0;
 
+  // Returning visitors with all journeys completed don't need an empty container
+  if (!inProgress && hasActivity) {
+    return null;
+  }
+
   return (
-    <div className="home-strip">
-      {/* The "Today's spark" chip used to live here — a second suggestion
-          widget stacked directly under ExampleQuestions' suggestion chip,
-          with heavily overlapping topics. One suggestion surface (next to
-          the input, where the decision happens) beats two competing ones:
-          fewer choices before the primary action (Hick's law). */}
-
-      {/* Resume the unfinished journey */}
-      {inProgress && (
-        <button
-          type="button"
-          onClick={async () => {
-            if (!isSignedIn) {
-              router.push(`/sign-in?redirect_url=${encodeURIComponent("/learn")}`);
-              return;
-            }
-            // Free local read from the IndexedDB archive — no LLM call.
-            const lesson = inProgress.lesson ?? (await getArchivedLesson(inProgress.id));
-            if (lesson) {
-              loadJourney({ ...inProgress, lesson });
-              router.push("/learn");
-              return;
-            }
-            // Last resort (archive copy gone): regenerate via the normal
-            // question flow — usually a server-cache hit.
-            onStartTopic(inProgress.question);
-          }}
-          className="resume-card"
-        >
-          <span className="resume-card__icon" aria-hidden="true">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M13 4v3.5a3 3 0 0 1-3 3H3.5m0 0L6.5 7.5m-3 3 3 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </span>
-          <span className="resume-card__text">
-            <span className="resume-card__kicker">pick up where you left off</span>
-            <span className="resume-card__question"><MathText text={inProgress.question} /></span>
-          </span>
-          <span className="resume-card__cta">resume →</span>
-        </button>
-      )}
-
-      {/* First visit: a quiet mental model of the product — ask, learn in
-          three parts, pass each gate. Disappears once there's any activity. */}
-      {!hasActivity && (
-        <div className="home-first-visit">
-          <ol className="how-strip" aria-label="How RealLearn works">
-            <li className="how-strip__step">
-              <span className="how-strip__num" aria-hidden="true">1</span>
-              Ask any question in 12 languages
-            </li>
-            <li className="how-strip__step">
-              <span className="how-strip__num" aria-hidden="true">2</span>
-              Learn step-by-step with real-world facts
-            </li>
-            <li className="how-strip__step">
-              <span className="how-strip__num" aria-hidden="true">3</span>
-              Lock in memory with instant quizzes
-            </li>
-          </ol>
-          {/* Only the claims the how-strip doesn't already make — languages
-              and fact grounding are stated two lines up (repeating them read
-              as filler, not trust). */}
-          <div className="trust-strip" aria-label="Trust and platform standards">
-            <span className="trust-badge">
-              <span className="trust-badge__dot" aria-hidden="true" />
-              Class 6 to College Level
+    <div className="hero__content hero-glass-card hero__panel">
+      <div className="home-strip">
+        {/* Resume the unfinished journey */}
+        {inProgress && (
+          <button
+            type="button"
+            onClick={async () => {
+              if (!isSignedIn) {
+                router.push(`/sign-in?redirect_url=${encodeURIComponent("/learn")}`);
+                return;
+              }
+              // Free local read from the IndexedDB archive — no LLM call.
+              const lesson = inProgress.lesson ?? (await getArchivedLesson(inProgress.id));
+              if (lesson) {
+                loadJourney({ ...inProgress, lesson });
+                router.push("/learn");
+                return;
+              }
+              // Last resort (archive copy gone): regenerate via the normal
+              // question flow — usually a server-cache hit.
+              onStartTopic(inProgress.question);
+            }}
+            className="resume-card"
+          >
+            <span className="resume-card__icon" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M13 4v3.5a3 3 0 0 1-3 3H3.5m0 0L6.5 7.5m-3 3 3 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </span>
-            <span className="trust-badge">
-              <span className="trust-badge__dot" aria-hidden="true" />
-              Zero Ads &amp; Private
+            <span className="resume-card__text">
+              <span className="resume-card__kicker">pick up where you left off</span>
+              <span className="resume-card__question"><MathText text={inProgress.question} /></span>
             </span>
+            <span className="resume-card__cta">resume →</span>
+          </button>
+        )}
+
+        {/* First visit: a quiet mental model of the product — ask, learn in
+            three parts, pass each gate. Disappears once there's any activity. */}
+        {!hasActivity && (
+          <div className="home-first-visit">
+            <ol className="how-strip" aria-label="How RealLearn works">
+              <li className="how-strip__step">
+                <span className="how-strip__num" aria-hidden="true">1</span>
+                Ask any question in 12 languages
+              </li>
+              <li className="how-strip__step">
+                <span className="how-strip__num" aria-hidden="true">2</span>
+                Learn step-by-step with real-world facts
+              </li>
+              <li className="how-strip__step">
+                <span className="how-strip__num" aria-hidden="true">3</span>
+                Lock in memory with instant quizzes
+              </li>
+            </ol>
+            <div className="trust-strip" aria-label="Trust and platform standards">
+              <span className="trust-badge">
+                <span className="trust-badge__dot" aria-hidden="true" />
+                Class 6 to College Level
+              </span>
+              <span className="trust-badge">
+                <span className="trust-badge__dot" aria-hidden="true" />
+                Zero Ads &amp; Private
+              </span>
+            </div>
           </div>
-        </div>
-      )}
-
+        )}
+      </div>
     </div>
   );
 }
