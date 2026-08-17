@@ -5575,46 +5575,6 @@ p {
 .app-sidebar__new {
   width: 100%;
 }
-.app-sidebar__nav {
-  display: none;
-  flex-direction: column;
-  gap: 4px;
-  padding: 8px 14px 12px;
-  border-bottom: 1px solid var(--border-subtle);
-}
-@media (max-width: 900px) {
-  .app-sidebar__head {
-    border-bottom: none;
-  }
-}
-.app-sidebar__nav-link {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border-radius: var(--radius-lg);
-  color: var(--text-secondary);
-  font-size: 14px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: background var(--dur-fast) var(--ease-color),
-    color var(--dur-fast) var(--ease-color);
-}
-.app-sidebar__nav-link:hover,
-.app-sidebar__nav-link:focus-visible {
-  background: var(--bg-card-hover);
-  color: var(--text-primary);
-  outline: none;
-}
-.app-sidebar__nav-link--active {
-  background: var(--accent-dim);
-  color: var(--accent);
-}
-@media (max-width: 900px) {
-  .app-sidebar__nav {
-    display: flex;
-  }
-}
 .app-sidebar__scroll {
   flex: 1;
   overflow-y: auto;
@@ -5648,22 +5608,6 @@ p {
   color: var(--text-tertiary);
   font-style: italic;
   line-height: 1.7;
-}
-.app-sidebar__foot {
-  border-top: 1px solid var(--border-subtle);
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.app-sidebar__foot-btn {
-  width: 100%;
-  justify-content: space-between;
-  font-size: 13px;
-}
-.app-sidebar__foot-note {
-  color: var(--accent);
-  font-size: 12px;
 }
 
 .sidebar-search {
@@ -5786,100 +5730,174 @@ p {
   color: var(--danger);
 }
 
-/* ── Physical theme switch (sidebar) ─────────────────────────────
-   A real slide toggle: recessed track (inset shadows), raised thumb
-   that springs across and squashes slightly while pressed, sun/moon
-   glyphs living inside the track. */
-.theme-switch-row {
+/* ── Sidebar footer controls (Theme toggle + Settings on one horizontal row) ── */
+.app-sidebar__foot {
+  border-top: 1px solid var(--border-subtle);
+  padding: 12px 14px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  width: 100%;
-  padding: 10px 12px;
-  border: none;
-  border-radius: var(--radius-lg);
-  background: transparent;
-  color: var(--text-primary);
-  font-size: 13px;
-  cursor: pointer;
-  transition: background var(--dur-fast) var(--ease-color);
 }
-.theme-switch-row:hover {
-  background: var(--bg-card-hover);
-}
-.theme-switch-row:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px var(--accent-glow);
-}
-.theme-switch-row__label {
-  display: inline-flex;
+.app-sidebar__controls {
+  display: flex;
   align-items: center;
-  gap: 8px;
-  font-weight: 500;
-}
-.theme-switch {
-  position: relative;
-  flex-shrink: 0;
-  width: 46px;
-  height: 26px;
-  border-radius: var(--radius-pill);
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  box-shadow:
-    inset 0 2px 4px rgba(0, 0, 0, 0.28),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.06);
-  transition: background var(--dur-base) var(--ease-color),
-              border-color var(--dur-base) var(--ease-color);
-}
-.theme-switch__icon {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-tertiary);
-  opacity: 0.55;
-  transition: opacity var(--dur-base) var(--ease-color),
-              color var(--dur-base) var(--ease-color);
-}
-.theme-switch__icon--sun { left: 5px; }
-.theme-switch__icon--moon { right: 5px; }
-.theme-switch--on .theme-switch__icon--moon,
-.theme-switch:not(.theme-switch--on) .theme-switch__icon--sun {
-  color: var(--accent);
-  opacity: 1;
-}
-.theme-switch__thumb {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 20px;
-  height: 20px;
-  border-radius: var(--radius-pill);
-  background: var(--bg-solid);
-  border: 1px solid var(--border-default);
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.35),
-    0 2px 6px rgba(0, 0, 0, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  transition: transform 180ms var(--ease-spring),
-              width 160ms ease;
-}
-.theme-switch--on .theme-switch__thumb {
-  transform: translateX(20px);
-}
-/* Tactile press: the thumb widens under the finger, anchored to its side. */
-.theme-switch-row:active .theme-switch__thumb {
-  width: 24px;
-}
-.theme-switch-row:active .theme-switch--on .theme-switch__thumb {
-  transform: translateX(16px);
+  gap: 10px;
+  width: 100%;
 }
 
-.app-sidebar__foot-label {
+/* ── Physical segmented theme toggle ── */
+.theme-toggle-segmented {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.22),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+  position: relative;
+}
+.theme-toggle-btn {
+  flex: 1;
+  height: 32px;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 0;
+  position: relative;
+  transition:
+    background var(--dur-fast) var(--ease-color),
+    border-color var(--dur-fast) var(--ease-color),
+    color var(--dur-fast) var(--ease-color),
+    transform var(--dur-fast) var(--ease-spring),
+    box-shadow var(--dur-fast) var(--ease-spring);
 }
+.theme-toggle-btn:hover:not(.is-active) {
+  color: var(--text-primary);
+  background: var(--bg-card-hover);
+}
+.theme-toggle-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent-glow);
+}
+.theme-toggle-btn.is-active {
+  background: var(--bg-solid);
+  border-color: var(--border-default);
+  color: var(--accent);
+  box-shadow:
+    var(--key-bevel-soft),
+    0 1px 3px rgba(0, 0, 0, 0.25),
+    0 1px 0 var(--edge-neutral);
+}
+.theme-toggle-btn.is-active:active {
+  transform: translateY(1px);
+  box-shadow: var(--key-pressed);
+}
+.theme-toggle-icon {
+  display: block;
+  flex-shrink: 0;
+  transition: transform 180ms var(--ease-spring), color var(--dur-fast) var(--ease-color);
+}
+.theme-toggle-btn.is-active .theme-toggle-icon {
+  transform: scale(1.1);
+}
+.theme-toggle-btn.is-active .theme-toggle-icon--moon {
+  filter: drop-shadow(0 0 4px var(--accent-glow));
+}
+
+/* ── Icon-only Settings button ── */
+.app-sidebar__settings-btn {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0;
+  box-shadow:
+    var(--key-bevel-soft),
+    0 2px 0 var(--edge-neutral);
+  transition:
+    background var(--dur-fast) var(--ease-color),
+    border-color var(--dur-fast) var(--ease-color),
+    color var(--dur-fast) var(--ease-color),
+    transform 180ms var(--ease-spring),
+    box-shadow 180ms var(--ease-spring);
+}
+.app-sidebar__settings-btn:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow:
+    var(--key-bevel-soft),
+    0 3px 0 var(--edge-neutral),
+    0 0 12px var(--accent-glow);
+}
+.app-sidebar__settings-btn:active {
+  transform: translateY(2px);
+  box-shadow: var(--key-pressed);
+}
+.app-sidebar__settings-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
+/* ── Sidebar hover tooltip ── */
+.sidebar-tooltip {
+  position: relative;
+  display: inline-flex;
+}
+.sidebar-tooltip__bubble {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+  background: var(--bg-solid);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md), var(--key-bevel-soft);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 150ms var(--ease-color), transform 150ms var(--ease-spring), visibility 150ms;
+  z-index: 50;
+}
+.sidebar-tooltip__bubble::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 4px 4px 0 4px;
+  border-style: solid;
+  border-color: var(--border-default) transparent transparent transparent;
+}
+.sidebar-tooltip:hover .sidebar-tooltip__bubble,
+.sidebar-tooltip:focus-within .sidebar-tooltip__bubble {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
 .journey-item__meta svg {
   vertical-align: -1.5px;
 }
@@ -6148,10 +6166,10 @@ h3,
   .settings-action,
   .settings-back,
   .xp-track__fill,
-  .theme-switch,
-  .theme-switch__thumb,
-  .theme-switch__icon,
-  .theme-switch-row,
+  .theme-toggle-btn,
+  .theme-toggle-icon,
+  .app-sidebar__settings-btn,
+  .sidebar-tooltip__bubble,
   .scroll-top {
     transition-duration: 0.01ms !important;
   }

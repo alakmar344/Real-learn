@@ -1,10 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { useAuth } from "@clerk/nextjs";
 import { useLessonStore } from "@/store/lessonStore";
 import { useSavedJourneysStore } from "@/store/savedJourneysStore";
 import { usePreferenceStore } from "@/store/preferenceStore";
@@ -25,12 +23,6 @@ const ConfirmModal = dynamic(
   { ssr: false }
 );
 
-const NAV_ITEMS = [
-  { href: "/", label: "Home", icon: "compass" },
-  { href: "/learn", label: "Learn", icon: "book-open" },
-  { href: "/progress", label: "Stats", icon: "trophy" },
-];
-
 interface Props {
   open: boolean;
   onClose: () => void;
@@ -38,8 +30,6 @@ interface Props {
 
 export default function Sidebar({ open, onClose }: Props) {
   const router = useRouter();
-  const pathname = usePathname();
-  const { isLoaded, isSignedIn } = useAuth();
   const mounted = useMounted();
 
   const { journeys, removeJourney } = useSavedJourneysStore(
@@ -139,27 +129,6 @@ export default function Sidebar({ open, onClose }: Props) {
           </button>
         </div>
 
-        <nav aria-label="Primary" className="app-sidebar__nav">
-          {NAV_ITEMS.map((item) => {
-            const active =
-              item.href === "/"
-                ? pathname === "/"
-                : pathname?.startsWith(item.href) ?? false;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={onClose}
-                className={`app-sidebar__nav-link${active ? " app-sidebar__nav-link--active" : ""}`}
-                aria-current={active ? "page" : undefined}
-              >
-                <Icon name={item.icon as Parameters<typeof Icon>[0]["name"]} size={18} />
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-
         <div className="app-sidebar__scroll">
           <div className="app-sidebar__list-head">
             <p className="app-sidebar__list-title">Saved lessons</p>
@@ -253,40 +222,58 @@ export default function Sidebar({ open, onClose }: Props) {
         </div>
 
         <div className="app-sidebar__foot">
-          <button
-            type="button"
-            role="switch"
-            aria-checked={theme === "dark"}
-            aria-label={theme === "dark" ? "Dark mode on — switch to light" : "Light mode on — switch to dark"}
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="theme-switch-row"
-          >
-            <span className="theme-switch-row__label">
-              {theme === "dark" ? "Dark mode" : "Light mode"}
-            </span>
-            <span
-              className={`theme-switch${theme === "dark" ? " theme-switch--on" : ""}`}
-              aria-hidden="true"
+          <div className="app-sidebar__controls">
+            {/* Physical tactile Theme Toggle */}
+            <div
+              className="theme-toggle-segmented"
+              role="radiogroup"
+              aria-label="Theme mode"
             >
-              <Icon name="sun" size={12} className="theme-switch__icon theme-switch__icon--sun" />
-              <Icon name="moon" size={12} className="theme-switch__icon theme-switch__icon--moon" />
-              <span className="theme-switch__thumb" />
-            </span>
-          </button>
+              <button
+                type="button"
+                role="radio"
+                aria-checked={theme === "light"}
+                aria-label="Light mode"
+                onClick={() => setTheme("light")}
+                className={`theme-toggle-btn${theme === "light" ? " is-active" : ""}`}
+                title="Light mode"
+              >
+                <Icon name="sun" size={15} className="theme-toggle-icon theme-toggle-icon--sun" />
+                <span className="sr-only">Light mode</span>
+              </button>
+              <button
+                type="button"
+                role="radio"
+                aria-checked={theme === "dark"}
+                aria-label="Dark mode"
+                onClick={() => setTheme("dark")}
+                className={`theme-toggle-btn${theme === "dark" ? " is-active" : ""}`}
+                title="Dark mode"
+              >
+                <Icon name="moon" size={15} className="theme-toggle-icon theme-toggle-icon--moon" />
+                <span className="sr-only">Dark mode</span>
+              </button>
+            </div>
 
-          {/* Settings */}
-          {isLoaded && isSignedIn && (
-            <button
-              type="button"
-              onClick={() => { onClose(); router.push("/settings"); }}
-              className="btn-ghost app-sidebar__foot-btn"
-            >
-              <span className="app-sidebar__foot-label">
-                <Icon name="settings" /> Settings
+            {/* Icon-only Settings button with hover tooltip */}
+            <div className="sidebar-tooltip">
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  router.push("/settings");
+                }}
+                className="btn-icon app-sidebar__settings-btn"
+                aria-label="Settings"
+                title="Settings"
+              >
+                <Icon name="settings" size={18} />
+              </button>
+              <span className="sidebar-tooltip__bubble" role="tooltip">
+                Settings
               </span>
-              <span className="app-sidebar__foot-note">Account & data</span>
-            </button>
-          )}
+            </div>
+          </div>
         </div>
       </aside>
 
