@@ -21,8 +21,8 @@ export const SERVICE_VERSION = (() => {
 
 export const PORT = Number(process.env.PORT || 10000);
 
-export const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "3.4";
-export const TERMS_OF_SERVICE_VERSION = process.env.TERMS_OF_SERVICE_VERSION || "3.1";
+export const PRIVACY_POLICY_VERSION = process.env.PRIVACY_POLICY_VERSION || "3.5";
+export const TERMS_OF_SERVICE_VERSION = process.env.TERMS_OF_SERVICE_VERSION || "3.2";
 export const COOKIE_POLICY_VERSION = process.env.COOKIE_POLICY_VERSION || "2.3";
 
 // ── Input validation limits (security: bound prompt size and lock free-text
@@ -122,15 +122,15 @@ export const MAX_CONCURRENT_LESSON_REQUESTS_PER_USER =
     : DEFAULT_MAX_CONCURRENT_LESSON_REQUESTS_PER_USER;
 
 export function validateStartupConfig() {
-  const hasCerebrasConfig = Boolean(process.env.CEREBRAS_API_KEY?.trim());
+  const hasGroqConfig = Boolean(process.env.GROQ_API_KEY?.trim());
   const hasNvidiaConfig = Boolean(process.env.NVIDIA_API_KEY?.trim());
   const hasCloudflareConfig = Boolean(
     process.env.CLOUDFLARE_API_TOKEN?.trim() &&
       process.env.CLOUDFLARE_ACCOUNT_ID?.trim()
   );
-  if (!hasCerebrasConfig && !hasNvidiaConfig && !hasCloudflareConfig) {
+  if (!hasGroqConfig && !hasNvidiaConfig && !hasCloudflareConfig) {
     throw new Error(
-      "Missing required environment variables: set CEREBRAS_API_KEY, NVIDIA_API_KEY, or CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID"
+      "Missing required environment variables: set GROQ_API_KEY, NVIDIA_API_KEY, or CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID"
     );
   }
   // Fail fast in production on missing critical config: without MONGODB_URI

@@ -21,9 +21,10 @@ It is not a chatbot. It is not a search engine. It is **teaching, reimagined for
 
 ## Core Technology
 
-- **AI Model:** Google's Gemma 4
-  - Primary inference: Cerebras Cloud (Gemma 4 31B, `gemma-4-31b`) — chosen for very low time-to-first-token
-  - Fallback inference: Cloudflare Workers AI (Gemma, `@cf/google/gemma-4-26b-a4b-it`) — automatic failover for reliability
+- **AI Model & Inference Tier:**
+  - Primary inference: Groq Cloud LPU (`groq-sdk`, Qwen 3.6 27B `qwen/qwen3.6-27b` & GPT-OSS 120B `gpt-oss-120b`) — chosen for sub-second TTFT and unmatched tokens/sec
+  - Secondary inference: NVIDIA NIM (70B–150B parameter models: `meta/llama-3.3-70b-instruct`, `mistralai/mistral-large-2-instruct` ~123B, `nvidia/llama-3.1-nemotron-70b-instruct`, `qwen/qwen2.5-72b-instruct`)
+  - Last-resort fallback: Cloudflare Workers AI (`@cf/meta/llama-3.3-70b-instruct-fp8-fast`) — automatic failover with circuit breaker
 - **Structured Output:** System prompt enforces strict JSON schema with exactly three progressive parts (Foundation, Mechanism, Real World), each with two multiple-choice quiz questions.
 - **Multilingual Generation:** Lessons generated natively in 12 languages — English, Hindi, Gujarati, Tamil, Bengali, Marathi, Telugu, Kannada, Malayalam, Punjabi, Urdu, Odia — never machine-translated.
 - **Adaptive Difficulty:** Vocabulary, examples, and rigor calibrate to three levels — Class 6-8 (simple, friendly, concrete), Class 9-10 (balanced technical depth), College/Advanced (full rigor, precise terminology).
@@ -148,7 +149,7 @@ Signed-in learners can set learning-style preferences (checklist) and free-text 
 - **Runtime:** Node.js (ES Modules)
 - **Framework:** Express
 - **Transport:** JSON + Server-Sent Events (SSE) streaming
-- **AI:** Gemma 4 — Cerebras Cloud primary with Cloudflare Workers AI fallback
+- **AI:** Groq LPU primary (`groq-sdk`, Qwen 3.6 27B & GPT-OSS 120B) + NVIDIA NIM (70B–150B) fallback + Cloudflare Workers AI last-resort fallback
 - **News:** Serper API
 - **Auth:** Clerk JWT verification via `jose`
 - **Persistence:** MongoDB (consent records, moderation logs, lesson cache)

@@ -1,15 +1,16 @@
 import { test, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
 
-process.env.CEREBRAS_API_KEY = "test-cerebras-key";
+process.env.GROQ_API_KEY = "test-groq-key";
 process.env.NVIDIA_API_KEY = "test-nvidia-key";
 process.env.CLOUDFLARE_API_TOKEN = "test-token";
 process.env.CLOUDFLARE_ACCOUNT_ID = "test-account";
-process.env.GEMMA_FALLBACK_MODELS = "gemma-4-27b";
-process.env.NVIDIA_AI_MODEL = "google/gemma-4-31b-it";
-process.env.NVIDIA_AI_MODELS = "google/gemma-4-9b-it";
-process.env.CLOUDFLARE_AI_MODEL = "@cf/google/gemma-4-26b-a4b-it";
-process.env.CLOUDFLARE_AI_MODELS = "@cf/google/gemma-4-9b-it-qa";
+process.env.GROQ_AI_MODEL = "qwen/qwen3.6-27b";
+process.env.GROQ_FALLBACK_MODELS = "gpt-oss-120b";
+process.env.NVIDIA_AI_MODEL = "meta/llama-3.3-70b-instruct";
+process.env.NVIDIA_AI_MODELS = "mistralai/mistral-large-2-instruct";
+process.env.CLOUDFLARE_AI_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
+process.env.CLOUDFLARE_AI_MODELS = "@cf/meta/llama-3.1-70b-instruct";
 process.env.AI_HEDGE_DELAY_MS = "300";
 process.env.GEMMA_MAX_RETRIES = "1";
 process.env.GEMMA_RETRY_DELAY_MS = "20";
@@ -23,6 +24,7 @@ const {
   resetProviderHealth,
   GemmaApiError,
   GEMMA_MODEL,
+  PRIMARY_AI_MODEL,
 } = await import("../src/lib/gemma.js");
 
 const originalFetch = globalThis.fetch;
@@ -79,8 +81,8 @@ const sseChunk = (text) =>
 
 `;
 
-function isCerebrasUrl(url) {
-  return String(url).includes("api.cerebras.ai");
+function isGroqUrl(url) {
+  return String(url).includes("api.groq.com");
 }
 
 function isNvidiaUrl(url) {
@@ -98,7 +100,7 @@ beforeEach(() => {
     if (urlStr.includes("/tcp_warming")) {
       return new Response(null, { status: 204 });
     }
-    return scenario(isCerebrasUrl(urlStr), isNvidiaUrl(urlStr), isCloudflareUrl(urlStr), opts, urlStr);
+    return scenario(isGroqUrl(urlStr), isNvidiaUrl(urlStr), isCloudflareUrl(urlStr), opts, urlStr);
   };
 });
 
@@ -106,14 +108,15 @@ afterEach(() => {
   globalThis.fetch = originalFetch;
 });
 
-test("GEMMA_MODEL defaults to gemma-4-31b", () => {
-  assert.equal(GEMMA_MODEL, "gemma-4-31b");
+test("PRIMARY_AI_MODEL and GEMMA_MODEL default to qwen/qwen3.6-27b", () => {
+  assert.equal(PRIMARY_AI_MODEL, "qwen/qwen3.6-27b");
+  assert.equal(GEMMA_MODEL, "qwen/qwen3.6-27b");
 });
 
-test("healthy primary wins without touching the fallback", async () => {
+test("healthy primary (Groq) wins without touching the fallback", async () => {
   let fallbackCalls = 0;
-  scenario = async (isCerebras, isNvidia, isCloudflare, opts) => {
-    if (isCerebras) return sseResponse(opts?.signal, [{ at: 0, data: sseChunk("primary-answer") }]);
+  scenario = async (isGroq, isNvidia, isCloudflare, opts) => {
+    if (isGroq) return sseResponse(opts?.signal, [{ at: 0, data: sseChunk("primary-answer") }]);
     fallbackCalls += 1;
     return okResponse("fallback-answer");
   };
@@ -123,9 +126,9 @@ test("healthy primary wins without touching the fallback", async () => {
 });
 
 test("slow primary is hedged: nvidia launches in parallel and wins", async () => {
-  scenario = (isCerebras, isNvidia, isCloudflare, opts) =>
+  scenario = (isGroq, isNvidia, isCloudflare, opts) =>
     new Promise((resolve, reject) => {
-      if (isCerebras) {
+      if (isGroq) {
         const timer = setTimeout(
           () => resolve(sseResponse(opts.signal, [{ at: 0, data: sseChunk("slow") }])),
           3000
@@ -148,8 +151,8 @@ test("slow primary is hedged: nvidia launches in parallel and wins", async () =>
 });
 
 test("failing primary triggers immediate fail-fast nvidia (no hedge wait)", async () => {
-  scenario = async (isCerebras, isNvidia, isCloudflare) => {
-    if (isCerebras) return jsonResponse({ errors: [{ message: "boom" }] }, 500);
+  scenario = async (isGroq, isNvidia, isCloudflare) => {
+    if (isGroq) return jsonResponse({ errors: [{ message: "boom" }] }, 500);
     if (isNvidia) return okResponse("nvidia-answer");
     return okResponse("cloudflare-answer");
   };
@@ -159,12 +162,12 @@ test("failing primary triggers immediate fail-fast nvidia (no hedge wait)", asyn
 
 test("nvidia rotates to the next model on 429", async () => {
   const seenModels = [];
-  scenario = async (isCerebras, isNvidia, isCloudflare, opts) => {
-    if (isCerebras) return jsonResponse({ errors: [{ message: "down" }] }, 500);
+  scenario = async (isGroq, isNvidia, isCloudflare, opts) => {
+    if (isGroq) return jsonResponse({ errors: [{ message: "down" }] }, 500);
     if (isCloudflare) return okResponse("cloudflare-last-resort");
     const body = JSON.parse(opts.body);
     seenModels.push(body.model);
-    if (body.model === "google/gemma-4-31b-it") {
+    if (body.model === "meta/llama-3.3-70b-instruct") {
       return jsonResponse({ error: { message: "rate limited" } }, 429);
     }
     return okResponse("rotated-answer");
@@ -172,18 +175,18 @@ test("nvidia rotates to the next model on 429", async () => {
   const text = await callGemma("sys", "user", 0.5, 5000);
   assert.equal(text, "rotated-answer");
   assert.deepEqual(seenModels, [
-    "google/gemma-4-31b-it",
-    "google/gemma-4-9b-it",
+    "meta/llama-3.3-70b-instruct",
+    "mistralai/mistral-large-2-instruct",
   ]);
   // The working model is remembered for the next request.
   assert.equal(getProviderHealthSnapshot().nvidia.preferredModelIndex, 1);
 });
 
-test("total outage opens both circuits and surfaces a retryable error", async () => {
+test("total outage opens all circuits and surfaces a retryable error", async () => {
   scenario = async () => jsonResponse({ errors: [{ message: "dead" }] }, 500);
   await assert.rejects(() => callGemma("sys", "user", 0.5, 5000));
   const snapshot = getProviderHealthSnapshot();
-  assert.equal(snapshot.cerebras.circuitOpen, true);
+  assert.equal(snapshot.groq.circuitOpen, true);
   assert.equal(snapshot.nvidia.circuitOpen, true);
   assert.equal(snapshot.cloudflare.circuitOpen, true);
 });
@@ -205,8 +208,8 @@ test("open circuits still half-open-probe instead of refusing outright", async (
 
 test("hedge is SKIPPED while the leader is streaming (no fallback spend)", async () => {
   let fallbackCalls = 0;
-  scenario = (isCerebras, isNvidia, isCloudflare, opts) => {
-    if (isCerebras) {
+  scenario = (isGroq, isNvidia, isCloudflare, opts) => {
+    if (isGroq) {
       // First chunk at 20ms (before the 300ms hedge), finishes at 250ms
       // (after the hedge would have fired).
       return sseResponse(opts.signal, [
@@ -226,7 +229,7 @@ test("silence watchdog kills a stalled stream fast (retryable 408)", async () =>
   process.env.AI_FIRST_BYTE_TIMEOUT_MS = "150";
   process.env.AI_STALL_TIMEOUT_MS = "100";
   try {
-    scenario = (isCerebras, isNvidia, isCloudflare, opts) =>
+    scenario = (isGroq, isNvidia, isCloudflare, opts) =>
       // One chunk, then silence forever — never closes.
       sseResponse(opts.signal, [{ at: 5, data: sseChunk("hi") }], { close: false });
     const startedAt = Date.now();
@@ -243,12 +246,12 @@ test("silence watchdog kills a stalled stream fast (retryable 408)", async () =>
 test("thinking knob is passed to nvidia by default", async () => {
   process.env.AI_DISABLE_THINKING = "off";
   try {
-    const payloads = { cerebras: null, nvidia: null };
-    scenario = async (isCerebras, isNvidia, isCloudflare, opts) => {
+    const payloads = { groq: null, nvidia: null };
+    scenario = async (isGroq, isNvidia, isCloudflare, opts) => {
       const body = JSON.parse(opts.body);
-      if (isCerebras) {
-        payloads.cerebras = body;
-        // Fail Cerebras so the NVIDIA fallback also runs and we can inspect its payload.
+      if (isGroq) {
+        payloads.groq = body;
+        // Fail Groq so the NVIDIA fallback also runs and we can inspect its payload.
         return jsonResponse({ errors: [{ message: "down" }] }, 500);
       }
       if (!isNvidia) return okResponse("cloudflare-answer");
@@ -257,7 +260,7 @@ test("thinking knob is passed to nvidia by default", async () => {
     };
     const text = await callGemma("sys", "user", 0.5, 5000);
     assert.equal(text, "fast-answer");
-    assert.equal(payloads.cerebras.chat_template_kwargs, undefined);
+    assert.equal(payloads.groq.chat_template_kwargs, undefined);
     assert.deepEqual(payloads.nvidia.chat_template_kwargs, {
       enable_thinking: true,
     });
@@ -267,7 +270,7 @@ test("thinking knob is passed to nvidia by default", async () => {
 });
 
 test("caller abort propagates as AbortError", async () => {
-  scenario = (isCerebras, isNvidia, isCloudflare, opts) =>
+  scenario = (isGroq, isNvidia, isCloudflare, opts) =>
     new Promise((resolve, reject) => {
       const timer = setTimeout(() => resolve(okResponse("late")), 2000);
       opts.signal?.addEventListener("abort", () => {

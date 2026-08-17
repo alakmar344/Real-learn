@@ -7,7 +7,7 @@ What it is:
 RealLearn AI is an AI-native learning platform that transforms any question into a structured, three-part educational journey. It is not a chatbot or search engine — it is a teaching system.
 
 Key facts:
-- Generates complete lessons powered by Google's Gemma 4 (via Cerebras Cloud primary, NVIDIA NIM fallback, Cloudflare Workers AI last-resort fallback).
+- Generates complete lessons powered by Groq LPUs (Qwen 3.6 27B / GPT-OSS 120B primary), backed by NVIDIA NIM 70B–150B parameter models and Cloudflare Workers AI last-resort fallback.
 - Three-stage progression: Foundation -> Mechanism -> Real World.
 - Quiz-gated comprehension: 100% pass required before advancing.
 - Native multilingual generation in 12 languages (English, Hindi, Gujarati, Tamil, Bengali, Marathi, Telugu, Kannada, Malayalam, Punjabi, Urdu, Odia).

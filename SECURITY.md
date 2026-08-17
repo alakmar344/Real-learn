@@ -58,7 +58,7 @@ RealLearn employs several security measures:
 
 This policy applies to:
 - **In scope:** RealLearn application at reallearn.site, backend API at real-learn.onrender.com
-- **Out of scope:** Third-party services (Clerk, Cerebras Cloud, Cloudflare Workers AI, Serper, MongoDB Atlas, Vercel, Render) — report issues with those services directly to their respective maintainers
+- **Out of scope:** Third-party services (Clerk, Groq Cloud, NVIDIA NIM, Cloudflare Workers AI, Serper, MongoDB Atlas, Vercel, Render) — report issues with those services directly to their respective maintainers
 
 ## Recognition
 

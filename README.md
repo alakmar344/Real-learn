@@ -27,7 +27,7 @@ When a learner asks a question:
 |---|---|
 | **Frontend** | Next.js 16 (App Router, Turbopack), React 19, TypeScript, hand-rolled CSS design system (globals.css), Clerk Auth, Zustand state management |
 | **Backend** | Node.js, Express API, Server-Sent Events (SSE) streaming |
-| **AI Inference Engine** | Google Gemma 4 (Cerebras Cloud primary, NVIDIA NIM fallback, Cloudflare Workers AI last-resort fallback with circuit-breaker) |
+| **AI Inference Engine** | Groq LPU (Qwen 3.6 27B / GPT-OSS 120B primary via official `groq-sdk`), NVIDIA NIM (70B–150B high-capacity fallback), Cloudflare Workers AI (70B Fast FP8 last-resort fallback with circuit-breaker) |
 | **Live Grounding** | Serper API for live news and web context |
 | **Caching & DB** | Two-tier LRU memory cache + MongoDB persistent cache |
 
