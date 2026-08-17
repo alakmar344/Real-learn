@@ -75,12 +75,19 @@ Real-learn/
 │   └── app/globals.css   ⭐ the design system (tokens + component classes)
 ├── backend/           Express API  (deploy: Render)
 │   └── src/
-│       ├── server.js          entrypoint, SSE streaming, endpoints
+│       ├── server.js          composition root ONLY (config, middleware + router mounting, terminal handlers, listen/shutdown)
+│       ├── config.js          env parsing, startup validation, shared constants
+│       ├── middleware/security.js   CORS, origin guard, compression, security headers
+│       ├── routes/            one router per surface — lesson.js (generate-lesson SSE, single-flight map),
+│       │                      account.js (agreement/legal-consent/account/export-data), tts.js, feedback.js, health.js
+│       ├── startup/migrations.js    consent IP/email scrubs + index ensurers
 │       ├── lib/gemma.js       AI engine (Cerebras primary, NVIDIA fallback, Cloudflare last-resort, retries, circuit breaker)
 │       ├── lib/prompts.js     GENERATE_LESSON_PROMPT + GENERATE_FAST_ANSWER_PROMPT
 │       ├── lib/serper.js      live news grounding
 │       ├── lib/moderation.js  regex + LLM moderation
-│       ├── lib/lessonCache.js + lruCache.js   two-tier caching
+│       ├── lib/lessonCache.js two-tier caching (memory LRU + Mongo TTL)
+│       ├── lib/rateLimit.js   limiter factory + token-spray/IPv6-collapse keying
+│       ├── lib/sse.js, lib/moderationLog.js, lib/privacy.js   SSE writers, moderation event log, IP/UA anonymization
 │       ├── lib/auth.js        Clerk JWT verify (jose)
 │       └── lib/mongodb.js
 └── docs/, *.md         this file + README, GEMINI.md, AGENT_INSTRUCTIONS.md,
@@ -1131,3 +1138,45 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
   own hero). Backend: input moderation fails closed, `feedback` gets a TTL
   index (`FEEDBACK_TTL_DAYS`, default 730), user-controlled log fields are
   control-char-stripped (`cleanForLog`).
+- 2026-08-17 — **Full-stack production-hardening pass (5 commits).** Backend:
+  `server.js` (2,674 lines) split into a 152-line composition root + 12
+  modules (`config.js`, `middleware/security.js`, `routes/{lesson,account,
+  tts,feedback,health}.js`, `startup/migrations.js`, `lib/{rateLimit,sse,
+  moderationLog,privacy}.js`) with zero behavior change (§2 updated);
+  concurrent identical questions now coalesce into ONE in-flight generation
+  (single-flight map — followers stream the leader's result); `/health`
+  returns 503 "degraded" when every AI circuit is open; production boot
+  fails fast on missing `MONGODB_URI`; dead full-text search index retired;
+  input moderation runs once (was twice); sync output moderation capped at
+  20k chars; Cerebras SDK client reused; dead exports pruned. Frontend
+  logic: lessonStore persists lesson METADATA only (body rehydrates from
+  the IndexedDB archive — no more multi-KB `JSON.stringify` per quiz
+  click); 401 retries once then says "session expired" (was 5 retries /
+  ~24s); streak freezes are earnable (+1 per 7 goal-met days, cap 2);
+  reopening an archived journey preserves `savedAt`; SSE frames without
+  `event:` default to `message` per spec; error humanization matches
+  technical patterns instead of any sentence containing "network"/"json".
+  UI/UX: **BottomNav.tsx recreated** (Home/Learn/Stats, <900px — mobile had
+  NO route to core pages while every page reserved 64px for the absent
+  bar); LoadingCinematic stops lying (auto-progress saturates ~90%, 100%
+  only on real reveal, patience copy at 10s, honest Fast-mode variant);
+  toasts get dismiss/pause-on-hover/8s-errors/exit transitions;
+  FeedbackPrompt escapable (Esc/backdrop/× all snooze); QuizSheet drops its
+  fake drag handle and adopts the shared `useFocusTrap`; quiz-pass
+  celebration localized (was a full-viewport 1s flash — WCAG 2.3.1);
+  homepage suggestions rewritten from slang to the calm voice; signed-out
+  Enter opens Clerk sign-in; Settings choice groups are proper radiogroups
+  and Delete-my-data purges the TTS blob cache; under-13 onboarding is a
+  kind terminal panel (not a stranded disabled form); 404 rewritten
+  in-brand with 3 routes; "Go deeper" pills fall back to the homepage
+  draft; ConfirmModal/KeyboardShortcuts/FeedbackPrompt/QuickSummaryCards/
+  ShareResult/ProgressRail/ListenButton de-inlined onto design-system
+  classes (new: `.toast*`, `.modal-scrim*`, `.confirm-modal*`,
+  `.shortcuts-modal*`, `.kbd`, `.feedback-modal*`, `.feedback-star`,
+  `.unlock-fx*`, `.summary-deck/card/dot`, `.share-actions`, `.listen-btn*`,
+  `.heatmap-scroll`, `.heading-rule`); the bare `h1/h2::after` chapter bar
+  is now the opt-in `.heading-rule` applied only to hero/page titles.
+  Verified: backend `npm test` 84/84 (dead-feature tests removed, 1 added),
+  integration smoke 7/7 PASS, route list byte-identical pre/post refactor,
+  `tsc --noEmit` clean, lint 0 errors, `next build` clean (14 routes), all
+  `verify:*` scripts pass.
