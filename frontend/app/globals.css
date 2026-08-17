@@ -132,6 +132,7 @@
   --leading-snug: 1.35;
   --leading-normal: 1.55;
   --leading-relaxed: 1.75;
+  --leading-loose: 1.8;
 
   --tracking-tight: -0.03em;
   --tracking-normal: 0;
@@ -430,14 +431,15 @@ html::before {
   width: 100%;
 }
 .celebration-card__dismiss {
-  margin-top: 14px;
+  margin-top: 8px;
   font-size: 12px;
   color: var(--text-tertiary);
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: 6px 10px;
-  min-height: 32px;
+  padding: 6px 12px;
+  min-height: 44px;
+  min-width: 44px;
 }
 .celebration-card__icon {
   display: flex;
@@ -569,21 +571,6 @@ body::before {
 .pattern-seigaiha > * {
   position: relative;
   z-index: 1;
-}
-
-/* ── Tala-breath — intentional negative space for sections that need to feel
-   considered and unhurried, like a pause in a rhythmic composition. ── */
-.ma-breath {
-  margin-top: var(--space-3xl);
-  margin-bottom: var(--space-3xl);
-}
-.ma-breath--sm {
-  margin-top: var(--space-xl);
-  margin-bottom: var(--space-xl);
-}
-.ma-breath--lg {
-  margin-top: var(--space-4xl);
-  margin-bottom: var(--space-4xl);
 }
 
 /* ── Divider — a refined section separator with a small accent bead
@@ -723,17 +710,8 @@ pre {
   font-family: var(--font-mono), monospace;
 }
 
-::selection {
-  background: var(--accent);
-  color: var(--on-accent);
-  text-shadow: none;
-}
-
-:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-  border-radius: var(--radius-sm);
-}
+/* ::selection and :focus-visible are defined once, in the Design polish
+   section further down — keeping a second copy here let the values fork. */
 
 /* ── Tap feedback — kill the default blue "copied" flash and replace it with a
    calm, brand-tinted press so taps feel intentional, never like a selection. ── */
@@ -761,17 +739,8 @@ a:active {
   transition: transform 120ms var(--ease-color), box-shadow 120ms var(--ease-color);
 }
 
-/* ── CSS containment — tell the browser what each component can't affect,
-    so it can skip unnecessary layout/paint work across the rest of the page. */
-.part-card {
-  contain: layout style paint;
-}
-.quiz-sheet {
-  contain: layout style paint;
-}
-.quiz-question {
-  contain: layout style;
-}
+/* CSS containment for these components lives with the content-visibility
+   rules in the performance section further down (single source). */
 
 /* ── Scrollbar — sleek, neutral ── */
 ::-webkit-scrollbar {
@@ -1179,6 +1148,11 @@ a:active {
   white-space: normal;
   word-break: break-word;
 }
+/* The hero greeting is centered — center its chapter-marker bar too (the
+   block-level ::after otherwise pins to the stage's far left edge). */
+.hero__title::after {
+  margin-inline: auto;
+}
 @media (min-width: 1024px) {
   .hero__title {
     font-size: clamp(40px, 4vw, 56px);
@@ -1295,7 +1269,7 @@ a:active {
   align-items: center;
   gap: 6px;
   font-size: var(--text-xs);
-  color: var(--text-muted);
+  color: var(--text-tertiary);
   font-weight: 500;
   letter-spacing: 0.01em;
 }
@@ -1431,6 +1405,11 @@ a:active {
   letter-spacing: var(--tracking-tight);
   border-bottom: 2px solid var(--border-glow);
   padding-bottom: 10px;
+}
+/* The border-bottom above IS this heading's rule — the global h2::after
+   chapter marker doubled it up. */
+.markdown-content h2::after {
+  display: none;
 }
 
 .markdown-content h3 {
@@ -1871,8 +1850,8 @@ a:active {
     inset: 0;
     z-index: 70;
     background: var(--scrim);
-    -webkit-backdrop-filter: blur(12px) saturate(160%);
-    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   }
   .app-sidebar-toggle {
     display: inline-flex;
@@ -2204,11 +2183,8 @@ html[data-browser="firefox"] *::after {
   -webkit-backdrop-filter: none !important;
 }
 
-/* ── HIGH tier: refined depth for powerful devices ── */
-html[data-perf="high"] {
-  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
-  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.1), 0 6px 12px rgba(0, 0, 0, 0.06);
-}
+/* html[data-perf="high"] shadow overrides live in the Design polish section
+   further down — this earlier copy was dead (last-one-wins) and had drifted. */
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Design polish
@@ -3914,8 +3890,8 @@ p {
   inset: 0;
   z-index: 90;
   background: var(--scrim, rgba(0, 0, 0, 0.7));
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
 }
 .quiz-sheet__panel {
   position: fixed;
@@ -4169,13 +4145,17 @@ p {
   flex-shrink: 0;
   transition: background 150ms var(--ease-color), color 150ms var(--ease-color);
 }
+/* Wash-fill + state-color text (the pairing the option rows already use) —
+   white on the raw state colors failed AA at this size, worst in dark mode. */
 .quiz-question__badge.is-correct {
-  background: var(--correct);
-  color: white;
+  background: var(--correct-bg);
+  color: var(--correct);
+  box-shadow: inset 0 0 0 1.5px var(--correct);
 }
 .quiz-question__badge.is-wrong {
-  background: var(--wrong);
-  color: white;
+  background: var(--wrong-bg);
+  color: var(--wrong);
+  box-shadow: inset 0 0 0 1.5px var(--wrong);
 }
 .quiz-question__badge.is-default {
   background: var(--bg-card-hover);
@@ -4808,7 +4788,7 @@ p {
   color: var(--text-secondary);
   margin: 0;
   min-width: 44px;
-  min-height: 36px;
+  min-height: 44px;
   flex-shrink: 0;
   justify-content: center;
 }
@@ -4900,7 +4880,7 @@ p {
   -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-2xl);
-  box-shadow: var(--shadow-xl);
+  box-shadow: var(--shadow-lg);
 }
 
 .not-found-canvas {
@@ -5780,7 +5760,7 @@ p {
 }
 .sidebar-search__clear {
   position: absolute;
-  right: 6px;
+  right: 0;
   top: 50%;
   transform: translateY(-50%);
   border: none;
@@ -5789,7 +5769,12 @@ p {
   cursor: pointer;
   font-size: 13px;
   line-height: 1;
-  padding: 4px;
+  /* 44px hit area (visual size unchanged — the padding is invisible). */
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 .sidebar-search__clear:hover {
   color: var(--text-primary);
@@ -5843,15 +5828,21 @@ p {
 }
 .journey-item__remove {
   position: absolute;
-  top: 8px;
-  right: 6px;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
   border: none;
   background: transparent;
   color: var(--text-tertiary);
   cursor: pointer;
   font-size: 14px;
   line-height: 1;
-  padding: 4px;
+  /* 44px hit area for a destructive control (icon stays small). */
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border-radius: var(--radius-pill);
   transition: color var(--dur-fast) var(--ease-color);
 }

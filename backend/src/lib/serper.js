@@ -83,9 +83,11 @@ export async function fetchRealWorldContext(topic, language) {
     const startedAt = Date.now();
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), SERPER_TIMEOUT_MS);
-    let response;
+    let data;
+    // The timeout must cover the body read too — a stalling body would
+    // otherwise hold a lesson-concurrency slot with no deadline.
     try {
-      response = await fetch("https://google.serper.dev/news", {
+      const response = await fetch("https://google.serper.dev/news", {
         method: "POST",
         headers: {
           "X-API-KEY": SERPER_API_KEY,
@@ -99,6 +101,22 @@ export async function fetchRealWorldContext(topic, language) {
         }),
         signal: controller.signal,
       });
+
+      console.log("[Serper] Response received", {
+        requestId,
+        status: response.status,
+        ok: response.ok,
+        latencyMs: Date.now() - startedAt,
+      });
+      if (!response.ok) {
+        console.warn("[Serper] Non-OK response; returning null context", {
+          requestId,
+          status: response.status,
+        });
+        return null;
+      }
+
+      data = await response.json();
     } catch (fetchError) {
       if (fetchError?.name === "AbortError") {
         console.warn("[Serper] Request timed out; returning null context", {
@@ -112,21 +130,6 @@ export async function fetchRealWorldContext(topic, language) {
       clearTimeout(timeoutId);
     }
 
-    console.log("[Serper] Response received", {
-      requestId,
-      status: response.status,
-      ok: response.ok,
-      latencyMs: Date.now() - startedAt,
-    });
-    if (!response.ok) {
-      console.warn("[Serper] Non-OK response; returning null context", {
-        requestId,
-        status: response.status,
-      });
-      return null;
-    }
-
-    const data = await response.json();
     const news = data.news?.slice(0, 3) ?? [];
     console.log("[Serper] Parsed news payload", {
       requestId,
