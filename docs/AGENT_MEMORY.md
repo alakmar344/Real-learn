@@ -1241,5 +1241,18 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
   - **Comprehensive Unit Testing & Empirical Verification**:
     - Added unit tests in `backend/test/gemma-engine.test.js` validating model registration, 50/50 round-robin alternation, sliding 60s window token pruning, and automated Groq Compound overflow.
     - Verified: backend tests 87/87 passing (`npm test` 100% PASS), frontend typecheck (`tsc --noEmit` 0 errors), Next.js production build (`npm run build` 15/15 pages clean).
+- 2026-08-17 (later) — **Groq API 400 Unsupported Property Fix, NVIDIA NIM Free Tier Model Catalog Update & Fast Multi-Model Error Rotation.**
+  - **Groq API 400 Invalid Request Error Resolved (`backend/src/lib/gemma.js`)**:
+    - Removed unsupported `chat_template_kwargs` property from `callGroq`. Groq Cloud's OpenAI-compatible completions API rejects `chat_template_kwargs` with HTTP 400 `invalid_request_error`.
+    - Made `AI_DISABLE_THINKING` default to `"off"` so standard completions payloads remain completely clean across OpenAI-compatible providers.
+    - Added exact token telemetry tracking via Groq streaming chunks (`chunk.usage` / `chunk.x_groq.usage`) feeding directly into `recordGroqTokens`, eliminating estimation variance on sliding 60s TPM tracking.
+  - **NVIDIA NIM Free Tier Model Catalog & Schema Fixes (`backend/src/lib/gemma.js`)**:
+    - Omitted unsupported kwargs on standard NVIDIA NIM chat completions calls so non-reasoning models (Llama 3.3, Nemotron, Mistral) do not fail schema validation.
+    - Updated default NVIDIA NIM fallback catalog to verified active models: `meta/llama-3.3-70b-instruct`, `nvidia/llama-3.1-nemotron-70b-instruct`, `mistralai/mistral-large-2-instruct`, `mistralai/mixtral-8x7b-instruct-v0.1`, `mistralai/mistral-7b-instruct-v0.3`, `qwen/qwen2.5-72b-instruct`, `meta/llama-3.1-8b-instruct`, `google/gemma-2-27b-it`.
+    - Expanded `isModelRotationFailure` to classify HTTP 400, 401, 402, 403, 404, 422, and 429 errors as model-rotatable. If a model is forbidden on the current tier (403), out of credits (402), or deprecated (404), the engine immediately advances to the next model in the fallback roster with an ultra-low 50ms rotation delay instead of aborting.
+  - **Verification & Test Suite Updates**:
+    - Added test `chat_template_kwargs is never sent to Groq and omitted on standard NVIDIA calls` and test `nvidia rotates to the next model on 403 forbidden (not allowed on free tier)` in `backend/test/gemma-engine.test.js`.
+    - Verified: all 88 backend unit tests pass (`npm test`), frontend build and typechecks pass with 0 errors.
+
 
 

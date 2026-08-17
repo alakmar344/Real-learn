@@ -252,30 +252,46 @@ test("silence watchdog kills a stalled stream fast (retryable 408)", async () =>
   }
 });
 
-test("thinking knob is passed to nvidia by default", async () => {
-  process.env.AI_DISABLE_THINKING = "off";
-  try {
-    const payloads = { groq: null, nvidia: null };
-    scenario = async (isGroq, isNvidia, isCloudflare, opts) => {
-      const body = JSON.parse(opts.body);
-      if (isGroq) {
-        payloads.groq = body;
-        // Fail Groq so the NVIDIA fallback also runs and we can inspect its payload.
-        return jsonResponse({ errors: [{ message: "down" }] }, 500);
-      }
-      if (!isNvidia) return okResponse("cloudflare-answer");
-      payloads.nvidia = body;
-      return okResponse("fast-answer");
-    };
-    const text = await callGemma("sys", "user", 0.5, 5000);
-    assert.equal(text, "fast-answer");
-    assert.equal(payloads.groq.chat_template_kwargs, undefined);
-    assert.deepEqual(payloads.nvidia.chat_template_kwargs, {
-      enable_thinking: true,
-    });
-  } finally {
-    delete process.env.AI_DISABLE_THINKING;
-  }
+test("chat_template_kwargs is never sent to Groq and omitted on standard NVIDIA calls", async () => {
+  const payloads = { groq: null, nvidia: null };
+  scenario = async (isGroq, isNvidia, isCloudflare, opts) => {
+    const body = JSON.parse(opts.body);
+    if (isGroq) {
+      payloads.groq = body;
+      // Fail Groq so the NVIDIA fallback also runs and we can inspect its payload.
+      return jsonResponse({ errors: [{ message: "down" }] }, 500);
+    }
+    if (!isNvidia) return okResponse("cloudflare-answer");
+    payloads.nvidia = body;
+    return okResponse("fast-answer");
+  };
+  const text = await callGemma("sys", "user", 0.5, 5000);
+  assert.equal(text, "fast-answer");
+  // Groq Cloud rejects chat_template_kwargs with 400 error — must be undefined
+  assert.equal(payloads.groq.chat_template_kwargs, undefined);
+  // NVIDIA NIM standard calls use standard OpenAI payload
+  assert.equal(payloads.nvidia.chat_template_kwargs, undefined);
+});
+
+test("nvidia rotates to the next model on 403 forbidden (not allowed on free tier)", async () => {
+  const seenModels = [];
+  scenario = async (isGroq, isNvidia, isCloudflare, opts) => {
+    if (isGroq) return jsonResponse({ errors: [{ message: "down" }] }, 500);
+    if (isCloudflare) return okResponse("cloudflare-last-resort");
+    const body = JSON.parse(opts.body);
+    seenModels.push(body.model);
+    if (body.model === "meta/llama-3.3-70b-instruct") {
+      return jsonResponse({ error: { message: "model not allowed on current tier", type: "forbidden" } }, 403);
+    }
+    return okResponse("rotated-free-tier-answer");
+  };
+  const text = await callGemma("sys", "user", 0.5, 5000);
+  assert.equal(text, "rotated-free-tier-answer");
+  assert.deepEqual(seenModels, [
+    "meta/llama-3.3-70b-instruct",
+    "mistralai/mistral-large-2-instruct",
+  ]);
+  assert.equal(getProviderHealthSnapshot().nvidia.preferredModelIndex, 1);
 });
 
 test("caller abort propagates as AbortError", async () => {

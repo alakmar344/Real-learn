@@ -327,19 +327,24 @@ function isRetryableNetworkGemmaError(error) {
   );
 }
 
-function isRetryableGemmaError(error) {
+function isRetryableGemmaError(error, hasFallbackModels = false) {
   if (error instanceof GemmaTimeoutError) return true;
   if (error instanceof GemmaApiError) {
     // 408 = upstream request timeout (transient), 429 = rate limit
-    // (transient), 403 = Cloudflare Workers AI rate limiting (transient),
+    // (transient), 403 = Cloudflare Workers AI / provider tier rate limiting (transient),
+    // 402 = payment / tier credits limit (transient/rotatable),
     // 5xx = server error (transient). 401 is an auth error — retrying won't
-    // help. 404/400 are handled via model rotation.
+    // help unless rotating. 404/400/422 are handled via model rotation.
     if (
       error.status === 408 ||
       error.status === 429 ||
       error.status === 403 ||
+      error.status === 402 ||
       (error.status >= 500 && error.status < 600)
     ) {
+      return true;
+    }
+    if (hasFallbackModels && isModelRotationFailure(error)) {
       return true;
     }
     // Cloudflare occasionally reports transient stream failures with a
@@ -356,18 +361,27 @@ function isAvailabilityFailure(error) {
   return (
     error instanceof GemmaTimeoutError ||
     (error instanceof GemmaApiError &&
-      (error.status === 408 || error.status === 429 || error.status === 403 ||
+      (error.status === 408 ||
+        error.status === 429 ||
+        error.status === 403 ||
+        error.status === 402 ||
         error.status >= 500)) ||
     isRetryableNetworkGemmaError(error)
   );
 }
 
-// A model-shaped failure: this specific model is missing/invalid/throttled.
+// A model-shaped failure: this specific model is missing/invalid/throttled/unsupported on tier.
 // Worth rotating to the next model in the provider's list.
 function isModelRotationFailure(error) {
   return (
     error instanceof GemmaApiError &&
-    (error.status === 400 || error.status === 404 || error.status === 429)
+    (error.status === 400 ||
+      error.status === 401 ||
+      error.status === 402 ||
+      error.status === 403 ||
+      error.status === 404 ||
+      error.status === 422 ||
+      error.status === 429)
   );
 }
 
@@ -534,9 +548,10 @@ export function getGroqModels() {
   ];
   const all = [
     ...rotating,
+    "llama-3.3-70b-versatile",
+    "llama-3.1-8b-instant",
     GROQ_COMPOUND_MODEL,
     ...configured,
-    "llama-3.3-70b-versatile",
   ];
   return [...new Set(all.filter(Boolean))];
 }
@@ -549,10 +564,13 @@ function getNvidiaModels() {
   if (models.length === 0) {
     models.push(
       "meta/llama-3.3-70b-instruct",
-      "mistralai/mistral-large-2-instruct",
       "nvidia/llama-3.1-nemotron-70b-instruct",
+      "mistralai/mistral-large-2-instruct",
+      "mistralai/mixtral-8x7b-instruct-v0.1",
+      "mistralai/mistral-7b-instruct-v0.3",
       "qwen/qwen2.5-72b-instruct",
-      "meta/llama-3.1-70b-instruct"
+      "meta/llama-3.1-8b-instruct",
+      "google/gemma-2-27b-it"
     );
   }
   return [...new Set(models)];
@@ -777,16 +795,15 @@ async function fetchChatCompletion(url, headers, payload, signal, opts = {}) {
   }
 }
 
-// LATENCY: Models like Qwen / DeepSeek can spend output tokens "thinking"
-// before the answer (we strip those tags but still pay for the time). Most
-// hosts accept the vLLM-style `chat_template_kwargs: { enable_thinking:
-// false }` to turn that off, roughly halving wall-clock generation for
-// structured-output workloads like ours. Because not every host tolerates
-// the extra field, it is opt-in per provider:
-//   AI_DISABLE_THINKING = off (default) | groq | nvidia | cloudflare | both/all
+// Thinking tags stripping & provider parameter configuration.
+// Note: Groq Cloud does NOT accept `chat_template_kwargs` (causes 400 error).
+// For providers that support vLLM-style kwargs (e.g. Cloudflare / self-hosted NIM),
+// AI_DISABLE_THINKING can be set explicitly:
+//   AI_DISABLE_THINKING = off (default) | cloudflare | nvidia | all
 function thinkingDisabledFor(providerKey) {
-  const mode = (process.env.AI_DISABLE_THINKING || "groq").trim().toLowerCase();
-  return mode === "both" || mode === "all" || mode === "groq" || mode === providerKey;
+  const mode = (process.env.AI_DISABLE_THINKING || "off").trim().toLowerCase();
+  if (mode === "off" || !mode) return false;
+  return mode === "all" || mode === "both" || mode === providerKey;
 }
 
 async function callNvidiaAI(model, body, signal, opts) {
@@ -802,9 +819,9 @@ async function callNvidiaAI(model, body, signal, opts) {
     max_tokens: body.max_tokens,
     stream: true,
   };
-  payload.chat_template_kwargs = {
-    enable_thinking: !thinkingDisabledFor("nvidia"),
-  };
+  if (process.env.AI_DISABLE_THINKING && thinkingDisabledFor("nvidia")) {
+    payload.chat_template_kwargs = { enable_thinking: false };
+  }
   return fetchChatCompletion(
     "https://integrate.api.nvidia.com/v1/chat/completions",
     {
@@ -944,23 +961,25 @@ async function callGroq(model, body, signal, opts) {
       max_completion_tokens: body.max_tokens,
       top_p: 0.95,
       stream: true,
-      reasoning_effort: "none",
       stop: null,
     };
-    if (thinkingDisabledFor("groq")) {
-      payload.chat_template_kwargs = { enable_thinking: false };
-    }
     const stream = await groq.chat.completions.create(
       payload,
       { signal: controller.signal }
     );
 
     let fullText = "";
+    let exactTokens = 0;
     for await (const chunk of stream) {
       activity();
       const streamError = extractStreamChunkError(chunk);
       if (streamError) {
         throw new GemmaApiError(408, "StreamError", streamError);
+      }
+      if (chunk.usage?.total_tokens) {
+        exactTokens = chunk.usage.total_tokens;
+      } else if (chunk.x_groq?.usage?.total_tokens) {
+        exactTokens = chunk.x_groq.usage.total_tokens;
       }
       const token = chunk.choices?.[0]?.delta?.content || "";
       fullText += token;
@@ -992,12 +1011,16 @@ async function callGroq(model, body, signal, opts) {
       );
     }
 
-    const promptChars = body.messages.reduce(
-      (acc, m) => acc + (typeof m.content === "string" ? m.content.length : 0),
-      0
-    );
-    const estimatedTokensUsed = Math.ceil((promptChars + fullText.length) / 3.5);
-    recordGroqTokens(estimatedTokensUsed);
+    if (exactTokens > 0) {
+      recordGroqTokens(exactTokens);
+    } else {
+      const promptChars = body.messages.reduce(
+        (acc, m) => acc + (typeof m.content === "string" ? m.content.length : 0),
+        0
+      );
+      const estimatedTokensUsed = Math.ceil((promptChars + fullText.length) / 3.5);
+      recordGroqTokens(estimatedTokensUsed);
+    }
 
     return { choices: [{ message: { content: fullText } }] };
   } catch (error) {
@@ -1309,24 +1332,34 @@ async function runProviderAttempts(provider, request, config, raceState) {
       }
 
       const isLastAttempt = attempt === config.maxRetries;
-      if (isLastAttempt || !isRetryableGemmaError(error)) {
+      const canRotate = models.length > 1 && isModelRotationFailure(error);
+      if (isLastAttempt || (!isRetryableGemmaError(error, models.length > 1) && !canRotate)) {
         throw new ProviderExhaustedError(provider.key, error);
       }
 
       // Backoff before the next attempt. Timeouts on Cloudflare usually mean
       // a cold model — wait long enough for it to load, unless another
       // provider is racing (then keep the loser's retries cheap and quick).
+      // Model-rotation switches (e.g. 403 tier restriction / 400 invalid model)
+      // do not require waiting for server recovery, so cap their backoff to 50ms.
       const isColdStart =
         (error instanceof GemmaTimeoutError ||
           (error instanceof GemmaApiError && error.status === 408)) &&
         !error.receivedData;
       const racing = raceState?.othersRunning?.() ?? false;
-      const baseDelay = isColdStart ? COLD_START_RETRY_DELAY_MS : config.retryDelayMs;
-      const cap = racing
-        ? RACING_MAX_RETRY_DELAY_MS
+      const isRotation = isModelRotationFailure(error);
+      const baseDelay = isRotation
+        ? 50
         : isColdStart
-          ? COLD_START_MAX_RETRY_DELAY_MS
-          : config.maxRetryDelayMs;
+          ? COLD_START_RETRY_DELAY_MS
+          : config.retryDelayMs;
+      const cap = isRotation
+        ? 200
+        : racing
+          ? RACING_MAX_RETRY_DELAY_MS
+          : isColdStart
+            ? COLD_START_MAX_RETRY_DELAY_MS
+            : config.maxRetryDelayMs;
       const waitMs = error.retryAfterMs
         ? Math.min(error.retryAfterMs, cap)
         : Math.min(jitter(baseDelay * Math.pow(2, attempt)), cap);
