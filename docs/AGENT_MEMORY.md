@@ -202,17 +202,18 @@ Available component classes (already implemented — use them):
   `__body`, `__title`, `__hint`, `__swatch`, `__check`), `.settings-action`
   (+ `--danger`, `__note`), `.glass-textarea`, `.char-count`, `.fieldset-reset`,
   `.account-row` (+ `__name`, `__hint`)
-- Sidebar: `.app-sidebar__head/brand/brand-mark/wordmark/new/scroll/list-head/list-title/count/empty/foot/foot-btn/foot-note`,
+- Sidebar: `.app-sidebar__head/brand/brand-mark/wordmark/new/scroll/list-head/list-title/count/empty/foot/controls/settings-btn`,
   `.sidebar-search` (+ `__icon`, `__input`, `__clear`), `.journey-list`,
-  `.journey-item` (+ `__open`, `__q`, `__meta`, `__remove`)
+  `.journey-item` (+ `__open`, `__q`, `__meta`, `__remove`),
+  `.sidebar-tooltip` (+ `__bubble`)
 - Navbar hub / home strip: `.progress-hub__streak/flame/count/count--zero/divider/ring/ring-arc/ring-level/daily/daily--met`,
   `.progress-hub-placeholder`, `.home-strip` (+ `--skeleton`), `.mini-progress-link`
   (+ `__count`, `__cta`), `.flame--dead`
 - 2026 glass: `.hero-glass-card`, `.hero__panel`, `.stat-tile-2026`, `.progress-hero-card`,
   `.settings-panel-glass`, `.modal-glass-surface`, `.not-found-canvas`,
   `.not-found__code/title/sub/cta`, `.auth-glass-card`
-- Theme switch: `.theme-switch-row` (+ `__label`), `.theme-switch` (+ `--on`,
-  `__icon`, `__icon--sun/--moon`, `__thumb`) — the physical sidebar toggle
+- Theme toggle: `.theme-toggle-segmented`, `.theme-toggle-btn` (+ `.is-active`),
+  `.theme-toggle-icon` (+ `--sun`, `--moon`) — physical segmented sidebar switch
 - Tactile press system: the "Tactile press system" section at the end of
   `globals.css` owns transform/box-shadow for all buttons — raised keys with
   a lit bevel + hard bottom edge that press DOWN on `:active` (tokens:
@@ -1180,3 +1181,20 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
   integration smoke 7/7 PASS, route list byte-identical pre/post refactor,
   `tsc --noEmit` clean, lint 0 errors, `next build` clean (14 routes), all
   `verify:*` scripts pass.
+- 2026-08-17 (later) — **Sidebar UI cleanup and control redesign.**
+  Removed the three nav buttons (Home, Learn, Stats) from under "New Lesson" in
+  `Sidebar.tsx` to eliminate visual clutter. Redesigned the sidebar footer
+  (`.app-sidebar__foot`) to host **Settings** and **Theme** controls on the
+  **same horizontal row** (`.app-sidebar__controls`):
+  - **Settings button:** Compact icon-only tactile key (`.app-sidebar__settings-btn`)
+    with bespoke custom SVG precision gear artwork (no text label), floating
+    hover tooltip (`.sidebar-tooltip`), accessible `aria-label="Settings"`, and
+    clean routing to `/settings`.
+  - **Theme toggle:** Segmented physical tactile dual-key control
+    (`.theme-toggle-segmented` + `.theme-toggle-btn`) with recessed track, raised
+    active plate, lit top bevel, bottom edge, tactile press compression, and
+    immediate visual communication via custom SVG Sun (radiant solar corona) and
+    Moon (sculpted crescent + micro-sparkle) glyphs.
+  - Verified across light/dark themes, responsive mobile/desktop viewports, and
+    prefers-reduced-motion.
+
