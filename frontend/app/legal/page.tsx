@@ -4,6 +4,7 @@ import { CookiePolicyContent } from "../legal/cookies/content";
 import { Suspense } from "react";
 import { Metadata } from "next";
 import Link from "next/link";
+import Navbar from "@/components/shared/Navbar";
 
 type SearchParams = Promise<{ tab?: string }>;
 
@@ -31,6 +32,7 @@ export default async function LegalPage({ searchParams }: { searchParams: Search
 
   return (
     <main className="flow-page">
+      <Navbar />
       <div className="flow-page__inner flow-page__inner--narrow">
         <header className="page-hero">
           <h1 className="page-hero__title">Legal</h1>

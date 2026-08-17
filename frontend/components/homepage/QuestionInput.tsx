@@ -34,8 +34,6 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
   const setMode = usePreferenceStore((s) => s.setMode);
   const mounted = useMounted();
   const mode = mounted ? persistedMode : "fast";
-  const activeMode = MODES.find((m) => m.value === mode) ?? MODES[0];
-  const charCount = question.length;
   const isRtl = RTL_LANGUAGES.includes(language);
   const activeIndex = MODES.findIndex((m) => m.value === mode);
 
@@ -142,7 +140,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
         ) : null}
       </div>
 
-      {/* 2. Bigger, prominent Mode Toggle Row */}
+      {/* 2. Compact answer-mode toggle */}
       <div className="q-form__modes">
         <div role="radiogroup" aria-label="Answer mode" className="mode-glider">
           <span
@@ -170,7 +168,6 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
             );
           })}
         </div>
-        <span className="q-form__mode-hint">{activeMode.hint}</span>
       </div>
 
       {/* 3. Bottom Actions & Enter Button */}

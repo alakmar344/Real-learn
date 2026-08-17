@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { UserButton, useAuth, useClerk } from "@clerk/nextjs";
+import Navbar from "@/components/shared/Navbar";
 import { LESSON_MODES } from "@/lib/lessonModes";
 import ConfirmModal from "@/components/shared/ConfirmModal";
 import { showToast } from "@/components/shared/ToastContainer";
@@ -355,6 +356,7 @@ export default function SettingsPage() {
 
   return (
     <main className="flow-page">
+      <Navbar />
       <div className="flow-page__inner flow-page__inner--narrow">
         <button type="button" onClick={() => router.back()} className="settings-back">
           <span className="settings-back__arrow" aria-hidden="true">
