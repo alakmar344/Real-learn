@@ -1091,7 +1091,7 @@ a:active {
   justify-content: center;
   text-align: center;
   min-height: 0;
-  padding: clamp(20px, 5vh, 48px) clamp(16px, 4vw, 32px);
+  padding: clamp(36px, 8vh, 72px) clamp(16px, 4vw, 32px) clamp(48px, 10vh, 96px);
 }
 .hero__stage {
   width: 100%;
@@ -1099,10 +1099,12 @@ a:active {
   position: relative;
   display: flex;
   flex-direction: column;
+  margin-top: clamp(16px, 3vh, 36px);
 }
 @media (min-width: 1024px) {
   .hero__stage {
     max-width: 920px;
+    margin-top: clamp(20px, 3.5vh, 44px);
   }
 }
 .hero__stage::before {
@@ -1159,7 +1161,7 @@ a:active {
   z-index: 1;
   display: flex;
   justify-content: center;
-  margin-top: 20px;
+  margin-top: clamp(20px, 3vh, 32px);
 }
 .hero__content {
   position: relative;
@@ -3028,7 +3030,7 @@ p {
 /* ── Question input (homepage) ─────────────────────────────────────
    Replaces the inline-style form in QuestionInput.tsx. */
 .q-form {
-  margin-top: 20px;
+  margin-top: 0;
   max-width: 720px;
   width: 100%;
   position: relative;
@@ -3044,7 +3046,7 @@ p {
 @media (min-width: 1024px) {
   .q-form {
     max-width: 860px;
-    margin-top: 24px;
+    margin-top: 0;
   }
 }
 .q-form__body {

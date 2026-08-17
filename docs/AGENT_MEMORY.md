@@ -1202,5 +1202,9 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
   Content below). Updated `HomeStats.tsx` to return `null` when there are no
   active in-progress lessons or first-visit prompts, eliminating empty frosted
   glass container rendering.
+- 2026-08-17 (later) — **Input bar ergonomics, domain allowlist & cross-deployment fix.**
+  - Lowered question input bar on homepage by refining `.hero` padding (`clamp(36px, 8vh, 72px) ... clamp(48px, 10vh, 96px)`), `.hero__stage` top margin (`clamp(16px, 3vh, 36px)` / `clamp(20px, 3.5vh, 44px)` on desktop), `.hero__input-row` spacing (`clamp(20px, 3vh, 32px)`), and removing stacked margins on `.q-form`, bringing the search/input bar into an ergonomic, natural center typing position.
+  - Added `https://reallearn-taupe.vercel.app` to default `allowedOrigins` (`backend/src/middleware/security.js`) and `DEFAULT_PRODUCTION_AUTHORIZED_PARTIES` (`backend/src/lib/auth.js`) for Clerk `azp` validation and CORS origin guard.
+  - Verified: backend tests 84/84 passing, frontend `tsc --noEmit` 0 errors, ESLint 0 errors, all 8 verify scripts pass, `npm run build` (15/15 pages) clean.
 
 

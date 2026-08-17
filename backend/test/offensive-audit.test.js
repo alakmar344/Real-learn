@@ -496,14 +496,19 @@ test("K1: requireAuth pins userId from sub (spread-then-override)", () => {
 });
 
 test("K2: azp validation strictly rejects unauthorized origins (including real-learn.vercel.app and attacker *.vercel.app)", () => {
-  const trusted = ["https://reallearn.site", "https://www.reallearn.site"];
+  const trusted = [
+    "https://reallearn.site",
+    "https://www.reallearn.site",
+    "https://reallearn-taupe.vercel.app",
+  ];
   const isAllowed = (azp) => !azp || trusted.includes(String(azp).replace(/\/$/, ""));
   
   assert.equal(isAllowed("https://reallearn.site"), true);
   assert.equal(isAllowed("https://www.reallearn.site"), true);
+  assert.equal(isAllowed("https://reallearn-taupe.vercel.app"), true);
   assert.equal(isAllowed(undefined), true);
   
-  // Non-trusted and malicious origins (including vercel.app domains) must be strictly rejected:
+  // Non-trusted and malicious origins (including unapproved vercel.app domains) must be strictly rejected:
   assert.equal(isAllowed("https://real-learn.vercel.app"), false, "real-learn.vercel.app is not trusted in production");
   assert.equal(isAllowed("https://attacker-app.vercel.app"), false);
   assert.equal(isAllowed("https://evil-phish.vercel.app"), false);
