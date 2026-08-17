@@ -15,9 +15,11 @@ import {
   AICircuitOpenError,
   GemmaCircuitOpenError,
   parseJSON,
+  callMistralFallbackAI,
   callNvidiaFallbackAI,
   callCloudflareAI,
   isFallbackConfigured,
+  isMistralFallbackConfigured,
   isNvidiaFallbackConfigured,
   isCloudflareFallbackConfigured,
   extractTextFromResult,
@@ -661,12 +663,11 @@ END_EXTERNAL_CONTEXT>>>`
 
     const systemPrompt =
       mode === "fast" ? GENERATE_FAST_ANSWER_PROMPT : GENERATE_LESSON_PROMPT;
-    // TOKEN EFFICIENCY & 8K TPM OPTIMIZATION:
-    // Tailored max_tokens ceiling prevents runaway loops from consuming
-    // Groq's 8k TPM pool while providing ample headroom:
-    // - Fast mode (1 part + 2 quizzes): ~400-600 tokens -> 1,200 cap (2x headroom)
-    // - Explain mode (3 parts + 6 quizzes): ~700-1,100 tokens -> 2,200 cap (2x headroom)
-    const maxOutputTokens = mode === "fast" ? 1200 : 2200;
+    // TOKEN EFFICIENCY & RELIABILITY:
+    // Tailored max_tokens ceiling provides ample headroom without truncation:
+    // - Fast mode (1 part + 2 quizzes): ~600-900 tokens -> 1,800 cap (2x headroom)
+    // - Explain mode (3 parts + 6 quizzes): ~1,500-2,400 tokens -> 4,000 cap (ample headroom for Indic languages)
+    const maxOutputTokens = mode === "fast" ? 1800 : 4000;
     // Fast mode uses a lower temperature for more focused, deterministic
     // output — less sampling overhead means faster generation.
     const temperature = mode === "fast" ? 0.2 : 0.6;
@@ -685,7 +686,8 @@ END_EXTERNAL_CONTEXT>>>`
     let generationPercent = 40;
 
     const PROVIDER_LOG_LABELS = {
-      primary: "Groq Cloud (Qwen 3.6 27B / GPT-OSS 120B)",
+      primary: "Groq Cloud (Llama 3.3 70B / Qwen 3.6 27B / GPT-OSS 120B)",
+      mistral: "Mistral AI",
       nvidia: "NVIDIA NIM",
       cloudflare: "Cloudflare Workers AI",
     };
@@ -694,6 +696,7 @@ END_EXTERNAL_CONTEXT>>>`
       mode,
       providerOrder: [
         "groq",
+        ...(isMistralFallbackConfigured() ? ["mistral"] : []),
         ...(isNvidiaFallbackConfigured() ? ["nvidia"] : []),
         ...(isCloudflareFallbackConfigured() ? ["cloudflare"] : []),
       ],
@@ -739,7 +742,22 @@ END_EXTERNAL_CONTEXT>>>`
       const startedAt = Date.now();
       let result;
       try {
-        if (source === "nvidia") {
+        if (source === "mistral") {
+          result = extractTextFromResult(
+            await callMistralFallbackAI(
+              undefined,
+              {
+                messages: [
+                  { role: "system", content: systemPrompt },
+                  { role: "user", content: attemptUserPrompt },
+                ],
+                temperature: attemptTemperature,
+                max_tokens: maxOutputTokens,
+              },
+              generateAbortSignal
+            )
+          );
+        } else if (source === "nvidia") {
           result = extractTextFromResult(
             await callNvidiaFallbackAI(
               undefined,
@@ -907,6 +925,10 @@ END_EXTERNAL_CONTEXT>>>`
       { source: "primary", label: "primary", repair: false },
       { source: "primary", label: "primary-repair", repair: true },
     ];
+    if (isMistralFallbackConfigured()) {
+      attemptPlan.push({ source: "mistral", label: "mistral", repair: false });
+      attemptPlan.push({ source: "mistral", label: "mistral-repair", repair: true });
+    }
     if (isNvidiaFallbackConfigured()) {
       attemptPlan.push({ source: "nvidia", label: "nvidia", repair: false });
       attemptPlan.push({ source: "nvidia", label: "nvidia-repair", repair: true });

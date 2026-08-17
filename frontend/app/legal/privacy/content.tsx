@@ -27,7 +27,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
         Privacy Policy
       </Title>
       <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
-        Last updated: August 11, 2026 (version 3.4)
+        Last updated: August 17, 2026 (version 3.6)
       </p>
 
       <section style={{ marginBottom: 28 }}>
@@ -54,10 +54,11 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
           it generates either a quick single-part direct answer (&quot;Fast&quot; mode) or a 3-part
           learning journey (Foundation, Mechanism, Real World — &quot;Explain&quot; mode) for any
           topic you ask about. It is powered by high-performance open models: our primary
-          inference provider is <strong>Groq Cloud</strong> (running Qwen 3.6 27B and GPT-OSS 120B on LPUs), with{" "}
-          <strong>NVIDIA NIM</strong> (70B–150B parameter models) configured as the automatic fallback and{" "}
+          inference provider is <strong>Groq Cloud</strong> (running Llama 3.3 70B, Qwen 3.6 27B and GPT-OSS 120B on LPUs), with{" "}
+          <strong>Mistral AI</strong> (running mistral-small and mistral-large) and{" "}
+          <strong>NVIDIA NIM</strong> (70B–150B parameter models) configured as our automatic fallbacks, and{" "}
           <strong>Cloudflare Workers AI</strong> (70B Fast FP8) as a last-resort fallback so lessons can
-          still be generated if the primary and fallback are slow or unavailable. This is designed to
+          still be generated if other providers are slow or unavailable. This is designed to
           help students learn through interactive quizzes and structured content. RealLearn also
           builds a <strong>personalized learning profile</strong> from your quiz results: a compact,
           on-device map of the concepts you have proven you know (by passing lesson quizzes) and
@@ -303,8 +304,9 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>6. AI-Generated Content</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           RealLearn generates content using high-performance open AI models. Our primary
-          inference provider is <strong>Groq Cloud</strong> (running Qwen 3.6 27B and GPT-OSS 120B on LPUs); if Groq is
+          inference provider is <strong>Groq Cloud</strong> (running Llama 3.3 70B, Qwen 3.6 27B and GPT-OSS 120B on LPUs); if Groq is
           temporarily slow or unavailable, the request automatically falls back to{" "}
+          <strong>Mistral AI</strong> (running mistral-small and mistral-large) and{" "}
           <strong>NVIDIA NIM</strong> (70B–150B parameter models), and may then use{" "}
           <strong>Cloudflare Workers AI</strong> (70B Fast FP8) as a last-resort provider so your lesson can
           still be generated. All
@@ -324,10 +326,10 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
           <strong>RealLearn does not use your data to train, fine-tune, or improve any AI model.</strong>{" "}
           Your questions are sent to our primary inference provider, <strong>Groq Cloud</strong>{" "}
           (which runs open models on LPUs), for one-time inference only. If Groq is temporarily slow
-          or unavailable, the same request falls back to <strong>NVIDIA NIM</strong> (running 70B–150B models),
+          or unavailable, the same request falls back to <strong>Mistral AI</strong> or <strong>NVIDIA NIM</strong> (running 70B–150B models),
           and may then use <strong>Cloudflare Workers AI</strong> as a last-resort fallback for
           one-time inference so the lesson can still be generated; the same &quot;no training on your
-          data&quot; commitment applies to all three providers. Safety moderation
+          data&quot; commitment applies to all providers. Safety moderation
           of your question and the generated lesson is performed locally on our own servers using
           rule-based pattern matching — your question is <strong> not</strong> sent to any third
           party just for moderation. We do not store your questions or generated lessons in a form
@@ -341,6 +343,9 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
           that data. We recommend reviewing{" "}
           <a href="https://groq.com/privacy-policy/" style={{ color: "var(--accent)" }}>
             Groq&apos;s Privacy Policy
+          </a>{", "}
+          <a href="https://mistral.ai/terms/#privacy-policy" style={{ color: "var(--accent)" }}>
+            Mistral&apos;s Privacy Policy
           </a>{", "}
           <a href="https://www.nvidia.com/en-us/about-nvidia/privacy-policy/" style={{ color: "var(--accent)" }}>
             NVIDIA&apos;s Privacy Policy
@@ -445,13 +450,19 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
           <li style={{ marginBottom: 4 }}>
             <strong>Groq Cloud</strong> (groq.com) — Our <strong>primary</strong> AI content
             generation provider. Your question, chosen language, and difficulty level are sent to
-            Groq&apos;s API (which runs open models Qwen 3.6 27B and GPT-OSS 120B on LPUs) for one-time
+            Groq&apos;s API (which runs open models Llama 3.3 70B, Qwen 3.6 27B and GPT-OSS 120B on LPUs) for one-time
             inference (lesson generation only — safety moderation runs locally on our servers and is
             not sent to Groq). No user identity is included in the API call. Groq&apos;s own
             data practices apply to API requests.
           </li>
           <li style={{ marginBottom: 4 }}>
-            <strong>NVIDIA NIM</strong> (nvidia.com) — Our <strong>automatic fallback</strong> AI
+            <strong>Mistral AI</strong> (mistral.ai) — Our <strong>low-latency European fallback</strong> AI
+            provider (Mistral AI SAS, France/EU). Used when Groq is temporarily slow or during parallel hedging.
+            Mistral receives the same question, language, and difficulty level for one-time inference with no user
+            identity attached, and no user data is used for training.
+          </li>
+          <li style={{ marginBottom: 4 }}>
+            <strong>NVIDIA NIM</strong> (nvidia.com) — Our <strong>high-capacity fallback</strong> AI
             provider. Used when Groq is temporarily slow or unavailable. NVIDIA receives the
             same question, language, and difficulty level for one-time inference with no user
             identity attached, and no user data is used for training.
@@ -577,6 +588,14 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
            by posting the new policy on this page and updating the &quot;Last updated&quot; date.
            Continued use of the service after changes constitutes acceptance of the updated policy.
          </p>
+          <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+            <strong>Version 3.6 (effective August 17, 2026).</strong> This update adds{" "}
+            <strong>Mistral AI</strong> (Mistral AI SAS, France/EU) as a fast fallback inference provider
+            alongside Groq Cloud, NVIDIA NIM, and Cloudflare Workers AI. Requests to Mistral AI are sent for one-time
+            inference only with zero user identity attached, and no user data is used for model training.
+            Because this introduces a new AI subprocessor, we are re-prompting all users to review and
+            re-accept this Privacy Policy and our Terms of Service before continuing.
+          </p>
           <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
             <strong>Version 3.5 (effective August 17, 2026).</strong> This update upgrades our
             core AI inference architecture: our <strong>primary</strong> model provider is now{" "}
