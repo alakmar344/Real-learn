@@ -617,6 +617,9 @@ async function fetchChatCompletion(url, headers, payload, signal, opts = {}) {
     }
     return data;
   } catch (error) {
+    // Release the upstream connection when the body wasn't fully consumed
+    // (mid-stream error payload, overflow); abort is idempotent.
+    controller.abort();
     if (watchdogFired && isAbortError(error)) {
       // 408 keeps this on the retryable/rotate/circuit path.
       const stallError = new GemmaApiError(
@@ -935,25 +938,32 @@ async function handleStreamingResponse(response, onChunk) {
     }
   };
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    onChunk?.();
-    buffer += decoder.decode(value, { stream: true });
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      onChunk?.();
+      buffer += decoder.decode(value, { stream: true });
 
-    const lines = buffer.split("\n");
-    buffer = lines.pop() || "";
+      const lines = buffer.split("\n");
+      buffer = lines.pop() || "";
 
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (!trimmed || !trimmed.startsWith("data: ")) continue;
-      consumePayload(trimmed.slice(6));
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed || !trimmed.startsWith("data: ")) continue;
+        consumePayload(trimmed.slice(6));
+      }
     }
-  }
 
-  buffer += decoder.decode();
-  if (buffer.trim().startsWith("data: ")) {
-    consumePayload(buffer.trim().slice(6));
+    buffer += decoder.decode();
+    if (buffer.trim().startsWith("data: ")) {
+      consumePayload(buffer.trim().slice(6));
+    }
+  } catch (error) {
+    // A mid-stream throw abandons the reader; without cancel() the upstream
+    // connection stays open (~300s) on every retried failure.
+    void reader.cancel().catch(() => {});
+    throw error;
   }
 
   return { choices: [{ message: { content: fullText } }] };
@@ -1518,12 +1528,18 @@ export function startPeriodicWarmUp(intervalMs) {
 import { jsonrepair } from "jsonrepair";
 
 export function parseJSON(text) {
+  // Prefix/fence strips are anchored to the ends of the text — unanchored
+  // (global/multiline) replaces also deleted fences and "Reasoning:" labels
+  // from INSIDE JSON string values, corrupting lessons that quote them.
   let cleaned = text
     .replace(/<think(?:ing)?>[\s\S]*?<\/think(?:ing)?>/gi, "")
-    .replace(/^\s*(?:thinking|thought|reasoning)\s*:\s*/gim, "")
+    .trim()
+    .replace(/^(?:thinking|thought|reasoning)\s*:\s*/i, "")
     .trim();
-  cleaned = cleaned.replace(/```(?:json)?\s*/gi, "").replace(/```\s*/g, "");
-  cleaned = cleaned.trim();
+  cleaned = cleaned
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/```\s*$/, "")
+    .trim();
 
   const firstBrace = cleaned.indexOf("{");
   const firstBracket = cleaned.indexOf("[");

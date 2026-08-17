@@ -1240,6 +1240,9 @@ app.delete("/api/account", rateLimit, requireAuth, async (req, res) => {
     const clerkRes = await fetch(`${apiBase}/v1/users/${encodeURIComponent(userId)}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${secret}` },
+      // A hung Clerk API must not stall this request for minutes after the
+      // Mongo data is already gone; the catch below maps timeouts to the 502.
+      signal: AbortSignal.timeout(10_000),
     });
 
     if (!clerkRes.ok) {
@@ -1781,6 +1784,15 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
   let heartbeat = null;
   const generationAbortController = new AbortController();
   const generateAbortSignal = generationAbortController.signal;
+  // Enforce LESSON_TIMEOUT_MS for real: without this timer a slow-but-not-
+  // silent provider ladder could hold a concurrency slot far past the budget
+  // the error copy promises.
+  let lessonDeadlineHit = false;
+  const lessonDeadlineTimer = setTimeout(() => {
+    lessonDeadlineHit = true;
+    generationAbortController.abort();
+  }, LESSON_TIMEOUT_MS);
+  lessonDeadlineTimer.unref?.();
   // Every progress ticker created inside the generation flow registers here
   // so finishRequest can always release it, no matter where the request
   // stops. (Previously an early abort could strand a 1.5s interval forever.)
@@ -1802,6 +1814,7 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
     if (finished) return;
     finished = true;
     generationAbortController.abort();
+    clearTimeout(lessonDeadlineTimer);
     if (heartbeat !== null) clearInterval(heartbeat);
     for (const ticker of activeTickers) clearInterval(ticker);
     activeTickers.clear();
@@ -2317,7 +2330,25 @@ END_EXTERNAL_CONTEXT>>>`
     // pre-mutation text left a gap where the served bytes were never the
     // moderated bytes (quality fixes rewrite/truncate sentences after the
     // verdict was captured).
-    const outputModerationPromise = moderateText(JSON.stringify(normalized), "output");
+    // Moderate the extracted text joined with REAL newlines — JSON.stringify
+    // escaped line breaks to literal "\n", so multi-word banned patterns with
+    // \s gaps never matched phrases spanning lines.
+    const moderatedOutputText = [
+      normalized.topic,
+      ...(Array.isArray(normalized.parts) ? normalized.parts : []).flatMap((part) => [
+        part?.title,
+        part?.content,
+        ...(Array.isArray(part?.quiz) ? part.quiz : []).flatMap((q) => [
+          q?.question,
+          ...(Array.isArray(q?.options) ? q.options : []),
+          q?.explanation,
+        ]),
+      ]),
+      ...(Array.isArray(normalized.keyTakeaways) ? normalized.keyTakeaways : []),
+    ]
+      .filter((value) => typeof value === "string" && value.trim())
+      .join("\n");
+    const outputModerationPromise = moderateText(moderatedOutputText, "output");
 
     if (mode === "fast") {
       // NOTE: input moderation was already awaited (Promise.all above) and
@@ -2383,13 +2414,15 @@ END_EXTERNAL_CONTEXT>>>`
     recordLessonResult(true);
   } catch (error) {
     if (finished) return;
-    if (error.name === 'AbortError') {
+    // A deadline-triggered abort is a timeout, not a client disconnect —
+    // fall through so the user gets the "timed out after Ns" error.
+    if (error.name === 'AbortError' && !lessonDeadlineHit) {
       console.log("[generate-lesson] Request aborted", { requestId });
       return;
     }
     const timeoutMessage = formatGemmaTimeoutMessage(LESSON_TIMEOUT_MS);
     const message =
-      error instanceof GemmaTimeoutError
+      lessonDeadlineHit || error instanceof GemmaTimeoutError
         ? timeoutMessage
         : error instanceof GemmaCircuitOpenError
         ? error.message
