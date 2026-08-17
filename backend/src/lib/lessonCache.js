@@ -126,20 +126,26 @@ export function lessonCacheKey(
   return crypto.createHash("sha256").update(material).digest("hex");
 }
 
-let ttlIndexEnsured = false;
-async function ensureTtlIndex(db) {
-  if (ttlIndexEnsured) return;
-  ttlIndexEnsured = true;
-  try {
+// Memoize the in-flight promise (same pattern as moderationLogIndexPromise in
+// server.js): a plain "ensured" boolean was set before the awaited createIndex
+// resolved, so a failure raced with concurrent writers that had already been
+// waved through, and the guard reported "done" while creation was still
+// pending. Concurrent callers now share one attempt; a failure clears the memo
+// so a later write retries.
+let ttlIndexPromise = null;
+function ensureTtlIndex(db) {
+  if (ttlIndexPromise) return ttlIndexPromise;
+  ttlIndexPromise = (async () => {
     await db
       .collection(CACHE_COLLECTION)
       .createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
     await db.collection(CACHE_COLLECTION).createIndex({ key: 1 }, { unique: true });
-  } catch (error) {
+  })().catch((error) => {
     // Index creation failing must never break lesson generation.
-    ttlIndexEnsured = false;
+    ttlIndexPromise = null;
     console.warn("[lessonCache] Failed to ensure indexes", error?.message);
-  }
+  });
+  return ttlIndexPromise;
 }
 
 /**
@@ -172,24 +178,6 @@ export async function getCachedLesson(key) {
     console.warn("[lessonCache] Lookup failed; treating as miss", error?.message);
     return null;
   }
-}
-
-/**
- * Remove a lesson from BOTH tiers — used when a post-hoc moderation verdict
- * flags an already-cached lesson so no other user can be served it.
- * Fire-and-forget safe: all errors are swallowed after logging.
- */
-export function deleteCachedLesson(key) {
-  memoryCache.delete(key);
-  (async () => {
-    try {
-      const db = await getDb();
-      await db.collection(CACHE_COLLECTION).deleteOne({ key });
-      console.log("[lessonCache] Lesson evicted", { key: key.slice(0, 12) });
-    } catch (error) {
-      console.warn("[lessonCache] Evict failed (non-fatal)", error?.message);
-    }
-  })();
 }
 
 /**

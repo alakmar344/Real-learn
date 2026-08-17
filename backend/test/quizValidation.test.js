@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { alignQuizCorrectIndex, normalizeJourney } from "../src/validation.js";
+import { alignQuizCorrectIndex, normalizeJourney, isValidJourney } from "../src/validation.js";
 
 test("alignQuizCorrectIndex: leaves valid 0-indexed question untouched", () => {
   const q = {
@@ -128,4 +128,36 @@ test("normalizeJourney: salvages a question whose correctIndex is a letter strin
   assert.equal(normalized.parts.length, 1);
   assert.equal(normalized.parts[0].quiz.length, 1);
   assert.equal(normalized.parts[0].quiz[0].correctIndex, 1);
+});
+
+test("isValidJourney: requires keyTakeaways within the mode's expected count", () => {
+  const journeyData = {
+    topic: "Photosynthesis",
+    parts: [
+      {
+        partNumber: 1,
+        title: "Foundation",
+        content: "Plants convert light energy into chemical energy.",
+        sources: [],
+        quiz: [
+          {
+            question: "Which gas do plants absorb during photosynthesis?",
+            options: ["Oxygen", "Carbon dioxide", "Nitrogen", "Hydrogen"],
+            correctIndex: 1,
+            explanation: "Plants absorb carbon dioxide.",
+          },
+        ],
+      },
+    ],
+  };
+
+  // normalizeJourney pads missing keyTakeaways to the mode's count → valid.
+  const normalized = normalizeJourney(journeyData, "fast");
+  assert.equal(normalized.keyTakeaways.length, 2);
+  assert.ok(isValidJourney(normalized, "fast"));
+
+  // Missing, empty, or over-count keyTakeaways all fail validation.
+  assert.ok(!isValidJourney({ ...normalized, keyTakeaways: undefined }, "fast"));
+  assert.ok(!isValidJourney({ ...normalized, keyTakeaways: [] }, "fast"));
+  assert.ok(!isValidJourney({ ...normalized, keyTakeaways: ["a", "b", "c"] }, "fast"));
 });

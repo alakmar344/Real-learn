@@ -26,6 +26,7 @@ import {
   isCloudflareFallbackConfigured,
   extractTextFromResult,
   getProviderHealthSnapshot,
+  allCircuitsOpen,
   GEMMA_MODEL,
 } from "./lib/gemma.js";
 import {
@@ -38,6 +39,7 @@ import { getDb, closeMongo } from "./lib/mongodb.js";
 import {
   requireAuth,
   extractBearerToken,
+  getAuthEmail,
 } from "./lib/auth.js";
 import { filterUserInput } from "./lib/contentGuard.js";
 import { moderateText } from "./lib/moderation.js";
@@ -54,7 +56,6 @@ import {
   getCachedLesson,
   setCachedLesson,
 } from "./lib/lessonCache.js";
-import { ensureLessonSearchIndexes } from "./lib/searchIndex.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -300,7 +301,8 @@ async function ensureUserDataIndexes() {
       db.collection("moderationLogs").createIndex({ clerkId: 1 }),
       db.collection("feedback").createIndex({ createdAt: -1 }),
       ensureFeedbackTtlIndex(db),
-      ensureLessonSearchIndexes(db),
+      // The lessonCache full-text index was retired with the /api/find route
+      // (drop any pre-existing "lesson_text_search" index on lessonCache manually).
     ]);
     console.log(
       `[startup] User-data indexes ensured (feedback TTL ${FEEDBACK_TTL_DAYS} days)`
@@ -641,6 +643,17 @@ function decrementUserLessonRequests(userKey) {
   else activeLessonRequestsByUser.set(userKey, current - 1);
 }
 
+// Single-flight guard against cache stampedes: when N clients ask the same
+// uncached question at once (a shared classroom link, a viral topic), each
+// one misses the cache and would launch its own full Serper + LLM pipeline —
+// N× provider spend and N concurrency slots for one identical lesson. The
+// first request (the "leader") registers its in-flight promise here; later
+// requests for the same cacheKey ("followers") await it and stream the
+// finished journey like a cache hit. Entries are deleted as soon as the
+// leader settles (success or failure), so the map only ever holds keys that
+// are actively generating.
+const inFlightLessonGenerations = new Map(); // cacheKey -> Promise<journey>
+
 function validateStartupConfig() {
   const hasCerebrasConfig = Boolean(process.env.CEREBRAS_API_KEY?.trim());
   const hasNvidiaConfig = Boolean(process.env.NVIDIA_API_KEY?.trim());
@@ -652,6 +665,28 @@ function validateStartupConfig() {
     throw new Error(
       "Missing required environment variables: set CEREBRAS_API_KEY, NVIDIA_API_KEY, or CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID"
     );
+  }
+  // Fail fast in production on missing critical config: without MONGODB_URI
+  // every consent write, lesson-cache lookup, and moderation log fails at
+  // runtime — better to refuse to boot than to serve a half-broken service.
+  // Dev keeps working without a database.
+  if (process.env.NODE_ENV === "production") {
+    // lib/mongodb.js accepts either variable name.
+    if (!process.env.MONGODB_URI?.trim() && !process.env.MONGODB_URL?.trim()) {
+      throw new Error(
+        "MONGODB_URI must be set in production — consent records, the lesson cache, and moderation logs all require MongoDB"
+      );
+    }
+    // Not fatal (the defaults are this app's real production issuer/key), but
+    // a deploy relying on baked-in auth constants should be a conscious choice.
+    if (
+      !process.env.CLERK_FRONTEND_API?.trim() ||
+      !process.env.CLERK_JWT_PUBLIC_KEY?.trim()
+    ) {
+      console.warn(
+        "[startup] WARNING: Clerk auth is using the baked-in default issuer and/or JWT fallback public key (see src/lib/auth.js). Set CLERK_FRONTEND_API and CLERK_JWT_PUBLIC_KEY explicitly for this deployment."
+      );
+    }
   }
 }
 
@@ -980,17 +1015,23 @@ async function healthHandler(_req, res) {
   }
 
   // AI provider health is derived from the circuit-breaker snapshot. We expose
-  // only a coarse status — never provider names, keys, or endpoints.
+  // only a coarse status — never provider names, keys, or endpoints. When
+  // EVERY configured provider's circuit is open, lesson generation is in total
+  // outage — surface that as a 503 "degraded" so uptime monitors alert on it
+  // instead of seeing a green Mongo ping.
   const aiSnapshot = getProviderHealthSnapshot();
-  const aiDegraded = Object.values(aiSnapshot).some(
-    (provider) => provider.circuitOpen || provider.consecutiveFailures > 0
-  );
-  dependencies.ai = { status: aiDegraded ? "degraded" : "ok" };
+  const aiOutage = allCircuitsOpen();
+  const aiDegraded =
+    aiOutage ||
+    Object.values(aiSnapshot).some(
+      (provider) => provider.circuitOpen || provider.consecutiveFailures > 0
+    );
+  dependencies.ai = { status: aiOutage ? "down" : aiDegraded ? "degraded" : "ok" };
 
-  const status = ok ? 200 : 503;
+  const status = ok && !aiOutage ? 200 : 503;
   const payload = {
-    ok,
-    status: ok ? "healthy" : "unhealthy",
+    ok: ok && !aiOutage,
+    status: !ok ? "unhealthy" : aiOutage ? "degraded" : "healthy",
     version: SERVICE_VERSION,
     uptimeSeconds: Math.round(process.uptime()),
     timestamp: new Date().toISOString(),
@@ -1171,19 +1212,15 @@ app.post("/api/feedback", feedbackRateLimiter, async (req, res) => {
 // learner's mastery graph is now computed on-device (frontend/lib/
 // knowledgeFrontier.ts + learningProfile.ts) and a compact, topic-relevant
 // context snippet is attached to each /api/generate-lesson request instead of
-// being surfaced on a separate page. The lesson text index (searchIndex.js) is
-// retained for cache retrieval but is no longer wired to a discovery route.
+// being surfaced on a separate page. The lesson full-text index that backed it
+// was retired along with the route (see ensureUserDataIndexes).
 
 // Delete every server-side trace of the authenticated user: their MongoDB
 // cookie-consent records AND their Clerk account. The frontend handles clearing
 // localStorage and signing out after this resolves. Irreversible by design.
 app.delete("/api/account", rateLimit, requireAuth, async (req, res) => {
   const userId = req.auth?.userId;
-  const email =
-    req.auth?.email ||
-    req.auth?.email_address ||
-    (Array.isArray(req.auth?.email_addresses) ? req.auth.email_addresses[0] : "") ||
-    "";
+  const email = getAuthEmail(req.auth);
   console.log("[api/account] Delete request", { userId, hasEmail: Boolean(email) });
 
   if (!userId) {
@@ -1374,11 +1411,7 @@ app.get("/api/legal-consent/status", rateLimit, requireAuth, async (req, res) =>
 app.get("/api/export-data", rateLimit, requireAuth, async (req, res) => {
   try {
     const userId = req.auth?.userId;
-    const email =
-      req.auth?.email ||
-      req.auth?.email_address ||
-      (Array.isArray(req.auth?.email_addresses) ? req.auth.email_addresses[0] : "") ||
-      "";
+    const email = getAuthEmail(req.auth);
 
     if (!userId) {
       return res.status(400).json({ error: "Could not determine the user." });
@@ -1539,8 +1572,8 @@ app.post("/api/tts", ttsRateLimiter, requireAuth, async (req, res) => {
 app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
   const requestId = `lesson-${Date.now()}-${++lessonRequestCounter}`;
   // Robustness: a non-string question (e.g. {"question": 123}) must not throw —
-  // this handler has no outer try/catch, so a TypeError here becomes an
-  // unhandled promise rejection that kills the whole process on Node >= 15.
+  // Express 5 would forward the rejection to the terminal error middleware as
+  // a generic 500 instead of this handler's clear 400.
   const question =
     typeof req.body?.question === "string" ? req.body.question.trim() : "";
   const language = req.body?.language ?? "English";
@@ -1695,18 +1728,24 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
     return res.status(400).json({ error: "Unsupported level." });
   }
 
-  const inputFilter = filterUserInput(question);
-  if (!inputFilter.allowed) {
+  // Single rule-based input-moderation pass. moderateText's harmful-content
+  // check is a superset of filterUserInput's banned-pattern set, so running
+  // both (as earlier revisions did) executed the same regexes twice per
+  // request. One pass here, BEFORE the cache/concurrency gates, preserves both
+  // prior behaviors: the immediate user-facing 400 with the block reason AND
+  // the moderation-log event. Purely local (regex + dictionaries, no network).
+  const inputModeration = await moderateText(question, "input");
+  if (!inputModeration.allowed) {
     const moderationEvent = buildModerationEvent({
       requestId,
       clerkId: req.auth?.userId,
       type: "user-input-blocked",
-      reason: inputFilter.reason,
+      reason: inputModeration.reason,
       question,
     });
     console.warn("[moderation] Banned input blocked", redactModerationEvent(moderationEvent));
     await logModerationEvent(moderationEvent);
-    return res.status(400).json({ error: inputFilter.reason });
+    return res.status(400).json({ error: inputModeration.reason });
   }
 
   // SPEED TACTIC: two-tier lesson cache. Identical (question, language, level)
@@ -1718,10 +1757,10 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
   const cachedLesson = await getCachedLesson(cacheKey);
   if (cachedLesson) {
     // Reliability: this branch runs OUTSIDE the main try/finally below. If the
-    // client disconnects mid-write, res.write/flushHeaders can throw — in an
-    // async Express 4 handler that becomes an unhandledRejection, which kills
-    // the whole process on Node >= 15 (a trivially triggerable DoS: request a
-    // cached question and abort immediately). Contain it.
+    // client disconnects mid-write, res.write/flushHeaders can throw. Express 5
+    // would forward that rejection to the error middleware (no process crash),
+    // but with headers already flushed the middleware can only cut the stream —
+    // contain it here so we log the cause and end the SSE response cleanly.
     try {
       console.log("[generate-lesson] Cache hit — serving instantly", { requestId });
       res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
@@ -1741,6 +1780,92 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
       if (!res.writableEnded) {
         try { res.end(); } catch { /* socket already destroyed */ }
       }
+    }
+    return;
+  }
+
+  // Single-flight follower path (cache stampede fix): a generation for this
+  // exact cacheKey is already running. Await the leader's result and stream it
+  // like a cache hit instead of paying for a duplicate generation. Followers
+  // hold no concurrency slot (they cost almost nothing), but they DO keep
+  // their own heartbeat + progress ticker so the SSE connection never looks
+  // dead while the leader works. A leader failure propagates its user-facing
+  // error to every follower.
+  const inFlightGeneration = inFlightLessonGenerations.get(cacheKey);
+  if (inFlightGeneration) {
+    console.log("[generate-lesson] Joining in-flight generation (single-flight)", {
+      requestId,
+    });
+    let followerDone = false;
+    let followerHeartbeat = null;
+    let followerTicker = null;
+    const finishFollower = () => {
+      if (followerDone) return;
+      followerDone = true;
+      if (followerHeartbeat !== null) clearInterval(followerHeartbeat);
+      if (followerTicker !== null) clearInterval(followerTicker);
+      if (!res.writableEnded) {
+        try { res.end(); } catch { /* socket already destroyed */ }
+      }
+    };
+    res.on("close", finishFollower);
+    res.on("error", finishFollower);
+    const followerWrite = (chunk) => {
+      try {
+        if (!res.writableEnded) res.write(chunk);
+      } catch (error) {
+        console.warn("[generate-lesson] Follower write failed (client gone?)", {
+          requestId,
+          error: error?.message,
+        });
+      }
+    };
+    try {
+      res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
+      res.setHeader("Cache-Control", "no-cache, no-transform");
+      res.setHeader("Connection", "keep-alive");
+      res.setHeader("X-Accel-Buffering", "no");
+      res.flushHeaders();
+    } catch (error) {
+      console.warn("[SSE] Follower header flush failed (client gone?)", {
+        requestId,
+        error: error?.message,
+      });
+      finishFollower();
+      return;
+    }
+    followerWrite(`event: ping\ndata: ${Date.now()}\n\n`);
+    followerHeartbeat = setInterval(() => {
+      followerWrite(`event: ping\ndata: ${Date.now()}\n\n`);
+    }, HEARTBEAT_INTERVAL_MS);
+    // Same asymptotic progress curve the leader's attempt ticker uses, so the
+    // waiting client's UI advances instead of sitting at 0%.
+    let followerPercent = 40;
+    followerWrite(`event: progress\ndata: ${JSON.stringify({ stage: "generating", percent: followerPercent })}\n\n`);
+    followerTicker = setInterval(() => {
+      if (followerDone) return;
+      const remaining = 82 - followerPercent;
+      if (remaining <= 0.5) return;
+      followerPercent = Math.min(82, followerPercent + Math.max(0.6, remaining * 0.08));
+      followerWrite(
+        `event: progress\ndata: ${JSON.stringify({ stage: "generating", percent: Math.round(followerPercent) })}\n\n`
+      );
+    }, 1500);
+    try {
+      const journey = await inFlightGeneration;
+      followerWrite(`event: lesson\ndata: ${JSON.stringify(journey)}\n\n`);
+      followerWrite(`event: done\ndata: ${JSON.stringify({ ok: true })}\n\n`);
+      recordLessonResult(true);
+    } catch (error) {
+      // The leader already recorded the failure and logged its cause; the
+      // follower only relays the same user-facing message.
+      followerWrite(
+        `event: error\ndata: ${JSON.stringify({
+          error: error?.message || "Failed to generate lesson. Please try again.",
+        })}\n\n`
+      );
+    } finally {
+      finishFollower();
     }
     return;
   }
@@ -1780,6 +1905,33 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
     activeLessonRequests,
   });
 
+  // Single-flight leader registration: publish this generation's promise so
+  // concurrent requests for the same cacheKey join it instead of generating
+  // again. settleInFlight is idempotent; whichever outcome happens first
+  // (validated journey, user-facing error, disconnect cleanup) wins, and the
+  // map entry is removed on settle so the map stays bounded by in-flight work.
+  let settleInFlight;
+  {
+    let resolveInFlight;
+    let rejectInFlight;
+    const inFlightPromise = new Promise((resolve, reject) => {
+      resolveInFlight = resolve;
+      rejectInFlight = reject;
+    });
+    // Followers handle rejections themselves; swallow here so a failure with
+    // zero followers doesn't surface as an unhandledRejection.
+    inFlightPromise.catch(() => {});
+    inFlightLessonGenerations.set(cacheKey, inFlightPromise);
+    let inFlightSettled = false;
+    settleInFlight = (error, journey) => {
+      if (inFlightSettled) return;
+      inFlightSettled = true;
+      inFlightLessonGenerations.delete(cacheKey);
+      if (error) rejectInFlight(error);
+      else resolveInFlight(journey);
+    };
+  }
+
   let finished = false;
   let heartbeat = null;
   const generationAbortController = new AbortController();
@@ -1813,6 +1965,9 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
   const finishRequest = (reason = "completed") => {
     if (finished) return;
     finished = true;
+    // No-op when the generation already settled; otherwise (disconnect/abort
+    // before completion) release any followers with a generic retryable error.
+    settleInFlight(new Error("Failed to generate lesson. Please try again."), null);
     generationAbortController.abort();
     clearTimeout(lessonDeadlineTimer);
     if (heartbeat !== null) clearInterval(heartbeat);
@@ -1839,9 +1994,10 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
 
   // Reliability: register the disconnect handlers BEFORE flushing headers.
   // If the client is already gone, the flush below must route into cleanup
-  // (releasing the global/per-user concurrency slots we just took) instead
-  // of throwing into an async handler as an unhandled rejection — which
-  // both crashes Node >= 15 and permanently leaks the concurrency slot.
+  // (releasing the global/per-user concurrency slots we just took). Express 5
+  // would forward an uncaught throw to the error middleware rather than
+  // crashing, but that path knows nothing about our slots — only finishRequest
+  // releases them, so it must own every exit.
   req.on("aborted", () => finishRequest("request aborted"));
   res.on("close", () => finishRequest("response closed"));
   res.on("error", (error) => {
@@ -1883,31 +2039,26 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
   };
 
   try {
-    // Run local rule-based input moderation concurrently with the real-world
-    // context fetch so the safety check adds no latency in the common
-    // (allowed) case.
+    // Input moderation already ran (and passed) before the cache lookup — see
+    // the single moderateText pass above.
     // Privacy (policy v3.2): the Serper fetch runs ONLY in explain mode —
     // the Privacy Policy promises that Fast-mode questions are never sent to
     // the search service, so fast mode must not call Serper.
     sendEvent("progress", { stage: "starting", percent: 5 });
-    const inputModerationPromise = moderateText(question, "input");
     if (mode === "explain") {
       console.log("[Serper] Context fetch start", { requestId, mode });
     }
     sendEvent("progress", { stage: "searching", percent: 15 });
-    const [inputModeration, newsContextResult] = await Promise.all([
-      inputModerationPromise,
+    const newsContext =
       mode === "explain"
-        ? fetchRealWorldContext(question, language).catch((error) => {
+        ? await fetchRealWorldContext(question, language).catch((error) => {
             console.warn("[Serper] Context fetch failed, continuing without context", {
               requestId,
               error,
             });
             return null;
           })
-        : Promise.resolve(null),
-    ]);
-    const newsContext = newsContextResult;
+        : null;
     const trimmedNewsContext =
       typeof newsContext === "string" && newsContext.length > 1500
         ? newsContext.slice(0, 1500) + "\n\n[context truncated]"
@@ -1921,24 +2072,6 @@ app.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
     sendEvent("progress", { stage: "searched", percent: 30 });
 
     if (finished) return;
-    if (inputModeration && !inputModeration.allowed) {
-      const moderationEvent = buildModerationEvent({
-        requestId,
-        clerkId: req.auth?.userId,
-        type: "user-input-moderated",
-        reason: inputModeration.reason,
-        question,
-      });
-      console.warn("[moderation] Input blocked by rule-based moderation", redactModerationEvent(moderationEvent));
-      await logModerationEvent(moderationEvent);
-      sendEvent("error", {
-        error:
-          inputModeration.reason ||
-          "Your question was flagged by our safety review. Please try a different question.",
-      });
-      recordLessonResult(false);
-      return;
-    }
 
     // SECURITY (prompt-injection hardening): the Serper news context is
     // third-party, attacker-influenceable text (SEO'd pages can rank for any
@@ -2007,17 +2140,9 @@ END_EXTERNAL_CONTEXT>>>`
       temperature,
     });
     sendEvent("progress", { stage: "generating", percent: 40 });
+    // Progress during generation is emitted by the per-attempt ticker inside
+    // tryGenerate (one per rung of the reliability ladder below).
     let generationPercent = 40;
-    const generationTicker = trackTicker(setInterval(() => {
-      if (finished) return;
-      const remaining = 82 - generationPercent;
-      if (remaining <= 0.5) return;
-      generationPercent = Math.min(82, generationPercent + Math.max(0.6, remaining * 0.08));
-      sendEvent("progress", {
-        stage: "generating",
-        percent: Math.round(generationPercent),
-      });
-    }, 1500));
 
     const PROVIDER_LOG_LABELS = {
       primary: "Cerebras Cloud (Gemma 4 31B)",
@@ -2047,7 +2172,6 @@ END_EXTERNAL_CONTEXT>>>`
       const attemptTemperature = repairReason
         ? Math.max(0.2, temperature - 0.3)
         : temperature;
-      clearInterval(generationTicker);
       generationPercent = 40;
       const attemptTicker = trackTicker(setInterval(() => {
         if (finished) return;
@@ -2111,7 +2235,6 @@ END_EXTERNAL_CONTEXT>>>`
           result = await callGemma(
             systemPrompt,
             attemptUserPrompt,
-            false,
             attemptTemperature,
             GEMMA_CALL_TIMEOUT_MS,
             generateAbortSignal,
@@ -2313,11 +2436,10 @@ END_EXTERNAL_CONTEXT>>>`
         lastValidationError,
         lastThrownErrorName: lastThrownError?.name,
       });
-      sendEvent("error", {
-        error:
-          lastValidationError ||
-          "Failed to generate lesson. Please try again.",
-      });
+      const exhaustedMessage =
+        lastValidationError || "Failed to generate lesson. Please try again.";
+      settleInFlight(new Error(exhaustedMessage), null);
+      sendEvent("error", { error: exhaustedMessage });
       recordLessonResult(false);
       return;
     }
@@ -2371,11 +2493,11 @@ END_EXTERNAL_CONTEXT>>>`
         });
         console.warn("[moderation] Fast-mode output blocked by moderation", redactModerationEvent(moderationEvent));
         await logModerationEvent(moderationEvent);
-        sendEvent("error", {
-          error:
-            fastOutputVerdict.reason ||
-            "The generated content was flagged. Please try a different question.",
-        });
+        const blockedMessage =
+          fastOutputVerdict.reason ||
+          "The generated content was flagged. Please try a different question.";
+        settleInFlight(new Error(blockedMessage), null);
+        sendEvent("error", { error: blockedMessage });
         recordLessonResult(false);
         return;
       }
@@ -2392,17 +2514,20 @@ END_EXTERNAL_CONTEXT>>>`
         });
         console.warn("[moderation] Explain-mode output blocked by rule-based moderation", redactModerationEvent(moderationEvent));
         await logModerationEvent(moderationEvent);
-        sendEvent("error", {
-          error:
-            outputVerdict.reason ||
-            "The generated content was flagged. Please try a different question.",
-        });
+        const blockedMessage =
+          outputVerdict.reason ||
+          "The generated content was flagged. Please try a different question.";
+        settleInFlight(new Error(blockedMessage), null);
+        sendEvent("error", { error: blockedMessage });
         recordLessonResult(false);
         return;
       }
     }
 
     setCachedLesson(cacheKey, normalized);
+    // Release single-flight followers with the same validated, moderated
+    // journey that was just cached and is streamed below.
+    settleInFlight(null, normalized);
 
     console.log("[generate-lesson] Streaming final lesson", {
       requestId,
@@ -2441,6 +2566,7 @@ END_EXTERNAL_CONTEXT>>>`
         : "Failed to generate lesson. Please try again.";
 
     console.error("[generate-lesson] Request failed", { requestId, error });
+    settleInFlight(new Error(message), null);
     recordLessonResult(false);
     sendEvent("error", { error: message });
   } finally {

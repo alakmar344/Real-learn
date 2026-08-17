@@ -87,10 +87,6 @@ function containsBannedUserInput(text) {
 // (containsHarmfulContent runs on every input and every output pass).
 const HARMFUL_PATTERNS = [...BANNED_PATTERNS, ...BANNED_RESPONSE_PATTERNS];
 
-function containsBannedAIResponse(text) {
-  return matchesBannedPattern(text, HARMFUL_PATTERNS);
-}
-
 // Shared, INTENT-BASED harmful-content check (the union of the input + response
 // pattern sets). Exposed so the moderation layer can reuse the same carefully
 // scoped patterns instead of maintaining a parallel list of blanket keyword
@@ -113,16 +109,4 @@ export function filterUserInput(question) {
     };
   }
   return { allowed: true, filtered: trimmed };
-}
-
-export function filterAIResponse(rawResponse) {
-  if (!rawResponse || typeof rawResponse !== "string") return { allowed: true, filtered: rawResponse };
-  if (containsBannedAIResponse(rawResponse)) {
-    return {
-      allowed: false,
-      reason: "The generated content was flagged for review. Please try a different question or rephrase your request.",
-      filtered: null,
-    };
-  }
-  return { allowed: true, filtered: rawResponse };
 }

@@ -272,6 +272,11 @@ export function isValidJourney(data, mode = "explain") {
   const rules = getModeRules(mode);
   if (!Array.isArray(data.parts) || data.parts.length < 1) return false;
   if (data.parts.length > rules.partsCount) return false;
+  // keyTakeaways mirrors the parts rule: at least one, never more than the
+  // mode allows. normalizeJourney pads/trims to the mode's count, so anything
+  // outside this range means malformed or unnormalized data.
+  if (!Array.isArray(data.keyTakeaways) || data.keyTakeaways.length < 1) return false;
+  if (data.keyTakeaways.length > rules.keyTakeawaysCount) return false;
 
   return data.parts.every(
     (part, index) =>

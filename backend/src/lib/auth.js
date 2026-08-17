@@ -240,6 +240,18 @@ function isJwksFetchError(error) {
   );
 }
 
+// Best-effort email extraction from the verified token claims. Clerk JWT
+// templates expose the address under several claim shapes; return the first
+// one present (empty string when the token carries none).
+export function getAuthEmail(auth) {
+  return (
+    auth?.email ||
+    auth?.email_address ||
+    (Array.isArray(auth?.email_addresses) ? auth.email_addresses[0] : "") ||
+    ""
+  );
+}
+
 export function extractBearerToken(req) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {

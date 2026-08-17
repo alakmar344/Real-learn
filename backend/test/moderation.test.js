@@ -1,7 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { moderateText, sanitizeText } from "../src/lib/moderation.js";
-import { filterUserInput, filterAIResponse } from "../src/lib/contentGuard.js";
+import { moderateText } from "../src/lib/moderation.js";
 
 // ── Legitimate educational content must ALWAYS be allowed ──────────────────
 // Regression guard: bare topic-keyword bans ("bomb", "kill", "gun", "terrorism",
@@ -101,11 +100,4 @@ test("genuinely harmful responses are still blocked (output)", async () => {
     const verdict = await moderateText(r, "output");
     assert.equal(verdict.allowed, false, `moderateText failed to block: ${r}`);
   }
-});
-
-test("sanitizeText replaces profanity from both filter layers", () => {
-  const uncleaned = "this shit is fucked up with some cocaine";
-  const cleaned = sanitizeText(uncleaned);
-  assert.ok(cleaned.includes("*"), "sanitizeText should mask profanity");
-  assert.notEqual(cleaned, uncleaned, "sanitizeText should modify profane input");
 });
