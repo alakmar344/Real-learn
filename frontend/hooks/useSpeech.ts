@@ -22,25 +22,6 @@ export function markdownToPlainText(markdown: string): string {
     .trim();
 }
 
-// Chrome silently stops long utterances (~15s), so we split text into short
-// sentence-aligned chunks and queue them. Includes the Devanagari danda (।)
-// used as a full stop in several Indian languages.
-function chunkForSpeech(text: string, maxLen = 200): string[] {
-  const sentences = text.match(/[^.!?।]+[.!?।]*\s*/g) ?? [text];
-  const chunks: string[] = [];
-  let current = "";
-  for (const sentence of sentences) {
-    if ((current + sentence).length > maxLen && current.trim()) {
-      chunks.push(current.trim());
-      current = sentence;
-    } else {
-      current += sentence;
-    }
-  }
-  if (current.trim()) chunks.push(current.trim());
-  return chunks;
-}
-
 // BANDWIDTH: in-memory LRU of synthesized audio blobs. Replaying the same
 // text (pause/restart, re-listening to a part) reuses the blob instead of
 // re-downloading ~1 MB of MP3 from the backend. `lru-cache` enforces the
@@ -55,6 +36,16 @@ function ttsBlobCacheGet(key: string): Blob | undefined {
 }
 function ttsBlobCacheSet(key: string, blob: Blob): void {
   ttsBlobCache.set(key, blob);
+}
+
+/**
+ * PRIVACY: the cache is module-global, so synthesized lesson audio would
+ * otherwise survive sign-out and "Delete My Data". Call this from those flows
+ * to drop every cached blob. (Object URLs are per-playback, owned and revoked
+ * by the hook's refs — the cache holds raw Blobs only, so clearing suffices.)
+ */
+export function clearTtsCache(): void {
+  ttsBlobCache.clear();
 }
 
 export function useEdgeTts() {
@@ -213,10 +204,41 @@ export function useEdgeTts() {
       const audio = new Audio(objectUrl);
       audio.preload = "auto";
       audioRef.current = audio;
-      setSpeaking(true);
-      setLoading(false);
+
+      // Keep a watchdog armed through PLAYBACK START, not just the download:
+      // play() can resolve while decoding/buffering stalls forever, which
+      // previously left the button stuck on "Generating…". Cleared by the
+      // `playing` event — the moment audio is actually audible.
+      const PLAYBACK_START_TIMEOUT_MS = 10000;
+      const playbackWatchdogId = setTimeout(() => {
+        console.error("[edge-tts] playback never started", {
+          blobType: blob.type,
+          blobSize: blob.size,
+        });
+        if (sessionRef.current === session) {
+          setError("Audio playback failed");
+          setSpeaking(false);
+          setLoading(false);
+        }
+        cleanupAudio(objectUrl);
+      }, PLAYBACK_START_TIMEOUT_MS);
+
+      // Loading flips off only when sound actually starts — so the
+      // "Generating…" state truthfully covers fetch + decode + buffer.
+      audio.addEventListener(
+        "playing",
+        () => {
+          clearTimeout(playbackWatchdogId);
+          if (sessionRef.current === session) {
+            setSpeaking(true);
+            setLoading(false);
+          }
+        },
+        { once: true }
+      );
 
       audio.onended = () => {
+        clearTimeout(playbackWatchdogId);
         if (sessionRef.current === session) {
           setSpeaking(false);
         }
@@ -224,6 +246,7 @@ export function useEdgeTts() {
       };
 
       audio.onerror = () => {
+        clearTimeout(playbackWatchdogId);
         const audioErr = audio.error ? ` media code=${audio.error.code}` : "";
         console.error("[edge-tts] audio playback error", {
           blobType: blob.type,
@@ -233,6 +256,7 @@ export function useEdgeTts() {
         if (sessionRef.current === session) {
           setError("Audio playback failed");
           setSpeaking(false);
+          setLoading(false);
         }
         cleanupAudio(objectUrl);
       };
@@ -240,10 +264,12 @@ export function useEdgeTts() {
       const playPromise = audio.play();
       if (playPromise !== undefined) {
         playPromise.catch((playError) => {
+          clearTimeout(playbackWatchdogId);
           console.error("[edge-tts] audio play() rejected", playError);
           if (sessionRef.current === session) {
             setError("Audio playback failed");
             setSpeaking(false);
+            setLoading(false);
           }
           cleanupAudio(objectUrl);
         });

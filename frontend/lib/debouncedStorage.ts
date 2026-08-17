@@ -85,6 +85,11 @@ export function createDebouncedStorage<S>(delayMs = 800): PersistStorage<S> {
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "hidden") debouncedFlush.flush();
     });
+    // Belt-and-braces: some hard-exit paths (e.g. certain desktop window
+    // closes / crashes mid-teardown) fire beforeunload but never reach
+    // pagehide/visibilitychange. flush() is idempotent — the extra listener
+    // costs nothing when the other events also fire.
+    window.addEventListener("beforeunload", () => debouncedFlush.flush());
   }
 
   return {

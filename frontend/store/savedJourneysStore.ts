@@ -94,11 +94,20 @@ export const useSavedJourneysStore = create<SavedJourneysStore>()(
           // Upsert by stable id, moving the entry to the front so the list
           // stays ordered by recency.
           const existingIndex = state.journeys.findIndex((j) => j.id === journey.id);
+          const existing = existingIndex >= 0 ? state.journeys[existingIndex] : null;
           const rest =
             existingIndex >= 0
               ? state.journeys.filter((j) => j.id !== journey.id)
               : state.journeys;
-          const journeys = applyRetention([journey, ...rest]);
+          // savedAt is stamped ONCE, on first save. Re-upserting (progress
+          // updates, merely reopening an archived journey) must not rewrite
+          // it — it feeds the learning-profile "recently studied" window,
+          // where re-viewed must not masquerade as freshly studied.
+          const entry =
+            existing && Number.isFinite(existing.savedAt)
+              ? { ...journey, savedAt: existing.savedAt }
+              : journey;
+          const journeys = applyRetention([entry, ...rest]);
           journeyLog("saveJourney", {
             id: journey.id,
             upserted: existingIndex >= 0,
