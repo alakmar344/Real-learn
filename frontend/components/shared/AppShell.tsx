@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Sidebar from "@/components/shared/Sidebar";
-import BottomNav from "@/components/shared/BottomNav";
 import ScrollToTop from "@/components/shared/ScrollToTop";
 import ErrorBoundary from "@/components/shared/ErrorBoundary";
 import { Icon } from "@/components/shared/icons";
@@ -75,7 +74,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <div id="main-content" className="app-main">
         <ErrorBoundary>{children}</ErrorBoundary>
       </div>
-      <BottomNav />
       <ScrollToTop />
       <EngagementLayer />
       <KeyboardShortcuts />

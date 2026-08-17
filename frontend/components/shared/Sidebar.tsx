@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useAuth } from "@clerk/nextjs";
 import { useLessonStore } from "@/store/lessonStore";
@@ -24,6 +25,12 @@ const ConfirmModal = dynamic(
   { ssr: false }
 );
 
+const NAV_ITEMS = [
+  { href: "/", label: "Home", icon: "compass" },
+  { href: "/learn", label: "Learn", icon: "book-open" },
+  { href: "/progress", label: "Stats", icon: "trophy" },
+];
+
 interface Props {
   open: boolean;
   onClose: () => void;
@@ -31,6 +38,7 @@ interface Props {
 
 export default function Sidebar({ open, onClose }: Props) {
   const router = useRouter();
+  const pathname = usePathname();
   const { isLoaded, isSignedIn } = useAuth();
   const mounted = useMounted();
 
@@ -130,6 +138,27 @@ export default function Sidebar({ open, onClose }: Props) {
             <Icon name="plus" /> New lesson
           </button>
         </div>
+
+        <nav aria-label="Primary" className="app-sidebar__nav">
+          {NAV_ITEMS.map((item) => {
+            const active =
+              item.href === "/"
+                ? pathname === "/"
+                : pathname?.startsWith(item.href) ?? false;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onClose}
+                className={`app-sidebar__nav-link${active ? " app-sidebar__nav-link--active" : ""}`}
+                aria-current={active ? "page" : undefined}
+              >
+                <Icon name={item.icon as Parameters<typeof Icon>[0]["name"]} size={18} />
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
 
         <div className="app-sidebar__scroll">
           <div className="app-sidebar__list-head">

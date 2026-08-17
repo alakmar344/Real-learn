@@ -1,36 +1,25 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
-import { useProgressStore } from "@/store/progressStore";
 import { useSavedJourneysStore } from "@/store/savedJourneysStore";
 import { useLessonStore } from "@/store/lessonStore";
 import { getArchivedLesson } from "@/lib/lessonArchive";
-import { levelInfo, displayableStreak } from "@/lib/achievements";
 import { useMounted } from "@/hooks/useMounted";
 import { Skeleton } from "@/components/shared/Skeleton";
-import { Icon } from "@/components/shared/icons";
 import MathText from "@/components/shared/MathText";
 
 interface Props {
   onStartTopic: (topic: string) => void;
 }
 
-/** A slim, distributed home strip: the day's suggested topic + a resume card,
- * with only a light-touch link to the full progress dashboard. The heavy
- * stats live on /progress, keeping the landing page calm. */
+/** A quiet home strip: resume an unfinished journey or a brief "how it works"
+ * for first-time visitors. Progress lives in the navbar (ProgressHub) and on
+ * /progress — no duplicate links needed. */
 export default function HomeStats({ onStartTopic }: Props) {
   const mounted = useMounted();
   const router = useRouter();
   const { isSignedIn } = useAuth();
-
-  const xp = useProgressStore((s) => s.xp);
-  const rawStreak = useProgressStore((s) => s.streak);
-  const lastActiveDay = useProgressStore((s) => s.lastActiveDay);
-  const streakFreezes = useProgressStore((s) => s.streakFreezes);
-  // Lapse-checked streak — the raw persisted value never decays on its own.
-  const streak = displayableStreak(rawStreak, lastActiveDay, streakFreezes);
 
   const journeys = useSavedJourneysStore((s) => s.journeys);
   const loadJourney = useLessonStore((s) => s.loadJourney);
@@ -43,7 +32,6 @@ export default function HomeStats({ onStartTopic }: Props) {
     );
   }
 
-  const info = levelInfo(xp);
   // Lesson bodies live in the IndexedDB archive (the store keeps only a
   // lightweight index), so resumability is judged from the index counts and
   // the full lesson is loaded async on click.
@@ -51,7 +39,7 @@ export default function HomeStats({ onStartTopic }: Props) {
     const totalParts = j.lesson?.parts?.length ?? j.partCount ?? 3;
     return (j.completedParts ?? []).length < totalParts;
   });
-  const hasActivity = xp > 0 || journeys.length > 0;
+  const hasActivity = journeys.length > 0;
 
   return (
     <div className="home-strip">
@@ -130,18 +118,6 @@ export default function HomeStats({ onStartTopic }: Props) {
         </div>
       )}
 
-      {/* Light-touch link to the full dashboard */}
-      {hasActivity && (
-        <Link href="/progress" className="mini-progress-link">
-          <span className={streak > 0 ? "flame-flicker" : "flame--dead"}>
-            <Icon name="flame" size={16} style={{ verticalAlign: "-3px" }} />
-          </span>
-          <span className="mini-progress-link__count">{streak}</span>
-          <span>·</span>
-          <span>Level <strong>{info.level}</strong></span>
-          <span className="mini-progress-link__cta">· View progress →</span>
-        </Link>
-      )}
     </div>
   );
 }

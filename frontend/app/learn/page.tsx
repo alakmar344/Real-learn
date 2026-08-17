@@ -559,19 +559,6 @@ export default function LearnPage() {
             </Suspense>
           ) : null}
 
-          {!showCompletion && (
-            <button
-              type="button"
-              onClick={() => {
-                resetAll();
-                restart();
-              }}
-              className="btn-ghost flow-gap-lg"
-            >
-              Learn Something New
-            </button>
-          )}
-
           {/* Optional, anonymous review — appears the day after the first
               lesson on any return visit (not only at the moment of completion).
               Hidden while the completion screen is up to avoid a duplicate. */}

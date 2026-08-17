@@ -150,95 +150,29 @@ export default function CookieConsent() {
   if (pathname?.startsWith("/onboarding")) return null;
 
   return (
-    <div
-      role="region"
-      aria-label="Cookie preferences"
-      style={{
-        position: "fixed",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        zIndex: 100,
-        background: "var(--bg-glass, var(--bg-card))",
-        backdropFilter: "blur(var(--blur-md, 12px))",
-        borderTop: "1px solid var(--border-default)",
-        boxShadow: "var(--shadow-lg)",
-        padding: "20px 24px",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: 1024,
-          margin: "0 auto",
-          display: "flex",
-          flexWrap: "wrap",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 16,
-        }}
-      >
-        <div style={{ flex: 1, minWidth: "min(280px, 100%)" }}>
-          <p
-            style={{
-              margin: 0,
-              fontSize: 14,
-              color: "var(--text-primary)",
-              fontFamily: "var(--font-inter)",
-              fontWeight: 500,
-            }}
-          >
-            A quick choice about analytics
-          </p>
-          <p
-            style={{
-              margin: "4px 0 0",
-              fontSize: 12,
-              color: "var(--text-secondary)",
-              fontFamily: "var(--font-lora)",
-            }}
-          >
+    <div role="region" aria-label="Cookie preferences" className="cookie-banner">
+      <div className="cookie-banner__inner">
+        <div className="cookie-banner__copy">
+          <p className="cookie-banner__title">A quick choice about analytics</p>
+          <p className="cookie-banner__body">
             We&apos;d like to use Google Analytics to understand what helps people
             learn. Nothing loads until you say yes, and you can change your mind
             anytime in Settings.{" "}
-            <Link href="/legal/cookies" style={{ color: "var(--accent)" }}>
-              Cookie Policy
-            </Link>
+            <Link href="/legal/cookies">Cookie Policy</Link>
           </p>
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
+        <div className="cookie-banner__actions">
           <button
             onClick={() => saveConsent(false)}
             disabled={loading}
-            style={{
-              border: "2px solid var(--border-default)",
-              borderRadius: "var(--radius-md)",
-              padding: "8px 16px",
-              fontSize: 13,
-              fontWeight: 600,
-              color: "var(--text-primary)",
-              background: "var(--bg-surface)",
-              cursor: loading ? "not-allowed" : "pointer",
-              opacity: loading ? 0.6 : 1,
-              minHeight: 44,
-            }}
+            className="cookie-banner__btn cookie-banner__btn--secondary"
           >
             No thanks
           </button>
           <button
             onClick={() => saveConsent(true)}
             disabled={loading}
-            style={{
-              border: "2px solid var(--accent)",
-              borderRadius: "var(--radius-md)",
-              padding: "8px 16px",
-              fontSize: 13,
-              fontWeight: 600,
-              color: "var(--on-accent)",
-              background: "var(--accent)",
-              cursor: loading ? "not-allowed" : "pointer",
-              opacity: loading ? 0.6 : 1,
-              minHeight: 44,
-            }}
+            className="cookie-banner__btn cookie-banner__btn--primary"
           >
             {loading ? "Saving..." : "Allow analytics"}
           </button>

@@ -1862,74 +1862,6 @@ a:active {
   }
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   Bottom tab bar — mobile-first wayfinding.
-   Below 900px the sidebar collapses and the navbar links disappear; the tab
-   bar puts the three primary destinations (Home / Library / Progress) in the
-   thumb zone, per mobile-HCI reachability research. Hidden on desktop where
-   the sidebar + navbar already cover navigation.
-   ═══════════════════════════════════════════════════════════════════════════ */
-.bottom-nav {
-  display: none;
-}
-
-@media (max-width: 900px) {
-  .bottom-nav {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 60;
-    background: var(--bg-glass);
-    -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
-    backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
-    border-top: 1px solid var(--border-subtle);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-  }
-  [data-perf="low"] .bottom-nav {
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    background: var(--bg-surface);
-  }
-  .bottom-nav__item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
-    min-height: 56px;
-    padding: 6px 4px;
-    text-decoration: none;
-    color: var(--text-tertiary);
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-    transition: color var(--dur-base) var(--ease-color);
-  }
-  .bottom-nav__item svg {
-    width: 22px;
-    height: 22px;
-  }
-  .bottom-nav__item[aria-current="page"] {
-    color: var(--accent);
-  }
-  .bottom-nav__item:focus-visible {
-    outline: none;
-    box-shadow: inset var(--focus-ring);
-    border-radius: var(--radius-md);
-  }
-  /* Reserve room so page content and footers never hide under the bar. */
-  .app-main {
-    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
-  }
-}
-
 @media (max-width: 640px) {
   /* Reading text NEVER shrinks below 16px on phones — most of our users read
      lessons on a phone, and 13px body text is the fastest way to lose them.
@@ -3170,25 +3102,22 @@ p {
   font-style: italic;
 }
 
-/* ── Answer-mode toggle row (BIGGER, CLEARER, TACTILE) ── */
+/* ── Answer-mode toggle row (compact, unobtrusive) ── */
 .q-form__modes {
-  padding: 4px 24px 14px;
+  padding: 4px 24px 10px;
   display: flex;
   align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
   box-sizing: border-box;
 }
 @media (min-width: 1024px) {
   .q-form__modes {
-    padding: 6px 28px 16px;
-    gap: 16px;
+    padding: 6px 28px 12px;
   }
 }
 .mode-glider {
   position: relative;
   display: inline-flex;
-  padding: 4px;
+  padding: 3px;
   gap: 2px;
   border-radius: var(--radius-pill);
   background: var(--bg-solid);
@@ -3196,9 +3125,9 @@ p {
 }
 .mode-glider__pill {
   position: absolute;
-  top: 4px;
-  bottom: 4px;
-  left: 4px;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
   border-radius: var(--radius-pill);
   background: var(--accent-gradient);
   box-shadow: var(--shadow-glow-accent);
@@ -3210,12 +3139,12 @@ p {
   z-index: 1;
   border: none;
   border-radius: 999px;
-  padding: 9px 24px;
-  font-size: 15px;
-  font-weight: 700;
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
-  min-height: 42px;
-  min-width: 110px;
+  min-height: 32px;
+  min-width: 80px;
   text-align: center;
   background: transparent;
   color: var(--text-secondary);
@@ -3225,12 +3154,6 @@ p {
 }
 .mode-glider__option--active {
   color: var(--on-accent);
-}
-.q-form__mode-hint {
-  font-size: 13px;
-  color: var(--text-tertiary);
-  font-weight: 500;
-  line-height: 1.4;
 }
 
 /* ── Actions Row (Suggestions + Controls + Enter) ── */
@@ -3305,22 +3228,17 @@ p {
     padding: 16px 16px 6px;
   }
   .q-form__modes {
-    padding: 4px 16px 12px;
-    gap: 8px;
+    padding: 4px 16px 10px;
   }
   .mode-glider {
-    width: 100%;
+    width: auto;
   }
   .mode-glider__option {
     flex: 1;
     min-width: 0;
-    padding: 10px 14px;
-    font-size: 14px;
-    min-height: 44px;
-  }
-  .q-form__mode-hint {
+    padding: 7px 12px;
     font-size: 12px;
-    width: 100%;
+    min-height: 36px;
   }
   .q-form__actions {
     padding: 8px 16px 16px;
@@ -5560,33 +5478,6 @@ p {
   justify-content: center;
   flex-direction: row;
 }
-.mini-progress-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: var(--text-tertiary);
-  text-decoration: none;
-  transition: transform 180ms var(--ease-spring);
-}
-.mini-progress-link:hover {
-  transform: translateY(-1px);
-}
-.mini-progress-link strong {
-  color: var(--text-secondary);
-}
-.mini-progress-link__count {
-  font-weight: 700;
-  color: var(--text-secondary);
-}
-.mini-progress-link__cta {
-  color: var(--accent);
-  font-weight: 600;
-}
-.flame--dead {
-  filter: grayscale(1) opacity(0.6);
-}
-
 .progress-hub {
   margin-left: auto;
 }
@@ -5683,6 +5574,46 @@ p {
 }
 .app-sidebar__new {
   width: 100%;
+}
+.app-sidebar__nav {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 14px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+@media (max-width: 900px) {
+  .app-sidebar__head {
+    border-bottom: none;
+  }
+}
+.app-sidebar__nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-lg);
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background var(--dur-fast) var(--ease-color),
+    color var(--dur-fast) var(--ease-color);
+}
+.app-sidebar__nav-link:hover,
+.app-sidebar__nav-link:focus-visible {
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+  outline: none;
+}
+.app-sidebar__nav-link--active {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+@media (max-width: 900px) {
+  .app-sidebar__nav {
+    display: flex;
+  }
 }
 .app-sidebar__scroll {
   flex: 1;
@@ -6138,8 +6069,7 @@ p {
 .option-row:active,
 .resume-card:active,
 .listen-btn:active,
-.summary-dot:active,
-.bottom-nav__item:active {
+.summary-dot:active {
   transform: translateY(1px) scale(0.98);
   transition: transform 90ms var(--ease-color);
 }
@@ -6206,7 +6136,6 @@ h3,
   .quiz-sheet__close,
   .btn-toggle,
   .error-state__btn,
-  .bottom-nav__item,
   .mode-glider__option,
   .journey-item__open,
   .suggest-pill,
@@ -7952,4 +7881,77 @@ html[data-theme="light"] {
 .not-found-canvas {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Cookie consent banner — clean, unobtrusive, and fully class-driven.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.cookie-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--bg-glass, var(--bg-card));
+  -webkit-backdrop-filter: blur(var(--blur-md, 12px));
+  backdrop-filter: blur(var(--blur-md, 12px));
+  border-top: 1px solid var(--border-default);
+  box-shadow: var(--shadow-lg);
+  padding: 20px 24px;
+}
+.cookie-banner__inner {
+  max-width: 1024px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.cookie-banner__copy {
+  flex: 1;
+  min-width: min(280px, 100%);
+}
+.cookie-banner__title {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-primary);
+  font-family: var(--font-inter);
+  font-weight: 500;
+}
+.cookie-banner__body {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-family: var(--font-lora);
+}
+.cookie-banner__body a {
+  color: var(--accent);
+}
+.cookie-banner__actions {
+  display: flex;
+  gap: 8px;
+}
+.cookie-banner__btn {
+  border-radius: var(--radius-md);
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  min-height: 44px;
+  cursor: pointer;
+  transition: opacity var(--dur-fast) var(--ease-color);
+}
+.cookie-banner__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.cookie-banner__btn--secondary {
+  border: 2px solid var(--border-default);
+  color: var(--text-primary);
+  background: var(--bg-surface);
+}
+.cookie-banner__btn--primary {
+  border: 2px solid var(--accent);
+  color: var(--on-accent);
+  background: var(--accent);
 }
