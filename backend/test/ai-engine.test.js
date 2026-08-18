@@ -36,6 +36,7 @@ const {
   getRollingGroqTpmUsage,
   isGroqTpmNearLimit,
   resetGroqTokenLedger,
+  resetBannedModels,
 } = await import("../src/lib/aiEngine.js");
 
 const originalFetch = globalThis.fetch;
@@ -111,6 +112,7 @@ function isCloudflareUrl(url) {
 beforeEach(() => {
   resetProviderHealth();
   resetGroqTokenLedger();
+  resetBannedModels();
   globalThis.fetch = async (url, opts) => {
     const urlStr = String(url);
     return scenario(
@@ -494,6 +496,41 @@ test("a Groq 429 marks that model's TPM ledger full so selection steers away", a
   assert.equal(isGroqTpmNearLimit(models[0], 100), true);
   const next = selectGroqModel(models, 0, 500);
   assert.notEqual(next.model, models[0]);
+});
+
+test("a Groq 404 bans that model so later requests skip it entirely", async () => {
+  const models = getGroqModels();
+  const seenGroqModels = [];
+  scenario = async (isGroq, isMistral, isNvidia, isCloudflare, opts) => {
+    if (isGroq) {
+      const body = JSON.parse(opts.body);
+      seenGroqModels.push(body.model);
+      if (body.model === "llama-3.3-70b-versatile") {
+        return jsonResponse(
+          { error: { message: "The model `llama-3.3-70b-versatile` does not exist" } },
+          404
+        );
+      }
+      return sseResponse(opts.signal, [{ at: 0, data: sseChunk("groq-ok") }]);
+    }
+    return new Promise(() => {}); // other providers never answer
+  };
+
+  // Force selection to start at the tertiary model by poisoning the primary.
+  recordGroqTokens(models[0], 8000);
+  recordGroqTokens(models[1], 8000);
+  const text = await callAI("sys", "user", 0.5, 5000);
+  assert.equal(text, "groq-ok");
+
+  // After the 404, the tertiary model is banned. A subsequent call should
+  // skip it even if the preferred index points there.
+  seenGroqModels.length = 0;
+  const text2 = await callAI("sys", "user", 0.5, 5000);
+  assert.equal(text2, "groq-ok");
+  assert.ok(
+    !seenGroqModels.includes("llama-3.3-70b-versatile"),
+    "banned model was tried again"
+  );
 });
 
 test("exact usage from the Groq stream feeds the per-model TPM ledger", async () => {
