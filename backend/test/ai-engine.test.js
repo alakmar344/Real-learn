@@ -6,8 +6,8 @@ process.env.NVIDIA_API_KEY = "test-nvidia-key";
 process.env.CLOUDFLARE_API_TOKEN = "test-token";
 process.env.CLOUDFLARE_ACCOUNT_ID = "test-account";
 process.env.GROQ_AI_MODEL = "qwen/qwen3.6-27b";
-process.env.GROQ_SECONDARY_MODEL = "openai/gpt-oss-120b";
-process.env.GROQ_FALLBACK_MODELS = "llama-3.3-70b-versatile";
+process.env.GROQ_SECONDARY_MODEL = "openai/gpt-oss-20b";
+process.env.GROQ_FALLBACK_MODELS = "llama-3.1-8b-instant";
 process.env.MISTRAL_API_KEY = "test-mistral-key";
 process.env.MISTRAL_AI_MODEL = "mistral-small-latest";
 process.env.MISTRAL_AI_MODELS = "mistral-large-latest";
@@ -16,30 +16,27 @@ process.env.NVIDIA_AI_MODELS = "mistralai/mistral-large-2-instruct";
 process.env.CLOUDFLARE_AI_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 process.env.CLOUDFLARE_AI_MODELS = "@cf/meta/llama-3.1-70b-instruct";
 process.env.AI_HEDGE_DELAY_MS = "300";
-process.env.GEMMA_MAX_RETRIES = "1";
-process.env.GEMMA_RETRY_DELAY_MS = "20";
-process.env.GEMMA_MAX_RETRY_DELAY_MS = "50";
+process.env.AI_MAX_RETRIES = "1";
+process.env.AI_RETRY_DELAY_MS = "20";
+process.env.AI_MAX_RETRY_DELAY_MS = "50";
 
 const {
-  callGemma,
+  callAI,
   parseJSON,
   extractTextFromResult,
   getProviderHealthSnapshot,
   resetProviderHealth,
   AIApiError,
-  GemmaApiError,
-  GEMMA_MODEL,
   PRIMARY_AI_MODEL,
-  GROQ_SECONDARY_MODEL,
   getGroqModels,
   getMistralModels,
   isMistralConfigured,
-  selectNextGroqModel,
+  selectGroqModel,
   recordGroqTokens,
   getRollingGroqTpmUsage,
   isGroqTpmNearLimit,
   resetGroqTokenLedger,
-} = await import("../src/lib/gemma.js");
+} = await import("../src/lib/aiEngine.js");
 
 const originalFetch = globalThis.fetch;
 let scenario = null;
@@ -113,11 +110,9 @@ function isCloudflareUrl(url) {
 
 beforeEach(() => {
   resetProviderHealth();
+  resetGroqTokenLedger();
   globalThis.fetch = async (url, opts) => {
     const urlStr = String(url);
-    if (urlStr.includes("/tcp_warming")) {
-      return new Response(null, { status: 204 });
-    }
     return scenario(
       isGroqUrl(urlStr),
       isMistralUrl(urlStr),
@@ -133,9 +128,8 @@ afterEach(() => {
   globalThis.fetch = originalFetch;
 });
 
-test("PRIMARY_AI_MODEL and GEMMA_MODEL default to qwen/qwen3.6-27b", () => {
+test("PRIMARY_AI_MODEL follows GROQ_AI_MODEL", () => {
   assert.equal(PRIMARY_AI_MODEL, "qwen/qwen3.6-27b");
-  assert.equal(GEMMA_MODEL, "qwen/qwen3.6-27b");
 });
 
 test("healthy primary (Groq) wins without touching the fallback", async () => {
@@ -145,9 +139,65 @@ test("healthy primary (Groq) wins without touching the fallback", async () => {
     fallbackCalls += 1;
     return okResponse("fallback-answer");
   };
-  const text = await callGemma("sys", "user", 0.5, 5000);
+  const text = await callAI("sys", "user", 0.5, 5000);
   assert.equal(text, "primary-answer");
   assert.equal(fallbackCalls, 0);
+});
+
+test("Groq requests use the OpenAI-compatible endpoint with streaming and no unsupported params", async () => {
+  let groqPayload = null;
+  let groqUrl = null;
+  scenario = async (isGroq, isMistral, isNvidia, isCloudflare, opts, urlStr) => {
+    if (isGroq) {
+      groqPayload = JSON.parse(opts.body);
+      groqUrl = urlStr;
+      return sseResponse(opts?.signal, [{ at: 0, data: sseChunk("groq-answer") }]);
+    }
+    return okResponse("fallback");
+  };
+  const text = await callAI("sys", "user", 0.5, 5000, null, 1234);
+  assert.equal(text, "groq-answer");
+  assert.equal(groqUrl, "https://api.groq.com/openai/v1/chat/completions");
+  assert.equal(groqPayload.stream, true);
+  assert.equal(groqPayload.max_completion_tokens, 1234);
+  // Groq rejects these with a 400 — they must never be sent.
+  assert.equal(groqPayload.chat_template_kwargs, undefined);
+  assert.equal(groqPayload.response_format, undefined);
+});
+
+test("Mistral requests enable JSON mode (streaming-compatible structured output)", async () => {
+  let mistralPayload = null;
+  scenario = async (isGroq, isMistral, isNvidia, isCloudflare, opts) => {
+    if (isGroq) return jsonResponse({ errors: [{ message: "down" }] }, 500);
+    if (isMistral) {
+      mistralPayload = JSON.parse(opts.body);
+      return okResponse('{"ok":true}');
+    }
+    return okResponse("other");
+  };
+  const text = await callAI("sys", "user", 0.5, 5000);
+  assert.equal(text, '{"ok":true}');
+  assert.deepEqual(mistralPayload.response_format, { type: "json_object" });
+  assert.equal(mistralPayload.stream, true);
+});
+
+test("MISTRAL_JSON_MODE=off disables the response_format field", async () => {
+  process.env.MISTRAL_JSON_MODE = "off";
+  try {
+    let mistralPayload = null;
+    scenario = async (isGroq, isMistral, isNvidia, isCloudflare, opts) => {
+      if (isGroq) return jsonResponse({ errors: [{ message: "down" }] }, 500);
+      if (isMistral) {
+        mistralPayload = JSON.parse(opts.body);
+        return okResponse("plain");
+      }
+      return okResponse("other");
+    };
+    await callAI("sys", "user", 0.5, 5000);
+    assert.equal(mistralPayload.response_format, undefined);
+  } finally {
+    delete process.env.MISTRAL_JSON_MODE;
+  }
 });
 
 test("slow primary is hedged: mistral launches in parallel and wins", async () => {
@@ -169,7 +219,7 @@ test("slow primary is hedged: mistral launches in parallel and wins", async () =
       }
     });
   const startedAt = Date.now();
-  const text = await callGemma("sys", "user", 0.5, 5000);
+  const text = await callAI("sys", "user", 0.5, 5000);
   assert.equal(text, "fast-mistral");
   // hedge delay (300ms) + mistral latency (20ms) + slack — never the 3s primary
   assert.ok(Date.now() - startedAt < 1000);
@@ -182,7 +232,7 @@ test("failing primary triggers immediate fail-fast fallback (no hedge wait)", as
     if (isNvidia) return okResponse("nvidia-answer");
     return okResponse("cloudflare-answer");
   };
-  const text = await callGemma("sys", "user", 0.5, 5000);
+  const text = await callAI("sys", "user", 0.5, 5000);
   assert.equal(text, "mistral-answer");
 });
 
@@ -200,7 +250,7 @@ test("mistral rotates to the next model on 429", async () => {
     }
     return okResponse("nvidia-answer");
   };
-  const text = await callGemma("sys", "user", 0.5, 5000);
+  const text = await callAI("sys", "user", 0.5, 5000);
   assert.equal(text, "mistral-rotated-answer");
   assert.deepEqual(seenModels, [
     "mistral-small-latest",
@@ -221,7 +271,7 @@ test("nvidia rotates to the next model on 429", async () => {
     }
     return okResponse("rotated-answer");
   };
-  const text = await callGemma("sys", "user", 0.5, 5000);
+  const text = await callAI("sys", "user", 0.5, 5000);
   assert.equal(text, "rotated-answer");
   assert.deepEqual(seenModels, [
     "meta/llama-3.3-70b-instruct",
@@ -233,7 +283,7 @@ test("nvidia rotates to the next model on 429", async () => {
 
 test("total outage opens all circuits and surfaces a retryable error", async () => {
   scenario = async () => jsonResponse({ errors: [{ message: "dead" }] }, 500);
-  await assert.rejects(() => callGemma("sys", "user", 0.5, 5000));
+  await assert.rejects(() => callAI("sys", "user", 0.5, 5000));
   const snapshot = getProviderHealthSnapshot();
   assert.equal(snapshot.groq.circuitOpen, true);
   assert.equal(snapshot.mistral.circuitOpen, true);
@@ -243,7 +293,7 @@ test("total outage opens all circuits and surfaces a retryable error", async () 
 
 test("open circuits still half-open-probe instead of refusing outright", async () => {
   scenario = async () => jsonResponse({ errors: [{ message: "dead" }] }, 500);
-  await assert.rejects(() => callGemma("sys", "user", 0.5, 5000));
+  await assert.rejects(() => callAI("sys", "user", 0.5, 5000));
 
   // Provider recovers — the next call must probe it, not throw CircuitOpen.
   let probed = 0;
@@ -251,7 +301,7 @@ test("open circuits still half-open-probe instead of refusing outright", async (
     probed += 1;
     return sseResponse(null, [{ at: 0, data: sseChunk("recovered") }]);
   };
-  const text = await callGemma("sys", "user", 0.5, 5000);
+  const text = await callAI("sys", "user", 0.5, 5000);
   assert.equal(text, "recovered");
   assert.equal(probed, 1);
 });
@@ -270,7 +320,7 @@ test("hedge is SKIPPED while the leader is streaming (no fallback spend)", async
     fallbackCalls += 1;
     return okResponse("should-never-run");
   };
-  const text = await callGemma("sys", "user", 0.5, 5000);
+  const text = await callAI("sys", "user", 0.5, 5000);
   assert.equal(text, "slow but alive");
   assert.equal(fallbackCalls, 0);
 });
@@ -283,7 +333,7 @@ test("silence watchdog kills a stalled stream fast (retryable 408)", async () =>
       // One chunk, then silence forever — never closes.
       sseResponse(opts.signal, [{ at: 5, data: sseChunk("hi") }], { close: false });
     const startedAt = Date.now();
-    await assert.rejects(() => callGemma("sys", "user", 0.5, 60000));
+    await assert.rejects(() => callAI("sys", "user", 0.5, 60000));
     // Providers killed by watchdog plus small backoffs
     assert.ok(Date.now() - startedAt < 5000, "watchdog should fire in ms, not seconds");
   } finally {
@@ -308,7 +358,7 @@ test("chat_template_kwargs is never sent to Groq and omitted on standard NVIDIA 
     payloads.nvidia = body;
     return okResponse("fast-answer");
   };
-  const text = await callGemma("sys", "user", 0.5, 5000);
+  const text = await callAI("sys", "user", 0.5, 5000);
   assert.equal(text, "fast-answer");
   // Groq Cloud rejects chat_template_kwargs with 400 error — must be undefined
   assert.equal(payloads.groq.chat_template_kwargs, undefined);
@@ -328,7 +378,7 @@ test("nvidia rotates to the next model on 403 forbidden (not allowed on free tie
     }
     return okResponse("rotated-free-tier-answer");
   };
-  const text = await callGemma("sys", "user", 0.5, 5000);
+  const text = await callAI("sys", "user", 0.5, 5000);
   assert.equal(text, "rotated-free-tier-answer");
   assert.deepEqual(seenModels, [
     "meta/llama-3.3-70b-instruct",
@@ -351,7 +401,7 @@ test("caller abort propagates as AbortError", async () => {
   const controller = new AbortController();
   setTimeout(() => controller.abort(), 30);
   await assert.rejects(
-    () => callGemma("sys", "user", 0.5, 5000, controller.signal),
+    () => callAI("sys", "user", 0.5, 5000, controller.signal),
     (error) => error.name === "AbortError"
   );
 });
@@ -359,7 +409,7 @@ test("caller abort propagates as AbortError", async () => {
 test("extractTextFromResult rejects empty payloads", () => {
   assert.throws(
     () => extractTextFromResult({ choices: [{ message: { content: "" } }] }),
-    GemmaApiError
+    AIApiError
   );
   assert.equal(
     extractTextFromResult({ choices: [{ message: { content: "hi" } }] }),
@@ -375,7 +425,8 @@ test("parseJSON repairs fenced and truncated model output", () => {
 test("Groq and Mistral model lists include configured models", () => {
   const groqModels = getGroqModels();
   assert.ok(groqModels.includes("qwen/qwen3.6-27b"));
-  assert.ok(groqModels.includes("openai/gpt-oss-120b"));
+  assert.ok(groqModels.includes("openai/gpt-oss-20b"));
+  assert.ok(groqModels.includes("llama-3.1-8b-instant"));
 
   assert.equal(isMistralConfigured(), true);
   const mistralModels = getMistralModels();
@@ -383,30 +434,86 @@ test("Groq and Mistral model lists include configured models", () => {
   assert.ok(mistralModels.includes("mistral-large-latest"));
 });
 
-test("Groq load balancer alternates models in round robin", () => {
+test("Groq model selection sticks with the preferred model while it has TPM headroom", () => {
   resetGroqTokenLedger();
-  const first = selectNextGroqModel();
-  const second = selectNextGroqModel();
-  const third = selectNextGroqModel();
-
-  assert.equal(first.reason, "round_robin");
-  assert.equal(second.reason, "round_robin");
-  assert.equal(third.reason, "round_robin");
-  assert.notEqual(first.selectedModel, second.selectedModel);
+  const models = getGroqModels();
+  const first = selectGroqModel(models, 0, 500);
+  assert.equal(first.model, models[0]);
+  assert.equal(first.reason, "preferred");
+  // Affinity: repeated selection keeps the same warm model — no blind rotation.
+  const second = selectGroqModel(models, 0, 500);
+  assert.equal(second.model, models[0]);
 });
 
-test("Groq sliding 60s TPM tracker tracks usage and limits", () => {
+test("Groq model selection rotates when the preferred model nears its TPM limit", () => {
   resetGroqTokenLedger();
-  assert.equal(getRollingGroqTpmUsage(), 0);
-  assert.equal(isGroqTpmNearLimit(500), false);
+  const models = getGroqModels();
+  recordGroqTokens(models[0], 6500);
+  const selection = selectGroqModel(models, 0, 500);
+  assert.notEqual(selection.model, models[0]);
+  assert.equal(selection.reason, "tpm_rotation");
+  // Other models' ledgers are independent (per-model TPM envelopes).
+  assert.equal(getRollingGroqTpmUsage(selection.model), 0);
+});
 
-  // Record token usage approaching 8k TPM limit (safety threshold = 6800)
-  recordGroqTokens(6500);
-  assert.equal(getRollingGroqTpmUsage(), 6500);
-  assert.equal(isGroqTpmNearLimit(500), true);
-
-  // Reset ledger and verify it resets
+test("Groq per-model sliding 60s TPM tracker tracks usage and limits", () => {
   resetGroqTokenLedger();
-  assert.equal(getRollingGroqTpmUsage(), 0);
-  assert.equal(isGroqTpmNearLimit(500), false);
+  assert.equal(getRollingGroqTpmUsage("m-a"), 0);
+  assert.equal(isGroqTpmNearLimit("m-a", 500), false);
+
+  // Record token usage approaching the 8k TPM limit (safety threshold = 6800)
+  recordGroqTokens("m-a", 6500);
+  assert.equal(getRollingGroqTpmUsage("m-a"), 6500);
+  assert.equal(isGroqTpmNearLimit("m-a", 500), true);
+  // A different model has its own independent envelope.
+  assert.equal(isGroqTpmNearLimit("m-b", 500), false);
+
+  resetGroqTokenLedger();
+  assert.equal(getRollingGroqTpmUsage("m-a"), 0);
+  assert.equal(isGroqTpmNearLimit("m-a", 500), false);
+});
+
+test("a Groq 429 marks that model's TPM ledger full so selection steers away", async () => {
+  const models = getGroqModels();
+  const seenGroqModels = [];
+  scenario = async (isGroq, isMistral, isNvidia, isCloudflare, opts) => {
+    if (isGroq) {
+      const body = JSON.parse(opts.body);
+      seenGroqModels.push(body.model);
+      if (body.model === models[0]) {
+        return jsonResponse({ error: { message: "rate_limit_exceeded" } }, 429);
+      }
+      return sseResponse(opts.signal, [{ at: 0, data: sseChunk("rotated-groq") }]);
+    }
+    return new Promise(() => {}); // other providers never answer
+  };
+  const text = await callAI("sys", "user", 0.5, 5000);
+  assert.equal(text, "rotated-groq");
+  assert.deepEqual(seenGroqModels, [models[0], models[1]]);
+  // Ledger poisoned for the throttled model → next selection avoids it.
+  assert.equal(isGroqTpmNearLimit(models[0], 100), true);
+  const next = selectGroqModel(models, 0, 500);
+  assert.notEqual(next.model, models[0]);
+});
+
+test("exact usage from the Groq stream feeds the per-model TPM ledger", async () => {
+  const models = getGroqModels();
+  const usageChunk = `data: ${JSON.stringify({
+    choices: [{ delta: { content: "!" } }],
+    x_groq: { usage: { total_tokens: 1234 } },
+  })}
+
+`;
+  scenario = async (isGroq, isMistral, isNvidia, isCloudflare, opts) => {
+    if (isGroq) {
+      return sseResponse(opts.signal, [
+        { at: 0, data: sseChunk("answer") },
+        { at: 5, data: usageChunk },
+      ]);
+    }
+    return new Promise(() => {});
+  };
+  const text = await callAI("sys", "user", 0.5, 5000);
+  assert.equal(text, "answer!");
+  assert.equal(getRollingGroqTpmUsage(models[0]), 1234);
 });

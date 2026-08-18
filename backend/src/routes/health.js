@@ -1,6 +1,6 @@
 import express from "express";
 import { getDb } from "../lib/mongodb.js";
-import { getProviderHealthSnapshot, allCircuitsOpen } from "../lib/gemma.js";
+import { getProviderHealthSnapshot, allCircuitsOpen } from "../lib/aiEngine.js";
 import { createRateLimiter } from "../lib/rateLimit.js";
 import { SERVICE_VERSION } from "../config.js";
 

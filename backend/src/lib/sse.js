@@ -32,13 +32,15 @@ export function createSseWriter(res, requestId) {
     }
   };
 
+  // One write per event frame: a single res.write cannot be torn in half by a
+  // dead socket (the old two-write version could emit `event:` without its
+  // `data:` line), and small frames coalesce into one TCP packet.
   const sendEvent = (event, payload) => {
-    const eventWritten = safeWrite(`event: ${event}\n`);
-    const dataWritten = safeWrite(`data: ${JSON.stringify(payload)}\n\n`);
-    if (!eventWritten || !dataWritten) {
+    const written = safeWrite(`event: ${event}\ndata: ${JSON.stringify(payload)}\n\n`);
+    if (!written) {
       console.warn("[SSE] Event write failed", { requestId, event });
     }
-    return eventWritten && dataWritten;
+    return written;
   };
 
   return { safeWrite, sendEvent };

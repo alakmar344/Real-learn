@@ -1,121 +1,54 @@
-import { Groq } from "groq-sdk";
+import { jsonrepair } from "jsonrepair";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Multi-provider AI inference engine (Production Quality).
+// Multi-provider AI inference engine.
 //
-// Providers:
-//   • "groq"       — Groq Cloud LPU SDK (Qwen 3.6 27B / GPT-OSS 120B), ultra-low-latency primary.
-//   • "nvidia"     — NVIDIA NIM OpenAI-compatible completions (70B-150B parameter models), high-capacity fallback.
-//   • "cloudflare" — Cloudflare Workers AI (Llama 3.3 70B FP8 fast), the last-resort provider.
+// Providers (all speak the OpenAI-compatible chat-completions dialect and are
+// driven through ONE shared fetch/stream/watchdog path):
+//   • "groq"       — Groq Cloud LPU, ultra-low-latency primary (sub-second TTFT).
+//   • "mistral"    — Mistral AI, low-latency zero-cold-start first fallback.
+//   • "nvidia"     — NVIDIA NIM, high-capacity 70B-class fallback.
+//   • "cloudflare" — Cloudflare Workers AI, last-resort (tier 1) provider.
 //
-// The providers are individually unreliable, so the engine is built around
-// three ideas that together give the fastest answer that actually succeeds:
+// Free/hosted providers are individually unreliable, so the engine is built
+// around three ideas that together give the fastest answer that actually
+// succeeds:
 //
-//   1. HEDGED RACING — the healthiest provider starts first; if it hasn't
-//      answered within AI_HEDGE_DELAY_MS (or fails outright), the other
-//      provider is launched IN PARALLEL. First success wins and the loser is
-//      aborted. A slow/dying primary therefore costs at most the hedge delay,
-//      not a full timeout + retry ladder.
+//   1. HEDGED RACING — the healthiest provider starts first; if it has shown
+//      no sign of life within AI_HEDGE_DELAY_MS (or fails outright), the next
+//      provider launches IN PARALLEL. First success wins, losers are aborted.
+//      A provider that is alive and streaming is never hedged against, so
+//      duplicate tokens are only spent on genuine rescues.
 //
 //   2. PER-PROVIDER CIRCUIT BREAKERS — repeated availability failures open
-//      that provider's circuit for a cooldown, so requests route straight to
-//      the healthy provider instead of burning their latency budget on a dead
-//      one. When EVERY circuit is open, the engine still half-open-probes the
-//      provider closest to recovery rather than failing the user outright.
+//      that provider's circuit for a cooldown so requests route straight to a
+//      healthy provider. When EVERY circuit is open the engine half-open-
+//      probes the provider closest to recovery instead of failing the user.
 //
-//   3. MODEL ROTATION — each provider carries an ordered model list
-//      (PRIMARY_AI_MODEL + fallback models). Free-tier or hosted models get
-//      rate-limited or removed without notice; on a model-shaped failure
-//      (404/400/429) the engine advances to the next model and REMEMBERS the
-//      working one for subsequent requests.
+//   3. MODEL ROTATION — each provider carries an ordered model list. Hosted
+//      models get rate-limited or delisted without notice; on a model-shaped
+//      failure (400/404/429/…) the engine advances to the next model and
+//      REMEMBERS the working one for subsequent requests. Groq additionally
+//      gets per-model TPM-aware selection (see the token ledger below).
 //
 // Health (EWMA latency + consecutive failures) is tracked per provider and
-// used to decide who starts first on the next request.
+// decides who starts first on the next request. All requests STREAM from the
+// provider so silence watchdogs can kill a hung request in seconds instead of
+// burning a full timeout.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const PRIMARY_AI_MODEL =
-  process.env.GROQ_AI_MODEL ||
-  process.env.AI_MODEL ||
-  "llama-3.3-70b-versatile";
-export const GEMMA_MODEL = PRIMARY_AI_MODEL;
+  process.env.GROQ_AI_MODEL || "qwen/qwen3.6-27b";
 export const GROQ_SECONDARY_MODEL =
-  process.env.GROQ_SECONDARY_MODEL || "qwen/qwen3.6-27b";
+  process.env.GROQ_SECONDARY_MODEL || "openai/gpt-oss-20b";
 export const GROQ_TERTIARY_MODEL =
-  process.env.GROQ_TERTIARY_MODEL || "openai/gpt-oss-120b";
-
-// ── Groq Sliding 60s TPM Tracker & Load Balancer ─────────────────────────
-// Groq rate-limits free/standard tier traffic to TPM envelopes.
-// We alternate between high-speed versatile models (Llama 3.3 70B, Qwen 3.6 27B, GPT-OSS 120B).
-// A rolling 60s sliding window tracks estimated & consumed tokens.
-
-const DEFAULT_GROQ_TPM_LIMIT = 8000;
-const DEFAULT_GROQ_TPM_SAFETY_THRESHOLD = 6800;
-const TPM_WINDOW_MS = 60000;
-
-const groqTokenLedger = [];
-let groqRotationCounter = 0;
-
-export function pruneGroqTokenLedger(now = Date.now()) {
-  const cutoff = now - TPM_WINDOW_MS;
-  while (groqTokenLedger.length > 0 && groqTokenLedger[0].timestamp < cutoff) {
-    groqTokenLedger.shift();
-  }
-}
-
-export function getRollingGroqTpmUsage(now = Date.now()) {
-  pruneGroqTokenLedger(now);
-  return groqTokenLedger.reduce((sum, entry) => sum + entry.tokens, 0);
-}
-
-export function recordGroqTokens(tokens, now = Date.now()) {
-  if (typeof tokens !== "number" || !Number.isFinite(tokens) || tokens <= 0) return;
-  pruneGroqTokenLedger(now);
-  groqTokenLedger.push({ timestamp: now, tokens: Math.round(tokens) });
-}
-
-export function resetGroqTokenLedger() {
-  groqTokenLedger.length = 0;
-  groqRotationCounter = 0;
-}
-
-export function isGroqTpmNearLimit(estimatedTokens = 600) {
-  const threshold = parsePositiveInt(
-    process.env.GROQ_TPM_SAFETY_THRESHOLD,
-    DEFAULT_GROQ_TPM_SAFETY_THRESHOLD
-  );
-  const currentUsage = getRollingGroqTpmUsage();
-  return (currentUsage + estimatedTokens) >= threshold;
-}
-
-export function selectNextGroqModel(estimatedTokens = 600) {
-  const currentUsage = getRollingGroqTpmUsage();
-  const rotatingModels = [
-    PRIMARY_AI_MODEL,
-    GROQ_SECONDARY_MODEL,
-    GROQ_TERTIARY_MODEL,
-    "llama-3.1-8b-instant",
-  ].filter(Boolean);
-  const idx = groqRotationCounter++ % rotatingModels.length;
-  const selectedModel = rotatingModels[idx];
-
-  console.log("[AI] Groq load balancer selected model", {
-    selectedModel,
-    rotationIndex: idx,
-    currentUsage,
-  });
-
-  return {
-    selectedModel,
-    reason: "round_robin",
-    currentUsage,
-  };
-}
+  process.env.GROQ_TERTIARY_MODEL || "llama-3.1-8b-instant";
 
 // SECURITY: hard ceiling on accumulated streamed characters. Providers are
 // first-party and max_tokens bounds normal generation, but a misbehaving
 // upstream that streams continuously (defeating the stall watchdog by always
 // sending SOMETHING) could otherwise grow memory without limit. ~2M chars is
-// far above any legitimate lesson (~500k tokens' worth of text).
+// far above any legitimate lesson.
 const MAX_STREAM_CHARS = 2_000_000;
 
 const DEFAULT_MAX_RETRIES = 1;
@@ -129,34 +62,41 @@ const COLD_START_MAX_RETRY_DELAY_MS = 45000;
 // a full cold-start window before retrying — the fallback already covers the
 // user's latency. Cap in-race backoffs low so the loser keeps trying cheaply.
 const RACING_MAX_RETRY_DELAY_MS = 2500;
-// Trip the circuit after 2 consecutive availability failures. A degraded
-// provider times out on EVERY call, so a high threshold means many requests
-// waste their latency budget on a dead provider before the circuit opens.
+// Trip the circuit after 2 consecutive availability failures — a degraded
+// provider fails EVERY call, so a higher threshold only burns more requests'
+// latency budget before traffic reroutes.
 const DEFAULT_CIRCUIT_FAILURE_THRESHOLD = 2;
 const DEFAULT_CIRCUIT_COOLDOWN_MS = 60000;
-// How long the leading provider gets to itself before the second provider is
-// considered for hedging. COST CONTROL: the hedge only fires if the leader
-// has shown NO sign of life (no bytes received) by then — a healthy provider
-// that is merely generating never triggers the hedge, so the fallback's
-// free-tier limits and duplicate tokens are spent ONLY on rescues.
-const DEFAULT_HEDGE_DELAY_MS = 5000;
-// Streaming watchdogs. Responses are streamed so a hung request is detected
-// by silence, not by burning the whole per-attempt timeout (production logs
-// showed 45s wasted per hang):
-//  - first byte: cold starts legitimately take 10-30s, so allow 35s
-//  - between chunks: a generating model emits tokens continuously; 15s of
-//    mid-stream silence means the request is dead
-const DEFAULT_FIRST_BYTE_TIMEOUT_MS = 35000;
+// How long the leading provider gets to itself before the next provider is
+// considered for hedging. Groq and Mistral both have sub-second TTFT, so a
+// leader with ZERO bytes after 2.5s is almost certainly stuck — hedging then
+// costs duplicate tokens only when a rescue is genuinely needed.
+const DEFAULT_HEDGE_DELAY_MS = 2500;
+// Streaming watchdogs. A hung request is detected by SILENCE, not by burning
+// the whole per-attempt timeout. First-byte budgets are PER PROVIDER: Groq
+// and Mistral answer in well under a second when healthy, while Cloudflare
+// Workers AI legitimately cold-starts for 10-30s. AI_FIRST_BYTE_TIMEOUT_MS
+// (when set) overrides all of them.
+const FIRST_BYTE_TIMEOUT_DEFAULTS_MS = {
+  groq: 8000,
+  mistral: 8000,
+  nvidia: 20000,
+  cloudflare: 35000,
+};
 const DEFAULT_STALL_TIMEOUT_MS = 15000;
 const PARSE_JSON_LOG_PREVIEW_CHARS = 300;
 
-// ── Errors (public API — server.js maps these to friendly client messages) ──
+// ── Errors (public API — routes map these to client messages) ───────────────
+// User-facing copy here is deliberately NEUTRAL: no provider names, no
+// internal mechanics ("circuit", "API", "upstream"). The learner experiences
+// one RealLearn system regardless of which provider is behind it. The strings
+// keep "try again"/"temporarily"/"timed out" wording because the frontend
+// classifies retryability from those phrases.
 
 export function formatAITimeoutMessage(timeoutMs) {
-  const timeoutSeconds = timeoutMs / 1000;
-  return `AI API request timed out after ${timeoutSeconds} seconds`;
+  const timeoutSeconds = Math.round(timeoutMs / 1000);
+  return `This request timed out after ${timeoutSeconds} seconds. Please try again.`;
 }
-export const formatGemmaTimeoutMessage = formatAITimeoutMessage;
 
 export class AIApiError extends Error {
   constructor(status, statusText, details, retryAfterMs) {
@@ -168,7 +108,6 @@ export class AIApiError extends Error {
     this.retryAfterMs = retryAfterMs;
   }
 }
-export class GemmaApiError extends AIApiError {}
 
 export class AITimeoutError extends Error {
   constructor(timeoutMs) {
@@ -176,20 +115,18 @@ export class AITimeoutError extends Error {
     this.name = "AITimeoutError";
   }
 }
-export class GemmaTimeoutError extends AITimeoutError {}
 
 export class AICircuitOpenError extends Error {
   constructor(retryAfterMs) {
-    const retryAfterSeconds = Math.ceil(retryAfterMs / 1000);
+    const retryAfterSeconds = Math.max(1, Math.ceil(retryAfterMs / 1000));
     const secondsLabel = retryAfterSeconds === 1 ? "second" : "seconds";
     super(
-      `AI service is temporarily paused after repeated timeouts. Retry in about ${retryAfterSeconds} ${secondsLabel}`
+      `Lesson generation is temporarily unavailable. Please try again in about ${retryAfterSeconds} ${secondsLabel}.`
     );
     this.name = "AICircuitOpenError";
     this.retryAfterMs = retryAfterMs;
   }
 }
-export class GemmaCircuitOpenError extends AICircuitOpenError {}
 
 // ── Env helpers ──────────────────────────────────────────────────────────────
 
@@ -216,37 +153,37 @@ function parseModelList(value) {
 }
 
 function getEngineConfig() {
+  const firstByteOverride = parsePositiveInt(
+    process.env.AI_FIRST_BYTE_TIMEOUT_MS,
+    0
+  );
   return {
     maxRetries: parseNonNegativeInt(
-      process.env.AI_MAX_RETRIES ?? process.env.GEMMA_MAX_RETRIES,
+      process.env.AI_MAX_RETRIES,
       DEFAULT_MAX_RETRIES
     ),
     retryDelayMs: parseNonNegativeInt(
-      process.env.AI_RETRY_DELAY_MS ?? process.env.GEMMA_RETRY_DELAY_MS,
+      process.env.AI_RETRY_DELAY_MS,
       DEFAULT_RETRY_DELAY_MS
     ),
     maxRetryDelayMs: parseNonNegativeInt(
-      process.env.AI_MAX_RETRY_DELAY_MS ?? process.env.GEMMA_MAX_RETRY_DELAY_MS,
+      process.env.AI_MAX_RETRY_DELAY_MS,
       DEFAULT_MAX_RETRY_DELAY_MS
     ),
     circuitFailureThreshold: parsePositiveInt(
-      process.env.AI_TIMEOUT_CIRCUIT_FAILURE_THRESHOLD ??
-        process.env.GEMMA_TIMEOUT_CIRCUIT_FAILURE_THRESHOLD,
+      process.env.AI_TIMEOUT_CIRCUIT_FAILURE_THRESHOLD,
       DEFAULT_CIRCUIT_FAILURE_THRESHOLD
     ),
     circuitCooldownMs: parsePositiveInt(
-      process.env.AI_TIMEOUT_CIRCUIT_COOLDOWN_MS ??
-        process.env.GEMMA_TIMEOUT_CIRCUIT_COOLDOWN_MS,
+      process.env.AI_TIMEOUT_CIRCUIT_COOLDOWN_MS,
       DEFAULT_CIRCUIT_COOLDOWN_MS
     ),
     hedgeDelayMs: parseNonNegativeInt(
       process.env.AI_HEDGE_DELAY_MS,
       DEFAULT_HEDGE_DELAY_MS
     ),
-    firstByteTimeoutMs: parseNonNegativeInt(
-      process.env.AI_FIRST_BYTE_TIMEOUT_MS,
-      DEFAULT_FIRST_BYTE_TIMEOUT_MS
-    ),
+    // 0 = "no global override; use the per-provider default".
+    firstByteOverrideMs: firstByteOverride > 0 ? firstByteOverride : 0,
     stallTimeoutMs: parseNonNegativeInt(
       process.env.AI_STALL_TIMEOUT_MS,
       DEFAULT_STALL_TIMEOUT_MS
@@ -254,8 +191,122 @@ function getEngineConfig() {
   };
 }
 
+// ── Groq per-model sliding 60s TPM ledger ────────────────────────────────────
+// Groq rate-limits free/standard tiers with PER-MODEL tokens-per-minute
+// envelopes. The engine keeps a rolling 60s token ledger PER MODEL and picks
+// the preferred (healthy, warm) model while it has TPM headroom, rotating to
+// the model with the most headroom only when the preferred one is close to
+// its limit. This preserves latency affinity (the known-good model keeps
+// serving) while spreading load across models exactly when it matters —
+// instead of blind round-robin, which sent every Nth request to a colder or
+// broken model for no reason.
+
+const DEFAULT_GROQ_TPM_LIMIT = 8000;
+const DEFAULT_GROQ_TPM_SAFETY_THRESHOLD = 6800;
+const TPM_WINDOW_MS = 60000;
+
+const groqTokenLedgers = new Map(); // model -> [{ timestamp, tokens }]
+
+function groqTpmLimit() {
+  return parsePositiveInt(process.env.GROQ_TPM_LIMIT, DEFAULT_GROQ_TPM_LIMIT);
+}
+
+function groqTpmSafetyThreshold() {
+  return parsePositiveInt(
+    process.env.GROQ_TPM_SAFETY_THRESHOLD,
+    DEFAULT_GROQ_TPM_SAFETY_THRESHOLD
+  );
+}
+
+function pruneLedger(ledger, now) {
+  const cutoff = now - TPM_WINDOW_MS;
+  while (ledger.length > 0 && ledger[0].timestamp < cutoff) {
+    ledger.shift();
+  }
+}
+
+export function recordGroqTokens(model, tokens, now = Date.now()) {
+  if (typeof tokens !== "number" || !Number.isFinite(tokens) || tokens <= 0) return;
+  const key = String(model || "unknown");
+  let ledger = groqTokenLedgers.get(key);
+  if (!ledger) {
+    ledger = [];
+    groqTokenLedgers.set(key, ledger);
+  }
+  pruneLedger(ledger, now);
+  ledger.push({ timestamp: now, tokens: Math.round(tokens) });
+}
+
+export function getRollingGroqTpmUsage(model, now = Date.now()) {
+  const ledger = groqTokenLedgers.get(String(model || "unknown"));
+  if (!ledger) return 0;
+  pruneLedger(ledger, now);
+  return ledger.reduce((sum, entry) => sum + entry.tokens, 0);
+}
+
+export function isGroqTpmNearLimit(model, estimatedTokens = 600, now = Date.now()) {
+  return (
+    getRollingGroqTpmUsage(model, now) + estimatedTokens >= groqTpmSafetyThreshold()
+  );
+}
+
+export function resetGroqTokenLedger() {
+  groqTokenLedgers.clear();
+}
+
+/**
+ * TPM-aware Groq model selection: stick with the preferred (pinned-healthy)
+ * model while it has rolling-window headroom for this request; otherwise pick
+ * the configured model with the most remaining headroom.
+ */
+export function selectGroqModel(models, preferredIndex = 0, estimatedTokens = 600) {
+  if (!Array.isArray(models) || models.length === 0) {
+    return { model: PRIMARY_AI_MODEL, index: 0, reason: "default" };
+  }
+  const start = ((preferredIndex % models.length) + models.length) % models.length;
+  const preferred = models[start];
+  if (!isGroqTpmNearLimit(preferred, estimatedTokens)) {
+    return { model: preferred, index: start, reason: "preferred" };
+  }
+  let bestIndex = start;
+  let bestUsage = Infinity;
+  for (let offset = 1; offset < models.length; offset++) {
+    const index = (start + offset) % models.length;
+    const usage = getRollingGroqTpmUsage(models[index]);
+    if (usage + estimatedTokens < groqTpmSafetyThreshold()) {
+      console.log("[AI] Groq TPM rotation", {
+        from: preferred,
+        to: models[index],
+        preferredUsage: getRollingGroqTpmUsage(preferred),
+        estimatedTokens,
+      });
+      return { model: models[index], index, reason: "tpm_rotation" };
+    }
+    if (usage < bestUsage) {
+      bestUsage = usage;
+      bestIndex = index;
+    }
+  }
+  // Every model is near its limit — use the least-loaded one rather than
+  // refusing (the provider will 429 if it truly has no budget, and the
+  // race/rotation machinery handles that).
+  return { model: models[bestIndex], index: bestIndex, reason: "least_loaded" };
+}
+
+// Rough estimator (1 token ≈ 3.5 chars). Completions rarely use the whole
+// max_tokens budget, so count half of it for the TPM headroom check.
+function estimateRequestTokens(messages, maxOutputTokens) {
+  const promptChars = (messages || []).reduce(
+    (acc, m) => acc + (typeof m.content === "string" ? m.content.length : 0),
+    0
+  );
+  return Math.ceil(promptChars / 3.5) + Math.ceil((maxOutputTokens || 0) / 2);
+}
+
 // ── Text utilities ───────────────────────────────────────────────────────────
 
+// Reasoning-tuned models (gpt-oss, deepseek-r1 distills) can leak <think>
+// blocks into content; strip them so they never reach parsing or the user.
 function stripThinkingTags(text) {
   const source = typeof text === "string" ? text : String(text ?? "");
   return source
@@ -282,7 +333,7 @@ const RETRYABLE_NETWORK_ERROR_CODES = new Set([
   "UND_ERR_BODY_TIMEOUT",
 ]);
 
-function isRetryableNetworkGemmaError(error) {
+function isRetryableNetworkError(error) {
   if (!(error instanceof Error)) {
     return false;
   }
@@ -302,8 +353,7 @@ function isRetryableNetworkGemmaError(error) {
     message.includes("econnreset") ||
     message.includes("socket") ||
     // undici throws "terminated" / "other side closed" / "premature close"
-    // when the connection drops while the response body is being read —
-    // this is the classic "error in input stream" failure mode.
+    // when the connection drops while the response body is being read.
     message.includes("terminated") ||
     message.includes("other side closed") ||
     message.includes("premature close") ||
@@ -311,14 +361,12 @@ function isRetryableNetworkGemmaError(error) {
   );
 }
 
-function isRetryableGemmaError(error, hasFallbackModels = false) {
-  if (error instanceof GemmaTimeoutError) return true;
-  if (error instanceof GemmaApiError) {
+function isRetryableAIError(error, hasFallbackModels = false) {
+  if (error instanceof AITimeoutError) return true;
+  if (error instanceof AIApiError) {
     // 408 = upstream request timeout (transient), 429 = rate limit
-    // (transient), 403 = Cloudflare Workers AI / provider tier rate limiting (transient),
-    // 402 = payment / tier credits limit (transient/rotatable),
-    // 5xx = server error (transient). 401 is an auth error — retrying won't
-    // help unless rotating. 404/400/422 are handled via model rotation.
+    // (transient), 403 = provider tier limiting (transient),
+    // 402 = payment/credits limit (transient/rotatable), 5xx = server error.
     if (
       error.status === 408 ||
       error.status === 429 ||
@@ -331,34 +379,34 @@ function isRetryableGemmaError(error, hasFallbackModels = false) {
     if (hasFallbackModels && isModelRotationFailure(error)) {
       return true;
     }
-    // Cloudflare occasionally reports transient stream failures with a
-    // non-retryable-looking status code; match on the upstream message.
+    // Some providers report transient stream failures with a non-retryable-
+    // looking status code; match on the upstream message.
     const details = String(error.details ?? "").toLowerCase();
     return details.includes("input stream") || details.includes("timed out");
   }
-  return isRetryableNetworkGemmaError(error);
+  return isRetryableNetworkError(error);
 }
 
 // Failures that indicate the PROVIDER is unavailable (feeds the circuit
 // breaker). Auth/validation errors do not count — the provider answered.
 function isAvailabilityFailure(error) {
   return (
-    error instanceof GemmaTimeoutError ||
-    (error instanceof GemmaApiError &&
+    error instanceof AITimeoutError ||
+    (error instanceof AIApiError &&
       (error.status === 408 ||
         error.status === 429 ||
         error.status === 403 ||
         error.status === 402 ||
         error.status >= 500)) ||
-    isRetryableNetworkGemmaError(error)
+    isRetryableNetworkError(error)
   );
 }
 
-// A model-shaped failure: this specific model is missing/invalid/throttled/unsupported on tier.
-// Worth rotating to the next model in the provider's list.
+// A model-shaped failure: this specific model is missing/invalid/throttled/
+// unsupported on tier. Worth rotating to the next model in the list.
 function isModelRotationFailure(error) {
   return (
-    error instanceof GemmaApiError &&
+    error instanceof AIApiError &&
     (error.status === 400 ||
       error.status === 401 ||
       error.status === 402 ||
@@ -369,10 +417,8 @@ function isModelRotationFailure(error) {
   );
 }
 
-function isGemmaServiceUnavailableError(error) {
-  return (
-    error instanceof GemmaCircuitOpenError || isAvailabilityFailure(error)
-  );
+function isAIServiceUnavailableError(error) {
+  return error instanceof AICircuitOpenError || isAvailabilityFailure(error);
 }
 
 function isAbortError(error) {
@@ -381,6 +427,12 @@ function isAbortError(error) {
     (error.name === "AbortError" ||
       (typeof error.message === "string" && /\baborted\b/i.test(error.message)))
   );
+}
+
+function newAbortError() {
+  const abortError = new Error("The operation was aborted");
+  abortError.name = "AbortError";
+  return abortError;
 }
 
 // ── Small async utilities ────────────────────────────────────────────────────
@@ -421,8 +473,8 @@ function newProviderHealth() {
 const providerHealth = {
   groq: newProviderHealth(),
   mistral: newProviderHealth(),
-  cloudflare: newProviderHealth(),
   nvidia: newProviderHealth(),
+  cloudflare: newProviderHealth(),
 };
 
 function recordProviderSuccess(providerKey, latencyMs, modelIndex) {
@@ -464,7 +516,7 @@ function isCircuitOpen(providerKey) {
  * (503) so uptime monitors see the outage instead of a green Mongo ping.
  */
 export function allCircuitsOpen() {
-  const providers = getProviders(true);
+  const providers = getProviders();
   if (providers.length === 0) return false;
   return providers.every((provider) => isCircuitOpen(provider.key));
 }
@@ -489,10 +541,9 @@ export function getProviderHealthSnapshot() {
 
 /** Test-only helper: reset all circuit/health state. */
 export function resetProviderHealth() {
-  providerHealth.groq = newProviderHealth();
-  providerHealth.mistral = newProviderHealth();
-  providerHealth.cloudflare = newProviderHealth();
-  providerHealth.nvidia = newProviderHealth();
+  for (const key of Object.keys(providerHealth)) {
+    providerHealth[key] = newProviderHealth();
+  }
 }
 
 // ── Provider registry ────────────────────────────────────────────────────────
@@ -505,6 +556,10 @@ export function isMistralConfigured() {
   return Boolean(process.env.MISTRAL_API_KEY?.trim());
 }
 
+function isNvidiaConfigured() {
+  return Boolean(process.env.NVIDIA_API_KEY?.trim());
+}
+
 function isCloudflareConfigured() {
   return Boolean(
     process.env.CLOUDFLARE_API_TOKEN?.trim() &&
@@ -512,25 +567,15 @@ function isCloudflareConfigured() {
   );
 }
 
-function isNvidiaConfigured() {
-  return Boolean(process.env.NVIDIA_API_KEY?.trim());
-}
-
-/** True when any non-primary provider is available. Kept for server.js compatibility. */
-export function isFallbackConfigured() {
-  return isMistralConfigured() || isNvidiaConfigured() || isCloudflareConfigured();
-}
-
-export function isMistralFallbackConfigured() {
-  return isMistralConfigured();
-}
-
-export function isCloudflareFallbackConfigured() {
-  return isCloudflareConfigured();
-}
-
-export function isNvidiaFallbackConfigured() {
-  return isNvidiaConfigured();
+export function getGroqModels() {
+  const configured = [
+    PRIMARY_AI_MODEL,
+    GROQ_SECONDARY_MODEL,
+    GROQ_TERTIARY_MODEL,
+    ...parseModelList(process.env.GROQ_AI_MODELS),
+    ...parseModelList(process.env.GROQ_FALLBACK_MODELS),
+  ];
+  return [...new Set(configured.filter(Boolean))];
 }
 
 export function getMistralModels() {
@@ -539,33 +584,15 @@ export function getMistralModels() {
     ...parseModelList(process.env.MISTRAL_AI_MODELS),
   ];
   if (configured.length === 0) {
+    // Text-generation models only — code/vision specialists (codestral,
+    // pixtral) have no business writing lessons.
     configured.push(
       "mistral-small-latest",
-      "mistral-large-latest",
       "open-mistral-nemo",
-      "codestral-latest",
-      "pixtral-12b-2409"
+      "mistral-large-latest"
     );
   }
   return [...new Set(configured)];
-}
-
-export function getGroqModels() {
-  const rotating = [PRIMARY_AI_MODEL, GROQ_SECONDARY_MODEL, GROQ_TERTIARY_MODEL];
-  const configured = [
-    ...parseModelList(process.env.GROQ_AI_MODELS),
-    ...parseModelList(process.env.GROQ_FALLBACK_MODELS),
-    ...parseModelList(process.env.AI_FALLBACK_MODELS),
-  ];
-  const all = [
-    ...rotating,
-    "llama-3.3-70b-versatile",
-    "qwen/qwen3.6-27b",
-    "openai/gpt-oss-120b",
-    "llama-3.1-8b-instant",
-    ...configured,
-  ];
-  return [...new Set(all.filter(Boolean))];
 }
 
 function getNvidiaModels() {
@@ -578,11 +605,8 @@ function getNvidiaModels() {
       "meta/llama-3.3-70b-instruct",
       "nvidia/llama-3.1-nemotron-70b-instruct",
       "mistralai/mistral-large-2-instruct",
-      "mistralai/mixtral-8x7b-instruct-v0.1",
-      "mistralai/mistral-7b-instruct-v0.3",
       "qwen/qwen2.5-72b-instruct",
-      "meta/llama-3.1-8b-instruct",
-      "google/gemma-2-27b-it"
+      "meta/llama-3.1-8b-instruct"
     );
   }
   return [...new Set(models)];
@@ -597,54 +621,49 @@ function getCloudflareModels() {
     models.push(
       "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
       "@cf/meta/llama-3.1-70b-instruct",
-      "@cf/deepseek-ai/deepseek-r1-distill-qwen-32b",
       "@cf/qwen/qwen2.5-72b-instruct"
     );
   }
   return [...new Set(models)];
 }
 
-function getProviders(allowFallback) {
+function getProviders() {
   const providers = [];
   if (isGroqConfigured()) {
     providers.push({
       key: "groq",
-      label: "Groq Cloud (Llama 3.3 70B / Qwen 3.6 27B / GPT-OSS 120B)",
       // tier 0 = normal racing pool (ordered by health/latency within a tier)
       tier: 0,
       models: getGroqModels(),
-      call: (model, body, signal, opts) =>
-        callGroq(model, body, signal, opts),
+      firstByteTimeoutMs: FIRST_BYTE_TIMEOUT_DEFAULTS_MS.groq,
+      call: callGroq,
     });
   }
-  if (allowFallback && isMistralConfigured()) {
+  if (isMistralConfigured()) {
     providers.push({
       key: "mistral",
-      label: "Mistral AI (mistral-small / mistral-large / nemo)",
       tier: 0,
       models: getMistralModels(),
-      call: (model, body, signal, opts) =>
-        callMistralAI(model, body, signal, opts),
+      firstByteTimeoutMs: FIRST_BYTE_TIMEOUT_DEFAULTS_MS.mistral,
+      call: callMistral,
     });
   }
-  if (allowFallback && isNvidiaConfigured()) {
+  if (isNvidiaConfigured()) {
     providers.push({
       key: "nvidia",
-      label: "NVIDIA NIM",
       tier: 0,
       models: getNvidiaModels(),
-      call: (model, body, signal, opts) =>
-        callNvidiaAI(model, body, signal, opts),
+      firstByteTimeoutMs: FIRST_BYTE_TIMEOUT_DEFAULTS_MS.nvidia,
+      call: callNvidia,
     });
   }
-  if (allowFallback && isCloudflareConfigured()) {
+  if (isCloudflareConfigured()) {
     providers.push({
       key: "cloudflare",
-      label: "Cloudflare Workers AI",
       tier: 1,
       models: getCloudflareModels(),
-      call: (model, body, signal, opts) =>
-        callWorkersAI(process.env.CLOUDFLARE_ACCOUNT_ID.trim(), model, body, signal, opts),
+      firstByteTimeoutMs: FIRST_BYTE_TIMEOUT_DEFAULTS_MS.cloudflare,
+      call: callCloudflare,
     });
   }
   return providers;
@@ -668,15 +687,14 @@ function orderProviders(providers) {
   });
 }
 
-// ── HTTP layer ───────────────────────────────────────────────────────────────
+// ── HTTP layer (shared by every provider) ────────────────────────────────────
 
 function parseRetryAfterMs(response) {
   const header = response.headers.get("Retry-After");
   if (typeof header !== "string" || !header.trim()) return undefined;
   const parsed = Number(header);
   if (Number.isFinite(parsed) && parsed > 0) return parsed * 1000;
-  // RFC 7231 also allows an HTTP-date form ("Wed, 21 Oct 2015 07:28:00 GMT");
-  // convert it to a non-negative delay relative to now.
+  // RFC 7231 also allows an HTTP-date form; convert to a delay from now.
   const dateMs = Date.parse(header);
   if (Number.isFinite(dateMs)) return Math.max(0, dateMs - Date.now());
   return undefined;
@@ -686,8 +704,8 @@ async function readErrorDetails(response, contentType) {
   try {
     if (contentType.includes("application/json")) {
       const errBody = await response.json();
-      // Cap like the text branch below — an upstream error body can be huge
-      // and would otherwise land whole in error messages and every log line.
+      // Cap like the text branch — an upstream error body can be huge and
+      // would otherwise land whole in error messages and every log line.
       return String(
         errBody.errors?.[0]?.message ||
           errBody.error?.message ||
@@ -702,11 +720,11 @@ async function readErrorDetails(response, contentType) {
 }
 
 // Fetch a chat completion with a SILENCE WATCHDOG. `opts.onActivity` fires on
-// every sign of life (headers, each stream chunk) — the race orchestrator
-// uses it to skip hedging a provider that is alive and generating. If the
-// provider goes silent past the watchdog windows, the request is aborted and
-// surfaced as a retryable 408 so retries/fallback kick in within seconds
-// instead of burning the full per-attempt timeout.
+// every sign of life (each stream chunk) — the race orchestrator uses it to
+// skip hedging a provider that is alive and generating. If the provider goes
+// silent past the watchdog windows, the request is aborted and surfaced as a
+// retryable 408 so retries/fallback kick in within seconds instead of burning
+// the full per-attempt timeout.
 async function fetchChatCompletion(url, headers, payload, signal, opts = {}) {
   const { firstByteTimeoutMs = 0, stallTimeoutMs = 0, onActivity } = opts;
 
@@ -742,36 +760,29 @@ async function fetchChatCompletion(url, headers, payload, signal, opts = {}) {
   try {
     const response = await fetch(url, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Connection: "keep-alive",
-        "Accept-Encoding": "gzip, deflate, br",
-        ...headers,
-      },
+      headers: { "Content-Type": "application/json", ...headers },
       body: JSON.stringify(payload),
       signal: controller.signal,
     });
 
     // Headers only reset the watchdog; "alive" (hedge-skipping) is reserved
-    // for HEALTHY responses — an error reply is not a generation in progress.
+    // for HEALTHY BODY BYTES — an error reply is not a generation in
+    // progress, and neither is a 200 whose body never arrives (a provider
+    // that accepts the stream and then goes silent must still be hedged
+    // against, not trusted because it sent headers).
     armWatchdog(stallTimeoutMs);
     const contentType = response.headers.get("content-type") || "";
 
     if (!response.ok) {
       const retryAfterMs = parseRetryAfterMs(response);
       const details = await readErrorDetails(response, contentType);
-      throw new GemmaApiError(
-        response.status,
-        response.statusText,
-        details,
-        retryAfterMs
-      );
+      throw new AIApiError(response.status, response.statusText, details, retryAfterMs);
     }
-    activity();
 
     if (contentType.includes("text/event-stream")) {
       return await handleStreamingResponse(response, activity);
     }
+    activity();
 
     if (!contentType.includes("application/json")) {
       return await response.text();
@@ -781,12 +792,11 @@ async function fetchChatCompletion(url, headers, payload, signal, opts = {}) {
     if (data.error) {
       // Some providers put a non-numeric string in error.code. Coerce to a
       // finite number (falling back to 500) so the retry/rotation/circuit
-      // classifiers — which compare status against 408/429/>=500 — see a real
-      // status instead of a string that fails every comparison and makes a
-      // transient error look non-retryable.
+      // classifiers see a real status instead of a string that fails every
+      // comparison and makes a transient error look non-retryable.
       const rawCode = Number(data.error.code);
       const statusCode = Number.isFinite(rawCode) ? rawCode : 500;
-      throw new GemmaApiError(
+      throw new AIApiError(
         statusCode,
         "APIError",
         data.error.message || JSON.stringify(data.error),
@@ -800,13 +810,13 @@ async function fetchChatCompletion(url, headers, payload, signal, opts = {}) {
     controller.abort();
     if (watchdogFired && isAbortError(error)) {
       // 408 keeps this on the retryable/rotate/circuit path.
-      const stallError = new GemmaApiError(
+      const stallError = new AIApiError(
         408,
         "StallTimeout",
         `provider sent no data for ${watchdogAtMs}ms (silence watchdog)`
       );
       // A stall AFTER data flowed is a dead connection, not a cold start —
-      // the retry scheduler must not sit out the 15s cold-start window.
+      // the retry scheduler must not sit out the cold-start backoff window.
       stallError.receivedData = receivedData;
       throw stallError;
     }
@@ -817,344 +827,9 @@ async function fetchChatCompletion(url, headers, payload, signal, opts = {}) {
   }
 }
 
-// Thinking tags stripping & provider parameter configuration.
-// Note: Groq Cloud does NOT accept `chat_template_kwargs` (causes 400 error).
-// For providers that support vLLM-style kwargs (e.g. Cloudflare / self-hosted NIM),
-// AI_DISABLE_THINKING can be set explicitly:
-//   AI_DISABLE_THINKING = off (default) | cloudflare | nvidia | all
-function thinkingDisabledFor(providerKey) {
-  const mode = (process.env.AI_DISABLE_THINKING || "off").trim().toLowerCase();
-  if (mode === "off" || !mode) return false;
-  return mode === "all" || mode === "both" || mode === providerKey;
-}
-
-async function callMistralAI(model, body, signal, opts) {
-  const apiKey = process.env.MISTRAL_API_KEY?.trim();
-  if (!apiKey) {
-    throw new Error("MISTRAL_API_KEY is not configured");
-  }
-  const payload = {
-    model,
-    messages: body.messages,
-    temperature: body.temperature,
-    max_tokens: body.max_tokens,
-    stream: true,
-  };
-  return fetchChatCompletion(
-    "https://api.mistral.ai/v1/chat/completions",
-    {
-      Authorization: `Bearer ${apiKey}`,
-      Accept: "text/event-stream",
-    },
-    payload,
-    signal,
-    opts
-  );
-}
-
-async function callNvidiaAI(model, body, signal, opts) {
-  const apiKey = process.env.NVIDIA_API_KEY?.trim();
-  if (!apiKey) {
-    throw new Error("NVIDIA_API_KEY is not configured");
-  }
-  const payload = {
-    model,
-    messages: body.messages,
-    temperature: body.temperature,
-    top_p: 0.95,
-    max_tokens: body.max_tokens,
-    stream: true,
-  };
-  if (process.env.AI_DISABLE_THINKING && thinkingDisabledFor("nvidia")) {
-    payload.chat_template_kwargs = { enable_thinking: false };
-  }
-  return fetchChatCompletion(
-    "https://integrate.api.nvidia.com/v1/chat/completions",
-    {
-      Authorization: `Bearer ${apiKey}`,
-      Accept: "text/event-stream",
-    },
-    payload,
-    signal,
-    opts
-  );
-}
-
-async function callWorkersAI(accountId, model, body, signal, opts) {
-  const apiToken = process.env.CLOUDFLARE_API_TOKEN?.trim();
-  if (!apiToken) {
-    throw new Error("CLOUDFLARE_API_TOKEN is not configured");
-  }
-  const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/v1/chat/completions`;
-  const payload = {
-    model,
-    messages: body.messages,
-    temperature: body.temperature,
-    max_tokens: body.max_tokens,
-    // Streaming is what makes the silence watchdog possible: a healthy
-    // generation emits tokens continuously, a hung one goes quiet and is
-    // killed in seconds instead of after the full timeout.
-    stream: true,
-  };
-  if (thinkingDisabledFor("cloudflare")) {
-    payload.chat_template_kwargs = { enable_thinking: false };
-  }
-  return fetchChatCompletion(
-    url,
-    { Authorization: `Bearer ${apiToken}` },
-    payload,
-    signal,
-    opts
-  );
-}
-
-function wrapGroqError(error) {
-  // The SDK surfaces caller aborts as APIUserAbortError. Convert to a real
-  // AbortError so the rest of the engine treats it as a cancellation.
-  if (
-    error?.name === "APIUserAbortError" ||
-    error?.constructor?.name === "APIUserAbortError"
-  ) {
-    const abortError = new Error(error.message || "The operation was aborted");
-    abortError.name = "AbortError";
-    return abortError;
-  }
-  if (isAbortError(error)) {
-    return error;
-  }
-  const status = Number(error?.status);
-  if (Number.isFinite(status)) {
-    return new GemmaApiError(
-      status,
-      error.name || "GroqError",
-      error.message || String(error),
-      undefined
-    );
-  }
-  if (error?.name?.includes("Timeout") || error?.name === "APIConnectionTimeoutError") {
-    return new GemmaTimeoutError(0);
-  }
-  if (error?.name === "APIConnectionError") {
-    return new GemmaApiError(502, "ConnectionError", error.message || String(error));
-  }
-  return error;
-}
-
-// Module-level Groq SDK client, created lazily and reused across calls —
-// constructing a fresh client on every generation is wasteful. Keyed by API
-// key so a rotated GROQ_API_KEY takes effect without a restart; the per-request
-// abort signal is passed per call.
-let groqClient = null;
-let groqClientKey = null;
-function getGroqClient(apiKey) {
-  if (!groqClient || groqClientKey !== apiKey) {
-    groqClient = new Groq({
-      apiKey,
-      maxRetries: 0,
-      timeout: 600000, // 10 minutes — the engine's own watchdogs + abort handle timeouts.
-      fetch: (...args) => globalThis.fetch(...args),
-    });
-    groqClientKey = apiKey;
-  }
-  return groqClient;
-}
-
-async function callGroq(model, body, signal, opts) {
-  const apiKey = process.env.GROQ_API_KEY?.trim();
-  if (!apiKey) {
-    throw new Error("GROQ_API_KEY is not configured");
-  }
-
-  const { firstByteTimeoutMs = 0, stallTimeoutMs = 0, onActivity } = opts;
-
-  const controller = new AbortController();
-  const forwardAbort = () => controller.abort();
-  signal?.addEventListener("abort", forwardAbort, { once: true });
-
-  let watchdogFired = false;
-  let watchdogAtMs = 0;
-  let watchdogTimer = null;
-  let receivedData = false;
-
-  const disarmWatchdog = () => {
-    if (watchdogTimer) clearTimeout(watchdogTimer);
-    watchdogTimer = null;
-  };
-  const armWatchdog = (ms) => {
-    disarmWatchdog();
-    if (!(ms > 0)) return;
-    watchdogAtMs = ms;
-    watchdogTimer = setTimeout(() => {
-      watchdogFired = true;
-      controller.abort();
-    }, ms);
-  };
-  const activity = () => {
-    receivedData = true;
-    onActivity?.();
-    armWatchdog(stallTimeoutMs);
-  };
-
-  armWatchdog(firstByteTimeoutMs);
-
-  const groq = getGroqClient(apiKey);
-
-  try {
-    const payload = {
-      model,
-      messages: body.messages,
-      temperature: body.temperature,
-      max_completion_tokens: body.max_tokens,
-      top_p: 0.95,
-      stream: true,
-      stop: null,
-    };
-    const stream = await groq.chat.completions.create(
-      payload,
-      { signal: controller.signal }
-    );
-
-    let fullText = "";
-    let exactTokens = 0;
-    for await (const chunk of stream) {
-      activity();
-      const streamError = extractStreamChunkError(chunk);
-      if (streamError) {
-        throw new GemmaApiError(408, "StreamError", streamError);
-      }
-      if (chunk.usage?.total_tokens) {
-        exactTokens = chunk.usage.total_tokens;
-      } else if (chunk.x_groq?.usage?.total_tokens) {
-        exactTokens = chunk.x_groq.usage.total_tokens;
-      }
-      const token = chunk.choices?.[0]?.delta?.content || "";
-      fullText += token;
-      if (fullText.length > MAX_STREAM_CHARS) {
-        // 408 keeps this on the retryable path (see isRetryableGemmaError).
-        throw new GemmaApiError(
-          408,
-          "StreamOverflow",
-          `provider stream exceeded ${MAX_STREAM_CHARS} characters`
-        );
-      }
-    }
-
-    if (watchdogFired) {
-      const stallError = new GemmaApiError(
-        408,
-        "StallTimeout",
-        `provider sent no data for ${watchdogAtMs}ms (silence watchdog)`
-      );
-      stallError.receivedData = receivedData;
-      throw stallError;
-    }
-
-    if (!fullText.trim()) {
-      throw new GemmaApiError(
-        502,
-        "EmptyResponse",
-        "Groq returned an empty response body"
-      );
-    }
-
-    if (exactTokens > 0) {
-      recordGroqTokens(exactTokens);
-    } else {
-      const promptChars = body.messages.reduce(
-        (acc, m) => acc + (typeof m.content === "string" ? m.content.length : 0),
-        0
-      );
-      const estimatedTokensUsed = Math.ceil((promptChars + fullText.length) / 3.5);
-      recordGroqTokens(estimatedTokensUsed);
-    }
-
-    return { choices: [{ message: { content: fullText } }] };
-  } catch (error) {
-    if (
-      error?.status === 429 ||
-      error?.code === 429 ||
-      error?.message?.includes?.("rate_limit_exceeded")
-    ) {
-      recordGroqTokens(DEFAULT_GROQ_TPM_LIMIT);
-    }
-
-    if (
-      watchdogFired &&
-      (isAbortError(error) ||
-        error?.name === "APIUserAbortError" ||
-        error?.constructor?.name === "APIUserAbortError" ||
-        error instanceof GemmaApiError)
-    ) {
-      const stallError = new GemmaApiError(
-        408,
-        "StallTimeout",
-        `provider sent no data for ${watchdogAtMs}ms (silence watchdog)`
-      );
-      stallError.receivedData = receivedData;
-      throw stallError;
-    }
-    throw wrapGroqError(error);
-  } finally {
-    disarmWatchdog();
-    signal?.removeEventListener("abort", forwardAbort);
-  }
-}
-
-// RELIABILITY: the direct fallback rungs (called from server.js when the
-// primary circuit is open) previously ran with empty opts, disabling the
-// first-byte + stall watchdogs. A provider that accepts the stream and then
-// goes silent without closing the socket would hang until undici's default
-// body timeout (~5 min), holding a global + per-user concurrency slot the whole
-// time. Give these rungs the SAME watchdog budget the primary path uses so a
-// silent upstream is aborted in seconds and the ladder moves on.
-function fallbackWatchdogOpts() {
-  const config = getEngineConfig();
-  return {
-    firstByteTimeoutMs: config.firstByteTimeoutMs,
-    stallTimeoutMs: config.stallTimeoutMs,
-  };
-}
-
-/**
- * Direct call to the Mistral AI fallback provider.
- * Public because routes use it for circuit-independent fallback rungs.
- * Returns the raw completion payload — pass it through extractTextFromResult().
- */
-export async function callMistralFallbackAI(model, body, signal) {
-  const models = getMistralModels();
-  const preferred = models[providerHealth.mistral.modelIndex % models.length];
-  const targetModel = model && models.includes(model) ? model : (preferred || models[0]);
-  return callMistralAI(targetModel, body, signal, fallbackWatchdogOpts());
-}
-
-/**
- * Direct call to the NVIDIA fallback provider.
- * Public because server.js uses it for circuit-independent fallback rungs.
- * Returns the raw completion payload — pass it through extractTextFromResult().
- */
-export async function callNvidiaFallbackAI(model, body, signal) {
-  const models = getNvidiaModels();
-  const preferred = models[providerHealth.nvidia.modelIndex % models.length];
-  const targetModel = model && models.includes(model) ? model : (preferred || models[0]);
-  return callNvidiaAI(targetModel, body, signal, fallbackWatchdogOpts());
-}
-
-export async function callCloudflareAI(model, body, signal) {
-  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID?.trim();
-  // Bug fix: without this guard a missing account ID silently produced a
-  // request to .../accounts/undefined/... and surfaced as a confusing 404.
-  if (!accountId) {
-    throw new Error("CLOUDFLARE_ACCOUNT_ID is not configured");
-  }
-  const models = getCloudflareModels();
-  const preferred = models[providerHealth.cloudflare.modelIndex % models.length];
-  const targetModel = model && models.includes(model) ? model : (preferred || models[0]);
-  return callWorkersAI(accountId, targetModel, body, signal, fallbackWatchdogOpts());
-}
-
-// Cloudflare Workers AI can report a mid-stream failure (e.g. 408 "error in
-// input stream") as an error payload INSIDE the SSE stream rather than as an
-// HTTP error status. Detect it and throw a retryable GemmaApiError instead of
+// Providers can report a mid-stream failure (e.g. 408 "error in input
+// stream") as an error payload INSIDE the SSE stream rather than as an HTTP
+// error status. Detect it and throw a retryable AIApiError instead of
 // silently returning empty/truncated text that later fails JSON validation.
 function extractStreamChunkError(chunk) {
   if (!chunk || typeof chunk !== "object") return null;
@@ -1173,6 +848,10 @@ async function handleStreamingResponse(response, onChunk) {
   const decoder = new TextDecoder();
   let fullText = "";
   let buffer = "";
+  // Exact token accounting when the provider reports it: Groq attaches usage
+  // to the final chunk under x_groq; OpenAI-compatible streams may use a
+  // top-level usage field.
+  let usage = null;
 
   const consumePayload = (payload) => {
     if (payload === "[DONE]") return;
@@ -1180,8 +859,13 @@ async function handleStreamingResponse(response, onChunk) {
       const chunk = JSON.parse(payload);
       const streamError = extractStreamChunkError(chunk);
       if (streamError) {
-        // 408 keeps this on the retryable path (see isRetryableGemmaError).
-        throw new GemmaApiError(408, "StreamError", streamError);
+        // 408 keeps this on the retryable path (see isRetryableAIError).
+        throw new AIApiError(408, "StreamError", streamError);
+      }
+      if (chunk.x_groq?.usage?.total_tokens) {
+        usage = chunk.x_groq.usage;
+      } else if (chunk.usage?.total_tokens) {
+        usage = chunk.usage;
       }
       const token =
         chunk.choices?.[0]?.delta?.content ??
@@ -1190,14 +874,14 @@ async function handleStreamingResponse(response, onChunk) {
         "";
       fullText += token;
       if (fullText.length > MAX_STREAM_CHARS) {
-        throw new GemmaApiError(
+        throw new AIApiError(
           408,
           "StreamOverflow",
           `provider stream exceeded ${MAX_STREAM_CHARS} characters`
         );
       }
     } catch (error) {
-      if (error instanceof GemmaApiError) throw error;
+      if (error instanceof AIApiError) throw error;
       // Non-JSON keep-alive/comment lines are safe to ignore.
     }
   };
@@ -1225,13 +909,131 @@ async function handleStreamingResponse(response, onChunk) {
     }
   } catch (error) {
     // A mid-stream throw abandons the reader; without cancel() the upstream
-    // connection stays open (~300s) on every retried failure.
+    // connection stays open (~minutes) on every retried failure.
     void reader.cancel().catch(() => {});
     throw error;
   }
 
-  return { choices: [{ message: { content: fullText } }] };
+  return { choices: [{ message: { content: fullText } }], usage };
 }
+
+// ── Provider callers (thin payload builders on the shared HTTP layer) ────────
+
+// vLLM-style reasoning toggle for providers that support it. Groq and Mistral
+// reject unknown kwargs with a 400, so this NEVER applies to them.
+//   AI_DISABLE_THINKING = off (default) | nvidia | cloudflare | all
+function thinkingDisabledFor(providerKey) {
+  const mode = (process.env.AI_DISABLE_THINKING || "off").trim().toLowerCase();
+  if (mode === "off" || !mode) return false;
+  return mode === "all" || mode === "both" || mode === providerKey;
+}
+
+// Mistral structured output: response_format json_object is documented,
+// streaming-compatible, and eliminates markdown-fenced / prose-wrapped JSON
+// at the source — which is what used to burn repair attempts. Kill switch:
+// MISTRAL_JSON_MODE=off (in case a future model rejects the field).
+function mistralJsonModeEnabled() {
+  const raw = (process.env.MISTRAL_JSON_MODE || "on").trim().toLowerCase();
+  return !["off", "false", "0", "no"].includes(raw);
+}
+
+function callGroq(model, body, signal, opts) {
+  const apiKey = process.env.GROQ_API_KEY?.trim();
+  if (!apiKey) {
+    throw new Error("GROQ_API_KEY is not configured");
+  }
+  const payload = {
+    model,
+    messages: body.messages,
+    temperature: body.temperature,
+    // Groq's canonical name for the completion budget.
+    max_completion_tokens: body.max_tokens,
+    // Streaming enables the silence watchdogs and exact per-chunk liveness.
+    stream: true,
+  };
+  return fetchChatCompletion(
+    "https://api.groq.com/openai/v1/chat/completions",
+    { Authorization: `Bearer ${apiKey}` },
+    payload,
+    signal,
+    opts
+  );
+}
+
+function callMistral(model, body, signal, opts) {
+  const apiKey = process.env.MISTRAL_API_KEY?.trim();
+  if (!apiKey) {
+    throw new Error("MISTRAL_API_KEY is not configured");
+  }
+  const payload = {
+    model,
+    messages: body.messages,
+    temperature: body.temperature,
+    max_tokens: body.max_tokens,
+    stream: true,
+  };
+  if (mistralJsonModeEnabled()) {
+    payload.response_format = { type: "json_object" };
+  }
+  return fetchChatCompletion(
+    "https://api.mistral.ai/v1/chat/completions",
+    { Authorization: `Bearer ${apiKey}` },
+    payload,
+    signal,
+    opts
+  );
+}
+
+function callNvidia(model, body, signal, opts) {
+  const apiKey = process.env.NVIDIA_API_KEY?.trim();
+  if (!apiKey) {
+    throw new Error("NVIDIA_API_KEY is not configured");
+  }
+  const payload = {
+    model,
+    messages: body.messages,
+    temperature: body.temperature,
+    max_tokens: body.max_tokens,
+    stream: true,
+  };
+  if (thinkingDisabledFor("nvidia")) {
+    payload.chat_template_kwargs = { enable_thinking: false };
+  }
+  return fetchChatCompletion(
+    "https://integrate.api.nvidia.com/v1/chat/completions",
+    { Authorization: `Bearer ${apiKey}` },
+    payload,
+    signal,
+    opts
+  );
+}
+
+function callCloudflare(model, body, signal, opts) {
+  const apiToken = process.env.CLOUDFLARE_API_TOKEN?.trim();
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID?.trim();
+  if (!apiToken || !accountId) {
+    throw new Error("CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID is not configured");
+  }
+  const payload = {
+    model,
+    messages: body.messages,
+    temperature: body.temperature,
+    max_tokens: body.max_tokens,
+    stream: true,
+  };
+  if (thinkingDisabledFor("cloudflare")) {
+    payload.chat_template_kwargs = { enable_thinking: false };
+  }
+  return fetchChatCompletion(
+    `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/v1/chat/completions`,
+    { Authorization: `Bearer ${apiToken}` },
+    payload,
+    signal,
+    opts
+  );
+}
+
+// ── Result extraction ────────────────────────────────────────────────────────
 
 export function extractTextFromResult(result) {
   if (result == null) {
@@ -1257,7 +1059,7 @@ export function extractTextFromResult(result) {
   }
   text = stripThinkingTags(text);
   if (!text.trim()) {
-    throw new GemmaApiError(
+    throw new AIApiError(
       502,
       "EmptyResponse",
       "AI provider returned an empty response body"
@@ -1281,25 +1083,30 @@ async function runProviderAttempts(provider, request, config, raceState) {
   const { messages, temperature, maxOutputTokens, timeoutMs, callId, parentSignal, raceSignal } = request;
   const health = providerHealth[provider.key];
   const models = provider.models.length > 0 ? provider.models : [PRIMARY_AI_MODEL];
+  const firstByteTimeoutMs =
+    config.firstByteOverrideMs || provider.firstByteTimeoutMs;
   let lastError = null;
 
   for (let attempt = 0; attempt <= config.maxRetries; attempt++) {
     if (parentSignal?.aborted || raceSignal?.aborted) {
-      const abortError = new Error("The operation was aborted");
-      abortError.name = "AbortError";
-      throw abortError;
+      throw newAbortError();
     }
 
-    // Always use the provider's CURRENT preferred model — rotation on a
+    // Start from the provider's CURRENT preferred model — rotation on a
     // model-shaped failure advances it, and success pins it for next time.
+    // Groq additionally consults the per-model TPM ledger so a model that is
+    // about to hit its tokens-per-minute envelope is sidestepped BEFORE it
+    // 429s, not after.
     let modelIndex = health.modelIndex % models.length;
     let model = models[modelIndex];
-    if (provider.key === "groq" && attempt === 0) {
-      const selection = selectNextGroqModel();
-      if (selection?.selectedModel && models.includes(selection.selectedModel)) {
-        model = selection.selectedModel;
-        modelIndex = models.indexOf(model);
-      }
+    if (provider.key === "groq") {
+      const selection = selectGroqModel(
+        models,
+        modelIndex,
+        estimateRequestTokens(messages, maxOutputTokens)
+      );
+      model = selection.model;
+      modelIndex = selection.index;
     }
 
     const controller = new AbortController();
@@ -1327,7 +1134,7 @@ async function runProviderAttempts(provider, request, config, raceState) {
         { messages, temperature, max_tokens: maxOutputTokens },
         controller.signal,
         {
-          firstByteTimeoutMs: config.firstByteTimeoutMs,
+          firstByteTimeoutMs,
           stallTimeoutMs: config.stallTimeoutMs,
           // Liveness signal for the race orchestrator: a provider that is
           // receiving data must not be hedged against (cost control).
@@ -1338,6 +1145,13 @@ async function runProviderAttempts(provider, request, config, raceState) {
 
       const latencyMs = Date.now() - startedAt;
       recordProviderSuccess(provider.key, latencyMs, modelIndex);
+      if (provider.key === "groq") {
+        // Exact usage when Groq reported it in the stream; estimate otherwise.
+        const totalTokens =
+          result?.usage?.total_tokens ||
+          estimateRequestTokens(messages, 0) + Math.ceil(text.length / 3.5);
+        recordGroqTokens(model, totalTokens);
+      }
       console.log("[AI] attempt success", {
         callId,
         provider: provider.key,
@@ -1352,9 +1166,9 @@ async function runProviderAttempts(provider, request, config, raceState) {
 
       if (isAbortError(rawError)) {
         if (timeoutTriggered) {
-          error = new GemmaTimeoutError(timeoutMs);
+          error = new AITimeoutError(timeoutMs);
         } else {
-          // Aborted by the caller or because the other provider already won —
+          // Aborted by the caller or because another provider already won —
           // propagate untouched; the orchestrator ignores race-cancellations.
           throw rawError;
         }
@@ -1362,6 +1176,12 @@ async function runProviderAttempts(provider, request, config, raceState) {
 
       lastError = error;
       recordProviderFailure(provider.key, error, config);
+      if (provider.key === "groq" && error?.status === 429) {
+        // The provider says this model's minute budget is gone — mark its
+        // ledger full so TPM-aware selection steers the next requests away
+        // until the window rolls over.
+        recordGroqTokens(model, groqTpmLimit());
+      }
       console.warn("[AI] attempt failed", {
         callId,
         provider: provider.key,
@@ -1391,18 +1211,18 @@ async function runProviderAttempts(provider, request, config, raceState) {
 
       const isLastAttempt = attempt === config.maxRetries;
       const canRotate = models.length > 1 && isModelRotationFailure(error);
-      if (isLastAttempt || (!isRetryableGemmaError(error, models.length > 1) && !canRotate)) {
+      if (isLastAttempt || (!isRetryableAIError(error, models.length > 1) && !canRotate)) {
         throw new ProviderExhaustedError(provider.key, error);
       }
 
-      // Backoff before the next attempt. Timeouts on Cloudflare usually mean
-      // a cold model — wait long enough for it to load, unless another
+      // Backoff before the next attempt. Timeouts on Cloudflare/NVIDIA can
+      // mean a cold model — wait long enough for it to load, unless another
       // provider is racing (then keep the loser's retries cheap and quick).
-      // Model-rotation switches (e.g. 403 tier restriction / 400 invalid model)
-      // do not require waiting for server recovery, so cap their backoff to 50ms.
+      // Model-rotation switches don't require waiting for server recovery,
+      // so cap their backoff near-zero.
       const isColdStart =
-        (error instanceof GemmaTimeoutError ||
-          (error instanceof GemmaApiError && error.status === 408)) &&
+        (error instanceof AITimeoutError ||
+          (error instanceof AIApiError && error.status === 408)) &&
         !error.receivedData;
       const racing = raceState?.othersRunning?.() ?? false;
       const isRotation = isModelRotationFailure(error);
@@ -1447,12 +1267,12 @@ function pickBestError(errors) {
   if (meaningful.length === 0) {
     return new Error("Unable to generate lesson after exhausting retries");
   }
-  // Unwrap provider-exhausted wrappers so server.js sees the real cause.
+  // Unwrap provider-exhausted wrappers so callers see the real cause.
   const unwrapped = meaningful.map((e) =>
     e instanceof ProviderExhaustedError && e.cause ? e.cause : e
   );
   // Prefer a concrete provider error over "circuit was open".
-  const concrete = unwrapped.find((e) => !(e instanceof GemmaCircuitOpenError));
+  const concrete = unwrapped.find((e) => !(e instanceof AICircuitOpenError));
   return concrete ?? unwrapped[0];
 }
 
@@ -1461,26 +1281,25 @@ function pickBestError(errors) {
  *  - launch the first (healthiest) provider immediately;
  *  - if it fails, launch the next one instantly (fail-fast);
  *  - if the hedge timer fires and NO running provider has shown any sign of
- *    life (no bytes received), launch the next one in parallel — but if the
- *    leader is alive and generating, DON'T: hedging a healthy provider only
- *    doubles token spend and burns the fallback's free-tier limits. A leader
- *    that goes quiet later is killed by the stream silence watchdog, which
- *    lands in the fail-fast path anyway;
+ *    life (no bytes received), launch the next one in parallel — but if any
+ *    running provider is alive and generating, DON'T: hedging a healthy
+ *    provider only doubles token spend. A leader that goes quiet later is
+ *    killed by the stream silence watchdog, which lands in the fail-fast
+ *    path anyway;
  *  - first success wins, all other in-flight attempts are aborted.
+ *
+ * Liveness is tracked PER STARTER (not as one shared flag) so a dead
+ * provider's exit never erases — or a corpse never fakes — the liveness of a
+ * provider that is still streaming.
  */
 function hedgedRace(starters, hedgeDelayMs, onWinner, onHedgeSkipped) {
   return new Promise((resolve, reject) => {
     const errors = new Array(starters.length);
+    const aliveIndices = new Set();
     let nextIndex = 0;
     let running = 0;
     let finished = false;
     let hedgeTimer = null;
-    let anyAlive = false;
-
-    const othersRunning = () => running > 1;
-    const markAlive = () => {
-      anyAlive = true;
-    };
 
     const settleReject = () => {
       if (!finished && running === 0 && nextIndex >= starters.length) {
@@ -1494,8 +1313,8 @@ function hedgedRace(starters, hedgeDelayMs, onWinner, onHedgeSkipped) {
       if (finished || nextIndex >= starters.length) return;
       hedgeTimer = setTimeout(() => {
         if (finished) return;
-        if (anyAlive) {
-          // Leader is receiving data — rescue not needed, save the money.
+        if (aliveIndices.size > 0) {
+          // A running provider is receiving data — rescue not needed.
           onHedgeSkipped?.();
           return;
         }
@@ -1511,12 +1330,13 @@ function hedgedRace(starters, hedgeDelayMs, onWinner, onHedgeSkipped) {
       }
       const index = nextIndex++;
       running += 1;
-      // A newly launched provider starts silent: reset the liveness flag so
-      // its own hedge window judges IT, not the corpse of its predecessor.
-      anyAlive = false;
-      starters[index]({ othersRunning, markAlive }).then(
+      starters[index]({
+        othersRunning: () => running > 1,
+        markAlive: () => aliveIndices.add(index),
+      }).then(
         (value) => {
           running -= 1;
+          aliveIndices.delete(index);
           if (finished) return;
           finished = true;
           if (hedgeTimer) clearTimeout(hedgeTimer);
@@ -1525,6 +1345,7 @@ function hedgedRace(starters, hedgeDelayMs, onWinner, onHedgeSkipped) {
         },
         (error) => {
           running -= 1;
+          aliveIndices.delete(index);
           errors[index] = error;
           if (finished) return;
           // Fail-fast: a dead provider shouldn't make the user wait for the
@@ -1543,17 +1364,21 @@ function hedgedRace(starters, hedgeDelayMs, onWinner, onHedgeSkipped) {
 
 // ── Public entrypoint ────────────────────────────────────────────────────────
 
-export async function callGemma(
+/**
+ * Generate one chat completion across the provider pool. Resolves with the
+ * completion TEXT (thinking tags stripped); rejects with AIApiError /
+ * AITimeoutError / AICircuitOpenError / AbortError.
+ */
+export async function callAI(
   systemPrompt,
   userMessage,
   temperature = 0.7,
   timeoutMs = 30000,
   signal = null,
-  maxOutputTokens = 4000,
-  allowFallback = true
+  maxOutputTokens = 4000
 ) {
   const config = getEngineConfig();
-  const providers = getProviders(allowFallback);
+  const providers = getProviders();
 
   if (providers.length === 0) {
     throw new Error(
@@ -1562,10 +1387,8 @@ export async function callGemma(
   }
 
   const callId = `ai-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-  lastUserRequestAt = Date.now();
-  const sanitizedSystemPrompt = stripThinkingTags(systemPrompt);
   const messages = [
-    { role: "system", content: sanitizedSystemPrompt },
+    { role: "system", content: systemPrompt },
     { role: "user", content: userMessage },
   ];
 
@@ -1583,18 +1406,12 @@ export async function callGemma(
   }
   const ordered = orderProviders(candidates);
 
-  console.log("[AI] callGemma invoked", {
+  console.log("[AI] callAI invoked", {
     callId,
     providerOrder: ordered.map((p) => p.key),
     halfOpenProbe,
-    hedgeDelayMs: config.hedgeDelayMs,
-    maxRetries: config.maxRetries,
     timeoutMs,
-    temperature,
     maxOutputTokens,
-    systemPromptLength: sanitizedSystemPrompt?.length ?? 0,
-    userMessageLength: userMessage?.length ?? 0,
-    health: getProviderHealthSnapshot(),
   });
 
   // Losers get aborted through this controller the moment a winner lands.
@@ -1618,41 +1435,34 @@ export async function callGemma(
   );
 
   try {
-    const text = await hedgedRace(
+    return await hedgedRace(
       starters,
       config.hedgeDelayMs,
       (index) => {
-        console.log("[AI] callGemma success", {
-          callId,
-          winner: ordered[index].key,
-        });
+        console.log("[AI] callAI success", { callId, winner: ordered[index].key });
       },
       () => {
-        console.log("[AI] hedge skipped — leader is alive and generating", {
-          callId,
-        });
+        console.log("[AI] hedge skipped — leader is alive and generating", { callId });
       }
     );
-    return text;
   } catch (error) {
     // Caller cancelled — surface the abort as-is.
     if (signal?.aborted && isAbortError(error)) throw error;
 
-    console.error("[AI] callGemma exhausted all options", {
+    console.error("[AI] callAI exhausted all options", {
       callId,
       errorName: error?.name,
       errorMessage: error?.message,
-      health: getProviderHealthSnapshot(),
     });
 
     // When every provider is unavailable AND circuits are open, tell the
     // caller when it's worth retrying.
-    if (isGemmaServiceUnavailableError(error)) {
+    if (isAIServiceUnavailableError(error)) {
       const openTimes = providers
         .map((p) => providerHealth[p.key].openUntil)
         .filter((t) => t > Date.now());
       if (openTimes.length === providers.length && openTimes.length > 0) {
-        throw new GemmaCircuitOpenError(Math.min(...openTimes) - Date.now());
+        throw new AICircuitOpenError(Math.min(...openTimes) - Date.now());
       }
     }
     throw error;
@@ -1662,145 +1472,41 @@ export async function callGemma(
   }
 }
 
-// ── Warm-up ──────────────────────────────────────────────────────────────────
+// ── Boot-time connection warm-up ─────────────────────────────────────────────
+// Groq and Mistral have no model cold start, so there is nothing to keep warm
+// with inference pings (the old periodic Cloudflare warm-up burned ~700
+// inference calls/day for a last-resort provider). What IS worth paying once,
+// at boot, is the DNS + TCP + TLS handshake to each configured provider:
+// undici keeps the pooled connection alive, so the first real user request
+// skips the handshake and reaches the provider faster.
 
-/**
- * Warm up the last-resort model (Cloudflare Workers AI) with a minimal request.
- * Cloudflare Workers AI unloads idle models quickly and can cold-start in
- * 10-30s, so we keep it warm with a tiny non-streaming ping.
- *
- * The PRIMARY (Groq) is intentionally NOT warmed: Groq LPUs have sub-second
- * TTFT and no meaningful cold start, and pinging it 24/7 would only waste
- * tokens for no latency benefit.
- */
-export async function warmUpModel() {
-  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID?.trim();
-  const apiToken = process.env.CLOUDFLARE_API_TOKEN?.trim();
-  if (!accountId || !apiToken) {
-    console.log("[AI] Warm-up skipped: Cloudflare (CLOUDFLARE_ACCOUNT_ID / CLOUDFLARE_API_TOKEN) not configured");
-    return;
-  }
+const PROVIDER_ORIGINS = [
+  { key: "groq", origin: "https://api.groq.com", enabled: isGroqConfigured },
+  { key: "mistral", origin: "https://api.mistral.ai", enabled: isMistralConfigured },
+  { key: "nvidia", origin: "https://integrate.api.nvidia.com", enabled: isNvidiaConfigured },
+  { key: "cloudflare", origin: "https://api.cloudflare.com", enabled: isCloudflareConfigured },
+];
 
-  const models = getCloudflareModels();
-  const model = models[0];
-  const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/v1/chat/completions`;
-
-  const callId = `warmup-${Date.now()}`;
-  const maxAttempts = 2;
-  const warmupTimeoutMs = 60000;
-
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    // Bug fix: startedAt was measured once BEFORE the loop, so the logged
-    // latency of attempt 2 wrongly included all of attempt 1.
-    const startedAt = Date.now();
+export function preconnectProviders() {
+  for (const { key, origin, enabled } of PROVIDER_ORIGINS) {
+    if (!enabled()) continue;
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), warmupTimeoutMs);
-
-    try {
-      const res = await fetch(url, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model,
-          messages: [{ role: "user", content: "Hi" }],
-          temperature: 0.7,
-          max_tokens: 5,
-          stream: false,
-        }),
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-      const latencyMs = Date.now() - startedAt;
-
-      if (res.ok) {
-        console.log("[AI] Fallback model (Cloudflare) warmed up successfully", {
-          callId,
-          latencyMs,
-          attempt: attempt + 1,
-        });
-        return;
-      }
-
-      console.warn("[AI] Warm-up received non-OK status (non-fatal)", {
-        callId,
-        latencyMs,
-        attempt: attempt + 1,
-        status: res.status,
-      });
-    } catch (error) {
-      clearTimeout(timeoutId);
-      console.warn("[AI] Warm-up attempt failed (non-fatal)", {
-        callId,
-        attempt: attempt + 1,
-        latencyMs: Date.now() - startedAt,
-        error: error?.message,
-      });
-    }
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    // No auth header and no body: any HTTP status (404, 401, …) still means
+    // the TLS session is established and pooled. Fire-and-forget.
+    fetch(origin, { method: "GET", signal: controller.signal })
+      .then((res) => {
+        void res.body?.cancel().catch(() => {});
+        console.log("[AI] preconnect ok", { provider: key, status: res.status });
+      })
+      .catch(() => {
+        // Purely opportunistic; a failure here means nothing for real calls.
+      })
+      .finally(() => clearTimeout(timeoutId));
   }
-}
-
-// Periodic warm-up: ping the model at a regular interval to prevent cold
-// starts. Cloudflare Workers AI unloads idle models quickly — production
-// logs show the model going cold within 30-40 seconds.
-//
-// COST CONTROL: pinging 24/7 is ~960 inference calls/day even when nobody is
-// using the site. Warm-up now only runs while there has been user activity
-// within WARM_UP_IDLE_WINDOW_MS (default 15 min, boot counts as activity so
-// the first visitors are covered). After an idle stretch the first request
-// pays a cold start once — the silence watchdog + fallback rescue keep even
-// that case bounded — and warm-up resumes automatically with the traffic.
-const DEFAULT_WARM_UP_INTERVAL_MS = 120 * 1000;
-const DEFAULT_WARM_UP_IDLE_WINDOW_MS = 10 * 60 * 1000;
-
-// Updated on every callGemma invocation; initialized to "now" at boot.
-let lastUserRequestAt = Date.now();
-
-export function startPeriodicWarmUp(intervalMs) {
-  const resolvedMs =
-    Number.isFinite(intervalMs) && intervalMs > 0
-      ? intervalMs
-      : parsePositiveInt(
-          process.env.AI_WARM_UP_INTERVAL_MS ?? process.env.GEMMA_WARM_UP_INTERVAL_MS,
-          DEFAULT_WARM_UP_INTERVAL_MS
-        );
-  const idleWindowMs = parsePositiveInt(
-    process.env.WARM_UP_IDLE_WINDOW_MS,
-    DEFAULT_WARM_UP_IDLE_WINDOW_MS
-  );
-
-  let idleLogged = false;
-  // Run the first warm-up immediately, then on the interval while active.
-  warmUpModel();
-  const handle = setInterval(() => {
-    const idleForMs = Date.now() - lastUserRequestAt;
-    if (idleForMs > idleWindowMs) {
-      if (!idleLogged) {
-        console.log("[AI] Warm-up paused — no user requests recently", {
-          idleForMs,
-          idleWindowMs,
-        });
-        idleLogged = true;
-      }
-      return;
-    }
-    idleLogged = false;
-    warmUpModel();
-  }, resolvedMs);
-  handle.unref?.();
-  console.log("[AI] Periodic warm-up started", {
-    intervalMs: resolvedMs,
-    idleWindowMs,
-  });
-  return handle;
 }
 
 // ── Tolerant JSON extraction from model output ──────────────────────────────
-
-import { jsonrepair } from "jsonrepair";
 
 export function parseJSON(text) {
   // Prefix/fence strips are anchored to the ends of the text — unanchored

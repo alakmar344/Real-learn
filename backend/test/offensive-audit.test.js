@@ -39,7 +39,7 @@ import {
 import { filterUserInput, containsHarmfulContent } from "../src/lib/contentGuard.js";
 import { moderateText } from "../src/lib/moderation.js";
 import { sanitizeSources, normalizeJourney, isValidJourney } from "../src/validation.js";
-import { parseJSON } from "../src/lib/gemma.js";
+import { parseJSON } from "../src/lib/aiEngine.js";
 
 // ── A. Prompt-injection fence escape ──────────────────────────────────────────
 
