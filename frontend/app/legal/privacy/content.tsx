@@ -54,7 +54,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
           it generates either a quick single-part direct answer (&quot;Fast&quot; mode) or a 3-part
           learning journey (Foundation, Mechanism, Real World — &quot;Explain&quot; mode) for any
           topic you ask about. It is powered by high-performance open models: our primary
-          inference provider is <strong>Groq Cloud</strong> (running Llama 3.3 70B, Qwen 3.6 27B and GPT-OSS 120B on LPUs), with{" "}
+          inference provider is <strong>Groq Cloud</strong> (running GPT-OSS 120B, GPT-OSS 20B and Qwen 3.6 27B on LPUs), with{" "}
           <strong>Mistral AI</strong> (running mistral-small and mistral-large) and{" "}
           <strong>NVIDIA NIM</strong> (70B–150B parameter models) configured as our automatic fallbacks, and{" "}
           <strong>Cloudflare Workers AI</strong> (70B Fast FP8) as a last-resort fallback so lessons can
@@ -304,7 +304,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>6. AI-Generated Content</h3>
         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
           RealLearn generates content using high-performance open AI models. Our primary
-          inference provider is <strong>Groq Cloud</strong> (running Llama 3.3 70B, Qwen 3.6 27B and GPT-OSS 120B on LPUs); if Groq is
+          inference provider is <strong>Groq Cloud</strong> (running GPT-OSS 120B, GPT-OSS 20B and Qwen 3.6 27B on LPUs); if Groq is
           temporarily slow or unavailable, the request automatically falls back to{" "}
           <strong>Mistral AI</strong> (running mistral-small and mistral-large) and{" "}
           <strong>NVIDIA NIM</strong> (70B–150B parameter models), and may then use{" "}
@@ -450,7 +450,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
           <li style={{ marginBottom: 4 }}>
             <strong>Groq Cloud</strong> (groq.com) — Our <strong>primary</strong> AI content
             generation provider. Your question, chosen language, and difficulty level are sent to
-            Groq&apos;s API (which runs open models Llama 3.3 70B, Qwen 3.6 27B and GPT-OSS 120B on LPUs) for one-time
+            Groq&apos;s API (which runs open models GPT-OSS 120B, GPT-OSS 20B and Qwen 3.6 27B on LPUs) for one-time
             inference (lesson generation only — safety moderation runs locally on our servers and is
             not sent to Groq). No user identity is included in the API call. Groq&apos;s own
             data practices apply to API requests.
