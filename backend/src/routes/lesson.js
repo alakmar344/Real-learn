@@ -5,25 +5,13 @@
 // imported exactly once.
 import express from "express";
 import {
-  callGemma,
+  callAI,
   formatAITimeoutMessage,
-  formatGemmaTimeoutMessage,
   AITimeoutError,
-  GemmaTimeoutError,
   AIApiError,
-  GemmaApiError,
   AICircuitOpenError,
-  GemmaCircuitOpenError,
   parseJSON,
-  callMistralFallbackAI,
-  callNvidiaFallbackAI,
-  callCloudflareAI,
-  isFallbackConfigured,
-  isMistralFallbackConfigured,
-  isNvidiaFallbackConfigured,
-  isCloudflareFallbackConfigured,
-  extractTextFromResult,
-} from "../lib/gemma.js";
+} from "../lib/aiEngine.js";
 import {
   GENERATE_LESSON_PROMPT,
   GENERATE_FAST_ANSWER_PROMPT,
@@ -60,7 +48,6 @@ import {
   ALLOWED_LEVELS,
   LESSON_TIMEOUT_MS,
   AI_CALL_TIMEOUT_MS,
-  GEMMA_CALL_TIMEOUT_MS,
   HEARTBEAT_INTERVAL_MS,
   MAX_CONCURRENT_LESSON_REQUESTS,
   LESSON_FAILURE_ALERT_THRESHOLD,
@@ -323,7 +310,7 @@ router.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => 
   }
 
   // SPEED TACTIC: two-tier lesson cache. Identical (question, language, level)
-  // requests are served instantly from memory/Mongo — no Serper, no Gemma, no
+  // requests are served instantly from memory/Mongo — no Serper, no AI call, no
   // rule-based moderation (the cached lesson already passed every check when it was
   // first generated). Cache hits also bypass the concurrency gate because they
   // cost almost nothing.
@@ -682,28 +669,12 @@ END_EXTERNAL_CONTEXT>>>`
     });
     sendEvent("progress", { stage: "generating", percent: 40 });
     // Progress during generation is emitted by the per-attempt ticker inside
-    // tryGenerate (one per rung of the reliability ladder below).
+    // tryGenerate. MONOTONIC: repair attempts continue the asymptotic curve
+    // from wherever it is instead of resetting to 40 — a progress bar that
+    // jumps backwards reads as a failure to the learner.
     let generationPercent = 40;
 
-    const PROVIDER_LOG_LABELS = {
-      primary: "Groq Cloud (Llama 3.3 70B / Qwen 3.6 27B / GPT-OSS 120B)",
-      mistral: "Mistral AI",
-      nvidia: "NVIDIA NIM",
-      cloudflare: "Cloudflare Workers AI",
-    };
-    console.log("[AI] Provider plan", {
-      requestId,
-      mode,
-      providerOrder: [
-        "groq",
-        ...(isMistralFallbackConfigured() ? ["mistral"] : []),
-        ...(isNvidiaFallbackConfigured() ? ["nvidia"] : []),
-        ...(isCloudflareFallbackConfigured() ? ["cloudflare"] : []),
-      ],
-      fallbackConfigured: isFallbackConfigured(),
-    });
-
-    async function tryGenerate(source, label, { repairReason = null } = {}) {
+    async function tryGenerate(label, { repairReason = null } = {}) {
       // Self-correcting retry: when a previous attempt produced output that
       // failed JSON/schema validation, re-ask the SAME question with an
       // explicit correction hint and a lower temperature. Malformed output is
@@ -715,7 +686,6 @@ END_EXTERNAL_CONTEXT>>>`
       const attemptTemperature = repairReason
         ? Math.max(0.2, temperature - 0.3)
         : temperature;
-      generationPercent = 40;
       const attemptTicker = trackTicker(setInterval(() => {
         if (finished) return;
         const remaining = 82 - generationPercent;
@@ -730,86 +700,35 @@ END_EXTERNAL_CONTEXT>>>`
       console.log("[AI] generate start", {
         requestId,
         mode,
-        provider: PROVIDER_LOG_LABELS[source] || PROVIDER_LOG_LABELS.primary,
         label,
         isRepairAttempt: Boolean(repairReason),
         callTimeoutMs: AI_CALL_TIMEOUT_MS,
         userPromptLength: attemptUserPrompt.length,
-        hasNewsContext: Boolean(newsContext),
         maxOutputTokens,
         temperature: attemptTemperature,
       });
       const startedAt = Date.now();
-      let result;
       try {
-        if (source === "mistral") {
-          result = extractTextFromResult(
-            await callMistralFallbackAI(
-              undefined,
-              {
-                messages: [
-                  { role: "system", content: systemPrompt },
-                  { role: "user", content: attemptUserPrompt },
-                ],
-                temperature: attemptTemperature,
-                max_tokens: maxOutputTokens,
-              },
-              generateAbortSignal
-            )
-          );
-        } else if (source === "nvidia") {
-          result = extractTextFromResult(
-            await callNvidiaFallbackAI(
-              undefined,
-              {
-                messages: [
-                  { role: "system", content: systemPrompt },
-                  { role: "user", content: attemptUserPrompt },
-                ],
-                temperature: attemptTemperature,
-                max_tokens: maxOutputTokens,
-              },
-              generateAbortSignal
-            )
-          );
-        } else if (source === "cloudflare") {
-          // Direct provider calls bypass callGemma's circuit breaker so a
-          // fallback is still reachable when the primary's circuit is open.
-          result = extractTextFromResult(
-            await callCloudflareAI(
-              undefined,
-              {
-                messages: [
-                  { role: "system", content: systemPrompt },
-                  { role: "user", content: attemptUserPrompt },
-                ],
-                temperature: attemptTemperature,
-                max_tokens: maxOutputTokens,
-              },
-              generateAbortSignal
-            )
-          );
-        } else {
-          result = await callGemma(
-            systemPrompt,
-            attemptUserPrompt,
-            attemptTemperature,
-            AI_CALL_TIMEOUT_MS,
-            generateAbortSignal,
-            maxOutputTokens
-          );
-        }
+        // callAI orders providers by health, races them with cost-aware
+        // hedging, retries transient failures, and rotates models — one call
+        // is the WHOLE availability strategy for this attempt.
+        const result = await callAI(
+          systemPrompt,
+          attemptUserPrompt,
+          attemptTemperature,
+          AI_CALL_TIMEOUT_MS,
+          generateAbortSignal,
+          maxOutputTokens
+        );
         clearInterval(attemptTicker);
         const promptTokens = estimateTokenCount(systemPrompt) + estimateTokenCount(attemptUserPrompt);
         const completionTokens = estimateTokenCount(result);
-        logTokenUsage(requestId, mode, source, promptTokens, completionTokens);
+        logTokenUsage(requestId, mode, label, promptTokens, completionTokens);
         console.log("[AI] generate success", {
           requestId,
-          provider: PROVIDER_LOG_LABELS[source] || PROVIDER_LOG_LABELS.primary,
           label,
           latencyMs: Date.now() - startedAt,
           rawLength: result.length,
-          rawPreview: result.slice(0, 500),
         });
         sendEvent("progress", { stage: "generated", percent: 85 });
         return result;
@@ -817,10 +736,10 @@ END_EXTERNAL_CONTEXT>>>`
         clearInterval(attemptTicker);
         console.error("[AI] generate failed", {
           requestId,
-          provider: PROVIDER_LOG_LABELS[source] || PROVIDER_LOG_LABELS.primary,
           label,
           latencyMs: Date.now() - startedAt,
-          error,
+          errorName: error?.name,
+          errorMessage: error?.message,
         });
         throw error;
       }
@@ -909,94 +828,61 @@ END_EXTERNAL_CONTEXT>>>`
     }
 
     // ── Reliability ladder ──
-    // A user-visible error is the LAST resort. Every rung may fail either by
-    // throwing (network/timeout/API error) or by returning output that fails
-    // validation; the next rung then runs automatically. "repair" rungs re-ask
-    // the same provider with an explicit correction hint and lower temperature
-    // — this is the server doing the "second try" the user used to have to do
-    // by hand. Latency can grow a little on a bad first sample; that is a
-    // deliberate trade for never surfacing a fixable error.
-    // Reliability: direct fallback rungs call NVIDIA first, then Cloudflare as
-    // the last-resort provider, WITHOUT going through callGemma's timeout
-    // circuit breaker. This keeps a circuit-independent path reachable when
-    // Groq is degraded. Each rung only exists when its provider is
-    // configured, so single-provider deployments are unaffected.
+    // A user-visible error is the LAST resort — but the ladder is now built
+    // ON TOP of the engine's own availability strategy instead of duplicating
+    // it. Each rung runs ONE full hedged race across every configured
+    // provider (health-ordered, retried, model-rotated). The rungs therefore
+    // only handle the failure mode the engine cannot see: syntactically-fine
+    // completions that fail JSON/schema validation. "repair" rungs re-ask
+    // with an explicit correction hint and lower temperature — the server
+    // doing the "second try" the user used to have to do by hand.
+    //
+    // A THROWN error, by contrast, means the engine already exhausted every
+    // provider's retries and rotations for this attempt — re-running the
+    // whole race would just repeat the same exhaustion against the same dead
+    // providers and multiply worst-case latency, so it surfaces immediately.
     const attemptPlan = [
-      { source: "primary", label: "primary", repair: false },
-      { source: "primary", label: "primary-repair", repair: true },
+      { label: "generate", repair: false },
+      { label: "repair-1", repair: true },
+      { label: "repair-2", repair: true },
     ];
-    if (isMistralFallbackConfigured()) {
-      attemptPlan.push({ source: "mistral", label: "mistral", repair: false });
-      attemptPlan.push({ source: "mistral", label: "mistral-repair", repair: true });
-    }
-    if (isNvidiaFallbackConfigured()) {
-      attemptPlan.push({ source: "nvidia", label: "nvidia", repair: false });
-      attemptPlan.push({ source: "nvidia", label: "nvidia-repair", repair: true });
-    }
-    if (isCloudflareFallbackConfigured()) {
-      attemptPlan.push({ source: "cloudflare", label: "cloudflare-last-resort", repair: false });
-      attemptPlan.push({ source: "cloudflare", label: "cloudflare-last-resort-repair", repair: true });
-    }
 
     let validated = null;
     let lastValidationError = null;
-    let lastThrownError = null;
 
     for (const plan of attemptPlan) {
       if (finished || generateAbortSignal.aborted) return;
-      try {
-        const rawAttempt = await tryGenerate(plan.source, plan.label, {
-          repairReason: plan.repair
-            ? lastValidationError || "the response was not valid JSON"
-            : null,
-        });
-        const validation = await validateRaw(rawAttempt);
-        if (validation.ok) {
-          validated = validation;
-          console.log("[generate-lesson] Attempt succeeded", {
-            requestId,
-            label: plan.label,
-          });
-          break;
-        }
-        lastValidationError = validation.error;
-        sendEvent("progress", {
-          stage: "retrying",
-          percent: Math.round(generationPercent),
-          message: "Improving response quality...",
-        });
-        console.warn("[generate-lesson] Attempt produced invalid output; trying next rung", {
+      const rawAttempt = await tryGenerate(plan.label, {
+        repairReason: plan.repair
+          ? lastValidationError || "the response was not valid JSON"
+          : null,
+      });
+      const validation = await validateRaw(rawAttempt);
+      if (validation.ok) {
+        validated = validation;
+        console.log("[generate-lesson] Attempt succeeded", {
           requestId,
           label: plan.label,
-          validationError: validation.error,
         });
-      } catch (error) {
-        if (finished || generateAbortSignal.aborted) return;
-        if (error?.name === "AbortError") throw error;
-        lastThrownError = error;
-        sendEvent("progress", {
-          stage: "retrying",
-          percent: Math.round(generationPercent),
-          message: "Retrying generation...",
-        });
-        console.warn("[generate-lesson] Attempt threw; trying next rung", {
-          requestId,
-          label: plan.label,
-          errorName: error?.name,
-          errorMessage: error?.message,
-        });
+        break;
       }
+      lastValidationError = validation.error;
+      sendEvent("progress", {
+        stage: "retrying",
+        percent: Math.round(generationPercent),
+        message: "Improving response quality...",
+      });
+      console.warn("[generate-lesson] Attempt produced invalid output; trying next rung", {
+        requestId,
+        label: plan.label,
+        validationError: validation.error,
+      });
     }
 
     if (!validated) {
-      // Prefer the outer catch's friendly per-error-type mapping when the
-      // final failure was a thrown provider error; validation messages are
-      // already written for humans.
-      if (lastThrownError && !lastValidationError) throw lastThrownError;
       console.error("[generate-lesson] All generation attempts exhausted", {
         requestId,
         lastValidationError,
-        lastThrownErrorName: lastThrownError?.name,
       });
       const exhaustedMessage =
         lastValidationError || "Failed to generate lesson. Please try again.";
@@ -1107,24 +993,28 @@ END_EXTERNAL_CONTEXT>>>`
       console.log("[generate-lesson] Request aborted", { requestId });
       return;
     }
+    // User-facing copy is NEUTRAL: no provider names, no internal mechanics.
+    // The learner experiences one RealLearn system regardless of which
+    // provider is behind it. ("temporarily"/"try again"/"timed out" wording is
+    // load-bearing — the frontend classifies retryability from those phrases.)
     const timeoutMessage = formatAITimeoutMessage(LESSON_TIMEOUT_MS);
     const message =
-      lessonDeadlineHit || error instanceof AITimeoutError || error instanceof GemmaTimeoutError
+      lessonDeadlineHit || error instanceof AITimeoutError
         ? timeoutMessage
-        : error instanceof AICircuitOpenError || error instanceof GemmaCircuitOpenError
+        : error instanceof AICircuitOpenError
         ? error.message
-        : (error instanceof AIApiError || error instanceof GemmaApiError) &&
+        : error instanceof AIApiError &&
           (error.status === 408 ||
             error.status === 429 ||
             (error.status >= 500 && error.status < 600))
-        ? "AI service is temporarily unavailable. Please try again in a moment."
+        ? "Lesson generation is temporarily unavailable. Please try again in a moment."
         : // Security: NEVER echo AIApiError.message to clients — it embeds
           // up to 500 chars of the raw upstream response body,
           // which can leak account/model/config internals. Same for any other
           // internal error (driver/infra messages can contain hostnames).
           // The full detail is still logged server-side below.
-          error instanceof AIApiError || error instanceof GemmaApiError
-        ? "The AI service could not process this request. Please try again."
+          error instanceof AIApiError
+        ? "We couldn't generate this lesson. Please try again."
         : "Failed to generate lesson. Please try again.";
 
     console.error("[generate-lesson] Request failed", { requestId, error });

@@ -3,7 +3,7 @@
 // logic lives under src/routes/, shared plumbing under src/lib/ and
 // src/middleware/, startup maintenance under src/startup/.
 import express from "express";
-import { startPeriodicWarmUp } from "./lib/gemma.js";
+import { preconnectProviders } from "./lib/aiEngine.js";
 import { closeMongo } from "./lib/mongodb.js";
 import { PORT, validateStartupConfig } from "./config.js";
 import {
@@ -94,9 +94,11 @@ try {
   validateStartupConfig();
   const server = app.listen(PORT, () => {
     console.log(`Backend listening on port ${PORT}`);
-    if (process.env.CLOUDFLARE_API_TOKEN?.trim() && process.env.CLOUDFLARE_ACCOUNT_ID?.trim()) {
-      startPeriodicWarmUp();
-    }
+    // LATENCY: open DNS+TCP+TLS to every configured AI provider once at boot
+    // so the first user request skips the handshake. (The old periodic
+    // Cloudflare inference warm-up is gone — Groq/Mistral have no model cold
+    // start, and pinging a last-resort provider 24/7 burned ~700 calls/day.)
+    preconnectProviders();
     // Privacy (policy v2.3): retroactively anonymize raw IPs stored by
     // earlier releases. Fire-and-forget; errors are logged, not fatal.
     void scrubStoredConsentIps();

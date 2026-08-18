@@ -7,7 +7,7 @@
 // A cached lesson was already moderated (local rule-based filters — no
 // third-party moderation call, see lib/moderation.js) and schema-validated the
 // first time it was generated, so a cache hit legitimately skips Serper, the
-// Gemma generation call, AND both moderation passes — turning a ~20-60s
+// AI generation call, AND both moderation passes — turning a ~20-60s
 // pipeline into a single lookup.
 //
 // TTL is deliberately modest (default 6 hours) because Part 3 of every lesson
@@ -33,6 +33,16 @@ const LESSON_CACHE_TTL_MS = parsePositiveInt(
 const LESSON_CACHE_MAX_MEMORY_ENTRIES = parsePositiveInt(
   process.env.LESSON_CACHE_MAX_MEMORY_ENTRIES,
   DEFAULT_LESSON_CACHE_MAX_MEMORY_ENTRIES
+);
+// LATENCY: the Mongo tier sits on the critical path BEFORE generation starts.
+// A healthy findOne takes single-digit ms; a degraded/unreachable cluster can
+// hang for the driver's full server-selection window (10s) — which would delay
+// EVERY lesson by that much for a cache that is merely an optimization. Cap
+// the lookup and treat a slow answer as a miss; writes stay fire-and-forget.
+const DEFAULT_LESSON_CACHE_LOOKUP_TIMEOUT_MS = 800;
+const LESSON_CACHE_LOOKUP_TIMEOUT_MS = parsePositiveInt(
+  process.env.LESSON_CACHE_LOOKUP_TIMEOUT_MS,
+  DEFAULT_LESSON_CACHE_LOOKUP_TIMEOUT_MS
 );
 
 export function isLessonCacheEnabled() {
@@ -161,22 +171,44 @@ export async function getCachedLesson(key) {
     return fromMemory;
   }
 
+  // The Mongo lookup races a short deadline: past it, generation proceeds as
+  // a miss while the lookup (if it ever completes) still back-fills the
+  // memory tier for the next request. Never throws.
+  const mongoLookup = (async () => {
+    try {
+      const db = await getDb();
+      // Project only what we use — skips shipping key/createdAt/updatedAt
+      // bytes over the wire on every cache hit.
+      const doc = await db
+        .collection(CACHE_COLLECTION)
+        .findOne({ key }, { projection: { _id: 0, lesson: 1, expiresAt: 1 } });
+      if (!doc?.lesson) return null;
+      const expiresAt = doc.expiresAt instanceof Date ? doc.expiresAt.getTime() : 0;
+      if (expiresAt <= Date.now()) return null; // TTL monitor may lag; enforce here.
+      memorySet(key, doc.lesson, expiresAt);
+      console.log("[lessonCache] Mongo hit", { key: key.slice(0, 12) });
+      return doc.lesson;
+    } catch (error) {
+      console.warn("[lessonCache] Lookup failed; treating as miss", error?.message);
+      return null;
+    }
+  })();
+
+  let deadlineTimer = null;
+  const deadline = new Promise((resolve) => {
+    deadlineTimer = setTimeout(() => {
+      console.warn("[lessonCache] Mongo lookup exceeded deadline; treating as miss", {
+        key: key.slice(0, 12),
+        timeoutMs: LESSON_CACHE_LOOKUP_TIMEOUT_MS,
+      });
+      resolve(null);
+    }, LESSON_CACHE_LOOKUP_TIMEOUT_MS);
+  });
+
   try {
-    const db = await getDb();
-    // Project only what we use — skips shipping key/createdAt/updatedAt
-    // bytes over the wire on every cache hit.
-    const doc = await db
-      .collection(CACHE_COLLECTION)
-      .findOne({ key }, { projection: { _id: 0, lesson: 1, expiresAt: 1 } });
-    if (!doc?.lesson) return null;
-    const expiresAt = doc.expiresAt instanceof Date ? doc.expiresAt.getTime() : 0;
-    if (expiresAt <= Date.now()) return null; // TTL monitor may lag; enforce here.
-    memorySet(key, doc.lesson, expiresAt);
-    console.log("[lessonCache] Mongo hit", { key: key.slice(0, 12) });
-    return doc.lesson;
-  } catch (error) {
-    console.warn("[lessonCache] Lookup failed; treating as miss", error?.message);
-    return null;
+    return await Promise.race([mongoLookup, deadline]);
+  } finally {
+    clearTimeout(deadlineTimer);
   }
 }
 

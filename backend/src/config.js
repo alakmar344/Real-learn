@@ -59,12 +59,14 @@ export const RATE_LIMIT_MAX_REQUESTS =
 const DEFAULT_LESSON_TIMEOUT_MS = 300000;
 const MIN_LESSON_TIMEOUT_MS = 30000;
 const MAX_LESSON_TIMEOUT_MS = 600000;
-// Per-call timeout for individual AI provider API requests. The lesson-level
-// timeout (above) covers the full generation including retries and
-// validation; this shorter timeout ensures a single stuck request doesn't
-// eat the entire budget. 45s is enough for a warm model (~30-50s typical);
-// cold starts that exceed this will be retried with a delay.
-const DEFAULT_AI_CALL_TIMEOUT_MS = 45000;
+// Per-call timeout for one full hedged generation attempt (all providers,
+// retries and rotations included). Hung/silent requests are killed in seconds
+// by the engine's first-byte + stall watchdogs, so this ceiling only bounds a
+// SLOW-BUT-STREAMING generation. It must therefore fit the slowest healthy
+// case (a 4k-token explain lesson on a slower fallback model can legitimately
+// take 60-80s) — the old 45s cap was sized for the fast primary and killed
+// healthy fallback generations mid-stream.
+const DEFAULT_AI_CALL_TIMEOUT_MS = 90000;
 const configuredLessonTimeoutMs = Number(process.env.LESSON_TIMEOUT_MS);
 export const LESSON_TIMEOUT_MS =
   Number.isFinite(configuredLessonTimeoutMs) && configuredLessonTimeoutMs > 0
@@ -90,14 +92,11 @@ if (
     `[config] LESSON_TIMEOUT_MS clamped from ${configuredLessonTimeoutMs}ms to maximum ${MAX_LESSON_TIMEOUT_MS}ms`
   );
 }
-const configuredAiCallTimeoutMs = Number(
-  process.env.AI_CALL_TIMEOUT_MS ?? process.env.GEMMA_CALL_TIMEOUT_MS
-);
+const configuredAiCallTimeoutMs = Number(process.env.AI_CALL_TIMEOUT_MS);
 export const AI_CALL_TIMEOUT_MS =
   Number.isFinite(configuredAiCallTimeoutMs) && configuredAiCallTimeoutMs > 0
     ? configuredAiCallTimeoutMs
     : DEFAULT_AI_CALL_TIMEOUT_MS;
-export const GEMMA_CALL_TIMEOUT_MS = AI_CALL_TIMEOUT_MS;
 const DEFAULT_HEARTBEAT_INTERVAL_MS = 15000;
 const MAX_HEARTBEAT_INTERVAL_MS = 55000;
 const configuredHeartbeatIntervalMs = Number(process.env.SSE_HEARTBEAT_INTERVAL_MS);

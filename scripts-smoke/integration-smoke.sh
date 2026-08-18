@@ -42,7 +42,7 @@ FRONT_PORT="${FRONT_PORT:-3907}"
 
 # ── Boot backend (a dummy AI key satisfies startup config; DB may be absent) ──
 cd "$ROOT/backend"
-CEREBRAS_API_KEY="${CEREBRAS_API_KEY:-dummy-smoke-key}" PORT="$BACK_PORT" \
+GROQ_API_KEY="${GROQ_API_KEY:-dummy-smoke-key}" PORT="$BACK_PORT" \
   node src/server.js > /tmp/logs/smoke-backend.log 2>&1 &
 BACK_PID=$!
 
