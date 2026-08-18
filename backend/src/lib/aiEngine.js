@@ -41,8 +41,11 @@ export const PRIMARY_AI_MODEL =
   process.env.GROQ_AI_MODEL || "qwen/qwen3.6-27b";
 export const GROQ_SECONDARY_MODEL =
   process.env.GROQ_SECONDARY_MODEL || "openai/gpt-oss-20b";
+// The previous default "llama-3.1-8b-instant" now returns 404 on GroqCloud
+// for many accounts (deprecated / access-restricted). Use a current production
+// model as the default tertiary fallback.
 export const GROQ_TERTIARY_MODEL =
-  process.env.GROQ_TERTIARY_MODEL || "llama-3.1-8b-instant";
+  process.env.GROQ_TERTIARY_MODEL || "llama-3.3-70b-versatile";
 
 // SECURITY: hard ceiling on accumulated streamed characters. Providers are
 // first-party and max_tokens bounds normal generation, but a misbehaving
@@ -207,6 +210,31 @@ const TPM_WINDOW_MS = 60000;
 
 const groqTokenLedgers = new Map(); // model -> [{ timestamp, tokens }]
 
+// Models that return 403/404 are configuration errors (wrong id, access
+// tier, or deprecation). They will fail forever, so remember them per process
+// and skip them in Groq model selection instead of burning retries/latency.
+const MODEL_BAN_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour
+const bannedModels = new Map(); // model -> bannedUntil
+
+function banModel(model) {
+  bannedModels.set(String(model || "unknown"), Date.now() + MODEL_BAN_COOLDOWN_MS);
+}
+
+function isModelBanned(model, now = Date.now()) {
+  const key = String(model || "unknown");
+  const bannedUntil = bannedModels.get(key);
+  if (!bannedUntil) return false;
+  if (now >= bannedUntil) {
+    bannedModels.delete(key);
+    return false;
+  }
+  return true;
+}
+
+export function resetBannedModels() {
+  bannedModels.clear();
+}
+
 function groqTpmLimit() {
   return parsePositiveInt(process.env.GROQ_TPM_LIMIT, DEFAULT_GROQ_TPM_LIMIT);
 }
@@ -257,40 +285,55 @@ export function resetGroqTokenLedger() {
 /**
  * TPM-aware Groq model selection: stick with the preferred (pinned-healthy)
  * model while it has rolling-window headroom for this request; otherwise pick
- * the configured model with the most remaining headroom.
+ * the configured model with the most remaining headroom. Models that recently
+ * 404'd/403'd are skipped so a known-dead model does not keep stealing
+ * attempts from healthy ones.
  */
-export function selectGroqModel(models, preferredIndex = 0, estimatedTokens = 600) {
+export function selectGroqModel(models, preferredIndex = 0, estimatedTokens = 600, now = Date.now()) {
   if (!Array.isArray(models) || models.length === 0) {
     return { model: PRIMARY_AI_MODEL, index: 0, reason: "default" };
   }
+
+  // Build an ordered list of candidates: non-banned models first. If every
+  // model is banned, ignore the ban rather than leaving nothing to try.
   const start = ((preferredIndex % models.length) + models.length) % models.length;
-  const preferred = models[start];
-  if (!isGroqTpmNearLimit(preferred, estimatedTokens)) {
-    return { model: preferred, index: start, reason: "preferred" };
-  }
-  let bestIndex = start;
-  let bestUsage = Infinity;
-  for (let offset = 1; offset < models.length; offset++) {
+  const ordered = [];
+  const banned = [];
+  for (let offset = 0; offset < models.length; offset++) {
     const index = (start + offset) % models.length;
-    const usage = getRollingGroqTpmUsage(models[index]);
+    const model = models[index];
+    (isModelBanned(model, now) ? banned : ordered).push({ index, model });
+  }
+  const candidates = ordered.length > 0 ? ordered : banned;
+
+  const preferred = candidates[0];
+  if (!isGroqTpmNearLimit(preferred.model, estimatedTokens, now)) {
+    return { model: preferred.model, index: preferred.index, reason: "preferred" };
+  }
+
+  let best = preferred;
+  let bestUsage = getRollingGroqTpmUsage(preferred.model, now);
+  for (let i = 1; i < candidates.length; i++) {
+    const candidate = candidates[i];
+    const usage = getRollingGroqTpmUsage(candidate.model, now);
     if (usage + estimatedTokens < groqTpmSafetyThreshold()) {
       console.log("[AI] Groq TPM rotation", {
-        from: preferred,
-        to: models[index],
-        preferredUsage: getRollingGroqTpmUsage(preferred),
+        from: preferred.model,
+        to: candidate.model,
+        preferredUsage: getRollingGroqTpmUsage(preferred.model, now),
         estimatedTokens,
       });
-      return { model: models[index], index, reason: "tpm_rotation" };
+      return { model: candidate.model, index: candidate.index, reason: "tpm_rotation" };
     }
     if (usage < bestUsage) {
       bestUsage = usage;
-      bestIndex = index;
+      best = candidate;
     }
   }
   // Every model is near its limit — use the least-loaded one rather than
   // refusing (the provider will 429 if it truly has no budget, and the
   // race/rotation machinery handles that).
-  return { model: models[bestIndex], index: bestIndex, reason: "least_loaded" };
+  return { model: best.model, index: best.index, reason: "least_loaded" };
 }
 
 // Rough estimator (1 token ≈ 3.5 chars). Completions rarely use the whole
@@ -1103,7 +1146,8 @@ async function runProviderAttempts(provider, request, config, raceState) {
       const selection = selectGroqModel(
         models,
         modelIndex,
-        estimateRequestTokens(messages, maxOutputTokens)
+        estimateRequestTokens(messages, maxOutputTokens),
+        Date.now()
       );
       model = selection.model;
       modelIndex = selection.index;
@@ -1181,6 +1225,18 @@ async function runProviderAttempts(provider, request, config, raceState) {
         // ledger full so TPM-aware selection steers the next requests away
         // until the window rolls over.
         recordGroqTokens(model, groqTpmLimit());
+      }
+      // A 403/404 means the model is not accessible to this account (tier or
+      // deprecation). Remember that so we don't keep paying the latency cost
+      // of trying it again on every request.
+      if (error instanceof AIApiError && (error.status === 403 || error.status === 404)) {
+        banModel(model);
+        console.warn("[AI] model banned", {
+          callId,
+          provider: provider.key,
+          model,
+          status: error.status,
+        });
       }
       console.warn("[AI] attempt failed", {
         callId,
