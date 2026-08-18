@@ -27,6 +27,8 @@ const nextConfig = {
       "rehype-katex",
       "canvas-confetti",
       "@clerk/nextjs",
+      "zustand",
+      "eventsource-parser",
     ],
   },
   async redirects() {

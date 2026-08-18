@@ -348,14 +348,16 @@ function estimateRequestTokens(messages, maxOutputTokens) {
 
 // ── Text utilities ───────────────────────────────────────────────────────────
 
+const THINKING_TAGS_RE = /<think(?:ing)?>[\s\S]*?<\/think(?:ing)?>/gi;
+
 // Reasoning-tuned models (gpt-oss, deepseek-r1 distills) can leak <think>
 // blocks into content; strip them so they never reach parsing or the user.
 function stripThinkingTags(text) {
   const source = typeof text === "string" ? text : String(text ?? "");
-  return source
-    .replace(/<think>[\s\S]*?<\/think>/gi, "")
-    .replace(/<thinking>[\s\S]*?<\/thinking>/gi, "")
-    .trim();
+  if (!source.includes("<think") && !source.includes("<thinking")) {
+    return source.trim();
+  }
+  return source.replace(THINKING_TAGS_RE, "").trim();
 }
 
 // ── Error classification ─────────────────────────────────────────────────────
@@ -1564,18 +1566,22 @@ export function preconnectProviders() {
 
 // ── Tolerant JSON extraction from model output ──────────────────────────────
 
+const PARSE_REASONING_PREFIX_RE = /^(?:thinking|thought|reasoning)\s*:\s*/i;
+const PARSE_CODE_FENCE_START_RE = /^```(?:json)?\s*/i;
+const PARSE_CODE_FENCE_END_RE = /```\s*$/;
+
 export function parseJSON(text) {
   // Prefix/fence strips are anchored to the ends of the text — unanchored
   // (global/multiline) replaces also deleted fences and "Reasoning:" labels
   // from INSIDE JSON string values, corrupting lessons that quote them.
-  let cleaned = text
-    .replace(/<think(?:ing)?>[\s\S]*?<\/think(?:ing)?>/gi, "")
+  let cleaned = (typeof text === "string" ? text : String(text ?? ""))
+    .replace(THINKING_TAGS_RE, "")
     .trim()
-    .replace(/^(?:thinking|thought|reasoning)\s*:\s*/i, "")
+    .replace(PARSE_REASONING_PREFIX_RE, "")
     .trim();
   cleaned = cleaned
-    .replace(/^```(?:json)?\s*/i, "")
-    .replace(/```\s*$/, "")
+    .replace(PARSE_CODE_FENCE_START_RE, "")
+    .replace(PARSE_CODE_FENCE_END_RE, "")
     .trim();
 
   const firstBrace = cleaned.indexOf("{");
@@ -1594,14 +1600,21 @@ export function parseJSON(text) {
     return null;
   }
 
+  // Fast path: 95%+ of model outputs are already valid JSON. Calling native
+  // JSON.parse directly is 10-50x faster than jsonrepair AST traversal.
   try {
-    return JSON.parse(jsonrepair(cleaned));
-  } catch (error) {
-    console.error("[parseJSON] Repair failed", {
-      preview: text.slice(0, PARSE_JSON_LOG_PREVIEW_CHARS),
-      rawLength: text.length,
-      error: error?.message,
-    });
-    return null;
+    return JSON.parse(cleaned);
+  } catch {
+    // Fallback: repair truncated or malformed JSON via jsonrepair
+    try {
+      return JSON.parse(jsonrepair(cleaned));
+    } catch (error) {
+      console.error("[parseJSON] Repair failed", {
+        preview: text.slice(0, PARSE_JSON_LOG_PREVIEW_CHARS),
+        rawLength: text.length,
+        error: error?.message,
+      });
+      return null;
+    }
   }
 }

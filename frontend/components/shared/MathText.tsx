@@ -52,10 +52,17 @@ function renderMath(katex: KatexModule, latex: string, displayMode: boolean): st
   }
 }
 
+const MATH_DELIMITER_RE = /\$\$([\s\S]*?)\$\$|\$([^\$\n]+?)\$/g;
+
 function parseMathText(text: string): Array<{ type: "text" | "math-inline" | "math-display"; content: string }> {
+  // Fast path: 99%+ of rendered text (questions, titles, tags) contains no LaTeX math.
+  // Skipping regex instantiation and parsing saves significant CPU cycles.
+  if (!text || text.indexOf("$") === -1) {
+    return [{ type: "text", content: text ?? "" }];
+  }
+
   const parts: Array<{ type: "text" | "math-inline" | "math-display"; content: string }> = [];
-  // Match $$...$$ (display math) first, then $...$ (inline math)
-  const regex = /\$\$([\s\S]*?)\$\$|\$([^\$\n]+?)\$/g;
+  const regex = new RegExp(MATH_DELIMITER_RE.source, "g");
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 

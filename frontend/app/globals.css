@@ -1983,6 +1983,16 @@ a:active {
   contain-intrinsic-size: auto 300px;
 }
 
+/* Home stats and completion screens are rendered below the fold. */
+.home-stats {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 320px;
+}
+.completion {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 600px;
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    Adaptive visual-performance tiers  (html[data-perf="low|mid|high"])
    Set pre-paint by app/layout.tsx, kept in sync by ThemeApplier; resolved

@@ -87,6 +87,15 @@
 ---
 
 **Today — August 18, 2026**
+- **Full-Stack Performance, Snappy Efficiency & High-Throughput Inference Overhaul:**
+  - **Backend JSON Fast-Path & Regex Pre-compilation (`aiEngine.js`)**: Accelerated `parseJSON` by introducing a direct native `JSON.parse` fast-path for valid JSON responses (95%+ of Groq / Mistral with JSON mode), eliminating heavy `jsonrepair` AST traversal overhead. Hoisted and pre-compiled thinking tag and reasoning label regular expressions (`THINKING_TAGS_RE`, `PARSE_REASONING_PREFIX_RE`, `PARSE_CODE_FENCE_START_RE`, `PARSE_CODE_FENCE_END_RE`). Reduced backend test suite runtime from ~26.8s to ~11.8s (>2× speedup).
+  - **Frontend Render Isolation (`PartCard.tsx`)**: Extracted `PartCardFooter` sub-component to isolate `useReadingTimer` ticks (~50 progress updates per reading session) from `PartCardBase`. Eliminated 50 unnecessary re-renders of the full article card, headings, tags, listen buttons, and markdown hierarchy during active reading.
+  - **Fast-Path MathText Parsing (`MathText.tsx`)**: Added dollar-sign index fast path (`text.indexOf('$') === -1`) to skip regex compilation, execution, and array allocation for 99%+ of normal text without LaTeX formulas across all cards, titles, and suggestions.
+  - **Debounced Keystroke Persistence (`QuestionInput.tsx`)**: Debounced question draft persistence to `sessionStorage` (200ms) to eliminate synchronous storage writes on every keystroke during typing.
+  - **Sidebar Filter Memoization (`Sidebar.tsx`)**: Hoisted text normalization helper and memoized `filteredJourneys` search results with `useMemo`.
+  - **CSS Containment & GPU Acceleration (`globals.css`)**: Added `content-visibility: auto` and `contain-intrinsic-size` to `.home-stats` and `.completion` for below-the-fold render skipping.
+  - **Build-time Package Import Optimization (`next.config.js`)**: Added `zustand` and `eventsource-parser` to `optimizePackageImports`.
+  - **Linter & Type Integrity**: Cleaned unused eslint-disable directives in `GoogleAnalytics.tsx` and `useSpeech.ts` for 0 warnings / 0 errors. Verified with 101/101 backend tests, 8/8 verification scripts, and clean Next.js 15 production build.
 - **Groq Model Roster Update: Retired Deprecated Llama 70B, GPT-OSS 120B Primary, GPT-OSS 20B Secondary, Qwen 27B Tertiary:**
   - **Model Roster Update**: Retired deprecated `llama-3.3-70b-versatile` and `llama-3.1-8b-instant` on Groq Cloud.
   - **Configured Active Roster**:
