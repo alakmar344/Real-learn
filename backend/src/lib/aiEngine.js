@@ -40,12 +40,9 @@ import { jsonrepair } from "jsonrepair";
 export const PRIMARY_AI_MODEL =
   process.env.GROQ_AI_MODEL || "qwen/qwen3.6-27b";
 export const GROQ_SECONDARY_MODEL =
-  process.env.GROQ_SECONDARY_MODEL || "openai/gpt-oss-20b";
-// The previous default "llama-3.1-8b-instant" now returns 404 on GroqCloud
-// for many accounts (deprecated / access-restricted). Use a current production
-// model as the default tertiary fallback.
+  process.env.GROQ_SECONDARY_MODEL || "openai/gpt-oss-120b";
 export const GROQ_TERTIARY_MODEL =
-  process.env.GROQ_TERTIARY_MODEL || "llama-3.3-70b-versatile";
+  process.env.GROQ_TERTIARY_MODEL || "openai/gpt-oss-20b";
 
 // SECURITY: hard ceiling on accumulated streamed characters. Providers are
 // first-party and max_tokens bounds normal generation, but a misbehaving

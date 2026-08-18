@@ -6,8 +6,8 @@ process.env.NVIDIA_API_KEY = "test-nvidia-key";
 process.env.CLOUDFLARE_API_TOKEN = "test-token";
 process.env.CLOUDFLARE_ACCOUNT_ID = "test-account";
 process.env.GROQ_AI_MODEL = "qwen/qwen3.6-27b";
-process.env.GROQ_SECONDARY_MODEL = "openai/gpt-oss-20b";
-process.env.GROQ_FALLBACK_MODELS = "llama-3.1-8b-instant";
+process.env.GROQ_SECONDARY_MODEL = "openai/gpt-oss-120b";
+process.env.GROQ_FALLBACK_MODELS = "";
 process.env.MISTRAL_API_KEY = "test-mistral-key";
 process.env.MISTRAL_AI_MODEL = "mistral-small-latest";
 process.env.MISTRAL_AI_MODELS = "mistral-large-latest";
@@ -427,8 +427,8 @@ test("parseJSON repairs fenced and truncated model output", () => {
 test("Groq and Mistral model lists include configured models", () => {
   const groqModels = getGroqModels();
   assert.ok(groqModels.includes("qwen/qwen3.6-27b"));
+  assert.ok(groqModels.includes("openai/gpt-oss-120b"));
   assert.ok(groqModels.includes("openai/gpt-oss-20b"));
-  assert.ok(groqModels.includes("llama-3.1-8b-instant"));
 
   assert.equal(isMistralConfigured(), true);
   const mistralModels = getMistralModels();
@@ -505,9 +505,9 @@ test("a Groq 404 bans that model so later requests skip it entirely", async () =
     if (isGroq) {
       const body = JSON.parse(opts.body);
       seenGroqModels.push(body.model);
-      if (body.model === "llama-3.3-70b-versatile") {
+      if (body.model === "openai/gpt-oss-20b") {
         return jsonResponse(
-          { error: { message: "The model `llama-3.3-70b-versatile` does not exist" } },
+          { error: { message: "The model `openai/gpt-oss-20b` does not exist" } },
           404
         );
       }
@@ -528,7 +528,7 @@ test("a Groq 404 bans that model so later requests skip it entirely", async () =
   const text2 = await callAI("sys", "user", 0.5, 5000);
   assert.equal(text2, "groq-ok");
   assert.ok(
-    !seenGroqModels.includes("llama-3.3-70b-versatile"),
+    !seenGroqModels.includes("openai/gpt-oss-20b"),
     "banned model was tried again"
   );
 });
