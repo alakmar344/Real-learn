@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useLessonStore } from "@/store/lessonStore";
@@ -28,6 +28,13 @@ interface Props {
   onClose: () => void;
 }
 
+// Hoisted: Filter saved lessons by their question text (case- and accent-insensitive)
+const normalize = (value: string) =>
+  value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+
 export default function Sidebar({ open, onClose }: Props) {
   const router = useRouter();
   const mounted = useMounted();
@@ -51,20 +58,14 @@ export default function Sidebar({ open, onClose }: Props) {
   const [journeyToRemove, setJourneyToRemove] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
-  // Filter saved lessons by their question text. With up to 100 saved lessons,
-  // scrolling to find one is slow — a quick client-side filter (case- and
-  // accent-insensitive) makes returning to any past lesson instant.
-  const normalize = (value: string) =>
-    value
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "");
   const trimmedSearch = search.trim();
-  const filteredJourneys = trimmedSearch
-    ? journeys.filter((journey) =>
-        normalize(journey.question).includes(normalize(trimmedSearch))
-      )
-    : journeys;
+  const filteredJourneys = useMemo(() => {
+    if (!trimmedSearch) return journeys;
+    const searchNormalized = normalize(trimmedSearch);
+    return journeys.filter((journey) =>
+      normalize(journey.question).includes(searchNormalized)
+    );
+  }, [journeys, trimmedSearch]);
 
   const handleNewLesson = () => {
     onClose();

@@ -23,21 +23,17 @@ function loadGtag() {
   if (!GA_MEASUREMENT_ID) return;
 
   // Clear a previous opt-out flag if the user re-consents.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (window as any)[`ga-disable-${GA_MEASUREMENT_ID}`] = false;
+  (window as unknown as Record<string, unknown>)[`ga-disable-${GA_MEASUREMENT_ID}`] = false;
 
   if (document.getElementById(`ga-script-${GA_MEASUREMENT_ID}`)) return;
 
   // CSP: the gtag init runs as ordinary bundled code (not an injected inline
   // <script>), so it needs no 'unsafe-inline'/nonce — gtag.js only reads
   // window.dataLayer, it doesn't care how the queue was seeded.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const w = window as any;
+  const w = window as unknown as { dataLayer: unknown[]; gtag: (...args: unknown[]) => void };
   w.dataLayer = w.dataLayer || [];
-  function gtag() {
-    // gtag requires the real `arguments` object (not a spread array).
-    // eslint-disable-next-line prefer-rest-params
-    w.dataLayer.push(arguments);
+  function gtag(...args: unknown[]) {
+    w.dataLayer.push(args);
   }
   w.gtag = w.gtag || gtag;
   w.gtag("js", new Date());
@@ -55,8 +51,7 @@ function loadGtag() {
 function disableGtag() {
   if (typeof window === "undefined") return;
   if (!GA_MEASUREMENT_ID) return;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (window as any)[`ga-disable-${GA_MEASUREMENT_ID}`] = true;
+  (window as unknown as Record<string, unknown>)[`ga-disable-${GA_MEASUREMENT_ID}`] = true;
   try {
     const items = parseCookie(document.cookie);
     for (const name of Object.keys(items)) {
@@ -84,8 +79,7 @@ export default function GoogleAnalytics() {
   useEffect(() => {
     // Respect Global Privacy Control (GPC) signal — if the browser sends it,
     // never load analytics regardless of stored consent.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((navigator as any).globalPrivacyControl) {
+    if ((navigator as unknown as { globalPrivacyControl?: boolean }).globalPrivacyControl) {
       disableGtag();
       return;
     }

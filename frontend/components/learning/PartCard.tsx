@@ -71,6 +71,69 @@ interface Props {
   onToggleCollapse: (partNumber: number) => void;
 }
 
+const PartCardFooter = memo(function PartCardFooter({
+  part,
+  isUnlocked,
+  isCompleted,
+  onStartQuiz,
+}: {
+  part: LessonPart;
+  isUnlocked: boolean;
+  isCompleted: boolean;
+  onStartQuiz: (part: LessonPart) => void;
+}) {
+  const timer = useReadingTimer(isUnlocked && !isCompleted);
+
+  if (!isUnlocked || isCompleted) return null;
+
+  return (
+    <div className="part-card__footer">
+      {!timer.isComplete ? (
+        <div className="part-card__reading">
+          <div
+            role="progressbar"
+            aria-valuenow={Math.round(timer.progress)}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label="Reading progress"
+            className="part-card__reading-track"
+          >
+            <div className="part-card__reading-fill" style={{ width: `${timer.progress}%` }} />
+          </div>
+          {/* The forward path is ALWAYS visible. While the reading timer
+              runs it's a quiet capsule; once the timer completes it
+              upgrades to the filled gradient CTA below. */}
+          <button
+            type="button"
+            onClick={() => onStartQuiz(part)}
+            className="btn-toggle part-card__skip animate-fade-up"
+            aria-label={`Skip reading and take quiz for Part ${part.partNumber}`}
+          >
+            I already know this → Take quiz
+          </button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => onStartQuiz(part)}
+          // Empty-quiz parts advance directly (see learn/page.tsx), so
+          // don't promise a quiz that will never open.
+          aria-label={
+            (part.quiz?.length ?? 0) === 0
+              ? `Continue past Part ${part.partNumber}`
+              : `Take quiz for Part ${part.partNumber}`
+          }
+          className="part-cta animate-fade-up"
+        >
+          {(part.quiz?.length ?? 0) === 0
+            ? "I've Read This → Continue"
+            : "I've Read This → Take Quiz"}
+        </button>
+      )}
+    </div>
+  );
+});
+
 const PartCardBase = ({
   part,
   isUnlocked,
@@ -81,14 +144,12 @@ const PartCardBase = ({
   onToggleCollapse,
 }: Props) => {
   const [copied, setCopied] = useState(false);
-  const timer = useReadingTimer(isUnlocked && !isCompleted);
   const contentId = `part-${part.partNumber}-content`;
   const lessonLanguage = useLessonStore((s) => s.lesson?.language);
   const subjectColor = subjectColors[part.subject] ?? "var(--subject-general)";
 
-  // The reading timer re-renders this card ~50× while the learner reads. Memoize
-  // the rendered prose on `part.content` alone so those ticks don't re-parse
-  // markdown and re-run KaTeX on every frame.
+  // The rendered prose is memoized on `part.content` alone so parent re-renders
+  // don't re-parse markdown and re-run KaTeX on every frame.
   const renderedProse = useMemo(
     () => (
       <ReactMarkdown
@@ -213,53 +274,13 @@ const PartCardBase = ({
           </div>
         ) : null}
 
-        {/* Reading timer / quiz CTA */}
-        {isUnlocked && !isCompleted ? (
-          <div className="part-card__footer">
-            {!timer.isComplete ? (
-              <div className="part-card__reading">
-                <div
-                  role="progressbar"
-                  aria-valuenow={Math.round(timer.progress)}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-label="Reading progress"
-                  className="part-card__reading-track"
-                >
-                  <div className="part-card__reading-fill" style={{ width: `${timer.progress}%` }} />
-                </div>
-                {/* The forward path is ALWAYS visible. While the reading timer
-                    runs it's a quiet capsule; once the timer completes it
-                    upgrades to the filled gradient CTA below. */}
-                <button
-                  type="button"
-                  onClick={() => onStartQuiz(part)}
-                  className="btn-toggle part-card__skip animate-fade-up"
-                  aria-label={`Skip reading and take quiz for Part ${part.partNumber}`}
-                >
-                  I already know this → Take quiz
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => onStartQuiz(part)}
-                // Empty-quiz parts advance directly (see learn/page.tsx), so
-                // don't promise a quiz that will never open.
-                aria-label={
-                  (part.quiz?.length ?? 0) === 0
-                    ? `Continue past Part ${part.partNumber}`
-                    : `Take quiz for Part ${part.partNumber}`
-                }
-                className="part-cta animate-fade-up"
-              >
-                {(part.quiz?.length ?? 0) === 0
-                  ? "I've Read This → Continue"
-                  : "I've Read This → Take Quiz"}
-              </button>
-            )}
-          </div>
-        ) : null}
+        {/* Reading timer / quiz CTA isolated sub-component */}
+        <PartCardFooter
+          part={part}
+          isUnlocked={isUnlocked}
+          isCompleted={isCompleted}
+          onStartQuiz={onStartQuiz}
+        />
 
         {/* Collapse completed part */}
         {isCompleted && !isCollapsed ? (

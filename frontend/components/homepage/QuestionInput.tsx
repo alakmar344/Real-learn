@@ -60,18 +60,21 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
     }
   }, [mounted, setQuestion]);
 
-  // Persist draft question
+  // Persist draft question (debounced to avoid sync storage writes on every keystroke)
   useEffect(() => {
     if (!mounted) return;
-    try {
-      if (question.trim()) {
-        sessionStorage.setItem("reallearn_draft_question", question);
-      } else {
-        sessionStorage.removeItem("reallearn_draft_question");
+    const timer = setTimeout(() => {
+      try {
+        if (question.trim()) {
+          sessionStorage.setItem("reallearn_draft_question", question);
+        } else {
+          sessionStorage.removeItem("reallearn_draft_question");
+        }
+      } catch {
+        // Best-effort
       }
-    } catch {
-      // Best-effort
-    }
+    }, 200);
+    return () => clearTimeout(timer);
   }, [question, mounted]);
 
   const handleSubmit = (e?: FormEvent) => {

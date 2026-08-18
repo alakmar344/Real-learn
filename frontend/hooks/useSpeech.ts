@@ -304,14 +304,12 @@ export function useSpeechRecognition({ lang, onResult }: UseSpeechRecognitionOpt
   // flashes from hidden → visible (which also causes layout shift).
   const [supported] = useState(() => {
     if (typeof window === "undefined") return false;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const w = window as any;
+    const w = window as unknown as Record<string, unknown>;
     return Boolean(w.SpeechRecognition || w.webkitSpeechRecognition);
   });
   const [listening, setListening] = useState(false);
   const [interimTranscript, setInterimTranscript] = useState("");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<{ abort?: () => void; stop?: () => void } | null>(null);
   const onResultRef = useRef(onResult);
   const langRef = useRef(lang);
   // "Latest ref" pattern — updated in an effect (not during render) so the
@@ -334,9 +332,19 @@ export function useSpeechRecognition({ lang, onResult }: UseSpeechRecognitionOpt
 
   const start = useCallback(() => {
     if (typeof window === "undefined" || recognitionRef.current) return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const w = window as any;
-    const RecognitionCtor = w.SpeechRecognition || w.webkitSpeechRecognition;
+    const w = window as unknown as Record<string, new () => unknown>;
+    const RecognitionCtor = (w.SpeechRecognition || w.webkitSpeechRecognition) as (new () => {
+      lang: string;
+      interimResults: boolean;
+      continuous: boolean;
+      maxAlternatives: number;
+      onresult: ((event: { resultIndex: number; results: Array<{ isFinal: boolean; [key: number]: { transcript: string } }> }) => void) | null;
+      onend: (() => void) | null;
+      onerror: ((event: { error?: unknown }) => void) | null;
+      start: () => void;
+      abort: () => void;
+      stop: () => void;
+    }) | undefined;
     if (!RecognitionCtor) return;
 
     const recognition = new RecognitionCtor();
@@ -346,8 +354,7 @@ export function useSpeechRecognition({ lang, onResult }: UseSpeechRecognitionOpt
     recognition.maxAlternatives = 1;
 
     let finalTranscript = "";
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event) => {
       let interim = "";
       for (let i = event.resultIndex; i < event.results.length; i += 1) {
         const result = event.results[i];
@@ -362,8 +369,7 @@ export function useSpeechRecognition({ lang, onResult }: UseSpeechRecognitionOpt
       setInterimTranscript("");
       if (finalTranscript.trim()) onResultRef.current(finalTranscript.trim());
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    recognition.onerror = (event: any) => {
+    recognition.onerror = (event) => {
       console.warn("[useSpeechRecognition] error", event?.error);
       // Defensive reset: `onend` normally fires after `onerror`, but on
       // engines where it doesn't, the mic button would stay stuck in the
