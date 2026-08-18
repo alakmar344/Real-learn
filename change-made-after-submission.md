@@ -87,6 +87,16 @@
 ---
 
 **Today — August 18, 2026**
+- **Groq Model Roster Update: Retired Deprecated Llama 70B, GPT-OSS 120B Primary, GPT-OSS 20B Secondary, Qwen 27B Tertiary:**
+  - **Model Roster Update**: Retired deprecated `llama-3.3-70b-versatile` and `llama-3.1-8b-instant` on Groq Cloud.
+  - **Configured Active Roster**:
+    - Primary (`GROQ_AI_MODEL` / `PRIMARY_AI_MODEL`): `openai/gpt-oss-120b`
+    - Secondary (`GROQ_SECONDARY_MODEL`): `openai/gpt-oss-20b`
+    - Tertiary (`GROQ_TERTIARY_MODEL`): `qwen/qwen3.6-27b`
+  - **Backend, Tests & Legal Disclosures Synced**:
+    - Updated default constants in `backend/src/lib/aiEngine.js` and `backend/.env.example`.
+    - Updated unit test assertions in `backend/test/ai-engine.test.js` (101/101 tests pass).
+    - Updated AI model disclosures in `frontend/app/legal/privacy/content.tsx` and `frontend/app/legal/terms/content.tsx`. Verified all frontend verification scripts pass 100%.
 - **MAJOR TURNING POINT: Backend Rebuilt Around the New Provider Stack (`aiEngine.js`) — Full AI-Pipeline Audit, Latency Overhaul & Legacy Purge:** After the Mistral migration, a systematic backend-only audit found the AI pipeline still carrying assumptions from three provider generations (Gemma-era naming/env aliases, Cloudflare-primary-era warm-ups and timeouts, a pre-race-era duplicate fallback ladder) plus real bugs in the new Groq load balancer. The backend was rebuilt around the current stack:
   - **One engine, one HTTP path:** `backend/src/lib/gemma.js` replaced by `backend/src/lib/aiEngine.js`. All four providers (Groq, Mistral, NVIDIA NIM, Cloudflare Workers AI) now stream through a single shared `fetchChatCompletion` (watchdogs, aborts, mid-stream error detection, usage capture identical everywhere). The `groq-sdk` dependency was removed — Groq is called through its OpenAI-compatible endpoint like every other provider — along with `wrapGroqError`, all `Gemma*` class aliases, `GEMMA_*` env fallbacks, and `callGemma` (now `callAI`).
   - **Reliability ladder de-duplicated (`routes/lesson.js`):** the old 8-rung route ladder re-ran the *entire* multi-provider hedged race per rung (worst case ~24 provider attempts, minutes of exhaustion before the user saw an error). New ladder: one hedged race + up to two validation-repair races. Thrown provider errors surface immediately (the engine already exhausted retries, rotation, and failover); only invalid-JSON/schema output triggers repair rungs.

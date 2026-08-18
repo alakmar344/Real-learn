@@ -38,14 +38,14 @@ import { jsonrepair } from "jsonrepair";
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const PRIMARY_AI_MODEL =
-  process.env.GROQ_AI_MODEL || "qwen/qwen3.6-27b";
+  process.env.GROQ_AI_MODEL || "openai/gpt-oss-120b";
 export const GROQ_SECONDARY_MODEL =
   process.env.GROQ_SECONDARY_MODEL || "openai/gpt-oss-20b";
-// The previous default "llama-3.1-8b-instant" now returns 404 on GroqCloud
-// for many accounts (deprecated / access-restricted). Use a current production
-// model as the default tertiary fallback.
+// Groq model roster: openai/gpt-oss-120b (primary), openai/gpt-oss-20b
+// (secondary), qwen/qwen3.6-27b (tertiary fallback).
+// Llama 70B/8B models are deprecated on GroqCloud.
 export const GROQ_TERTIARY_MODEL =
-  process.env.GROQ_TERTIARY_MODEL || "llama-3.3-70b-versatile";
+  process.env.GROQ_TERTIARY_MODEL || "qwen/qwen3.6-27b";
 
 // SECURITY: hard ceiling on accumulated streamed characters. Providers are
 // first-party and max_tokens bounds normal generation, but a misbehaving
