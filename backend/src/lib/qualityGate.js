@@ -66,6 +66,7 @@ const LEVEL_THRESHOLDS = {
     maxHardWordPct: 12,
     maxQuizGrade: 7.5,
     maxQuizOptionWords: 8,
+    maxQuestionWords: 20,
   },
   "Class 9-10": {
     maxGrade: 11.0,
@@ -73,6 +74,7 @@ const LEVEL_THRESHOLDS = {
     maxHardWordPct: 18,
     maxQuizGrade: 10.5,
     maxQuizOptionWords: 12,
+    maxQuestionWords: 25,
   },
   "College / Advanced": {
     maxGrade: 16.0,
@@ -80,6 +82,7 @@ const LEVEL_THRESHOLDS = {
     maxHardWordPct: 30,
     maxQuizGrade: 16.0,
     maxQuizOptionWords: 20,
+    maxQuestionWords: 40,
   },
 };
 
@@ -277,13 +280,16 @@ function analyzeContent(text, level, language = "English") {
 // ── Language simplification engine ─────────────────────────────────────────
 
 /**
- * Simplify a single sentence for Class 6-8 level.
- * - Replaces known complex words with simpler alternatives (English only)
+ * Simplify a single sentence for the target level.
+ * - Replaces known complex words with simpler alternatives (English only,
+ *   skipped for College / Advanced where the original vocabulary is wanted)
  * - Shortens very long sentences by splitting at conjunctions
  */
 function simplifyText(text, level, language = "English") {
   if (!text || typeof text !== "string") return text;
-  if (level !== "Class 6-8") return text; // Only simplify for youngest learners
+  // College / Advanced content is supposed to be sophisticated; do not
+  // rewrite its vocabulary.
+  if (level === "College / Advanced") return text;
 
   let result = text;
 
@@ -351,13 +357,14 @@ function splitLongSentences(text, maxWords) {
 }
 
 /**
- * Simplify a quiz question for Class 6-8 level.
+ * Simplify a quiz question for the target level.
  * Returns the modified question object (or the original if no changes needed).
  */
 function simplifyQuizQuestion(question, level, language = "English") {
-  if (level !== "Class 6-8") return question;
+  if (level === "College / Advanced") return question;
   if (!question || typeof question !== "object") return question;
 
+  const thresholds = getThresholds(level);
   const simplified = { ...question };
 
   // Simplify question text
@@ -365,19 +372,22 @@ function simplifyQuizQuestion(question, level, language = "English") {
     simplified.question = simplifyText(simplified.question, level, language);
     // If still too long, truncate intelligently at a clause boundary
     const qWords = getWords(simplified.question);
-    if (qWords.length > 20) {
-      simplified.question = truncateAtClause(simplified.question, 20);
+    if (qWords.length > thresholds.maxQuestionWords) {
+      simplified.question = truncateAtClause(
+        simplified.question,
+        thresholds.maxQuestionWords
+      );
     }
   }
 
-  // Simplify options — also enforce length limit
+  // Simplify options — also enforce length limit for the level
   if (Array.isArray(simplified.options)) {
     simplified.options = simplified.options.map((opt) => {
       if (typeof opt !== "string") return opt;
       let s = simplifyText(opt, level, language);
       const optWords = getWords(s);
-      if (optWords.length > 8) {
-        s = truncateAtClause(s, 8);
+      if (optWords.length > thresholds.maxQuizOptionWords) {
+        s = truncateAtClause(s, thresholds.maxQuizOptionWords);
       }
       return s;
     });
@@ -535,7 +545,11 @@ export function evaluateAndFix(journey, level = "Class 9-10", mode = "explain", 
   };
 
   if (issues.length > 0) {
-    console.log("[qualityGate] Issues detected and auto-fixed", {
+    const logLabel =
+      fixed.length > 0
+        ? "[qualityGate] Issues detected and auto-fixed"
+        : "[qualityGate] Issues detected (auto-fix did not change content)";
+    console.log(logLabel, {
       level,
       issueCount: issues.length,
       fixCount: fixed.length,
