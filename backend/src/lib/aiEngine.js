@@ -72,9 +72,9 @@ const DEFAULT_CIRCUIT_FAILURE_THRESHOLD = 2;
 const DEFAULT_CIRCUIT_COOLDOWN_MS = 60000;
 // How long the leading provider gets to itself before the next provider is
 // considered for hedging. Groq and Mistral both have sub-second TTFT, so a
-// leader with ZERO bytes after 2.5s is almost certainly stuck — hedging then
+// leader with ZERO bytes after 1.8s is almost certainly stuck — hedging then
 // costs duplicate tokens only when a rescue is genuinely needed.
-const DEFAULT_HEDGE_DELAY_MS = 2500;
+const DEFAULT_HEDGE_DELAY_MS = 1800;
 // Streaming watchdogs. A hung request is detected by SILENCE, not by burning
 // the whole per-attempt timeout. First-byte budgets are PER PROVIDER: Groq
 // and Mistral answer in well under a second when healthy, while Cloudflare
@@ -82,11 +82,11 @@ const DEFAULT_HEDGE_DELAY_MS = 2500;
 // (when set) overrides all of them.
 const FIRST_BYTE_TIMEOUT_DEFAULTS_MS = {
   groq: 8000,
-  mistral: 8000,
+  mistral: 5000,
   nvidia: 20000,
   cloudflare: 35000,
 };
-const DEFAULT_STALL_TIMEOUT_MS = 15000;
+const DEFAULT_STALL_TIMEOUT_MS = 10000;
 const PARSE_JSON_LOG_PREVIEW_CHARS = 300;
 
 // ── Errors (public API — routes map these to client messages) ───────────────
@@ -629,11 +629,11 @@ export function getMistralModels() {
     ...parseModelList(process.env.MISTRAL_AI_MODELS),
   ];
   if (configured.length === 0) {
-    // Text-generation models only — code/vision specialists (codestral,
-    // pixtral) have no business writing lessons.
+    // Speed-ordered: nemo (7B, fastest TTFT + throughput for structured JSON)
+    // then small (medium, higher quality but slower), then large (last resort).
     configured.push(
-      "mistral-small-latest",
       "open-mistral-nemo",
+      "mistral-small-latest",
       "mistral-large-latest"
     );
   }
@@ -964,9 +964,10 @@ async function handleStreamingResponse(response, onChunk) {
 
 // ── Provider callers (thin payload builders on the shared HTTP layer) ────────
 
-// vLLM-style reasoning toggle for providers that support it. Groq and Mistral
-// reject unknown kwargs with a 400, so this NEVER applies to them.
-//   AI_DISABLE_THINKING = off (default) | nvidia | cloudflare | all
+// vLLM-style reasoning toggle for providers that support it. NVIDIA and
+// Cloudflare use chat_template_kwargs; Groq uses its own reasoning_format
+// parameter (chat_template_kwargs is rejected with a 400 on Groq).
+//   AI_DISABLE_THINKING = off (default) | groq | nvidia | cloudflare | all
 function thinkingDisabledFor(providerKey) {
   const mode = (process.env.AI_DISABLE_THINKING || "off").trim().toLowerCase();
   if (mode === "off" || !mode) return false;
@@ -982,20 +983,49 @@ function mistralJsonModeEnabled() {
   return !["off", "false", "0", "no"].includes(raw);
 }
 
+// Detect reasoning-capable models whose <think> blocks consume the
+// max_completion_tokens budget. When unmanaged, thinking can eat the entire
+// token budget and produce an empty/truncated answer.
+const REASONING_MODEL_RE = /gpt-oss|deepseek|qwen/i;
+
 function callGroq(model, body, signal, opts) {
   const apiKey = process.env.GROQ_API_KEY?.trim();
   if (!apiKey) {
     throw new Error("GROQ_API_KEY is not configured");
   }
+
+  const isReasoningModel = REASONING_MODEL_RE.test(model);
+  const thinkingOff = thinkingDisabledFor("groq");
+
+  // Reasoning models produce <think> blocks that consume the completion
+  // budget. Two mitigations:
+  //   1. When AI_DISABLE_THINKING includes "groq", send reasoning_format
+  //      "hidden" — Groq's native way to suppress reasoning (faster, no
+  //      wasted tokens).
+  //   2. When thinking IS active, double the token budget so reasoning
+  //      doesn't crowd out the actual JSON answer (capped at 16384 to
+  //      stay within Groq's per-model limits).
+  const maxTokens =
+    isReasoningModel && !thinkingOff
+      ? Math.min((body.max_tokens || 4000) * 2, 16384)
+      : body.max_tokens;
+
   const payload = {
     model,
     messages: body.messages,
     temperature: body.temperature,
     // Groq's canonical name for the completion budget.
-    max_completion_tokens: body.max_tokens,
+    max_completion_tokens: maxTokens,
     // Streaming enables the silence watchdogs and exact per-chunk liveness.
     stream: true,
   };
+
+  // Groq-native reasoning control (NOT chat_template_kwargs, which Groq
+  // rejects with a 400).
+  if (isReasoningModel && thinkingOff) {
+    payload.reasoning_format = "hidden";
+  }
+
   return fetchChatCompletion(
     "https://api.groq.com/openai/v1/chat/completions",
     { Authorization: `Bearer ${apiKey}` },

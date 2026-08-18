@@ -1222,3 +1222,23 @@ vendors). All of these live between `2b239b5` (start) and now:
     - Added unit tests in `backend/test/gemma-engine.test.js` validating model registration, 50/50 round-robin alternation, sliding 60s window token pruning, and automated Groq Compound overflow.
     - Verified: backend tests 87/87 passing (`npm test` 100% PASS), frontend typecheck (`tsc --noEmit` 0 errors), Next.js production build (`npm run build` 15/15 pages clean).
 
+- 2026-08-18 — **Quality Gate Auto-Fix Enhancement (`backend/src/lib/qualityGate.js`)**:
+  - Fixed 4 categories of detected-but-unfixed quality issues in the algorithmic quality gate:
+    1. **Explanation complexity**: Explanations exceeding max FK grade now get sentence splitting at conjunction boundaries (was only doing vocabulary replacement).
+    2. **Option complexity**: Quiz options with high FK grade (e.g. 14.3, 17.8) now get subordinate clause stripping (parentheticals, which/that/who clauses) to reduce grade level.
+    3. **Uneven option lengths**: When options are 4x+ longer than the shortest (poor distractor design), outliers are truncated toward the median length at clause boundaries.
+    4. **Dead code activation**: `splitLongSentences()` existed but was never called from `simplifyText()` — now wired in to split long sentences at conjunctions for all non-College content.
+  - Verified: backend tests 101/101 passing, zero regressions.
+- 2026-08-18 — **AI Engine Latency Optimization (`backend/src/lib/aiEngine.js`)**:
+  - **Mistral model reorder**: Swapped default model priority from `mistral-small-latest` → `open-mistral-nemo` first (7B, fastest TTFT and throughput for structured JSON), then `mistral-small` as fallback. `mistral-small` was paradoxically the slowest for long 4000-token JSON generation.
+  - **Hedge delay tightened**: 2500ms → 1800ms. Groq and Mistral have sub-second TTFT — a 1.8s silence window is sufficient to detect a stuck leader before launching the rescue provider.
+  - **Mistral first-byte timeout tightened**: 8000ms → 5000ms. Mistral has zero cold-start; 8s was too generous and delayed fallback when Mistral was degraded.
+  - **Stall timeout tightened**: 15s → 10s. If a provider stops sending data for 10s mid-stream, the connection is dead — 15s added unnecessary latency before rotation.
+  - Combined effect: reduces worst-case fallback latency by ~6-8 seconds.
+  - Verified: backend tests 101/101 passing, zero regressions.
+- 2026-08-18 — **Groq Empty Answer Fix (`backend/src/lib/aiEngine.js`)**:
+  - **Root cause**: GPT-OSS and Qwen reasoning models on Groq produce `<think>` blocks that consumed the entire `max_completion_tokens` budget (4000 for explain mode), leaving nothing for the actual JSON answer. After `stripThinkingTags` removed the thinking, the result was empty → 502 EmptyResponse → slow Mistral fallback.
+  - **Fix 1 — `reasoning_format: "hidden"`**: When `AI_DISABLE_THINKING` includes "groq" (production default), `callGroq` now sends Groq's native `reasoning_format: "hidden"` parameter to suppress reasoning entirely (faster generation, no wasted tokens).
+  - **Fix 2 — 2x token budget**: When thinking IS active, `callGroq` doubles `max_completion_tokens` (capped at 16384) so reasoning doesn't crowd out the answer.
+  - Updated `ai-engine.test.js` to verify the token doubling for reasoning models.
+  - Verified: backend tests 101/101 passing, zero regressions.

@@ -307,6 +307,10 @@ function simplifyText(text, level, language = "English") {
     }
   }
 
+  // Split long sentences at natural break points to reduce grade level
+  const thresholds = getThresholds(level);
+  result = splitLongSentences(result, thresholds.maxAvgSentenceLen);
+
   return result;
 }
 
@@ -380,7 +384,7 @@ function simplifyQuizQuestion(question, level, language = "English") {
     }
   }
 
-  // Simplify options — also enforce length limit for the level
+  // Simplify options — enforce length limit AND reduce complexity for the level
   if (Array.isArray(simplified.options)) {
     simplified.options = simplified.options.map((opt) => {
       if (typeof opt !== "string") return opt;
@@ -389,16 +393,84 @@ function simplifyQuizQuestion(question, level, language = "English") {
       if (optWords.length > thresholds.maxQuizOptionWords) {
         s = truncateAtClause(s, thresholds.maxQuizOptionWords);
       }
+      // If the option is still too complex (high FK grade), strip
+      // subordinate clauses and parentheticals to lower the grade
+      if (optWords.length > 5) {
+        const optGrade = fleschKincaidGrade(s);
+        if (optGrade > thresholds.maxQuizGrade + 2) {
+          s = stripSubordinateClauses(s, thresholds.maxQuizOptionWords);
+        }
+      }
       return s;
     });
+
+    // Balance uneven option lengths — when one option is 4x+ longer than the
+    // shortest (and > 10 words), truncate outliers toward the median length
+    const lengths = simplified.options
+      .filter((o) => typeof o === "string")
+      .map((o) => getWords(o).length);
+    if (lengths.length === 4) {
+      const sorted = [...lengths].sort((a, b) => a - b);
+      const median = Math.ceil((sorted[1] + sorted[2]) / 2);
+      const maxLen = Math.max(...lengths);
+      const minLen = Math.min(...lengths);
+      if (maxLen > minLen * 4 && maxLen > 10) {
+        const target = Math.max(median, thresholds.maxQuizOptionWords);
+        simplified.options = simplified.options.map((opt) => {
+          if (typeof opt !== "string") return opt;
+          const wc = getWords(opt).length;
+          if (wc > target) {
+            return truncateAtClause(opt, target);
+          }
+          return opt;
+        });
+      }
+    }
   }
 
-  // Simplify explanation
+  // Simplify explanation — vocabulary replacement + sentence splitting
   if (typeof simplified.explanation === "string") {
     simplified.explanation = simplifyText(simplified.explanation, level, language);
+    // If explanation is still too complex, split its long sentences further
+    const expGrade = fleschKincaidGrade(simplified.explanation);
+    if (expGrade > thresholds.maxQuizGrade + 1) {
+      simplified.explanation = splitLongSentences(
+        simplified.explanation,
+        Math.max(12, thresholds.maxAvgSentenceLen - 4)
+      );
+    }
   }
 
   return simplified;
+}
+
+/**
+ * Strip subordinate clauses and parentheticals from text to reduce
+ * Flesch-Kincaid grade. Removes content in parentheses, and clauses
+ * starting with which/that/who/where/although when they make the text
+ * exceed the word limit.
+ */
+function stripSubordinateClauses(text, maxWords) {
+  if (!text || typeof text !== "string") return text;
+
+  let result = text;
+
+  // Remove parenthetical content: "(some detail here)"
+  result = result.replace(/\s*\([^)]{5,}\)/g, "");
+
+  // Remove trailing subordinate clauses: ", which ...", ", that ...", etc.
+  result = result.replace(
+    /,\s*(?:which|that|who|where|although|even though)\b[^,.]*/gi,
+    ""
+  );
+
+  // If still over limit, hard-truncate
+  const words = result.split(/\s+/);
+  if (words.length > maxWords) {
+    result = truncateAtClause(result, maxWords);
+  }
+
+  return result.trim();
 }
 
 /**

@@ -161,10 +161,13 @@ test("Groq requests use the OpenAI-compatible endpoint with streaming and no uns
   assert.equal(text, "groq-answer");
   assert.equal(groqUrl, "https://api.groq.com/openai/v1/chat/completions");
   assert.equal(groqPayload.stream, true);
-  assert.equal(groqPayload.max_completion_tokens, 1234);
+  // GPT-OSS is a reasoning model — callGroq doubles the token budget
+  // (1234 * 2 = 2468) so <think> blocks don't crowd out the answer.
+  assert.equal(groqPayload.max_completion_tokens, 2468);
   // Groq rejects these with a 400 — they must never be sent.
   assert.equal(groqPayload.chat_template_kwargs, undefined);
-  assert.equal(groqPayload.response_format, undefined);
+  // reasoning_format is only sent when AI_DISABLE_THINKING includes "groq"
+  assert.equal(groqPayload.reasoning_format, undefined);
 });
 
 test("Mistral requests enable JSON mode (streaming-compatible structured output)", async () => {

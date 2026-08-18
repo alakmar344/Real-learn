@@ -1305,3 +1305,19 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
     - Added `zustand` and `eventsource-parser` to `optimizePackageImports`.
   - **Linter & Type Integrity**:
     - Cleaned unused eslint-disable directives in `GoogleAnalytics.tsx` and `useSpeech.ts` for 0 warnings / 0 errors. Verified with 101/101 backend tests, 8/8 verification scripts, clean TypeScript check, clean ESLint, and Next.js 15 production build.
+- 2026-08-18 (later) — **Fix Groq Empty Answers, AI Latency Overhaul & Quality Gate Complete Auto-Fix.**
+  - **Groq Reasoning & Empty Answer Fix (`backend/src/lib/aiEngine.js`)**:
+    - Resolved bug where Groq reasoning models (GPT-OSS, Qwen) generated `<think>` blocks consuming the entire completion budget, leaving zero tokens for JSON output (causing empty response -> 502 -> fallback to slow providers).
+    - Added `reasoning_format: "hidden"` when `AI_DISABLE_THINKING` includes `groq` (suppresses reasoning tokens natively on Groq).
+    - When thinking is active, dynamically doubled `max_completion_tokens` (capped at 16384) to ensure reasoning tokens never crowd out the JSON answer.
+  - **Multi-Provider Latency & Watchdog Overhaul (`backend/src/lib/aiEngine.js`)**:
+    - Reordered Mistral fallback models: `open-mistral-nemo` (7B, fastest TTFT + JSON throughput) now leads over `mistral-small-latest`.
+    - Tightened `DEFAULT_HEDGE_DELAY_MS` (2500ms → 1800ms) for ~700ms faster rescue provider launch when a leader stalls.
+    - Tightened Mistral `firstByteTimeoutMs` (8000ms → 5000ms) and `DEFAULT_STALL_TIMEOUT_MS` (15000ms → 10000ms).
+  - **Quality Gate 100% Auto-Fix Engine (`backend/src/lib/qualityGate.js`)**:
+    - Wired `splitLongSentences` into `simplifyText` (activated dead code) for sentence splitting at conjunction boundaries.
+    - Added `stripSubordinateClauses` and FK grade complexity reduction for quiz options.
+    - Added distractor length balancing to truncate length outliers toward the median when options are unevenly sized (4x+ ratio).
+    - Added sentence splitting for quiz explanations exceeding level grade thresholds.
+  - **Empirical Verification**:
+    - Backend test suite: 101/101 tests passing (`node --test`).
