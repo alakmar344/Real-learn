@@ -151,13 +151,14 @@ test("isValidJourney: requires keyTakeaways within the mode's expected count", (
     ],
   };
 
-  // normalizeJourney pads missing keyTakeaways to the mode's count → valid.
+  // normalizeJourney pads missing keyTakeaways to the mode's count (1) → valid.
   const normalized = normalizeJourney(journeyData, "fast");
-  assert.equal(normalized.keyTakeaways.length, 2);
+  assert.equal(normalized.keyTakeaways.length, 1);
   assert.ok(isValidJourney(normalized, "fast"));
 
   // Missing, empty, or over-count keyTakeaways all fail validation.
   assert.ok(!isValidJourney({ ...normalized, keyTakeaways: undefined }, "fast"));
   assert.ok(!isValidJourney({ ...normalized, keyTakeaways: [] }, "fast"));
+  assert.ok(!isValidJourney({ ...normalized, keyTakeaways: ["a", "b"] }, "fast"));
   assert.ok(!isValidJourney({ ...normalized, keyTakeaways: ["a", "b", "c"] }, "fast"));
 });
