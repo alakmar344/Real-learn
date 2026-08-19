@@ -7,7 +7,8 @@ import HomeStats from "@/components/homepage/HomeStats";
 import LoadingCinematic from "@/components/shared/LoadingCinematic";
 import LiveRegion from "@/components/shared/LiveRegion";
 import dynamic from "next/dynamic";
-import { useLesson, warmupBackend } from "@/hooks/useLesson";
+import { useLesson } from "@/hooks/useLesson";
+import { warmupBackend, fetchReady } from "@/lib/api";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { isConsentCurrent, readLegalConsent, writeLegalConsent } from "@/lib/legalConsent";
 import { specialDayFor } from "@/lib/specialDays";
@@ -43,6 +44,10 @@ export default function HomePage() {
 
   useEffect(() => {
     warmupBackend();
+    // Fetch public capabilities once per session. This warms the connection,
+    // lets the backend report health/feature flags, and avoids hard-coding
+    // constants like maxQuestionLength in the UI.
+    fetchReady().catch(() => {});
     const now = new Date();
     setSpecialDay(specialDayFor(now.getMonth() + 1, now.getDate())?.hero ?? null);
     setGreeting(greetingForHour(now.getHours()));

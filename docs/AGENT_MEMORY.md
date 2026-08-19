@@ -69,7 +69,7 @@ Real-learn/
 │   │   ├── homepage/  QuestionInput, HomeStats, ExampleQuestions
 │   │   ├── learning/  PartCard, QuizSheet, QuizQuestion, ProgressRail, CompletionScreen, ...
 │   │   └── shared/    Navbar, Sidebar, Footer, AppShell, ProgressHub, LoadingCinematic, ...
-│   ├── lib/           quizShuffle, themes, achievements, haptics, feedback, legalConsent, ...
+│   ├── lib/           quizShuffle, themes, achievements, haptics, feedback, legalConsent, api (shared backend client), ...
 │   ├── hooks/         useLesson, useSpeech, useFocusTrap, useReadingTimer, useMounted, useModalSlot
 │   ├── store/         lessonStore, progressStore, preferenceStore (incl. learning personalization), savedJourneysStore (Zustand + persist)
 │   ├── public/        logo.svg, manifest.json, llms.txt (robots/sitemap are
@@ -82,6 +82,7 @@ Real-learn/
 │       ├── config.js          env parsing, startup validation, shared constants
 │       ├── middleware/security.js   CORS, origin guard, compression, security headers
 │       ├── routes/            one router per surface — lesson.js (generate-lesson SSE, single-flight map),
+│       │                      ready.js (public capabilities), lessonCacheCheck.js (instant cache peek),
 │       │                      account.js (agreement/legal-consent/account/export-data), tts.js, feedback.js, health.js
 │       ├── startup/migrations.js    consent IP/email scrubs + index ensurers
 │       ├── lib/aiEngine.js    AI engine (Groq primary + Mistral/NVIDIA/Cloudflare, hedged racing, circuit breakers, per-model Groq TPM ledger, silence watchdogs)
@@ -91,6 +92,7 @@ Real-learn/
 │       ├── lib/lessonCache.js two-tier caching (memory LRU + Mongo TTL)
 │       ├── lib/rateLimit.js   limiter factory + token-spray/IPv6-collapse keying
 │       ├── lib/sse.js, lib/moderationLog.js, lib/privacy.js   SSE writers, moderation event log, IP/UA anonymization
+│       ├── lib/lessonRequest.js   shared request parsing/normalization for generate-lesson + cache-check
 │       ├── lib/auth.js        Clerk JWT verify (jose)
 │       └── lib/mongodb.js
 └── docs/, *.md         this file + README, GEMINI.md, AGENT_INSTRUCTIONS.md,
@@ -135,10 +137,10 @@ npm test                  # node --test: personalization + learning-context +
 > scripts are kept as `node` for portability; use `tsx` if you hit
 > `ERR_UNKNOWN_FILE_EXTENSION`.
 
-**Baseline recorded 2026-08-15 (Node 24 / Next 16 / Express 5):**
+**Baseline recorded 2026-08-19 (Node 24 / Next 16 / Express 5):**
 `tsc --noEmit` clean (TS 6.0.3), `npm run lint` clean (ESLint 9.39 flat
 config, 0 errors), `npm run build` clean (14 routes, Turbopack, zero
-warnings), backend `npm test` 90/90, `npm audit` 0 vulnerabilities in both
+warnings), backend `npm test` 112/112, `npm audit` 0 vulnerabilities in both
 workspaces, all eight `verify:*` scripts pass.
 
 ---
@@ -1346,3 +1348,29 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
   every new/loaded/reset lesson, and `LoadingCinematic` renders the banner off it.
   Verified: 101/101 backend tests, `tsc --noEmit` clean, ESLint clean on changed
   files, `next build` green.
+- 2026-08-19 — **Frontend-backend system integration overhaul — predictive cache peek, optimistic shells, and public capability handshake.**
+  Tightened the coupling between the Next.js frontend and the Express backend to
+  cut perceived latency and eliminate duplicated constants:
+  - **Backend**: new public `/api/ready` endpoint returns capabilities,
+    supported languages/levels/modes, `maxQuestionLength`, policy versions, and
+    coarse AI provider health — no more hard-coded lists in the UI. New
+    `/api/lesson-cache-check` endpoint (auth) returns instantly whether a lesson
+    is cached and its expected part count, using the exact same request
+    parsing/cache-key logic as `/api/generate-lesson` via the new shared
+    `lib/lessonRequest.js` helper.
+  - **Backend SSE**: the generate-lesson stream now emits an `event: meta`
+    frame immediately after headers with `{mode, language, level, expectedParts,
+    requestId}` so the frontend can render an accurate optimistic skeleton before
+    the lesson body is ready. Cache-hit and single-flight follower paths batch
+    their initial frames via `sse.sendBatch` for fewer TCP packets.
+  - **Frontend**: new `lib/api.ts` is the single backend client (`fetchReady`,
+    `checkLessonCache`, `warmupBackend`). `QuestionInput.tsx` debounce-checks the
+    cache as the user pauses typing and shows an "Instant answer" badge when the
+    lesson is already cached. `useLesson.ts` handles the `meta` SSE event and
+    seeds `lessonStore.expectedParts`. `learn/page.tsx` renders an optimistic
+    `OptimisticLessonShell` (1 or 3 skeleton cards matching the expected mode)
+    inside the `Suspense` fallback and derives the count from the backend hint.
+  - **Docs/tests**: updated `docs/AGENT_MEMORY.md` layout and baseline;
+  added `backend/test/lessonRequest.test.js` and `backend/test/ready.test.js`.
+  Verified: 112/112 backend tests, `tsc --noEmit` clean, ESLint clean,
+  `next build` green, all eight `verify:*` scripts pass.

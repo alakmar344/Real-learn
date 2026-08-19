@@ -43,5 +43,18 @@ export function createSseWriter(res, requestId) {
     return written;
   };
 
-  return { safeWrite, sendEvent };
+  // Write several events in a single TCP packet. Useful for the cache-hit and
+  // follower paths where multiple frames are emitted back-to-back.
+  const sendBatch = (events) => {
+    const frame = events
+      .map(({ event, payload }) => `event: ${event}\ndata: ${JSON.stringify(payload)}\n`)
+      .join("\n");
+    const written = safeWrite(`${frame}\n`);
+    if (!written) {
+      console.warn("[SSE] Batch write failed", { requestId, eventCount: events.length });
+    }
+    return written;
+  };
+
+  return { safeWrite, sendEvent, sendBatch };
 }

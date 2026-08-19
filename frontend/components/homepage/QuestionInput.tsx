@@ -5,11 +5,15 @@ import { useAuth, useClerk } from "@clerk/nextjs";
 import { SignInButton } from "@clerk/nextjs";
 import ExampleQuestions from "@/components/homepage/ExampleQuestions";
 import MicButton from "@/components/shared/MicButton";
+import { Icon } from "@/components/shared/icons";
 import { usePreferenceStore } from "@/store/preferenceStore";
+import { useSavedJourneysStore } from "@/store/savedJourneysStore";
+import { useProgressStore } from "@/store/progressStore";
 import { useMounted } from "@/hooks/useMounted";
-import { warmupBackend } from "@/hooks/useLesson";
+import { warmupBackend, checkLessonCache } from "@/lib/api";
 import { Language } from "@/types";
 import { LESSON_MODES as MODES } from "@/lib/lessonModes";
+import { buildLearningContext } from "@/lib/learningProfile";
 
 const MAX_QUESTION_LENGTH = 1000;
 
@@ -27,11 +31,16 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
   const initialQuestionRef = useRef(question);
   const [focused, setFocused] = useState(false);
   const [interimSpeech, setInterimSpeech] = useState("");
-  const { isSignedIn } = useAuth();
+  const [cachedHint, setCachedHint] = useState<{ cached: boolean; expectedParts: number } | null>(null);
+  const { isSignedIn, getToken } = useAuth();
   const { openSignIn } = useClerk();
   const language = usePreferenceStore((s) => s.language);
+  const level = usePreferenceStore((s) => s.level);
   const persistedMode = usePreferenceStore((s) => s.mode);
   const setMode = usePreferenceStore((s) => s.setMode);
+  const personalization = usePreferenceStore((s) => s.personalization);
+  const journeys = useSavedJourneysStore((s) => s.journeys);
+  const subjectsSeen = useProgressStore((s) => s.subjectsSeen);
   const mounted = useMounted();
   const mode = mounted ? persistedMode : "fast";
   const isRtl = RTL_LANGUAGES.includes(language);
@@ -76,6 +85,57 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
     }, 200);
     return () => clearTimeout(timer);
   }, [question, mounted]);
+
+  // Predictive cache check: as the learner pauses typing, ask the backend if
+  // this exact question is already cached. If so, show an "Instant answer"
+  // badge so the UI feels prescient and the learner knows the response will
+  // land immediately.
+  useEffect(() => {
+    if (!mounted || !isSignedIn) {
+      setCachedHint(null);
+      return;
+    }
+    const normalized = question.trim();
+    if (!normalized) {
+      setCachedHint(null);
+      return;
+    }
+    let stale = false;
+    const timer = setTimeout(async () => {
+      try {
+        const token = await getToken();
+        const prefsPayload = personalization.onboarded ? personalization : null;
+        const learningContext = buildLearningContext(
+          journeys,
+          subjectsSeen,
+          normalized,
+          prefsPayload?.goals ?? "",
+          Date.now()
+        );
+        const result = await checkLessonCache({
+          question: normalized,
+          language,
+          level,
+          mode,
+          token,
+          personalization: prefsPayload,
+          learningContext,
+        });
+        if (stale) return;
+        if (result?.cached) {
+          setCachedHint({ cached: true, expectedParts: result.expectedParts });
+        } else {
+          setCachedHint(null);
+        }
+      } catch {
+        if (!stale) setCachedHint(null);
+      }
+    }, 350);
+    return () => {
+      stale = true;
+      clearTimeout(timer);
+    };
+  }, [question, language, level, mode, isSignedIn, getToken, mounted, personalization, journeys, subjectsSeen]);
 
   const handleSubmit = (e?: FormEvent) => {
     e?.preventDefault();
@@ -191,6 +251,12 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
             }
             onInterim={setInterimSpeech}
           />
+          {cachedHint?.cached && (
+            <span className="q-form__instant-badge" title="This question is ready instantly">
+              <Icon name="sparkle" size={12} />
+              Instant answer
+            </span>
+          )}
           {question.trim() && (
             <button
               type="button"

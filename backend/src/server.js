@@ -14,10 +14,12 @@ import {
   timingAllowOrigin,
 } from "./middleware/security.js";
 import healthRouter from "./routes/health.js";
+import readyRouter from "./routes/ready.js";
 import accountRouter from "./routes/account.js";
 import feedbackRouter from "./routes/feedback.js";
 import ttsRouter from "./routes/tts.js";
 import lessonRouter from "./routes/lesson.js";
+import lessonCacheCheckRouter from "./routes/lessonCacheCheck.js";
 import {
   scrubStoredConsentIps,
   scrubStoredConsentEmails,
@@ -47,10 +49,12 @@ app.use(timingAllowOrigin);
 // carries no matching significance — but keep the terminal 404/error handlers
 // LAST regardless.
 app.use(healthRouter);
+app.use(readyRouter);
 app.use(accountRouter);
 app.use(feedbackRouter);
 app.use(ttsRouter);
 app.use(lessonRouter);
+app.use(lessonCacheCheckRouter);
 
 // JSON 404 for unmatched routes — without this, Express's finalhandler
 // returns an HTML "Cannot GET /x" body, a content-type mismatch for a JSON
