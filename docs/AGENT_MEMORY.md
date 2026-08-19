@@ -1400,3 +1400,16 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
     - Backend test suite: 112/112 tests passed (`node --test`).
     - Frontend: clean ESLint, `tsc --noEmit` typecheck, and Next.js production build (`next build`).
     - Verification scripts: all 8 frontend verify scripts passed cleanly.
+- 2026-08-19 — **Design Richness, Vibrant Colors & Luminous Depth Polish Pass (`globals.css`, `palette.ts`, `achievements.ts`).**
+  - **Tokens & Surfaces**: Deepened dark mode background to rich obsidian-moss (`#0E120D` / `#161A12`) with enhanced contrast, elevated luminous top-edge glass highlights (`inset 0 1px 0 rgba(255, 255, 255, 0.08)`), and crisp luminous borders (`rgba(164, 198, 57, 0.14)` / `rgba(164, 198, 57, 0.26)`).
+  - **Ambient Aurora Backdrops**: Enriched `.aurora-bg` static radial gradients with multi-stop warm olive luminary spotlights, emerald vitality, and sapphire accents for rich, immersive visual depth without animation overhead.
+  - **Color Vibrancy & Gradients**: Saturated `--accent-gradient` and `--text-pop-gradient` with luminous lime sparks (`#D4F46B`, `#E2F988`) and moss anchors; enhanced `--shadow-glow-accent` and `--shadow-glow-correct`.
+  - **Dopamine Subject Spectrum**: Saturating subject tokens (Physics, Chemistry, Economics, Biology, CS, History, General) across dark and light modes, and enriched `.part-card__tag--subject` with matching translucent washes, vibrant border strokes, and glowing indicator dots.
+  - **Tactile Component Feedback**:
+    - Primary buttons (`.btn-primary`): Added subtle top-edge sheen and glowing drop-shadows on hover.
+    - Chips (`.chip`): Elevated with frosted glass backgrounds, subtle specular highlights, and glowing accent hover rings.
+    - Learning Journey Rail (`.journey-rail`): Active node with radiant pulse; completed node with glowing emerald badge.
+    - Quiz Options (`.quiz-question__option`): Rich emerald and rose glowing borders on correct/incorrect answers.
+    - Achievement Tiers (`TIER_COLOR`): Polished Bronze (`#CD7F32`), Silver (`#94A3B8`), Gold (`#F59E0B`), and Legendary (`#84CC16`).
+  - **Empirical Verification**: TypeScript `tsc --noEmit` clean, ESLint clean, 8/8 verify scripts passed, and Next.js production build succeeded.
+
