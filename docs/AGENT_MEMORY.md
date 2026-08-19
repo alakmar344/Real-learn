@@ -1374,6 +1374,7 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
   added `backend/test/lessonRequest.test.js` and `backend/test/ready.test.js`.
   Verified: 112/112 backend tests, `tsc --noEmit` clean, ESLint clean,
   `next build` green, all eight `verify:*` scripts pass.
+ perf/cut-tokens-and-speedup
 - 2026-08-19 — **LLM Token Optimization & Speed Acceleration Pass (Backend Prompts, Validation, Ceilings & Frontend Single Key Takeaway).**
   Cut LLM output tokens and improved response latency by ~35–45% across Fast and Explain modes while maintaining high concept density, step-by-step clarity, and Gen Z / Gen Alpha flair with vivid analogies:
   - **Single Key Takeaway**: Consolidated `keyTakeaways` across the system from 2 (Fast) / 3 (Explain) to **exactly 1 high-impact takeaway string**. Updated `MODE_RULES` in `backend/src/validation.js`, `normalizeJourney`, and `isValidJourney`. Refined `QuickSummaryCards.tsx` to display clean single-card takeaway without redundant dots/arrows, and updated `Flashcards.tsx` to generate multi-part flashcards across Explain parts and pair the single takeaway in Fast mode.
@@ -1384,3 +1385,15 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
   - **Tightened Token Ceilings (`maxOutputTokens`)**: Reduced Fast mode ceiling from 1,800 to **1,200 tokens** and Explain mode ceiling from 4,000 to **2,600 tokens** in `backend/src/routes/lesson.js`, speeding up completion and reducing provider throughput pressure while keeping ample headroom for Indic languages.
   - **Verification**: Backend tests 112/112 pass, frontend `verify:quiz`, `verify:achievements`, `verify:personalization` pass, `tsc --noEmit` clean, ESLint clean, and Next.js production build green.
 
+
+- 2026-08-19 — **Forensic security audit & bug remediation pass.**
+  - **CORS & Clerk `azp` Typosquat Whitelist Remediation (`backend/src/middleware/security.js`, `backend/src/lib/auth.js`, `backend/.env.example`)**:
+    - Removed typosquatted domain `"https://reallearn-taupe.xercel.app"` from CORS `allowedOrigins`, Clerk `DEFAULT_PRODUCTION_AUTHORIZED_PARTIES`, and example configuration templates.
+    - Updated offensive security test suite `backend/test/offensive-audit.test.js` (test `K2`) to explicitly assert that `https://reallearn-taupe.xercel.app` is rejected as an unauthorized origin.
+  - **Account Deletion Database Query Hardening (`backend/src/routes/account.js`)**:
+    - Hardened `DELETE /api/account` query filter from `userId ? { clerkId: userId } : {}` to strict `const filter = { clerkId: userId }`, removing the unsafe `{}` fallback that could have triggered collection-wide deletion across `agreements` and `moderationLogs`.
+  - **Empirical Verification**:
+    - Backend test suite: 112/112 tests passed (`node --test`).
+    - Frontend: clean ESLint, `tsc --noEmit` typecheck, and Next.js production build (`next build`).
+    - Verification scripts: all 8 frontend verify scripts passed cleanly (`verify:quiz`, `verify:achievements`, `verify:reconsent`, `verify:frontier`, `verify:learning-profile`, `verify:personalization`, `verify:special-days`, `verify:onboarding`).
+ main
