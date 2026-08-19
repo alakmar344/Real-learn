@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { evaluateAndFix } from "../src/lib/qualityGate.js";
 
 function makeJourney(parts) {
-  return { topic: "Test topic", parts, keyTakeaways: ["a", "b", "c"] };
+  return { topic: "Test topic", parts, keyTakeaways: ["a"] };
 }
 
 function makePart(quiz) {

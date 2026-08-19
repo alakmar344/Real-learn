@@ -23,7 +23,10 @@ export default function QuickSummaryCards({ lesson }: Props) {
 
   const handleCopyCard = async () => {
     try {
-      const textToCopy = `Quick Summary (${activeCardIndex + 1}/${totalCards}): ${lesson.question ?? lesson.topic ?? ""}\n\n${currentTakeaway}`;
+      const textToCopy =
+        totalCards > 1
+          ? `Quick Summary (${activeCardIndex + 1}/${totalCards}): ${lesson.question ?? lesson.topic ?? ""}\n\n${currentTakeaway}`
+          : `Key Takeaway: ${lesson.question ?? lesson.topic ?? ""}\n\n${currentTakeaway}`;
       await navigator.clipboard.writeText(textToCopy);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -44,16 +47,19 @@ export default function QuickSummaryCards({ lesson }: Props) {
     <div className="summary-deck">
       <div className="summary-deck__head">
         <span className="summary-deck__label">
-          <Icon name="zap" size={14} /> Quick Takeaway Cards ({activeCardIndex + 1} of {totalCards})
+          <Icon name="zap" size={14} />{" "}
+          {totalCards > 1
+            ? `Quick Takeaway Cards (${activeCardIndex + 1} of ${totalCards})`
+            : "Key Takeaway"}
         </span>
         <button
           type="button"
           onClick={handleCopyCard}
-          aria-label="Copy summary card text"
+          aria-label={totalCards > 1 ? "Copy summary card text" : "Copy key takeaway text"}
           className="btn-ghost summary-deck__copy"
         >
           <Icon name={copied ? "check" : "clipboard-check"} size={13} />
-          {copied ? "Copied" : "Copy Card"}
+          {copied ? "Copied" : totalCards > 1 ? "Copy Card" : "Copy Takeaway"}
         </button>
       </div>
 
@@ -67,30 +73,32 @@ export default function QuickSummaryCards({ lesson }: Props) {
           </p>
         </div>
 
-        {/* Navigation dots & next/prev controls */}
-        <div className="summary-card__nav">
-          <div className="summary-card__dots">
-            {takeaways.map((_, idx) => (
-              <button
-                key={idx}
-                type="button"
-                aria-label={`Go to card ${idx + 1}`}
-                aria-current={idx === activeCardIndex}
-                onClick={() => setActiveCardIndex(idx)}
-                className={`summary-dot${idx === activeCardIndex ? " summary-dot--active" : ""}`}
-              />
-            ))}
-          </div>
+        {/* Navigation dots & next/prev controls (only rendered when multiple cards exist) */}
+        {totalCards > 1 && (
+          <div className="summary-card__nav">
+            <div className="summary-card__dots">
+              {takeaways.map((_, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  aria-label={`Go to card ${idx + 1}`}
+                  aria-current={idx === activeCardIndex}
+                  onClick={() => setActiveCardIndex(idx)}
+                  className={`summary-dot${idx === activeCardIndex ? " summary-dot--active" : ""}`}
+                />
+              ))}
+            </div>
 
-          <div className="summary-card__arrows">
-            <button type="button" onClick={handlePrev} aria-label="Previous card" className="btn-icon">
-              <Icon name="arrow-left" size={15} />
-            </button>
-            <button type="button" onClick={handleNext} aria-label="Next card" className="btn-icon">
-              <Icon name="arrow-right" size={15} />
-            </button>
+            <div className="summary-card__arrows">
+              <button type="button" onClick={handlePrev} aria-label="Previous card" className="btn-icon">
+                <Icon name="arrow-left" size={15} />
+              </button>
+              <button type="button" onClick={handleNext} aria-label="Next card" className="btn-icon">
+                <Icon name="arrow-right" size={15} />
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

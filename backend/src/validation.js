@@ -43,11 +43,11 @@ export function sanitizeSources(sources) {
 }
 
 // Per-mode structural expectations.
-// - "explain": the classic 3-part learning journey.
-// - "fast": one direct answer part, two quick takeaways.
+// - "explain": the classic 3-part learning journey, 1 overarching key takeaway.
+// - "fast": one direct answer part, 1 key takeaway.
 const MODE_RULES = {
-  explain: { partsCount: 3, keyTakeawaysCount: 3 },
-  fast: { partsCount: 1, keyTakeawaysCount: 2 },
+  explain: { partsCount: 3, keyTakeawaysCount: 1 },
+  fast: { partsCount: 1, keyTakeawaysCount: 1 },
 };
 
 export function getModeRules(mode) {

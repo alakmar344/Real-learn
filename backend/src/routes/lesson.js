@@ -606,9 +606,9 @@ END_EXTERNAL_CONTEXT>>>`
       mode === "fast" ? GENERATE_FAST_ANSWER_PROMPT : GENERATE_LESSON_PROMPT;
     // TOKEN EFFICIENCY & RELIABILITY:
     // Tailored max_tokens ceiling provides ample headroom without truncation:
-    // - Fast mode (1 part + 2 quizzes): ~600-900 tokens -> 1,800 cap (2x headroom)
-    // - Explain mode (3 parts + 6 quizzes): ~1,500-2,400 tokens -> 4,000 cap (ample headroom for Indic languages)
-    const maxOutputTokens = mode === "fast" ? 1800 : 4000;
+    // - Fast mode (1 part + 2 quizzes + 1 takeaway): ~400-600 tokens -> 1,200 cap (2x headroom)
+    // - Explain mode (3 parts + 6 quizzes + 1 takeaway): ~1,100-1,500 tokens -> 2,600 cap (ample headroom for Indic languages)
+    const maxOutputTokens = mode === "fast" ? 1200 : 2600;
     // Fast mode uses a lower temperature for more focused, deterministic
     // output — less sampling overhead means faster generation.
     const temperature = mode === "fast" ? 0.2 : 0.6;

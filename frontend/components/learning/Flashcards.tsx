@@ -48,10 +48,9 @@ export function buildFlashcards(lesson: LessonJourney): Card[] {
 
   const parts = lesson.parts ?? [];
 
-  // Legacy cached/saved lessons can lack keyTakeaways — fall back to one card
-  // per part, built from the opening of the part's own content, so every
-  // lesson still gets a deck.
-  if (takeaways.length === 0) {
+  // When we have multiple parts (Explain mode with 3 parts), build flashcards
+  // for each part so the learner gets multi-card recall practice across all parts!
+  if (parts.length > 1) {
     return parts
       .map((part, i) => {
         const content = removeMarkdown(String(part?.content ?? ""))
@@ -61,30 +60,40 @@ export function buildFlashcards(lesson: LessonJourney): Card[] {
         const title = removeMarkdown(String(part?.title ?? lesson.topic ?? "")).trim();
         return {
           front: title || `Part ${i + 1}`,
-          hint:
-            parts.length > 1
-              ? `Part ${part?.partNumber ?? i + 1} · what's the key idea?`
-              : "Key idea · can you recall it?",
+          hint: `Part ${part?.partNumber ?? i + 1} · what's the key idea?`,
           back: excerptFromContent(content),
         };
       })
       .filter((card): card is Card => card !== null);
   }
 
-  return takeaways.map((back, i) => {
-    // 3-part lessons have 3 takeaways that mirror the 3 parts; fast lessons
-    // have 1 part and 2 takeaways — fall back to the last available part.
-    const part = parts[Math.min(i, Math.max(parts.length - 1, 0))];
+  // Fast mode (1 part) or single part: pair with the key takeaway
+  if (takeaways.length > 0) {
+    const part = parts[0];
     const title = removeMarkdown(String(part?.title ?? lesson.topic ?? "")).trim();
-    return {
-      front: title || `Key idea ${i + 1}`,
-      hint:
-        parts.length > 1
-          ? `Part ${Math.min(i + 1, parts.length)} · what's the key idea?`
-          : `Key idea ${i + 1} · can you recall it?`,
-      back,
-    };
-  });
+    return [
+      {
+        front: title || "Core Insight",
+        hint: "Key idea · can you recall it?",
+        back: takeaways[0],
+      },
+    ];
+  }
+
+  return parts
+    .map((part, i) => {
+      const content = removeMarkdown(String(part?.content ?? ""))
+        .replace(/\s+/g, " ")
+        .trim();
+      if (!content) return null;
+      const title = removeMarkdown(String(part?.title ?? lesson.topic ?? "")).trim();
+      return {
+        front: title || `Part ${i + 1}`,
+        hint: "Key idea · can you recall it?",
+        back: excerptFromContent(content),
+      };
+    })
+    .filter((card): card is Card => card !== null);
 }
 
 interface Props {

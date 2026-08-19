@@ -1269,3 +1269,18 @@ vendors). All of these live between `2b239b5` (start) and now:
     - The loader still **starts immediately** on submit (home overlay + `/learn` continuity) and drives to 100% only on the real reveal signal.
   - **Docs**: `docs/AGENT_MEMORY.md` §5 class list + §13 changelog updated per the Change Protocol.
   - **Verification**: backend `npm test` **101/101**; frontend `tsc --noEmit` clean; ESLint clean on changed files; `next build` green.
+- 2026-08-19 — **LLM Token Optimization & Speed Acceleration Pass (Backend Prompts, Validation, Ceilings & Frontend Single Key Takeaway).**
+  - **Problem**: Long output generation caused unnecessary token spend and increased latency (especially on fallback providers) while multi-sentence quiz explanations and multiple key takeaways added repetitive tokens.
+  - **Backend Prompt & Token Optimization (`backend/src/lib/prompts.js`, `backend/src/routes/lesson.js`)**:
+    - **Single Key Takeaway**: Consolidated `keyTakeaways` from 2 (Fast) / 3 (Explain) to **exactly 1 high-impact takeaway string**.
+    - **1-Sentence Quiz Explanations**: Trimmed explanations from 2–3 sentences down to **1 crisp, punchy sentence** detailing the core insight.
+    - **Streamlined Word Counts**: Set Fast mode target to **140–200 words** and Explain mode target to **150–220 words per part** (rich intuition, mechanisms, and real-world impact with flair, avoiding 2–4 line summaries).
+    - **Token Ceilings (`maxOutputTokens`)**: Adjusted Fast mode ceiling to **1,200** and Explain mode ceiling to **2,600**.
+  - **Backend Validation (`backend/src/validation.js`, `backend/test/quizValidation.test.js`, `backend/test/qualityGate.test.js`)**:
+    - Updated `MODE_RULES` to expect `keyTakeawaysCount: 1` across both modes.
+    - Updated test suites to reflect single key takeaway assertions.
+  - **Frontend Polish (`frontend/components/learning/QuickSummaryCards.tsx`, `frontend/components/learning/Flashcards.tsx`)**:
+    - `QuickSummaryCards.tsx`: Renders single takeaway card without redundant dots/arrows; labels updated to "Key Takeaway".
+    - `Flashcards.tsx`: Generates multi-part recall cards for Explain mode lessons and pairs the single takeaway for Fast mode.
+  - **Verification**: Backend tests 112/112 pass, frontend `verify:quiz`, `verify:achievements`, `verify:personalization` pass, `tsc --noEmit` clean, ESLint clean, and Next.js production build green.
+
