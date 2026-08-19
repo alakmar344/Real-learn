@@ -87,6 +87,9 @@
 ---
 
 **Today — August 19, 2026**
+- **Restore AI Bold & Highlighted Markdown Formatting (`backend/src/lib/prompts.js`):**
+  - Added explicit Markdown formatting rules to `VOICE_AND_SAFETY` and prompt templates (`GENERATE_FAST_ANSWER_PROMPT`, `GENERATE_LESSON_PROMPT`) instructing the AI tutor to always format output with scannable Markdown and use `**bold**` on core concepts, pivotal terms, key definitions, and critical takeaways.
+  - Verified empirical compliance: backend tests 112/112 pass, 8/8 frontend verification scripts pass, `tsc --noEmit` clean, ESLint clean, and Next.js production build green across 15 routes.
 - **Frontend-Backend System Integration Overhaul — Predictive Cache Peek, Optimistic Shells & Public Capability Handshake:**
   - **Backend public capability endpoint (`/api/ready`)**: returns supported languages/levels/modes, `maxQuestionLength`, policy versions, service version, and coarse AI provider health so the frontend never has to hard-code backend constants.
   - **Backend cache-peek endpoint (`/api/lesson-cache-check`)**: instant JSON response indicating whether a lesson is already cached and its expected part count. Uses the new shared `backend/src/lib/lessonRequest.js` helper so parsing, personalization filtering, and cache-key computation stay identical to `/api/generate-lesson`.
