@@ -42,11 +42,11 @@ export function withAlpha(hex: string, alpha: number): string {
 export const SHARE_CARD = {
   paper: "#FAF9F3",
   card: "#FFFFFF",
-  ink: "#1F2318",
-  inkSoft: "#565B48",
-  brand: "#556B2F",
-  brandBright: "#84CC16",
+  ink: "#1B2014",
+  inkSoft: "#4D5340",
+  brand: "#4E652A",
+  brandBright: "#688532",
   mint: "#059669",
-  amber: "#3F6212",
-  border: "#E7E5D8",
+  amber: "#384C1C",
+  border: "#E2DFCE",
 } as const;
