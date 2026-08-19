@@ -1374,7 +1374,6 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
   added `backend/test/lessonRequest.test.js` and `backend/test/ready.test.js`.
   Verified: 112/112 backend tests, `tsc --noEmit` clean, ESLint clean,
   `next build` green, all eight `verify:*` scripts pass.
- perf/cut-tokens-and-speedup
 - 2026-08-19 — **LLM Token Optimization & Speed Acceleration Pass (Backend Prompts, Validation, Ceilings & Frontend Single Key Takeaway).**
   Cut LLM output tokens and improved response latency by ~35–45% across Fast and Explain modes while maintaining high concept density, step-by-step clarity, and Gen Z / Gen Alpha flair with vivid analogies:
   - **Single Key Takeaway**: Consolidated `keyTakeaways` across the system from 2 (Fast) / 3 (Explain) to **exactly 1 high-impact takeaway string**. Updated `MODE_RULES` in `backend/src/validation.js`, `normalizeJourney`, and `isValidJourney`. Refined `QuickSummaryCards.tsx` to display clean single-card takeaway without redundant dots/arrows, and updated `Flashcards.tsx` to generate multi-part flashcards across Explain parts and pair the single takeaway in Fast mode.
@@ -1384,8 +1383,6 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
     - **Explain Mode**: Trimmed target from 220–320 words/part to **150–220 words/part** across Part 1 (Foundation), Part 2 (Mechanism), and Part 3 (Real World) with full flair and analogies intact.
   - **Tightened Token Ceilings (`maxOutputTokens`)**: Reduced Fast mode ceiling from 1,800 to **1,200 tokens** and Explain mode ceiling from 4,000 to **2,600 tokens** in `backend/src/routes/lesson.js`, speeding up completion and reducing provider throughput pressure while keeping ample headroom for Indic languages.
   - **Verification**: Backend tests 112/112 pass, frontend `verify:quiz`, `verify:achievements`, `verify:personalization` pass, `tsc --noEmit` clean, ESLint clean, and Next.js production build green.
-
-
 - 2026-08-19 — **Forensic security audit & bug remediation pass.**
   - **CORS & Clerk `azp` Typosquat Whitelist Remediation (`backend/src/middleware/security.js`, `backend/src/lib/auth.js`, `backend/.env.example`)**:
     - Removed typosquatted domain `"https://reallearn-taupe.xercel.app"` from CORS `allowedOrigins`, Clerk `DEFAULT_PRODUCTION_AUTHORIZED_PARTIES`, and example configuration templates.
@@ -1396,4 +1393,10 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
     - Backend test suite: 112/112 tests passed (`node --test`).
     - Frontend: clean ESLint, `tsc --noEmit` typecheck, and Next.js production build (`next build`).
     - Verification scripts: all 8 frontend verify scripts passed cleanly (`verify:quiz`, `verify:achievements`, `verify:reconsent`, `verify:frontier`, `verify:learning-profile`, `verify:personalization`, `verify:special-days`, `verify:onboarding`).
- main
+- 2026-08-19 — **Restore AI Bold & Highlighted Markdown Formatting (`backend/src/lib/prompts.js`).**
+  - Added explicit Markdown formatting rules to `VOICE_AND_SAFETY` and prompt templates (`GENERATE_FAST_ANSWER_PROMPT`, `GENERATE_LESSON_PROMPT`) instructing the AI tutor to always format output with scannable Markdown and use `**bold**` on core concepts, pivotal terms, key definitions, and critical takeaways.
+  - Retained deterministic client-side flashcard generation without any additional AI latency or token cost.
+  - **Empirical Verification**:
+    - Backend test suite: 112/112 tests passed (`node --test`).
+    - Frontend: clean ESLint, `tsc --noEmit` typecheck, and Next.js production build (`next build`).
+    - Verification scripts: all 8 frontend verify scripts passed cleanly.
