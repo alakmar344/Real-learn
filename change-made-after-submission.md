@@ -86,6 +86,17 @@
 
 ---
 
+**Today — August 19, 2026**
+- **Frontend-Backend System Integration Overhaul — Predictive Cache Peek, Optimistic Shells & Public Capability Handshake:**
+  - **Backend public capability endpoint (`/api/ready`)**: returns supported languages/levels/modes, `maxQuestionLength`, policy versions, service version, and coarse AI provider health so the frontend never has to hard-code backend constants.
+  - **Backend cache-peek endpoint (`/api/lesson-cache-check`)**: instant JSON response indicating whether a lesson is already cached and its expected part count. Uses the new shared `backend/src/lib/lessonRequest.js` helper so parsing, personalization filtering, and cache-key computation stay identical to `/api/generate-lesson`.
+  - **Backend SSE meta frame**: `/api/generate-lesson` streams `event: meta` immediately after headers with `{mode, language, level, expectedParts, requestId}` so the frontend renders an accurate optimistic skeleton before the lesson body arrives. Cache-hit and single-flight follower paths batch initial frames via `sse.sendBatch`.
+  - **Frontend shared API client (`frontend/lib/api.ts`)**: centralizes `BACKEND_URL`, `fetchReady()`, `checkLessonCache()`, and `warmupBackend()` — replaces the scattered local warmup helper.
+  - **Frontend predictive UI (`QuestionInput.tsx`)**: debounced cache-check while typing shows an "Instant answer" badge when the lesson is already cached; focus still warms the backend.
+  - **Frontend optimistic shell (`learn/page.tsx` + `lessonStore`)**: the store now tracks `expectedParts`; `useLesson.ts` seeds it from the SSE `meta` event; `learn/page.tsx` renders a 1- or 3-card `OptimisticLessonShell` matching the expected mode inside the `Suspense` fallback.
+  - **Design system**: added `.q-form__instant-badge` styling for the cache-hit badge.
+  - **Tests/docs**: added `backend/test/lessonRequest.test.js` and `backend/test/ready.test.js`; updated `docs/AGENT_MEMORY.md` layout and baseline. Verified 112/112 backend tests, `tsc --noEmit` clean, ESLint clean, `next build` green, all eight `verify:*` scripts pass.
+
 **Today — August 18, 2026**
 - **Full-Stack Performance, Snappy Efficiency & High-Throughput Inference Overhaul:**
   - **Backend JSON Fast-Path & Regex Pre-compilation (`aiEngine.js`)**: Accelerated `parseJSON` by introducing a direct native `JSON.parse` fast-path for valid JSON responses (95%+ of Groq / Mistral with JSON mode), eliminating heavy `jsonrepair` AST traversal overhead. Hoisted and pre-compiled thinking tag and reasoning label regular expressions (`THINKING_TAGS_RE`, `PARSE_REASONING_PREFIX_RE`, `PARSE_CODE_FENCE_START_RE`, `PARSE_CODE_FENCE_END_RE`). Reduced backend test suite runtime from ~26.8s to ~11.8s (>2× speedup).
