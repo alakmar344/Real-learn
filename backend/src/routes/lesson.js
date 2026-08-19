@@ -19,15 +19,12 @@ import {
 import { fetchRealWorldContext } from "../lib/serper.js";
 import { isValidJourney, normalizeJourney, hasExpectedPartCount } from "../validation.js";
 import { requireAuth } from "../lib/auth.js";
-import { filterUserInput } from "../lib/contentGuard.js";
 import { moderateText } from "../lib/moderation.js";
 import { evaluateAndFix } from "../lib/qualityGate.js";
 import {
-  sanitizePersonalization,
   formatPersonalizationForPrompt,
   parseLearningContext,
   neutralizePromptFences,
-  MAX_LEARNING_CONTEXT_CHARS,
 } from "../lib/personalization.js";
 import {
   lessonCacheKey,
@@ -43,9 +40,10 @@ import { apiRateLimiter } from "../lib/rateLimit.js";
 import { flushSseHeaders, createSseWriter } from "../lib/sse.js";
 import { cleanForLog } from "../middleware/security.js";
 import {
-  MAX_QUESTION_LENGTH,
-  ALLOWED_LANGUAGES,
-  ALLOWED_LEVELS,
+  parseLessonBody,
+  validateLessonRequest,
+} from "../lib/lessonRequest.js";
+import {
   LESSON_TIMEOUT_MS,
   AI_CALL_TIMEOUT_MS,
   HEARTBEAT_INTERVAL_MS,
@@ -132,101 +130,15 @@ function decrementActiveLessonRequests() {
 
 router.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
   const requestId = `lesson-${Date.now()}-${++lessonRequestCounter}`;
-  // Robustness: a non-string question (e.g. {"question": 123}) must not throw —
-  // Express 5 would forward the rejection to the terminal error middleware as
-  // a generic 500 instead of this handler's clear 400.
-  const question =
-    typeof req.body?.question === "string" ? req.body.question.trim() : "";
-  const language = req.body?.language ?? "English";
-  const level = req.body?.level ?? "Class 9-10";
-  // "fast" → one direct answer part, minimal latency (no Serper, smaller
-  // output budget). Anything else → the classic 3-part explanation journey.
-  const mode = req.body?.mode === "fast" ? "fast" : "explain";
-  const personalization = sanitizePersonalization(req.body?.personalization);
-  // SECURITY: personalization notes are free text that flows into the LLM
-  // prompt, so they must clear the SAME banned-content filter as the question
-  // — otherwise the notes field is a moderation bypass (harmful instructions
-  // smuggled as "how I learn"). Blocked notes are dropped (the lesson still
-  // generates without them) and the event is logged like any other flag.
-  // This runs BEFORE the cache key is computed so the dropped notes can't
-  // create poisoned per-notes cache entries.
-  if (personalization.notes) {
-    const notesFilter = filterUserInput(personalization.notes);
-    if (!notesFilter.allowed) {
-      const moderationEvent = buildModerationEvent({
-        requestId,
-        clerkId: req.auth?.userId,
-        type: "personalization-notes-blocked",
-        reason: notesFilter.reason,
-        question: personalization.notes,
-      });
-      console.warn(
-        "[moderation] Personalization notes blocked; continuing without them",
-        redactModerationEvent(moderationEvent)
-      );
-      void logModerationEvent(moderationEvent);
-      personalization.notes = "";
-    }
-  }
-  // SECURITY: the learner's stated GOAL is the single highest-authority signal
-  // in the adaptation plan (it is framed to the model as the "north star").
-  // Like notes, it is free text flowing into the prompt, so it MUST clear the
-  // same banned-content filter — otherwise it is a moderation bypass with even
-  // more leverage than notes. Blocked goals are dropped (the lesson still
-  // generates) and the drop happens BEFORE the cache key so a blocked goal
-  // cannot create a poisoned per-goal cache entry.
-  if (personalization.goals) {
-    const goalsFilter = filterUserInput(personalization.goals);
-    if (!goalsFilter.allowed) {
-      const moderationEvent = buildModerationEvent({
-        requestId,
-        clerkId: req.auth?.userId,
-        type: "personalization-goals-blocked",
-        reason: goalsFilter.reason,
-        question: personalization.goals,
-      });
-      console.warn(
-        "[moderation] Personalization goals blocked; continuing without them",
-        redactModerationEvent(moderationEvent)
-      );
-      void logModerationEvent(moderationEvent);
-      personalization.goals = "";
-    }
-  }
-  // Learning context: a compact, topic-relevant snippet derived on-device from
-  // the learner's quiz-verified knowledge (see frontend/lib/learningProfile.ts).
-  // It is plain, descriptive prose treated as DESCRIPTIVE DATA — fenced and
-  // neutralized exactly like learner notes. Run it through the SAME content
-  // filter as the question/notes so the field cannot be a moderation bypass.
-  // SECURITY (DoS): cap the raw context to the same ceiling the prompt
-  // formatter enforces BEFORE running the content-filter regexes. The `question`
-  // (≤1000) and `notes` (≤500) fields are already bounded before filtering;
-  // learningContext previously reached `filterUserInput` at its full body size
-  // (up to the 100kb JSON limit), so a ~96kb payload of a trigger word plus
-  // whitespace could drive the unbounded `[\w\s]*` hate-content pattern into
-  // quadratic backtracking and stall the event loop.
-  let learningContextRaw =
-    typeof req.body?.learningContext === "string"
-      ? req.body.learningContext.slice(0, MAX_LEARNING_CONTEXT_CHARS)
-      : "";
-  if (learningContextRaw) {
-    const contextFilter = filterUserInput(learningContextRaw);
-    if (!contextFilter.allowed) {
-      const contextModerationEvent = buildModerationEvent({
-        requestId,
-        clerkId: req.auth?.userId,
-        type: "learning-context-blocked",
-        reason: contextFilter.reason,
-        question: learningContextRaw,
-      });
-      console.warn(
-        "[moderation] Learning context blocked; continuing without it",
-        redactModerationEvent(contextModerationEvent)
-      );
-      void logModerationEvent(contextModerationEvent);
-      learningContextRaw = "";
-    }
-  }
+  const {
+    question,
+    language,
+    level,
+    mode,
+    personalization,
+    learningContextRaw,
+  } = parseLessonBody(req);
+
   // DECISION ENGINE: parse the quiz-verified context into structured signals
   // (strengths / weaknesses / recent / goals), then build ONE ranked
   // adaptation plan that treats the 10 checklist options as CANDIDATES and
@@ -258,35 +170,13 @@ router.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => 
     },
   });
 
-  if (!question) {
-    console.warn("[generate-lesson] Missing question", { requestId });
-    return res.status(400).json({ error: "Question is required" });
-  }
-  if (question.length > MAX_QUESTION_LENGTH) {
-    console.warn("[generate-lesson] Question too long", {
+  const validation = validateLessonRequest({ question, language, level });
+  if (!validation.ok) {
+    console.warn("[generate-lesson] Request validation failed", {
       requestId,
-      questionLength: question.length,
+      reason: validation.error,
     });
-    return res.status(400).json({
-      error: `Question is too long (max ${MAX_QUESTION_LENGTH} characters).`,
-    });
-  }
-  // Security: language/level are interpolated into the LLM prompt. Lock them
-  // to the values the app actually offers so they can't be used to smuggle
-  // arbitrary instructions (prompt injection) past the question filters.
-  if (!ALLOWED_LANGUAGES.has(language)) {
-    console.warn("[generate-lesson] Invalid language", {
-      requestId,
-      language: cleanForLog(language),
-    });
-    return res.status(400).json({ error: "Unsupported language." });
-  }
-  if (!ALLOWED_LEVELS.has(level)) {
-    console.warn("[generate-lesson] Invalid level", {
-      requestId,
-      level: cleanForLog(level),
-    });
-    return res.status(400).json({ error: "Unsupported level." });
+    return res.status(validation.status).json({ error: validation.error });
   }
 
   // Single rule-based input-moderation pass. moderateText's harmful-content
@@ -325,8 +215,22 @@ router.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => 
     try {
       console.log("[generate-lesson] Cache hit — serving instantly", { requestId });
       flushSseHeaders(res);
-      res.write(`event: lesson\ndata: ${JSON.stringify(cachedLesson)}\n\n`);
-      res.write(`event: done\ndata: ${JSON.stringify({ ok: true })}\n\n`);
+      const { sendBatch } = createSseWriter(res, requestId);
+      sendBatch([
+        {
+          event: "meta",
+          payload: {
+            mode,
+            language,
+            level,
+            expectedParts: mode === "fast" ? 1 : 3,
+            requestId,
+            cached: true,
+          },
+        },
+        { event: "lesson", payload: cachedLesson },
+        { event: "done", payload: { ok: true } },
+      ]);
       res.end();
       recordLessonResult(true);
     } catch (error) {
@@ -379,8 +283,10 @@ router.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => 
         });
       }
     };
+    let followerSse;
     try {
       flushSseHeaders(res);
+      followerSse = createSseWriter(res, requestId);
     } catch (error) {
       console.warn("[SSE] Follower header flush failed (client gone?)", {
         requestId,
@@ -389,14 +295,27 @@ router.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => 
       finishFollower();
       return;
     }
-    followerWrite(`event: ping\ndata: ${Date.now()}\n\n`);
+    followerSse.sendBatch([
+      { event: "ping", payload: Date.now() },
+      {
+        event: "meta",
+        payload: {
+          mode,
+          language,
+          level,
+          expectedParts: mode === "fast" ? 1 : 3,
+          requestId,
+          follower: true,
+        },
+      },
+      { event: "progress", payload: { stage: "generating", percent: 40 } },
+    ]);
     followerHeartbeat = setInterval(() => {
       followerWrite(`event: ping\ndata: ${Date.now()}\n\n`);
     }, HEARTBEAT_INTERVAL_MS);
     // Same asymptotic progress curve the leader's attempt ticker uses, so the
     // waiting client's UI advances instead of sitting at 0%.
     let followerPercent = 40;
-    followerWrite(`event: progress\ndata: ${JSON.stringify({ stage: "generating", percent: followerPercent })}\n\n`);
     followerTicker = setInterval(() => {
       if (followerDone) return;
       const remaining = 82 - followerPercent;
@@ -418,16 +337,17 @@ router.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => 
     }, FOLLOWER_SLOW_NOTICE_AFTER_MS);
     try {
       const journey = await inFlightGeneration;
-      followerWrite(`event: lesson\ndata: ${JSON.stringify(journey)}\n\n`);
-      followerWrite(`event: done\ndata: ${JSON.stringify({ ok: true })}\n\n`);
+      followerSse.sendBatch([
+        { event: "lesson", payload: journey },
+        { event: "done", payload: { ok: true } },
+      ]);
       recordLessonResult(true);
     } catch (error) {
       // The leader already recorded the failure and logged its cause; the
       // follower only relays the same user-facing message.
-      followerWrite(
-        `event: error\ndata: ${JSON.stringify({
-          error: error?.message || "Failed to generate lesson. Please try again.",
-        })}\n\n`
+      followerSse.sendEvent(
+        "error",
+        { error: error?.message || "Failed to generate lesson. Please try again." }
       );
     } finally {
       finishFollower();
@@ -593,6 +513,16 @@ router.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => 
   };
   sendPing();
   heartbeat = setInterval(sendPing, HEARTBEAT_INTERVAL_MS);
+
+  // META: send structural hints immediately so the frontend can render an
+  // accurate optimistic skeleton before the lesson body is ready.
+  sendEvent("meta", {
+    mode,
+    language,
+    level,
+    expectedParts: mode === "fast" ? 1 : 3,
+    requestId,
+  });
 
   try {
     // Input moderation already ran (and passed) before the cache lookup — see
