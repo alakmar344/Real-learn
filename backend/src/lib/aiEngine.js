@@ -1463,7 +1463,8 @@ export async function callAI(
   temperature = 0.7,
   timeoutMs = 30000,
   signal = null,
-  maxOutputTokens = 4000
+  maxOutputTokens = 4000,
+  hooks = null
 ) {
   const config = getEngineConfig();
   const providers = getProviders();
@@ -1517,9 +1518,24 @@ export async function callAI(
     raceSignal: raceController.signal,
   };
 
+  // Fire `onProviderStart` exactly once the first time each provider is
+  // actually launched (leader OR hedge). The route uses this to tell the
+  // client the moment the last-resort tier (e.g. Cloudflare) is engaged, so
+  // the "taking longer than expected" reassurance only ever appears AFTER that
+  // request has genuinely been triggered — never as a pre-emptive guess.
+  const startedProviders = new Set();
   const starters = ordered.map(
-    (provider) => (raceState) =>
-      runProviderAttempts(provider, request, config, raceState)
+    (provider) => (raceState) => {
+      if (!startedProviders.has(provider.key)) {
+        startedProviders.add(provider.key);
+        try {
+          hooks?.onProviderStart?.(provider.key, provider.tier ?? 0);
+        } catch {
+          // Hook failures must never affect generation.
+        }
+      }
+      return runProviderAttempts(provider, request, config, raceState);
+    }
   );
 
   try {

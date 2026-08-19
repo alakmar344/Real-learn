@@ -249,6 +249,7 @@ export function useLesson() {
   const setQuestion = useLessonStore((s) => s.setQuestion);
   const startLoading = useLessonStore((s) => s.startLoading);
   const setProgress = useLessonStore((s) => s.setProgress);
+  const setNotice = useLessonStore((s) => s.setNotice);
   const setLesson = useLessonStore((s) => s.setLesson);
   const setError = useLessonStore((s) => s.setError);
   const resetForNextQuestion = useLessonStore((s) => s.resetForNextQuestion);
@@ -426,6 +427,17 @@ export function useLesson() {
               if (payload) {
                 logLessonDebug("progress event received", { requestId, attempt, payload });
                 setProgress(payload.stage, payload.percent);
+              }
+              return null;
+            }
+            if (entry.event === "notice") {
+              // Backend-confirmed slow path (resilient tier engaged, or a real
+              // measured delay). This is the ONLY trigger for the loading
+              // screen's "taking longer than expected" reassurance.
+              const payload = safeParseEvent<{ kind?: string }>(entry.data);
+              if (payload?.kind === "resilient-tier" || payload?.kind === "slow") {
+                logLessonDebug("notice event received", { requestId, attempt, payload });
+                setNotice(payload.kind);
               }
               return null;
             }
@@ -621,7 +633,7 @@ export function useLesson() {
       setError(humanizeErrorMessage(lastError));
       return false;
     },
-    [getToken, language, level, mode, personalization, journeys, subjectsSeen, router, setError, setLesson, setProgress, setQuestion, startLoading]
+    [getToken, language, level, mode, personalization, journeys, subjectsSeen, router, setError, setLesson, setProgress, setNotice, setQuestion, startLoading]
   );
 
   const restart = useCallback(() => {

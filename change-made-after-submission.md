@@ -1242,3 +1242,19 @@ vendors). All of these live between `2b239b5` (start) and now:
   - **Fix 2 — 2x token budget**: When thinking IS active, `callGroq` doubles `max_completion_tokens` (capped at 16384) so reasoning doesn't crowd out the answer.
   - Updated `ai-engine.test.js` to verify the token doubling for reasoning models.
   - Verified: backend tests 101/101 passing, zero regressions.
+
+- 2026-08-19 — **Reinvented Loading Experience + Backend-Confirmed "Taking Longer" Signal (frontend + backend).**
+  - **Problem**: the loading screen showed a "taking longer than expected"-style line on a blind 10-second client timer — it fired *before* anything had actually gone slow, undercutting trust. The loader itself only leaned on a local progress curve.
+  - **Backend — real slow-path signal (`backend/src/lib/aiEngine.js`, `backend/src/routes/lesson.js`)**:
+    - Added an optional `hooks` argument to `callAI(...)`; the hedged-race orchestrator fires `hooks.onProviderStart(providerKey, tier)` **exactly once per provider the moment it's actually launched** (leader or hedge). Backwards compatible — every existing 6-arg call site and all tests are unaffected.
+    - `lesson.js` passes a hook that emits a **new `event: notice` SSE frame** with `{ kind: "resilient-tier" }` the instant the **last-resort Cloudflare tier (tier ≥ 1)** is engaged — i.e. the Cloudflare request has *genuinely been triggered*.
+    - Independently, a measured-delay fallback emits `{ kind: "slow" }` if generation itself runs past `SLOW_NOTICE_AFTER_MS` (default **16s**, `process.env.SLOW_NOTICE_AFTER_MS`-tunable). The notice is idempotent (emitted at most once) and cleaned up on every request-exit path. The single-flight **follower** path emits the same delayed `slow` notice so joined clients get parity.
+  - **Frontend — store + stream wiring (`frontend/store/lessonStore.ts`, `frontend/hooks/useLesson.ts`)**:
+    - `lessonStore` gains a transient, **non-persisted** `notice: "resilient-tier" | "slow" | null` field with a `setNotice` action (first real signal wins; `resilient-tier` isn't downgraded by a later `slow`). Reset on `startLoading`, `setLesson`, and `resetForNextQuestion`.
+    - `useLesson` parses the `notice` SSE frame and calls `setNotice`. No new requests, no polling — it rides the existing lesson stream.
+  - **Frontend — reinvented loader (`frontend/components/shared/LoadingCinematic.tsx`, `frontend/app/globals.css`)**:
+    - Replaced the entire `.loading-cinematic*` CSS/markup with a distinctive `.lc` "generation studio": an **olive aurora** backdrop, a **conic progress dial** (registered `@property --lc-pct` for buttery fills, a travelling edge spark, and a large tabular-nums % core), a **live status line that snaps to the real backend `stage`** (falling back to the honest local curve between events), a **segment-by-segment part tracker** (Foundation → Mechanism → Real World, or a single Answer in Fast mode), the intelligent stage checklist, rotating study facts, and a full `prefers-reduced-motion` kill-switch.
+    - The **"Sorry, it's taking longer than expected."** banner (`.lc__slow`, with a small orbit spinner) renders **only when `store.notice` is set** — i.e. strictly after Cloudflare is triggered or a real delay is measured, **never before**. Copy adapts to the cause (resilient-engine reroute vs. extra fact-checking care).
+    - The loader still **starts immediately** on submit (home overlay + `/learn` continuity) and drives to 100% only on the real reveal signal.
+  - **Docs**: `docs/AGENT_MEMORY.md` §5 class list + §13 changelog updated per the Change Protocol.
+  - **Verification**: backend `npm test` **101/101**; frontend `tsc --noEmit` clean; ESLint clean on changed files; `next build` green.

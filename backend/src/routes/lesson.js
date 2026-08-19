@@ -356,11 +356,13 @@ router.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => 
     let followerDone = false;
     let followerHeartbeat = null;
     let followerTicker = null;
+    let followerSlowTimer = null;
     const finishFollower = () => {
       if (followerDone) return;
       followerDone = true;
       if (followerHeartbeat !== null) clearInterval(followerHeartbeat);
       if (followerTicker !== null) clearInterval(followerTicker);
+      if (followerSlowTimer !== null) clearTimeout(followerSlowTimer);
       if (!res.writableEnded) {
         try { res.end(); } catch { /* socket already destroyed */ }
       }
@@ -404,6 +406,16 @@ router.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => 
         `event: progress\ndata: ${JSON.stringify({ stage: "generating", percent: Math.round(followerPercent) })}\n\n`
       );
     }, 1500);
+    // A follower shares the leader's fate: if the leader is on the slow path,
+    // this join is slow too. Surface the same reassurance after a genuine delay.
+    const FOLLOWER_SLOW_NOTICE_AFTER_MS = Math.max(
+      6000,
+      Number(process.env.SLOW_NOTICE_AFTER_MS) || 16000
+    );
+    followerSlowTimer = setTimeout(() => {
+      if (followerDone) return;
+      followerWrite(`event: notice\ndata: ${JSON.stringify({ kind: "slow" })}\n\n`);
+    }, FOLLOWER_SLOW_NOTICE_AFTER_MS);
     try {
       const journey = await inFlightGeneration;
       followerWrite(`event: lesson\ndata: ${JSON.stringify(journey)}\n\n`);
@@ -507,6 +519,18 @@ router.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => 
     return ticker;
   };
   const { safeWrite, sendEvent } = createSseWriter(res, requestId);
+  // "Taking longer than expected" signal. Emitted AT MOST ONCE, and ONLY once
+  // one of two REAL conditions holds: the last-resort (Cloudflare) tier has
+  // actually been engaged, or generation has genuinely run past the slow
+  // threshold. The frontend pairs this with the loading screen — it never
+  // shows the reassurance pre-emptively.
+  let slowNoticeSent = false;
+  const emitSlowNotice = (kind) => {
+    if (finished || slowNoticeSent) return;
+    slowNoticeSent = true;
+    console.log("[generate-lesson] Slow-path notice", { requestId, kind });
+    sendEvent("notice", { kind });
+  };
   const finishRequest = (reason = "completed") => {
     if (finished) return;
     finished = true;
@@ -668,6 +692,15 @@ END_EXTERNAL_CONTEXT>>>`
       temperature,
     });
     sendEvent("progress", { stage: "generating", percent: 40 });
+    // Genuine-delay fallback: if generation itself runs past this budget (a
+    // real, measured backend delay — not a client-side guess), surface the
+    // "taking longer" reassurance even when no last-resort tier was engaged
+    // (e.g. Cloudflare isn't configured, or the slow provider is tier 0).
+    const SLOW_NOTICE_AFTER_MS = Math.max(
+      6000,
+      Number(process.env.SLOW_NOTICE_AFTER_MS) || 16000
+    );
+    trackTicker(setTimeout(() => emitSlowNotice("slow"), SLOW_NOTICE_AFTER_MS));
     // Progress during generation is emitted by the per-attempt ticker inside
     // tryGenerate. MONOTONIC: repair attempts continue the asymptotic curve
     // from wherever it is instead of resetting to 40 — a progress bar that
@@ -718,7 +751,17 @@ END_EXTERNAL_CONTEXT>>>`
           attemptTemperature,
           AI_CALL_TIMEOUT_MS,
           generateAbortSignal,
-          maxOutputTokens
+          maxOutputTokens,
+          {
+            // The engine tells us the moment a provider is launched. The
+            // last-resort tier (Cloudflare, tier ≥ 1) engaging is the real
+            // trigger for "this is taking longer than expected".
+            onProviderStart: (providerKey, tier) => {
+              if ((tier ?? 0) >= 1 || providerKey === "cloudflare") {
+                emitSlowNotice("resilient-tier");
+              }
+            },
+          }
         );
         clearInterval(attemptTicker);
         const promptTokens = estimateTokenCount(systemPrompt) + estimateTokenCount(attemptUserPrompt);
