@@ -183,8 +183,14 @@ Available component classes (already implemented — use them):
   (+ `.suggest-pill`), `.progress-hub`
 - Quiz: `.quiz-sheet`, `.quiz-sheet__panel`, `.quiz-sheet__close`, `.quiz-sheet__action`,
   `.quiz-question`, `.quiz-question__option`, `.quiz-question__badge`, `.quiz-question__explanation`
-- Loading / error: `.loading-cinematic`, `.loading-cinematic__progress`, `.loading-cinematic__steps`,
-  `.loading-cinematic__cancel`, `.error-state`, `.error-state__card`, `.error-state__btn`
+- Loading / error: `.lc` (the reinvented loading cinematic — 2026-08-19) with
+  `.lc__aurora`/`__aurora-blob`, `.lc__dial` (conic `@property --lc-pct` progress
+  dial + `__dial-fill`/`__dial-spark`/`__dial-core`/`__dial-pct`), `.lc__status`
+  (live real-stage line), `.lc__question`, `.lc__parts`/`__part`/`__part-bar`,
+  `.lc__steps`/`__step`, `.lc__fact`, `.lc__slow` (the "taking longer than
+  expected" banner, rendered ONLY on a backend `notice` SSE event), `.lc__cancel`;
+  `.error-state`, `.error-state__card`, `.error-state__btn`
+  (the old `.loading-cinematic*` classes were retired in the same pass)
 - Toggles: `.btn-toggle`, `.mode-glider`
 - Decorative: `.engraved`, `.identity-texture`, `.texture-noise`
   (`.kusari`, `.liquid-sheen`, `.texture-dots` were removed 2026-08-15 —
@@ -1321,3 +1327,22 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
     - Added sentence splitting for quiz explanations exceeding level grade thresholds.
   - **Empirical Verification**:
     - Backend test suite: 101/101 tests passing (`node --test`).
+- 2026-08-19 — **Reinvented loading experience + backend-driven "taking longer" signal.**
+  Rebuilt `LoadingCinematic.tsx` from the ground up (old `.loading-cinematic*`
+  CSS retired for a new `.lc` system): an olive **aurora** backdrop, a conic
+  **progress dial** (`@property --lc-pct`, travelling spark, big % core), a live
+  **status line that snaps to the real backend `stage`** token (honest, not
+  faked), a segment-by-segment **part tracker**, the stage checklist, rotating
+  facts, and a `prefers-reduced-motion` kill-switch. The **"Sorry, it's taking
+  longer than expected"** reassurance (`.lc__slow`) is now shown **only after a
+  real backend condition**: a new `event: notice` SSE frame emitted when the
+  **last-resort Cloudflare tier is actually engaged** (`onProviderStart` hook
+  added to `callAI`, tier ≥ 1 → `notice{kind:"resilient-tier"}`) **or** when
+  generation genuinely runs past `SLOW_NOTICE_AFTER_MS` (default 16s, env-tunable)
+  → `notice{kind:"slow"}`. The old blind 10s client timer is gone — the message
+  never appears pre-emptively. Wired end to end: `lesson.js` emits the notice
+  (leader + single-flight follower paths), `useLesson.ts` parses the `notice`
+  frame, `lessonStore` holds a transient (non-persisted) `notice` field reset on
+  every new/loaded/reset lesson, and `LoadingCinematic` renders the banner off it.
+  Verified: 101/101 backend tests, `tsc --noEmit` clean, ESLint clean on changed
+  files, `next build` green.
