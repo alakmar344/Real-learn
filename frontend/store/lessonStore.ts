@@ -33,6 +33,11 @@ interface LessonStore {
    * loading screen's reassurance banner.
    */
   notice: "resilient-tier" | "slow" | null;
+  /**
+   * Hints from the backend's first SSE `meta` event about the lesson shape
+   * (mode, expected part count). Drives the optimistic skeleton on /learn.
+   */
+  expectedParts: number | null;
   unlockedPart: number;
   completedParts: number[];
   partScores: Record<number, number | null>;
@@ -43,6 +48,7 @@ interface LessonStore {
   startLoading: () => void;
   setProgress: (stage: string, percent: number) => void;
   setNotice: (notice: "resilient-tier" | "slow" | null) => void;
+  setMeta: (meta: { expectedParts?: number; mode?: string }) => void;
   setLesson: (lesson: LessonJourney) => void;
   setError: (error: string | null) => void;
   passPart: (part: number, score: number) => void;
@@ -135,6 +141,7 @@ const initialState = {
   progressStage: "",
   progressPercent: 0,
   notice: null as "resilient-tier" | "slow" | null,
+  expectedParts: null as number | null,
   unlockedPart: 1,
   completedParts: [] as number[],
   partScores: { 1: null, 2: null, 3: null } as Record<number, number | null>,
@@ -162,6 +169,7 @@ export const useLessonStore = create<LessonStore>()(
           progressStage: "",
           progressPercent: 0,
           notice: null,
+          expectedParts: null,
           unlockedPart: 1,
           completedParts: [],
           partScores: { 1: null, 2: null, 3: null },
@@ -179,6 +187,15 @@ export const useLessonStore = create<LessonStore>()(
         // First real signal wins — resilient-tier is more specific than a bare
         // slow-timer, so a later "slow" must not downgrade it.
         set((state) => (state.notice ? state : { notice }));
+      },
+      setMeta: (meta) => {
+        storeLog("setMeta", meta);
+        set((state) => ({
+          expectedParts:
+            typeof meta.expectedParts === "number" && meta.expectedParts > 0
+              ? meta.expectedParts
+              : state.expectedParts,
+        }));
       },
       setLesson: (lesson) => {
         storeLog("setLesson", {
@@ -202,6 +219,7 @@ export const useLessonStore = create<LessonStore>()(
           progressStage: "",
           progressPercent: 0,
           notice: null,
+          expectedParts: lesson.parts?.length ?? null,
           unlockedPart: 1,
           completedParts: [],
           partScores: { 1: null, 2: null, 3: null },
@@ -256,6 +274,7 @@ export const useLessonStore = create<LessonStore>()(
           progressStage: "",
           progressPercent: 0,
           notice: null,
+          expectedParts: null,
           unlockedPart: 1,
           completedParts: [],
           partScores: { 1: null, 2: null, 3: null },

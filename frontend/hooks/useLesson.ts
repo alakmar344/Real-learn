@@ -11,11 +11,9 @@ import { useProgressStore } from "@/store/progressStore";
 import { LessonJourney } from "@/types";
 import { type LearningPreferences } from "@/lib/personalization";
 import { buildLearningContext } from "@/lib/learningProfile";
+import { BACKEND_URL, warmupBackend } from "@/lib/api";
 
-const trimmedBackendUrl = (
-  process.env.NEXT_PUBLIC_BACKEND_URL ||
-"https://real-learn.onrender.com"
-).replace(/\/$/, "");
+const trimmedBackendUrl = BACKEND_URL;
 const DEFAULT_STREAM_IDLE_TIMEOUT_MS = 180000;
 const configuredStreamIdleTimeoutMs = Number(process.env.NEXT_PUBLIC_STREAM_IDLE_TIMEOUT_MS);
 const STREAM_IDLE_TIMEOUT_MS =
@@ -60,20 +58,7 @@ export function cancelActiveLessonRequest() {
   activeController = null;
 }
 
-/** Non-blocking warmup ping to wake up sleeping Render backend instances on page load. */
-export function warmupBackend() {
-  if (typeof window === "undefined") return;
-  try {
-    fetch(`${trimmedBackendUrl}/health`, {
-      method: "GET",
-      mode: "cors",
-      cache: "no-store",
-      signal: AbortSignal.timeout(6000),
-    }).catch(() => {});
-  } catch {
-    // Best-effort non-blocking warmup
-  }
-}
+export { warmupBackend };
 
 type StreamEvent = EventSourceMessage;
 
@@ -250,6 +235,7 @@ export function useLesson() {
   const startLoading = useLessonStore((s) => s.startLoading);
   const setProgress = useLessonStore((s) => s.setProgress);
   const setNotice = useLessonStore((s) => s.setNotice);
+  const setMeta = useLessonStore((s) => s.setMeta);
   const setLesson = useLessonStore((s) => s.setLesson);
   const setError = useLessonStore((s) => s.setError);
   const resetForNextQuestion = useLessonStore((s) => s.resetForNextQuestion);
@@ -421,6 +407,22 @@ export function useLesson() {
                 dataLength: entry.data.length,
               });
               return safeParseEvent<LessonJourney>(entry.data);
+            }
+            if (entry.event === "meta") {
+              const payload = safeParseEvent<{
+                mode?: string;
+                expectedParts?: number;
+                requestId?: string;
+                cached?: boolean;
+              }>(entry.data);
+              if (payload) {
+                logLessonDebug("meta event received", { requestId, attempt, payload });
+                setMeta({
+                  expectedParts: payload.expectedParts,
+                  mode: payload.mode,
+                });
+              }
+              return null;
             }
             if (entry.event === "progress") {
               const payload = safeParseEvent<{ stage: string; percent: number }>(entry.data);
@@ -633,7 +635,7 @@ export function useLesson() {
       setError(humanizeErrorMessage(lastError));
       return false;
     },
-    [getToken, language, level, mode, personalization, journeys, subjectsSeen, router, setError, setLesson, setProgress, setNotice, setQuestion, startLoading]
+    [getToken, language, level, mode, personalization, journeys, subjectsSeen, router, setError, setLesson, setProgress, setNotice, setMeta, setQuestion, startLoading]
   );
 
   const restart = useCallback(() => {

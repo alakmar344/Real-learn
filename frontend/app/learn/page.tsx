@@ -39,6 +39,17 @@ function SuspenseFallback() {
   return null;
 }
 
+function OptimisticLessonShell({ expectedParts }: { expectedParts: number }) {
+  const count = Math.max(1, Math.min(expectedParts, 3));
+  return (
+    <>
+      {Array.from({ length: count }).map((_, i) => (
+        <SkeletonCard key={i} height={180} />
+      ))}
+    </>
+  );
+}
+
 function scrollToTop() {
   // Respect prefers-reduced-motion: an explicit behavior option overrides the
   // CSS `scroll-behavior: auto !important` reduced-motion rule.
@@ -78,6 +89,7 @@ export default function LearnPage() {
     hydratingLesson,
     isLoading,
     error,
+    expectedParts,
     unlockedPart,
     completedParts,
     partScores,
@@ -95,6 +107,7 @@ export default function LearnPage() {
       hydratingLesson: state.hydratingLesson,
       isLoading: state.isLoading,
       error: state.error,
+      expectedParts: state.expectedParts,
       unlockedPart: state.unlockedPart,
       completedParts: state.completedParts,
       partScores: state.partScores,
@@ -496,11 +509,15 @@ export default function LearnPage() {
 
           <Suspense
             fallback={
-              <>
-                <SkeletonCard height={180} />
-                <SkeletonCard height={180} />
-                <SkeletonCard height={180} />
-              </>
+              expectedParts ? (
+                <OptimisticLessonShell expectedParts={expectedParts} />
+              ) : (
+                <>
+                  <SkeletonCard height={180} />
+                  <SkeletonCard height={180} />
+                  <SkeletonCard height={180} />
+                </>
+              )
             }
           >
             {lesson.parts.map((part) => (
