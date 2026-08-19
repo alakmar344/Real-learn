@@ -500,17 +500,16 @@ test("K2: azp validation strictly rejects unauthorized origins (including real-l
     "https://reallearn.site",
     "https://www.reallearn.site",
     "https://reallearn-taupe.vercel.app",
-    "https://reallearn-taupe.xercel.app",
   ];
   const isAllowed = (azp) => !azp || trusted.includes(String(azp).replace(/\/$/, ""));
   
   assert.equal(isAllowed("https://reallearn.site"), true);
   assert.equal(isAllowed("https://www.reallearn.site"), true);
   assert.equal(isAllowed("https://reallearn-taupe.vercel.app"), true);
-  assert.equal(isAllowed("https://reallearn-taupe.xercel.app"), true);
   assert.equal(isAllowed(undefined), true);
   
-  // Non-trusted and malicious origins (including unapproved vercel.app domains) must be strictly rejected:
+  // Non-trusted, typosquat, and malicious origins (including unapproved vercel.app domains) must be strictly rejected:
+  assert.equal(isAllowed("https://reallearn-taupe.xercel.app"), false, "xercel.app typosquat must be rejected");
   assert.equal(isAllowed("https://real-learn.vercel.app"), false, "real-learn.vercel.app is not trusted in production");
   assert.equal(isAllowed("https://attacker-app.vercel.app"), false);
   assert.equal(isAllowed("https://evil-phish.vercel.app"), false);

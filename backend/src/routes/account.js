@@ -141,7 +141,7 @@ router.delete("/api/account", rateLimit, requireAuth, async (req, res) => {
   let moderationLogsDeleted = 0;
   try {
     const db = await getDb();
-    const filter = userId ? { clerkId: userId } : {};
+    const filter = { clerkId: userId };
     // PERFORMANCE: delete both collections SIMULTANEOUSLY instead of waiting
     // for one to finish before starting the other. Promise.allSettled ensures
     // one failure doesn't crash the other.

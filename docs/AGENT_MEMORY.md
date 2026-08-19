@@ -1374,3 +1374,13 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
   added `backend/test/lessonRequest.test.js` and `backend/test/ready.test.js`.
   Verified: 112/112 backend tests, `tsc --noEmit` clean, ESLint clean,
   `next build` green, all eight `verify:*` scripts pass.
+- 2026-08-19 — **Forensic security audit & bug remediation pass.**
+  - **CORS & Clerk `azp` Typosquat Whitelist Remediation (`backend/src/middleware/security.js`, `backend/src/lib/auth.js`, `backend/.env.example`)**:
+    - Removed typosquatted domain `"https://reallearn-taupe.xercel.app"` from CORS `allowedOrigins`, Clerk `DEFAULT_PRODUCTION_AUTHORIZED_PARTIES`, and example configuration templates.
+    - Updated offensive security test suite `backend/test/offensive-audit.test.js` (test `K2`) to explicitly assert that `https://reallearn-taupe.xercel.app` is rejected as an unauthorized origin.
+  - **Account Deletion Database Query Hardening (`backend/src/routes/account.js`)**:
+    - Hardened `DELETE /api/account` query filter from `userId ? { clerkId: userId } : {}` to strict `const filter = { clerkId: userId }`, removing the unsafe `{}` fallback that could have triggered collection-wide deletion across `agreements` and `moderationLogs`.
+  - **Empirical Verification**:
+    - Backend test suite: 112/112 tests passed (`node --test`).
+    - Frontend: clean ESLint, `tsc --noEmit` typecheck, and Next.js production build (`next build`).
+    - Verification scripts: all 8 frontend verify scripts passed cleanly (`verify:quiz`, `verify:achievements`, `verify:reconsent`, `verify:frontier`, `verify:learning-profile`, `verify:personalization`, `verify:special-days`, `verify:onboarding`).
