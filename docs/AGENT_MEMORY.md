@@ -1465,5 +1465,26 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
   - **✅ Verification**:
     - Backend integration and offensive audit test suites (`backend/test/fastify-server.test.js`, `backend/test/offensive-audit.test.js` test `K2`) updated and 100% passing (116/116 tests).
     - Full frontend TypeScript (`tsc --noEmit`), ESLint, 9/9 verify scripts, and Next.js 16 production build (`next build`) green.
+- 2026-08-20 — **System Performance Optimization, Reliability Hardening & Architecture Cleanups.**
+  - **⚡ Frontend Package Modernization & Import Tree-Shaking (`frontend/package.json`, `frontend/next.config.js`)**:
+    - Added `"type": "module"` to `frontend/package.json` to eliminate Node ESM typeless package warnings across verification and build scripts.
+    - Updated `frontend/next.config.js` to use ES module `export default nextConfig`.
+    - Removed decommissioned `"canvas-confetti"` from `optimizePackageImports` and added active runtime packages `"katex"` and `"idb"` for improved bundle tree-shaking and module loading performance.
+  - **⚡ Read-Your-Writes Cache Consistency (`frontend/lib/debouncedStorage.ts`)**:
+    - Fixed read-your-writes consistency in `createDebouncedStorage`: `getItem(name)` checks `pending` write queue and immediately returns `pending.value` if a write is queued, preventing stale `localStorage` reads during active debounced sessions.
+  - **🎯 Part-Accurate Scroll Recovery on Quiz Reread (`frontend/components/learning/QuizSheet.tsx`, `frontend/app/learn/page.tsx`)**:
+    - Added `partNumber` prop to `QuizSheet` and updated "Re-read the section before retrying" action to scroll directly to the active part card (`#part-${partNumber}`) instead of hardcoding `.part-card` (Part 1).
+  - **⚡ High-Performance Output Moderation Extraction (`backend/src/routes/lesson.js`)**:
+    - Replaced multi-level nested `.flatMap()` and object spread allocations with a high-performance linear single-pass string extractor `extractModeratedOutputText(normalized)`, minimizing GC pause latency during high-throughput SSE token streaming.
+  - **⚡ Streamlined Lesson Cache Storage (`backend/src/lib/lessonCache.js`)**:
+    - Avoided redundant index creation checks in `setCachedLesson` by only invoking `ensureTtlIndex` if not yet initialized, streamlining fire-and-forget cache writes.
+  - **🧹 Clean Async File Cleanup in TTS (`backend/src/routes/tts.js`)**:
+    - Replaced callback-based `fs.unlink` with promise-based `await fs.promises.unlink(outFile).catch(() => {})` in the `finally` block for deterministic temporary audio file descriptor cleanup.
+  - **⚡ Consolidated Readability Word Extraction Regexes (`backend/src/lib/qualityGate.js`)**:
+    - Precompiled and unified URL and punctuation stripping regular expressions (`URL_CLEAN_RE`, `PUNCT_CLEAN_RE`) in `getWords(text)`, optimizing Flesch-Kincaid grade level evaluation across all lesson parts.
+  - **✅ Verification**:
+    - Backend: 116/116 tests passed (`npm test`).
+    - Frontend: `npx tsc --noEmit` clean (0 errors), ESLint clean (0 errors), 9/9 verification scripts passed 100% (`verify:quiz`, `verify:achievements`, `verify:reconsent`, `verify:frontier`, `verify:profile`, `verify:personalization`, `verify:special-days`, `verify:onboarding`, `verify:user-scoping`), and Next.js 16 production build (`next build`) green across 14 routes.
+
 
 

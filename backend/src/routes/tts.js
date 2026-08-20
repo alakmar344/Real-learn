@@ -192,7 +192,7 @@ export async function ttsHandler(req, res) {
       fileBuffer = await fs.promises.readFile(outFile);
     } finally {
       activeTtsSyntheses -= 1;
-      fs.unlink(outFile, () => {});
+      await fs.promises.unlink(outFile).catch(() => {});
     }
 
     ttsCacheSet(cacheKey, fileBuffer);

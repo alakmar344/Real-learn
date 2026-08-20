@@ -127,6 +127,9 @@ export function createDebouncedStorage<S>(delayMs = 800): PersistStorage<S> {
 
   return {
     getItem: (name) => {
+      if (pending && pending.name === name) {
+        return pending.value;
+      }
       try {
         const raw = window.localStorage.getItem(name);
         return raw ? (JSON.parse(raw) as StorageValue<S>) : null;

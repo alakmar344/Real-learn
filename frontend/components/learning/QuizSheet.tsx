@@ -19,13 +19,14 @@ export interface QuizAttemptState {
 interface Props {
   open: boolean;
   questions: Question[];
+  partNumber?: number;
   initialState?: QuizAttemptState | null;
   onStateChange?: (state: QuizAttemptState) => void;
   onClose: () => void;
   onPass: (score: number) => void;
 }
 
-const QuizSheetBase = ({ open, questions, initialState, onStateChange, onClose, onPass }: Props) => {
+const QuizSheetBase = ({ open, questions, partNumber, initialState, onStateChange, onClose, onPass }: Props) => {
   // Derive the quiz length from the actual questions instead of hardcoding 2.
   // The backend can legitimately deliver a salvaged single-question quiz
   // (e.g. when the model's output was truncated); with a hardcoded total of 2
@@ -247,7 +248,10 @@ const QuizSheetBase = ({ open, questions, initialState, onStateChange, onClose, 
                 onClose();
                 // Scroll to the relevant part card after a short delay
                 setTimeout(() => {
-                  const el = document.querySelector(".part-card");
+                  const targetId = partNumber ? `part-${partNumber}` : null;
+                  const el =
+                    (targetId ? document.getElementById(targetId) : null) ||
+                    document.querySelector(".part-card");
                   el?.scrollIntoView({ behavior: "smooth", block: "start" });
                 }, 300);
               }}
