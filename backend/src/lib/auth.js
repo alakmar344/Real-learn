@@ -282,10 +282,20 @@ export function inspectToken(token) {
   }
 }
 
-export async function requireAuth(req, res, next) {
+export async function requireAuth(req, reply, next) {
+  const isExpress = typeof next === "function";
+  const sendError = (status, msg) => {
+    if (reply.code && typeof reply.code === "function") {
+      return reply.code(status).send({ error: msg });
+    }
+    if (reply.status && typeof reply.status === "function") {
+      return reply.status(status).json({ error: msg });
+    }
+  };
+
   const token = extractBearerToken(req);
   if (!token) {
-    return res.status(401).json({ error: "Authentication required. No token provided." });
+    return sendError(401, "Authentication required. No token provided.");
   }
 
   const result = await verifyClerkToken(token);
@@ -300,7 +310,7 @@ export async function requireAuth(req, res, next) {
       token: inspection,
       configuredIssuer: CONFIGURED_FRONTEND_API,
     });
-    return res.status(401).json({ error: "Invalid or expired token." });
+    return sendError(401, "Invalid or expired token.");
   }
 
   // SECURITY: spread the raw claims FIRST and pin the identity fields LAST.
@@ -315,5 +325,7 @@ export async function requireAuth(req, res, next) {
     sessionId: result.payload.sid,
   };
 
-  next();
+  if (isExpress) {
+    next();
+  }
 }

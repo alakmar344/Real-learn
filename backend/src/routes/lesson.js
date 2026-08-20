@@ -3,7 +3,6 @@
 // output moderation. All module-level state here (concurrency counters, the
 // in-flight generation map) is a process-wide singleton — this module is
 // imported exactly once.
-import express from "express";
 import {
   callAI,
   formatAITimeoutMessage,
@@ -51,9 +50,6 @@ import {
   LESSON_FAILURE_ALERT_THRESHOLD,
   MAX_CONCURRENT_LESSON_REQUESTS_PER_USER,
 } from "../config.js";
-
-const router = express.Router();
-const rateLimit = apiRateLimiter;
 
 // Rough token estimator for logging (1 token ≈ 3.5 chars for English/most
 // languages). Providers don't always expose exact usage in streaming mode, so
@@ -128,7 +124,30 @@ function decrementActiveLessonRequests() {
   activeLessonRequests -= 1;
 }
 
-router.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
+export async function generateLessonHandler(req, res) {
+  const reply = res;
+  const rawRes = reply?.raw || res;
+  const rawReq = req?.raw || req;
+
+  const sendError = (status, payload, retryAfter) => {
+    if (retryAfter) {
+      if (reply?.header) reply.header("Retry-After", retryAfter);
+      else if (rawRes.setHeader) rawRes.setHeader("Retry-After", retryAfter);
+    }
+    if (reply?.code && typeof reply.code === "function") {
+      return reply.code(status).send(payload);
+    }
+    if (res?.status && typeof res.status === "function") {
+      return res.status(status).json(payload);
+    }
+  };
+
+  const hijackStream = () => {
+    if (typeof reply?.hijack === "function" && !rawRes.headersSent) {
+      reply.hijack();
+    }
+  };
+
   const requestStartedAt = Date.now();
   const requestId = `lesson-${requestStartedAt}-${++lessonRequestCounter}`;
   const {
@@ -177,7 +196,7 @@ router.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => 
       requestId,
       reason: validation.error,
     });
-    return res.status(validation.status).json({ error: validation.error });
+    return sendError(validation.status, { error: validation.error });
   }
 
   // Single rule-based input-moderation pass. moderateText's harmful-content
@@ -197,7 +216,7 @@ router.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => 
     });
     console.warn("[moderation] Banned input blocked", redactModerationEvent(moderationEvent));
     await logModerationEvent(moderationEvent);
-    return res.status(400).json({ error: inputModeration.reason });
+    return sendError(400, { error: inputModeration.reason });
   }
 
   // SPEED TACTIC: two-tier lesson cache. Identical (question, language, level)
@@ -215,8 +234,9 @@ router.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => 
     // contain it here so we log the cause and end the SSE response cleanly.
     try {
       console.log("[generate-lesson] Cache hit — serving instantly", { requestId });
-      flushSseHeaders(res);
-      const { sendBatch } = createSseWriter(res, requestId);
+      hijackStream();
+      flushSseHeaders(rawRes);
+      const { sendBatch } = createSseWriter(rawRes, requestId);
       sendBatch([
         {
           event: "meta",
@@ -232,15 +252,15 @@ router.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => 
         { event: "lesson", payload: cachedLesson },
         { event: "done", payload: { ok: true } },
       ]);
-      res.end();
+      rawRes.end();
       recordLessonResult(true);
     } catch (error) {
       console.warn("[generate-lesson] Cache-hit write failed (client gone?)", {
         requestId,
         error: error?.message,
       });
-      if (!res.writableEnded) {
-        try { res.end(); } catch { /* socket already destroyed */ }
+      if (!rawRes.writableEnded) {
+        try { rawRes.end(); } catch { /* socket already destroyed */ }
       }
     }
     return;
@@ -268,15 +288,15 @@ router.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => 
       if (followerHeartbeat !== null) clearInterval(followerHeartbeat);
       if (followerTicker !== null) clearInterval(followerTicker);
       if (followerSlowTimer !== null) clearTimeout(followerSlowTimer);
-      if (!res.writableEnded) {
-        try { res.end(); } catch { /* socket already destroyed */ }
+      if (!rawRes.writableEnded) {
+        try { rawRes.end(); } catch { /* socket already destroyed */ }
       }
     };
-    res.on("close", finishFollower);
-    res.on("error", finishFollower);
+    rawRes.on("close", finishFollower);
+    rawRes.on("error", finishFollower);
     const followerWrite = (chunk) => {
       try {
-        if (!res.writableEnded) res.write(chunk);
+        if (!rawRes.writableEnded) rawRes.write(chunk);
       } catch (error) {
         console.warn("[generate-lesson] Follower write failed (client gone?)", {
           requestId,
@@ -286,8 +306,9 @@ router.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => 
     };
     let followerSse;
     try {
-      flushSseHeaders(res);
-      followerSse = createSseWriter(res, requestId);
+      hijackStream();
+      flushSseHeaders(rawRes);
+      followerSse = createSseWriter(rawRes, requestId);
     } catch (error) {
       console.warn("[SSE] Follower header flush failed (client gone?)", {
         requestId,
@@ -367,10 +388,11 @@ router.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => 
       requestId,
       userActive,
     });
-    res.setHeader("Retry-After", 5);
-    return res.status(429).json({
-      error: "You already have lessons generating. Please wait for them to finish.",
-    });
+    return sendError(
+      429,
+      { error: "You already have lessons generating. Please wait for them to finish." },
+      5
+    );
   }
 
   if (activeLessonRequests >= MAX_CONCURRENT_LESSON_REQUESTS) {
@@ -379,10 +401,11 @@ router.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => 
       activeLessonRequests,
       maxConcurrent: MAX_CONCURRENT_LESSON_REQUESTS,
     });
-    res.setHeader("Retry-After", 5);
-    return res
-      .status(503)
-      .json({ error: "Server is busy. Please retry in a few seconds." });
+    return sendError(
+      503,
+      { error: "Server is busy. Please retry in a few seconds." },
+      5
+    );
   }
   activeLessonRequests += 1;
   incrementUserLessonRequests(concurrencyUserId);
@@ -439,7 +462,7 @@ router.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => 
     activeTickers.add(ticker);
     return ticker;
   };
-  const { safeWrite, sendEvent } = createSseWriter(res, requestId);
+  const { safeWrite, sendEvent } = createSseWriter(rawRes, requestId);
   // "Taking longer than expected" signal. Emitted AT MOST ONCE, and ONLY once
   // one of two REAL conditions holds: the last-resort (Cloudflare) tier has
   // actually been engaged, or generation has genuinely run past the slow
@@ -469,13 +492,13 @@ router.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => 
       requestId,
       reason,
       activeLessonRequests,
-      writableEnded: res.writableEnded,
-      responseFinished: res.finished,
+      writableEnded: rawRes.writableEnded,
+      responseFinished: rawRes.finished,
     });
-    if (!res.writableEnded) {
+    if (!rawRes.writableEnded) {
       // Cleanup must never throw — the socket may already be destroyed.
       try {
-        res.end();
+        rawRes.end();
       } catch {
         /* socket gone */
       }
@@ -488,15 +511,18 @@ router.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => 
   // would forward an uncaught throw to the error middleware rather than
   // crashing, but that path knows nothing about our slots — only finishRequest
   // releases them, so it must own every exit.
-  req.on("aborted", () => finishRequest("request aborted"));
-  res.on("close", () => finishRequest("response closed"));
-  res.on("error", (error) => {
+  rawReq.on?.("aborted", () => finishRequest("request aborted"));
+  rawReq.on?.("close", () => finishRequest("request closed"));
+  rawRes.on("close", () => finishRequest("response closed"));
+  rawRes.on("error", (error) => {
     console.error("[SSE] response error", { requestId, error });
     finishRequest("response error");
   });
 
   try {
-    flushSseHeaders(res);
+    hijackStream();
+    flushSseHeaders(rawRes);
+  } catch (error) {
   } catch (error) {
     console.warn("[SSE] Header flush failed (client gone?)", {
       requestId,
@@ -1003,6 +1029,12 @@ END_EXTERNAL_CONTEXT>>>`
   } finally {
     finishRequest("finally cleanup");
   }
-});
+}
 
-export default router;
+export default async function lessonRoutes(fastify) {
+  fastify.post(
+    "/api/generate-lesson",
+    { preHandler: [apiRateLimiter, requireAuth] },
+    generateLessonHandler
+  );
+}

@@ -55,7 +55,7 @@ this §1 is the canonical spec. Frontend: Next.js 16 + React 19 +
 TypeScript + Clerk + Zustand — styling is the hand-rolled design system in
 globals.css (Tailwind was removed 2026-08-15: it never compiled — there was
 no postcss config — and no generated utility was in use). Backend: Node 24 +
-Express 5. Toolchain: Node 24 LTS (`.nvmrc` + engines).
+Fastify 5 + Undici Keep-Alive Dispatcher + Multi-core Cluster support (`src/cluster.js`). Toolchain: Node 24 LTS (`.nvmrc` + engines).
 
 ---
 
