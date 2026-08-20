@@ -61,34 +61,30 @@ test("CORS origin validation and preflight handling across environments", async 
   assert.equal(readyProd.statusCode, 200);
   assert.equal(readyProd.headers["access-control-allow-origin"], "https://reallearn.site");
 
-  // 2. Allowed Vercel preview origin returns CORS header on OPTIONS preflight
-  const preflightVercel = await fastify.inject({
+  // 2. Allowed production origin returns CORS header on OPTIONS preflight
+  const preflightProd = await fastify.inject({
     method: "OPTIONS",
     url: "/api/generate-lesson",
     headers: {
-      origin: "https://real-learn-git-test-branch-alakmar344s-projects.vercel.app",
+      origin: "https://www.reallearn.site",
       "access-control-request-method": "POST",
       "access-control-request-headers": "authorization, content-type",
     },
   });
-  assert.equal(preflightVercel.statusCode, 204);
-  assert.equal(
-    preflightVercel.headers["access-control-allow-origin"],
-    "https://real-learn-git-test-branch-alakmar344s-projects.vercel.app"
-  );
-  assert.ok(preflightVercel.headers["access-control-allow-methods"]?.includes("POST"));
+  assert.equal(preflightProd.statusCode, 204);
+  assert.equal(preflightProd.headers["access-control-allow-origin"], "https://www.reallearn.site");
+  assert.ok(preflightProd.headers["access-control-allow-methods"]?.includes("POST"));
 
-  // 3. Allowed localhost origin returns CORS header in non-production
-  const preflightLocal = await fastify.inject({
+  // 3. Unauthorized origin (including vercel.app and localhost) does not receive CORS allow header
+  const preflightVercel = await fastify.inject({
     method: "OPTIONS",
     url: "/api/generate-lesson",
     headers: {
-      origin: "http://localhost:3000",
+      origin: "https://real-learn-preview-123.vercel.app",
       "access-control-request-method": "POST",
     },
   });
-  assert.equal(preflightLocal.statusCode, 204);
-  assert.equal(preflightLocal.headers["access-control-allow-origin"], "http://localhost:3000");
+  assert.equal(preflightVercel.headers["access-control-allow-origin"], undefined);
 
   // 4. POST /api/generate-lesson with origin carries CORS headers even on 401
   const lessonCors = await fastify.inject({
@@ -103,12 +99,13 @@ test("CORS origin validation and preflight handling across environments", async 
   await fastify.close();
 });
 
-test("isOriginAllowed correctly recognizes production, preview, and dev origins", () => {
+test("isOriginAllowed strictly allows only trusted production origins", () => {
   assert.equal(isOriginAllowed("https://reallearn.site"), true);
   assert.equal(isOriginAllowed("https://www.reallearn.site"), true);
-  assert.equal(isOriginAllowed("https://reallearn-taupe.vercel.app"), true);
-  assert.equal(isOriginAllowed("https://real-learn-preview-123.vercel.app"), true);
-  assert.equal(isOriginAllowed("https://reallearn-preview-abc.vercel.app"), true);
+  assert.equal(isOriginAllowed("https://real-learn.onrender.com"), true);
+  assert.equal(isOriginAllowed("https://reallearn-taupe.vercel.app"), false);
+  assert.equal(isOriginAllowed("https://real-learn-preview-123.vercel.app"), false);
+  assert.equal(isOriginAllowed("http://localhost:3000"), false);
   assert.equal(isOriginAllowed("https://evil-attacker.com"), false);
   assert.equal(isOriginAllowed("https://malicious-site.org"), false);
 });

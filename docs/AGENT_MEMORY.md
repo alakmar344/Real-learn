@@ -1452,5 +1452,18 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
   - **✅ Empirical Verification**:
     - Added 4 new integration test cases in `backend/test/fastify-server.test.js` covering CORS preflight, GET, POST, origin matching, and hijacked SSE stream header stamping (116/116 backend tests passed).
     - Frontend: `npx tsc --noEmit` clean (0 errors), ESLint clean (0 errors), 9/9 verify scripts passed, and Next.js 16 production build (`next build`) clean (14 routes).
+- 2026-08-20 — **Security Hardening: Complete Purge of Vercel & Localhost Origin Allowances (Strict Zero-Loophole Policy).**
+  - **🔒 Strict Production Origin Enforcement (`backend/src/middleware/security.js`)**:
+    - Purged `reallearn-taupe.vercel.app`, all `*.vercel.app` wildcards, and all `localhost` / `127.0.0.1` origins from `allowedOrigins` and `isOriginAllowed(origin)`.
+    - Allowed origins are strictly restricted to canonical production domains (`https://reallearn.site`, `https://www.reallearn.site`, `https://real-learn.onrender.com`) and explicit `FRONTEND_ORIGIN` env configurations.
+  - **🔒 Strict Authorized Party (AZP) Validation (`backend/src/lib/auth.js`)**:
+    - Purged `reallearn-taupe.vercel.app`, `*.vercel.app` pattern matchers, and localhost origins from `DEFAULT_PRODUCTION_AUTHORIZED_PARTIES` and `isAuthorizedParty(azp)`.
+    - Clerk JWT `azp` validation strictly accepts only `https://reallearn.site`, `https://www.reallearn.site`, or explicitly configured `CLERK_AUTHORIZED_PARTIES`.
+  - **🔒 Next.js CSP & Env Example Sanitization (`frontend/proxy.ts`, `backend/.env.example`)**:
+    - Removed `localhost` and `127.0.0.1` from CSP `connect-src` in `frontend/proxy.ts`.
+    - Removed all `vercel.app` references from `backend/.env.example`.
+  - **✅ Verification**:
+    - Backend integration and offensive audit test suites (`backend/test/fastify-server.test.js`, `backend/test/offensive-audit.test.js` test `K2`) updated and 100% passing (116/116 tests).
+    - Full frontend TypeScript (`tsc --noEmit`), ESLint, 9/9 verify scripts, and Next.js 16 production build (`next build`) green.
 
 

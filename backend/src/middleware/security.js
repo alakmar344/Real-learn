@@ -13,54 +13,17 @@ export const allowedOrigins = Array.from(
     ...configuredOrigins,
     "https://reallearn.site",
     "https://www.reallearn.site",
-    "https://reallearn-taupe.vercel.app",
     "https://real-learn.onrender.com",
-    ...(process.env.NODE_ENV !== "production"
-      ? [
-          "http://localhost:3000",
-          "http://localhost:3001",
-          "http://127.0.0.1:3000",
-          "http://127.0.0.1:3001",
-        ]
-      : []),
   ])
 );
 
 // Allowed Origin means the exact browser Origin header is either listed in
-// FRONTEND_ORIGIN (comma-separated), the production frontend / Render preview
-// origins, or matches dynamic Vercel / dev origins. Requests without an Origin
-// header are non-browser/server-to-server traffic.
+// FRONTEND_ORIGIN (comma-separated) or the trusted production domains.
+// Requests without an Origin header are non-browser/server-to-server traffic.
 export function isOriginAllowed(origin) {
   if (!origin) return false;
   const normalized = origin.trim().replace(/\/$/, "");
-  if (allowedOrigins.includes(normalized)) return true;
-
-  try {
-    const { hostname, protocol } = new URL(normalized);
-    // Allow local development on any port when not in production
-    if (process.env.NODE_ENV !== "production") {
-      if (
-        (protocol === "http:" || protocol === "https:") &&
-        (hostname === "localhost" || hostname === "127.0.0.1")
-      ) {
-        return true;
-      }
-    }
-    // Allow Vercel preview deployments for RealLearn
-    if (
-      protocol === "https:" &&
-      hostname.endsWith(".vercel.app") &&
-      (hostname.startsWith("real-learn") ||
-        hostname.startsWith("reallearn") ||
-        hostname.includes("alakmar344"))
-    ) {
-      return true;
-    }
-  } catch {
-    return false;
-  }
-
-  return false;
+  return allowedOrigins.includes(normalized);
 }
 
 // Log injection guard: rejected user-controlled strings (Origin header,
