@@ -38,13 +38,11 @@ import {
   sanitizeNotes,
 } from "@/lib/personalization";
 
+import { BACKEND_URL } from "@/lib/api";
+
 const THEMES = THEME_OPTIONS;
 
 const MODES = LESSON_MODES;
-
-const BACKEND_URL = (
-  process.env.NEXT_PUBLIC_BACKEND_URL || "https://real-learn.onrender.com"
-).replace(/\/$/, "");
 
 // Journey-rail-style check node; visibility handled in CSS via --active.
 function CheckNode() {
@@ -201,8 +199,7 @@ export default function SettingsPage() {
 
   const handleExportData = async () => {
     try {
-      const backendUrl =
-        process.env.NEXT_PUBLIC_BACKEND_URL || "https://real-learn.onrender.com";
+      const backendUrl = BACKEND_URL;
       const token = await getToken();
       const headers: Record<string, string> = {};
       if (token) headers["Authorization"] = `Bearer ${token}`;

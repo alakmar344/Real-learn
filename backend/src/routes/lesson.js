@@ -235,7 +235,7 @@ export async function generateLessonHandler(req, res) {
     try {
       console.log("[generate-lesson] Cache hit — serving instantly", { requestId });
       hijackStream();
-      flushSseHeaders(rawRes);
+      flushSseHeaders(rawRes, rawReq);
       const { sendBatch } = createSseWriter(rawRes, requestId);
       sendBatch([
         {
@@ -307,7 +307,7 @@ export async function generateLessonHandler(req, res) {
     let followerSse;
     try {
       hijackStream();
-      flushSseHeaders(rawRes);
+      flushSseHeaders(rawRes, rawReq);
       followerSse = createSseWriter(rawRes, requestId);
     } catch (error) {
       console.warn("[SSE] Follower header flush failed (client gone?)", {
@@ -521,7 +521,7 @@ export async function generateLessonHandler(req, res) {
 
   try {
     hijackStream();
-    flushSseHeaders(rawRes);
+    flushSseHeaders(rawRes, rawReq);
   } catch (error) {
     console.warn("[SSE] Header flush failed (client gone?)", {
       requestId,

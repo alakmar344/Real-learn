@@ -8,7 +8,7 @@ import LoadingCinematic from "@/components/shared/LoadingCinematic";
 import LiveRegion from "@/components/shared/LiveRegion";
 import dynamic from "next/dynamic";
 import { useLesson } from "@/hooks/useLesson";
-import { warmupBackend, fetchReady } from "@/lib/api";
+import { warmupBackend, fetchReady, BACKEND_URL } from "@/lib/api";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { isConsentCurrent, readLegalConsent, writeLegalConsent } from "@/lib/legalConsent";
 import { specialDayFor } from "@/lib/specialDays";
@@ -64,8 +64,7 @@ export default function HomePage() {
       if (!isConsentCurrent(parsed)) return;
 
       try {
-        const backendUrl =
-          process.env.NEXT_PUBLIC_BACKEND_URL || "https://real-learn.onrender.com";
+        const backendUrl = BACKEND_URL;
         const token = await getToken();
         const headers: Record<string, string> = {
           "Content-Type": "application/json",

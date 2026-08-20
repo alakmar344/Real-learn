@@ -1,3 +1,5 @@
+import { isOriginAllowed } from "../middleware/security.js";
+
 // SSE plumbing shared by the lesson stream's three writer paths (cache hit,
 // single-flight follower, generation leader). The leader's lifecycle machinery
 // (heartbeat, finishRequest, progress tickers) stays in the route handler —
@@ -8,12 +10,34 @@
  * Set the SSE response headers and flush them immediately. May throw when the
  * client is already gone — callers wrap this in their own try/catch so the
  * failure routes into their cleanup path.
+ *
+ * Fastify stream hijacking (reply.hijack()) bypasses the Fastify onSend plugin
+ * pipeline, so CORS, Vary, and security headers must be set explicitly on the
+ * raw Node ServerResponse before flushing.
  */
-export function flushSseHeaders(res) {
+export function flushSseHeaders(res, req) {
+  const origin = req?.headers?.origin || res?.req?.headers?.origin;
+  if (origin && isOriginAllowed(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, If-None-Match, Accept, Cache-Control, X-Requested-With, x-clerk-auth-token"
+    );
+    res.setHeader(
+      "Access-Control-Expose-Headers",
+      "Retry-After, ETag, X-RateLimit-Limit, X-RateLimit-Remaining, Content-Disposition, Content-Length"
+    );
+    res.setHeader("Vary", "Origin");
+    res.setHeader("Timing-Allow-Origin", origin);
+  }
   res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
   res.setHeader("Cache-Control", "no-cache, no-transform");
   res.setHeader("Connection", "keep-alive");
   res.setHeader("X-Accel-Buffering", "no");
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader("X-Frame-Options", "DENY");
   res.flushHeaders();
 }
 

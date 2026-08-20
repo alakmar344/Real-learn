@@ -14,6 +14,7 @@ import {
   writeLegalConsent,
   type LegalConsentState,
 } from "@/lib/legalConsent";
+import { BACKEND_URL } from "@/lib/api";
 
 const ALLOWED_PATHS_WHEN_DECLINED = ["/sign-in", "/sign-up", "/legal"];
 
@@ -146,7 +147,7 @@ export default function PreSignInConsent() {
       // a localStorage wipe, or a re-login). Only when the DB lookup fails do
       // we fall back to the local record.
       try {
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "https://real-learn.onrender.com";
+        const backendUrl = BACKEND_URL;
         // The status call needs a Clerk session token. In Firefox, Enhanced
         // Tracking Protection can delay or briefly block the session refresh
         // worker, so getToken() may reject on the first try even though the
@@ -273,8 +274,7 @@ export default function PreSignInConsent() {
 
     if (accepted && isSignedIn) {
       try {
-        const backendUrl =
-          process.env.NEXT_PUBLIC_BACKEND_URL || "https://real-learn.onrender.com";
+        const backendUrl = BACKEND_URL;
         const token = await getToken();
         const headers: Record<string, string> = {
           "Content-Type": "application/json",
