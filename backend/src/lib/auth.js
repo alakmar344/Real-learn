@@ -128,22 +128,12 @@ const CONFIGURED_AUTHORIZED_PARTIES = (process.env.CLERK_AUTHORIZED_PARTIES || "
 const DEFAULT_PRODUCTION_AUTHORIZED_PARTIES = [
   "https://reallearn.site",
   "https://www.reallearn.site",
-  "https://reallearn-taupe.vercel.app",
-];
-
-const DEFAULT_DEV_AUTHORIZED_PARTIES = [
-  ...DEFAULT_PRODUCTION_AUTHORIZED_PARTIES,
-  "http://localhost:3000",
-  "http://localhost:3001",
-  "http://127.0.0.1:3000",
 ];
 
 const AUTHORIZED_PARTIES =
   CONFIGURED_AUTHORIZED_PARTIES.length > 0
     ? CONFIGURED_AUTHORIZED_PARTIES
-    : process.env.NODE_ENV === "production"
-      ? DEFAULT_PRODUCTION_AUTHORIZED_PARTIES
-      : DEFAULT_DEV_AUTHORIZED_PARTIES;
+    : DEFAULT_PRODUCTION_AUTHORIZED_PARTIES;
 
 function isAuthorizedParty(azp) {
   if (!azp) {
@@ -151,34 +141,7 @@ function isAuthorizedParty(azp) {
     return process.env.NODE_ENV !== "production";
   }
   const normalized = String(azp).replace(/\/$/, "");
-  if (AUTHORIZED_PARTIES.includes(normalized)) return true;
-
-  try {
-    const { hostname, protocol } = new URL(normalized);
-    // Allow localhost/127.0.0.1 in non-production
-    if (process.env.NODE_ENV !== "production") {
-      if (
-        (protocol === "http:" || protocol === "https:") &&
-        (hostname === "localhost" || hostname === "127.0.0.1")
-      ) {
-        return true;
-      }
-    }
-    // Allow Vercel preview deployments for RealLearn
-    if (
-      protocol === "https:" &&
-      hostname.endsWith(".vercel.app") &&
-      (hostname.startsWith("real-learn") ||
-        hostname.startsWith("reallearn") ||
-        hostname.includes("alakmar344"))
-    ) {
-      return true;
-    }
-  } catch {
-    return false;
-  }
-
-  return false;
+  return AUTHORIZED_PARTIES.includes(normalized);
 }
 
 export async function verifyClerkToken(token) {

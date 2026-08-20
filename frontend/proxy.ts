@@ -78,14 +78,6 @@ function buildCsp(nonce: string): string {
     "https://www.google-analytics.com",
     "https://*.google-analytics.com",
     "https://www.googletagmanager.com",
-    ...(process.env.NODE_ENV === "development"
-      ? [
-          "http://localhost:*",
-          "http://127.0.0.1:*",
-          "ws://localhost:*",
-          "ws://127.0.0.1:*",
-        ]
-      : []),
   ]);
   const frameSrc = uniq([
     "'self'",
