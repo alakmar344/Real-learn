@@ -1,7 +1,7 @@
 {
   "name": "reallearn-backend",
   "version": "1.2.0",
-  "description": "Express API backend for RealLearn - AI-powered educational platform",
+  "description": "Fastify API backend for RealLearn - AI-powered educational platform",
   "author": "alakmar344",
   "license": "MIT",
   "repository": {
@@ -14,15 +14,17 @@
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
+    "start:cluster": "node src/cluster.js",
+    "start:bun": "bun src/server.js",
     "test": "node --test --test-concurrency=1"
   },
   "dependencies": {
+    "@fastify/compress": "^9.2.0",
+    "@fastify/cors": "^11.3.0",
+    "@fastify/rate-limit": "^11.2.0",
     "bad-words": "^4.1.5",
     "better-profane-words": "^1.0.7",
-    "compression": "^1.8.1",
-    "cors": "^2.8.6",
-    "express": "^5.2.1",
-    "express-rate-limit": "^8.6.2",
+    "fastify": "^5.12.1",
     "ip-address": "^10.5.0",
     "jose": "^6.2.8",
     "jsonrepair": "^3.15.0",

@@ -1,8 +1,5 @@
 // Public capability endpoint — tells the frontend what the backend supports
-// without requiring authentication. This lets the frontend avoid hard-coding
-// constants (max question length, language list, policy versions) and adapt
-// to backend health/capabilities at runtime.
-import express from "express";
+// without requiring authentication.
 import {
   MAX_QUESTION_LENGTH,
   ALLOWED_LANGUAGES,
@@ -15,10 +12,6 @@ import {
 import { getProviderHealthSnapshot, allCircuitsOpen } from "../lib/aiEngine.js";
 import { createRateLimiter } from "../lib/rateLimit.js";
 
-const router = express.Router();
-
-// This endpoint is cheap but public — cap it so it can't be used as an
-// amplification vector.
 const readyRateLimiter = createRateLimiter({
   windowMs: 60_000,
   max: 120,
@@ -33,8 +26,7 @@ export function readyHandler(_req, res) {
       (provider) => provider.circuitOpen || provider.consecutiveFailures > 0
     );
 
-  res.setHeader("Cache-Control", "public, max-age=30, stale-while-revalidate=300");
-  res.status(200).json({
+  const payload = {
     ok: true,
     version: SERVICE_VERSION,
     capabilities: {
@@ -66,9 +58,20 @@ export function readyHandler(_req, res) {
         ])
       ),
     },
-  });
+  };
+
+  if (res.header && typeof res.header === "function") {
+    res.header("Cache-Control", "public, max-age=30, stale-while-revalidate=300");
+    return res.code(200).send(payload);
+  }
+  if (res.setHeader && typeof res.setHeader === "function") {
+    res.setHeader("Cache-Control", "public, max-age=30, stale-while-revalidate=300");
+  }
+  if (res.status && typeof res.status === "function") {
+    return res.status(200).json(payload);
+  }
 }
 
-router.get("/api/ready", readyRateLimiter, readyHandler);
-
-export default router;
+export default async function readyRoutes(fastify) {
+  fastify.get("/api/ready", { preHandler: [readyRateLimiter] }, readyHandler);
+}

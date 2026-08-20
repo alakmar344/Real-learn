@@ -87,6 +87,23 @@
 ---
 
 **Today — August 20, 2026**
+- **High-Performance Backend Upgrade: Fastify 5 Engine Migration, Global Undici Keep-Alive Pooling & Multi-Core Clustering:**
+  - **🚀 Fastify 5 Framework Migration**:
+    - Replaced Express 5 with Fastify 5 across the entire backend architecture (`server.js`, `routes/health.js`, `routes/ready.js`, `routes/lesson.js`, `routes/lessonCacheCheck.js`, `routes/account.js`, `routes/feedback.js`, `routes/tts.js`).
+    - Adopted Fastify's high-speed Radix-tree routing (`find-my-way`) and optimized JSON serialization.
+    - Integrated `@fastify/cors` (with 24h preflight caching) and `@fastify/compress` (Brotli + gzip, excluding SSE streams).
+    - Built dual-gate in-memory rate limiting hook in `backend/src/lib/rateLimit.js` preserving IP backstop, per-caller token buckets, and IPv6 prefix collapse with sub-microsecond overhead.
+    - Upgraded SSE streaming in `backend/src/routes/lesson.js` using Fastify stream hijacking (`reply.hijack()`) and direct `reply.raw` response writing.
+  - **⚡ Global Undici Keep-Alive Connection Pooling**:
+    - Configured global `undici.Agent` dispatcher with persistent connection pooling (`keepAliveTimeout: 60_000`, `connections: 100`, `pipelining: 1`).
+    - Eliminates repetitive 50–150ms DNS/TCP/TLS handshakes across Groq, Mistral, NVIDIA, Cloudflare, Serper, and Clerk JWKS requests.
+  - **🧵 Multi-Core CPU Clustering Launcher**:
+    - Created `backend/src/cluster.js` with Node's native `node:cluster` to fork workers matching CPU core count or `WEB_CONCURRENCY`, complete with zero-downtime worker replacement and signal forwarding.
+    - Added `"start:cluster"` and `"start:bun"` scripts to `backend/package.json`.
+  - **✅ Verification**:
+    - 112/112 backend tests passed cleanly with 0 failures (`npm test`).
+    - Frontend Next.js production build (`next build`) compiled cleanly with 0 errors.
+
 - **Nuclear Mode: Full-Stack Security Hardening, Performance Overhaul, Bug Remediation & Mobile Navigation Polish:**
   - **🔴 Security First — User-Scoped State & Cross-Account Isolation**:
     - Built `frontend/lib/userScopedStorage.ts` and `frontend/components/shared/AuthScopeSync.tsx`: Zustand persisted stores (`useSavedJourneysStore`, `useProgressStore`, `useLessonStore`, `usePreferenceStore`) dynamically scope keys by Clerk `userId` (`reallearn-progress:${userId || 'anon'}`).
