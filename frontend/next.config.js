@@ -25,7 +25,8 @@ const nextConfig = {
       "remark-gfm",
       "remark-math",
       "rehype-katex",
-      "canvas-confetti",
+      "katex",
+      "idb",
       "@clerk/nextjs",
       "zustand",
       "eventsource-parser",
@@ -101,4 +102,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+export default nextConfig;

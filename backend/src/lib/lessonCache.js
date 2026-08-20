@@ -223,7 +223,9 @@ export function setCachedLesson(key, lesson) {
   (async () => {
     try {
       const db = await getDb();
-      await ensureTtlIndex(db);
+      if (!ttlIndexPromise) {
+        await ensureTtlIndex(db);
+      }
       await db.collection(CACHE_COLLECTION).updateOne(
         { key },
         {

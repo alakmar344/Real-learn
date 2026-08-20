@@ -28,12 +28,14 @@ function countSyllables(word) {
   return count;
 }
 
+const URL_CLEAN_RE = /https?:\/\/\S+/g;
+const PUNCT_CLEAN_RE = /[#*_`\[\](){}<>|~\-]|[^\w\s'-]/g;
+
 function getWords(text) {
   if (!text || typeof text !== "string") return [];
   return text
-    .replace(/[#*_`\[\](){}<>|~\-]/g, " ")
-    .replace(/https?:\/\/\S+/g, "")
-    .replace(/[^\w\s'-]/g, " ")
+    .replace(URL_CLEAN_RE, "")
+    .replace(PUNCT_CLEAN_RE, " ")
     .toLowerCase()
     .split(/\s+/)
     .filter((w) => w.length > 0);

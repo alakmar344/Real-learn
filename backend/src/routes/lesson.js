@@ -98,6 +98,39 @@ function decrementUserLessonRequests(userKey) {
 // are actively generating.
 const inFlightLessonGenerations = new Map(); // cacheKey -> Promise<journey>
 
+function extractModeratedOutputText(normalized) {
+  if (!normalized || typeof normalized !== "object") return "";
+  const lines = [];
+  if (typeof normalized.topic === "string" && normalized.topic.trim()) {
+    lines.push(normalized.topic.trim());
+  }
+  if (Array.isArray(normalized.parts)) {
+    for (const part of normalized.parts) {
+      if (!part || typeof part !== "object") continue;
+      if (typeof part.title === "string" && part.title.trim()) lines.push(part.title.trim());
+      if (typeof part.content === "string" && part.content.trim()) lines.push(part.content.trim());
+      if (Array.isArray(part.quiz)) {
+        for (const q of part.quiz) {
+          if (!q || typeof q !== "object") continue;
+          if (typeof q.question === "string" && q.question.trim()) lines.push(q.question.trim());
+          if (Array.isArray(q.options)) {
+            for (const opt of q.options) {
+              if (typeof opt === "string" && opt.trim()) lines.push(opt.trim());
+            }
+          }
+          if (typeof q.explanation === "string" && q.explanation.trim()) lines.push(q.explanation.trim());
+        }
+      }
+    }
+  }
+  if (Array.isArray(normalized.keyTakeaways)) {
+    for (const t of normalized.keyTakeaways) {
+      if (typeof t === "string" && t.trim()) lines.push(t.trim());
+    }
+  }
+  return lines.join("\n");
+}
+
 function recordLessonResult(success) {
   if (success) {
     if (consecutiveLessonFailures >= LESSON_FAILURE_ALERT_THRESHOLD) {
@@ -907,21 +940,7 @@ END_EXTERNAL_CONTEXT>>>`
     // Moderate the extracted text joined with REAL newlines — JSON.stringify
     // escaped line breaks to literal "\n", so multi-word banned patterns with
     // \s gaps never matched phrases spanning lines.
-    const moderatedOutputText = [
-      normalized.topic,
-      ...(Array.isArray(normalized.parts) ? normalized.parts : []).flatMap((part) => [
-        part?.title,
-        part?.content,
-        ...(Array.isArray(part?.quiz) ? part.quiz : []).flatMap((q) => [
-          q?.question,
-          ...(Array.isArray(q?.options) ? q.options : []),
-          q?.explanation,
-        ]),
-      ]),
-      ...(Array.isArray(normalized.keyTakeaways) ? normalized.keyTakeaways : []),
-    ]
-      .filter((value) => typeof value === "string" && value.trim())
-      .join("\n");
+    const moderatedOutputText = extractModeratedOutputText(normalized);
     const outputModerationPromise = moderateText(moderatedOutputText, "output");
 
     if (mode === "fast") {

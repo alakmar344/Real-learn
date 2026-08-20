@@ -590,6 +590,7 @@ export default function LearnPage() {
           <QuizSheet
             open={quizPart !== null}
             questions={activePart.quiz ?? []}
+            partNumber={activePart.partNumber}
             initialState={quizInitialState}
             onStateChange={handleQuizStateChange}
             onClose={() => setQuizPart(null)}
