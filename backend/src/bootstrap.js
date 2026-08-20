@@ -1,4 +1,4 @@
-// Automatic Bun Runtime Bootstrapper for PaaS Web Services (Render, etc.)
+// Automatic Bun Runtime Bootstrapper for PaaS Web Services (Render)
 // When deployed on standard Node web services (no Docker / no terminal access),
 // this script automatically ensures Bun is available and runs the server on Bun.
 // If Bun cannot be acquired, it safely falls back to Node.js.
