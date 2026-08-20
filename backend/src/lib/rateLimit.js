@@ -52,11 +52,11 @@ export function createRateLimiter({ windowMs, max, ipMultiplier = 5 }) {
   const ipStore = new LRUCache({ max: 50_000, ttl: windowMs });
   const callerStore = new LRUCache({ max: 50_000, ttl: windowMs });
 
-  const limiterHook = async (req, reply, next) => {
+  // Fastify async preHandler hook: takes exactly 2 arguments (req, reply)
+  const limiterHook = async (req, reply) => {
     const rawIp = req.ip || req.raw?.socket?.remoteAddress || req.socket?.remoteAddress || "unknown";
     const ip = rateLimitIpKey(rawIp);
 
-    const isExpress = typeof next === "function";
     const send429 = () => {
       const retryAfterSec = Math.ceil(windowMs / 1000);
       if (reply.header && typeof reply.header === "function") {
@@ -101,10 +101,6 @@ export function createRateLimiter({ windowMs, max, ipMultiplier = 5 }) {
 
     if (currentCallerCount > max) {
       return send429();
-    }
-
-    if (isExpress) {
-      next();
     }
   };
 

@@ -2,10 +2,11 @@
 // plugin mounting (order is behavior), router mounting, terminal handlers,
 // listen + graceful shutdown.
 import "./lib/polyfills.js";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import Fastify from "fastify";
 import fastifyCors from "@fastify/cors";
 import fastifyCompress from "@fastify/compress";
-import { Agent, setGlobalDispatcher } from "undici";
 import { preconnectProviders } from "./lib/aiEngine.js";
 import { closeMongo } from "./lib/mongodb.js";
 import { PORT, validateStartupConfig } from "./config.js";
@@ -31,14 +32,19 @@ import {
 // Configure global Undici dispatcher with persistent connection pooling and keep-alive.
 // Eliminates 50–150ms DNS+TCP+TLS handshakes across Groq, Mistral, NVIDIA, Cloudflare,
 // Serper, and Clerk JWKS endpoints.
-setGlobalDispatcher(
-  new Agent({
-    keepAliveTimeout: 60_000,
-    keepAliveMaxTimeout: 600_000,
-    connections: 100,
-    pipelining: 1,
-  })
-);
+try {
+  const { Agent, setGlobalDispatcher } = await import("undici");
+  setGlobalDispatcher(
+    new Agent({
+      keepAliveTimeout: 60_000,
+      keepAliveMaxTimeout: 600_000,
+      connections: 100,
+      pipelining: 1,
+    })
+  );
+} catch {
+  // Bun runtime and edge environments have native socket pooling
+}
 
 export function buildServer() {
   const fastify = Fastify({
@@ -157,7 +163,18 @@ export async function startServer() {
   }
 }
 
-// Auto-start if executed directly
-if (import.meta.url === `file://${process.argv[1]}` || process.env.NODE_ENV !== "test") {
+// Auto-start when executed as the main entrypoint
+const isMainModule = () => {
+  if (!process.argv[1]) return false;
+  try {
+    const currentFile = fileURLToPath(import.meta.url);
+    const executedFile = path.resolve(process.argv[1]);
+    return currentFile === executedFile;
+  } catch {
+    return false;
+  }
+};
+
+if (isMainModule()) {
   startServer();
 }

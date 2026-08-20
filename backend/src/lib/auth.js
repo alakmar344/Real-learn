@@ -282,8 +282,7 @@ export function inspectToken(token) {
   }
 }
 
-export async function requireAuth(req, reply, next) {
-  const isExpress = typeof next === "function";
+export async function requireAuth(req, reply) {
   const sendError = (status, msg) => {
     if (reply.code && typeof reply.code === "function") {
       return reply.code(status).send({ error: msg });
@@ -324,8 +323,4 @@ export async function requireAuth(req, reply, next) {
     userId: result.payload.sub,
     sessionId: result.payload.sid,
   };
-
-  if (isExpress) {
-    next();
-  }
 }
