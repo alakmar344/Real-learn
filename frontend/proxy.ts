@@ -59,7 +59,6 @@ function buildCsp(nonce: string): string {
     // modern browsers because a nonce is present):
     "'unsafe-inline'",
     scriptSrcEval,
-    "https:",
     "https://www.googletagmanager.com",
     "https://www.google-analytics.com",
     "https://*.clerk.accounts.dev",
@@ -93,7 +92,7 @@ function buildCsp(nonce: string): string {
     "default-src 'self'",
     `script-src ${scriptSrc}`,
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' https://img.clerk.com https://www.google-analytics.com data:",
+    "img-src 'self' https://img.clerk.com https://lh3.googleusercontent.com https://*.googleusercontent.com https://www.google-analytics.com data:",
     `connect-src ${connectSrc}`,
     `frame-src ${frameSrc}`,
     "worker-src 'self' blob:",

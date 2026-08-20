@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { createDebouncedStorage } from "@/lib/debouncedStorage";
+import { createScopedStorage } from "@/lib/userScopedStorage";
 import { getArchivedLesson } from "@/lib/lessonArchive";
 import { journeySignature } from "@/store/savedJourneysStore";
 import { LessonJourney } from "@/types";
@@ -328,7 +328,7 @@ export const useLessonStore = create<LessonStore>()(
       name: "reallearn-journey",
       version: 1,
       // Perf: defer serialization + write off the click path (see lib/debouncedStorage).
-      storage: createDebouncedStorage<PersistedLessonState>(),
+      storage: createScopedStorage<PersistedLessonState>(),
       // Persist lesson METADATA only: the multi-KB body already lives in the
       // IndexedDB archive (saved by learn/page's persist effect), so writing
       // it here too meant re-stringifying the whole lesson to localStorage on

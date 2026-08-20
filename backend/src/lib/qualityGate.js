@@ -11,9 +11,21 @@
 import readability from "text-readability";
 import { syllable } from "syllable";
 
+const syllableCache = new Map();
+const MAX_SYLLABLE_CACHE = 4000;
+
 function countSyllables(word) {
   if (!word || typeof word !== "string") return 0;
-  return Math.max(1, syllable(word.toLowerCase()) || 0);
+  const lower = word.toLowerCase();
+  const cached = syllableCache.get(lower);
+  if (cached !== undefined) return cached;
+  const count = Math.max(1, syllable(lower) || 0);
+  if (syllableCache.size >= MAX_SYLLABLE_CACHE) {
+    const firstKey = syllableCache.keys().next().value;
+    if (firstKey) syllableCache.delete(firstKey);
+  }
+  syllableCache.set(lower, count);
+  return count;
 }
 
 function getWords(text) {

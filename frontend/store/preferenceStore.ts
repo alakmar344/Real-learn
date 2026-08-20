@@ -1,7 +1,8 @@
 "use client";
 
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
+import { persist } from "zustand/middleware";
+import { createScopedStorage } from "@/lib/userScopedStorage";
 import { Theme, Language, Level, LessonMode } from "@/types";
 import type { PerfMode } from "@/lib/performance";
 import {
@@ -133,7 +134,7 @@ export const usePreferenceStore = create<PreferenceStore>()(
     }),
     {
       name: "reallearn-preferences",
-      storage: createJSONStorage(() => localStorage),
+      storage: createScopedStorage<PreferenceStore>(),
       // Migration: legacy stores have no personalization field. Rehydration
       // merges persisted state over the defaults, so provide a sane default
       // without overwriting other fields.
