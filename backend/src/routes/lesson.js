@@ -523,7 +523,6 @@ export async function generateLessonHandler(req, res) {
     hijackStream();
     flushSseHeaders(rawRes);
   } catch (error) {
-  } catch (error) {
     console.warn("[SSE] Header flush failed (client gone?)", {
       requestId,
       error: error?.message,

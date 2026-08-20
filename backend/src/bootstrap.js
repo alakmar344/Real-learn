@@ -7,6 +7,9 @@ import { spawn, execSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 function findBunExecutable() {
   // 1. Check PATH
@@ -25,9 +28,11 @@ function findBunExecutable() {
   const home = os.homedir();
   const standardPaths = [
     path.join(home, ".bun", "bin", process.platform === "win32" ? "bun.exe" : "bun"),
-    "/root/.bun/bin/bun",
+    "/opt/render/.bun/bin/bun",
     "/home/render/.bun/bin/bun",
-  ];
+    "/root/.bun/bin/bun",
+    process.env.BUN_INSTALL ? path.join(process.env.BUN_INSTALL, "bin", "bun") : null,
+  ].filter(Boolean);
 
   for (const candidate of standardPaths) {
     if (fs.existsSync(candidate)) {
@@ -62,13 +67,9 @@ async function run() {
 
   if (bunPath) {
     console.log(`[bootstrap] 🚀 Launching Fastify backend under Bun (${bunPath})...`);
-    const serverFile = path.join(path.dirname(new URL(import.meta.url).pathname), "server.js");
-    // Normalize path for Windows/Linux
-    const cleanServerFile = process.platform === "win32" && serverFile.startsWith("/")
-      ? serverFile.slice(1)
-      : serverFile;
+    const serverFile = path.join(__dirname, "server.js");
 
-    const child = spawn(bunPath, ["run", cleanServerFile], {
+    const child = spawn(bunPath, ["run", serverFile], {
       stdio: "inherit",
       env: {
         ...process.env,
