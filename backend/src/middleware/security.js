@@ -53,6 +53,9 @@ export const corsMiddleware = cors({
   // If-None-Match lets cross-origin TTS fetches revalidate via ETag (the
   // handler serves 304s on it — without this the preflight rejects it).
   allowedHeaders: ["Content-Type", "Authorization", "If-None-Match"],
+  // PERFORMANCE: Cache preflight OPTIONS responses for 24h (86400s) so repeat
+  // API requests and cache checks avoid unnecessary preflight roundtrips.
+  maxAge: 86400,
 });
 
 export function originGuard(req, res, next) {

@@ -1410,6 +1410,27 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
     - Chips (`.chip`): Elevated with frosted glass backgrounds, subtle specular highlights, and glowing accent hover rings.
     - Learning Journey Rail (`.journey-rail`): Active node with radiant pulse; completed node with glowing emerald badge.
     - Quiz Options (`.quiz-question__option`): Rich emerald and rose glowing borders on correct/incorrect answers.
-    - Achievement Tiers (`TIER_COLOR`): Polished Bronze (`#CD7F32`), Silver (`#94A3B8`), Gold (`#F59E0B`), and Legendary (`#84CC16`).
-  - **Empirical Verification**: TypeScript `tsc --noEmit` clean, ESLint clean, 8/8 verify scripts passed, and Next.js production build succeeded.
+- 2026-08-20 — **Nuclear Mode: Full-Stack Security Hardening, Performance Overhaul, Bug Remediation & Mobile Navigation Polish.**
+  Executed comprehensive nuclear audit and multi-layer hardening across frontend and backend:
+  - **🔴 Security First — User-Scoped State & Cross-Account Isolation**:
+    - Built `frontend/lib/userScopedStorage.ts` and `frontend/components/shared/AuthScopeSync.tsx`: Zustand persisted stores (`useSavedJourneysStore`, `useProgressStore`, `useLessonStore`, `usePreferenceStore`) dynamically scope keys by Clerk `userId` (`reallearn-progress:${userId || 'anon'}`).
+    - Added automatic legacy unscoped key migration on first user sign-in without data loss.
+    - Added complete in-memory and `sessionStorage` state wipe (`useLessonStore.resetAll()`, `useProgressStore.resetEngagement()`, `journeys: []`, `DEFAULT_LEARNING_PREFERENCES`, draft question clear) on Clerk sign-out so no user's private data, notes, or saved journeys leak on shared devices.
+    - Scoped IndexedDB lesson archive keys by `${userId || 'anon'}::${id}` in `frontend/lib/lessonArchive.ts`.
+    - Hardened `backend/src/lib/auth.js`: in production (`NODE_ENV === "production"`), `azp` claim is strictly mandatory against authorized parties, and `CLERK_ALLOW_DEV_ISSUERS` is strictly ignored.
+    - Tightened CSP in `frontend/proxy.ts`: removed `"https:"` wildcard from `script-src` and permitted Google OAuth avatars in `img-src`.
+    - Added `maxAge: 86400` (24h) to CORS preflights in `backend/src/middleware/security.js`.
+  - **⚡ Performance Acceleration & Resource Bounding**:
+    - Added bounded LRU cache (`syllableCache`, max 4,000 entries) in `backend/src/lib/qualityGate.js` to eliminate heavy syllable calculation loop latency during lesson readability evaluation and auto-fixing.
+    - Clamped repair attempt timeouts in `backend/src/routes/lesson.js` dynamically against remaining total request deadline budget (`LESSON_TIMEOUT_MS`).
+    - Fixed `handleStreamingResponse` in `backend/src/lib/aiEngine.js` with `buffer.length > MAX_STREAM_CHARS` boundary check on chunk accumulation to prevent memory overruns on newline-free streams.
+    - Ensured MongoDB `lessonCache` `{ key: 1 }` (unique) and `{ expiresAt: 1 }` (TTL) indexes at startup in `backend/src/startup/migrations.js`.
+    - Deduplicated window/document lifecycle event listeners (`pagehide`, `visibilitychange`, `beforeunload`) in `frontend/lib/debouncedStorage.ts`.
+    - Memoized `toNode` with `WeakMap` in `frontend/lib/learningProfile.ts` to eliminate repetitive profile parsing during predictive cache checks.
+  - **🎨 UI/UX Cleanliness & Design System Preservation**:
+    - Kept navigation clean and uncluttered via top Navbar brand mark/links and tactile Sidebar drawer for saved journeys, removing any distracting bottom navigation bars to maintain invisible UX and zero cognitive load.
+  - **✅ Empirical Verification**:
+    - Backend test suite: 112/112 unit, integration, and offensive audit tests passed.
+    - Frontend: `npx tsc --noEmit` clean, ESLint clean, 9/9 verify scripts passed (`verify:quiz`, `verify:achievements`, `verify:reconsent`, `verify:frontier`, `verify:profile`, `verify:personalization`, `verify:special-days`, `verify:onboarding`, `verify:user-scoping`), and Next.js production build (`next build`) green.
+
 

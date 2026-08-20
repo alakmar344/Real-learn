@@ -3,6 +3,7 @@
 // fire-and-forget from the listen callback; failures are logged, never fatal.
 import { getDb } from "../lib/mongodb.js";
 import { anonymizeIp } from "../lib/privacy.js";
+import { ensureLessonCacheIndexes } from "../lib/lessonCache.js";
 
 // One-time cleanup (policy v2.3): earlier releases stored the RAW client IP
 // in consent records. Retroactively anonymize every stored deviceIp so no
@@ -156,11 +157,10 @@ export async function ensureUserDataIndexes() {
       db.collection("moderationLogs").createIndex({ clerkId: 1 }),
       db.collection("feedback").createIndex({ createdAt: -1 }),
       ensureFeedbackTtlIndex(db),
-      // The lessonCache full-text index was retired with the /api/find route
-      // (drop any pre-existing "lesson_text_search" index on lessonCache manually).
+      ensureLessonCacheIndexes(db),
     ]);
     console.log(
-      `[startup] User-data indexes ensured (feedback TTL ${FEEDBACK_TTL_DAYS} days)`
+      `[startup] User-data and lesson-cache indexes ensured (feedback TTL ${FEEDBACK_TTL_DAYS} days)`
     );
   } catch (error) {
     console.error("[startup] Failed to ensure user-data indexes", error?.message);

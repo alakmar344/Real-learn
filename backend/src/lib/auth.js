@@ -98,11 +98,11 @@ function isTrustedIssuer(issuer) {
     }
     // Shared multi-tenant Clerk dev domains (*.clerk.accounts.dev): anyone can
     // spin up a free instance there and mint valid tokens, so trusting them is
-    // an authentication bypass. This must FAIL SAFE — any NODE_ENV-based gate
-    // (including NODE_ENV === "development") is one misconfigured host away
-    // from a full auth bypass in production. Trust dev issuers ONLY on the
-    // explicit opt-in flag; local devs set CLERK_ALLOW_DEV_ISSUERS=true.
-    const allowDevIssuers = process.env.CLERK_ALLOW_DEV_ISSUERS === "true";
+    // an authentication bypass. This must FAIL SAFE — strictly blocked in production.
+    // Local dev requires non-production NODE_ENV + explicit CLERK_ALLOW_DEV_ISSUERS=true.
+    const allowDevIssuers =
+      process.env.NODE_ENV !== "production" &&
+      process.env.CLERK_ALLOW_DEV_ISSUERS === "true";
     if (allowDevIssuers) {
       return (
         hostname.endsWith(".clerk.accounts.dev") ||
@@ -147,7 +147,10 @@ const AUTHORIZED_PARTIES =
 
 function isAuthorizedParty(azp) {
   if (AUTHORIZED_PARTIES.length === 0) return true; // not configured → skip
-  if (!azp) return true; // token didn't specify azp claim — signature validity from Clerk JWKS is authoritative
+  if (!azp) {
+    // In production, when authorized parties are configured, the azp claim is mandatory
+    return process.env.NODE_ENV !== "production";
+  }
   const normalized = String(azp).replace(/\/$/, "");
   return AUTHORIZED_PARTIES.includes(normalized);
 }

@@ -47,6 +47,30 @@ function debounce<T extends (...args: never[]) => void>(
  */
 /** Cancel callbacks for every live debounced storage (see below). */
 const cancelCallbacks = new Set<() => void>();
+/** Flush callbacks for every live debounced storage. */
+const flushCallbacks = new Set<() => void>();
+
+let lifecycleListenersAttached = false;
+function ensureLifecycleListeners(): void {
+  if (lifecycleListenersAttached || typeof window === "undefined") return;
+  lifecycleListenersAttached = true;
+
+  const flushAll = () => {
+    flushCallbacks.forEach((flush) => {
+      try {
+        flush();
+      } catch {
+        // best-effort flush on exit
+      }
+    });
+  };
+
+  window.addEventListener("pagehide", flushAll);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") flushAll();
+  });
+  window.addEventListener("beforeunload", flushAll);
+}
 
 /**
  * Drop every pending (not-yet-flushed) debounced write across all stores.
@@ -56,6 +80,19 @@ const cancelCallbacks = new Set<() => void>();
  */
 export function cancelPendingDebouncedWrites(): void {
   cancelCallbacks.forEach((cancel) => cancel());
+}
+
+/**
+ * Immediately flush all pending writes across all stores (e.g. before switching user scopes).
+ */
+export function flushAllPendingDebouncedWrites(): void {
+  flushCallbacks.forEach((flush) => {
+    try {
+      flush();
+    } catch {
+      // best-effort
+    }
+  });
 }
 
 export function createDebouncedStorage<S>(delayMs = 800): PersistStorage<S> {
@@ -75,22 +112,18 @@ export function createDebouncedStorage<S>(delayMs = 800): PersistStorage<S> {
 
   const debouncedFlush = debounce(flush, delayMs);
 
-  cancelCallbacks.add(() => {
+  const cancelEntry = () => {
     pending = null;
     debouncedFlush.cancel();
-  });
+  };
+  const flushEntry = () => {
+    debouncedFlush.flush();
+  };
 
-  if (typeof window !== "undefined") {
-    window.addEventListener("pagehide", () => debouncedFlush.flush());
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "hidden") debouncedFlush.flush();
-    });
-    // Belt-and-braces: some hard-exit paths (e.g. certain desktop window
-    // closes / crashes mid-teardown) fire beforeunload but never reach
-    // pagehide/visibilitychange. flush() is idempotent — the extra listener
-    // costs nothing when the other events also fire.
-    window.addEventListener("beforeunload", () => debouncedFlush.flush());
-  }
+  cancelCallbacks.add(cancelEntry);
+  flushCallbacks.add(flushEntry);
+
+  ensureLifecycleListeners();
 
   return {
     getItem: (name) => {

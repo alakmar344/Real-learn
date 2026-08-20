@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { createDebouncedStorage } from "@/lib/debouncedStorage";
+import { createScopedStorage } from "@/lib/userScopedStorage";
 import { saveArchivedLesson, deleteArchivedLesson } from "@/lib/lessonArchive";
 import { SavedJourney } from "@/types";
 
@@ -126,7 +126,7 @@ export const useSavedJourneysStore = create<SavedJourneysStore>()(
     }),
     {
       name: "reallearn-saved-journeys",
-      storage: createDebouncedStorage<Pick<SavedJourneysStore, "journeys">>(),
+      storage: createScopedStorage<Pick<SavedJourneysStore, "journeys">>(),
       partialize: (state) => ({ journeys: state.journeys }),
       version: 2,
       // v0/v1 → v2: move every inline lesson body out of localStorage into

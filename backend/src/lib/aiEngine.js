@@ -937,6 +937,13 @@ async function handleStreamingResponse(response, onChunk) {
       if (done) break;
       onChunk?.();
       buffer += decoder.decode(value, { stream: true });
+      if (buffer.length > MAX_STREAM_CHARS) {
+        throw new AIApiError(
+          408,
+          "StreamOverflow",
+          `provider stream line buffer exceeded ${MAX_STREAM_CHARS} characters`
+        );
+      }
 
       const lines = buffer.split("\n");
       buffer = lines.pop() || "";

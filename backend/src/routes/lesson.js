@@ -129,7 +129,8 @@ function decrementActiveLessonRequests() {
 }
 
 router.post("/api/generate-lesson", rateLimit, requireAuth, async (req, res) => {
-  const requestId = `lesson-${Date.now()}-${++lessonRequestCounter}`;
+  const requestStartedAt = Date.now();
+  const requestId = `lesson-${requestStartedAt}-${++lessonRequestCounter}`;
   const {
     question,
     language,
@@ -660,12 +661,17 @@ END_EXTERNAL_CONTEXT>>>`
         });
       }, 1500));
 
+      const requestElapsed = Date.now() - requestStartedAt;
+      const remainingBudget = Math.max(10000, LESSON_TIMEOUT_MS - requestElapsed - 1000);
+      const attemptTimeout = Math.min(AI_CALL_TIMEOUT_MS, remainingBudget);
+
       console.log("[AI] generate start", {
         requestId,
         mode,
         label,
         isRepairAttempt: Boolean(repairReason),
-        callTimeoutMs: AI_CALL_TIMEOUT_MS,
+        callTimeoutMs: attemptTimeout,
+        remainingBudgetMs: remainingBudget,
         userPromptLength: attemptUserPrompt.length,
         maxOutputTokens,
         temperature: attemptTemperature,
@@ -679,7 +685,7 @@ END_EXTERNAL_CONTEXT>>>`
           systemPrompt,
           attemptUserPrompt,
           attemptTemperature,
-          AI_CALL_TIMEOUT_MS,
+          attemptTimeout,
           generateAbortSignal,
           maxOutputTokens,
           {

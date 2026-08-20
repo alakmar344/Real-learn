@@ -12,6 +12,7 @@ import { useLessonStore } from "@/store/lessonStore";
 import { useProgressStore } from "@/store/progressStore";
 import { useSavedJourneysStore } from "@/store/savedJourneysStore";
 import { cancelPendingDebouncedWrites } from "@/lib/debouncedStorage";
+import { getScopedStorageKey } from "@/lib/userScopedStorage";
 import { clearArchivedLessons } from "@/lib/lessonArchive";
 import { clearTtsCache } from "@/hooks/useSpeech";
 import { useMounted } from "@/hooks/useMounted";
@@ -221,63 +222,23 @@ export default function SettingsPage() {
 
       const localData: Record<string, unknown> = {};
       try {
-        const savedJourneysKey = "reallearn-saved-journeys";
-        const savedJourneys = localStorage.getItem(savedJourneysKey);
-        if (savedJourneys) {
-          localData.savedJourneys = JSON.parse(savedJourneys);
-        }
-
-        localData.cookieConsent = (() => {
+        const readStorageItem = (baseKey: string) => {
           try {
-            return JSON.parse(localStorage.getItem("reallearn-cookie-consent") || "null");
+            const scopedKey = getScopedStorageKey(baseKey);
+            const val = localStorage.getItem(scopedKey) ?? localStorage.getItem(baseKey);
+            return val ? JSON.parse(val) : null;
           } catch {
             return null;
           }
-        })();
+        };
 
-        localData.legalConsent = (() => {
-          try {
-            return JSON.parse(localStorage.getItem("reallearn-legal-consent") || "null");
-          } catch {
-            return null;
-          }
-        })();
-
-        // Current preferences live under "reallearn-preferences" (the old
-        // "reallearn-theme" key is legacy); the lesson store persists under
-        // "reallearn-journey". Exporting the wrong keys silently omitted
-        // both from this privacy/GDPR export.
-        localData.preferences = (() => {
-          try {
-            return JSON.parse(localStorage.getItem("reallearn-preferences") || "null");
-          } catch {
-            return null;
-          }
-        })();
-
-        localData.legacyTheme = (() => {
-          try {
-            return JSON.parse(localStorage.getItem("reallearn-theme") || "null");
-          } catch {
-            return null;
-          }
-        })();
-
-        localData.lessonState = (() => {
-          try {
-            return JSON.parse(localStorage.getItem("reallearn-journey") || "null");
-          } catch {
-            return null;
-          }
-        })();
-
-        localData.progress = (() => {
-          try {
-            return JSON.parse(localStorage.getItem("reallearn-progress") || "null");
-          } catch {
-            return null;
-          }
-        })();
+        localData.savedJourneys = readStorageItem("reallearn-saved-journeys");
+        localData.cookieConsent = readStorageItem("reallearn-cookie-consent");
+        localData.legalConsent = readStorageItem("reallearn-legal-consent");
+        localData.preferences = readStorageItem("reallearn-preferences");
+        localData.legacyTheme = readStorageItem("reallearn-theme");
+        localData.lessonState = readStorageItem("reallearn-journey");
+        localData.progress = readStorageItem("reallearn-progress");
 
         localData.feedback = (() => {
           try {

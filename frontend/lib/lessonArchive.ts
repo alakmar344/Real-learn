@@ -2,6 +2,7 @@
 
 import { openDB, type IDBPDatabase } from "idb";
 import type { LessonJourney } from "@/types";
+import { getActiveUserScope } from "@/lib/userScopedStorage";
 
 /**
  * IndexedDB archive for full lesson bodies.
@@ -139,6 +140,11 @@ function openDb(): Promise<IDBPDatabase | null> {
   return dbPromise;
 }
 
+function getScopedArchiveId(id: string): string {
+  const scope = getActiveUserScope();
+  return `${scope}::${id}`;
+}
+
 /**
  * Persist a full lesson body keyed by journey id, stored as compressed JSON
  * (see STORAGE FORMAT above). Fire-and-forget safe.
@@ -149,7 +155,7 @@ export async function saveArchivedLesson(id: string, lesson: LessonJourney): Pro
   if (!db) return;
   try {
     const envelope = await encodeLesson(lesson);
-    await db.put(STORE, envelope, id);
+    await db.put(STORE, envelope, getScopedArchiveId(id));
   } catch {
     // best-effort persistence — never throw
   }
@@ -161,7 +167,17 @@ export async function getArchivedLesson(id: string): Promise<LessonJourney | nul
   const db = await openDb();
   if (!db) return null;
   try {
-    return await decodeLesson(await db.get(STORE, id));
+    // 1. Try user-scoped key
+    const scopedRecord = await db.get(STORE, getScopedArchiveId(id));
+    if (scopedRecord) {
+      return await decodeLesson(scopedRecord);
+    }
+    // 2. Fallback to legacy unscoped id (for seamless backward compatibility)
+    const legacyRecord = await db.get(STORE, id);
+    if (legacyRecord) {
+      return await decodeLesson(legacyRecord);
+    }
+    return null;
   } catch {
     return null;
   }
@@ -173,6 +189,7 @@ export async function deleteArchivedLesson(id: string): Promise<void> {
   const db = await openDb();
   if (!db) return;
   try {
+    await db.delete(STORE, getScopedArchiveId(id));
     await db.delete(STORE, id);
   } catch {
     // best-effort — never throw

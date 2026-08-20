@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { createDebouncedStorage } from "@/lib/debouncedStorage";
+import { createScopedStorage } from "@/lib/userScopedStorage";
 import {
   BADGES,
   ProgressSnapshot,
@@ -391,7 +391,7 @@ export const useProgressStore = create<ProgressState>()(
         } as Omit<ProgressState, "celebrations">;
       },
       // Perf: defer serialization + write off the click path (see lib/debouncedStorage).
-      storage: createDebouncedStorage<Omit<ProgressState, "celebrations">>(),
+      storage: createScopedStorage<Omit<ProgressState, "celebrations">>(),
       // Never persist the transient celebration queue.
       partialize: (state) => {
         const { celebrations: _celebrations, ...rest } = state;

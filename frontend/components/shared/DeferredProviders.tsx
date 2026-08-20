@@ -18,6 +18,7 @@
  * on every route without bloating the initial bundle.
  */
 import dynamic from "next/dynamic";
+import AuthScopeSync from "@/components/shared/AuthScopeSync";
 
 const ToastContainer = dynamic(
   () => import("@/components/shared/ToastContainer"),
@@ -39,6 +40,7 @@ const PreSignInConsent = dynamic(
 export default function DeferredProviders() {
   return (
     <>
+      <AuthScopeSync />
       <ToastContainer />
       <GoogleAnalytics />
       <CookieConsent />

@@ -144,10 +144,14 @@ export function classifyBucket(
   return "low-confidence";
 }
 
+const nodeCache = new WeakMap<SavedJourney, ProficiencyNode>();
+
 function toNode(journey: SavedJourney): ProficiencyNode {
+  const cached = nodeCache.get(journey);
+  if (cached) return cached;
   const strength = journeyStrength(journey);
   const topic = normalizeTopic(journey.question);
-  return {
+  const node: ProficiencyNode = {
     id: journey.id,
     topic,
     strength,
@@ -159,6 +163,8 @@ function toNode(journey: SavedJourney): ProficiencyNode {
     tokens: tokenize(topic || journey.question),
     savedAt: Number.isFinite(journey.savedAt) ? journey.savedAt : 0,
   };
+  nodeCache.set(journey, node);
+  return node;
 }
 
 // Stable, deterministic ordering: strongest first, then most recent, then id.

@@ -136,12 +136,6 @@ export function lessonCacheKey(
   return crypto.createHash("sha256").update(material).digest("hex");
 }
 
-// Memoize the in-flight promise (same pattern as moderationLogIndexPromise in
-// server.js): a plain "ensured" boolean was set before the awaited createIndex
-// resolved, so a failure raced with concurrent writers that had already been
-// waved through, and the guard reported "done" while creation was still
-// pending. Concurrent callers now share one attempt; a failure clears the memo
-// so a later write retries.
 let ttlIndexPromise = null;
 function ensureTtlIndex(db) {
   if (ttlIndexPromise) return ttlIndexPromise;
@@ -156,6 +150,10 @@ function ensureTtlIndex(db) {
     console.warn("[lessonCache] Failed to ensure indexes", error?.message);
   });
   return ttlIndexPromise;
+}
+
+export function ensureLessonCacheIndexes(db) {
+  return ensureTtlIndex(db);
 }
 
 /**
