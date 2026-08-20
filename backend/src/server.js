@@ -1,6 +1,7 @@
 // Composition root: Fastify initialization, Undici keep-alive connection pool,
 // plugin mounting (order is behavior), router mounting, terminal handlers,
 // listen + graceful shutdown.
+import "./lib/polyfills.js";
 import Fastify from "fastify";
 import fastifyCors from "@fastify/cors";
 import fastifyCompress from "@fastify/compress";

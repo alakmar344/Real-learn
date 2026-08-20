@@ -67,9 +67,10 @@ async function run() {
 
   if (bunPath) {
     console.log(`[bootstrap] 🚀 Launching Fastify backend under Bun (${bunPath})...`);
+    const polyfillsFile = path.join(__dirname, "lib", "polyfills.js");
     const serverFile = path.join(__dirname, "server.js");
 
-    const child = spawn(bunPath, ["run", serverFile], {
+    const child = spawn(bunPath, ["run", "--preload", polyfillsFile, serverFile], {
       stdio: "inherit",
       env: {
         ...process.env,
