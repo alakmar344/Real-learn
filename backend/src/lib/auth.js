@@ -146,13 +146,39 @@ const AUTHORIZED_PARTIES =
       : DEFAULT_DEV_AUTHORIZED_PARTIES;
 
 function isAuthorizedParty(azp) {
-  if (AUTHORIZED_PARTIES.length === 0) return true; // not configured → skip
   if (!azp) {
     // In production, when authorized parties are configured, the azp claim is mandatory
     return process.env.NODE_ENV !== "production";
   }
   const normalized = String(azp).replace(/\/$/, "");
-  return AUTHORIZED_PARTIES.includes(normalized);
+  if (AUTHORIZED_PARTIES.includes(normalized)) return true;
+
+  try {
+    const { hostname, protocol } = new URL(normalized);
+    // Allow localhost/127.0.0.1 in non-production
+    if (process.env.NODE_ENV !== "production") {
+      if (
+        (protocol === "http:" || protocol === "https:") &&
+        (hostname === "localhost" || hostname === "127.0.0.1")
+      ) {
+        return true;
+      }
+    }
+    // Allow Vercel preview deployments for RealLearn
+    if (
+      protocol === "https:" &&
+      hostname.endsWith(".vercel.app") &&
+      (hostname.startsWith("real-learn") ||
+        hostname.startsWith("reallearn") ||
+        hostname.includes("alakmar344"))
+    ) {
+      return true;
+    }
+  } catch {
+    return false;
+  }
+
+  return false;
 }
 
 export async function verifyClerkToken(token) {

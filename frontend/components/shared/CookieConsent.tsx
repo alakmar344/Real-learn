@@ -13,6 +13,7 @@ import {
   readCookieConsent,
   writeCookieConsent,
 } from "@/lib/legalConsent";
+import { BACKEND_URL } from "@/lib/api";
 
 /**
  * Cookie/analytics consent banner.
@@ -105,8 +106,7 @@ export default function CookieConsent() {
       // anonymous choices live in localStorage alone (no identifier to key on).
       if (!isSignedIn) return;
 
-      const backendUrl =
-        process.env.NEXT_PUBLIC_BACKEND_URL || "https://real-learn.onrender.com";
+      const backendUrl = BACKEND_URL;
 
       const token = await getToken();
       const headers: Record<string, string> = {

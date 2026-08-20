@@ -8,6 +8,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { LRUCache } from "lru-cache";
 import { useAuth } from "@clerk/nextjs";
+import { BACKEND_URL } from "@/lib/api";
 
 // The language map lives in lib/locale.ts (shared with the DOM lang/dir
 // attributes on lesson content); these re-exports keep existing imports alive.
@@ -156,7 +157,7 @@ export function useEdgeTts() {
       let blob = ttsBlobCacheGet(cacheKey);
 
       if (!blob) {
-        const backendUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || "https://real-learn.onrender.com").replace(/\/$/, "");
+        const backendUrl = BACKEND_URL;
         const headers: Record<string, string> = { "Content-Type": "application/json" };
         try {
           const token = await getToken();

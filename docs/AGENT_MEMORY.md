@@ -1432,5 +1432,25 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
   - **✅ Empirical Verification**:
     - Backend test suite: 112/112 unit, integration, and offensive audit tests passed.
     - Frontend: `npx tsc --noEmit` clean, ESLint clean, 9/9 verify scripts passed (`verify:quiz`, `verify:achievements`, `verify:reconsent`, `verify:frontier`, `verify:profile`, `verify:personalization`, `verify:special-days`, `verify:onboarding`, `verify:user-scoping`), and Next.js production build (`next build`) green.
+- 2026-08-20 — **Frontend & Backend Connectivity Restoration & Full-Stack Network Hardening.**
+  - **🌐 Hijacked Stream CORS Remediation (`backend/src/lib/sse.js`, `backend/src/routes/lesson.js`)**:
+    - Resolved critical CORS issue on SSE stream generation (`/api/generate-lesson`) where Fastify stream hijacking (`reply.hijack()`) bypassed Fastify `onSend` plugin hooks, leaving hijacked responses without `Access-Control-Allow-Origin` headers.
+    - Updated `flushSseHeaders(res, req)` to explicitly stamp CORS headers (`Access-Control-Allow-Origin`, `Access-Control-Allow-Credentials: true`, `Access-Control-Allow-Headers`, `Access-Control-Expose-Headers`, `Vary: Origin`, `Timing-Allow-Origin`, `X-Content-Type-Options: nosniff`) directly onto the raw Node `ServerResponse` before flushing.
+    - Updated cache hit, follower, and leader paths in `routes/lesson.js` to pass `rawReq` into `flushSseHeaders(rawRes, rawReq)`.
+  - **🛡️ CORS Origin Matching & Preflight Hardening (`backend/src/middleware/security.js`)**:
+    - Merged configured `FRONTEND_ORIGIN` with default production domains and dev localhost origins to prevent custom env variables from accidentally dropping required origins.
+    - Enhanced `isOriginAllowed(origin)` to support Vercel preview domains (`*.vercel.app` for `reallearn` / `real-learn` / `alakmar344`), production domains, and localhost on any port in non-production.
+    - Fixed `@fastify/cors` origin callback to return `callback(null, false)` instead of throwing an Error on unmatched origins, preventing uncaught 500/403 crashes during preflight negotiation.
+    - Added `exposedHeaders` (`Retry-After`, `ETag`, `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `Content-Disposition`, `Content-Length`) and `allowedHeaders` (`Content-Type`, `Authorization`, `If-None-Match`, `Accept`, `Cache-Control`, `X-Requested-With`, `x-clerk-auth-token`).
+    - Fixed `securityPlugin` `onRequest` hook to exempt `OPTIONS` preflight requests from premature rejection.
+  - **🔒 Auth AZP Validation Polish (`backend/src/lib/auth.js`)**:
+    - Updated `isAuthorizedParty(azp)` to allow matching Vercel preview deployments and non-production localhost origins so preview builds and local dev environments authenticate with Clerk seamlessly.
+  - **🔒 Next.js CSP `connect-src` Alignment (`frontend/proxy.ts`)**:
+    - Updated `buildCsp` in `proxy.ts` to permit `http://localhost:*`, `http://127.0.0.1:*`, `ws://localhost:*`, `ws://127.0.0.1:*` in development, preventing browser CSP from blocking local API and HMR connections.
+  - **📦 Centralized Backend API Client (`frontend/lib/api.ts`)**:
+    - Consolidated scattered `NEXT_PUBLIC_BACKEND_URL` resolutions across `legalConsent.ts`, `useSpeech.ts`, `FeedbackPrompt.tsx`, `CookieConsent.tsx`, `PreSignInConsent.tsx`, `page.tsx`, and `settings/page.tsx` to uniformly consume the canonical `BACKEND_URL` export from `@/lib/api`.
+  - **✅ Empirical Verification**:
+    - Added 4 new integration test cases in `backend/test/fastify-server.test.js` covering CORS preflight, GET, POST, origin matching, and hijacked SSE stream header stamping (116/116 backend tests passed).
+    - Frontend: `npx tsc --noEmit` clean (0 errors), ESLint clean (0 errors), 9/9 verify scripts passed, and Next.js 16 production build (`next build`) clean (14 routes).
 
 

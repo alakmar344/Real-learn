@@ -9,6 +9,7 @@ import {
 } from "@/lib/feedback";
 import { starColor } from "@/lib/palette";
 import { Icon } from "@/components/shared/icons";
+import { BACKEND_URL } from "@/lib/api";
 
 interface Props {
   /** Closes/removes the prompt from the parent (used after submit/dismiss). */
@@ -42,8 +43,7 @@ export default function FeedbackPrompt({ onDone }: Props) {
       likes: likes.trim(),
       improvements: improvements.trim(),
     };
-    const backendUrl =
-      process.env.NEXT_PUBLIC_BACKEND_URL || "https://real-learn.onrender.com";
+    const backendUrl = BACKEND_URL;
     const res = await fetch(`${backendUrl}/api/feedback`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

@@ -8,6 +8,8 @@
 //  - raw `localStorage` access crashing the whole app when storage is blocked
 //    (Chrome "Block all cookies", private mode, embedded webviews).
 
+import { BACKEND_URL } from "@/lib/api";
+
 export const LEGAL_CONSENT_KEY = "reallearn-legal-consent";
 export const COOKIE_CONSENT_KEY = "reallearn-cookie-consent";
 export const CURRENT_PRIVACY_VERSION = "3.6";
@@ -44,8 +46,7 @@ export async function fetchCookieConsentStatus(
   getToken: () => Promise<string | null>
 ): Promise<CookieConsentStatus | null> {
   try {
-    const backendUrl =
-      process.env.NEXT_PUBLIC_BACKEND_URL || "https://real-learn.onrender.com";
+    const backendUrl = BACKEND_URL;
     // Retry the token once: in Firefox, Enhanced Tracking Protection can delay
     // the Clerk session-refresh worker so getToken() rejects on the first call
     // even for a signed-in user. A single retry avoids a spurious null (which
@@ -177,8 +178,7 @@ export async function syncLegalConsentToBackend(
 ): Promise<boolean> {
   if (!state?.accepted) return false;
   try {
-    const backendUrl =
-      process.env.NEXT_PUBLIC_BACKEND_URL || "https://real-learn.onrender.com";
+    const backendUrl = BACKEND_URL;
     const token = await getToken();
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
