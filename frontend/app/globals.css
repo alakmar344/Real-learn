@@ -1797,7 +1797,6 @@ a:active {
   }
   .app-main {
     margin-left: 0;
-    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
   }
   .app-sidebar {
     transform: translateX(-100%);
@@ -2657,87 +2656,6 @@ p {
   .navbar-inner { padding-left: 72px; }
   .navbar--compact .navbar-inner { padding-left: 72px; }
   .navbar-links { display: none; }
-}
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   Mobile Bottom Navigation (< 900px)
-   Tactile, accessible, strictly Olive Frenzy Minimal
-   ───────────────────────────────────────────────────────────────────────────── */
-.bottom-nav {
-  display: none;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 90;
-  background: var(--bg-card);
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  backdrop-filter: blur(var(--glass-blur));
-  border-top: 1px solid var(--border-subtle);
-  padding: 6px 16px calc(6px + env(safe-area-inset-bottom, 0px));
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
-}
-
-@media (max-width: 900px) {
-  .bottom-nav {
-    display: block;
-  }
-}
-
-.bottom-nav__inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  max-width: 480px;
-  margin: 0 auto;
-}
-
-.bottom-nav__item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  min-width: 60px;
-  min-height: 44px;
-  padding: 4px 10px;
-  border-radius: var(--radius-sm);
-  color: var(--text-muted);
-  text-decoration: none;
-  font-family: var(--font-sans), system-ui, sans-serif;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  transition: color 150ms var(--ease-color), background 150ms var(--ease-color), transform 100ms ease;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.bottom-nav__item:active {
-  transform: scale(0.96);
-}
-
-.bottom-nav__icon-wrap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: var(--radius-pill);
-  transition: background 150ms var(--ease-color), transform 150ms var(--ease-spring);
-}
-
-.bottom-nav__item--active {
-  color: var(--accent);
-  font-weight: 700;
-}
-
-.bottom-nav__item--active .bottom-nav__icon-wrap {
-  background: var(--accent-subtle);
-  transform: translateY(-1px);
-}
-
-.bottom-nav__label {
-  line-height: 1;
 }
 
 /* Brand lockup — logo tile + two-tone wordmark. */

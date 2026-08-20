@@ -103,9 +103,8 @@
     - Ensured MongoDB `lessonCache` `{ key: 1 }` (unique) and `{ expiresAt: 1 }` (TTL) indexes at startup in `backend/src/startup/migrations.js`.
     - Deduplicated window/document lifecycle event listeners (`pagehide`, `visibilitychange`, `beforeunload`) in `frontend/lib/debouncedStorage.ts`.
     - Memoized `toNode` with `WeakMap` in `frontend/lib/learningProfile.ts` to eliminate repetitive profile parsing during predictive cache checks.
-  - **🎨 UI/UX & Mobile Navigation (`BottomNav.tsx`)**:
-    - Created dedicated mobile bottom navigation bar (`frontend/components/shared/BottomNav.tsx`, `< 900px`) linking Home (`/`), Learn (`/learn`), and Stats (`/progress`) with active indicators, haptic feedback, safe-area inset handling (`env(safe-area-inset-bottom)`), and Olive Frenzy design system styling.
-    - Added mobile `padding-bottom` on `.app-main` to eliminate content overlap.
+  - **🎨 UI/UX Cleanliness & Design System Preservation**:
+    - Kept navigation clean and uncluttered via top Navbar brand mark/links and tactile Sidebar drawer for saved journeys, removing any distracting bottom navigation bars to maintain invisible UX and zero cognitive load.
   - **✅ Empirical Verification**:
     - Backend test suite: 112/112 unit, integration, and offensive audit tests passed.
     - Frontend: `npx tsc --noEmit` clean, ESLint clean, 9/9 verify scripts passed (`verify:quiz`, `verify:achievements`, `verify:reconsent`, `verify:frontier`, `verify:profile`, `verify:personalization`, `verify:special-days`, `verify:onboarding`, `verify:user-scoping`), and Next.js production build (`next build`) green.

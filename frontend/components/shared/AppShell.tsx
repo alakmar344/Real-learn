@@ -9,8 +9,6 @@ import { Icon } from "@/components/shared/icons";
 import OnboardingRedirect from "@/components/onboarding/OnboardingRedirect";
 import dynamic from "next/dynamic";
 
-import BottomNav from "@/components/shared/BottomNav";
-
 const EngagementLayer = dynamic(() => import("@/components/shared/EngagementLayer"), {
   ssr: false,
   loading: () => null,
@@ -76,7 +74,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <div id="main-content" className="app-main">
         <ErrorBoundary>{children}</ErrorBoundary>
       </div>
-      <BottomNav />
       <ScrollToTop />
       <EngagementLayer />
       <KeyboardShortcuts />
