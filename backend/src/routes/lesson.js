@@ -818,15 +818,6 @@ END_EXTERNAL_CONTEXT>>>`
                 emitSlowNotice("resilient-tier");
               }
             },
-            onPart: (part) => {
-              if (finished || generateAbortSignal.aborted) return;
-              console.log("[generate-lesson] Emitting progressive part", {
-                requestId,
-                partNumber: part.partNumber,
-                title: part.title,
-              });
-              sendEvent("part", part);
-            },
           }
         );
         clearInterval(attemptTicker);

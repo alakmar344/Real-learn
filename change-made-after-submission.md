@@ -92,10 +92,14 @@
   - **Fix**: Updated `engines.node` across `backend/package.json`, `frontend/package.json`, and root `package.json` to `">=20.0.0"` to support both Node 22 LTS (Render/Vercel) and Node 24+ LTS. Created `.nvmrc` aligned with `.node-version` (`22`).
   - **Verification**: Backend 117/117 tests passing; frontend `tsc --noEmit` clean, ESLint clean, 9/9 verification suites passed 100%, Next.js 16 production build (`next build`) green.
 
+- **Seamless Lesson Delivery & Zero-Jank Completion Landing (`useLesson.ts`, `lessonStore.ts`, `routes/lesson.js`):**
+  - **Issue**: Emitting and mounting partial parts mid-stream caused premature unmounting of `LoadingCinematic` and violent UI re-renders/layout shifts as subsequent parts arrived.
+  - **Fix**: Retained Fastify SSE streaming for progress and keep-alives while cleanly landing the user on the fully-formed, validated lesson upon completion (`event: lesson`) through the smooth 420ms `LoadingCinematic` reveal transition.
+  - **Result**: Zero layout shifting, zero mid-stream re-render flashing, and an instantaneous, calm reading experience with pre-rendered parts.
+
 - **Full-Stack Speed Acceleration & Performance Optimization Roadmap:**
-  - **🚀 Progressive Streaming Lesson Delivery (`aiEngine.js`, `routes/lesson.js`, `useLesson.ts`, `lessonStore.ts`)**:
-    - Implemented progressive part streaming pipeline (`createProgressivePartParser`). As tokens stream from the LLM, completed parts (with title, >=60 chars content, and aligned quiz questions) are validated and immediately emitted over SSE via `event: part`.
-    - Client unlocks and mounts Part 1 in ~800ms–1.2s, closing the `LoadingCinematic` while Parts 2 & 3 continue streaming in the background, slashing perceived learner TTFT by over 70%.
+  - **🚀 High-Throughput Streaming Lesson Delivery (`aiEngine.js`, `routes/lesson.js`, `useLesson.ts`, `lessonStore.ts`)**:
+    - Unified AI generation pipeline delivering complete, schema-validated journeys with live progress ticks and heartbeats over SSE, landing the user with a smooth reveal animation once generation completes.
   - **⚡ In-Memory Direct WebSocket Audio Pipe for Edge TTS (`backend/src/routes/tts.js`)**:
     - Replaced temporary disk file synthesis with direct in-memory WebSocket streaming to `Buffer` via `ws` with Edge DRM token generation.
     - Completely eliminated disk I/O latency, temporary files, orphan sweeps, and OS filesystem locking, returning audio buffers directly to Fastify's response stream.
