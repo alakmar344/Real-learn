@@ -329,6 +329,9 @@ export async function exportDataHandler(req, res) {
     };
     setHeader("Content-Type", "application/json");
     setHeader("Content-Disposition", `attachment; filename="reallearn-data-${safeFilenameId}.json"`);
+    // This payload is the user's complete stored personal data — it must
+    // never land in any shared/proxy cache or be replayed from disk cache.
+    setHeader("Cache-Control", "private, no-store");
 
     return send(200, {
       exportedAt: new Date().toISOString(),

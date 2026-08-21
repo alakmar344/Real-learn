@@ -417,6 +417,33 @@ test("G3: onboarded:false personalization still contributes to the cache key (an
   assert.equal(kPlain, kPlain2, "empty personalization must still share the default cache key");
 });
 
+test("G4: cache key encoding is injective — delimiter characters in user fields cannot fold two different requests into one key", async () => {
+  // Regression: key material used to be a "|"-join, and user-controlled fields
+  // (notes/goals, learningContext, question) can CONTAIN "|". Under the old
+  // encoding, personalization notes "a" and learningContext "a||" produced
+  // byte-identical material — two semantically different requests sharing one
+  // cached lesson (cross-cohort poisoning). The JSON-array encoding makes
+  // every component boundary unforgeable.
+  const { lessonCacheKey } = await import("../src/lib/lessonCache.js");
+  const base = ["What is gravity?", "English", "Class 9-10", "explain"];
+
+  // The exact historical collision pair.
+  const kNotes = lessonCacheKey(...base, { onboarded: true, notes: "a", checklist: [] }, "");
+  const kContext = lessonCacheKey(...base, null, "a||");
+  assert.notEqual(kNotes, kContext, "notes 'a' must not collide with learningContext 'a||'");
+
+  // Content shifted across adjacent fields must never collide.
+  const kShiftA = lessonCacheKey(...base, { onboarded: true, notes: "x|y", checklist: [] }, "z");
+  const kShiftB = lessonCacheKey(...base, { onboarded: true, notes: "x", checklist: [] }, "y|z");
+  assert.notEqual(kShiftA, kShiftB, "field content shifted across the old delimiter must not collide");
+
+  // Checklist items joined with "," used to be ambiguous against a single
+  // item containing a comma.
+  const kList = lessonCacheKey(...base, { onboarded: true, checklist: ["a", "b"], notes: "" }, "");
+  const kItem = lessonCacheKey(...base, { onboarded: true, checklist: ["a,b"], notes: "" }, "");
+  assert.notEqual(kList, kItem, "checklist ['a','b'] must not collide with ['a,b']");
+});
+
 // ── H. SSML injection via TTS ─────────────────────────────────────────────────
 // The TTS handler validates prosody with strict regex patterns and locks lang
 // to SPEECH_LANG_TO_VOICE keys. We replicate the pattern to test edge cases.
