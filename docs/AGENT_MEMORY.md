@@ -1514,7 +1514,7 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
 - 2026-08-21 (later still) — **Encoding-hardening pass.** Lesson cache keys now hash a JSON-array serialization (injective; the old `"|"`-join let user text containing `|`/`,` fold two different requests into one cached lesson — pinned by test G4). Root-layout JSON-LD is emitted via a `jsonLd()` helper that escapes `<` (`</script>`-breakout defense). `/api/export-data` sends `Cache-Control: private, no-store`. `next.config.js` adds cache headers for `*.png`, `manifest.json`, `llms.txt`.
 
 - 2026-08-21 (latest) — **Full-Stack Speed Acceleration & Performance Optimization Roadmap.**
-  - **Progressive Streaming Lesson Delivery**: `aiEngine.js` parses streaming JSON incrementally via `createProgressivePartParser`. As soon as Part 1 finishes streaming (valid title, >=60 chars content, aligned quiz questions), backend emits `event: part` over SSE (`routes/lesson.js`). Client `useLesson.ts` / `lessonStore.ts` consumes `event: part` and mounts Part 1 in ~800ms–1.2s, closing `LoadingCinematic` while remaining parts stream in background.
+  - **High-Throughput Streaming Lesson Delivery**: Unified AI generation pipeline delivering complete, schema-validated journeys with live progress ticks and heartbeats over SSE (`routes/lesson.js`), landing the user on the fully pre-rendered 3-part journey with a smooth reveal animation upon completion with zero mid-stream layout jumps.
   - **In-Memory Edge TTS Audio Pipe**: Replaced disk-based TTS file writing with direct in-memory WebSocket streaming to `Buffer` via `ws` with Edge DRM tokens (`routes/tts.js`), eliminating disk I/O, temp files, and filesystem locking.
   - **Speculative Grounding & Extended Serper Cache**: Increased Serper cache TTL to 24h (max 500 entries) in `lib/serper.js` and parallelized news grounding fetch with prompt preparation in `routes/lesson.js`.
   - **Adaptive EWMA TTFT Hedging**: Added real-time TTFT tracking across all provider streams; computed hedge delay dynamically as `Math.max(800, Math.min(config.hedgeDelayMs, Math.round(leadEwma * 2.2)))`.
@@ -1527,5 +1527,10 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
   - **Issue**: Render CI uses Node 22 (`.node-version`), and default `yarn` installation failed due to `"engines": { "node": ">=24.0.0" }`.
   - **Fix**: Broadened `"engines": { "node": ">=20.0.0" }` across `backend/package.json`, `frontend/package.json`, and root `package.json`. Added `.nvmrc` aligned with `.node-version` (`22`).
   - **Verification**: Backend 117/117 tests pass; frontend `tsc --noEmit` clean, ESLint clean, 9/9 verify scripts pass, `next build` green.
+- 2026-08-21 (UX) — **Seamless Complete Lesson Delivery & Zero-Jank Completion Landing.**
+  - **Issue**: Emitting and mounting partial parts mid-stream caused premature unmounting of `LoadingCinematic` and violent UI re-renders/layout shifts as subsequent parts arrived.
+  - **Fix**: Removed mid-stream partial state mounting; user is seamlessly transitioned on lesson completion (`event: lesson`) via the 420ms `LoadingCinematic` reveal animation, eliminating mid-stream clutter and layout flashing.
+  - **Verification**: Backend 117/117 tests; frontend `tsc` clean, ESLint clean, 9/9 verify scripts pass, `next build` green.
+
 
 

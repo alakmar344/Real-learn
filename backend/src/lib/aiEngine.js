@@ -504,69 +504,6 @@ function jitter(ms) {
 
 // ── Provider health / circuit breakers ───────────────────────────────────────
 
-export function createProgressivePartParser(onPart) {
-  if (typeof onPart !== "function") return () => {};
-  const emittedPartNumbers = new Set();
-  let lastCheckedLength = 0;
-
-  return (token, fullText) => {
-    if (!fullText.includes('"parts"') && !fullText.includes("'parts'")) return;
-    if (fullText.length - lastCheckedLength < 25 && !token.includes("}") && !token.includes("]")) {
-      return;
-    }
-    lastCheckedLength = fullText.length;
-
-    try {
-      const firstBrace = fullText.indexOf("{");
-      if (firstBrace === -1) return;
-      const candidate = fullText.slice(firstBrace);
-
-      const repaired = jsonrepair(candidate);
-      const parsed = JSON.parse(repaired);
-      if (parsed && Array.isArray(parsed.parts)) {
-        for (const part of parsed.parts) {
-          if (
-            part &&
-            typeof part === "object" &&
-            typeof part.partNumber === "number" &&
-            !emittedPartNumbers.has(part.partNumber) &&
-            typeof part.title === "string" &&
-            part.title.trim().length > 0 &&
-            typeof part.content === "string" &&
-            part.content.trim().length >= 60 &&
-            Array.isArray(part.quiz) &&
-            part.quiz.length >= 1 &&
-            part.quiz.every(
-              (q) =>
-                q &&
-                typeof q.question === "string" &&
-                q.question.trim().length > 0 &&
-                Array.isArray(q.options) &&
-                q.options.length >= 2
-            )
-          ) {
-            emittedPartNumbers.add(part.partNumber);
-            try {
-              onPart({
-                partNumber: part.partNumber,
-                title: part.title.trim(),
-                subject: typeof part.subject === "string" ? part.subject.trim() : "General",
-                content: part.content.trim(),
-                quiz: part.quiz,
-                isPartial: true,
-              });
-            } catch (err) {
-              console.warn("[progressive-stream] onPart callback error:", err);
-            }
-          }
-        }
-      }
-    } catch {
-      // Stream in progress
-    }
-  };
-}
-
 function newProviderHealth() {
   return {
     consecutiveFailures: 0,
@@ -1284,10 +1221,7 @@ async function runProviderAttempts(provider, request, config, raceState, hooks =
           // Liveness signal for the race orchestrator: a provider that is
           // receiving data must not be hedged against (cost control).
           onActivity: () => raceState?.markAlive?.(),
-          onToken: (token, fullText) => {
-            hooks?.progressiveParser?.(token, fullText);
-            hooks?.onToken?.(token, fullText);
-          },
+          onToken: hooks?.onToken,
         }
       );
       const text = extractTextFromResult(result);
@@ -1592,11 +1526,6 @@ export async function callAI(
     raceSignal: raceController.signal,
   };
 
-  const progressiveParser = hooks?.onPart
-    ? createProgressivePartParser(hooks.onPart)
-    : null;
-  const attemptsHooks = { ...hooks, progressiveParser };
-
   // Fire `onProviderStart` exactly once the first time each provider is
   // actually launched (leader OR hedge). The route uses this to tell the
   // client the moment the last-resort tier (e.g. Cloudflare) is engaged, so
@@ -1613,7 +1542,7 @@ export async function callAI(
           // Hook failures must never affect generation.
         }
       }
-      return runProviderAttempts(provider, request, config, raceState, attemptsHooks);
+      return runProviderAttempts(provider, request, config, raceState, hooks);
     }
   );
 
