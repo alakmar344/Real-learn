@@ -12,6 +12,36 @@ const healthRateLimiter = createRateLimiter({
   max: 120,
 });
 
+// The MongoDB ping is the only expensive/amplifiable part of this handler.
+// Cache its result briefly so a burst of health checks (many IPs, past the
+// per-IP limiter) collapses onto ONE ping per window instead of one per hit.
+const DB_PING_CACHE_MS = 3_000;
+let dbPingCache = { at: 0, result: null };
+
+async function checkMongo() {
+  const now = Date.now();
+  if (dbPingCache.result && now - dbPingCache.at < DB_PING_CACHE_MS) {
+    return dbPingCache.result;
+  }
+  const dbStart = process.hrtime.bigint();
+  let result;
+  try {
+    const db = await getDb();
+    await db.command({ ping: 1 });
+    result = {
+      status: "ok",
+      latencyMs: Number((process.hrtime.bigint() - dbStart) / 1_000_000n),
+    };
+  } catch {
+    result = {
+      status: "down",
+      latencyMs: Number((process.hrtime.bigint() - dbStart) / 1_000_000n),
+    };
+  }
+  dbPingCache = { at: now, result };
+  return result;
+}
+
 // PUBLIC health check. This route is deliberately unauthenticated — uptime
 // monitors, load balancers, and container orchestrators must reach it without a
 // Clerk token. It NEVER discloses secrets: only coarse dependency states,
@@ -22,21 +52,8 @@ export async function healthHandler(_req, res) {
   const dependencies = {};
   let ok = true;
 
-  const dbStart = process.hrtime.bigint();
-  try {
-    const db = await getDb();
-    await db.command({ ping: 1 });
-    dependencies.mongodb = {
-      status: "ok",
-      latencyMs: Number((process.hrtime.bigint() - dbStart) / 1_000_000n),
-    };
-  } catch {
-    ok = false;
-    dependencies.mongodb = {
-      status: "down",
-      latencyMs: Number((process.hrtime.bigint() - dbStart) / 1_000_000n),
-    };
-  }
+  dependencies.mongodb = await checkMongo();
+  if (dependencies.mongodb.status !== "ok") ok = false;
 
   const aiSnapshot = getProviderHealthSnapshot();
   const aiOutage = allCircuitsOpen();

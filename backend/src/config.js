@@ -123,6 +123,17 @@ export const MAX_CONCURRENT_LESSON_REQUESTS_PER_USER =
     ? configuredPerUserConcurrency
     : DEFAULT_MAX_CONCURRENT_LESSON_REQUESTS_PER_USER;
 
+// Single-flight followers hold no concurrency slot but each keeps an open SSE
+// connection plus a heartbeat/progress/slow-notice timer for up to the lesson
+// deadline. Cap how many can pile onto ONE in-flight cacheKey so a burst of
+// identical questions can't exhaust sockets/timers behind the concurrency gate.
+const DEFAULT_MAX_IN_FLIGHT_FOLLOWERS = 200;
+const configuredMaxFollowers = Number(process.env.MAX_IN_FLIGHT_FOLLOWERS_PER_KEY);
+export const MAX_IN_FLIGHT_FOLLOWERS_PER_KEY =
+  Number.isFinite(configuredMaxFollowers) && configuredMaxFollowers > 0
+    ? configuredMaxFollowers
+    : DEFAULT_MAX_IN_FLIGHT_FOLLOWERS;
+
 export function validateStartupConfig() {
   const hasGroqConfig = Boolean(process.env.GROQ_API_KEY?.trim());
   const hasMistralConfig = Boolean(process.env.MISTRAL_API_KEY?.trim());

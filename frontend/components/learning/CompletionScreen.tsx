@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { LessonJourney } from "@/types";
 import ShareResult from "@/components/learning/ShareResult";
@@ -56,6 +56,7 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
   }, [totalScore, maxScore]);
   const pct = Math.round((totalScore / maxScore) * 100);
   const circumference = 2 * Math.PI * 42;
+  const followUps = useMemo(() => generateFollowUpSuggestions(lesson), [lesson]);
   const offset = circumference - (pct / 100) * circumference;
 
   return (
@@ -105,12 +106,14 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
       {/* Quick summary deck */}
       <QuickSummaryCards lesson={lesson} />
 
-      {/* Suggested follow-up questions — zero cognitive load: just tap */}
-      {lesson.keyTakeaways && lesson.keyTakeaways.length > 0 && (
+      {/* Suggested follow-up questions — zero cognitive load: just tap.
+          Derived from the topic (not just takeaways), so fast-mode and
+          salvaged lessons still get a next step instead of a dead end. */}
+      {followUps.length > 0 && (
         <div>
           <p className="completion__section-label">Go deeper</p>
           <div className="completion__suggests">
-            {generateFollowUpSuggestions(lesson).map((suggestion, i) => (
+            {followUps.map((suggestion, i) => (
               <button
                 key={i}
                 type="button"
