@@ -11,17 +11,17 @@ const SERPER_TIMEOUT_MS =
   Number.isFinite(configuredSerperTimeoutMs) && configuredSerperTimeoutMs > 0
     ? configuredSerperTimeoutMs
     : DEFAULT_SERPER_TIMEOUT_MS;
-// Short-lived in-memory context cache: repeated questions (and client-side
+// 24-hour in-memory context cache: repeated questions (and client-side
 // retries of the same request) skip a whole network round-trip to Serper.
-const DEFAULT_SERPER_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+const DEFAULT_SERPER_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 const configuredSerperCacheTtlMs = Number(process.env.SERPER_CACHE_TTL_MS);
 const SERPER_CACHE_TTL_MS =
   Number.isFinite(configuredSerperCacheTtlMs) && configuredSerperCacheTtlMs > 0
     ? configuredSerperCacheTtlMs
     : DEFAULT_SERPER_CACHE_TTL_MS;
-const SERPER_CACHE_MAX_ENTRIES = 200;
+const SERPER_CACHE_MAX_ENTRIES = 500;
 // `lru-cache` provides recency-eviction + capacity cap; the per-entry TTL
-// (10 min) is set per write so every cached context expires on its own clock.
+// (24h) is set per write so every cached context expires on its own clock.
 const contextCache = new LRUCache({ max: SERPER_CACHE_MAX_ENTRIES });
 
 function contextCacheGet(cacheKey) {

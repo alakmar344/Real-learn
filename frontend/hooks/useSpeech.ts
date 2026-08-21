@@ -377,3 +377,38 @@ export function useSpeechRecognition({ lang, onResult }: UseSpeechRecognitionOpt
 
   return { supported, listening, interimTranscript, start, stop, toggle };
 }
+
+/** Preload speech audio in background so playback starts instantaneously on user click. */
+export async function preloadSpeechAudio(
+  text: string,
+  lang: string,
+  getToken?: () => Promise<string | null>
+) {
+  if (typeof window === "undefined") return;
+  const cleaned = text.trim();
+  if (!cleaned) return;
+  const cacheKey = `${lang}|${cleaned}`;
+  if (ttsBlobCacheGet(cacheKey)) return;
+
+  try {
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (getToken) {
+      const token = await getToken().catch(() => null);
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+    }
+    const res = await fetch(`${BACKEND_URL}/api/tts`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ text: cleaned, lang }),
+    });
+    if (res.ok) {
+      const blob = await res.blob();
+      if (blob && blob.size > 0) {
+        ttsBlobCacheSet(cacheKey, blob);
+      }
+    }
+  } catch {
+    // Best-effort non-blocking prefetch
+  }
+}
+

@@ -1,44 +1,161 @@
-// Text-to-speech: Edge TTS synthesis behind an in-memory byte-budgeted cache
 import crypto from "node:crypto";
-import fs from "node:fs";
-import os from "node:os";
-import path from "node:path";
 import { LRUCache } from "lru-cache";
 import { requireAuth } from "../lib/auth.js";
 import { createRateLimiter } from "../lib/rateLimit.js";
+import { WebSocket } from "ws";
 
-let EdgeTTS = null;
-try {
-  const mod = await import("node-edge-tts");
-  EdgeTTS = mod.EdgeTTS || null;
-} catch (error) {
-  console.error("[tts] Failed to load node-edge-tts via ESM import", error);
+const CHROMIUM_FULL_VERSION = "143.0.3650.75";
+const TRUSTED_CLIENT_TOKEN = "6A5AA1D4EAFF4E9FB37E23D68491D6F4";
+const WINDOWS_FILE_TIME_EPOCH = 11644473600n;
+
+function generateSecMsGecToken() {
+  const ticks =
+    BigInt(Math.floor(Date.now() / 1000 + Number(WINDOWS_FILE_TIME_EPOCH))) *
+    10000000n;
+  const roundedTicks = ticks - (ticks % 3000000000n);
+  const strToHash = `${roundedTicks}${TRUSTED_CLIENT_TOKEN}`;
+  const hash = crypto.createHash("sha256");
+  hash.update(strToHash, "ascii");
+  return hash.digest("hex").toUpperCase();
 }
 
-const TTS_TEMP_DIR = path.join(os.tmpdir(), "reallearn-tts");
-if (!fs.existsSync(TTS_TEMP_DIR)) {
-  fs.mkdirSync(TTS_TEMP_DIR, { recursive: true });
-}
-// Clean up orphaned temp files from previous crashes (fire-and-forget).
-// Only files older than ORPHAN_MIN_AGE_MS are removed: the temp dir is shared
-// per-host, so during a rolling deploy / multi-instance boot an unconditional
-// sweep would delete another live instance's in-progress synthesis file and
-// turn its request into a spurious ENOENT 500.
-const ORPHAN_MIN_AGE_MS = 60 * 60 * 1000;
-fs.promises.readdir(TTS_TEMP_DIR).then(async (files) => {
-  const now = Date.now();
-  for (const file of files) {
-    const filePath = path.join(TTS_TEMP_DIR, file);
-    try {
-      const stats = await fs.promises.stat(filePath);
-      if (now - stats.mtimeMs > ORPHAN_MIN_AGE_MS) {
-        await fs.promises.unlink(filePath);
-      }
-    } catch {
-      // Already gone or unreadable — nothing to clean.
+function escapeXml(unsafe) {
+  return (unsafe || "").replace(/[<>&"']/g, (c) => {
+    switch (c) {
+      case "<":
+        return "&lt;";
+      case ">":
+        return "&gt;";
+      case "&":
+        return "&amp;";
+      case '"':
+        return "&quot;";
+      case "'":
+        return "&apos;";
+      default:
+        return c;
     }
-  }
-}).catch(() => {});
+  });
+}
+
+function synthesizeEdgeTtsInMemory({
+  text,
+  voice,
+  lang,
+  outputFormat = "audio-24khz-48kbitrate-mono-mp3",
+  rate = "default",
+  pitch = "default",
+  volume = "default",
+  timeoutMs = 30000,
+}) {
+  return new Promise((resolve, reject) => {
+    const url = `wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=${TRUSTED_CLIENT_TOKEN}&Sec-MS-GEC=${generateSecMsGecToken()}&Sec-MS-GEC-Version=1-${CHROMIUM_FULL_VERSION}`;
+    const ws = new WebSocket(url, {
+      host: "speech.platform.bing.com",
+      origin: "chrome-extension://jdiccldimpdaibmpdkjnbmckianbfold",
+      headers: {
+        Pragma: "no-cache",
+        "Cache-Control": "no-cache",
+        "User-Agent": `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${CHROMIUM_FULL_VERSION.split(".")[0]}.0.0.0 Safari/537.36 Edg/${CHROMIUM_FULL_VERSION.split(".")[0]}.0.0.0`,
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-US,en;q=0.9",
+      },
+    });
+
+    const chunks = [];
+    let isDone = false;
+    const timeout = setTimeout(() => {
+      if (!isDone) {
+        isDone = true;
+        try {
+          ws.terminate();
+        } catch {
+          // ignore
+        }
+        reject(new Error("Edge TTS timed out"));
+      }
+    }, timeoutMs);
+
+    ws.on("open", () => {
+      ws.send(`Content-Type:application/json; charset=utf-8\r\nPath:speech.config\r\n\r\n
+      {
+        "context": {
+          "synthesis": {
+            "audio": {
+              "metadataoptions": {
+                "sentenceBoundaryEnabled": "false",
+                "wordBoundaryEnabled": "false"
+              },
+              "outputFormat": "${outputFormat}"
+            }
+          }
+        }
+      }`);
+
+      const requestId = crypto.randomBytes(16).toString("hex");
+      ws.send(`X-RequestId:${requestId}\r\nContent-Type:application/ssml+xml\r\nPath:ssml\r\n\r\n
+      <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="${lang}">
+        <voice name="${voice}">
+          <prosody rate="${rate || "default"}" pitch="${pitch || "default"}" volume="${volume || "default"}">
+            ${escapeXml(text)}
+          </prosody>
+        </voice>
+      </speak>`);
+    });
+
+    ws.on("message", (data, isBinary) => {
+      if (isBinary) {
+        const separator = "Path:audio\r\n";
+        const separatorIndex = data.indexOf(separator);
+        if (separatorIndex !== -1) {
+          const audioData = data.subarray(separatorIndex + separator.length);
+          if (audioData.length > 0) {
+            chunks.push(audioData);
+          }
+        }
+      } else {
+        const message = data.toString();
+        if (message.includes("Path:turn.end")) {
+          if (!isDone) {
+            isDone = true;
+            clearTimeout(timeout);
+            try {
+              ws.close();
+            } catch {
+              // ignore
+            }
+            resolve(Buffer.concat(chunks));
+          }
+        }
+      }
+    });
+
+    ws.on("error", (err) => {
+      if (!isDone) {
+        isDone = true;
+        clearTimeout(timeout);
+        try {
+          ws.terminate();
+        } catch {
+          // ignore
+        }
+        reject(err);
+      }
+    });
+
+    ws.on("close", () => {
+      if (!isDone) {
+        isDone = true;
+        clearTimeout(timeout);
+        if (chunks.length > 0) {
+          resolve(Buffer.concat(chunks));
+        } else {
+          reject(new Error("Edge TTS connection closed before audio complete"));
+        }
+      }
+    });
+  });
+}
 
 const TTS_RATE_LIMIT_WINDOW_MS = 60000;
 const TTS_RATE_LIMIT_MAX = 30;
@@ -96,8 +213,6 @@ const SPEECH_LANG_TO_VOICE = {
   "en-US": "en-US-AriaNeural",
 };
 
-const inFlightTts = new Map(); // cacheKey -> Promise<Buffer>
-
 export async function ttsHandler(req, res) {
   const send = (status, payload) => {
     if (res.code && typeof res.code === "function") {
@@ -109,10 +224,6 @@ export async function ttsHandler(req, res) {
   };
 
   try {
-    if (!EdgeTTS) {
-      return send(500, { error: "TTS service is not available." });
-    }
-
     const text = typeof req.body?.text === "string" ? req.body.text.trim() : "";
     if (!text) {
       return send(400, { error: "text is required" });
@@ -200,31 +311,24 @@ export async function ttsHandler(req, res) {
     }
 
     const synthesize = async () => {
-      const tts = new EdgeTTS({
-        voice,
-        lang,
-        outputFormat,
-        rate,
-        pitch,
-        volume,
-        timeout: 30000,
-      });
-
-      const outFile = path.join(
-        TTS_TEMP_DIR,
-        `${cacheKey.slice(0, 16)}-${crypto.randomUUID()}.mp3`
-      );
-      let fileBuffer;
       activeTtsSyntheses += 1;
+      let buffer;
       try {
-        await tts.ttsPromise(text, outFile);
-        fileBuffer = await fs.promises.readFile(outFile);
+        buffer = await synthesizeEdgeTtsInMemory({
+          text,
+          voice,
+          lang,
+          outputFormat,
+          rate,
+          pitch,
+          volume,
+          timeoutMs: 30000,
+        });
       } finally {
         activeTtsSyntheses -= 1;
-        await fs.promises.unlink(outFile).catch(() => {});
       }
-      ttsCacheSet(cacheKey, fileBuffer);
-      return fileBuffer;
+      ttsCacheSet(cacheKey, buffer);
+      return buffer;
     };
 
     const synthesisPromise = synthesize();

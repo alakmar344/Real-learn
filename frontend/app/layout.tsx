@@ -25,6 +25,7 @@ const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
   display: "swap",
+  adjustFontFallback: true,
 });
 const lora = Lora({
   subsets: ["latin"],
@@ -32,6 +33,7 @@ const lora = Lora({
   variable: "--font-lora",
   display: "swap",
   preload: false,
+  adjustFontFallback: true,
 });
 // Display face: Space Grotesk — a working designer's grotesk (quirky enough to
 // have personality, disciplined enough to never read as a template).
@@ -40,12 +42,14 @@ const spaceGrotesk = Space_Grotesk({
   variable: "--font-display",
   display: "swap",
   preload: false,
+  adjustFontFallback: true,
 });
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
   display: "swap",
   preload: false,
+  adjustFontFallback: true,
 });
 // The Caveat script face is retired: handwriting display type read as
 // juvenile and cost an extra font download. Headings now ride the same

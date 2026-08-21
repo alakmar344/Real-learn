@@ -48,6 +48,23 @@ export async function feedbackHandler(req, res) {
   }
 }
 
+const feedbackResponseSchema = {
+  schema: {
+    response: {
+      200: {
+        type: "object",
+        properties: {
+          ok: { type: "boolean" },
+        },
+      },
+    },
+  },
+};
+
 export default async function feedbackRoutes(fastify) {
-  fastify.post("/api/feedback", { preHandler: [feedbackRateLimiter] }, feedbackHandler);
+  fastify.post(
+    "/api/feedback",
+    { preHandler: [feedbackRateLimiter], ...feedbackResponseSchema },
+    feedbackHandler
+  );
 }

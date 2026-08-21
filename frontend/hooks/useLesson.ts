@@ -237,6 +237,7 @@ export function useLesson() {
   const setNotice = useLessonStore((s) => s.setNotice);
   const setMeta = useLessonStore((s) => s.setMeta);
   const setLesson = useLessonStore((s) => s.setLesson);
+  const addStreamingPart = useLessonStore((s) => s.addStreamingPart);
   const setError = useLessonStore((s) => s.setError);
   const resetForNextQuestion = useLessonStore((s) => s.resetForNextQuestion);
   const language = usePreferenceStore((s) => s.language);
@@ -407,6 +408,19 @@ export function useLesson() {
                 dataLength: entry.data.length,
               });
               return safeParseEvent<LessonJourney>(entry.data);
+            }
+            if (entry.event === "part") {
+              const payload = safeParseEvent<import("@/types").LessonPart>(entry.data);
+              if (payload && payload.partNumber) {
+                logLessonDebug("progressive part event received", {
+                  requestId,
+                  attempt,
+                  partNumber: payload.partNumber,
+                  title: payload.title,
+                });
+                addStreamingPart(payload);
+              }
+              return null;
             }
             if (entry.event === "meta") {
               const payload = safeParseEvent<{
@@ -635,7 +649,7 @@ export function useLesson() {
       setError(humanizeErrorMessage(lastError));
       return false;
     },
-    [getToken, language, level, mode, personalization, journeys, subjectsSeen, router, setError, setLesson, setProgress, setNotice, setMeta, setQuestion, startLoading]
+    [getToken, language, level, mode, personalization, journeys, subjectsSeen, router, setError, setLesson, addStreamingPart, setProgress, setNotice, setMeta, setQuestion, startLoading]
   );
 
   const restart = useCallback(() => {

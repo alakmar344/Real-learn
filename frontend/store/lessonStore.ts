@@ -5,7 +5,7 @@ import { persist } from "zustand/middleware";
 import { createScopedStorage } from "@/lib/userScopedStorage";
 import { getArchivedLesson } from "@/lib/lessonArchive";
 import { journeySignature } from "@/store/savedJourneysStore";
-import { LessonJourney } from "@/types";
+import { LessonJourney, LessonPart } from "@/types";
 
 interface LessonStore {
   question: string;
@@ -49,6 +49,7 @@ interface LessonStore {
   setProgress: (stage: string, percent: number) => void;
   setNotice: (notice: "resilient-tier" | "slow" | null) => void;
   setMeta: (meta: { expectedParts?: number; mode?: string }) => void;
+  addStreamingPart: (part: LessonPart) => void;
   setLesson: (lesson: LessonJourney) => void;
   setError: (error: string | null) => void;
   passPart: (part: number, score: number) => void;
@@ -197,6 +198,43 @@ export const useLessonStore = create<LessonStore>()(
               : state.expectedParts,
         }));
       },
+      addStreamingPart: (part) => {
+        storeLog("addStreamingPart", { partNumber: part.partNumber, title: part.title });
+        set((state) => {
+          const currentParts = state.lesson?.parts ? [...state.lesson.parts] : [];
+          const existingIndex = currentParts.findIndex((p) => p.partNumber === part.partNumber);
+          if (existingIndex !== -1) {
+            currentParts[existingIndex] = part;
+          } else {
+            currentParts.push(part);
+            currentParts.sort((a, b) => a.partNumber - b.partNumber);
+          }
+
+          const existingLesson = state.lesson;
+          const updatedLesson: LessonJourney = existingLesson
+            ? {
+                ...existingLesson,
+                parts: currentParts,
+              }
+            : {
+                lessonId: newLessonId(),
+                question: state.question,
+                topic: state.question,
+                language: "English",
+                level: "College / Advanced",
+                parts: currentParts,
+                keyTakeaways: [],
+              };
+
+          return {
+            lesson: updatedLesson,
+            isLoading: false,
+            hydratingLesson: false,
+            error: null,
+            expectedParts: state.expectedParts ?? (currentParts.length > 1 ? 3 : 1),
+          };
+        });
+      },
       setLesson: (lesson) => {
         storeLog("setLesson", {
           questionLength: lesson.question?.length ?? 0,
@@ -210,9 +248,9 @@ export const useLessonStore = create<LessonStore>()(
         if (!lesson.lessonId) {
           lesson = { ...lesson, lessonId: newLessonId() };
         }
-        set({
+        set((state) => ({
           lesson,
-          question: lesson.question ?? lesson.topic ?? "",
+          question: lesson.question ?? lesson.topic ?? state.question,
           isLoading: false,
           hydratingLesson: false,
           error: null,
@@ -220,13 +258,13 @@ export const useLessonStore = create<LessonStore>()(
           progressPercent: 0,
           notice: null,
           expectedParts: lesson.parts?.length ?? null,
-          unlockedPart: 1,
-          completedParts: [],
-          partScores: { 1: null, 2: null, 3: null },
-          collapsedParts: [],
-          showCompletion: false,
-          showFollowUp: false,
-        });
+          unlockedPart: state.unlockedPart || 1,
+          completedParts: state.completedParts || [],
+          partScores: state.partScores || { 1: null, 2: null, 3: null },
+          collapsedParts: state.collapsedParts || [],
+          showCompletion: state.showCompletion || false,
+          showFollowUp: state.showFollowUp || false,
+        }));
       },
       setError: (error) => {
         storeLog("setError", { error });
