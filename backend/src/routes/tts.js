@@ -20,9 +20,23 @@ if (!fs.existsSync(TTS_TEMP_DIR)) {
   fs.mkdirSync(TTS_TEMP_DIR, { recursive: true });
 }
 // Clean up orphaned temp files from previous crashes (fire-and-forget).
-fs.promises.readdir(TTS_TEMP_DIR).then((files) => {
+// Only files older than ORPHAN_MIN_AGE_MS are removed: the temp dir is shared
+// per-host, so during a rolling deploy / multi-instance boot an unconditional
+// sweep would delete another live instance's in-progress synthesis file and
+// turn its request into a spurious ENOENT 500.
+const ORPHAN_MIN_AGE_MS = 60 * 60 * 1000;
+fs.promises.readdir(TTS_TEMP_DIR).then(async (files) => {
+  const now = Date.now();
   for (const file of files) {
-    fs.unlink(path.join(TTS_TEMP_DIR, file), () => {});
+    const filePath = path.join(TTS_TEMP_DIR, file);
+    try {
+      const stats = await fs.promises.stat(filePath);
+      if (now - stats.mtimeMs > ORPHAN_MIN_AGE_MS) {
+        await fs.promises.unlink(filePath);
+      }
+    } catch {
+      // Already gone or unreadable — nothing to clean.
+    }
   }
 }).catch(() => {});
 
@@ -30,6 +44,11 @@ const TTS_RATE_LIMIT_WINDOW_MS = 60000;
 const TTS_RATE_LIMIT_MAX = 30;
 const MAX_CONCURRENT_TTS_SYNTHESES = 8;
 let activeTtsSyntheses = 0;
+// Single-flight synthesis dedup: N concurrent cache-misses for the same
+// (text, voice, prosody) share ONE Edge-TTS synthesis instead of burning N of
+// the 8 concurrency slots producing byte-identical MP3s. Entries are removed
+// as soon as the synthesis settles.
+const inFlightSyntheses = new Map(); // cacheKey -> Promise<Buffer>
 
 const ttsRateLimiter = createRateLimiter({
   windowMs: TTS_RATE_LIMIT_WINDOW_MS,
@@ -162,6 +181,13 @@ export async function ttsHandler(req, res) {
       return sendAudio(cached);
     }
 
+    // Join an identical in-flight synthesis instead of starting a duplicate.
+    const inFlight = inFlightSyntheses.get(cacheKey);
+    if (inFlight) {
+      const sharedBuffer = await inFlight;
+      return sendAudio(sharedBuffer);
+    }
+
     if (activeTtsSyntheses >= MAX_CONCURRENT_TTS_SYNTHESES) {
       if (res.header && typeof res.header === "function") {
         res.header("Retry-After", 2);
@@ -171,32 +197,46 @@ export async function ttsHandler(req, res) {
       return send(503, { error: "Speech service is busy. Please retry in a moment." });
     }
 
-    const tts = new EdgeTTS({
-      voice,
-      lang,
-      outputFormat,
-      rate,
-      pitch,
-      volume,
-      timeout: 30000,
-    });
+    const synthesize = async () => {
+      const tts = new EdgeTTS({
+        voice,
+        lang,
+        outputFormat,
+        rate,
+        pitch,
+        volume,
+        timeout: 30000,
+      });
 
-    const outFile = path.join(
-      TTS_TEMP_DIR,
-      `${cacheKey.slice(0, 16)}-${crypto.randomUUID()}.mp3`
-    );
-    let fileBuffer;
-    activeTtsSyntheses += 1;
+      const outFile = path.join(
+        TTS_TEMP_DIR,
+        `${cacheKey.slice(0, 16)}-${crypto.randomUUID()}.mp3`
+      );
+      let fileBuffer;
+      activeTtsSyntheses += 1;
+      try {
+        await tts.ttsPromise(text, outFile);
+        fileBuffer = await fs.promises.readFile(outFile);
+      } finally {
+        activeTtsSyntheses -= 1;
+        await fs.promises.unlink(outFile).catch(() => {});
+      }
+      ttsCacheSet(cacheKey, fileBuffer);
+      return fileBuffer;
+    };
+
+    const synthesisPromise = synthesize();
+    // Joiners handle rejections themselves; swallow here so a failure with no
+    // joiner never surfaces as an unhandledRejection.
+    synthesisPromise.catch(() => {});
+    inFlightSyntheses.set(cacheKey, synthesisPromise);
+    let resultBuffer;
     try {
-      await tts.ttsPromise(text, outFile);
-      fileBuffer = await fs.promises.readFile(outFile);
+      resultBuffer = await synthesisPromise;
     } finally {
-      activeTtsSyntheses -= 1;
-      await fs.promises.unlink(outFile).catch(() => {});
+      inFlightSyntheses.delete(cacheKey);
     }
-
-    ttsCacheSet(cacheKey, fileBuffer);
-    return sendAudio(fileBuffer);
+    return sendAudio(resultBuffer);
   } catch (error) {
     console.error("[api/tts] Failed to synthesize speech", error);
     return send(500, { error: "Failed to synthesize speech." });

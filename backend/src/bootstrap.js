@@ -44,6 +44,16 @@ function findBunExecutable() {
 }
 
 function installBunOnLinux() {
+  // SECURITY: piping a remote installer into bash at boot is a supply-chain
+  // RCE surface (DNS hijack / TLS-intercepting proxy / upstream compromise
+  // executes attacker code with this service's secrets in env). It is
+  // therefore OPT-IN only; the default path is the Node.js runtime fallback.
+  if (process.env.BUN_AUTO_INSTALL !== "1") {
+    console.log(
+      "[bootstrap] Bun not found. Skipping network install (set BUN_AUTO_INSTALL=1 to opt in); using Node.js runtime."
+    );
+    return null;
+  }
   try {
     console.log("[bootstrap] Bun not found in environment. Automatically installing Bun...");
     execSync("curl -fsSL https://bun.sh/install | bash", {
@@ -94,7 +104,11 @@ async function run() {
     });
   } else {
     console.log("[bootstrap] Bun is not available. Falling back to Node.js 24 runtime...");
-    await import("./server.js");
+    // server.js only auto-starts when it is the entry script (argv[1]); here
+    // argv[1] is bootstrap.js, so startServer() must be invoked explicitly —
+    // a bare import would load the module without ever binding the port.
+    const { startServer } = await import("./server.js");
+    await startServer();
   }
 }
 

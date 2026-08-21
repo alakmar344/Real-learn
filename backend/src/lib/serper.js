@@ -56,7 +56,7 @@ function normalizeSerperLanguage(language) {
   return SERPER_LANGUAGE_MAP[normalizedLanguage] ?? "en";
 }
 
-export async function fetchRealWorldContext(topic, language) {
+export async function fetchRealWorldContext(topic, language, externalSignal) {
   if (!SERPER_API_KEY) {
     console.log("[Serper] Skipping context fetch: SERPER_API_KEY missing");
     return null;
@@ -83,6 +83,12 @@ export async function fetchRealWorldContext(topic, language) {
     const startedAt = Date.now();
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), SERPER_TIMEOUT_MS);
+    // Tie the fetch to the caller's lifecycle too: when the lesson request is
+    // aborted (client disconnect, deadline), the outbound Serper socket must
+    // not linger doing work nobody is waiting on.
+    const signal = externalSignal
+      ? AbortSignal.any([controller.signal, externalSignal])
+      : controller.signal;
     let data;
     // The timeout must cover the body read too — a stalling body would
     // otherwise hold a lesson-concurrency slot with no deadline.
@@ -99,7 +105,7 @@ export async function fetchRealWorldContext(topic, language) {
           gl: "in",
           hl,
         }),
-        signal: controller.signal,
+        signal,
       });
 
       console.log("[Serper] Response received", {
