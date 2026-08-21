@@ -124,7 +124,12 @@ export function createDebouncedStorage<S>(delayMs = 800): PersistStorage<S> {
     debouncedFlush.cancel();
   };
   const flushEntry = () => {
-    debouncedFlush.flush();
+    // Call flush() directly rather than debouncedFlush.flush(): the latter
+    // only fires while a debounce timer is armed, which would skip a pending
+    // entry that was restored after a failed setItem (its timer already
+    // fired). flush() itself no-ops when nothing is pending.
+    debouncedFlush.cancel();
+    flush();
   };
 
   cancelCallbacks.add(cancelEntry);
