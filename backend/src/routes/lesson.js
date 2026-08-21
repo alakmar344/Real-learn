@@ -49,6 +49,7 @@ import {
   MAX_CONCURRENT_LESSON_REQUESTS,
   LESSON_FAILURE_ALERT_THRESHOLD,
   MAX_CONCURRENT_LESSON_REQUESTS_PER_USER,
+  MAX_IN_FLIGHT_FOLLOWERS_PER_KEY,
 } from "../config.js";
 
 // Rough token estimator for logging (1 token ≈ 3.5 chars for English/most
@@ -97,6 +98,10 @@ function decrementUserLessonRequests(userKey) {
 // leader settles (success or failure), so the map only ever holds keys that
 // are actively generating.
 const inFlightLessonGenerations = new Map(); // cacheKey -> Promise<journey>
+// Live follower connections per in-flight cacheKey. Lets a leader whose OWN
+// client disconnected know that other clients are still waiting on its
+// generation, so it detaches instead of aborting (see finishRequest).
+const inFlightFollowerCounts = new Map(); // cacheKey -> count
 
 function extractModeratedOutputText(normalized) {
   if (!normalized || typeof normalized !== "object") return "";
@@ -192,18 +197,6 @@ export async function generateLessonHandler(req, res) {
     learningContextRaw,
   } = parseLessonBody(req);
 
-  // DECISION ENGINE: parse the quiz-verified context into structured signals
-  // (strengths / weaknesses / recent / goals), then build ONE ranked
-  // adaptation plan that treats the 10 checklist options as CANDIDATES and
-  // lets explicit preferences + quiz evidence + goals carry the authority.
-  // The parsed context feeds BOTH the ranked directives (evidence outranks
-  // the static checklist) and the verified-knowledge state shown to the model.
-  const parsedContext = parseLearningContext(learningContextRaw);
-  const personalizationPrompt = formatPersonalizationForPrompt(
-    personalization,
-    parsedContext,
-    level
-  );
   console.log("[generate-lesson] Incoming request", {
     requestId,
     questionLength: question?.length ?? 0,
@@ -211,16 +204,6 @@ export async function generateLessonHandler(req, res) {
     level,
     mode,
     activeLessonRequests,
-    hasPersonalization: Boolean(personalizationPrompt),
-    hasLearningContext: parsedContext.hasSignal,
-    adaptationSignals: {
-      strengths: parsedContext.strengths.length,
-      weaknesses: parsedContext.weaknesses.length,
-      recent: parsedContext.recent.length,
-      goals: parsedContext.goals.length,
-      checklist: personalization.checklist.length,
-      notes: Boolean(personalization.notes),
-    },
   });
 
   const validation = validateLessonRequest({ question, language, level });
@@ -248,7 +231,8 @@ export async function generateLessonHandler(req, res) {
       question,
     });
     console.warn("[moderation] Banned input blocked", redactModerationEvent(moderationEvent));
-    await logModerationEvent(moderationEvent);
+    // Fire-and-forget: never block the user-facing 400 on a Mongo write.
+    void logModerationEvent(moderationEvent);
     return sendError(400, { error: inputModeration.reason });
   }
 
@@ -308,9 +292,19 @@ export async function generateLessonHandler(req, res) {
   // error to every follower.
   const inFlightGeneration = inFlightLessonGenerations.get(cacheKey);
   if (inFlightGeneration) {
+    // Bound followers per key: beyond the cap, shed load with a retryable 503
+    // instead of opening yet another SSE connection + timer set.
+    if ((inFlightFollowerCounts.get(cacheKey) || 0) >= MAX_IN_FLIGHT_FOLLOWERS_PER_KEY) {
+      console.warn("[generate-lesson] Busy: in-flight follower cap reached", {
+        requestId,
+        followers: inFlightFollowerCounts.get(cacheKey) || 0,
+      });
+      return sendError(503, { error: "Server is busy. Please retry in a few seconds." }, 5);
+    }
     console.log("[generate-lesson] Joining in-flight generation (single-flight)", {
       requestId,
     });
+    inFlightFollowerCounts.set(cacheKey, (inFlightFollowerCounts.get(cacheKey) || 0) + 1);
     let followerDone = false;
     let followerHeartbeat = null;
     let followerTicker = null;
@@ -318,6 +312,9 @@ export async function generateLessonHandler(req, res) {
     const finishFollower = () => {
       if (followerDone) return;
       followerDone = true;
+      const remainingFollowers = (inFlightFollowerCounts.get(cacheKey) || 1) - 1;
+      if (remainingFollowers <= 0) inFlightFollowerCounts.delete(cacheKey);
+      else inFlightFollowerCounts.set(cacheKey, remainingFollowers);
       if (followerHeartbeat !== null) clearInterval(followerHeartbeat);
       if (followerTicker !== null) clearInterval(followerTicker);
       if (followerSlowTimer !== null) clearTimeout(followerSlowTimer);
@@ -447,12 +444,42 @@ export async function generateLessonHandler(req, res) {
     activeLessonRequests,
   });
 
+  // DECISION ENGINE: parse the quiz-verified context into structured signals
+  // (strengths / weaknesses / recent / goals), then build ONE ranked
+  // adaptation plan that treats the 10 checklist options as CANDIDATES and
+  // lets explicit preferences + quiz evidence + goals carry the authority.
+  // The parsed context feeds BOTH the ranked directives (evidence outranks
+  // the static checklist) and the verified-knowledge state shown to the model.
+  // Deliberately computed AFTER the cache / single-flight / concurrency gates:
+  // only a generation leader ever uses the plan, so cache hits and followers
+  // no longer pay for the regex splitting + directive ranking on every hit.
+  const parsedContext = parseLearningContext(learningContextRaw);
+  const personalizationPrompt = formatPersonalizationForPrompt(
+    personalization,
+    parsedContext,
+    level
+  );
+  console.log("[generate-lesson] Adaptation plan", {
+    requestId,
+    hasPersonalization: Boolean(personalizationPrompt),
+    hasLearningContext: parsedContext.hasSignal,
+    adaptationSignals: {
+      strengths: parsedContext.strengths.length,
+      weaknesses: parsedContext.weaknesses.length,
+      recent: parsedContext.recent.length,
+      goals: parsedContext.goals.length,
+      checklist: personalization.checklist.length,
+      notes: Boolean(personalization.notes),
+    },
+  });
+
   // Single-flight leader registration: publish this generation's promise so
   // concurrent requests for the same cacheKey join it instead of generating
   // again. settleInFlight is idempotent; whichever outcome happens first
   // (validated journey, user-facing error, disconnect cleanup) wins, and the
   // map entry is removed on settle so the map stays bounded by in-flight work.
   let settleInFlight;
+  let isInFlightSettled = () => false;
   {
     let resolveInFlight;
     let rejectInFlight;
@@ -465,6 +492,7 @@ export async function generateLessonHandler(req, res) {
     inFlightPromise.catch(() => {});
     inFlightLessonGenerations.set(cacheKey, inFlightPromise);
     let inFlightSettled = false;
+    isInFlightSettled = () => inFlightSettled;
     settleInFlight = (error, journey) => {
       if (inFlightSettled) return;
       inFlightSettled = true;
@@ -508,34 +536,67 @@ export async function generateLessonHandler(req, res) {
     console.log("[generate-lesson] Slow-path notice", { requestId, kind });
     sendEvent("notice", { kind });
   };
-  const finishRequest = (reason = "completed") => {
-    if (finished) return;
-    finished = true;
+  // Generation-side teardown, split from the response-side teardown so a
+  // DETACHED generation (leader's client gone, followers still waiting) can
+  // release its resources when it actually ends. Both are idempotent.
+  let resourcesReleased = false;
+  let detachedForFollowers = false;
+  const releaseGenerationResources = () => {
+    if (resourcesReleased) return;
+    resourcesReleased = true;
     // No-op when the generation already settled; otherwise (disconnect/abort
     // before completion) release any followers with a generic retryable error.
     settleInFlight(new Error("Failed to generate lesson. Please try again."), null);
     generationAbortController.abort();
     clearTimeout(lessonDeadlineTimer);
-    if (heartbeat !== null) clearInterval(heartbeat);
-    for (const ticker of activeTickers) clearInterval(ticker);
-    activeTickers.clear();
     decrementActiveLessonRequests();
     decrementUserLessonRequests(concurrencyUserId);
-    console.log("[generate-lesson] Finishing request", {
-      requestId,
-      reason,
-      activeLessonRequests,
-      writableEnded: rawRes.writableEnded,
-      responseFinished: rawRes.finished,
-    });
-    if (!rawRes.writableEnded) {
-      // Cleanup must never throw — the socket may already be destroyed.
-      try {
-        rawRes.end();
-      } catch {
-        /* socket gone */
+  };
+  const finishRequest = (reason = "completed", { allowDetach = false } = {}) => {
+    if (!finished) {
+      finished = true;
+      if (heartbeat !== null) clearInterval(heartbeat);
+      for (const ticker of activeTickers) clearInterval(ticker);
+      activeTickers.clear();
+      console.log("[generate-lesson] Finishing request", {
+        requestId,
+        reason,
+        activeLessonRequests,
+        writableEnded: rawRes.writableEnded,
+        responseFinished: rawRes.finished,
+      });
+      if (!rawRes.writableEnded) {
+        // Cleanup must never throw — the socket may already be destroyed.
+        try {
+          rawRes.end();
+        } catch {
+          /* socket gone */
+        }
       }
     }
+    // Single-flight leader handoff: when THIS client disconnects but other
+    // clients (followers) are still connected and waiting on this cacheKey,
+    // keep the generation running instead of aborting it — aborting here used
+    // to reject every follower, defeating the stampede fix in exactly the
+    // shared-classroom-link scenario it exists for. The detached generation
+    // keeps its concurrency slots (real work is still running), remains
+    // bounded by lessonDeadlineTimer, and the handler's finally block releases
+    // everything once it settles.
+    if (
+      allowDetach &&
+      !isInFlightSettled() &&
+      (inFlightFollowerCounts.get(cacheKey) || 0) > 0
+    ) {
+      if (!detachedForFollowers) {
+        detachedForFollowers = true;
+        console.log(
+          "[generate-lesson] Leader disconnected; continuing generation for followers",
+          { requestId, followers: inFlightFollowerCounts.get(cacheKey) || 0 }
+        );
+      }
+      return;
+    }
+    releaseGenerationResources();
   };
 
   // Reliability: register the disconnect handlers BEFORE flushing headers.
@@ -544,12 +605,12 @@ export async function generateLessonHandler(req, res) {
   // would forward an uncaught throw to the error middleware rather than
   // crashing, but that path knows nothing about our slots — only finishRequest
   // releases them, so it must own every exit.
-  rawReq.on?.("aborted", () => finishRequest("request aborted"));
-  rawReq.on?.("close", () => finishRequest("request closed"));
-  rawRes.on("close", () => finishRequest("response closed"));
+  rawReq.on?.("aborted", () => finishRequest("request aborted", { allowDetach: true }));
+  rawReq.on?.("close", () => finishRequest("request closed", { allowDetach: true }));
+  rawRes.on("close", () => finishRequest("response closed", { allowDetach: true }));
   rawRes.on("error", (error) => {
     console.error("[SSE] response error", { requestId, error });
-    finishRequest("response error");
+    finishRequest("response error", { allowDetach: true });
   });
 
   try {
@@ -596,7 +657,7 @@ export async function generateLessonHandler(req, res) {
     sendEvent("progress", { stage: "searching", percent: 15 });
     const newsContext =
       mode === "explain"
-        ? await fetchRealWorldContext(question, language).catch((error) => {
+        ? await fetchRealWorldContext(question, language, generateAbortSignal).catch((error) => {
             console.warn("[Serper] Context fetch failed, continuing without context", {
               requestId,
               error,
@@ -616,7 +677,9 @@ export async function generateLessonHandler(req, res) {
     });
     sendEvent("progress", { stage: "searched", percent: 30 });
 
-    if (finished) return;
+    // Abort-signal (not `finished`) guards from here on: a detached leader has
+    // finished its RESPONSE but must keep generating for its followers.
+    if (generateAbortSignal.aborted) return;
 
     // SECURITY (prompt-injection hardening): the Serper news context is
     // third-party, attacker-influenceable text (SEO'd pages can rank for any
@@ -888,7 +951,7 @@ END_EXTERNAL_CONTEXT>>>`
     let lastValidationError = null;
 
     for (const plan of attemptPlan) {
-      if (finished || generateAbortSignal.aborted) return;
+      if (generateAbortSignal.aborted) return;
       const rawAttempt = await tryGenerate(plan.label, {
         repairReason: plan.repair
           ? lastValidationError || "the response was not valid JSON"
@@ -947,13 +1010,13 @@ END_EXTERNAL_CONTEXT>>>`
       // NOTE: input moderation was already awaited (Promise.all above) and
       // enforced for BOTH modes before generation started — re-checking the
       // settled promise here would be dead code.
-      if (finished) return;
+      if (generateAbortSignal.aborted) return;
       // Security: enforce the output verdict BEFORE streaming the lesson.
       // The old post-hoc check only deleted the cache entry — the requesting
       // user had already received unmoderated content. The check is
       // rule-based (no network call), so awaiting it costs no latency.
       const fastOutputVerdict = await outputModerationPromise;
-      if (finished) return;
+      if (generateAbortSignal.aborted) return;
       if (!fastOutputVerdict.allowed) {
         const moderationEvent = buildModerationEvent({
           requestId,
@@ -963,7 +1026,7 @@ END_EXTERNAL_CONTEXT>>>`
           question,
         });
         console.warn("[moderation] Fast-mode output blocked by moderation", redactModerationEvent(moderationEvent));
-        await logModerationEvent(moderationEvent);
+        void logModerationEvent(moderationEvent);
         const blockedMessage =
           fastOutputVerdict.reason ||
           "The generated content was flagged. Please try a different question.";
@@ -974,7 +1037,7 @@ END_EXTERNAL_CONTEXT>>>`
       }
     } else {
       const outputVerdict = await outputModerationPromise;
-      if (finished) return;
+      if (generateAbortSignal.aborted) return;
       if (!outputVerdict.allowed) {
         const moderationEvent = buildModerationEvent({
           requestId,
@@ -984,7 +1047,7 @@ END_EXTERNAL_CONTEXT>>>`
           question,
         });
         console.warn("[moderation] Explain-mode output blocked by rule-based moderation", redactModerationEvent(moderationEvent));
-        await logModerationEvent(moderationEvent);
+        void logModerationEvent(moderationEvent);
         const blockedMessage =
           outputVerdict.reason ||
           "The generated content was flagged. Please try a different question.";
@@ -1009,7 +1072,10 @@ END_EXTERNAL_CONTEXT>>>`
     sendEvent("done", { ok: true });
     recordLessonResult(true);
   } catch (error) {
-    if (finished) return;
+    // resourcesReleased (not `finished`): a DETACHED leader must still settle
+    // its followers with the real error below; only a fully torn-down
+    // generation swallows late errors here.
+    if (resourcesReleased) return;
     // A deadline-triggered abort is a timeout, not a client disconnect —
     // fall through so the user gets the "timed out after Ns" error.
     if (error.name === 'AbortError' && !lessonDeadlineHit) {

@@ -63,6 +63,28 @@ const nextConfig = {
           },
         ],
       },
+      // Same policy for the remaining hand-placed public assets (og-image,
+      // PWA icons, manifest, llms.txt): they change rarely, and without a
+      // rule every social-preview scrape / PWA launch / crawler visit
+      // re-downloads them at full cost.
+      {
+        source: "/:path*.png",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=86400, stale-while-revalidate=604800",
+          },
+        ],
+      },
+      {
+        source: "/(manifest.json|llms.txt)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=3600, stale-while-revalidate=86400",
+          },
+        ],
+      },
       // /_next/static is fingerprinted and served immutable by Next itself —
       // a custom rule there is redundant and triggers a build warning. The
       // old /fonts/ and /crayon-bg*.svg rules pointed at assets that no

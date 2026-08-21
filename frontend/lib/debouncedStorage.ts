@@ -100,13 +100,20 @@ export function createDebouncedStorage<S>(delayMs = 800): PersistStorage<S> {
 
   const flush = () => {
     if (!pending) return;
-    const { name, value } = pending;
+    const entry = pending;
     pending = null;
     try {
-      window.localStorage.setItem(name, JSON.stringify(value));
+      window.localStorage.setItem(entry.name, JSON.stringify(entry.value));
     } catch {
       // Quota exceeded / private mode / blocked storage — persistence is
-      // best-effort; never crash the app over it.
+      // best-effort; never crash the app over it. But do NOT silently drop
+      // the state: keep it queued (unless a newer write superseded it while
+      // stringify/setItem ran) so the next debounce tick, pagehide flush, or
+      // scope-switch flush retries it — a transient quota error no longer
+      // permanently loses just-earned progress.
+      if (!pending) {
+        pending = entry;
+      }
     }
   };
 
@@ -117,7 +124,12 @@ export function createDebouncedStorage<S>(delayMs = 800): PersistStorage<S> {
     debouncedFlush.cancel();
   };
   const flushEntry = () => {
-    debouncedFlush.flush();
+    // Call flush() directly rather than debouncedFlush.flush(): the latter
+    // only fires while a debounce timer is armed, which would skip a pending
+    // entry that was restored after a failed setItem (its timer already
+    // fired). flush() itself no-ops when nothing is pending.
+    debouncedFlush.cancel();
+    flush();
   };
 
   cancelCallbacks.add(cancelEntry);

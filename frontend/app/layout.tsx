@@ -136,6 +136,13 @@ export const viewport: Viewport = {
   themeColor: "#121510",
 };
 
+// ENCODING (defense-in-depth): escape "<" in JSON-LD payloads so no string
+// value can ever terminate the <script> block early (a "</script>" breakout
+// is the classic inline-JSON XSS). The content is static today; this keeps it
+// safe if any field ever becomes dynamic.
+const jsonLd = (data: object): string =>
+  JSON.stringify(data).replace(/</g, "\\u003c");
+
 // Applies the persisted theme BEFORE first paint so users never see a wrong
 // flash (FOUC). Must stay tiny and synchronous.
 const themeInitScript = `(function(){try{var t=null;var p=localStorage.getItem("reallearn-preferences");if(p){var s=JSON.parse(p);t=s&&s.state&&s.state.theme}if(!t){var l=localStorage.getItem("reallearn-theme");if(l){var v=JSON.parse(l);t=typeof v==="string"?v:v&&v.state&&v.state.theme}}if(t!=="light"&&t!=="dark"){t="dark"}var m=document.querySelector('meta[name="theme-color"]');if(!m){m=document.createElement("meta");m.name="theme-color";document.head.appendChild(m)}if(t==="dark"){document.documentElement.dataset.theme=t;m.content="#121510"}else{m.content="#FAF9F3"}}catch(e){}})();`;
@@ -170,7 +177,7 @@ export default async function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
+            __html: jsonLd({
               "@context": "https://schema.org",
               "@type": "WebApplication",
               name: "RealLearn",
@@ -212,7 +219,7 @@ export default async function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
+            __html: jsonLd({
               "@context": "https://schema.org",
               "@type": "Organization",
               name: "RealLearn",
@@ -231,7 +238,7 @@ export default async function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
+            __html: jsonLd({
               "@context": "https://schema.org",
               "@type": "WebSite",
               name: "RealLearn",
@@ -251,7 +258,7 @@ export default async function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
+            __html: jsonLd({
               "@context": "https://schema.org",
               "@type": "FAQPage",
               mainEntity: [
@@ -310,8 +317,11 @@ export default async function RootLayout({
             /fonts/*.woff2, which do not exist (next/font self-hosts under
             /_next/static/media), so they 404'd on every load and wasted the
             preload budget. They are intentionally omitted here. */}
-        {/* PERFORMANCE: prefetch the most likely navigation target. */}
-        <link rel="prefetch" href="/learn" />
+        {/* NOTE: no static <link rel="prefetch" href="/learn"> here. /learn is
+            auth-gated (proxy 307s signed-out visitors to /sign-in), so an
+            unconditional prefetch spent a request-per-first-paint on a
+            redirect for the majority of landing traffic — and risked caching
+            it. Signed-in navigation already gets Next.js <Link> prefetching. */}
         <link rel="manifest" href="/manifest.json" />
         {/* Search / AI crawler: canonical misspelling recovery. The misspelled
             query "reallan" should resolve to RealLearn everywhere. */}

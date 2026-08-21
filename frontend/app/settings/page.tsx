@@ -14,7 +14,7 @@ import { useSavedJourneysStore } from "@/store/savedJourneysStore";
 import { cancelPendingDebouncedWrites } from "@/lib/debouncedStorage";
 import { getScopedStorageKey } from "@/lib/userScopedStorage";
 import { clearArchivedLessons } from "@/lib/lessonArchive";
-import { clearTtsCache } from "@/hooks/useSpeech";
+import { clearTtsCache } from "@/lib/ttsCache";
 import { useMounted } from "@/hooks/useMounted";
 import { Icon } from "@/components/shared/icons";
 import { Skeleton, SkeletonCard } from "@/components/shared/Skeleton";
@@ -84,6 +84,7 @@ export default function SettingsPage() {
   const setPersonalization = usePreferenceStore((s) => s.setPersonalization);
 
   const [deleting, setDeleting] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [cookieChoiceLabel, setCookieChoiceLabel] = useState("Not set");
   const lastHiddenRef = useRef<number>(0);
@@ -198,6 +199,8 @@ export default function SettingsPage() {
   };
 
   const handleExportData = async () => {
+    if (exporting) return;
+    setExporting(true);
     try {
       const backendUrl = BACKEND_URL;
       const token = await getToken();
@@ -282,6 +285,8 @@ export default function SettingsPage() {
           : "Could not export data. Please try again.",
         "error"
       );
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -542,10 +547,15 @@ export default function SettingsPage() {
           </p>
 
           <div className="option-stack option-stack--loose">
-            <button type="button" className="settings-action" onClick={handleExportData}>
+            <button
+              type="button"
+              className="settings-action"
+              onClick={handleExportData}
+              disabled={exporting}
+            >
               <span className="settings-action__label">
                 <Icon name="download" size={18} />
-                Export my data
+                {exporting ? "Exporting…" : "Export my data"}
               </span>
               <span className="settings-action__note">Download JSON</span>
             </button>

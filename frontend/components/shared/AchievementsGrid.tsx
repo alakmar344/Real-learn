@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { BADGES, ProgressSnapshot, TIER_COLOR, BadgeTier } from "@/lib/achievements";
 import { Icon } from "@/components/shared/icons";
@@ -46,7 +46,22 @@ interface PopoverPos {
  * boundary. A body-level portal escapes every ancestor's containment,
  * transform, and overflow, so the card always hugs the badge it belongs to. */
 export default function AchievementsGrid({ unlocked, snapshot }: Props) {
-  const earnedCount = BADGES.filter((b) => unlocked[b.id]).length;
+  // Derive every badge's earned/progress state ONCE per data change. Without
+  // the memo the full set of progress() callbacks re-ran on every render —
+  // and the popover open/close state changes on every hover across the grid.
+  const badgeStates = useMemo(
+    () =>
+      BADGES.map((badge) => ({
+        badge,
+        earned: Boolean(unlocked[badge.id]),
+        progress: Math.round(badge.progress(snapshot) * 100),
+      })),
+    [unlocked, snapshot]
+  );
+  const earnedCount = useMemo(
+    () => badgeStates.reduce((n, s) => n + (s.earned ? 1 : 0), 0),
+    [badgeStates]
+  );
   /** Badge id whose popover is pinned open by tap/click. */
   const [openId, setOpenId] = useState<string | null>(null);
   const [badgeRect, setBadgeRect] = useState<DOMRect | null>(null);
@@ -213,9 +228,7 @@ export default function AchievementsGrid({ unlocked, snapshot }: Props) {
           gap: 8,
         }}
       >
-        {BADGES.map((badge) => {
-          const earned = Boolean(unlocked[badge.id]);
-          const progress = Math.round(badge.progress(snapshot) * 100);
+        {badgeStates.map(({ badge, earned, progress }) => {
           const isOpen = openId === badge.id;
           const tooltipId = `badge-tip-${badge.id}`;
           return (
