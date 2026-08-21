@@ -10,7 +10,7 @@ import { usePreferenceStore } from "@/store/preferenceStore";
 import { useSavedJourneysStore } from "@/store/savedJourneysStore";
 import { useProgressStore } from "@/store/progressStore";
 import { useMounted } from "@/hooks/useMounted";
-import { warmupBackend, checkLessonCache } from "@/lib/api";
+import { warmupBackend, checkLessonCache, BACKEND_URL } from "@/lib/api";
 import { Language } from "@/types";
 import { LESSON_MODES as MODES } from "@/lib/lessonModes";
 import { buildLearningContext } from "@/lib/learningProfile";
@@ -24,6 +24,28 @@ interface Props {
   question: string;
   setQuestion: (value: string) => void;
   onSubmit: () => void;
+}
+
+function preconnectBackend() {
+  if (typeof document === "undefined") return;
+  try {
+    const origin = new URL(BACKEND_URL).origin;
+    if (!document.querySelector(`link[rel="preconnect"][href="${origin}"]`)) {
+      const link = document.createElement("link");
+      link.rel = "preconnect";
+      link.href = origin;
+      link.crossOrigin = "anonymous";
+      document.head.appendChild(link);
+    }
+    if (!document.querySelector(`link[rel="dns-prefetch"][href="${origin}"]`)) {
+      const dnsLink = document.createElement("link");
+      dnsLink.rel = "dns-prefetch";
+      dnsLink.href = origin;
+      document.head.appendChild(dnsLink);
+    }
+  } catch {
+    // Best-effort preconnect
+  }
 }
 
 export default function QuestionInput({ question, setQuestion, onSubmit }: Props) {
@@ -185,6 +207,7 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           onFocus={() => {
+            preconnectBackend();
             warmupBackend();
             setFocused(true);
           }}

@@ -1,17 +1,20 @@
 "use client";
 
 import React, { memo, useEffect, useMemo, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
-import "katex/dist/katex.min.css";
+import { useAuth } from "@clerk/nextjs";
 
-// Hoisted to module scope so their identity is stable across renders — new
-// array literals each render defeat react-markdown's internal memoization and
-// force a full markdown+KaTeX re-parse on every parent re-render.
-const REMARK_PLUGINS = [remarkGfm, remarkMath];
-const REHYPE_PLUGINS = [rehypeKatex];
+const REMARK_GFM_ONLY = [remarkGfm];
+
+// Lazy-loaded MathMarkdown component: KaTeX CSS and AST transformers are only
+// downloaded and parsed when a lesson contains LaTeX formulas ('$').
+const MathMarkdown = dynamic(() => import("./MathMarkdown"), {
+  ssr: false,
+  loading: () => <span className="animate-pulse">Rendering formula...</span>,
+});
+
 import { useReadingTimer } from "@/hooks/useReadingTimer";
 import { LessonPart } from "@/types";
 import SourceTag from "@/components/shared/SourceTag";
@@ -19,6 +22,7 @@ import ListenButton from "@/components/shared/ListenButton";
 import { Icon } from "@/components/shared/icons";
 import { useLessonStore } from "@/store/lessonStore";
 import { contentLangAttrs } from "@/lib/locale";
+import { preloadSpeechAudio, speechLangFor, markdownToPlainText } from "@/hooks/useSpeech";
 
 // Security: links inside AI-generated markdown are untrusted. react-markdown's
 // default urlTransform already strips javascript:/data: schemes; this override
@@ -83,6 +87,22 @@ const PartCardFooter = memo(function PartCardFooter({
   onStartQuiz: (part: LessonPart) => void;
 }) {
   const timer = useReadingTimer(isUnlocked && !isCompleted);
+  const { getToken } = useAuth();
+  const lessonLanguage = useLessonStore((s) => s.lesson?.language);
+  const preloadedRef = useRef(false);
+
+  // Predictive pre-fetch: when reading progress reaches 80% on Part 1,
+  // warm the Edge TTS audio buffer in the background so "Listen" plays instantly.
+  useEffect(() => {
+    if (part.partNumber === 1 && timer.progress >= 80 && !preloadedRef.current) {
+      preloadedRef.current = true;
+      void preloadSpeechAudio(
+        markdownToPlainText(part.content),
+        speechLangFor(lessonLanguage),
+        getToken
+      );
+    }
+  }, [part.partNumber, part.content, timer.progress, lessonLanguage, getToken]);
 
   if (!isUnlocked || isCompleted) return null;
 
@@ -148,20 +168,20 @@ const PartCardBase = ({
   const lessonLanguage = useLessonStore((s) => s.lesson?.language);
   const subjectColor = subjectColors[part.subject] ?? "var(--subject-general)";
 
-  // The rendered prose is memoized on `part.content` alone so parent re-renders
-  // don't re-parse markdown and re-run KaTeX on every frame.
-  const renderedProse = useMemo(
-    () => (
-      <ReactMarkdown
-        remarkPlugins={REMARK_PLUGINS}
-        rehypePlugins={REHYPE_PLUGINS}
-        components={markdownComponents}
-      >
+  // Fast path: 95%+ of lessons contain no LaTeX formulas. Bypassing remark-math
+  // and rehype-katex AST parsing saves significant CPU time and memory on mobile.
+  const hasMath = useMemo(() => part.content?.includes("$") ?? false, [part.content]);
+
+  const renderedProse = useMemo(() => {
+    if (hasMath) {
+      return <MathMarkdown content={part.content} components={markdownComponents} />;
+    }
+    return (
+      <ReactMarkdown remarkPlugins={REMARK_GFM_ONLY} components={markdownComponents}>
         {part.content}
       </ReactMarkdown>
-    ),
-    [part.content]
-  );
+    );
+  }, [part.content, hasMath]);
 
   const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(

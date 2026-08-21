@@ -504,11 +504,75 @@ function jitter(ms) {
 
 // ── Provider health / circuit breakers ───────────────────────────────────────
 
+export function createProgressivePartParser(onPart) {
+  if (typeof onPart !== "function") return () => {};
+  const emittedPartNumbers = new Set();
+  let lastCheckedLength = 0;
+
+  return (token, fullText) => {
+    if (!fullText.includes('"parts"') && !fullText.includes("'parts'")) return;
+    if (fullText.length - lastCheckedLength < 25 && !token.includes("}") && !token.includes("]")) {
+      return;
+    }
+    lastCheckedLength = fullText.length;
+
+    try {
+      const firstBrace = fullText.indexOf("{");
+      if (firstBrace === -1) return;
+      const candidate = fullText.slice(firstBrace);
+
+      const repaired = jsonrepair(candidate);
+      const parsed = JSON.parse(repaired);
+      if (parsed && Array.isArray(parsed.parts)) {
+        for (const part of parsed.parts) {
+          if (
+            part &&
+            typeof part === "object" &&
+            typeof part.partNumber === "number" &&
+            !emittedPartNumbers.has(part.partNumber) &&
+            typeof part.title === "string" &&
+            part.title.trim().length > 0 &&
+            typeof part.content === "string" &&
+            part.content.trim().length >= 60 &&
+            Array.isArray(part.quiz) &&
+            part.quiz.length >= 1 &&
+            part.quiz.every(
+              (q) =>
+                q &&
+                typeof q.question === "string" &&
+                q.question.trim().length > 0 &&
+                Array.isArray(q.options) &&
+                q.options.length >= 2
+            )
+          ) {
+            emittedPartNumbers.add(part.partNumber);
+            try {
+              onPart({
+                partNumber: part.partNumber,
+                title: part.title.trim(),
+                subject: typeof part.subject === "string" ? part.subject.trim() : "General",
+                content: part.content.trim(),
+                quiz: part.quiz,
+                isPartial: true,
+              });
+            } catch (err) {
+              console.warn("[progressive-stream] onPart callback error:", err);
+            }
+          }
+        }
+      }
+    } catch {
+      // Stream in progress
+    }
+  };
+}
+
 function newProviderHealth() {
   return {
     consecutiveFailures: 0,
     openUntil: 0,
     ewmaLatencyMs: null,
+    ewmaTtftMs: null,
     modelIndex: 0,
     lastErrorName: null,
     lastSuccessAt: 0,
@@ -522,7 +586,7 @@ const providerHealth = {
   cloudflare: newProviderHealth(),
 };
 
-function recordProviderSuccess(providerKey, latencyMs, modelIndex) {
+function recordProviderSuccess(providerKey, latencyMs, modelIndex, ttftMs) {
   const health = providerHealth[providerKey];
   health.consecutiveFailures = 0;
   health.openUntil = 0;
@@ -533,6 +597,12 @@ function recordProviderSuccess(providerKey, latencyMs, modelIndex) {
     health.ewmaLatencyMs == null
       ? latencyMs
       : Math.round(health.ewmaLatencyMs * 0.7 + latencyMs * 0.3);
+  if (typeof ttftMs === "number" && ttftMs > 0) {
+    health.ewmaTtftMs =
+      health.ewmaTtftMs == null
+        ? ttftMs
+        : Math.round(health.ewmaTtftMs * 0.7 + ttftMs * 0.3);
+  }
 }
 
 function recordProviderFailure(providerKey, error, config) {
@@ -576,6 +646,7 @@ export function getProviderHealthSnapshot() {
       circuitOpenForMs: Math.max(0, health.openUntil - now),
       consecutiveFailures: health.consecutiveFailures,
       ewmaLatencyMs: health.ewmaLatencyMs,
+      ewmaTtftMs: health.ewmaTtftMs,
       lastErrorName: health.lastErrorName,
       lastSuccessAt: health.lastSuccessAt || null,
       preferredModelIndex: health.modelIndex,
@@ -771,7 +842,7 @@ async function readErrorDetails(response, contentType) {
 // retryable 408 so retries/fallback kick in within seconds instead of burning
 // the full per-attempt timeout.
 async function fetchChatCompletion(url, headers, payload, signal, opts = {}) {
-  const { firstByteTimeoutMs = 0, stallTimeoutMs = 0, onActivity } = opts;
+  const { firstByteTimeoutMs = 0, stallTimeoutMs = 0, onActivity, onToken } = opts;
 
   const controller = new AbortController();
   const forwardAbort = () => controller.abort();
@@ -810,11 +881,6 @@ async function fetchChatCompletion(url, headers, payload, signal, opts = {}) {
       signal: controller.signal,
     });
 
-    // Headers only reset the watchdog; "alive" (hedge-skipping) is reserved
-    // for HEALTHY BODY BYTES — an error reply is not a generation in
-    // progress, and neither is a 200 whose body never arrives (a provider
-    // that accepts the stream and then goes silent must still be hedged
-    // against, not trusted because it sent headers).
     armWatchdog(stallTimeoutMs);
     const contentType = response.headers.get("content-type") || "";
 
@@ -825,7 +891,7 @@ async function fetchChatCompletion(url, headers, payload, signal, opts = {}) {
     }
 
     if (contentType.includes("text/event-stream")) {
-      return await handleStreamingResponse(response, activity);
+      return await handleStreamingResponse(response, activity, onToken);
     }
     activity();
 
@@ -835,10 +901,6 @@ async function fetchChatCompletion(url, headers, payload, signal, opts = {}) {
 
     const data = await response.json();
     if (data.error) {
-      // Some providers put a non-numeric string in error.code. Coerce to a
-      // finite number (falling back to 500) so the retry/rotation/circuit
-      // classifiers see a real status instead of a string that fails every
-      // comparison and makes a transient error look non-retryable.
       const rawCode = Number(data.error.code);
       const statusCode = Number.isFinite(rawCode) ? rawCode : 500;
       throw new AIApiError(
@@ -850,18 +912,13 @@ async function fetchChatCompletion(url, headers, payload, signal, opts = {}) {
     }
     return data;
   } catch (error) {
-    // Release the upstream connection when the body wasn't fully consumed
-    // (mid-stream error payload, overflow); abort is idempotent.
     controller.abort();
     if (watchdogFired && isAbortError(error)) {
-      // 408 keeps this on the retryable/rotate/circuit path.
       const stallError = new AIApiError(
         408,
         "StallTimeout",
         `provider sent no data for ${watchdogAtMs}ms (silence watchdog)`
       );
-      // A stall AFTER data flowed is a dead connection, not a cold start —
-      // the retry scheduler must not sit out the cold-start backoff window.
       stallError.receivedData = receivedData;
       throw stallError;
     }
@@ -888,7 +945,9 @@ function extractStreamChunkError(chunk) {
   return null;
 }
 
-async function handleStreamingResponse(response, onChunk) {
+async function handleStreamingResponse(response, onChunk, onToken) {
+  const streamStartedAt = Date.now();
+  let firstByteMs = null;
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let fullText = "";
@@ -904,7 +963,6 @@ async function handleStreamingResponse(response, onChunk) {
       const chunk = JSON.parse(payload);
       const streamError = extractStreamChunkError(chunk);
       if (streamError) {
-        // 408 keeps this on the retryable path (see isRetryableAIError).
         throw new AIApiError(408, "StreamError", streamError);
       }
       if (chunk.x_groq?.usage?.total_tokens) {
@@ -917,7 +975,13 @@ async function handleStreamingResponse(response, onChunk) {
         chunk.choices?.[0]?.message?.content ??
         chunk.response ??
         "";
-      fullText += token;
+      if (token) {
+        if (firstByteMs === null) {
+          firstByteMs = Date.now() - streamStartedAt;
+        }
+        fullText += token;
+        onToken?.(token, fullText);
+      }
       if (fullText.length > MAX_STREAM_CHARS) {
         throw new AIApiError(
           408,
@@ -960,13 +1024,11 @@ async function handleStreamingResponse(response, onChunk) {
       consumePayload(buffer.trim().slice(6));
     }
   } catch (error) {
-    // A mid-stream throw abandons the reader; without cancel() the upstream
-    // connection stays open (~minutes) on every retried failure.
     void reader.cancel().catch(() => {});
     throw error;
   }
 
-  return { choices: [{ message: { content: fullText } }], usage };
+  return { choices: [{ message: { content: fullText } }], usage, ttftMs: firstByteMs };
 }
 
 // ── Provider callers (thin payload builders on the shared HTTP layer) ────────
@@ -1161,7 +1223,7 @@ class ProviderExhaustedError extends Error {
   }
 }
 
-async function runProviderAttempts(provider, request, config, raceState) {
+async function runProviderAttempts(provider, request, config, raceState, hooks = {}) {
   const { messages, temperature, maxOutputTokens, timeoutMs, callId, parentSignal, raceSignal } = request;
   const health = providerHealth[provider.key];
   const models = provider.models.length > 0 ? provider.models : [PRIMARY_AI_MODEL];
@@ -1222,12 +1284,17 @@ async function runProviderAttempts(provider, request, config, raceState) {
           // Liveness signal for the race orchestrator: a provider that is
           // receiving data must not be hedged against (cost control).
           onActivity: () => raceState?.markAlive?.(),
+          onToken: (token, fullText) => {
+            hooks?.progressiveParser?.(token, fullText);
+            hooks?.onToken?.(token, fullText);
+          },
         }
       );
       const text = extractTextFromResult(result);
+      const ttftMs = result?.ttftMs ?? null;
 
       const latencyMs = Date.now() - startedAt;
-      recordProviderSuccess(provider.key, latencyMs, modelIndex);
+      recordProviderSuccess(provider.key, latencyMs, modelIndex, ttftMs);
       if (provider.key === "groq") {
         // Exact usage when Groq reported it in the stream; estimate otherwise.
         const totalTokens =
@@ -1525,6 +1592,11 @@ export async function callAI(
     raceSignal: raceController.signal,
   };
 
+  const progressiveParser = hooks?.onPart
+    ? createProgressivePartParser(hooks.onPart)
+    : null;
+  const attemptsHooks = { ...hooks, progressiveParser };
+
   // Fire `onProviderStart` exactly once the first time each provider is
   // actually launched (leader OR hedge). The route uses this to tell the
   // client the moment the last-resort tier (e.g. Cloudflare) is engaged, so
@@ -1541,14 +1613,29 @@ export async function callAI(
           // Hook failures must never affect generation.
         }
       }
-      return runProviderAttempts(provider, request, config, raceState);
+      return runProviderAttempts(provider, request, config, raceState, attemptsHooks);
     }
   );
+
+  // Adaptive hedge: if the leader has a low EWMA TTFT (e.g. Groq ~350ms),
+  // hedge sooner (Math.max(800, EWMA * 2.2)) instead of waiting a fixed 1800ms.
+  const leadProviderKey = ordered[0]?.key;
+  const leadHealth = leadProviderKey ? providerHealth[leadProviderKey] : null;
+  const leadEwma =
+    typeof leadHealth?.ewmaTtftMs === "number" && leadHealth.ewmaTtftMs > 0
+      ? leadHealth.ewmaTtftMs
+      : typeof leadHealth?.ewmaLatencyMs === "number" && leadHealth.ewmaLatencyMs > 0
+        ? leadHealth.ewmaLatencyMs
+        : 0;
+  const effectiveHedgeDelayMs =
+    leadEwma > 0
+      ? Math.max(800, Math.min(config.hedgeDelayMs, Math.round(leadEwma * 2.2)))
+      : config.hedgeDelayMs;
 
   try {
     return await hedgedRace(
       starters,
-      config.hedgeDelayMs,
+      effectiveHedgeDelayMs,
       (index) => {
         console.log("[AI] callAI success", { callId, winner: ordered[index].key });
       },

@@ -224,11 +224,23 @@ async function run() {
     });
   } else {
     console.log("[bootstrap] Bun is not available. Falling back to Node.js 24 runtime...");
-    // server.js only auto-starts when it is the entry script (argv[1]); here
-    // argv[1] is bootstrap.js, so startServer() must be invoked explicitly —
-    // a bare import would load the module without ever binding the port.
-    const { startServer } = await import("./server.js");
-    await startServer();
+    const concurrency = process.env.WEB_CONCURRENCY;
+    const isCluster =
+      process.env.CLUSTER_MODE === "1" ||
+      (typeof concurrency === "string" &&
+        (concurrency.trim().toLowerCase() === "auto" || Number(concurrency) > 1));
+    if (isCluster) {
+      console.log(
+        `[bootstrap] Multi-core clustering requested (WEB_CONCURRENCY=${concurrency || "auto"}). Launching cluster...`
+      );
+      await import("./cluster.js");
+    } else {
+      // server.js only auto-starts when it is the entry script (argv[1]); here
+      // argv[1] is bootstrap.js, so startServer() must be invoked explicitly —
+      // a bare import would load the module without ever binding the port.
+      const { startServer } = await import("./server.js");
+      await startServer();
+    }
   }
 }
 

@@ -76,10 +76,27 @@ export async function lessonCacheCheckHandler(req, res) {
   });
 }
 
+const lessonCacheCheckSchema = {
+  schema: {
+    response: {
+      200: {
+        type: "object",
+        properties: {
+          requestId: { type: "string" },
+          cached: { type: "boolean" },
+          mode: { type: "string" },
+          expectedParts: { type: "number" },
+          keyHash: { type: "string" },
+        },
+      },
+    },
+  },
+};
+
 export default async function lessonCacheCheckRoutes(fastify) {
   fastify.post(
     "/api/lesson-cache-check",
-    { preHandler: [apiRateLimiter, requireAuth] },
+    { preHandler: [apiRateLimiter, requireAuth], ...lessonCacheCheckSchema },
     lessonCacheCheckHandler
   );
 }
