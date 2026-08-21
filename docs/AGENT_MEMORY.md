@@ -54,8 +54,8 @@ Pop", Cyber Aqua) are recorded in `docs/REDESIGN.md` for history only —
 this §1 is the canonical spec. Frontend: Next.js 16 + React 19 +
 TypeScript + Clerk + Zustand — styling is the hand-rolled design system in
 globals.css (Tailwind was removed 2026-08-15: it never compiled — there was
-no postcss config — and no generated utility was in use). Backend: Node 24 +
-Fastify 5 + Undici Keep-Alive Dispatcher + Multi-core Cluster support (`src/cluster.js`). Toolchain: Node 24 LTS (`.nvmrc` + engines).
+no postcss config — and no generated utility was in use). Backend: Node 22/24 +
+Fastify 5 + Undici Keep-Alive Dispatcher + Multi-core Cluster support (`src/cluster.js`). Toolchain: Node 22/24 LTS (`.node-version`, `.nvmrc`, `"engines": { "node": ">=20.0.0" }`).
 
 ---
 
@@ -1523,4 +1523,9 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
   - **Predictive Connection Pre-warming & TTS Prefetching**: Added DNS prefetch and `preconnect` hints on question textarea focus in `QuestionInput.tsx`; background TTS prefetching in `PartCardFooter` when Part 1 reading progress >= 80%.
   - **Zero-CLS Font Fallbacks**: Enabled `adjustFontFallback: true` on Google Fonts in `app/layout.tsx`.
   - **Verification**: Backend 117/117 tests passing; frontend `tsc --noEmit` clean (0 errors), ESLint clean (0 errors), 9/9 verify scripts passed 100%, and Next.js 16 production build (`next build`) green across 14 routes.
+- 2026-08-21 (fix) — **Production Deployment Node Engine Compatibility Fix.**
+  - **Issue**: Render CI uses Node 22 (`.node-version`), and default `yarn` installation failed due to `"engines": { "node": ">=24.0.0" }`.
+  - **Fix**: Broadened `"engines": { "node": ">=20.0.0" }` across `backend/package.json`, `frontend/package.json`, and root `package.json`. Added `.nvmrc` aligned with `.node-version` (`22`).
+  - **Verification**: Backend 117/117 tests pass; frontend `tsc --noEmit` clean, ESLint clean, 9/9 verify scripts pass, `next build` green.
+
 

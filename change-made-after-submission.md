@@ -87,6 +87,11 @@
 ---
 
 **Today — August 21, 2026**
+- **Production Deployment Node Engine Compatibility Fix:**
+  - **Issue**: Render deployment failed during default `yarn install` because `reallearn-backend` specified `"engines": { "node": ">=24.0.0" }` while Render runs Node 22.23.2 via `.node-version`.
+  - **Fix**: Updated `engines.node` across `backend/package.json`, `frontend/package.json`, and root `package.json` to `">=20.0.0"` to support both Node 22 LTS (Render/Vercel) and Node 24+ LTS. Created `.nvmrc` aligned with `.node-version` (`22`).
+  - **Verification**: Backend 117/117 tests passing; frontend `tsc --noEmit` clean, ESLint clean, 9/9 verification suites passed 100%, Next.js 16 production build (`next build`) green.
+
 - **Full-Stack Speed Acceleration & Performance Optimization Roadmap:**
   - **🚀 Progressive Streaming Lesson Delivery (`aiEngine.js`, `routes/lesson.js`, `useLesson.ts`, `lessonStore.ts`)**:
     - Implemented progressive part streaming pipeline (`createProgressivePartParser`). As tokens stream from the LLM, completed parts (with title, >=60 chars content, and aligned quiz questions) are validated and immediately emitted over SSE via `event: part`.
