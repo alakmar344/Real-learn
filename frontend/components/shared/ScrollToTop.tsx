@@ -13,17 +13,21 @@ export default function ScrollToTop() {
 
   useEffect(() => {
     let ticking = false;
+    let rafId = 0;
     const onScroll = () => {
       if (ticking) return;
       ticking = true;
-      requestAnimationFrame(() => {
+      rafId = requestAnimationFrame(() => {
         setVisible(window.scrollY > window.innerHeight * 0.8);
         ticking = false;
       });
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(rafId);
+    };
   }, []);
 
   const handleClick = () => {

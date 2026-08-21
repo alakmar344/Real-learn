@@ -310,8 +310,11 @@ export default async function RootLayout({
             /fonts/*.woff2, which do not exist (next/font self-hosts under
             /_next/static/media), so they 404'd on every load and wasted the
             preload budget. They are intentionally omitted here. */}
-        {/* PERFORMANCE: prefetch the most likely navigation target. */}
-        <link rel="prefetch" href="/learn" />
+        {/* NOTE: no static <link rel="prefetch" href="/learn"> here. /learn is
+            auth-gated (proxy 307s signed-out visitors to /sign-in), so an
+            unconditional prefetch spent a request-per-first-paint on a
+            redirect for the majority of landing traffic — and risked caching
+            it. Signed-in navigation already gets Next.js <Link> prefetching. */}
         <link rel="manifest" href="/manifest.json" />
         {/* Search / AI crawler: canonical misspelling recovery. The misspelled
             query "reallan" should resolve to RealLearn everywhere. */}

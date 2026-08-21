@@ -47,7 +47,25 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
 
   const summaryText = `think you can pass it? score: ${totalScore}/${maxScore} on RealLearn — https://reallearn.site/`;
 
-  function drawCard(): Promise<Blob | null> {
+  async function drawCard(): Promise<Blob | null> {
+    // next/font registers the brand fonts under generated (obfuscated) family
+    // names exposed only through CSS variables — a literal "Inter" /
+    // "Space Grotesk" is an unknown family to canvas and silently falls back
+    // to default sans on every share card. Resolve the REAL family stacks
+    // from the CSS vars, and wait for the fonts to actually load first
+    // (canvas won't trigger or wait for a font load on its own).
+    try {
+      await document.fonts.ready;
+    } catch {
+      // Older browsers without the Font Loading API — draw with what we have.
+    }
+    const rootStyle = getComputedStyle(document.documentElement);
+    const resolveFamily = (cssVar: string, fallback: string): string => {
+      const value = rootStyle.getPropertyValue(cssVar).trim();
+      return value ? `${value}, ${fallback}` : fallback;
+    };
+    const sans = resolveFamily("--font-inter", "Inter, sans-serif");
+    const display = resolveFamily("--font-display", `'Space Grotesk', ${sans}`);
     return new Promise((resolve) => {
       const W = 1080;
       const H = 1920;
@@ -79,12 +97,12 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
 
       // Brand header
       ctx.textAlign = "center";
-      ctx.font = "900 92px Inter, sans-serif";
+      ctx.font = `900 92px ${sans}`;
       ctx.fillStyle = SHARE_CARD.ink;
       ctx.fillText("Real", W / 2 + 10, 180);
       ctx.fillStyle = SHARE_CARD.brand;
       ctx.fillText("Learn", W / 2 + 10, 280);
-      ctx.font = "600 36px Inter, sans-serif";
+      ctx.font = `600 36px ${sans}`;
       ctx.fillStyle = SHARE_CARD.inkSoft;
       ctx.fillText("THE WORLD IS YOUR TEXTBOOK", W / 2, 340);
       ctx.textAlign = "left";
@@ -126,11 +144,11 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
 
       ctx.textAlign = "center";
       ctx.fillStyle = SHARE_CARD.brandBright;
-      ctx.font = "600 42px Inter, sans-serif";
+      ctx.font = `600 42px ${sans}`;
       ctx.fillText("QUESTION", W / 2, boxY + 70);
 
       ctx.fillStyle = SHARE_CARD.ink;
-      ctx.font = "700 56px 'Space Grotesk', Inter, sans-serif";
+      ctx.font = `700 56px ${display}`;
       const qLines = wrapText(ctx, question, W - 184, 4);
       const qStartY = boxY + 160;
       qLines.forEach((ln, i) => ctx.fillText(ln, W / 2, qStartY + i * 90));
@@ -142,7 +160,7 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
         { text: `${streak}-day streak`, color: SHARE_CARD.amber },
         totalScore >= maxScore ? { text: "Perfect run", color: SHARE_CARD.amber } : { text: "Completed", color: SHARE_CARD.mint },
       ];
-      ctx.font = "700 34px Inter, sans-serif";
+      ctx.font = `700 34px ${sans}`;
       let px = 72;
       const py = H - 560;
       pills.forEach((p) => {
@@ -200,8 +218,8 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
       // Big score + "/ max" side by side, centered as one block — drawing
       // both center-aligned at the same point painted them on top of each
       // other, making the score illegible on every share card.
-      const scoreFont = "900 130px Inter, sans-serif";
-      const fracFont = "600 34px Inter, sans-serif";
+      const scoreFont = `900 130px ${sans}`;
+      const fracFont = `600 34px ${sans}`;
       ctx.textAlign = "left";
       ctx.font = scoreFont;
       const scoreWidth = ctx.measureText(`${totalScore}`).width;
@@ -221,7 +239,7 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
       ctx.fillText(` / ${maxScore}`, scoreStartX + scoreWidth, cy + 32);
 
       ctx.textAlign = "center";
-      ctx.font = "700 32px Inter, sans-serif";
+      ctx.font = `700 32px ${sans}`;
       ctx.fillStyle = SHARE_CARD.brandBright;
       ctx.fillText(totalScore >= maxScore ? "PERFECT" : "COMPLETED", cx, cy + 80);
 
@@ -245,7 +263,7 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
 
       ctx.textAlign = "center";
       ctx.fillStyle = SHARE_CARD.card;
-      ctx.font = "900 46px Inter, sans-serif";
+      ctx.font = `900 46px ${sans}`;
       ctx.fillText("TRY IT — REALLEARN.SITE", W / 2, ctaY + 65);
 
       canvas.toBlob((b) => resolve(b), "image/png");
