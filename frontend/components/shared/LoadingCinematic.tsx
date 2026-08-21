@@ -165,8 +165,7 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
 
   return (
     <div
-      role="status"
-      aria-live="polite"
+      role="group"
       aria-label={isFast ? "Generating your answer" : "Generating your lesson"}
       className={`lc${isRevealing ? " is-revealing" : ""}${notice ? " is-slow" : ""}`}
     >
@@ -189,15 +188,17 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
           <span className="lc__dial-track" aria-hidden="true" />
           <span className="lc__dial-fill" aria-hidden="true" />
           <span className="lc__dial-spark" aria-hidden="true" />
-          <span className="lc__dial-core">
+          <span className="lc__dial-core" aria-hidden="true">
             <span className="lc__dial-pct">{pct}</span>
             <span className="lc__dial-unit">%</span>
           </span>
         </div>
 
-        {/* Live, honest status — snaps to the real backend stage. */}
-        <p className="lc__status" aria-hidden="true">
-          <span className="lc__status-pulse" />
+        {/* Live, honest status — snaps to the real backend stage. This coarse
+            label is the ONLY polite live region, so screen readers hear each
+            stage change (~a handful) instead of the 100ms percentage tick. */}
+        <p className="lc__status" role="status" aria-live="polite">
+          <span className="lc__status-pulse" aria-hidden="true" />
           {stages[activeIndex]?.label ?? "Working on it"}
         </p>
 

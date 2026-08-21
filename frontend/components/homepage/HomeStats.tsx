@@ -7,6 +7,7 @@ import { useLessonStore } from "@/store/lessonStore";
 import { getArchivedLesson } from "@/lib/lessonArchive";
 import { useMounted } from "@/hooks/useMounted";
 import MathText from "@/components/shared/MathText";
+import { Skeleton } from "@/components/shared/Skeleton";
 
 interface Props {
   onStartTopic: (topic: string) => void;
@@ -23,8 +24,17 @@ export default function HomeStats({ onStartTopic }: Props) {
   const journeys = useSavedJourneysStore((s) => s.journeys);
   const loadJourney = useLessonStore((s) => s.loadJourney);
 
+  // Reserve the strip's space pre-hydration so the resume / how-it-works card
+  // fades in without shoving the ask box down (the localStorage-backed store
+  // isn't readable until mounted).
   if (!mounted) {
-    return null;
+    return (
+      <div className="hero__content hero-glass-card hero__panel" aria-hidden="true">
+        <div className="home-strip home-strip--skeleton">
+          <Skeleton height={44} width={220} borderRadius="var(--radius-lg, 12px)" ariaLabel="" />
+        </div>
+      </div>
+    );
   }
 
   // Lesson bodies live in the IndexedDB archive (the store keeps only a

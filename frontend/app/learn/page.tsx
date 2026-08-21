@@ -217,6 +217,19 @@ export default function LearnPage() {
   useEffect(() => {
     if (showCompletion && !prevCompletionRef.current) {
       showToast("Journey complete", "success");
+      // Bring the payoff into view: the completion screen mounts below the last
+      // part card (and is lazy), so acing the final quiz otherwise leaves the
+      // viewport parked on the part card. Wait a frame for it to render.
+      const reduce =
+        typeof window !== "undefined" &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const timer = window.setTimeout(() => {
+        document
+          .querySelector(".completion")
+          ?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+      }, 80);
+      prevCompletionRef.current = showCompletion;
+      return () => window.clearTimeout(timer);
     }
     prevCompletionRef.current = showCompletion;
   }, [showCompletion]);
@@ -534,11 +547,14 @@ export default function LearnPage() {
             ))}
           </Suspense>
 
-          {/* Flashcards appear as soon as the lesson generates — a spaced-
-              repetition style recap built from the lesson's key takeaways. */}
-          <Suspense fallback={<SuspenseFallback />}>
-            <Flashcards lesson={lesson} />
-          </Suspense>
+          {/* Flashcards are recall practice built from EVERY part's content, so
+              they only appear once the journey is complete — showing them
+              mid-lesson would leak still-locked parts past the quiz gate. */}
+          {showCompletion ? (
+            <Suspense fallback={<SuspenseFallback />}>
+              <Flashcards lesson={lesson} />
+            </Suspense>
+          ) : null}
 
           {showCompletion ? (
             <Suspense fallback={<SuspenseFallback />}>

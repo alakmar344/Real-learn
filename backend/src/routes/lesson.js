@@ -49,6 +49,7 @@ import {
   MAX_CONCURRENT_LESSON_REQUESTS,
   LESSON_FAILURE_ALERT_THRESHOLD,
   MAX_CONCURRENT_LESSON_REQUESTS_PER_USER,
+  MAX_IN_FLIGHT_FOLLOWERS_PER_KEY,
 } from "../config.js";
 
 // Rough token estimator for logging (1 token ≈ 3.5 chars for English/most
@@ -230,7 +231,8 @@ export async function generateLessonHandler(req, res) {
       question,
     });
     console.warn("[moderation] Banned input blocked", redactModerationEvent(moderationEvent));
-    await logModerationEvent(moderationEvent);
+    // Fire-and-forget: never block the user-facing 400 on a Mongo write.
+    void logModerationEvent(moderationEvent);
     return sendError(400, { error: inputModeration.reason });
   }
 
@@ -290,6 +292,15 @@ export async function generateLessonHandler(req, res) {
   // error to every follower.
   const inFlightGeneration = inFlightLessonGenerations.get(cacheKey);
   if (inFlightGeneration) {
+    // Bound followers per key: beyond the cap, shed load with a retryable 503
+    // instead of opening yet another SSE connection + timer set.
+    if ((inFlightFollowerCounts.get(cacheKey) || 0) >= MAX_IN_FLIGHT_FOLLOWERS_PER_KEY) {
+      console.warn("[generate-lesson] Busy: in-flight follower cap reached", {
+        requestId,
+        followers: inFlightFollowerCounts.get(cacheKey) || 0,
+      });
+      return sendError(503, { error: "Server is busy. Please retry in a few seconds." }, 5);
+    }
     console.log("[generate-lesson] Joining in-flight generation (single-flight)", {
       requestId,
     });
@@ -1015,7 +1026,7 @@ END_EXTERNAL_CONTEXT>>>`
           question,
         });
         console.warn("[moderation] Fast-mode output blocked by moderation", redactModerationEvent(moderationEvent));
-        await logModerationEvent(moderationEvent);
+        void logModerationEvent(moderationEvent);
         const blockedMessage =
           fastOutputVerdict.reason ||
           "The generated content was flagged. Please try a different question.";
@@ -1036,7 +1047,7 @@ END_EXTERNAL_CONTEXT>>>`
           question,
         });
         console.warn("[moderation] Explain-mode output blocked by rule-based moderation", redactModerationEvent(moderationEvent));
-        await logModerationEvent(moderationEvent);
+        void logModerationEvent(moderationEvent);
         const blockedMessage =
           outputVerdict.reason ||
           "The generated content was flagged. Please try a different question.";

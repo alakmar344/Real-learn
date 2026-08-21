@@ -19,7 +19,7 @@ const MODERATION_LOG_QUESTION_MAX_CHARS = 500;
 const MODERATION_LOG_TTL_INDEX_NAME = "moderationLogTtl";
 
 let moderationLogIndexPromise = null;
-function ensureModerationLogTtlIndex(db) {
+export function ensureModerationLogTtlIndex(db) {
   if (moderationLogIndexPromise) return moderationLogIndexPromise;
   moderationLogIndexPromise = (async () => {
     const collection = db.collection("moderationLogs");

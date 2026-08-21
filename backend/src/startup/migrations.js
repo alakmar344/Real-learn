@@ -4,6 +4,7 @@
 import { getDb } from "../lib/mongodb.js";
 import { anonymizeIp } from "../lib/privacy.js";
 import { ensureLessonCacheIndexes } from "../lib/lessonCache.js";
+import { ensureModerationLogTtlIndex } from "../lib/moderationLog.js";
 
 // One-time cleanup (policy v2.3): earlier releases stored the RAW client IP
 // in consent records. Retroactively anonymize every stored deviceIp so no
@@ -155,6 +156,9 @@ export async function ensureUserDataIndexes() {
     await Promise.all([
       db.collection("agreements").createIndex({ clerkId: 1, type: 1 }),
       db.collection("moderationLogs").createIndex({ clerkId: 1 }),
+      // Build the moderationLogs TTL index (+ legacy backfill) at startup so the
+      // FIRST flagged request no longer pays for createIndex/backfill inline.
+      ensureModerationLogTtlIndex(db),
       db.collection("feedback").createIndex({ createdAt: -1 }),
       ensureFeedbackTtlIndex(db),
       ensureLessonCacheIndexes(db),
