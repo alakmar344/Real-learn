@@ -125,11 +125,18 @@ export async function startServer() {
     fastify.server.requestTimeout = 30_000;
     fastify.server.keepAliveTimeout = 10_000;
 
-    // Background startup warm-ups and migrations
-    preconnectProviders();
-    void scrubStoredConsentIps();
-    void scrubStoredConsentEmails();
-    void ensureUserDataIndexes();
+    // Background startup warm-ups and migrations. These are best-effort:
+    // contained in their own try/catch so a synchronous throw here can never
+    // reach the fatal startup catch below and process.exit(1) an already
+    // listening, healthy server.
+    try {
+      preconnectProviders();
+      void scrubStoredConsentIps();
+      void scrubStoredConsentEmails();
+      void ensureUserDataIndexes();
+    } catch (warmupError) {
+      console.warn("[startup] Non-fatal warm-up error:", warmupError);
+    }
 
     // Graceful shutdown handling
     const shutdown = async (signal) => {

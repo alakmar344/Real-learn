@@ -47,10 +47,16 @@ export interface CacheCheckResult {
 
 let readyPromise: Promise<BackendCapabilities | null> | null = null;
 
-/** Fetch backend capabilities once per session. Falls back to null on error. */
+/**
+ * Fetch backend capabilities, memoized per session on SUCCESS only.
+ * A transient failure (cold-start timeout, network blip) resolves null for
+ * the callers already waiting, but clears the memo so a later call retries —
+ * previously one failed probe disabled capability discovery until a full
+ * page reload. Concurrent callers still share a single in-flight request.
+ */
 export function fetchReady(): Promise<BackendCapabilities | null> {
   if (readyPromise) return readyPromise;
-  readyPromise = (async () => {
+  const attempt = (async () => {
     try {
       const res = await fetch(`${BACKEND_URL}/api/ready`, {
         method: "GET",
@@ -62,7 +68,13 @@ export function fetchReady(): Promise<BackendCapabilities | null> {
       return null;
     }
   })();
-  return readyPromise;
+  readyPromise = attempt;
+  attempt.then((result) => {
+    if (result === null && readyPromise === attempt) {
+      readyPromise = null;
+    }
+  });
+  return attempt;
 }
 
 /** Non-blocking warmup ping to wake up sleeping backend instances. */

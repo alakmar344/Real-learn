@@ -85,6 +85,25 @@ check("switchUserScope rehydrates on user change", () => {
   return rehydrateCount > initialRehydrate && getActiveUserScope() === "user_test_2";
 });
 
+check("direct user→user switch resets all in-memory stores (no cross-account leak)", () => {
+  const prevLessonResets = resetLessonCount;
+  const prevProgressResets = resetProgressCount;
+  const prevJourneysResets = resetJourneysCount;
+  const prevPersonalizationResets = resetPersonalizationCount;
+  const prevRehydrates = rehydrateCount;
+
+  switchUserScope("user_test_3");
+
+  return (
+    resetLessonCount > prevLessonResets &&
+    resetProgressCount > prevProgressResets &&
+    resetJourneysCount > prevJourneysResets &&
+    resetPersonalizationCount > prevPersonalizationResets &&
+    rehydrateCount > prevRehydrates &&
+    getActiveUserScope() === "user_test_3"
+  );
+});
+
 check("sign out (switch to anon) resets all in-memory stores and clears session draft", () => {
   sessionStorage.setItem("reallearn_draft_question", "secret question");
   const prevLessonResets = resetLessonCount;

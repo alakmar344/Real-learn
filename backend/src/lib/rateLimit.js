@@ -49,8 +49,13 @@ export function rateLimitIpKey(ip) {
 }
 
 export function createRateLimiter({ windowMs, max, ipMultiplier = 5 }) {
-  const ipStore = new LRUCache({ max: 50_000, ttl: windowMs });
-  const callerStore = new LRUCache({ max: 50_000, ttl: windowMs });
+  // noUpdateTTL is load-bearing: lru-cache refreshes a key's TTL on every
+  // set() by default, and counters are bumped on EVERY request (including
+  // 429'd ones). Without it, a client that keeps retrying — or any busy NAT
+  // IP — slides its window forward forever and never recovers after
+  // windowMs. With it, this is a proper fixed window anchored at first hit.
+  const ipStore = new LRUCache({ max: 50_000, ttl: windowMs, noUpdateTTL: true });
+  const callerStore = new LRUCache({ max: 50_000, ttl: windowMs, noUpdateTTL: true });
 
   // Fastify async preHandler hook: takes exactly 2 arguments (req, reply)
   const limiterHook = async (req, reply) => {

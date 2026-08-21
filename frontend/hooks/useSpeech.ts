@@ -6,7 +6,6 @@
 // Both degrade gracefully — `supported` is false where the APIs are missing.
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { LRUCache } from "lru-cache";
 import { useAuth } from "@clerk/nextjs";
 import { BACKEND_URL } from "@/lib/api";
 
@@ -23,31 +22,11 @@ export function markdownToPlainText(markdown: string): string {
     .trim();
 }
 
-// BANDWIDTH: in-memory LRU of synthesized audio blobs. Replaying the same
-// text (pause/restart, re-listening to a part) reuses the blob instead of
-// re-downloading ~1 MB of MP3 from the backend. `lru-cache` enforces the
-// byte budget and evicts least-recently-used entries for us.
-const TTS_BLOB_CACHE_MAX_BYTES = 12 * 1024 * 1024;
-const ttsBlobCache = new LRUCache<string, Blob>({
-  maxSize: TTS_BLOB_CACHE_MAX_BYTES,
-  sizeCalculation: (blob) => blob.size,
-});
-function ttsBlobCacheGet(key: string): Blob | undefined {
-  return ttsBlobCache.get(key);
-}
-function ttsBlobCacheSet(key: string, blob: Blob): void {
-  ttsBlobCache.set(key, blob);
-}
-
-/**
- * PRIVACY: the cache is module-global, so synthesized lesson audio would
- * otherwise survive sign-out and "Delete My Data". Call this from those flows
- * to drop every cached blob. (Object URLs are per-playback, owned and revoked
- * by the hook's refs — the cache holds raw Blobs only, so clearing suffices.)
- */
-export function clearTtsCache(): void {
-  ttsBlobCache.clear();
-}
+// The synthesized-audio blob LRU lives in lib/ttsCache so light consumers
+// (e.g. the settings page's account-deletion cleanup) can clear it without
+// bundling this whole speech implementation. Re-export for existing imports.
+import { ttsBlobCacheGet, ttsBlobCacheSet } from "@/lib/ttsCache";
+export { clearTtsCache } from "@/lib/ttsCache";
 
 export function useEdgeTts() {
   // The backend TTS endpoint requires authentication (it drives a paid

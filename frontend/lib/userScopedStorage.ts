@@ -106,8 +106,14 @@ export function switchUserScope(newUserId: string | null | undefined): void {
   const previousScope = currentScope;
   currentScope = newScope;
 
-  // 2. If signing out (transition to anon), wipe in-memory and session state
-  if (newScope === "anon" && previousScope !== "anon") {
+  // 2. If LEAVING a signed-in scope (sign-out OR a direct user_A → user_B
+  // switch, e.g. Clerk multi-session account switching), wipe in-memory and
+  // session state. This must run for user→user transitions too: rehydrate()
+  // alone leaves the previous user's in-memory state intact whenever the new
+  // user has no persisted data yet — which would both SHOW user A's private
+  // progress/journeys to user B and then persist them under B's scoped keys
+  // on B's next write (a permanent cross-account data leak).
+  if (previousScope !== "anon") {
     try {
       sessionStorage.removeItem("reallearn_draft_question");
     } catch {

@@ -86,8 +86,8 @@ function normalizePersonalization(personalization) {
   // fleet-wide. Any input that shapes the prompt MUST contribute to the key.
   if (!personalization || typeof personalization !== "object") return "";
   const checklist = Array.isArray(personalization.checklist)
-    ? personalization.checklist.slice().sort().join(",")
-    : "";
+    ? personalization.checklist.slice().sort()
+    : [];
   const notes = String(personalization.notes ?? "").trim().toLowerCase().replace(/\s+/g, " ");
   // Goals are high-authority explicit signals — two learners with identical
   // checklist/notes but different goals must get distinct cache keys, otherwise
@@ -98,8 +98,12 @@ function normalizePersonalization(personalization) {
   // so the default no-personalization cohort keeps sharing one cache entry. Any
   // NON-empty field still produces a distinct, content-bound key — which is what
   // closes the poisoning vector, independent of the `onboarded` flag.
-  if (!checklist && !notes && !goals) return "";
-  return `${checklist}|${notes}|${goals}`;
+  if (checklist.length === 0 && !notes && !goals) return "";
+  // ENCODING: JSON array, not "|"/"," joins — notes/goals (and in principle
+  // checklist items) are user text that can CONTAIN the delimiter, which made
+  // the old encoding non-injective. JSON escaping makes every component
+  // boundary unforgeable.
+  return JSON.stringify([checklist, notes, goals]);
 }
 
 /**
@@ -132,7 +136,23 @@ export function lessonCacheKey(
     .trim()
     .toLowerCase()
     .replace(/\s+/g, " ");
-  const material = `${normalizedQuestion}|${language ?? ""}|${level ?? ""}|${mode ?? "explain"}|${normalizePersonalization(personalization)}|${normalizeLearningContext(learningContext)}`;
+  // ENCODING (security): serialize the key components as a JSON array — an
+  // injective, delimiter-free encoding. The previous `"|"`-join was ambiguous
+  // because user-controlled fields (question, notes/goals, learningContext)
+  // can contain the delimiter themselves: e.g. learningContext "a||" and
+  // personalization notes "a" produced byte-identical key material, so two
+  // semantically DIFFERENT requests shared one cached lesson (a cross-cohort
+  // cache-poisoning primitive). JSON escaping makes every component boundary
+  // unforgeable. (Deploying this rotates all cache keys once; the cache
+  // simply re-warms.)
+  const material = JSON.stringify([
+    normalizedQuestion,
+    String(language ?? ""),
+    String(level ?? ""),
+    String(mode ?? "explain"),
+    normalizePersonalization(personalization),
+    normalizeLearningContext(learningContext),
+  ]);
   return crypto.createHash("sha256").update(material).digest("hex");
 }
 

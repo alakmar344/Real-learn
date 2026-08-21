@@ -108,21 +108,36 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
   // local curve saturates toward ~90% while generation is genuinely still
   // running; real server progress events can lead it further, and only the
   // reveal signal drives it to 100%.
+  // The interval reads live values through refs so it is created ONCE: with
+  // progressPercent/isRevealing in the dep array, every streamed progress
+  // event tore the interval down, rebuilt it, and reset its 100ms clock —
+  // pure churn normally, and a visibly frozen bar if events ever arrived
+  // faster than the tick.
+  const progressPercentRef = useRef(progressPercent);
+  const isRevealingRef = useRef(isRevealing);
+  useEffect(() => {
+    progressPercentRef.current = progressPercent;
+  }, [progressPercent]);
+  useEffect(() => {
+    isRevealingRef.current = isRevealing;
+  }, [isRevealing]);
   useEffect(() => {
     const id = window.setInterval(() => {
       const elapsed = Date.now() - startTimeRef.current;
+      const revealing = isRevealingRef.current;
+      const latestPercent = progressPercentRef.current;
       const autoProgress =
         AUTO_PROGRESS_CEILING * (1 - Math.exp(-elapsed / AUTO_PROGRESS_TAU_MS));
-      const realLead = progressPercent > 0 ? Math.min(progressPercent + 6, 99) : 0;
-      const target = isRevealing ? 100 : Math.min(Math.max(autoProgress, realLead), 99);
-      const rate = isRevealing ? 1 : 0.12;
+      const realLead = latestPercent > 0 ? Math.min(latestPercent + 6, 99) : 0;
+      const target = revealing ? 100 : Math.min(Math.max(autoProgress, realLead), 99);
+      const rate = revealing ? 1 : 0.12;
       const eased = displayRef.current + (target - displayRef.current) * rate;
       const next = Math.min(100, Math.max(displayRef.current, eased));
       displayRef.current = next;
       setDisplayProgress(next);
     }, 100);
     return () => window.clearInterval(id);
-  }, [progressPercent, isRevealing]);
+  }, []);
 
   // Rotate the encouraging facts so there's always something fresh to read.
   useEffect(() => {

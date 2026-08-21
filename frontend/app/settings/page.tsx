@@ -14,7 +14,7 @@ import { useSavedJourneysStore } from "@/store/savedJourneysStore";
 import { cancelPendingDebouncedWrites } from "@/lib/debouncedStorage";
 import { getScopedStorageKey } from "@/lib/userScopedStorage";
 import { clearArchivedLessons } from "@/lib/lessonArchive";
-import { clearTtsCache } from "@/hooks/useSpeech";
+import { clearTtsCache } from "@/lib/ttsCache";
 import { useMounted } from "@/hooks/useMounted";
 import { Icon } from "@/components/shared/icons";
 import { Skeleton, SkeletonCard } from "@/components/shared/Skeleton";

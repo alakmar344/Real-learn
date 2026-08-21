@@ -14,20 +14,44 @@ if (cluster.isPrimary) {
   console.log(`[cluster] Primary process ${process.pid} is running`);
   console.log(`[cluster] Forking ${workerCount} worker(s)...`);
 
+  const workerStartTimes = new Map(); // worker.id -> fork timestamp
+  const fork = () => {
+    const worker = cluster.fork();
+    workerStartTimes.set(worker.id, Date.now());
+    return worker;
+  };
+
   for (let i = 0; i < workerCount; i++) {
-    cluster.fork();
+    fork();
   }
 
-  // Graceful zero-downtime worker replacement on unexpected death
+  // Graceful zero-downtime worker replacement on unexpected death — with a
+  // crash-loop backstop: a worker dying that fast (e.g. fatal config error at
+  // startup) would otherwise be re-forked in a tight loop forever, pegging the
+  // CPU while never serving a single request. Exiting instead surfaces the
+  // failure to the process supervisor / PaaS, where it belongs.
+  const FAST_DEATH_MS = 5000;
+  const MAX_CONSECUTIVE_FAST_DEATHS = 5;
+  let consecutiveFastDeaths = 0;
   cluster.on("exit", (worker, code, signal) => {
+    const startedAt = workerStartTimes.get(worker.id);
+    workerStartTimes.delete(worker.id);
     if (worker.exitedAfterDisconnect) {
       console.log(`[cluster] Worker ${worker.process.pid} shut down gracefully`);
-    } else {
-      console.error(
-        `[cluster] Worker ${worker.process.pid} died (code: ${code}, signal: ${signal}). Forking replacement...`
-      );
-      cluster.fork();
+      return;
     }
+    const diedFast = startedAt != null && Date.now() - startedAt < FAST_DEATH_MS;
+    consecutiveFastDeaths = diedFast ? consecutiveFastDeaths + 1 : 0;
+    if (consecutiveFastDeaths >= MAX_CONSECUTIVE_FAST_DEATHS) {
+      console.error(
+        `[cluster] ${consecutiveFastDeaths} consecutive workers died within ${FAST_DEATH_MS}ms of forking — startup is fatally broken. Exiting instead of crash-looping.`
+      );
+      process.exit(1);
+    }
+    console.error(
+      `[cluster] Worker ${worker.process.pid} died (code: ${code}, signal: ${signal}). Forking replacement...`
+    );
+    fork();
   });
 
   // Forward termination signals to all active workers
@@ -41,6 +65,9 @@ if (cluster.isPrimary) {
   process.on("SIGTERM", () => forwardSignal("SIGTERM"));
   process.on("SIGINT", () => forwardSignal("SIGINT"));
 } else {
-  // Workers import and run server.js directly
-  import("./server.js");
+  // Workers must call startServer() explicitly: server.js only auto-starts
+  // when it is the process entrypoint (process.argv[1]), and in a cluster
+  // worker argv[1] is cluster.js — a bare import would never bind the port.
+  const { startServer } = await import("./server.js");
+  await startServer();
 }
