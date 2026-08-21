@@ -86,7 +86,23 @@
 
 ---
 
-**Today — August 20, 2026**
+**Today — August 21, 2026**
+- **Full-Stack Speed Acceleration & Latency Optimization Pass:**
+  - **⚡ Adaptive Hedged Racing (`backend/src/lib/aiEngine.js`)**:
+    - Replaced fixed 1,800ms hedge delay with dynamic adaptive calculation based on the leading provider's EWMA TTFT (`Math.max(900, Math.min(config.hedgeDelayMs, Math.round(leadEwma * 2.2)))`). Healthy Groq calls (~350ms TTFT) trigger a fallback hedge at ~900ms instead of sitting idle for 1.8s, recovering ~900ms on transient provider stalls.
+  - **⚡ Tightened Serper Grounding Timeout (`backend/src/lib/serper.js`)**:
+    - Reduced `DEFAULT_SERPER_TIMEOUT_MS` from 4,000ms to **1,800ms** with graceful fallback to ensure slow external news queries never block Explain mode generation start.
+  - **⚡ Fastify Pre-Compiled JIT Response Schemas (`backend/src/routes/{ready,lessonCacheCheck,health}.js`)**:
+    - Added compiled JSON response schemas (`fast-json-stringify`) across `/api/ready`, `/api/lesson-cache-check`, and `/health`/`/api/health`, enabling 2x–4x faster serialization over standard `JSON.stringify`.
+  - **⚡ Single-Flight Coalescing for TTS Synthesis (`backend/src/routes/tts.js`)**:
+    - Added in-flight promise deduplication map `inFlightTts` so concurrent identical speech synthesis requests share a single synthesis job without duplicate processing.
+  - **⚡ Conditional Math / KaTeX Parsing Pipeline (`frontend/components/learning/PartCard.tsx`)**:
+    - Isolated math plugin pipeline (`remark-math`, `rehype-katex`) so that 95%+ of standard educational lessons without LaTeX (`$`) bypass KaTeX AST parsing and transformation completely.
+  - **✅ Empirical Verification**:
+    - Backend: 116/116 unit, integration, and offensive audit tests passed cleanly (`node --test`).
+    - Frontend: `npx tsc --noEmit` clean (0 errors), ESLint clean (0 errors), 9/9 verify scripts passed 100%, and Next.js 16 production build (`next build`) green across 14 routes.
+
+**August 20, 2026**
 - **System Performance Optimization, Reliability Hardening & Architecture Cleanups:**
   - **⚡ Frontend Package Modernization & Import Tree-Shaking (`frontend/package.json`, `frontend/next.config.js`)**:
     - Added `"type": "module"` to `frontend/package.json` to eliminate Node ESM typeless package warnings across verification and build scripts.

@@ -72,6 +72,66 @@ export function readyHandler(_req, res) {
   }
 }
 
+const readyResponseSchema = {
+  schema: {
+    response: {
+      200: {
+        type: "object",
+        properties: {
+          ok: { type: "boolean" },
+          version: { type: "string" },
+          capabilities: {
+            type: "object",
+            properties: {
+              lessonGeneration: { type: "boolean" },
+              textToSpeech: { type: "boolean" },
+              speechToText: { type: "boolean" },
+              multilingual: { type: "boolean" },
+            },
+          },
+          limits: {
+            type: "object",
+            properties: {
+              maxQuestionLength: { type: "number" },
+            },
+          },
+          languages: { type: "array", items: { type: "string" } },
+          levels: { type: "array", items: { type: "string" } },
+          modes: { type: "array", items: { type: "string" } },
+          policies: {
+            type: "object",
+            properties: {
+              privacy: { type: "string" },
+              terms: { type: "string" },
+              cookies: { type: "string" },
+            },
+          },
+          ai: {
+            type: "object",
+            properties: {
+              status: { type: "string" },
+              providers: {
+                type: "object",
+                additionalProperties: {
+                  type: "object",
+                  properties: {
+                    status: { type: "string" },
+                    latencyMs: { type: ["number", "null"] },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
 export default async function readyRoutes(fastify) {
-  fastify.get("/api/ready", { preHandler: [readyRateLimiter] }, readyHandler);
+  fastify.get(
+    "/api/ready",
+    { preHandler: [readyRateLimiter], ...readyResponseSchema },
+    readyHandler
+  );
 }

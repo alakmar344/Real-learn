@@ -70,7 +70,80 @@ export async function healthHandler(_req, res) {
   }
 }
 
+const healthResponseSchema = {
+  schema: {
+    response: {
+      200: {
+        type: "object",
+        properties: {
+          ok: { type: "boolean" },
+          status: { type: "string" },
+          version: { type: "string" },
+          uptimeSeconds: { type: "number" },
+          timestamp: { type: "string" },
+          latencyMs: { type: "number" },
+          dependencies: {
+            type: "object",
+            properties: {
+              mongodb: {
+                type: "object",
+                properties: {
+                  status: { type: "string" },
+                  latencyMs: { type: "number" },
+                },
+              },
+              ai: {
+                type: "object",
+                properties: {
+                  status: { type: "string" },
+                },
+              },
+            },
+          },
+        },
+      },
+      503: {
+        type: "object",
+        properties: {
+          ok: { type: "boolean" },
+          status: { type: "string" },
+          version: { type: "string" },
+          uptimeSeconds: { type: "number" },
+          timestamp: { type: "string" },
+          latencyMs: { type: "number" },
+          dependencies: {
+            type: "object",
+            properties: {
+              mongodb: {
+                type: "object",
+                properties: {
+                  status: { type: "string" },
+                  latencyMs: { type: "number" },
+                },
+              },
+              ai: {
+                type: "object",
+                properties: {
+                  status: { type: "string" },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
 export default async function healthRoutes(fastify) {
-  fastify.get("/health", { preHandler: [healthRateLimiter] }, healthHandler);
-  fastify.get("/api/health", { preHandler: [healthRateLimiter] }, healthHandler);
+  fastify.get(
+    "/health",
+    { preHandler: [healthRateLimiter], ...healthResponseSchema },
+    healthHandler
+  );
+  fastify.get(
+    "/api/health",
+    { preHandler: [healthRateLimiter], ...healthResponseSchema },
+    healthHandler
+  );
 }

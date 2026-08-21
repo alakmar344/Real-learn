@@ -77,6 +77,8 @@ const SPEECH_LANG_TO_VOICE = {
   "en-US": "en-US-AriaNeural",
 };
 
+const inFlightTts = new Map(); // cacheKey -> Promise<Buffer>
+
 export async function ttsHandler(req, res) {
   const send = (status, payload) => {
     if (res.code && typeof res.code === "function") {
@@ -162,6 +164,12 @@ export async function ttsHandler(req, res) {
       return sendAudio(cached);
     }
 
+    const inFlight = inFlightTts.get(cacheKey);
+    if (inFlight) {
+      const buffer = await inFlight;
+      return sendAudio(buffer);
+    }
+
     if (activeTtsSyntheses >= MAX_CONCURRENT_TTS_SYNTHESES) {
       if (res.header && typeof res.header === "function") {
         res.header("Retry-After", 2);
@@ -187,15 +195,30 @@ export async function ttsHandler(req, res) {
     );
     let fileBuffer;
     activeTtsSyntheses += 1;
+
+    let resolveInFlight;
+    let rejectInFlight;
+    const synthPromise = new Promise((resolve, reject) => {
+      resolveInFlight = resolve;
+      rejectInFlight = reject;
+    });
+    synthPromise.catch(() => {});
+    inFlightTts.set(cacheKey, synthPromise);
+
     try {
       await tts.ttsPromise(text, outFile);
       fileBuffer = await fs.promises.readFile(outFile);
+      ttsCacheSet(cacheKey, fileBuffer);
+      resolveInFlight(fileBuffer);
+    } catch (err) {
+      rejectInFlight(err);
+      throw err;
     } finally {
+      inFlightTts.delete(cacheKey);
       activeTtsSyntheses -= 1;
       await fs.promises.unlink(outFile).catch(() => {});
     }
 
-    ttsCacheSet(cacheKey, fileBuffer);
     return sendAudio(fileBuffer);
   } catch (error) {
     console.error("[api/tts] Failed to synthesize speech", error);

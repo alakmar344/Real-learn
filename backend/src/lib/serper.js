@@ -2,10 +2,10 @@ import { LRUCache } from "lru-cache";
 
 const SERPER_API_KEY = process.env.SERPER_API_KEY;
 // SPEED: the news lookup is nice-to-have context, not a hard dependency — a
-// slow retrieval must not hold the whole lesson hostage. 4s is enough for a
+// slow retrieval must not hold the whole lesson hostage. 1.8s is enough for a
 // healthy Serper round-trip; past that we proceed without context (the lesson
 // generator handles a missing Part-3 context gracefully).
-const DEFAULT_SERPER_TIMEOUT_MS = 4000;
+const DEFAULT_SERPER_TIMEOUT_MS = 1800;
 const configuredSerperTimeoutMs = Number(process.env.SERPER_TIMEOUT_MS);
 const SERPER_TIMEOUT_MS =
   Number.isFinite(configuredSerperTimeoutMs) && configuredSerperTimeoutMs > 0

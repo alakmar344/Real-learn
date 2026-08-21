@@ -1545,10 +1545,23 @@ export async function callAI(
     }
   );
 
+  // Adaptive hedge: if the leader has a low EWMA latency (e.g. Groq ~350ms),
+  // hedge sooner (~900ms) instead of waiting a fixed 1800ms.
+  const leadProviderKey = ordered[0]?.key;
+  const leadHealth = leadProviderKey ? providerHealth[leadProviderKey] : null;
+  const leadEwma =
+    typeof leadHealth?.ewmaLatencyMs === "number" && leadHealth.ewmaLatencyMs > 0
+      ? leadHealth.ewmaLatencyMs
+      : 0;
+  const effectiveHedgeDelayMs =
+    leadEwma > 0
+      ? Math.max(900, Math.min(config.hedgeDelayMs, Math.round(leadEwma * 2.2)))
+      : config.hedgeDelayMs;
+
   try {
     return await hedgedRace(
       starters,
-      config.hedgeDelayMs,
+      effectiveHedgeDelayMs,
       (index) => {
         console.log("[AI] callAI success", { callId, winner: ordered[index].key });
       },
