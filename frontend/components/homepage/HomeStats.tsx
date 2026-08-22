@@ -9,6 +9,8 @@ import { useMounted } from "@/hooks/useMounted";
 import MathText from "@/components/shared/MathText";
 import { Skeleton } from "@/components/shared/Skeleton";
 
+import { useTranslation } from "@/hooks/useTranslation";
+
 interface Props {
   onStartTopic: (topic: string) => void;
 }
@@ -17,6 +19,7 @@ interface Props {
  * for first-time visitors. Progress lives in the navbar (ProgressHub) and on
  * /progress — no duplicate links needed. */
 export default function HomeStats({ onStartTopic }: Props) {
+  const { t } = useTranslation();
   const mounted = useMounted();
   const router = useRouter();
   const { isSignedIn } = useAuth();
@@ -82,10 +85,10 @@ export default function HomeStats({ onStartTopic }: Props) {
               </svg>
             </span>
             <span className="resume-card__text">
-              <span className="resume-card__kicker">pick up where you left off</span>
+              <span className="resume-card__kicker">{t("hero.pickUpWhereLeft")}</span>
               <span className="resume-card__question"><MathText text={inProgress.question} /></span>
             </span>
-            <span className="resume-card__cta">resume →</span>
+            <span className="resume-card__cta">{t("hero.resume")}</span>
           </button>
         )}
 
@@ -96,25 +99,25 @@ export default function HomeStats({ onStartTopic }: Props) {
             <ol className="how-strip" aria-label="How RealLearn works">
               <li className="how-strip__step">
                 <span className="how-strip__num" aria-hidden="true">1</span>
-                Ask any question in 63 languages
+                {t("hero.step1")}
               </li>
               <li className="how-strip__step">
                 <span className="how-strip__num" aria-hidden="true">2</span>
-                Learn step-by-step with real-world facts
+                {t("hero.step2")}
               </li>
               <li className="how-strip__step">
                 <span className="how-strip__num" aria-hidden="true">3</span>
-                Lock in memory with instant quizzes
+                {t("hero.step3")}
               </li>
             </ol>
             <div className="trust-strip" aria-label="Trust and platform standards">
               <span className="trust-badge">
                 <span className="trust-badge__dot" aria-hidden="true" />
-                Class 6 to College Level
+                {t("hero.badgeLevel")}
               </span>
               <span className="trust-badge">
                 <span className="trust-badge__dot" aria-hidden="true" />
-                Zero Ads &amp; Private
+                {t("hero.badgePrivate")}
               </span>
             </div>
           </div>

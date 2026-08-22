@@ -23,6 +23,7 @@ import { Icon } from "@/components/shared/icons";
 import { useLessonStore } from "@/store/lessonStore";
 import { contentLangAttrs } from "@/lib/locale";
 import { preloadSpeechAudio, speechLangFor, markdownToPlainText } from "@/hooks/useSpeech";
+import { useTranslation } from "@/hooks/useTranslation";
 
 // Security: links inside AI-generated markdown are untrusted. react-markdown's
 // default urlTransform already strips javascript:/data: schemes; this override
@@ -86,6 +87,7 @@ const PartCardFooter = memo(function PartCardFooter({
   isCompleted: boolean;
   onStartQuiz: (part: LessonPart) => void;
 }) {
+  const { t } = useTranslation();
   const timer = useReadingTimer(isUnlocked && !isCompleted);
   const { getToken } = useAuth();
   const lessonLanguage = useLessonStore((s) => s.lesson?.language);
@@ -131,7 +133,7 @@ const PartCardFooter = memo(function PartCardFooter({
             className="btn-toggle part-card__skip animate-fade-up"
             aria-label={`Skip reading and take quiz for Part ${part.partNumber}`}
           >
-            I already know this → Take quiz
+            {t("learn.alreadyKnow")}
           </button>
         </div>
       ) : (
@@ -148,8 +150,8 @@ const PartCardFooter = memo(function PartCardFooter({
           className="part-cta animate-fade-up"
         >
           {(part.quiz?.length ?? 0) === 0
-            ? "I've Read This → Continue"
-            : "I've Read This → Take Quiz"}
+            ? t("learn.readThisContinue")
+            : t("learn.readThisTakeQuiz")}
         </button>
       )}
     </div>
@@ -165,10 +167,17 @@ const PartCardBase = ({
   onStartQuiz,
   onToggleCollapse,
 }: Props) => {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const contentId = `part-${part.partNumber}-content`;
   const lessonLanguage = useLessonStore((s) => s.lesson?.language);
   const subjectColor = subjectColors[part.subject] ?? "var(--subject-general)";
+
+  const partIntents = [
+    t("learn.intent1"),
+    t("learn.intent2"),
+    t("learn.intent3"),
+  ];
 
   // Fast path: 95%+ of lessons contain no LaTeX formulas. Bypassing remark-math
   // and rehype-katex AST parsing saves significant CPU time and memory on mobile.
@@ -219,7 +228,7 @@ const PartCardBase = ({
         style={{ marginTop: "var(--space-lg)" }}
       >
         <span>
-          <Icon name="check" size={14} style={{ verticalAlign: "-2px" }} /> {part.title} · Completed
+          <Icon name="check" size={14} style={{ verticalAlign: "-2px" }} /> {part.title} · {t("learn.copied")}
         </span>
         <strong>{score ?? 0}/{part.quiz?.length ?? 2}</strong>
       </button>
@@ -241,7 +250,7 @@ const PartCardBase = ({
       >
         <div className="part-card__meta">
           <div className="part-card__meta-left">
-            <span className="part-card__tag">Part {part.partNumber}</span>
+            <span className="part-card__tag">{t("learn.partTag", { num: part.partNumber })}</span>
             <span
               className="part-card__tag part-card__tag--subject"
               style={{ "--part-subject": subjectColor } as React.CSSProperties}
@@ -255,12 +264,12 @@ const PartCardBase = ({
               <button
                 type="button"
                 onClick={handleCopyText}
-                title="Copy section text"
-                aria-label="Copy section text"
+                title={t("learn.copy")}
+                aria-label={t("learn.copy")}
                 className={`part-card__tool${copied ? " is-active" : ""}`}
               >
                 {copied ? <Icon name="check" size={14} /> : <CopyIcon />}
-                {copied ? "Copied" : "Copy"}
+                {copied ? t("learn.copied") : t("learn.copy")}
               </button>
               <ListenButton
                 text={`${part.title}. ${part.content}`}
@@ -279,7 +288,7 @@ const PartCardBase = ({
             (structural, honest) rather than pretending to summarize content
             it hasn't read. */}
         <p className="part-card__intent">
-          {PART_INTENT[part.partNumber - 1] ?? PART_INTENT[0]}
+          {partIntents[part.partNumber - 1] ?? partIntents[0]}
         </p>
 
         {/* lang/dir so screen readers voice generated prose in the lesson
@@ -314,7 +323,7 @@ const PartCardBase = ({
             className="btn-toggle"
             style={{ marginTop: "var(--space-base)" }}
           >
-            Collapse part
+            {t("learn.collapsePart")}
           </button>
         ) : null}
       </div>
@@ -329,8 +338,8 @@ const PartCardBase = ({
               <circle cx="12" cy="15.2" r="1.4" fill="currentColor" />
             </svg>
             <span>
-              <strong>Part {part.partNumber} locked</strong>
-              Pass the Part {part.partNumber - 1} check to unlock
+              <strong>{t("learn.partLocked", { num: part.partNumber })}</strong>
+              {t("learn.passToUnlock", { prev: part.partNumber - 1 })}
             </span>
           </div>
         </div>

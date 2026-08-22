@@ -12,6 +12,8 @@ import { useShallow } from "zustand/shallow";
 import { Skeleton, SkeletonCard, SkeletonTile } from "@/components/shared/Skeleton";
 import { Icon } from "@/components/shared/icons";
 
+import { useTranslation } from "@/hooks/useTranslation";
+
 const ActivityHeatmap = dynamic(() => import("@/components/shared/ActivityHeatmap"), {
   loading: () => <Skeleton height={140} borderRadius="var(--radius-xl)" />,
   ssr: true,
@@ -47,6 +49,7 @@ function StatTile({ label, value, accent }: { label: string; value: string | num
 }
 
 export default function ProgressPage() {
+  const { t } = useTranslation();
   const mounted = useMounted();
   const s = useProgressStore(
     useShallow((state) => ({
@@ -108,8 +111,8 @@ export default function ProgressPage() {
 
       <div className="flow-page__inner">
         <header className="page-hero">
-          <h1 className="page-hero__title">Progress</h1>
-          <p className="page-hero__sub">Every quiz you pass builds this — at your own pace.</p>
+          <h1 className="page-hero__title">{t("progress.title")}</h1>
+          <p className="page-hero__sub">{t("progress.sub")}</p>
         </header>
 
         {!mounted ? (
@@ -133,9 +136,9 @@ export default function ProgressPage() {
                 <div className="level-orb animate-level-burst">{info.level}</div>
                 <div className="level-hero__body">
                   <div className="level-hero__name">
-                    Level {info.level} · <em>{levelTitle(info.level)}</em>
+                    {t("progress.level", { num: info.level })} · <em>{levelTitle(info.level)}</em>
                   </div>
-                  <div className="level-hero__meta">{info.totalXp.toLocaleString()} XP total</div>
+                  <div className="level-hero__meta">{t("progress.xpTotal", { xp: info.totalXp.toLocaleString() })}</div>
                   <div className="xp-track">
                     <div
                       className="xp-track__fill animate-sheen"
@@ -143,7 +146,7 @@ export default function ProgressPage() {
                     />
                   </div>
                   <div className="xp-track__note">
-                    {info.intoLevel} / {info.forNext} XP to Level {info.level + 1}
+                    {t("progress.xpToNext", { current: info.intoLevel, total: info.forNext, next: info.level + 1 })}
                   </div>
                 </div>
               </div>
@@ -164,21 +167,21 @@ export default function ProgressPage() {
                   </span>
                   <div>
                     <div className="streak-figure__count">{displayStreak}</div>
-                    <div className="stat-tile-2026__label">day streak</div>
+                    <div className="stat-tile-2026__label">{t("progress.dayStreak")}</div>
                   </div>
                 </div>
                 <div className="pill-row">
                   <span className="pill-stat">
-                    Longest · <strong>{s.longestStreak}</strong>
+                    {t("progress.longest")} · <strong>{s.longestStreak}</strong>
                   </span>
                   <span className="pill-stat">
-                    Freezes · <strong>{s.streakFreezes}</strong>
+                    {t("progress.freezes")} · <strong>{s.streakFreezes}</strong>
                   </span>
                 </div>
                 <p className="flow-note">
                   {goalMetToday
-                    ? "Today's goal is done — your streak is safe. See you tomorrow."
-                    : "Complete today's daily goal to extend your streak."}
+                    ? t("progress.goalSafe")
+                    : t("progress.goalExtend")}
                 </p>
               </Card>
 
@@ -186,14 +189,14 @@ export default function ProgressPage() {
                 <div className="streak-figure">
                   <DailyGoalRing value={todayCount} goal={s.dailyGoal} size={56} stroke={6} />
                   <div>
-                    <div className="flow-card__title flow-card__title--tight">Daily goal</div>
+                    <div className="flow-card__title flow-card__title--tight">{t("progress.dailyGoal")}</div>
                     <div className="stat-tile-2026__label">
-                      {Math.min(todayCount, s.dailyGoal)}/{s.dailyGoal} parts today
+                      {t("progress.partsToday", { current: Math.min(todayCount, s.dailyGoal), total: s.dailyGoal })}
                     </div>
                   </div>
                 </div>
                 <div className="flow-gap">
-                  <div className="flow-label">Set your target</div>
+                  <div className="flow-label">{t("progress.setTarget")}</div>
                   <div className="chip-row">
                     {[1, 3, 5, 8].map((g) => (
                       <button
@@ -213,21 +216,21 @@ export default function ProgressPage() {
 
             {/* Lifetime stats */}
             <Card className="flow-gap">
-              <h2 className="flow-card__title">Lifetime stats</h2>
+              <h2 className="flow-card__title">{t("progress.lifetimeStats")}</h2>
               <div className="stat-band">
-                <StatTile label="Journeys" value={s.lessonsCompleted} accent />
-                <StatTile label="Quizzes passed" value={s.partsPassed} />
-                <StatTile label="Perfect runs" value={s.perfectLessons} />
-                <StatTile label="Languages" value={s.languagesUsed.length} />
-                <StatTile label="Subjects" value={s.subjectsSeen.length} />
-                <StatTile label="Follow-ups" value={s.followUps} />
+                <StatTile label={t("progress.journeys")} value={s.lessonsCompleted} accent />
+                <StatTile label={t("progress.quizzesPassed")} value={s.partsPassed} />
+                <StatTile label={t("progress.perfectRuns")} value={s.perfectLessons} />
+                <StatTile label={t("progress.languages")} value={s.languagesUsed.length} />
+                <StatTile label={t("progress.subjects")} value={s.subjectsSeen.length} />
+                <StatTile label={t("progress.followUps")} value={s.followUps} />
               </div>
             </Card>
 
             {/* Activity */}
             <div className="flow-gap progress-activity">
               <Card>
-                <h2 className="flow-card__title">Activity</h2>
+                <h2 className="flow-card__title">{t("progress.activity")}</h2>
                 <ActivityHeatmap history={s.history} />
               </Card>
             </div>
@@ -241,7 +244,7 @@ export default function ProgressPage() {
 
             <div className="flow-cta-row">
               <Link href="/" className="btn-primary">
-                Learn something new →
+                {t("progress.learnSomethingNew")}
               </Link>
             </div>
           </>

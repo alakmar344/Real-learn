@@ -21,6 +21,7 @@ import { Skeleton, SkeletonCard } from "@/components/shared/Skeleton";
 import { triggerHaptic } from "@/lib/haptics";
 import { LessonJourney, LessonPart } from "@/types";
 import { useShallow } from "zustand/shallow";
+import { useTranslation } from "@/hooks/useTranslation";
 
 // PartCard pulls in the full react-markdown + remark/rehype + KaTeX toolchain
 // (the bulk of the /learn route JS). Code-splitting it keeps that chain out of
@@ -70,6 +71,7 @@ function scrollToPart(partNumber: number) {
 }
 
 export default function LearnPage() {
+  const { t } = useTranslation();
   const [quizPart, setQuizPart] = useState<number | null>(null);
   // Snapshot of the resumed attempt for the part being opened — captured in
   // the open handler because refs can't be read during render.
@@ -209,14 +211,14 @@ export default function LearnPage() {
 
   useEffect(() => {
     if (lesson && prevLessonRef.current === null && !showCompletion) {
-      showToast("Your lesson is ready", "success");
+      showToast(t("learn.readyToast"), "success");
     }
     prevLessonRef.current = lesson;
-  }, [lesson, showCompletion]);
+  }, [lesson, showCompletion, t]);
 
   useEffect(() => {
     if (showCompletion && !prevCompletionRef.current) {
-      showToast("Journey complete", "success");
+      showToast(t("learn.completeToast"), "success");
       // Bring the payoff into view: the completion screen mounts below the last
       // part card (and is lazy), so acing the final quiz otherwise leaves the
       // viewport parked on the part card. Wait a frame for it to render.
@@ -232,7 +234,7 @@ export default function LearnPage() {
       return () => window.clearTimeout(timer);
     }
     prevCompletionRef.current = showCompletion;
-  }, [showCompletion]);
+  }, [showCompletion, t]);
 
   /* ── Persist journey to local storage on generation and on progress changes ── */
   useEffect(() => {
@@ -486,12 +488,12 @@ export default function LearnPage() {
         <main className="flow-page">
           <Navbar />
           <div className="learn-empty">
-            <h1 className="learn-empty__title">No lesson loaded yet</h1>
+            <h1 className="learn-empty__title">{t("learn.emptyTitle")}</h1>
             <p className="learn-empty__sub">
-              Head back home and ask a question to start learning.
+              {t("learn.emptySub")}
             </p>
             <button type="button" onClick={restart} className="btn-primary">
-              Go Home →
+              {t("learn.goHome")}
             </button>
           </div>
         </main>

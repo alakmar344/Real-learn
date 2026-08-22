@@ -14,6 +14,7 @@ import { SavedJourney } from "@/types";
 import { Icon } from "@/components/shared/icons";
 import BrandMark from "@/components/shared/BrandMark";
 import MathText from "@/components/shared/MathText";
+import { useTranslation } from "@/hooks/useTranslation";
 
 // Lazy-load modals — they are only needed when the user clicks to open them.
 // This removes both components (and their deps, e.g. focus-trap hooks) from
@@ -36,6 +37,7 @@ const normalize = (value: string) =>
     .replace(/[\u0300-\u036f]/g, "");
 
 export default function Sidebar({ open, onClose }: Props) {
+  const { t } = useTranslation();
   const router = useRouter();
   const mounted = useMounted();
 
@@ -115,7 +117,7 @@ export default function Sidebar({ open, onClose }: Props) {
             <button
               type="button"
               className="app-sidebar-close btn-icon"
-              aria-label="Close menu"
+              aria-label={t("common.close")}
               onClick={onClose}
             >
               <Icon name="close" />
@@ -126,13 +128,13 @@ export default function Sidebar({ open, onClose }: Props) {
             onClick={handleNewLesson}
             className="btn-primary app-sidebar__new"
           >
-            <Icon name="plus" /> New lesson
+            <Icon name="plus" /> {t("sidebar.newLesson")}
           </button>
         </div>
 
         <div className="app-sidebar__scroll">
           <div className="app-sidebar__list-head">
-            <p className="app-sidebar__list-title">Saved lessons</p>
+            <p className="app-sidebar__list-title">{t("sidebar.savedLessons")}</p>
             {mounted && journeys.length > 0 ? (
               <span className="app-sidebar__count">
                 {trimmedSearch ? `${filteredJourneys.length}/${journeys.length}` : journeys.length}
@@ -159,8 +161,8 @@ export default function Sidebar({ open, onClose }: Props) {
                 type="search"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search saved lessons"
-                aria-label="Search saved lessons"
+                placeholder={t("sidebar.searchPlaceholder")}
+                aria-label={t("sidebar.searchPlaceholder")}
                 className="sidebar-search__input"
               />
               {trimmedSearch ? (
@@ -178,12 +180,11 @@ export default function Sidebar({ open, onClose }: Props) {
 
           {(!mounted || journeys.length === 0) ? (
             <p className="app-sidebar__empty">
-              Ask a question and your lesson will be saved here automatically. You can
-              return anytime to continue where you left off.
+              {t("sidebar.emptyState")}
             </p>
           ) : filteredJourneys.length === 0 ? (
             <p className="app-sidebar__empty">
-              No saved lessons match “{trimmedSearch}”.
+              {t("sidebar.noMatch", { query: trimmedSearch })}
             </p>
           ) : (
             <ul className="journey-list">
@@ -204,13 +205,13 @@ export default function Sidebar({ open, onClose }: Props) {
                       }{" "}
                       <Icon name="star-solid" size={10} label="points" />
                       {(journey.completedParts ?? []).length < (journey.lesson?.parts?.length ?? journey.partCount ?? 3) && (
-                        <span> · Part {journey.unlockedPart ?? 1}</span>
+                        <span> · {t("learn.partTag", { num: journey.unlockedPart ?? 1 })}</span>
                       )}
                     </span>
                   </button>
                   <button
                     type="button"
-                    aria-label="Remove saved lesson"
+                    aria-label={t("sidebar.removeConfirm")}
                     onClick={() => setJourneyToRemove(journey.id)}
                     className="journey-item__remove"
                   >
@@ -234,25 +235,25 @@ export default function Sidebar({ open, onClose }: Props) {
                 type="button"
                 role="radio"
                 aria-checked={theme === "light"}
-                aria-label="Light mode"
+                aria-label={t("sidebar.lightMode")}
                 onClick={() => setTheme("light")}
                 className={`theme-toggle-btn${theme === "light" ? " is-active" : ""}`}
-                title="Light mode"
+                title={t("sidebar.lightMode")}
               >
                 <Icon name="sun" size={15} className="theme-toggle-icon theme-toggle-icon--sun" />
-                <span className="sr-only">Light mode</span>
+                <span className="sr-only">{t("sidebar.lightMode")}</span>
               </button>
               <button
                 type="button"
                 role="radio"
                 aria-checked={theme === "dark"}
-                aria-label="Dark mode"
+                aria-label={t("sidebar.darkMode")}
                 onClick={() => setTheme("dark")}
                 className={`theme-toggle-btn${theme === "dark" ? " is-active" : ""}`}
-                title="Dark mode"
+                title={t("sidebar.darkMode")}
               >
                 <Icon name="moon" size={15} className="theme-toggle-icon theme-toggle-icon--moon" />
-                <span className="sr-only">Dark mode</span>
+                <span className="sr-only">{t("sidebar.darkMode")}</span>
               </button>
             </div>
 
@@ -265,13 +266,13 @@ export default function Sidebar({ open, onClose }: Props) {
                   router.push("/settings");
                 }}
                 className="btn-icon app-sidebar__settings-btn"
-                aria-label="Settings"
-                title="Settings"
+                aria-label={t("sidebar.settings")}
+                title={t("sidebar.settings")}
               >
                 <Icon name="settings" size={18} />
               </button>
               <span className="sidebar-tooltip__bubble" role="tooltip">
-                Settings
+                {t("sidebar.settings")}
               </span>
             </div>
           </div>
@@ -280,14 +281,14 @@ export default function Sidebar({ open, onClose }: Props) {
 
       <ConfirmModal
         open={journeyToRemove !== null}
-        title="Remove saved lesson?"
+        title={t("sidebar.removeTitle")}
         message={
           journeyToRemove
-            ? `Remove "${journeys.find((j) => j.id === journeyToRemove)?.question ?? "this lesson"}" from your saved lessons?`
+            ? t("sidebar.removeMessage", { title: journeys.find((j) => j.id === journeyToRemove)?.question ?? "" })
             : ""
         }
-        confirmLabel="Remove"
-        cancelLabel="Keep it"
+        confirmLabel={t("sidebar.removeConfirm")}
+        cancelLabel={t("sidebar.removeCancel")}
         destructive
         onConfirm={() => {
           if (journeyToRemove) removeJourney(journeyToRemove);

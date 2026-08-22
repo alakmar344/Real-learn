@@ -28,7 +28,8 @@
     "verify:personalization": "node scripts/verify-personalization.mjs",
     "verify:special-days": "node scripts/verify-special-days.mjs",
     "verify:onboarding": "node scripts/verify-onboarding.mjs",
-    "verify:user-scoping": "node scripts/verify-user-scoping.mjs"
+    "verify:user-scoping": "node scripts/verify-user-scoping.mjs",
+    "verify:i18n": "npx tsx scripts/verify-i18n.mjs"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.7.6",

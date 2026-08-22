@@ -2,6 +2,7 @@
 
 import { Language } from "@/types";
 import { Icon } from "@/components/shared/icons";
+import { LANGUAGE_NATIVE_NAMES } from "@/lib/i18n";
 
 const LANGUAGES: Language[] = [
   // Indian languages
@@ -97,7 +98,7 @@ export default function LanguageSelector({ value, onChange, compact = false, id 
       >
         {LANGUAGES.map((lang) => (
           <option key={lang} value={lang}>
-            {lang}
+            {LANGUAGE_NATIVE_NAMES[lang] || lang}
           </option>
         ))}
       </select>

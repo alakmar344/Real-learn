@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import MicButton from "@/components/shared/MicButton";
 import { usePreferenceStore } from "@/store/preferenceStore";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface Props {
   onSubmit: (question: string) => Promise<void>;
@@ -15,6 +16,7 @@ interface Props {
 const MAX_QUESTION_LENGTH = 1000;
 
 export default function FollowUpBox({ onSubmit }: Props) {
+  const { t } = useTranslation();
   const [value, setValue] = useState("");
   const [loading, setLoading] = useState(false);
   const [interimSpeech, setInterimSpeech] = useState("");
@@ -41,9 +43,9 @@ export default function FollowUpBox({ onSubmit }: Props) {
 
   return (
     <section className="followup animate-fade-up" aria-label="Ask a follow-up question">
-      <p className="followup__label">Ask a follow-up and unlock a new 3-part journey.</p>
+      <p className="followup__label">{t("followup.label")}</p>
       <label htmlFor="followup-input" className="sr-only">
-        Follow-up question
+        {t("followup.placeholder")}
       </label>
       <textarea
         id="followup-input"
@@ -55,14 +57,14 @@ export default function FollowUpBox({ onSubmit }: Props) {
             submit();
           }
         }}
-        placeholder="Still curious? Pull the thread…"
-        aria-label="Follow-up question"
+        placeholder={t("followup.placeholder")}
+        aria-label={t("followup.placeholder")}
         maxLength={MAX_QUESTION_LENGTH}
         className="followup__textarea"
       />
       {interimSpeech ? (
         <p aria-live="polite" className="followup__listening">
-          Listening — {interimSpeech}
+          {t("hero.listening", { text: interimSpeech })}
         </p>
       ) : null}
       <div className="followup__actions">
@@ -83,7 +85,7 @@ export default function FollowUpBox({ onSubmit }: Props) {
           onClick={submit}
           className="btn-primary"
         >
-          {loading ? "Generating…" : "Teach Me More →"}
+          {loading ? t("followup.generating") : t("followup.teachMeMore")}
         </button>
       </div>
     </section>

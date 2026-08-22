@@ -14,6 +14,9 @@ import { isConsentCurrent, readLegalConsent, writeLegalConsent } from "@/lib/leg
 import { specialDayFor } from "@/lib/specialDays";
 import { Skeleton } from "@/components/shared/Skeleton";
 
+import { useTranslation } from "@/hooks/useTranslation";
+import { TranslationKey } from "@/lib/i18n";
+
 const Footer = dynamic(() => import("@/components/shared/Footer"), {
   loading: () => <Skeleton height={120} borderRadius={0} />,
   ssr: true,
@@ -23,24 +26,27 @@ const FeedbackGate = dynamic(() => import("@/components/shared/FeedbackGate"), {
   ssr: false,
 });
 
-function greetingForHour(h: number): string {
-  if (h < 4) return "learn deeply";
-  if (h < 7) return "think clearly";
-  if (h < 12) return "master anything";
-  if (h < 17) return "explore concepts";
-  if (h < 21) return "understand faster";
-  return "stay curious";
+function greetingKeyForHour(h: number): TranslationKey {
+  if (h < 4) return "hero.greeting.deeply";
+  if (h < 7) return "hero.greeting.clearly";
+  if (h < 12) return "hero.greeting.master";
+  if (h < 17) return "hero.greeting.explore";
+  if (h < 21) return "hero.greeting.understand";
+  return "hero.greeting.curious";
 }
 
 export default function HomePage() {
+  const { t } = useTranslation();
   const [question, setQuestion] = useState("");
   const [loadingQuestion, setLoadingQuestion] = useState<string | null>(null);
-  const [greeting, setGreeting] = useState("");
+  const [hour, setHour] = useState<number>(12);
   const [specialDay, setSpecialDay] = useState<string | null>(null);
   const { generateLesson } = useLesson();
   const { isSignedIn, getToken } = useAuth();
   const { user } = useUser();
   const firstName = user?.firstName || "";
+
+  const greeting = t(greetingKeyForHour(hour));
 
   useEffect(() => {
     warmupBackend();
@@ -50,7 +56,7 @@ export default function HomePage() {
     fetchReady().catch(() => {});
     const now = new Date();
     setSpecialDay(specialDayFor(now.getMonth() + 1, now.getDate())?.hero ?? null);
-    setGreeting(greetingForHour(now.getHours()));
+    setHour(now.getHours());
   }, []);
 
   // One-time sync of locally-stored legal consent to the backend once we know

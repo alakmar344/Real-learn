@@ -7,6 +7,7 @@ import ShareResult from "@/components/learning/ShareResult";
 import FeedbackGate from "@/components/shared/FeedbackGate";
 import QuickSummaryCards from "@/components/learning/QuickSummaryCards";
 import { contentLangAttrs } from "@/lib/locale";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface Props {
   lesson: LessonJourney;
@@ -32,11 +33,11 @@ function generateFollowUpSuggestions(lesson: LessonJourney): string[] {
   }
 
   suggestions.push(`What is the most common misconception about this?`);
-
   return suggestions.slice(0, 3);
 }
 
 export default function CompletionScreen({ lesson, totalScore, onRestart, onRetake }: Props) {
+  const { t } = useTranslation();
   const sectionRef = useRef<HTMLElement>(null);
   const router = useRouter();
 
@@ -50,18 +51,13 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
       (lesson.parts?.length ?? 3) * 2
   );
 
-  /* Announce to screen readers */
-  useEffect(() => {
-    const el = document.getElementById("sr-live-region");
-    if (el) el.textContent = "Journey complete. Your first-try score is " + totalScore + " out of " + maxScore + ".";
-  }, [totalScore, maxScore]);
   const pct = Math.round((totalScore / maxScore) * 100);
   const circumference = 2 * Math.PI * 42;
   const followUps = useMemo(() => generateFollowUpSuggestions(lesson), [lesson]);
   const offset = circumference - (pct / 100) * circumference;
 
   return (
-    <section ref={sectionRef} className="completion animate-fade-up" aria-label="Journey complete">
+    <section ref={sectionRef} className="completion animate-fade-up" aria-label={t("completion.journeyComplete")}>
       {/* Score ring */}
       <div className="completion__hero">
         <div className="completion__ring" aria-hidden="true">
@@ -94,12 +90,10 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
 
         <div>
           <h3 className="completion__title">
-            {(lesson.parts?.length ?? 3) === 1 ? "Got it." : "Journey complete"}
+            {(lesson.parts?.length ?? 3) === 1 ? t("completion.gotIt") : t("completion.journeyComplete")}
           </h3>
           <p className="completion__subtitle">
-            {/* First-try score: quizzes must be perfected to advance, so the
-                meaningful number is how you did before any retries. */}
-            You scored <strong>{totalScore}/{maxScore}</strong> on the first try — {pct >= 80 ? "a clean run." : pct >= 50 ? "solid, and the retries sealed it." : "a tough one. It'll feel easier next time."}
+            {t("completion.scored", { score: totalScore, total: maxScore })} — {pct >= 80 ? t("completion.cleanRun") : pct >= 50 ? t("completion.solid") : t("completion.tough")}
           </p>
         </div>
       </div>
@@ -112,7 +106,7 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
           salvaged lessons still get a next step instead of a dead end. */}
       {followUps.length > 0 && (
         <div>
-          <p className="completion__section-label">What Connects Next · Go deeper</p>
+          <p className="completion__section-label">{t("completion.whatConnectsNext")}</p>
           <div className="completion__suggests">
             {followUps.map((suggestion, i) => (
               <button
@@ -160,12 +154,12 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
       <div className="completion__actions">
         {onRetake && (
           <button type="button" onClick={onRetake} className="btn-toggle">
-            Retake Quiz
+            {t("completion.retakeQuiz")}
           </button>
         )}
         {onRestart && (
           <button type="button" onClick={onRestart} className="btn-primary">
-            Continue Learning →
+            {t("completion.continueLearning")}
           </button>
         )}
       </div>

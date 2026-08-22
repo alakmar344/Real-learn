@@ -12,11 +12,9 @@ import { warmupBackend, checkLessonCache, BACKEND_URL } from "@/lib/api";
 import { Language } from "@/types";
 import { LESSON_MODES as MODES } from "@/lib/lessonModes";
 import { buildLearningContext } from "@/lib/learningProfile";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const MAX_QUESTION_LENGTH = 1000;
-
-const URDU_PLACEHOLDER = "یہاں اپنا سوال لکھیں...";
-const RTL_LANGUAGES: Language[] = ["Urdu"];
 
 interface Props {
   question: string;
@@ -47,6 +45,7 @@ function preconnectBackend() {
 }
 
 export default function QuestionInput({ question, setQuestion, onSubmit }: Props) {
+  const { t, dir, isRtl } = useTranslation();
   const router = useRouter();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const initialQuestionRef = useRef(question);
@@ -63,7 +62,6 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
   const subjectsSeen = useProgressStore((s) => s.subjectsSeen);
   const mounted = useMounted();
   const mode = mounted ? persistedMode : "fast";
-  const isRtl = RTL_LANGUAGES.includes(language);
   const activeIndex = MODES.findIndex((m) => m.value === mode);
 
   useLayoutEffect(() => {
@@ -197,14 +195,8 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
       {/* 1. Textarea Body */}
       <div className="q-form__body">
         <label htmlFor="question-input" className="sr-only">
-          What do you want to understand today?
+          {t("hero.askLabel")}
         </label>
-        {isRtl && (
-          <div className="q-form__urdu-badge" aria-hidden="true">
-            <span className="q-form__urdu-badge-dot" />
-            Urdu mode
-          </div>
-        )}
         <textarea
           id="question-input"
           ref={textareaRef}
@@ -218,14 +210,14 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           onBlur={() => setFocused(false)}
           onKeyDown={handleKeyDown}
           maxLength={MAX_QUESTION_LENGTH}
-          placeholder={isRtl ? URDU_PLACEHOLDER : "Ask anything you want to understand..."}
-          aria-label="Your question"
-          dir={isRtl ? "rtl" : "ltr"}
+          placeholder={t("hero.askPlaceholder")}
+          aria-label={t("hero.askLabel")}
+          dir={dir}
           className={`q-form__textarea${isRtl ? " q-form__textarea--rtl" : ""}`}
         />
         {interimSpeech ? (
           <p aria-live="polite" className="q-form__listening">
-            Listening — {interimSpeech}
+            {t("hero.listening", { text: interimSpeech })}
           </p>
         ) : null}
       </div>
@@ -243,17 +235,19 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           />
           {MODES.map((opt) => {
             const active = mode === opt.value;
+            const label = opt.value === "fast" ? t("hero.mode.fast") : t("hero.mode.explain");
+            const hint = opt.value === "fast" ? t("hero.mode.fastHint") : t("hero.mode.explainHint");
             return (
               <button
                 key={opt.value}
                 type="button"
                 role="radio"
                 aria-checked={active}
-                title={opt.hint}
+                title={hint}
                 onClick={() => setMode(opt.value)}
                 className={`mode-glider__option${active ? " mode-glider__option--active" : ""}`}
               >
-                {opt.label}
+                {label}
               </button>
             );
           })}
@@ -281,14 +275,14 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
           {cachedHint?.cached && (
             <span className="q-form__instant-badge" title="This question is ready instantly">
               <Icon name="sparkle" size={12} />
-              Instant answer
+              {t("hero.instantAnswer")}
             </span>
           )}
           {question.trim() && (
             <button
               type="button"
-              aria-label="Clear question"
-              title="Clear"
+              aria-label={t("hero.clear")}
+              title={t("hero.clear")}
               className="btn-icon btn-icon--danger"
               onClick={() => {
                 setQuestion("");
@@ -304,10 +298,10 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
             <button
               type="submit"
               disabled={!question.trim()}
-              aria-label="Enter question"
+              aria-label={t("hero.enter")}
               className="btn-primary q-form__enter-btn"
             >
-              <span>Enter</span>
+              <span>{t("hero.enter")}</span>
               <span className="q-form__enter-symbol" aria-hidden="true">↵</span>
             </button>
           ) : (
@@ -323,10 +317,10 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
                 }
                 router.push("/onboarding");
               }}
-              aria-label="Sign in to Enter"
+              aria-label={t("hero.signInToEnter")}
               className="btn-primary q-form__enter-btn"
             >
-              <span>Sign in</span>
+              <span>{t("hero.signInToEnter")}</span>
               <span className="q-form__enter-symbol" aria-hidden="true">↵</span>
             </button>
           )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const FIRST_VISIT_KEY = "reallearn-first-visit";
 const MILESTONES = new Set([7, 30, 100, 365]);
@@ -8,6 +9,7 @@ const MILESTONES = new Set([7, 30, 100, 365]);
 // "Day N of learning together" — a quiet local counter; rendered after mount
 // to avoid hydration mismatch.
 function CompanionDays() {
+  const { t } = useTranslation();
   const [days, setDays] = useState<number | null>(null);
 
   useEffect(() => {
@@ -26,15 +28,17 @@ function CompanionDays() {
   if (days === null) return null;
 
   const label = MILESTONES.has(days)
-    ? `${days} days of learning together — thank you for staying curious.`
+    ? t("footer.companionMilestone", { days })
     : days === 1
-      ? "Day 1 of learning together."
-      : `Learning together for ${days} days.`;
+      ? t("footer.companionOne")
+      : t("footer.companionDays", { days });
 
   return <p className="app-footer__companion">{label}</p>;
 }
 
 const Footer = ({ className }: { className?: string }) => {
+  const { t } = useTranslation();
+
   return (
     <footer className={className}>
       <p className="app-footer__row">
@@ -43,16 +47,16 @@ const Footer = ({ className }: { className?: string }) => {
             would otherwise hydration-error on the year. */}
         <span suppressHydrationWarning>© {new Date().getFullYear()} alakmar344</span>
         <span aria-hidden="true">·</span>
-        <span>AI-generated — verify with pros</span>
+        <span>{t("footer.aiDisclaimer")}</span>
       </p>
       <p className="app-footer__row app-footer__row--links">
-        <a href="/legal?tab=privacy" className="app-footer__link">Privacy</a>
+        <a href="/legal?tab=privacy" className="app-footer__link">{t("footer.privacy")}</a>
         <span aria-hidden="true">·</span>
-        <a href="/legal?tab=terms" className="app-footer__link">Terms</a>
+        <a href="/legal?tab=terms" className="app-footer__link">{t("footer.terms")}</a>
         <span aria-hidden="true">·</span>
-        <a href="/legal" className="app-footer__link">Legal</a>
+        <a href="/legal" className="app-footer__link">{t("footer.legal")}</a>
         <span aria-hidden="true">·</span>
-        <a href="mailto:esamzai365@gmail.com" className="app-footer__link">Support</a>
+        <a href="mailto:esamzai365@gmail.com" className="app-footer__link">{t("footer.support")}</a>
       </p>
       <CompanionDays />
     </footer>

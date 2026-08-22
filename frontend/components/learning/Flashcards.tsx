@@ -16,6 +16,7 @@ import { LessonJourney } from "@/types";
 import { triggerHaptic } from "@/lib/haptics";
 import { Icon } from "@/components/shared/icons";
 import { contentLangAttrs } from "@/lib/locale";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface Card {
   front: string;
@@ -101,6 +102,7 @@ interface Props {
 }
 
 export default function Flashcards({ lesson }: Props) {
+  const { t } = useTranslation();
   const baseCards = useMemo(() => buildFlashcards(lesson), [lesson]);
   const langAttrs = contentLangAttrs(lesson.language);
   const [order, setOrder] = useState<number[] | null>(null);
@@ -171,15 +173,15 @@ export default function Flashcards({ lesson }: Props) {
   return (
     <section className="flashcards" aria-label="Flashcards for this lesson">
       <div className="flashcards__head">
-        <h2 className="flashcards__title">Flashcards</h2>
+        <h2 className="flashcards__title">{t("flashcards.title")}</h2>
         <div className="flashcards__head-right">
           <span className="flashcards__meta" aria-live="polite">
             {allSeen ? (
               <>
-                Deck done — nice recall <Icon name="sparkle" size={12} style={{ verticalAlign: "-1px" }} />
+                {t("flashcards.deckDone")} <Icon name="sparkle" size={12} style={{ verticalAlign: "-1px" }} />
               </>
             ) : (
-              `${seen.size}/${cards.length} flipped`
+              t("flashcards.flippedCount", { flipped: seen.size, total: cards.length })
             )}
           </span>
           <button
@@ -203,7 +205,7 @@ export default function Flashcards({ lesson }: Props) {
         </div>
       </div>
       <p className="flashcards__sub">
-        Tap a card to flip it — recall the idea before peeking.
+        {t("flashcards.sub")}
       </p>
 
       <div className="flashcards__stage">
@@ -245,14 +247,14 @@ export default function Flashcards({ lesson }: Props) {
               <span className="flashcard__tag">{card.hint}</span>
               <span className="flashcard__text" {...langAttrs}>{card.front}</span>
               <span className="flashcard__flip-hint">
-                tap to flip <Icon name="refresh" size={11} style={{ verticalAlign: "-1px" }} />
+                {t("flashcards.tapToFlip")} <Icon name="refresh" size={11} style={{ verticalAlign: "-1px" }} />
               </span>
             </span>
             <span className="flashcard__face flashcard__face--back" aria-hidden="true">
-              <span className="flashcard__tag flashcard__tag--answer">answer</span>
+              <span className="flashcard__tag flashcard__tag--answer">{t("flashcards.answer")}</span>
               <span className="flashcard__text flashcard__text--answer" {...langAttrs}>{card.back}</span>
               <span className="flashcard__flip-hint">
-                tap to flip back <Icon name="refresh" size={11} style={{ verticalAlign: "-1px" }} />
+                {t("flashcards.tapToFlipBack")} <Icon name="refresh" size={11} style={{ verticalAlign: "-1px" }} />
               </span>
             </span>
           </button>

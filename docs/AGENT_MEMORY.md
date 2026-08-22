@@ -1541,3 +1541,25 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
   - **Fix**: Scoped low-perf card obfuscation to `html[data-perf="low"] .part-locked-content:not(.is-unlocked)` and explicitly declared `html[data-perf="low"] .part-locked-content.is-unlocked { filter: none; opacity: 1; pointer-events: auto; user-select: auto; }`. Added solid `--surface-glass: #FFFFFF` and `--surface-glass-strong: #FFFFFF` under `html[data-perf="low"][data-theme="light"]` (and matching `#161A12` under dark mode) for crisp solid surfaces without blurs. Updated `themeInitScript` in `app/layout.tsx` to set `dataset.theme = t` for both Light and Dark themes before first paint.
   - **Verification**: Backend 117/117 tests; frontend `tsc` clean, ESLint clean (0 errors), 8/8 verify scripts pass 100%, Next.js 16 production build (`next build`) green across 14 routes.
 
+- 2026-08-22 (i18n) — **App-Wide 63-Language Internationalization Architecture & Complete UI Localization.**
+  - **Core Architecture & Reactive Hook (`frontend/lib/translations/`, `frontend/lib/i18n.ts`, `frontend/hooks/useTranslation.ts`)**:
+    - Created complete translation dictionaries across 63 world languages categorized by region (`indian.ts`, `european.ts`, `asian.ts`, `middleEasternAfricanCaucasian.ts`, and base `index.ts`), covering 167 translation keys spanning navigation, hero, question input, mode selector, home onboarding stats, part cards, quiz sheets, flashcards, quick takeaways, completion scoring, follow-up inputs, progress metrics & streak badges, settings preferences, and footer disclosures.
+    - Implemented `useTranslation()` client hook connecting directly to `usePreferenceStore` so that selecting ANY of the 63 languages in `LanguageSelector` instantly and reactively translates all visible application text without requiring page reloads.
+    - `translate(key, params)` provides automatic `{param}` interpolation and safe English fallbacks.
+    - `ThemeApplier.tsx` dynamically sets `document.documentElement.lang` and `dir="rtl"` / `dir="ltr"` based on selected language (supporting Arabic, Hebrew, Urdu, Farsi RTL scripts).
+  - **Comprehensive UI Localization Across Every Screen & Component**:
+    - **Navbar & Navigation (`Navbar.tsx`)**: Localized brand label and navigation links (Home, Learn, Stats).
+    - **Sidebar & Lesson Management (`Sidebar.tsx`)**: Localized new journey, search placeholder, saved lesson empty states, part indicators, theme toggles, and deletion confirmation modal.
+    - **Language Selector (`LanguageSelector.tsx`)**: Rendered authentic native script names (`LANGUAGE_NATIVE_NAMES`) for all 63 languages alongside English names.
+    - **Homepage & Hero (`page.tsx`, `QuestionInput.tsx`, `HomeStats.tsx`, `ExampleQuestions.tsx`)**: Localized time-of-day dynamic greetings, question input placeholders, listening voice states, answer mode toggles and descriptions, resume cards, 3-step onboarding guide, and trust badges.
+    - **Learning Journey & Lesson Delivery (`learn/page.tsx`, `PartCard.tsx`, `FollowUpBox.tsx`)**: Localized empty state, toasts, part tags, section intent badges (Foundation, Mechanism, Application), reading timers, copy/listen buttons, follow-up prompts and teach-me-more generation status.
+    - **Interactive Quizzes & Mastery Cards (`QuizSheet.tsx`, `QuizQuestion.tsx`, `QuickSummaryCards.tsx`, `Flashcards.tsx`, `CompletionScreen.tsx`)**: Localized quick-check titles, question progress headers (`Question X of Y`), retry actions, unlock part CTAs, flip hints, takeaway cards, score announcements, and completion debriefs.
+    - **Progress & Gamification (`progress/page.tsx`)**: Localized level hero, XP trackers, streak & freeze counters, daily goal status, lifetime statistics, and achievement hubs.
+    - **Settings & Privacy Preferences (`settings/page.tsx`)**: Localized theme options, visual performance levels, learning preferences, data export/deletion controls, legal consent links, and parent guardian support links.
+    - **Footer (`Footer.tsx`)**: Localized AI disclaimer, legal links, and companion day streak milestones.
+  - **Empirical Verification (`verify:i18n`)**:
+    - Built and executed `verify:i18n` verifying all 63 languages across all 167 keys with 0 missing keys.
+    - `npx tsc --noEmit` passed with 0 errors.
+    - All 10 verification test suites passed 100%.
+    - Next.js 16 production build (`next build`) compiled successfully across all 14 routes.
+
