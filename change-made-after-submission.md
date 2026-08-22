@@ -89,8 +89,8 @@
 **Today — August 21, 2026**
 - **Radically Zero-Friction, Beginner-First Pedagogical Upgrade & Unified Linear Onboarding:**
   - **🧠 Doubt-Killing Pedagogical Architecture (`backend/src/lib/prompts.js`)**:
-    - Upgraded `VOICE_AND_SAFETY`, `GENERATE_FAST_ANSWER_PROMPT`, and `GENERATE_LESSON_PROMPT` to enforce the **Four Pillars of Understanding**:
-      - *Foundation (Part 1)*: "What is it?" — Crystal-clear mental model, everyday physical/digital analogies, zero unanchored jargon.
+    - Upgraded `VOICE_AND_SAFETY`, `GENERATE_FAST_ANSWER_PROMPT`, and `GENERATE_LESSON_PROMPT` to enforce **casual, friendly, conversational English** (no niche Gen-Z slang or memes, no stiff academic lecturing) and **universal daily-life analogies** (buying groceries, cooking, traffic, queues, charging phones — strictly no gaming references) across the **Four Pillars of Understanding**:
+      - *Foundation (Part 1)*: "What is it?" — Crystal-clear mental model, everyday physical analogies, zero unanchored jargon.
       - *Mechanism (Part 2)*: "How & Why does it work?" — Step-by-step cause-and-effect with explicit **Doubt-Busting** that disarms common beginner misconceptions ("Why doesn't X happen instead?").
       - *Application & Beyond (Part 3)*: "Where does it live & what connects next?" — Modern real-world context and concrete knowledge bridges to subsequent frontiers.
     - Upgraded active recall quizzes to provide crisp 1-sentence principle-focused explanations for every question.
