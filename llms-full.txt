@@ -25,21 +25,21 @@ It is not a chatbot. It is not a search engine. It is **teaching, reimagined for
   - Primary inference: Groq Cloud LPU (`groq-sdk`, Qwen 3.6 27B `qwen/qwen3.6-27b` & GPT-OSS 120B `gpt-oss-120b`) — chosen for sub-second TTFT and unmatched tokens/sec
   - Secondary inference: NVIDIA NIM (70B–150B parameter models: `meta/llama-3.3-70b-instruct`, `mistralai/mistral-large-2-instruct` ~123B, `nvidia/llama-3.1-nemotron-70b-instruct`, `qwen/qwen2.5-72b-instruct`)
   - Last-resort fallback: Cloudflare Workers AI (`@cf/meta/llama-3.3-70b-instruct-fp8-fast`) — automatic failover with circuit breaker
-- **Structured Output:** System prompt enforces strict JSON schema with exactly three progressive parts (Foundation, Mechanism, Real World), each with two multiple-choice quiz questions.
+- **Structured Output:** System prompt enforces strict JSON schema with exactly three progressive parts (The big idea, How it works, Where you see it), each with two multiple-choice quiz questions.
 - **Multilingual Generation:** Lessons generated natively in 12 languages — English, Hindi, Gujarati, Tamil, Bengali, Marathi, Telugu, Kannada, Malayalam, Punjabi, Urdu, Odia — never machine-translated.
 - **Adaptive Difficulty:** Vocabulary, examples, and rigor calibrate to three levels — Class 6-8 (simple, friendly, concrete), Class 9-10 (balanced technical depth), College/Advanced (full rigor, precise terminology).
 - **Real-World Grounding:** Before calling the model, the backend fetches recent, India-relevant news via the Serper API and weaves it into Part 3, connecting theory to actual current events with real names, dates, and figures.
-- **Dual Prompt Architecture:** Two distinct system prompts power two experiences — `GENERATE_LESSON_PROMPT` for the full 3-part Explain journey, and `GENERATE_FAST_ANSWER_PROMPT` for the lightning-fast single-part Fast mode.
+- **Dual Prompt Architecture:** Two distinct system prompts power two experiences — `GENERATE_LESSON_PROMPT` for the full 3-part lesson, and `GENERATE_FAST_ANSWER_PROMPT` for the lightning-fast single-part quick answer. Both share one plain-language, doubt-killing tutor voice: every technical term defined on first use, what/why/how/connections covered, and the reader's next doubt anticipated and answered.
 
 ---
 
 ## User Journey
 
 1. **Ask** — Type or speak any question.
-2. **Personalize** — Choose language (12 options), level (Class 6-8, 9-10, College/Advanced), and mode (Fast or Explain). Signed-in learners can also set optional learning-style preferences (checklist + 500-character notes) that tailor each lesson without leaving the device.
+2. **Personalize** — Choose language (12 options), depth (Simple, Standard, Advanced), and mode (Quick answer or Full lesson). Signed-in learners can also set optional learning-style preferences (checklist + 500-character notes) that tailor each lesson without leaving the device.
 3. **Watch it build** — Cinematic loading screen with a glowing radial backdrop, progress bar, 6-step checklist, and rotating learning facts.
-4. **Learn Part 1 — Foundation** — Beginner-friendly framing with real source links, subject badge, and reading timer.
-5. **Prove it** — Two-question quiz (4 options each). 100% pass required to unlock the next part. Every answer reveals an exhaustive mini-lesson explanation. Options reshuffled on retake using Fisher-Yates shuffle.
+4. **Learn Part 1 — The big idea** — Beginner-friendly framing with real source links, subject badge, and reading timer. All three parts are readable immediately — nothing is locked.
+5. **Make it stick (optional)** — Two-question quick check (4 options each) after every part. Any score continues; retrying missed questions is a choice. Every answer reveals an exhaustive mini-lesson explanation. Options reshuffled on retake using Fisher-Yates shuffle.
 6. **Unlock Part 2 — Mechanism** — Satisfying unlock animation; deeper "how and why" layer.
 7. **Unlock Part 3 — Real World Now** — Final part connects the concept to current events with live news context.
 8. **Complete** — Celebratory completion screen with animated confetti, SVG score ring, key takeaways, and shareable result card.
@@ -50,10 +50,10 @@ It is not a chatbot. It is not a search engine. It is **teaching, reimagined for
 ## Feature Highlights
 
 ### 1. Three-Part Learning Journey
-Every lesson has exactly three parts designed by cognitive-science principles: Foundation, Mechanism, and Real World. Each part arrives with real source links and a subject badge auto-classified across 11 disciplines — Physics, Chemistry, Economics, Biology, CS, History, Geography, Mathematics, Political Science, Environmental Science, or General.
+Every lesson has exactly three parts designed by cognitive-science principles: The big idea, How it works, and Where you see it. Each part arrives with real source links and a subject badge auto-classified across 11 disciplines — Physics, Chemistry, Economics, Biology, CS, History, Geography, Mathematics, Political Science, Environmental Science, or General.
 
 ### 2. Quiz-Gated Progression
-Active learning at its heart. After each part: 2 questions, 4 options each. Built-in reading timer. 100% pass to unlock next part. Every answer reveals a deep, exhaustive explanation. Wrong answers shake; correct answers pulse. Options reshuffled on retake so you must genuinely re-find the correct answer.
+Active learning at its heart. After each part: an optional quick check — 2 questions, 4 options each. Built-in reading timer. Any score continues; mastery retries are a choice, never a wall. Every answer reveals a deep, exhaustive explanation. Wrong answers shake; correct answers pulse. Options reshuffled on retake so you must genuinely re-find the correct answer.
 
 ### 3. Learn in Your Language
 Native multilingual generation in 12 languages lowers the access barrier for millions of students. The Serper news fetch also adapts — searching for news in the learner's chosen language using proper BCP-47 language codes.

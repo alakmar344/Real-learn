@@ -48,9 +48,9 @@ const subjectColors: Record<string, string> = {
 };
 
 const PART_INTENT = [
-  "The core idea, built from first intuition.",
-  "How it actually works, step by step.",
-  "Where it shows up in the real world right now.",
+  "What it is and why it matters.",
+  "How it works, step by step.",
+  "Where you see it in real life.",
 ];
 
 function CopyIcon() {
@@ -64,7 +64,6 @@ function CopyIcon() {
 
 interface Props {
   part: LessonPart;
-  isUnlocked: boolean;
   isCompleted: boolean;
   isCollapsed: boolean;
   score: number | null;
@@ -77,16 +76,14 @@ interface Props {
 
 const PartCardFooter = memo(function PartCardFooter({
   part,
-  isUnlocked,
   isCompleted,
   onStartQuiz,
 }: {
   part: LessonPart;
-  isUnlocked: boolean;
   isCompleted: boolean;
   onStartQuiz: (part: LessonPart) => void;
 }) {
-  const timer = useReadingTimer(isUnlocked && !isCompleted);
+  const timer = useReadingTimer(!isCompleted);
   const { getToken } = useAuth();
   const lessonLanguage = useLessonStore((s) => s.lesson?.language);
   const preloadedRef = useRef(false);
@@ -106,12 +103,17 @@ const PartCardFooter = memo(function PartCardFooter({
     }
   }, [part.partNumber, part.title, part.content, timer.progress, lessonLanguage, getToken]);
 
-  if (!isUnlocked || isCompleted) return null;
+  if (isCompleted) return null;
+
+  // Nothing is gated anymore: the whole lesson is readable top to bottom,
+  // and the quiz is an OPTIONAL self-check the reader can take whenever
+  // they feel ready — before, during, or after reading.
+  const hasQuiz = (part.quiz?.length ?? 0) > 0;
 
   return (
     <div className="part-card__footer">
-      {!timer.isComplete ? (
-        <div className="part-card__reading">
+      <div className="part-card__reading">
+        {!timer.isComplete ? (
           <div
             role="progressbar"
             aria-valuenow={Math.round(timer.progress)}
@@ -122,43 +124,32 @@ const PartCardFooter = memo(function PartCardFooter({
           >
             <div className="part-card__reading-fill" style={{ width: `${timer.progress}%` }} />
           </div>
-          {/* The forward path is ALWAYS visible. While the reading timer
-              runs it's a quiet capsule; once the timer completes it
-              upgrades to the filled gradient CTA below. */}
-          <button
-            type="button"
-            onClick={() => onStartQuiz(part)}
-            className="btn-toggle part-card__skip animate-fade-up"
-            aria-label={`Skip reading and take quiz for Part ${part.partNumber}`}
-          >
-            I already know this → Take quiz
-          </button>
-        </div>
-      ) : (
+        ) : null}
         <button
           type="button"
           onClick={() => onStartQuiz(part)}
           // Empty-quiz parts advance directly (see learn/page.tsx), so
           // don't promise a quiz that will never open.
           aria-label={
-            (part.quiz?.length ?? 0) === 0
-              ? `Continue past Part ${part.partNumber}`
-              : `Take quiz for Part ${part.partNumber}`
+            hasQuiz
+              ? `Check what you learned in Part ${part.partNumber} (optional)`
+              : `Mark Part ${part.partNumber} as done`
           }
-          className="part-cta animate-fade-up"
+          className={
+            timer.isComplete
+              ? "part-cta animate-fade-up"
+              : "btn-toggle part-card__skip"
+          }
         >
-          {(part.quiz?.length ?? 0) === 0
-            ? "I've Read This → Continue"
-            : "I've Read This → Take Quiz"}
+          {hasQuiz ? "Check what you learned →" : "Mark this part done →"}
         </button>
-      )}
+      </div>
     </div>
   );
 });
 
 const PartCardBase = ({
   part,
-  isUnlocked,
   isCompleted,
   isCollapsed,
   score,
@@ -232,13 +223,10 @@ const PartCardBase = ({
       aria-label={`Part ${part.partNumber}: ${part.title}`}
       id={`part-${part.partNumber}`}
     >
-      {/* Locked-state obfuscation lives in globals.css (.part-locked-content)
-          so low-end devices can swap the expensive 12px blur for a cheap fade
-          via the data-perf tier. */}
-      <div
-        id={contentId}
-        className={`part-locked-content${isUnlocked ? " is-unlocked" : ""}`}
-      >
+      {/* Nothing is locked anymore — every part renders fully readable.
+          The `is-unlocked` class keeps the existing globals.css rules happy
+          without a stylesheet change. */}
+      <div id={contentId} className="part-locked-content is-unlocked">
         <div className="part-card__meta">
           <div className="part-card__meta-left">
             <span className="part-card__tag">Part {part.partNumber}</span>
@@ -250,25 +238,23 @@ const PartCardBase = ({
               {part.subject}
             </span>
           </div>
-          {isUnlocked ? (
-            <div className="part-card__meta-right">
-              <button
-                type="button"
-                onClick={handleCopyText}
-                title="Copy section text"
-                aria-label="Copy section text"
-                className={`part-card__tool${copied ? " is-active" : ""}`}
-              >
-                {copied ? <Icon name="check" size={14} /> : <CopyIcon />}
-                {copied ? "Copied" : "Copy"}
-              </button>
-              <ListenButton
-                text={`${part.title}. ${part.content}`}
-                language={lessonLanguage}
-                label={`Listen to Part ${part.partNumber}`}
-              />
-            </div>
-          ) : null}
+          <div className="part-card__meta-right">
+            <button
+              type="button"
+              onClick={handleCopyText}
+              title="Copy section text"
+              aria-label="Copy section text"
+              className={`part-card__tool${copied ? " is-active" : ""}`}
+            >
+              {copied ? <Icon name="check" size={14} /> : <CopyIcon />}
+              {copied ? "Copied" : "Copy"}
+            </button>
+            <ListenButton
+              text={`${part.title}. ${part.content}`}
+              language={lessonLanguage}
+              label={`Listen to Part ${part.partNumber}`}
+            />
+          </div>
         </div>
 
         <h2 className="part-card__title" {...contentLangAttrs(lessonLanguage)}>
@@ -296,10 +282,9 @@ const PartCardBase = ({
           </div>
         ) : null}
 
-        {/* Reading timer / quiz CTA isolated sub-component */}
+        {/* Reading timer / optional self-check CTA isolated sub-component */}
         <PartCardFooter
           part={part}
-          isUnlocked={isUnlocked}
           isCompleted={isCompleted}
           onStartQuiz={onStartQuiz}
         />
@@ -318,23 +303,6 @@ const PartCardBase = ({
           </button>
         ) : null}
       </div>
-
-      {/* Locked veil */}
-      {!isUnlocked && (
-        <div className="part-card__veil">
-          <div className="part-card__lock">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <rect x="5" y="10.5" width="14" height="9.5" rx="3" stroke="currentColor" strokeWidth="1.8" />
-              <path d="M8 10V7.8C8 5.6 9.8 4 12 4s4 1.6 4 3.8V10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-              <circle cx="12" cy="15.2" r="1.4" fill="currentColor" />
-            </svg>
-            <span>
-              <strong>Part {part.partNumber} locked</strong>
-              Pass the Part {part.partNumber - 1} check to unlock
-            </span>
-          </div>
-        </div>
-      )}
     </article>
   );
 }

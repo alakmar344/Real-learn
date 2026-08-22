@@ -57,10 +57,10 @@ const QuizSheetBase = ({ open, questions, partNumber, initialState, onStateChang
   const [shuffledHint, setShuffledHint] = useState(
     () => resume !== null && resume.firstAttemptScore !== null && resume.answers.some((a) => a !== null)
   );
-  // First-attempt score: passing requires a perfect run, so the score at the
-  // moment of passing is ALWAYS perfect. "Perfect" stats/achievements only
-  // mean something if they track whether the learner aced the quiz on the
-  // FIRST try — capture that here and report it through onPass.
+  // First-attempt score: the learner may optionally retry missed questions,
+  // but "perfect" stats/achievements only mean something if they track
+  // whether the learner aced the quiz on the FIRST try — capture that here
+  // and report it through onPass.
   const [firstAttemptScore, setFirstAttemptScore] = useState<number | null>(
     () => resume?.firstAttemptScore ?? null
   );
@@ -149,35 +149,30 @@ const QuizSheetBase = ({ open, questions, partNumber, initialState, onStateChang
     setAnswers(next);
   };
 
-  const nextAction = () => {
+  const nextQuestion = () => {
     // Move to the next question that still needs an answer (on a retry pass,
     // already-correct answers are kept, so "next" may skip over them).
     const nextUnanswered = answers.findIndex((a, i) => a === null && i !== current);
-    if (nextUnanswered !== -1) {
-      setCurrent(nextUnanswered);
-      return;
-    }
+    if (nextUnanswered !== -1) setCurrent(nextUnanswered);
+  };
 
-    // Record the very first completed attempt's score (later attempts don't
-    // overwrite it) — this is what onPass reports so "perfect" means "aced
-    // on the first try", not "eventually got everything right".
+  // The quiz is an OPTIONAL self-check, not a gate: ANY completed attempt
+  // lets the learner continue. The score reported is the FIRST attempt's
+  // score, so "perfect" stats still mean "aced on the first try".
+  const finishQuiz = () => {
     const reportedScore = firstAttemptScore ?? score;
+    onPass(reportedScore);
+    setCurrent(0);
+    setAnswers(Array.from({ length: totalQuestions }, () => null));
+    setShuffledHint(false);
+    setFirstAttemptScore(null);
+  };
+
+  // Optional mastery loop for learners who WANT it: correct answers are
+  // BANKED, only missed questions come back (options reshuffled so the right
+  // answer must be understood, not memorized by position).
+  const retryMissed = () => {
     if (firstAttemptScore === null) setFirstAttemptScore(score);
-
-    if (score === perfectScore) {
-      onPass(reportedScore);
-      setCurrent(0);
-      setAnswers(Array.from({ length: totalQuestions }, () => null));
-      setShuffledHint(false);
-      setFirstAttemptScore(null);
-      return;
-    }
-
-    // Missed some → mastery still requires every question right, but correct
-    // answers are BANKED. Only the missed questions come back (with their
-    // options reshuffled so the right answer must be understood, not
-    // memorized by position). This keeps the 100% gate without the punishing
-    // "one slip restarts everything" loop that traps struggling learners.
     const missed = quizQuestions
       .map((q, i) => (answers[i] === q.correctIndex ? -1 : i))
       .filter((i) => i !== -1);
@@ -191,6 +186,7 @@ const QuizSheetBase = ({ open, questions, partNumber, initialState, onStateChang
 
   const remaining = answers.filter((a) => a === null).length;
   const hasNextUnanswered = answers.some((a, i) => a === null && i !== current);
+  const allAnswered = !hasNextUnanswered && answered;
   const success = score === perfectScore && !hasNextUnanswered;
 
   return (
@@ -214,9 +210,9 @@ const QuizSheetBase = ({ open, questions, partNumber, initialState, onStateChang
           <Icon name="close" size={16} />
         </button>
 
-        <h3 className="quiz-sheet__title">Quick Check</h3>
+        <h3 className="quiz-sheet__title">Quick check</h3>
         <p className="quiz-sheet__subtitle">
-          {totalQuestions} question{totalQuestions === 1 ? "" : "s"} about what you just read
+          {totalQuestions} quick question{totalQuestions === 1 ? "" : "s"} — just to make sure it stuck
         </p>
 
         {/* Progress dots — show where you are in the quiz at a glance. */}
@@ -274,25 +270,32 @@ const QuizSheetBase = ({ open, questions, partNumber, initialState, onStateChang
         />
 
         {answered ? (
-          <button
-            ref={actionRef}
-            type="button"
-            onClick={nextAction}
-            aria-label={
-              hasNextUnanswered
-                ? "Next question"
+          <>
+            <button
+              ref={actionRef}
+              type="button"
+              onClick={allAnswered ? finishQuiz : nextQuestion}
+              aria-label={hasNextUnanswered ? "Next question" : "Continue"}
+              className={`quiz-sheet__action${success ? " is-success" : ""}`}
+            >
+              {hasNextUnanswered
+                ? "Next question →"
                 : success
-                  ? "Unlock next part"
-                  : "Retry missed questions"
-            }
-            className={`quiz-sheet__action${success ? " is-success" : ""}`}
-          >
-            {hasNextUnanswered
-              ? "Next Question →"
-              : success
-                ? "Unlock Next Part →"
-                : "Retry the Missed Ones →"}
-          </button>
+                  ? "Perfect — continue →"
+                  : "Continue →"}
+            </button>
+            {/* Missed some? Retrying is a choice, never a wall. */}
+            {allAnswered && !success ? (
+              <button
+                type="button"
+                onClick={retryMissed}
+                className="btn-toggle"
+                style={{ marginTop: "var(--space-sm, 8px)", width: "100%" }}
+              >
+                Or try the missed ones again
+              </button>
+            ) : null}
+          </>
         ) : null}
       </div>
     </div>

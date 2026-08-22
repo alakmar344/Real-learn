@@ -3,7 +3,14 @@
 import { Level } from "@/types";
 import { Icon } from "@/components/shared/icons";
 
-const LEVELS: Level[] = ["Class 6-8", "Class 9-10", "College / Advanced"];
+// Backend enum values stay untouched; only the words people see change.
+// "Class 6-8" meant nothing outside one school system — "Simple / Standard /
+// Advanced" is understood by everyone.
+const LEVELS: { value: Level; label: string }[] = [
+  { value: "Class 6-8", label: "Simple — easy words, no background needed" },
+  { value: "Class 9-10", label: "Standard — clear and balanced" },
+  { value: "College / Advanced", label: "Advanced — full depth and detail" },
+];
 
 interface Props {
   value: Level;
@@ -18,14 +25,14 @@ export default function LevelSelector({ value, onChange, compact = false, id }: 
     <label className={`select-control${compact ? " select-control--compact" : ""}`}>
       <select
         id={id}
-        aria-label="Learning level"
+        aria-label="Explanation depth"
         value={value}
         onChange={(e) => onChange(e.target.value as Level)}
         className="select-control__field"
       >
         {LEVELS.map((level) => (
-          <option key={level} value={level}>
-            {level}
+          <option key={level.value} value={level.value}>
+            {level.label}
           </option>
         ))}
       </select>

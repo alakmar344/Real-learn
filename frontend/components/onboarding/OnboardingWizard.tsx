@@ -358,7 +358,7 @@ export default function OnboardingWizard() {
                   <Icon name="layers" size={18} aria-hidden="true" />
                   <span>
                     <strong>Learn step by step.</strong> Clear parts, your pace,
-                    and a tiny quiz to unlock the next one.
+                    and an optional tiny quiz to make it stick.
                   </span>
                 </li>
                 <li>

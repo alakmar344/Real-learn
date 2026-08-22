@@ -226,7 +226,7 @@ export const BADGES: Badge[] = [
     icon: "graduation-cap",
     title: "Tutorial Complete",
     description: "Complete your very first learning journey.",
-    how: "Finish all the parts of one lesson — read each part and pass its quiz to unlock the next.",
+    how: "Finish all the parts of one lesson — read each part and take its quick check.",
     tier: "bronze",
     progress: (s) => ratio(s.lessonsCompleted, 1),
     earned: (s) => s.lessonsCompleted >= 1,

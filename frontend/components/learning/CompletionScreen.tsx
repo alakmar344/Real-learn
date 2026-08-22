@@ -53,7 +53,7 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
   /* Announce to screen readers */
   useEffect(() => {
     const el = document.getElementById("sr-live-region");
-    if (el) el.textContent = "Journey complete. Your first-try score is " + totalScore + " out of " + maxScore + ".";
+    if (el) el.textContent = "Lesson complete. Your first-try score is " + totalScore + " out of " + maxScore + ".";
   }, [totalScore, maxScore]);
   const pct = Math.round((totalScore / maxScore) * 100);
   const circumference = 2 * Math.PI * 42;
@@ -61,7 +61,7 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
   const offset = circumference - (pct / 100) * circumference;
 
   return (
-    <section ref={sectionRef} className="completion animate-fade-up" aria-label="Journey complete">
+    <section ref={sectionRef} className="completion animate-fade-up" aria-label="Lesson complete">
       {/* Score ring */}
       <div className="completion__hero">
         <div className="completion__ring" aria-hidden="true">
@@ -94,12 +94,12 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
 
         <div>
           <h3 className="completion__title">
-            {(lesson.parts?.length ?? 3) === 1 ? "Got it." : "Journey complete"}
+            {(lesson.parts?.length ?? 3) === 1 ? "Got it." : "Lesson complete"}
           </h3>
           <p className="completion__subtitle">
-            {/* First-try score: quizzes must be perfected to advance, so the
-                meaningful number is how you did before any retries. */}
-            You scored <strong>{totalScore}/{maxScore}</strong> on the first try — {pct >= 80 ? "a clean run." : pct >= 50 ? "solid, and the retries sealed it." : "a tough one. It'll feel easier next time."}
+            {/* First-try score: retries are optional, so the meaningful
+                number is how you did before any retries. */}
+            You scored <strong>{totalScore}/{maxScore}</strong> on the first try — {pct >= 80 ? "a clean run." : pct >= 50 ? "solid work." : "a tough one. It'll feel easier next time."}
           </p>
         </div>
       </div>

@@ -35,9 +35,9 @@ const FAST_STAGES: StageDef[] = [
 ];
 
 const EXPLAIN_PARTS = [
-  { num: 1, title: "Foundation", at: 45 },
-  { num: 2, title: "Mechanism", at: 60 },
-  { num: 3, title: "Real World", at: 74 },
+  { num: 1, title: "The big idea", at: 45 },
+  { num: 2, title: "How it works", at: 60 },
+  { num: 3, title: "Where you see it", at: 74 },
 ];
 
 const FAST_PARTS = [{ num: 1, title: "Your Answer", at: 45 }];
@@ -46,7 +46,7 @@ const facts = [
   "Short spaced sessions beat one giant cram — your brain saves in checkpoints, not one big file.",
   "Explaining a concept to a friend is the fastest way to lock it in. Group chat counts.",
   "Your brain literally rewires while you sleep — tonight it saves what you learn right now.",
-  "Quizzing yourself beats re-reading every time. That's why the quizzes here aren't optional.",
+  "Quizzing yourself beats re-reading every time — that's why each part ends with a quick check.",
   "Attention is trainable in both directions — feeds train it one way, this trains it back.",
   "Ideas stick when they connect to something you already care about. That's the whole trick.",
   "Asking the question already primed your brain to remember the answer. You're ahead.",

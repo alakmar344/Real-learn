@@ -4,14 +4,14 @@ Tagline: The World Is Your Textbook.
 Website: https://reallearn.site/
 
 What it is:
-RealLearn AI is an AI-native learning platform that transforms any question into a structured, three-part educational journey. It is not a chatbot or search engine — it is a teaching system.
+RealLearn AI is an AI-native learning platform built for everyone — including people who have never used a computer. Open it, ask anything in your own words, and get a clear, plain-language explanation: the big idea, how it works, and where you see it in real life. It is not a chatbot or search engine — it is a teaching system with zero learning curve.
 
 Key facts:
 - Generates complete lessons powered by Groq LPUs (Qwen 3.6 27B / GPT-OSS 120B primary), backed by NVIDIA NIM 70B–150B parameter models and Cloudflare Workers AI last-resort fallback.
-- Three-stage progression: Foundation -> Mechanism -> Real World.
-- Quiz-gated comprehension: 100% pass required before advancing.
+- Three-step explanations: The big idea -> How it works -> Where you see it. Everything readable immediately — nothing locked.
+- Optional quick checks: short quizzes after each part help understanding stick; any score continues, retrying is a choice.
 - Native multilingual generation in 12 languages (English, Hindi, Gujarati, Tamil, Bengali, Marathi, Telugu, Kannada, Malayalam, Punjabi, Urdu, Odia).
-- Adaptive difficulty: Class 6-8, Class 9-10, College/Advanced.
+- Adaptive depth: Simple, Standard, Advanced — the reader chooses how deep to go.
 - Real-world grounding via live news context (Serper API).
 - Production-grade reliability: SSE streaming, circuit breaker, two-tier caching (in-memory LRU + MongoDB), concurrency control, rate limiting.
 - Full security and privacy: Clerk auth, content moderation, IDOR prevention, GDPR-minded consent, data export and permanent deletion, locally-stored learning personalization.

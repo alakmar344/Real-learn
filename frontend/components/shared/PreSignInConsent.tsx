@@ -117,10 +117,10 @@ export default function PreSignInConsent() {
     const applyLocalRecord = (parsed: LegalConsentState | null) => {
       if (cancelled) return;
       if (!parsed) {
-        // No record at all → a brand-new visitor. The /onboarding wizard now
-        // owns the first-time consent prompt for anonymous newcomers (they
-        // are redirected into it from the home page), so only signed-in
-        // users with a missing record still get the legacy modal.
+        // No record at all → a brand-new visitor. Anonymous visitors browse
+        // and type freely with zero prompts; this one-time consent dialog
+        // appears only once they sign in (the moment consent actually
+        // matters).
         if (isSignedIn) setShowConsent(true);
       } else if (isConsentCurrent(parsed)) {
         setShowConsent(false);
@@ -370,10 +370,11 @@ export default function PreSignInConsent() {
 
           <div style={{ fontSize: 14, color: "var(--text-secondary)", lineHeight: 1.7, marginBottom: 20 }}>
             <p style={{ marginBottom: 12 }}>
-              RealLearn turns any question into a friendly, structured learning
-              journey: <strong>Foundation</strong>, <strong>Mechanism</strong>, and{" "}
-              <strong>Real World</strong>. You read at your own pace, then a short
-              quiz unlocks the next part — no pressure, no trick questions.
+              Ask any question and RealLearn explains it in plain language:{" "}
+              <strong>the big idea</strong>, <strong>how it works</strong>, and{" "}
+              <strong>where you see it in real life</strong>. Read at your own
+              pace — short optional quizzes help it stick. No pressure, no trick
+              questions.
             </p>
             <p style={{ marginBottom: 12 }}>
               <strong>What we keep:</strong> your email (for sign-in), the questions

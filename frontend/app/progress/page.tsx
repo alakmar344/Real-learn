@@ -215,7 +215,7 @@ export default function ProgressPage() {
             <Card className="flow-gap">
               <h2 className="flow-card__title">Lifetime stats</h2>
               <div className="stat-band">
-                <StatTile label="Journeys" value={s.lessonsCompleted} accent />
+                <StatTile label="Lessons" value={s.lessonsCompleted} accent />
                 <StatTile label="Quizzes passed" value={s.partsPassed} />
                 <StatTile label="Perfect runs" value={s.perfectLessons} />
                 <StatTile label="Languages" value={s.languagesUsed.length} />

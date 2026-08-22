@@ -41,7 +41,7 @@ export default function FollowUpBox({ onSubmit }: Props) {
 
   return (
     <section className="followup animate-fade-up" aria-label="Ask a follow-up question">
-      <p className="followup__label">Ask a follow-up and unlock a new 3-part journey.</p>
+      <p className="followup__label">Still curious? Ask a follow-up — anything that&apos;s on your mind.</p>
       <label htmlFor="followup-input" className="sr-only">
         Follow-up question
       </label>

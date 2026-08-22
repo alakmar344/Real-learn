@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Learn",
   description:
-    "Your live RealLearn lesson — a structured 3-part journey with quiz gates.",
+    "Your live RealLearn lesson — a clear, plain-language explanation in short parts.",
   robots: {
     index: false,
     follow: false,

@@ -3,11 +3,14 @@
 interface Props {
   unlockedPart: number;
   completedParts: number[];
-  /** Total parts in this journey — 1 for fast mode, 3 for explain mode. */
+  /** Total parts in this lesson — 1 for a quick answer, 3 for a full lesson. */
   totalParts?: number;
 }
 
-const PART_NAMES = ["Foundation", "Mechanism", "Real World"];
+// Plain-language part names — everyone should instantly know what each step
+// gives them (the old "Foundation / Mechanism / Real World" read like a
+// textbook).
+const PART_NAMES = ["The big idea", "How it works", "Where you see it"];
 
 function CheckIcon() {
   return (
@@ -17,30 +20,21 @@ function CheckIcon() {
   );
 }
 
-function LockIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="5" y="10.5" width="14" height="9.5" rx="3" stroke="currentColor" strokeWidth="2" />
-      <path d="M8 10V7.8C8 5.6 9.8 4 12 4s4 1.6 4 3.8V10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  );
-}
-
 export default function ProgressRail({ unlockedPart, completedParts, totalParts = 3 }: Props) {
-  /* ── Fast mode: a single direct answer ── */
+  /* ── Quick answer: a single direct answer ── */
   if (totalParts <= 1) {
     const done = completedParts.includes(1);
     return (
       <div
         role="status"
-        aria-label={done ? "Quick answer mastered" : "Fast mode – one quick answer"}
+        aria-label={done ? "Answer complete" : "One clear answer"}
         className="rail-wrap rail-wrap--solo"
       >
         <span className={`journey-rail journey-rail--solo${done ? " is-done" : ""}`}>
           <span className="journey-rail__node" aria-hidden="true">
             {done ? <CheckIcon /> : <span className="journey-rail__pulse accent-pulse-dot" />}
           </span>
-          {done ? "Quick answer mastered" : "Fast mode — direct explanation"}
+          {done ? "Answer complete" : "One clear answer"}
         </span>
       </div>
     );
@@ -49,24 +43,26 @@ export default function ProgressRail({ unlockedPart, completedParts, totalParts 
   const parts = Array.from({ length: totalParts }, (_, i) => i + 1);
   const completedCount = parts.filter((p) => completedParts.includes(p)).length;
 
-  // Not a nav landmark: the rail has no links — like fast mode it only
-  // reports progress, so both variants share the status role.
+  // Not a nav landmark: the rail has no links — like the quick-answer variant
+  // it only reports progress, so both variants share the status role.
+  // Nothing is ever locked: every part is readable from the start, so the
+  // rail simply shows done / reading now / up next.
   return (
     <div
       role="status"
-      aria-label="Learning progress"
+      aria-label="Lesson progress"
       className="rail-wrap rail-wrap--steps"
     >
       <div className="journey-rail">
         <ol
           role="list"
-          aria-label={`${completedCount} of ${totalParts} parts completed`}
+          aria-label={`${completedCount} of ${totalParts} parts done`}
           className="journey-rail__steps"
         >
           {parts.map((part) => {
             const done = completedParts.includes(part);
             const active = !done && part <= unlockedPart;
-            const statusLabel = done ? "completed" : active ? "current active part" : "locked";
+            const statusLabel = done ? "done" : active ? "reading now" : "up next";
 
             return (
               <li
@@ -84,7 +80,7 @@ export default function ProgressRail({ unlockedPart, completedParts, totalParts 
                   />
                 ) : null}
                 <span className="journey-rail__node" aria-hidden="true">
-                  {done ? <CheckIcon /> : active ? part : <LockIcon />}
+                  {done ? <CheckIcon /> : part}
                 </span>
                 <span className="journey-rail__step-text">
                   <span className="journey-rail__step-prefix">Part {part}: </span>

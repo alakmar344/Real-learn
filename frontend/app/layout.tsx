@@ -61,7 +61,7 @@ export const metadata: Metadata = {
     template: "%s | RealLearn",
   },
   description:
-    "RealLearn turns any question into a structured 3-part lesson — Foundation, Mechanism, Real World — with quiz-gated progression, 12 Indian languages, and live news grounding.",
+    "Ask anything, understand it in minutes. RealLearn explains any topic in plain language — what it is, why it matters, and how it works — in 12 languages, grounded in the real world.",
   applicationName: "RealLearn",
   category: "education",
   // Kept deliberately short: search engines ignore stuffed keyword lists, and
@@ -71,7 +71,7 @@ export const metadata: Metadata = {
     "AI tutor",
     "AI learning platform",
     "interactive lessons",
-    "quiz-gated learning",
+    "plain language learning",
     "Indian languages learning app",
   ],
   authors: [{ name: "RealLearn" }],
@@ -271,7 +271,7 @@ export default async function RootLayout({
                   name: "What is RealLearn?",
                   acceptedAnswer: {
                     "@type": "Answer",
-                    text: "RealLearn is an AI-powered learning platform that turns any question into a structured three-part lesson: Foundation, Mechanism, and Real World. Each part ends with a quiz you must pass to advance.",
+                    text: "RealLearn is an AI-powered learning platform. Ask any question and get a clear, plain-language explanation — the big idea, how it works, and where you see it in real life — with optional quick checks to make it stick.",
                   },
                 },
                 {

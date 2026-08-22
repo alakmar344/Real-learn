@@ -216,7 +216,7 @@ export default function LearnPage() {
 
   useEffect(() => {
     if (showCompletion && !prevCompletionRef.current) {
-      showToast("Journey complete", "success");
+      showToast("Lesson complete", "success");
       // Bring the payoff into view: the completion screen mounts below the last
       // part card (and is lazy), so acing the final quiz otherwise leaves the
       // viewport parked on the part card. Wait a frame for it to render.
@@ -372,9 +372,14 @@ export default function LearnPage() {
       setShowUnlockFx(true);
       if (unlockTimeoutRef.current) clearTimeout(unlockTimeoutRef.current);
       unlockTimeoutRef.current = window.setTimeout(() => setShowUnlockFx(false), 850);
+      // Quizzes are optional self-checks: any completed attempt moves the
+      // lesson forward, so the toast celebrates without judging.
+      const partMax = part.quiz?.length ?? 0;
       showToast(
-        score >= 1 ? "Correct — well done." : "Part completed.",
-        score >= 1 ? "success" : "info"
+        partMax > 0 && score >= partMax
+          ? "Perfect — you got every question."
+          : "Nice — progress saved.",
+        "success"
       );
 
       const nextPartNumber = part.partNumber + 1;
@@ -537,7 +542,6 @@ export default function LearnPage() {
               <PartCard
                 key={part.partNumber}
                 part={part}
-                isUnlocked={part.partNumber <= unlockedPart}
                 isCompleted={completedParts.includes(part.partNumber)}
                 isCollapsed={collapsedParts.includes(part.partNumber)}
                 score={partScores[part.partNumber]}

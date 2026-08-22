@@ -89,28 +89,28 @@ export default function HomeStats({ onStartTopic }: Props) {
           </button>
         )}
 
-        {/* First visit: a quiet mental model of the product — ask, learn in
-            three parts, pass each gate. Disappears once there's any activity. */}
+        {/* First visit: a quiet mental model of the product — ask, understand,
+            make it stick. Disappears once there's any activity. */}
         {!hasActivity && (
           <div className="home-first-visit">
             <ol className="how-strip" aria-label="How RealLearn works">
               <li className="how-strip__step">
                 <span className="how-strip__num" aria-hidden="true">1</span>
-                Ask any question in 12 languages
+                Ask anything, in your own words
               </li>
               <li className="how-strip__step">
                 <span className="how-strip__num" aria-hidden="true">2</span>
-                Learn step-by-step with real-world facts
+                Get a clear answer in plain language
               </li>
               <li className="how-strip__step">
                 <span className="how-strip__num" aria-hidden="true">3</span>
-                Lock in memory with instant quizzes
+                Make it stick with an optional quick check
               </li>
             </ol>
             <div className="trust-strip" aria-label="Trust and platform standards">
               <span className="trust-badge">
                 <span className="trust-badge__dot" aria-hidden="true" />
-                Class 6 to College Level
+                12 languages, simple to advanced
               </span>
               <span className="trust-badge">
                 <span className="trust-badge__dot" aria-hidden="true" />

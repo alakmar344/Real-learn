@@ -1,7 +1,7 @@
 # RealLearn AI
 
 > **The World Is Your Textbook.**
-> RealLearn transforms any query into a structured, 3-part interactive learning journey grounded in live news, native languages, and quiz-gated progression.
+> Open. Ask. Understand. RealLearn explains anything in plain language anyone can follow — the big idea, how it works, and where you see it in real life — in 12 languages, grounded in live news.
 
 ---
 
@@ -19,17 +19,20 @@
 
 ## 🌟 Overview
 
-RealLearn is an AI-native educational platform designed for deep understanding rather than disposable one-line answers.
+RealLearn is an AI-native educational platform built for **everyone** — including people who have never used a computer. There is nothing to learn before you can learn: open the page, type (or speak) a question in your own words, and understand.
+
+**Design north star (2026-08 rebuild):** zero friction, zero jargon, doubt-killing answers. No forced onboarding, no locked content, no mandatory quizzes, no textbook vocabulary — just the fastest possible path from curiosity to understanding.
 
 When a learner asks a question:
-1. **Three-Stage Progression**: The app generates a 3-part lesson:
-   - **Part 1: Foundation** — Core concepts & fundamental intuition.
-   - **Part 2: Mechanism** — Step-by-step inner workings & mechanics.
-   - **Part 3: Real World** — Real-life applications grounded with live news updates (via Serper API).
-2. **Quiz-Gated Mastery**: Each part is locked behind a 2-question quiz. Learners must achieve **100% score** to unlock the next part.
-3. **Multilingual & Adaptive**: Supports 12 Indian languages and 3 difficulty levels — from middle-school foundations to college/advanced. (RealLearn is intended for learners aged 13+; the entry-level tier reflects content difficulty, not target age.)
-4. **Learning Personalization**: Optional user learning preferences and notes seamlessly injected into AI prompt generation.
-5. **Olive Frenzy Minimal Design System**: "frenzy in minimalism" — one rich-olive accent family (`#556B2F` on warm cream `#FAF9F3` light mode, glowing lime-olive `#A4C639` on deep olive-black `#121510` dark mode), emerald success, expressive script display type tilted over stark geometric cards, a kinetic hero ticker, and razor-sharp geometric sans UI micro-copy (strictly zero purple/violet, zero gold). Canonical spec: [`docs/AGENT_MEMORY.md`](docs/AGENT_MEMORY.md) §1; history: [`docs/REDESIGN.md`](docs/REDESIGN.md).
+1. **Doubt-Killing Answers**: Every explanation is written in plain, warm language that covers the **what**, the **why**, the **how**, and the **connections** — defining every technical term the moment it appears and answering the reader's next "but wait — why?" before they have to ask it.
+2. **Three Clear Steps** (Full lesson mode) — all readable immediately, nothing locked:
+   - **Part 1: The big idea** — What it is and why it matters to your life.
+   - **Part 2: How it works** — Step-by-step cause and effect, with worked examples.
+   - **Part 3: Where you see it** — Real-life applications grounded with live news updates (via Serper API).
+3. **Optional Quick Checks**: Each part ends with a short 2-question self-check to make understanding stick. Any score continues — retrying missed questions is always a choice, never a wall.
+4. **Multilingual & Adaptive**: Supports 12 Indian languages and 3 depth settings — Simple, Standard, and Advanced. (RealLearn is intended for learners aged 13+; the Simple tier reflects content difficulty, not target age.)
+5. **Learning Personalization**: Optional user learning preferences and notes seamlessly injected into AI prompt generation.
+6. **Olive Frenzy Minimal Design System**: "frenzy in minimalism" — one rich-olive accent family (`#556B2F` on warm cream `#FAF9F3` light mode, glowing lime-olive `#A4C639` on deep olive-black `#121510` dark mode), emerald success, expressive script display type tilted over stark geometric cards, a kinetic hero ticker, and razor-sharp geometric sans UI micro-copy (strictly zero purple/violet, zero gold). Canonical spec: [`docs/AGENT_MEMORY.md`](docs/AGENT_MEMORY.md) §1; history: [`docs/REDESIGN.md`](docs/REDESIGN.md).
 
 ---
 
