@@ -16,8 +16,11 @@ That file is the single source of truth for this project:
 - **the Change Protocol** — the rule that *every* change, small or big,
   must update `docs/AGENT_MEMORY.md` and append to
   `change-made-after-submission.md`, then ship as a PR.
+- **Autonomous agent operational prompt**: See `AUTONOMOUS_PROMPT.md` for the
+  comprehensive, self-guided execution prompt and audit playbook.
 
 If `docs/AGENT_MEMORY.md` conflicts with any other doc in the repo,
 `docs/AGENT_MEMORY.md` wins, and you should fix the other doc to match.
 
 — RealLearn maintainers
+

@@ -178,7 +178,7 @@ export default function Flashcards({ lesson }: Props) {
           <span className="flashcards__meta" aria-live="polite">
             {allSeen ? (
               <>
-                {t("flashcards.deckDone")} <Icon name="sparkle" size={12} style={{ verticalAlign: "-1px" }} />
+                {t("flashcards.deckDone")} <Icon name="sparkle" size={12} />
               </>
             ) : (
               t("flashcards.flippedCount", { flipped: seen.size, total: cards.length })
@@ -247,14 +247,14 @@ export default function Flashcards({ lesson }: Props) {
               <span className="flashcard__tag">{card.hint}</span>
               <span className="flashcard__text" {...langAttrs}>{card.front}</span>
               <span className="flashcard__flip-hint">
-                {t("flashcards.tapToFlip")} <Icon name="refresh" size={11} style={{ verticalAlign: "-1px" }} />
+                {t("flashcards.tapToFlip")} <Icon name="refresh" size={11} />
               </span>
             </span>
             <span className="flashcard__face flashcard__face--back" aria-hidden="true">
               <span className="flashcard__tag flashcard__tag--answer">{t("flashcards.answer")}</span>
               <span className="flashcard__text flashcard__text--answer" {...langAttrs}>{card.back}</span>
               <span className="flashcard__flip-hint">
-                {t("flashcards.tapToFlipBack")} <Icon name="refresh" size={11} style={{ verticalAlign: "-1px" }} />
+                {t("flashcards.tapToFlipBack")} <Icon name="refresh" size={11} />
               </span>
             </span>
           </button>

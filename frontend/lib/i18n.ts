@@ -1,17 +1,18 @@
 // frontend/lib/i18n.ts
-import { Language } from "@/types";
-import { TranslationKey, Translations, en } from "./translations/index";
-import { hi, gu, ta, bn, mr, te, kn, ml, pa, ur, or as odia } from "./translations/indian";
+import type { Language } from "../types";
+import type { TranslationKey, Translations } from "./translations/index.ts";
+import { en } from "./translations/index.ts";
+import { hi, gu, ta, bn, mr, te, kn, ml, pa, ur, or as odia } from "./translations/indian.ts";
 import {
   es, fr, de, it, pt, nl, ru, pl, ro, el, cs, hu, sv, no, da, fi, uk, tr,
   ca, bg, hr, sr, sk, sl, et, lv, lt,
-} from "./translations/european";
+} from "./translations/european.ts";
 import {
   zhCN, zhTW, ja, ko, vi, th, id, ms, fil, my, ne, si,
-} from "./translations/asian";
+} from "./translations/asian.ts";
 import {
   ar, he, fa, sw, am, yo, zu, ka, hy, kk, az, uz,
-} from "./translations/middleEasternAfricanCaucasian";
+} from "./translations/middleEasternAfricanCaucasian.ts";
 
 export type { TranslationKey, Translations };
 

@@ -1,5 +1,4 @@
 // frontend/lib/translations/index.ts
-import { Language } from "@/types";
 
 export type TranslationKey =
   | "nav.home"

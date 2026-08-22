@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { LessonJourney } from "@/types";
 import ShareResult from "@/components/learning/ShareResult";
@@ -80,7 +80,7 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
               strokeDashoffset={offset}
               strokeLinecap="round"
               transform="rotate(-90 50 50)"
-              style={{ transition: "stroke-dashoffset 800ms var(--ease-reveal)" }}
+              className="completion__ring-progress"
             />
           </svg>
           <div className="completion__ring-score">

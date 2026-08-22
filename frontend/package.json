@@ -29,7 +29,8 @@
     "verify:special-days": "node scripts/verify-special-days.mjs",
     "verify:onboarding": "node scripts/verify-onboarding.mjs",
     "verify:user-scoping": "node scripts/verify-user-scoping.mjs",
-    "verify:i18n": "npx tsx scripts/verify-i18n.mjs"
+    "verify:i18n": "node scripts/verify-i18n.mjs",
+    "verify:all": "npm run verify:quiz && npm run verify:achievements && npm run verify:reconsent && npm run verify:frontier && npm run verify:profile && npm run verify:personalization && npm run verify:special-days && npm run verify:onboarding && npm run verify:user-scoping && npm run verify:i18n"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.7.6",

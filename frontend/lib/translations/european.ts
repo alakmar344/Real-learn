@@ -1,5 +1,6 @@
 // frontend/lib/translations/european.ts
-import { Translations, en } from "./index";
+import type { Translations } from "./index.ts";
+import { en } from "./index.ts";
 
 export const es: Translations = {
   ...en,

@@ -205,29 +205,15 @@ export default function AchievementsGrid({ unlocked, snapshot }: Props) {
 
   return (
     <div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "baseline",
-          marginBottom: 10,
-        }}
-      >
+      <div className="achievements-header">
         {/* h2: only mounted on /progress, directly under its h1 page hero. */}
-        <h2 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>Achievements</h2>
-        <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
+        <h2 className="achievements-header__title">Achievements</h2>
+        <span className="achievements-header__count">
           {earnedCount}/{BADGES.length} unlocked
         </span>
       </div>
 
-      <div
-        ref={gridRef}
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(96px, 1fr))",
-          gap: 8,
-        }}
-      >
+      <div ref={gridRef} className="achievements-grid">
         {badgeStates.map(({ badge, earned, progress }) => {
           const isOpen = openId === badge.id;
           const tooltipId = `badge-tip-${badge.id}`;
@@ -268,9 +254,8 @@ export default function AchievementsGrid({ unlocked, snapshot }: Props) {
                 {/* Tier color when earned, muted when locked — replaces the
                     old grayscale-filtered emoji. */}
                 <div
+                  className="badge-tile__icon"
                   style={{
-                    display: "flex",
-                    justifyContent: "center",
                     color: earned ? TIER_COLOR[badge.tier] : "var(--text-tertiary)",
                     opacity: earned ? 1 : 0.72,
                   }}
@@ -278,29 +263,23 @@ export default function AchievementsGrid({ unlocked, snapshot }: Props) {
                   <Icon name={badge.icon} size={26} />
                 </div>
                 <div
+                  className="badge-tile__title"
                   style={{
-                    fontSize: 11,
-                    fontWeight: 700,
-                    marginTop: 4,
                     color: earned ? "var(--text-primary)" : "var(--text-tertiary)",
-                    lineHeight: 1.2,
                   }}
                 >
                   {badge.title}
                 </div>
                 {!earned && (
-                  <div style={{ marginTop: 6, height: 3, borderRadius: 3, background: "var(--border-subtle)", overflow: "hidden" }}>
-                    <div style={{ width: `${progress}%`, height: "100%", background: "var(--accent)", transition: "width 500ms var(--ease-reveal)" }} />
+                  <div className="badge-tile__track">
+                    <div className="badge-tile__fill" style={{ width: `${progress}%` }} />
                   </div>
                 )}
                 {earned && (
                   <div
                     aria-hidden="true"
+                    className="badge-tile__check"
                     style={{
-                      position: "absolute",
-                      top: 5,
-                      right: 6,
-                      display: "flex",
                       color: TIER_COLOR[badge.tier],
                     }}
                   >

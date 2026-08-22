@@ -2279,6 +2279,106 @@ p {
   box-shadow: var(--shadow-lg);
 }
 
+.achievements-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+
+.achievements-header__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.achievements-header__count {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 8px;
+}
+
+.badge-tile__icon {
+  display: flex;
+  justify-content: center;
+}
+
+.badge-tile__title {
+  font-size: 11px;
+  font-weight: 700;
+  margin-top: 4px;
+  line-height: 1.2;
+}
+
+.badge-tile__track {
+  margin-top: 6px;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--border-subtle);
+  overflow: hidden;
+}
+
+.badge-tile__fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 500ms var(--ease-reveal);
+}
+
+.badge-tile__check {
+  position: absolute;
+  top: 5px;
+  right: 6px;
+  display: flex;
+}
+
+.activity-heatmap__col {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.activity-heatmap__cell {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.activity-heatmap__legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.activity-heatmap__legend-cell {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  border: 1px solid var(--border-subtle);
+}
+
+.auth-glass-card--redirect {
+  text-align: center;
+  padding: var(--space-xl);
+}
+
+.auth-redirect__spinner {
+  margin: 0 auto var(--space-md);
+}
+
+.auth-redirect__text {
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+
 /* The story card. Sits above the tile; fades/rises in on hover, focus or tap. */
 /* ── Badge popover ── A single `position: fixed` element rendered at the
    AchievementsGrid root (NOT inside each badge tile). Fixed positioning
@@ -3024,6 +3124,7 @@ p {
 .part-done-bar {
   width: 100%;
   min-height: 52px;
+  margin-top: var(--space-lg);
   border-radius: var(--radius-pill);
   border: none;
   background: var(--correct-bg);
@@ -3058,10 +3159,13 @@ p {
   cursor: pointer;
   min-height: 48px;
   font-weight: 600;
-  transition: transform 180ms var(--ease-spring),
-              border-color 160ms var(--ease-color),
-              color 160ms var(--ease-color),
-              background 160ms var(--ease-color);
+  font-size: 14px;
+  transition: background 180ms var(--ease-color),
+              color 180ms var(--ease-color),
+              border-color 180ms var(--ease-color);
+}
+.btn-toggle--collapse {
+  margin-top: var(--space-base);
 }
 .btn-toggle:hover {
   border-color: var(--border-accent);
@@ -4528,6 +4632,13 @@ p {
 .flashcard__flip-hint {
   font-size: var(--text-xs);
   color: var(--text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.flashcard__flip-hint svg,
+.flashcards__meta svg {
+  vertical-align: -1px;
 }
 .flashcard:hover .flashcard__face {
   border-color: var(--border-accent);
@@ -4759,6 +4870,9 @@ p {
   width: 100px;
   height: 100px;
   flex-shrink: 0;
+}
+.completion__ring-progress {
+  transition: stroke-dashoffset 800ms var(--ease-reveal);
 }
 .completion__ring-score {
   position: absolute;
