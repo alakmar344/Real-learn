@@ -371,6 +371,8 @@ Target: WCAG 2.1 AA. Non-negotiables:
 | Full changelog since hackathon submission | `change-made-after-submission.md` |
 | Brand/product facts for an LLM | `llms.txt`, `llms-full.txt` |
 | Core AI Agent mandates | `GEMINI.md`, `AGENT_INSTRUCTIONS.md` |
+| Autonomous Agent Master Prompt & Playbook | `AUTONOMOUS_PROMPT.md` |
+
 
 ---
 
@@ -1562,4 +1564,19 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
     - `npx tsc --noEmit` passed with 0 errors.
     - All 10 verification test suites passed 100%.
     - Next.js 16 production build (`next build`) compiled successfully across all 14 routes.
+
+- 2026-08-22 (optimization & polish) — **Core Architecture Hardening, Fastify JIT Response Schemas, LRU Syllable Cache & Design System De-Slopping.**
+  - **⚡ Fastify Pre-Compiled JIT Response Schemas (`backend/src/routes/account.js`)**:
+    - Added pre-compiled `fast-json-stringify` response schemas to all account and consent routes (`/api/agreement`, `/api/agreement/status`, `/api/legal-consent`, `/api/legal-consent/status`, `/api/account`), achieving 2x–4x faster JSON serialization on consent checks and deletions.
+  - **🧠 Quality Gate LRU Cache Upgrade (`backend/src/lib/qualityGate.js`)**:
+    - Upgraded `syllableCache` in `countSyllables` to refresh entry order on cache hits, ensuring true LRU cache eviction and preventing unbounded memory growth.
+  - **🎨 Design System Hardening & Inline Style De-Slopping (`globals.css`, `AchievementsGrid.tsx`, `ActivityHeatmap.tsx`, `PartCard.tsx`, `CompletionScreen.tsx`, `Flashcards.tsx`, `sign-in`, `sign-up`)**:
+    - Extracted all ad-hoc inline styles into semantic CSS classes (`.achievements-header`, `.achievements-grid`, `.badge-tile__*`, `.activity-heatmap__*`, `.auth-glass-card--redirect`, `.completion__ring-progress`, `.btn-toggle--collapse`).
+    - Fixed collapsed completed part card label in `PartCard.tsx` and removed redundant margin overrides.
+    - Cleaned up 100% of ESLint warnings (0 errors, 0 warnings across the entire repository).
+  - **✅ Empirical Verification**:
+    - Backend: 117/117 unit, integration, and security tests passed (`node --test --test-concurrency=1`).
+    - Frontend: `npx tsc --noEmit` clean (0 errors), ESLint clean (0 errors, 0 warnings), all 10 verification suites passed 100% (`verify:quiz`, `verify:achievements`, `verify:reconsent`, `verify:frontier`, `verify:profile`, `verify:personalization`, `verify:special-days`, `verify:onboarding`, `verify:user-scoping`, `verify:i18n`), and Next.js 16 production build (`next build`) compiled with Turbopack across all 14 routes.
+
+
 

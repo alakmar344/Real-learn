@@ -9,7 +9,6 @@ import { useSavedJourneysStore } from "@/store/savedJourneysStore";
 import { useProgressStore } from "@/store/progressStore";
 import { useMounted } from "@/hooks/useMounted";
 import { warmupBackend, checkLessonCache, BACKEND_URL } from "@/lib/api";
-import { Language } from "@/types";
 import { LESSON_MODES as MODES } from "@/lib/lessonModes";
 import { buildLearningContext } from "@/lib/learningProfile";
 import { useTranslation } from "@/hooks/useTranslation";

@@ -18,7 +18,11 @@ function countSyllables(word) {
   if (!word || typeof word !== "string") return 0;
   const lower = word.toLowerCase();
   const cached = syllableCache.get(lower);
-  if (cached !== undefined) return cached;
+  if (cached !== undefined) {
+    syllableCache.delete(lower);
+    syllableCache.set(lower, cached);
+    return cached;
+  }
   const count = Math.max(1, syllable(lower) || 0);
   if (syllableCache.size >= MAX_SYLLABLE_CACHE) {
     const firstKey = syllableCache.keys().next().value;

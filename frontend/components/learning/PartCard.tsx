@@ -48,12 +48,6 @@ const subjectColors: Record<string, string> = {
   General: "var(--subject-general)",
 };
 
-const PART_INTENT = [
-  "Foundation — Core mental model & intuition built without jargon.",
-  "Mechanism — How it works step-by-step & disarming common doubts.",
-  "Application & Next — Real-world impact & what connects next.",
-];
-
 function CopyIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -225,10 +219,9 @@ const PartCardBase = ({
         aria-expanded={false}
         aria-controls={contentId}
         className="part-done-bar"
-        style={{ marginTop: "var(--space-lg)" }}
       >
         <span>
-          <Icon name="check" size={14} style={{ verticalAlign: "-2px" }} /> {part.title} · {t("learn.copied")}
+          <Icon name="check" size={14} /> {part.title}
         </span>
         <strong>{score ?? 0}/{part.quiz?.length ?? 2}</strong>
       </button>
@@ -320,8 +313,7 @@ const PartCardBase = ({
             onClick={() => onToggleCollapse(part.partNumber)}
             aria-expanded={true}
             aria-controls={contentId}
-            className="btn-toggle"
-            style={{ marginTop: "var(--space-base)" }}
+            className="btn-toggle btn-toggle--collapse"
           >
             {t("learn.collapsePart")}
           </button>

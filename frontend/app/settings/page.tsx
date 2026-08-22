@@ -263,7 +263,7 @@ export default function SettingsPage() {
     }
   };
 
-  if (!isLoaded || !isSignedIn) {
+  if (!isLoaded || !isSignedIn || !mounted) {
     return (
       <main className="flow-page">
         <Navbar />

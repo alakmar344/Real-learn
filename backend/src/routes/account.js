@@ -348,11 +348,82 @@ export async function exportDataHandler(req, res) {
   }
 }
 
+const agreementResponseSchema = {
+  schema: {
+    response: {
+      200: {
+        type: "object",
+        properties: {
+          ok: { type: "boolean" },
+        },
+      },
+    },
+  },
+};
+
+const agreementStatusResponseSchema = {
+  schema: {
+    response: {
+      200: {
+        type: "object",
+        properties: {
+          accepted: { type: "boolean" },
+          cookieVersion: { type: ["string", "null"] },
+        },
+      },
+    },
+  },
+};
+
+const legalConsentResponseSchema = {
+  schema: {
+    response: {
+      200: {
+        type: "object",
+        properties: {
+          ok: { type: "boolean" },
+        },
+      },
+    },
+  },
+};
+
+const legalConsentStatusResponseSchema = {
+  schema: {
+    response: {
+      200: {
+        type: "object",
+        properties: {
+          accepted: { type: "boolean" },
+          privacyVersion: { type: ["string", "null"] },
+          termsVersion: { type: ["string", "null"] },
+        },
+      },
+    },
+  },
+};
+
+const accountDeleteResponseSchema = {
+  schema: {
+    response: {
+      200: {
+        type: "object",
+        properties: {
+          ok: { type: "boolean" },
+          agreementsDeleted: { type: "number" },
+          moderationLogsDeleted: { type: "number" },
+          clerkDeleted: { type: "boolean" },
+        },
+      },
+    },
+  },
+};
+
 export default async function accountRoutes(fastify) {
-  fastify.post("/api/agreement", { preHandler: [apiRateLimiter, requireAuth] }, agreementHandler);
-  fastify.get("/api/agreement/status", { preHandler: [apiRateLimiter, requireAuth] }, agreementStatusHandler);
-  fastify.delete("/api/account", { preHandler: [apiRateLimiter, requireAuth] }, accountDeleteHandler);
-  fastify.post("/api/legal-consent", { preHandler: [apiRateLimiter, requireAuth] }, legalConsentHandler);
-  fastify.get("/api/legal-consent/status", { preHandler: [apiRateLimiter, requireAuth] }, legalConsentStatusHandler);
+  fastify.post("/api/agreement", { preHandler: [apiRateLimiter, requireAuth], ...agreementResponseSchema }, agreementHandler);
+  fastify.get("/api/agreement/status", { preHandler: [apiRateLimiter, requireAuth], ...agreementStatusResponseSchema }, agreementStatusHandler);
+  fastify.delete("/api/account", { preHandler: [apiRateLimiter, requireAuth], ...accountDeleteResponseSchema }, accountDeleteHandler);
+  fastify.post("/api/legal-consent", { preHandler: [apiRateLimiter, requireAuth], ...legalConsentResponseSchema }, legalConsentHandler);
+  fastify.get("/api/legal-consent/status", { preHandler: [apiRateLimiter, requireAuth], ...legalConsentStatusResponseSchema }, legalConsentStatusHandler);
   fastify.get("/api/export-data", { preHandler: [apiRateLimiter, requireAuth] }, exportDataHandler);
 }

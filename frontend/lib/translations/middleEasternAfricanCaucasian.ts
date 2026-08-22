@@ -1,5 +1,6 @@
 // frontend/lib/translations/middleEasternAfricanCaucasian.ts
-import { Translations, en } from "./index";
+import type { Translations } from "./index.ts";
+import { en } from "./index.ts";
 
 export const ar: Translations = {
   ...en,

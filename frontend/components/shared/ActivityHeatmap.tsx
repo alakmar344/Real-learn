@@ -63,15 +63,13 @@ export default function ActivityHeatmap({ history, weeks = 14 }: Props) {
     >
       <div aria-hidden="true" className="heatmap-scroll">
         {columns.map((col, ci) => (
-          <div key={ci} style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          <div key={ci} className="activity-heatmap__col">
             {col.map((cell) => (
               <div
                 key={cell.key}
                 title={cell.future ? undefined : cell.label}
+                className="activity-heatmap__cell"
                 style={{
-                  width: 12,
-                  height: 12,
-                  borderRadius: 3,
                   // Future days in the current week are blank spacers.
                   background: cell.future ? "transparent" : intensityColor(cell.count),
                   border: `1px solid ${cell.future ? "transparent" : "var(--border-subtle)"}`,
@@ -81,12 +79,13 @@ export default function ActivityHeatmap({ history, weeks = 14 }: Props) {
           </div>
         ))}
       </div>
-      <div aria-hidden="true" style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, fontSize: 11, color: "var(--text-tertiary)" }}>
+      <div aria-hidden="true" className="activity-heatmap__legend">
         <span>Less</span>
         {[0, 1, 2, 4, 6].map((n) => (
           <span
             key={n}
-            style={{ width: 11, height: 11, borderRadius: 3, background: intensityColor(n), border: "1px solid var(--border-subtle)" }}
+            className="activity-heatmap__legend-cell"
+            style={{ background: intensityColor(n) }}
           />
         ))}
         <span>More</span>
