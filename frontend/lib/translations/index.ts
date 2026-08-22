@@ -167,7 +167,108 @@ export type TranslationKey =
   | "common.cancel"
   | "common.save"
   | "common.retry"
-  | "common.errorTitle";
+  | "common.errorTitle"
+  | "loading.generatingAnswer"
+  | "loading.generatingLesson"
+  | "loading.progressLabel"
+  | "loading.stage.understand"
+  | "loading.stage.research"
+  | "loading.stage.ground"
+  | "loading.stage.writeLesson"
+  | "loading.stage.writeDirect"
+  | "loading.stage.polish"
+  | "loading.stage.craftQuizzes"
+  | "loading.stage.craftQuiz"
+  | "loading.stage.working"
+  | "loading.part.foundation"
+  | "loading.part.mechanism"
+  | "loading.part.realWorld"
+  | "loading.part.yourAnswer"
+  | "loading.slow.title"
+  | "loading.slow.resilient"
+  | "loading.slow.factCheck"
+  | "error.title"
+  | "error.retry"
+  | "error.goHome"
+  | "audio.generating"
+  | "audio.listenSection"
+  | "audio.stopReading"
+  | "audio.unsupported"
+  | "mic.askVoice"
+  | "mic.stopVoice"
+  | "mic.unsupported"
+  | "share.title"
+  | "share.preparing"
+  | "share.copyText"
+  | "share.downloaded"
+  | "share.copied"
+  | "share.failed"
+  | "share.copyFailed"
+  | "flashcards.coreInsight"
+  | "flashcards.hintGeneral"
+  | "flashcards.hintPart"
+  | "flashcards.shuffle"
+  | "flashcards.prev"
+  | "flashcards.next"
+  | "completion.suggestConnect"
+  | "completion.suggestApply"
+  | "completion.suggestMisconception"
+  | "feedback.modalTitle"
+  | "feedback.modalSub"
+  | "feedback.rateLabel"
+  | "feedback.likeLabel"
+  | "feedback.improveLabel"
+  | "feedback.optional"
+  | "feedback.likePlaceholder"
+  | "feedback.improvePlaceholder"
+  | "feedback.send"
+  | "feedback.sending"
+  | "feedback.askLater"
+  | "feedback.noThanks"
+  | "feedback.thankYou"
+  | "feedback.snoozed"
+  | "feedback.pickRating"
+  | "cookie.title"
+  | "cookie.body"
+  | "cookie.policy"
+  | "cookie.allow"
+  | "cookie.decline"
+  | "cookie.saving"
+  | "shortcuts.title"
+  | "shortcuts.submit"
+  | "shortcuts.toggle"
+  | "shortcuts.close"
+  | "shortcuts.selectOption"
+  | "shortcuts.nextQuestion"
+  | "shortcuts.hint"
+  | "achievements.title"
+  | "achievements.unlockedCount"
+  | "achievements.earnedDone"
+  | "achievements.pctThere"
+  | "achievements.tier.bronze"
+  | "achievements.tier.silver"
+  | "achievements.tier.gold"
+  | "achievements.tier.legendary"
+  | "learn.quizPassed"
+  | "learn.partPassed"
+  | "settings.analyticsAllowed"
+  | "settings.analyticsOff"
+  | "settings.analyticsNotSet"
+  | "settings.dataDeleted"
+  | "settings.exportDownloaded"
+  | "settings.exportFailed"
+  | "progress.levelTitle.finalBoss"
+  | "progress.levelTitle.mainCharacter"
+  | "progress.levelTitle.bigBrain"
+  | "progress.levelTitle.lockedIn"
+  | "progress.levelTitle.onTheGrind"
+  | "progress.levelTitle.explorer"
+  | "progress.levelTitle.freshSpawn"
+  | "progress.heatmapLess"
+  | "progress.heatmapMore"
+  | "progress.heatmapAria"
+  | "progress.heatmapCell"
+  | "progress.dailyGoalAria";
 
 export type Translations = Record<TranslationKey, string>;
 
@@ -339,4 +440,105 @@ export const en: Translations = {
   "common.save": "Save",
   "common.retry": "Try Again",
   "common.errorTitle": "Something went wrong",
+  "loading.generatingAnswer": "Generating your answer",
+  "loading.generatingLesson": "Generating your lesson",
+  "loading.progressLabel": "Lesson generation progress",
+  "loading.stage.understand": "Understanding your question",
+  "loading.stage.research": "Researching real-world context",
+  "loading.stage.ground": "Grounding it in today's world",
+  "loading.stage.writeLesson": "Writing your lesson",
+  "loading.stage.writeDirect": "Writing a direct answer",
+  "loading.stage.polish": "Polishing the explanation",
+  "loading.stage.craftQuizzes": "Crafting your quizzes",
+  "loading.stage.craftQuiz": "Crafting your quiz",
+  "loading.stage.working": "Working on it",
+  "loading.part.foundation": "Foundation",
+  "loading.part.mechanism": "Mechanism",
+  "loading.part.realWorld": "Real World",
+  "loading.part.yourAnswer": "Your Answer",
+  "loading.slow.title": "Sorry, it's taking longer than expected.",
+  "loading.slow.resilient": "We routed your lesson through our most resilient engine so it still lands — hang tight, it's on the way.",
+  "loading.slow.factCheck": "We're taking extra care to fact-check this one instead of rushing it. Hang tight — it's on the way.",
+  "error.title": "Let's try that once more",
+  "error.retry": "Try Again",
+  "error.goHome": "Go Home",
+  "audio.generating": "Generating…",
+  "audio.listenSection": "Listen to this section",
+  "audio.stopReading": "Stop reading aloud",
+  "audio.unsupported": "Read-aloud requires a modern browser",
+  "mic.askVoice": "Ask with your voice",
+  "mic.stopVoice": "Stop voice input",
+  "mic.unsupported": "Voice input requires Chrome, Edge, or Safari",
+  "share.title": "Share result",
+  "share.preparing": "Preparing…",
+  "share.copyText": "Copy text",
+  "share.downloaded": "Result card downloaded",
+  "share.copied": "Copied to clipboard",
+  "share.failed": "Could not share right now.",
+  "share.copyFailed": "Could not copy.",
+  "flashcards.coreInsight": "Core Insight",
+  "flashcards.hintGeneral": "Key idea · can you recall it?",
+  "flashcards.hintPart": "Part {num} · what's the key idea?",
+  "flashcards.shuffle": "Shuffle deck",
+  "flashcards.prev": "Previous card",
+  "flashcards.next": "Next card",
+  "completion.suggestConnect": "What is the next key concept connected to {topic}?",
+  "completion.suggestApply": "How does {topic} apply in real life?",
+  "completion.suggestMisconception": "What is the most common misconception about this?",
+  "feedback.modalTitle": "How was your first lesson?",
+  "feedback.modalSub": "A quick, optional review — no account needed and nothing tied to you. Takes under a minute.",
+  "feedback.rateLabel": "How would you rate RealLearn? (1–10 stars)",
+  "feedback.likeLabel": "What did you like?",
+  "feedback.improveLabel": "What should we improve?",
+  "feedback.optional": "(optional)",
+  "feedback.likePlaceholder": "The explanations, the quizzes, the vibe…",
+  "feedback.improvePlaceholder": "Anything that felt slow, confusing, or missing…",
+  "feedback.send": "Send feedback",
+  "feedback.sending": "Sending…",
+  "feedback.askLater": "Ask later",
+  "feedback.noThanks": "No thanks",
+  "feedback.thankYou": "Thanks for the feedback!",
+  "feedback.snoozed": "We'll ask another time.",
+  "feedback.pickRating": "Please pick a star rating (1–10), or tap “No thanks”.",
+  "cookie.title": "A quick choice about analytics",
+  "cookie.body": "We'd like to use Google Analytics to understand what helps people learn. Nothing loads until you say yes, and you can change your mind anytime in Settings.",
+  "cookie.policy": "Cookie Policy",
+  "cookie.allow": "Allow analytics",
+  "cookie.decline": "No thanks",
+  "cookie.saving": "Saving...",
+  "shortcuts.title": "Keyboard Shortcuts",
+  "shortcuts.submit": "Submit question / Start lesson",
+  "shortcuts.toggle": "Show keyboard shortcuts",
+  "shortcuts.close": "Close modal / quiz / sidebar",
+  "shortcuts.selectOption": "Select quiz answer (when quiz is open)",
+  "shortcuts.nextQuestion": "Next quiz question (after answering)",
+  "shortcuts.hint": "Press ? to toggle this overlay",
+  "achievements.title": "Achievements",
+  "achievements.unlockedCount": "{unlocked}/{total} unlocked",
+  "achievements.earnedDone": "Earned — beautifully done.",
+  "achievements.pctThere": "{pct}% there",
+  "achievements.tier.bronze": "Bronze",
+  "achievements.tier.silver": "Silver",
+  "achievements.tier.gold": "Gold",
+  "achievements.tier.legendary": "Legendary",
+  "learn.quizPassed": "Correct — well done.",
+  "learn.partPassed": "Part completed.",
+  "settings.analyticsAllowed": "Analytics allowed",
+  "settings.analyticsOff": "Analytics off",
+  "settings.analyticsNotSet": "Not set",
+  "settings.dataDeleted": "Your data and account have been deleted.",
+  "settings.exportDownloaded": "Data export downloaded",
+  "settings.exportFailed": "Could not export data. Please try again.",
+  "progress.levelTitle.finalBoss": "Final Boss",
+  "progress.levelTitle.mainCharacter": "Main Character",
+  "progress.levelTitle.bigBrain": "Big Brain",
+  "progress.levelTitle.lockedIn": "Locked In",
+  "progress.levelTitle.onTheGrind": "On the Grind",
+  "progress.levelTitle.explorer": "Explorer",
+  "progress.levelTitle.freshSpawn": "Fresh Spawn",
+  "progress.heatmapLess": "Less",
+  "progress.heatmapMore": "More",
+  "progress.heatmapAria": "Study activity over the last {weeks} weeks: {activeDays} active days, {totalParts} parts completed.",
+  "progress.heatmapCell": "{key}: {count} parts",
+  "progress.dailyGoalAria": "{value} of {goal} daily parts completed",
 };

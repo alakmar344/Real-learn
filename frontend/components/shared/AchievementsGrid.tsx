@@ -1,20 +1,20 @@
-"use client";
-
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { BADGES, ProgressSnapshot, TIER_COLOR, BadgeTier } from "@/lib/achievements";
 import { Icon } from "@/components/shared/icons";
+import { useTranslation } from "@/hooks/useTranslation";
+import { TranslationKey } from "@/lib/i18n";
 
 interface Props {
   unlocked: Record<string, number>;
   snapshot: ProgressSnapshot;
 }
 
-const TIER_LABEL: Record<BadgeTier, string> = {
-  bronze: "Bronze",
-  silver: "Silver",
-  gold: "Gold",
-  legendary: "Legendary",
+const TIER_TRANSLATION_KEYS: Record<BadgeTier, TranslationKey> = {
+  bronze: "achievements.tier.bronze",
+  silver: "achievements.tier.silver",
+  gold: "achievements.tier.gold",
+  legendary: "achievements.tier.legendary",
 };
 
 /** Padding (px) between the popover and the badge / viewport edge. */
@@ -31,21 +31,8 @@ interface PopoverPos {
   arrowLeft: number;
 }
 
-/** Grid of all achievements — earned ones lit, locked ones dimmed. Clicking
- * (or hovering, on desktop) any badge opens a popover card that explains
- * exactly how to earn it and how close you are.
- *
- * The popover is rendered through a PORTAL into `document.body`. This is
- * critical: the grid's ancestor (`.progress-achievements`) uses
- * `content-visibility: auto`, which applies paint containment — and a
- * paint-contained ancestor becomes the CONTAINING BLOCK for
- * `position: fixed` descendants. Rendering the popover inside the grid
- * (even with `position: fixed`) made the viewport-space coordinates get
- * resolved against the section's own box instead — the card appeared far
- * away from the clicked badge and its text was clipped at the section
- * boundary. A body-level portal escapes every ancestor's containment,
- * transform, and overflow, so the card always hugs the badge it belongs to. */
 export default function AchievementsGrid({ unlocked, snapshot }: Props) {
+  const { t } = useTranslation();
   // Derive every badge's earned/progress state ONCE per data change. Without
   // the memo the full set of progress() callbacks re-ran on every render —
   // and the popover open/close state changes on every hover across the grid.
@@ -103,15 +90,10 @@ export default function AchievementsGrid({ unlocked, snapshot }: Props) {
     );
     if (!tile) return;
     const rect = tile.getBoundingClientRect();
-    // We don't know the popover height until it renders, so we measure
-    // after paint in the layout effect below. For now, store the badge
-    // rect so we can compute the final position once the popover mounts.
     setBadgeRect(rect);
     setOpenId(badgeId);
   }, []);
 
-  // After the popover mounts (openId set), measure it and compute a clamped
-  // position that keeps it fully inside the viewport.
   useLayoutEffect(() => {
     if (!openId || !badgeRect || !popoverRef.current) {
       setPopoverPos(null);
@@ -148,17 +130,14 @@ export default function AchievementsGrid({ unlocked, snapshot }: Props) {
       Math.min(desiredLeft, vw - popRect.width - POPOVER_VIEWPORT_MARGIN)
     );
 
-    // Arrow horizontal offset: point at the badge centre relative to the
-    // popover's left edge. Clamped so the arrow never sits at the extreme
-    // edge of the popover (keeps it visually anchored).
+    // Arrow horizontal offset.
     const arrowLeft = badgeRect.left + badgeRect.width / 2 - left;
     const clampedArrowLeft = Math.max(16, Math.min(arrowLeft, popRect.width - 16));
 
     setPopoverPos({ top, left, below, arrowLeft: clampedArrowLeft });
   }, [openId, badgeRect]);
 
-  // Close on scroll (the badge positions change, so the arrow would point
-  // at the wrong spot) and on viewport resize.
+  // Close on scroll and on viewport resize.
   useEffect(() => {
     if (!openId) return;
     const close = () => {
@@ -182,7 +161,7 @@ export default function AchievementsGrid({ unlocked, snapshot }: Props) {
         popoverRef.current?.contains(target) ||
         gridRef.current?.contains(target)
       ) {
-        return; // click inside the grid or popover — let onClick handle it
+        return;
       }
       pinnedRef.current = false;
       setOpenId(null);
@@ -206,10 +185,9 @@ export default function AchievementsGrid({ unlocked, snapshot }: Props) {
   return (
     <div>
       <div className="achievements-header">
-        {/* h2: only mounted on /progress, directly under its h1 page hero. */}
-        <h2 className="achievements-header__title">Achievements</h2>
+        <h2 className="achievements-header__title">{t("achievements.title")}</h2>
         <span className="achievements-header__count">
-          {earnedCount}/{BADGES.length} unlocked
+          {t("achievements.unlockedCount", { unlocked: earnedCount, total: BADGES.length })}
         </span>
       </div>
 
@@ -251,8 +229,6 @@ export default function AchievementsGrid({ unlocked, snapshot }: Props) {
               }}
             >
               <div className="badge-tile__inner">
-                {/* Tier color when earned, muted when locked — replaces the
-                    old grayscale-filtered emoji. */}
                 <div
                   className="badge-tile__icon"
                   style={{
@@ -292,9 +268,6 @@ export default function AchievementsGrid({ unlocked, snapshot }: Props) {
         })}
       </div>
 
-      {/* ── Floating popover ── portalled into <body> so no ancestor's paint
-          containment (`content-visibility`), transform, or overflow can
-          re-anchor or clip its fixed-position coordinates. */}
       {mounted && openBadgeData && createPortal(
         <div
           ref={popoverRef}
@@ -324,7 +297,6 @@ export default function AchievementsGrid({ unlocked, snapshot }: Props) {
                 }
           }
         >
-          {/* Arrow pointing at the badge — only shown once positioned. */}
           {popoverPos && (
             <span
               className="badge-popover__arrow"
@@ -354,7 +326,7 @@ export default function AchievementsGrid({ unlocked, snapshot }: Props) {
               className="badge-popover__tier"
               style={{ color: TIER_COLOR[openBadgeData.tier], borderColor: TIER_COLOR[openBadgeData.tier] }}
             >
-              {TIER_LABEL[openBadgeData.tier]}
+              {t(TIER_TRANSLATION_KEYS[openBadgeData.tier])}
             </span>
           </div>
           <p className="badge-popover__how">
@@ -362,7 +334,7 @@ export default function AchievementsGrid({ unlocked, snapshot }: Props) {
           </p>
           {unlocked[openBadgeData.id] ? (
             <p className="badge-popover__status badge-popover__status--earned">
-              Earned — beautifully done.{" "}
+              {t("achievements.earnedDone")}{" "}
               <Icon name="check" size={12} style={{ verticalAlign: "-2px" }} />
             </p>
           ) : (
@@ -370,7 +342,7 @@ export default function AchievementsGrid({ unlocked, snapshot }: Props) {
               <div className="badge-popover__bar">
                 <div style={{ width: `${Math.round(openBadgeData.progress(snapshot) * 100)}%` }} />
               </div>
-              <span>{Math.round(openBadgeData.progress(snapshot) * 100)}% there</span>
+              <span>{t("achievements.pctThere", { pct: Math.round(openBadgeData.progress(snapshot) * 100) })}</span>
             </div>
           )}
         </div>,

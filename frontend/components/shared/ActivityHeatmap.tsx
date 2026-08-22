@@ -1,6 +1,5 @@
-"use client";
-
 import { dayKey } from "@/lib/achievements";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface Props {
   history: Record<string, number>;
@@ -17,6 +16,7 @@ function intensityColor(count: number): string {
 
 /** GitHub-style contribution grid over the last N weeks (local dates). */
 export default function ActivityHeatmap({ history, weeks = 14 }: Props) {
+  const { t } = useTranslation();
   const today = new Date();
   const end = new Date(today);
   end.setHours(0, 0, 0, 0);
@@ -37,7 +37,7 @@ export default function ActivityHeatmap({ history, weeks = 14 }: Props) {
     cells.push({
       key,
       count,
-      label: `${key}: ${count} part${count === 1 ? "" : "s"}`,
+      label: t("progress.heatmapCell", { key, count, s: count === 1 ? "" : "s" }),
       future: d > end,
     });
   }
@@ -48,18 +48,17 @@ export default function ActivityHeatmap({ history, weeks = 14 }: Props) {
     columns.push(cells.slice(w * 7, w * 7 + 7));
   }
 
-  // The grid is decorative for assistive tech (title tooltips are mouse-only);
-  // expose a single summarizing label so screen-reader/keyboard users get the
-  // gist without wading through hundreds of unlabeled cells.
   const activeDays = cells.filter((c) => !c.future && c.count > 0).length;
   const totalParts = cells.reduce((sum, c) => (c.future ? sum : sum + c.count), 0);
 
   return (
     <div
       role="img"
-      aria-label={`Study activity over the last ${weeks} weeks: ${activeDays} active ${
-        activeDays === 1 ? "day" : "days"
-      }, ${totalParts} part${totalParts === 1 ? "" : "s"} completed.`}
+      aria-label={t("progress.heatmapAria", {
+        weeks,
+        activeDays,
+        totalParts,
+      })}
     >
       <div aria-hidden="true" className="heatmap-scroll">
         {columns.map((col, ci) => (
@@ -80,7 +79,7 @@ export default function ActivityHeatmap({ history, weeks = 14 }: Props) {
         ))}
       </div>
       <div aria-hidden="true" className="activity-heatmap__legend">
-        <span>Less</span>
+        <span>{t("progress.heatmapLess")}</span>
         {[0, 1, 2, 4, 6].map((n) => (
           <span
             key={n}
@@ -88,7 +87,7 @@ export default function ActivityHeatmap({ history, weeks = 14 }: Props) {
             style={{ background: intensityColor(n) }}
           />
         ))}
-        <span>More</span>
+        <span>{t("progress.heatmapMore")}</span>
       </div>
     </div>
   );

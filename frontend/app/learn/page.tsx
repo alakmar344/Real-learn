@@ -375,7 +375,7 @@ export default function LearnPage() {
       if (unlockTimeoutRef.current) clearTimeout(unlockTimeoutRef.current);
       unlockTimeoutRef.current = window.setTimeout(() => setShowUnlockFx(false), 850);
       showToast(
-        score >= 1 ? "Correct — well done." : "Part completed.",
+        score >= 1 ? t("learn.quizPassed") : t("learn.partPassed"),
         score >= 1 ? "success" : "info"
       );
 
@@ -384,7 +384,7 @@ export default function LearnPage() {
         setTimeout(() => scrollToPart(nextPartNumber), 50);
       }
     },
-    [lesson, language, totalParts, partScores, passPart, recordPartPassed, recordLessonCompleted]
+    [lesson, language, totalParts, partScores, passPart, recordPartPassed, recordLessonCompleted, t]
   );
 
   const handleStartQuiz = useCallback(

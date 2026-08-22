@@ -1,11 +1,10 @@
-"use client";
-
 import { useState } from "react";
 import { useProgressStore } from "@/store/progressStore";
 import { levelInfo, levelTitle } from "@/lib/achievements";
 import { useMounted } from "@/hooks/useMounted";
 import { showToast } from "@/components/shared/ToastContainer";
 import { SHARE_CARD, withAlpha } from "@/lib/palette";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface Props {
   question: string;
@@ -38,6 +37,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number,
 }
 
 export default function ShareResult({ question, totalScore, maxScore = 6 }: Props) {
+  const { t } = useTranslation();
   const mounted = useMounted();
   const xp = useProgressStore((s) => s.xp);
   const streak = useProgressStore((s) => s.streak);
@@ -292,14 +292,14 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
         // revoking on the same tick can abort it. Defer the revoke so the
         // download reliably lands, while still freeing the object URL.
         setTimeout(() => URL.revokeObjectURL(url), 60_000);
-        showToast("Result card downloaded", "success");
+        showToast(t("share.downloaded"), "success");
       }
     } catch (err) {
       // Dismissing the native share sheet rejects with AbortError — that's a
       // deliberate user choice, not a failure; don't show an error toast.
       if (!(err instanceof DOMException && err.name === "AbortError")) {
         console.log("[frontend][ShareResult] share failed", err);
-        showToast("Could not share right now.", "error");
+        showToast(t("share.failed"), "error");
       }
     }
     setBusy(false);
@@ -308,9 +308,9 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
   async function handleCopy() {
     try {
       await navigator.clipboard.writeText(summaryText);
-      showToast("Copied to clipboard", "success");
+      showToast(t("share.copied"), "success");
     } catch {
-      showToast("Could not copy.", "error");
+      showToast(t("share.copyFailed"), "error");
     }
   }
 
@@ -319,10 +319,10 @@ export default function ShareResult({ question, totalScore, maxScore = 6 }: Prop
   return (
     <div className="share-actions">
       <button type="button" onClick={handleShare} disabled={busy} className="btn-primary">
-        {busy ? "Preparing…" : "Share result"}
+        {busy ? t("share.preparing") : t("share.title")}
       </button>
       <button type="button" onClick={handleCopy} className="btn-ghost">
-        Copy text
+        {t("share.copyText")}
       </button>
     </div>
   );

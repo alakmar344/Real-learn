@@ -1,6 +1,5 @@
-"use client";
-
 import { Icon } from "@/components/shared/icons";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface Props {
   value: number;
@@ -19,6 +18,7 @@ export default function DailyGoalRing({
   stroke = 4,
   showLabel = true,
 }: Props) {
+  const { t } = useTranslation();
   const safeGoal = Math.max(1, goal);
   const pct = Math.max(0, Math.min(1, value / safeGoal));
   const met = value >= safeGoal;
@@ -29,7 +29,7 @@ export default function DailyGoalRing({
   return (
     <div
       role="img"
-      aria-label={`${value} of ${goal} daily parts completed`}
+      aria-label={t("progress.dailyGoalAria", { value, goal })}
       style={{ position: "relative", width: size, height: size, flexShrink: 0 }}
     >
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">

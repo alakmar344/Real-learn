@@ -1,10 +1,6 @@
-"use client";
-
-// Voice-input mic button backed by the browser's speech recognition
-// (Web Speech API). Shows a disabled button with tooltip when unsupported.
-
 import { useEffect, useRef } from "react";
 import { speechLangFor, useSpeechRecognition } from "@/hooks/useSpeech";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface Props {
   /** App language to listen in, e.g. "Hindi". Defaults to English. */
@@ -17,6 +13,7 @@ interface Props {
 }
 
 export default function MicButton({ language, onTranscript, onInterim, size = 44 }: Props) {
+  const { t } = useTranslation();
   const { supported, listening, interimTranscript, toggle } = useSpeechRecognition({
     lang: speechLangFor(language),
     onResult: onTranscript,
@@ -55,8 +52,8 @@ export default function MicButton({ language, onTranscript, onInterim, size = 44
       <button
         type="button"
         disabled
-        aria-label="Voice input not supported in this browser"
-        title="Voice input requires Chrome, Edge, or Safari"
+        aria-label={t("mic.unsupported")}
+        title={t("mic.unsupported")}
         className="mic-btn mic-btn--unsupported"
         style={{ width: size, height: size, minWidth: size }}
       >
@@ -70,8 +67,8 @@ export default function MicButton({ language, onTranscript, onInterim, size = 44
       type="button"
       onClick={toggle}
       aria-pressed={listening}
-      aria-label={listening ? "Stop voice input" : "Ask with your voice"}
-      title={listening ? "Stop voice input" : "Ask with your voice"}
+      aria-label={listening ? t("mic.stopVoice") : t("mic.askVoice")}
+      title={listening ? t("mic.stopVoice") : t("mic.askVoice")}
       className={listening ? "mic-btn mic-btn--listening" : "mic-btn"}
       style={{ width: size, height: size, minWidth: size }}
     >

@@ -42,7 +42,10 @@ function excerptFromContent(text: string, cap = 220): string {
   return out;
 }
 
-export function buildFlashcards(lesson: LessonJourney): Card[] {
+export function buildFlashcards(
+  lesson: LessonJourney,
+  t: (key: any, params?: Record<string, string | number>) => string = (k) => k
+): Card[] {
   const takeaways = (lesson.keyTakeaways ?? [])
     .map((t) => removeMarkdown(String(t ?? "")).trim())
     .filter(Boolean);
@@ -60,8 +63,8 @@ export function buildFlashcards(lesson: LessonJourney): Card[] {
         if (!content) return null;
         const title = removeMarkdown(String(part?.title ?? lesson.topic ?? "")).trim();
         return {
-          front: title || `Part ${i + 1}`,
-          hint: `Part ${part?.partNumber ?? i + 1} · what's the key idea?`,
+          front: title || t("learn.partTag", { num: i + 1 }),
+          hint: t("flashcards.hintPart", { num: part?.partNumber ?? i + 1 }),
           back: excerptFromContent(content),
         };
       })
@@ -74,8 +77,8 @@ export function buildFlashcards(lesson: LessonJourney): Card[] {
     const title = removeMarkdown(String(part?.title ?? lesson.topic ?? "")).trim();
     return [
       {
-        front: title || "Core Insight",
-        hint: "Key idea · can you recall it?",
+        front: title || t("flashcards.coreInsight"),
+        hint: t("flashcards.hintGeneral"),
         back: takeaways[0],
       },
     ];
@@ -89,8 +92,8 @@ export function buildFlashcards(lesson: LessonJourney): Card[] {
       if (!content) return null;
       const title = removeMarkdown(String(part?.title ?? lesson.topic ?? "")).trim();
       return {
-        front: title || `Part ${i + 1}`,
-        hint: "Key idea · can you recall it?",
+        front: title || t("learn.partTag", { num: i + 1 }),
+        hint: t("flashcards.hintGeneral"),
         back: excerptFromContent(content),
       };
     })
@@ -103,7 +106,7 @@ interface Props {
 
 export default function Flashcards({ lesson }: Props) {
   const { t } = useTranslation();
-  const baseCards = useMemo(() => buildFlashcards(lesson), [lesson]);
+  const baseCards = useMemo(() => buildFlashcards(lesson, t), [lesson, t]);
   const langAttrs = contentLangAttrs(lesson.language);
   const [order, setOrder] = useState<number[] | null>(null);
   const [index, setIndex] = useState(0);
@@ -187,8 +190,8 @@ export default function Flashcards({ lesson }: Props) {
           <button
             type="button"
             className="btn-icon flashcards__shuffle"
-            aria-label="Shuffle deck"
-            title="Shuffle deck"
+            aria-label={t("flashcards.shuffle")}
+            title={t("flashcards.shuffle")}
             disabled={cards.length < 2}
             onClick={shuffle}
           >
@@ -212,7 +215,7 @@ export default function Flashcards({ lesson }: Props) {
         <button
           type="button"
           className="btn-icon flashcards__nav"
-          aria-label="Previous card"
+          aria-label={t("flashcards.prev")}
           disabled={cards.length < 2}
           onClick={() => go(index - 1)}
         >
@@ -263,7 +266,7 @@ export default function Flashcards({ lesson }: Props) {
         <button
           type="button"
           className="btn-icon flashcards__nav"
-          aria-label="Next card"
+          aria-label={t("flashcards.next")}
           disabled={cards.length < 2}
           onClick={() => go(index + 1)}
         >

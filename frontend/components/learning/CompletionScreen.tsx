@@ -18,21 +18,24 @@ interface Props {
 }
 
 /** Generate contextual follow-up suggestions based on the lesson topic and takeaways. */
-function generateFollowUpSuggestions(lesson: LessonJourney): string[] {
+function generateFollowUpSuggestions(
+  lesson: LessonJourney,
+  t: (key: any, params?: Record<string, string | number>) => string
+): string[] {
   const topic = lesson.question ?? lesson.topic ?? "";
   const takeaways = lesson.keyTakeaways ?? [];
   const suggestions: string[] = [];
 
   if (topic.length > 0) {
-    suggestions.push(`What is the next key concept connected to ${topic.slice(0, 50)}?`);
+    suggestions.push(t("completion.suggestConnect", { topic: topic.slice(0, 50) }));
   }
 
   if (takeaways[0]) {
     const short = takeaways[0].slice(0, 70).replace(/\.$/, "");
-    suggestions.push(`How does ${short.toLowerCase()} apply in real life?`);
+    suggestions.push(t("completion.suggestApply", { topic: short }));
   }
 
-  suggestions.push(`What is the most common misconception about this?`);
+  suggestions.push(t("completion.suggestMisconception"));
   return suggestions.slice(0, 3);
 }
 
@@ -53,7 +56,7 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
 
   const pct = Math.round((totalScore / maxScore) * 100);
   const circumference = 2 * Math.PI * 42;
-  const followUps = useMemo(() => generateFollowUpSuggestions(lesson), [lesson]);
+  const followUps = useMemo(() => generateFollowUpSuggestions(lesson, t), [lesson, t]);
   const offset = circumference - (pct / 100) * circumference;
 
   return (
@@ -93,7 +96,12 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
             {(lesson.parts?.length ?? 3) === 1 ? t("completion.gotIt") : t("completion.journeyComplete")}
           </h3>
           <p className="completion__subtitle">
-            {t("completion.scored", { score: totalScore, total: maxScore })} — {pct >= 80 ? t("completion.cleanRun") : pct >= 50 ? t("completion.solid") : t("completion.tough")}
+            {t("completion.scored", {
+              score: totalScore,
+              max: maxScore,
+              total: maxScore,
+              msg: pct >= 80 ? t("completion.cleanRun") : pct >= 50 ? t("completion.solid") : t("completion.tough"),
+            })}
           </p>
         </div>
       </div>

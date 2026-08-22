@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 import Footer from "@/components/shared/Footer";
 import DailyGoalRing from "@/components/shared/DailyGoalRing";
 import { useProgressStore } from "@/store/progressStore";
-import { levelInfo, levelTitle, dayKey, displayableStreak, ProgressSnapshot } from "@/lib/achievements";
+import { levelInfo, levelTitleKey, dayKey, displayableStreak, ProgressSnapshot } from "@/lib/achievements";
 import { useMounted } from "@/hooks/useMounted";
 import { useShallow } from "zustand/shallow";
 import { Skeleton, SkeletonCard, SkeletonTile } from "@/components/shared/Skeleton";
@@ -136,7 +136,7 @@ export default function ProgressPage() {
                 <div className="level-orb animate-level-burst">{info.level}</div>
                 <div className="level-hero__body">
                   <div className="level-hero__name">
-                    {t("progress.level", { num: info.level })} · <em>{levelTitle(info.level)}</em>
+                    {t("progress.level", { level: info.level, num: info.level })} · <em>{t(levelTitleKey(info.level))}</em>
                   </div>
                   <div className="level-hero__meta">{t("progress.xpTotal", { xp: info.totalXp.toLocaleString() })}</div>
                   <div className="xp-track">
@@ -146,7 +146,13 @@ export default function ProgressPage() {
                     />
                   </div>
                   <div className="xp-track__note">
-                    {t("progress.xpToNext", { current: info.intoLevel, total: info.forNext, next: info.level + 1 })}
+                    {t("progress.xpToNext", {
+                      into: info.intoLevel,
+                      forNext: info.forNext,
+                      next: info.level + 1,
+                      current: info.intoLevel,
+                      total: info.forNext,
+                    })}
                   </div>
                 </div>
               </div>
@@ -191,7 +197,12 @@ export default function ProgressPage() {
                   <div>
                     <div className="flow-card__title flow-card__title--tight">{t("progress.dailyGoal")}</div>
                     <div className="stat-tile-2026__label">
-                      {t("progress.partsToday", { current: Math.min(todayCount, s.dailyGoal), total: s.dailyGoal })}
+                      {t("progress.partsToday", {
+                        count: Math.min(todayCount, s.dailyGoal),
+                        goal: s.dailyGoal,
+                        current: Math.min(todayCount, s.dailyGoal),
+                        total: s.dailyGoal,
+                      })}
                     </div>
                   </div>
                 </div>

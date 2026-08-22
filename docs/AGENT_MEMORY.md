@@ -1578,5 +1578,30 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
     - Backend: 117/117 unit, integration, and security tests passed (`node --test --test-concurrency=1`).
     - Frontend: `npx tsc --noEmit` clean (0 errors), ESLint clean (0 errors, 0 warnings), all 10 verification suites passed 100% (`verify:quiz`, `verify:achievements`, `verify:reconsent`, `verify:frontier`, `verify:profile`, `verify:personalization`, `verify:special-days`, `verify:onboarding`, `verify:user-scoping`, `verify:i18n`), and Next.js 16 production build (`next build`) compiled with Turbopack across all 14 routes.
 
+- 2026-08-22 (i18n & ai-prompt-hardening) — **Complete Multilingual UI Translation & Backend AI Target Language Enforcement.**
+  - **🤖 Backend Prompt Language Hardening (`backend/src/lib/prompts.js`)**:
+    - Removed hardcoded English phrasing from `VOICE_AND_SAFETY`, `GENERATE_FAST_ANSWER_PROMPT`, and `GENERATE_LESSON_PROMPT` (which previously commanded "in casual everyday English" across voice instructions and part definitions, causing LLMs to generate English text even when Hindi, Spanish, French, etc. were selected).
+    - Enforced mandatory **CRITICAL LANGUAGE RULE**: 100% of generated content (`topic`, `parts[].title`, `parts[].content`, `parts[].quiz[].question`, `parts[].quiz[].options`, `parts[].quiz[].correctAnswer`, `parts[].quiz[].explanation`, `keyTakeaways`) MUST be written in the specified `Language` from the user turn.
+  - **🌐 Frontend Translation Dictionary Expansion (`frontend/lib/translations/`)**:
+    - Expanded `TranslationKey` and base `en` dictionary from 167 keys to 256 keys covering all previously hardcoded strings: Loading cinematic stages and notices, Error states, Speech & Audio controls, Share modal and cards, Flashcards hints and actions, Completion follow-up question templates, Feedback review modal, Cookie consent banner, Keyboard shortcuts, and Achievements hub.
+    - Updated regional dictionaries (`indian.ts`, `european.ts`, `asian.ts`, `middleEasternAfricanCaucasian.ts`) with authentic localized strings and valid fallbacks.
+  - **🔌 Frontend Component Localization Wiring (`useTranslation()`)**:
+    - `LoadingCinematic.tsx`: Localized all 8 generation stages, 4 part progress labels, slow-path resilient/fact-checking notices, and Cancel CTA.
+    - `ErrorState.tsx`: Localized retry title, retry button, and go home navigation.
+    - `ListenButton.tsx` & `MicButton.tsx`: Localized reading state, listen, stop, retry, voice listening, and unsupported browser tooltips.
+    - `ShareResult.tsx`: Localized share card generator, share result button, copy text button, and outcome toasts.
+    - `Flashcards.tsx`: Localized core insight front cards, per-part recall hints, shuffle deck, and card navigation.
+    - `CompletionScreen.tsx`: Localized dynamic follow-up question suggestion templates.
+    - `FeedbackPrompt.tsx`: Localized first lesson review modal, rating prompts, text placeholders, and action buttons.
+    - `CookieConsent.tsx`: Localized analytics choice banner copy, policy links, and allow/decline buttons.
+    - `KeyboardShortcuts.tsx`: Localized shortcut actions, modal title, and toggle hint.
+    - `app/learn/page.tsx` & `app/settings/page.tsx`: Localized quiz pass toasts, cookie status indicators, and data export/deletion notifications.
+    - `app/progress/page.tsx`, `ActivityHeatmap.tsx`, `DailyGoalRing.tsx`, `CompletionScreen.tsx`: Fixed raw logic and template parameter mismatches (e.g. `{num}` vs `{level}`, `{current}/{total}` vs `{into}/{forNext}`, `{count}/{goal}`, `{score}/{max}` and `{msg}`) where raw template brackets like `Level {level}` and `{into} / {forNext} XP to Level 2` were previously leaking un-interpolated into the UI. Added localized rank titles (`levelTitleKey`) and heatmap labels.
+  - **✅ Empirical Verification**:
+    - `npm run verify:i18n` passed 100% (all 63 languages have complete 268 keys).
+    - All 10 verification suites passed cleanly.
+    - Backend: 117/117 unit and security tests passed.
+    - Frontend: `npx tsc --noEmit` clean (0 errors), ESLint clean (0 errors, 0 warnings), Next.js 16 production build (`next build`) green across all 14 routes.
+
 
 

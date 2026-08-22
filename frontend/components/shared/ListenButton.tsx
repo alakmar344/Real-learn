@@ -1,9 +1,5 @@
-"use client";
-
-// "Listen to this answer" — reads a piece of lesson content aloud using
-// Microsoft Edge's online TTS service via the backend API.
-
 import { markdownToPlainText, speechLangFor, useEdgeTts } from "@/hooks/useSpeech";
+import { useTranslation } from "@/hooks/useTranslation";
 
 function SpeakerIcon() {
   return (
@@ -24,8 +20,10 @@ interface Props {
   label?: string;
 }
 
-export default function ListenButton({ text, language, label = "Listen to this section" }: Props) {
+export default function ListenButton({ text, language, label }: Props) {
+  const { t } = useTranslation();
   const { supported, speaking, loading, error, speak, stop, clearError } = useEdgeTts();
+  const idleLabel = label ?? t("audio.listenSection");
 
   const handleClick = () => {
     if (error) clearError();
@@ -39,12 +37,12 @@ export default function ListenButton({ text, language, label = "Listen to this s
   if (!supported) {
     return (
       <span
-        aria-label="Read-aloud not supported in this browser"
-        title="Read-aloud requires a modern browser"
+        aria-label={t("audio.unsupported")}
+        title={t("audio.unsupported")}
         className="listen-btn listen-btn--unsupported"
       >
         <span aria-hidden="true" className="listen-btn__icon"><SpeakerIcon /></span>
-        Listen
+        {t("learn.listen")}
       </span>
     );
   }
@@ -61,8 +59,8 @@ export default function ListenButton({ text, language, label = "Listen to this s
       <button
         type="button"
         aria-pressed={speaking}
-        aria-label={speaking ? "Stop reading aloud" : label}
-        title={showError ? `${label} — ${error}` : speaking ? "Stop reading aloud" : label}
+        aria-label={speaking ? t("audio.stopReading") : idleLabel}
+        title={showError ? `${idleLabel} — ${error}` : speaking ? t("audio.stopReading") : idleLabel}
         onClick={handleClick}
         className={`listen-btn${stateClass}`}
       >
@@ -80,7 +78,7 @@ export default function ListenButton({ text, language, label = "Listen to this s
             <SpeakerIcon />
           )}
         </span>
-        {loading ? "Generating..." : speaking ? "Stop" : showError ? "Retry" : "Listen"}
+        {loading ? t("audio.generating") : speaking ? t("learn.stop") : showError ? t("common.retry") : t("learn.listen")}
       </button>
       {showError ? (
         <span role="alert" className="listen-error" title={error ?? undefined}>

@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -14,6 +12,7 @@ import {
   writeCookieConsent,
 } from "@/lib/legalConsent";
 import { BACKEND_URL } from "@/lib/api";
+import { useTranslation } from "@/hooks/useTranslation";
 
 /**
  * Cookie/analytics consent banner.
@@ -28,6 +27,7 @@ import { BACKEND_URL } from "@/lib/api";
  *   dispatches COOKIE_CONSENT_REVOKED_EVENT so analytics shut off immediately.
  */
 export default function CookieConsent() {
+  const { t } = useTranslation();
   const { isSignedIn, getToken } = useAuth();
   const pathname = usePathname();
   const [showBanner, setShowBanner] = useState(false);
@@ -150,15 +150,13 @@ export default function CookieConsent() {
   if (pathname?.startsWith("/onboarding")) return null;
 
   return (
-    <div role="region" aria-label="Cookie preferences" className="cookie-banner">
+    <div role="region" aria-label={t("cookie.title")} className="cookie-banner">
       <div className="cookie-banner__inner">
         <div className="cookie-banner__copy">
-          <p className="cookie-banner__title">A quick choice about analytics</p>
+          <p className="cookie-banner__title">{t("cookie.title")}</p>
           <p className="cookie-banner__body">
-            We&apos;d like to use Google Analytics to understand what helps people
-            learn. Nothing loads until you say yes, and you can change your mind
-            anytime in Settings.{" "}
-            <Link href="/legal/cookies">Cookie Policy</Link>
+            {t("cookie.body")}{" "}
+            <Link href="/legal/cookies">{t("cookie.policy")}</Link>
           </p>
         </div>
         <div className="cookie-banner__actions">
@@ -167,14 +165,14 @@ export default function CookieConsent() {
             disabled={loading}
             className="cookie-banner__btn cookie-banner__btn--secondary"
           >
-            No thanks
+            {t("cookie.decline")}
           </button>
           <button
             onClick={() => saveConsent(true)}
             disabled={loading}
             className="cookie-banner__btn cookie-banner__btn--primary"
           >
-            {loading ? "Saving..." : "Allow analytics"}
+            {loading ? t("cookie.saving") : t("cookie.allow")}
           </button>
         </div>
       </div>

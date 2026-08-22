@@ -1570,3 +1570,29 @@ vendors). All of these live between `2b239b5` (start) and now:
     - Full TypeScript typecheck (`tsc --noEmit`) passed with 0 errors.
     - All 10 verification test suites passed 100%.
     - Next.js 16 production build (`next build`) green across all 14 routes.
+
+- 2026-08-22 (i18n & backend-prompts) — **Full Multilingual UI Coverage & AI Generation Target Language Enforcement.**
+  - **Backend AI Engine Prompt Hardening (`backend/src/lib/prompts.js`)**:
+    - Purged hardcoded "in casual conversational English" commands from system prompts (`VOICE_AND_SAFETY`, `GENERATE_FAST_ANSWER_PROMPT`, `GENERATE_LESSON_PROMPT`) that previously forced AI models to output titles, part bodies, quiz questions, and takeaways in English even when non-English languages were selected.
+    - Added explicit **CRITICAL LANGUAGE RULE**: 100% of all generated JSON fields (`topic`, `parts[].title`, `parts[].content`, `parts[].quiz[].question`, `parts[].quiz[].options`, `parts[].quiz[].correctAnswer`, `parts[].quiz[].explanation`, `keyTakeaways`) MUST be generated in the requested `Language`.
+  - **Frontend Internationalization Dictionaries (`frontend/lib/translations/`)**:
+    - Expanded `TranslationKey` and base `en` dictionary from 167 keys to 256 keys to cover all remaining hardcoded strings.
+    - Provided authentic localized regional translations (`indian.ts`, `european.ts`, `asian.ts`, `middleEasternAfricanCaucasian.ts`).
+  - **Comprehensive Component Wiring (`useTranslation()`)**:
+    - `LoadingCinematic.tsx`: Localized all generation stages, part progression bars, slow path resilient/fact-checking notices, and Cancel button.
+    - `ErrorState.tsx`: Localized retry title, retry button, and go home button.
+    - `ListenButton.tsx` & `MicButton.tsx`: Localized reading state, listen/stop/retry labels, voice input toggle, and browser compatibility tooltips.
+    - `ShareResult.tsx`: Localized share card creator, copy text CTA, share outcome toasts.
+    - `Flashcards.tsx`: Localized core insight title, per-part recall hints, shuffle deck, and card navigation.
+    - `CompletionScreen.tsx`: Localized dynamic follow-up question template suggestions.
+    - `FeedbackPrompt.tsx`: Localized user review modal, star rating queries, improvement questions, and feedback toasts.
+    - `CookieConsent.tsx`: Localized analytics consent banner, policy link, and allow/decline buttons.
+    - `KeyboardShortcuts.tsx`: Localized shortcut actions and modal dialog.
+    - `AchievementsGrid.tsx`: Localized achievements header, counter, tier badges, and status.
+    - `app/learn/page.tsx` & `app/settings/page.tsx`: Localized quiz pass toasts, cookie status labels, and export/delete feedback.
+    - `app/progress/page.tsx`, `ActivityHeatmap.tsx`, `DailyGoalRing.tsx`, `CompletionScreen.tsx`: Fixed template interpolation parameter mismatches (`{num}` vs `{level}`, `{current}/{total}` vs `{into}/{forNext}`, `{count}/{goal}`, `{score}/{max}` and `{msg}`) where raw brackets like `Level {level}` were leaking into the interface. Added localized rank titles (`levelTitleKey`) and heatmap labels.
+  - **Empirical Verification**:
+    - `npm run verify:i18n` verified 100% completeness for all 63 languages across all 268 keys.
+    - Backend: 117/117 unit and integration tests passed.
+    - Frontend: `npx tsc --noEmit` passed (0 errors), ESLint passed (0 errors), Next.js 16 production build (`next build`) green across 14 routes.
+
