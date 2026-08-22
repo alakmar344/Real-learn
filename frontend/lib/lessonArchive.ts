@@ -172,10 +172,22 @@ export async function getArchivedLesson(id: string): Promise<LessonJourney | nul
     if (scopedRecord) {
       return await decodeLesson(scopedRecord);
     }
-    // 2. Fallback to legacy unscoped id (for seamless backward compatibility)
+    // 2. Fallback to legacy unscoped id (for seamless backward compatibility).
+    // A signed-in scope CONSUMES the legacy record (re-saved scoped, unscoped
+    // copy deleted) so later accounts on the device can't read another user's
+    // lesson bodies; the anon scope reads without consuming.
     const legacyRecord = await db.get(STORE, id);
     if (legacyRecord) {
-      return await decodeLesson(legacyRecord);
+      const lesson = await decodeLesson(legacyRecord);
+      if (lesson && getActiveUserScope() !== "anon") {
+        try {
+          await db.put(STORE, legacyRecord, getScopedArchiveId(id));
+          await db.delete(STORE, id);
+        } catch {
+          // best-effort migration
+        }
+      }
+      return lesson;
     }
     return null;
   } catch {

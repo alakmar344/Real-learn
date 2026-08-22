@@ -65,17 +65,17 @@ export const corsOptions = {
   maxAge: 86400,
 };
 
-// Fastify Compress options
+// Fastify Compress options.
+// NOTE: the lesson SSE route uses reply.hijack(), which bypasses onSend hooks
+// entirely, so streams are never compressed here. Any future streaming route
+// that does NOT hijack must opt out per-route (@fastify/compress route config)
+// — the plugin has no request-level filter option.
 export const compressOptions = {
-  customFilter: (contentType, req) => {
-    // SSE streams must NOT be compressed (buffering would delay heartbeats and tokens)
-    const url = req?.raw?.url || req?.url || "";
-    if (url.startsWith("/api/generate-lesson")) return false;
-    return true;
-  },
   threshold: 128,
   zlibOptions: {
     level: 6,
+  },
+  brotliOptions: {
     params: {
       [zlib.constants.BROTLI_PARAM_QUALITY]: 5,
     },

@@ -33,15 +33,28 @@ export function getScopedStorageKey(baseName: string, scope: string = currentSco
 /**
  * Migrate legacy unscoped storage keys (e.g. "reallearn-progress") to the active
  * user's scoped key on first sign-in.
+ *
+ * The legacy key is CONSUMED (deleted) when a signed-in scope claims it.
+ * Without that, every account that ever signs in on the device would inherit
+ * the pre-scoping user's private journeys/progress/preferences — a permanent
+ * cross-account leak. The anon scope may read it without consuming it so a
+ * pre-scoping user still sees their data before their first sign-in.
  */
-function migrateLegacyStorageIfNeeded(baseName: string, targetKey: string): void {
+function migrateLegacyStorageIfNeeded(
+  baseName: string,
+  targetKey: string,
+  scope: string,
+): void {
   if (typeof window === "undefined") return;
   try {
-    const targetVal = window.localStorage.getItem(targetKey);
-    if (!targetVal) {
-      const legacyVal = window.localStorage.getItem(baseName);
-      if (legacyVal) {
+    const legacyVal = window.localStorage.getItem(baseName);
+    if (legacyVal) {
+      const targetVal = window.localStorage.getItem(targetKey);
+      if (!targetVal) {
         window.localStorage.setItem(targetKey, legacyVal);
+      }
+      if (scope !== "anon") {
+        window.localStorage.removeItem(baseName);
       }
     }
   } catch {
@@ -59,7 +72,7 @@ export function createScopedStorage<S>(delayMs = 800): PersistStorage<S> {
   return {
     getItem: (name) => {
       const scopedKey = getScopedStorageKey(name, currentScope);
-      migrateLegacyStorageIfNeeded(name, scopedKey);
+      migrateLegacyStorageIfNeeded(name, scopedKey, currentScope);
       return debounced.getItem(scopedKey);
     },
     setItem: (name, value) => {
@@ -125,6 +138,13 @@ export function switchUserScope(newUserId: string | null | undefined): void {
       registeredStores.resetJourneys();
       registeredStores.resetPersonalization();
     }
+    // The resets above run through zustand persist AFTER currentScope moved,
+    // so each queues a debounced write of DEFAULT state under the NEW scope's
+    // keys. Left pending, rehydrateAll() below would read those defaults back
+    // (read-your-writes) instead of the new user's real localStorage data, and
+    // the debounce flush would then overwrite the new scope's persisted state
+    // with defaults. Drop them before rehydrating.
+    cancelPendingDebouncedWrites();
   }
 
   // 3. Notify listeners (e.g. IndexedDB archive scope)

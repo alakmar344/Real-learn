@@ -96,13 +96,15 @@ const PartCardFooter = memo(function PartCardFooter({
   useEffect(() => {
     if (part.partNumber === 1 && timer.progress >= 80 && !preloadedRef.current) {
       preloadedRef.current = true;
+      // Must mirror ListenButton's text exactly (title-prefixed) so the
+      // prefetch lands on the same cache key the Listen click will read.
       void preloadSpeechAudio(
-        markdownToPlainText(part.content),
+        markdownToPlainText(`${part.title}. ${part.content}`),
         speechLangFor(lessonLanguage),
         getToken
       );
     }
-  }, [part.partNumber, part.content, timer.progress, lessonLanguage, getToken]);
+  }, [part.partNumber, part.title, part.content, timer.progress, lessonLanguage, getToken]);
 
   if (!isUnlocked || isCompleted) return null;
 

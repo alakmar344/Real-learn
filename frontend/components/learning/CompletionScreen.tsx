@@ -6,6 +6,7 @@ import { LessonJourney } from "@/types";
 import ShareResult from "@/components/learning/ShareResult";
 import FeedbackGate from "@/components/shared/FeedbackGate";
 import QuickSummaryCards from "@/components/learning/QuickSummaryCards";
+import { contentLangAttrs } from "@/lib/locale";
 
 interface Props {
   lesson: LessonJourney;
@@ -118,10 +119,14 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
                 key={i}
                 type="button"
                 className="suggest-pill"
+                // Pills embed model-generated topic/takeaway fragments (WCAG 3.1.2)
+                {...contentLangAttrs(lesson.language)}
                 onClick={() => {
                   const followUpInput = document.getElementById("followup-input");
                   if (followUpInput) {
-                    followUpInput.scrollIntoView({ behavior: "smooth", block: "center" });
+                    // Explicit behavior overrides the CSS reduced-motion rule
+                    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    followUpInput.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
                     const event = new CustomEvent("reallearn:fillFollowUp", { detail: suggestion });
                     window.dispatchEvent(event);
                     setTimeout(() => followUpInput.focus(), 500);

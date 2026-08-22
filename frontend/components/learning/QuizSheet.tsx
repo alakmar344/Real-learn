@@ -252,7 +252,9 @@ const QuizSheetBase = ({ open, questions, partNumber, initialState, onStateChang
                   const el =
                     (targetId ? document.getElementById(targetId) : null) ||
                     document.querySelector(".part-card");
-                  el?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  // Explicit behavior overrides the CSS reduced-motion rule
+                  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                  el?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
                 }, 300);
               }}
               className="quiz-sheet__reread"

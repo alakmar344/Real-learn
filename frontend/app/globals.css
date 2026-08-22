@@ -81,7 +81,12 @@
   --correct-bg: var(--success-bg);
   --wrong: var(--danger);
   --wrong-bg: var(--danger-bg);
-  --locked: #565B4A;
+  /* Achievement tier text/borders — AA-checked per theme. The "gold" tier
+     wears ember (gold hues are banned); legendary rides the brand lime. */
+  --tier-bronze: #E0A96D;
+  --tier-silver: #A8B3C4;
+  --tier-gold: #FB923C;
+  --tier-legendary: #A4C639;
 
   --subject-physics: #38BDF8;
   --subject-chemistry: #34D399;
@@ -240,7 +245,10 @@ html[data-theme="light"] {
   --correct-bg: var(--success-bg);
   --wrong: var(--danger);
   --wrong-bg: var(--danger-bg);
-  --locked: #A6AA96;
+  --tier-bronze: #8B5A2B;
+  --tier-silver: #475569;
+  --tier-gold: #C2410C;
+  --tier-legendary: #4D7C0F;
 
   --subject-physics: #0284C7;
   --subject-chemistry: #059669;
@@ -1738,7 +1746,8 @@ a:active {
 .app-main {
   margin-left: 280px;
   min-width: 0;
-  transition: margin-left 400ms var(--ease-reveal);
+  /* Kept short: margin-left transitions reflow the page every frame. */
+  transition: margin-left 240ms var(--ease-reveal);
 }
 
 @media (min-width: 901px) {
@@ -3150,7 +3159,7 @@ p {
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  min-height: 32px;
+  min-height: 44px;
   min-width: 80px;
   text-align: center;
   background: transparent;
@@ -3261,7 +3270,7 @@ p {
     min-width: 0;
     padding: 7px 12px;
     font-size: 12px;
-    min-height: 36px;
+    min-height: 44px;
   }
   .q-form__actions {
     padding: 8px 16px 16px;
@@ -3388,7 +3397,9 @@ p {
   letter-spacing: 0.02em;
   text-transform: none;
   font-weight: 700;
-  color: var(--part-subject, var(--accent));
+  /* Text runs deeper than the raw subject hue so 11px labels hold AA in
+     light mode; the dot/border/wash keep the full-strength subject color. */
+  color: color-mix(in srgb, var(--part-subject, var(--accent)) 72%, var(--text-primary));
   background: color-mix(in srgb, var(--part-subject, var(--accent)) 16%, transparent);
   border: 1px solid color-mix(in srgb, var(--part-subject, var(--accent)) 32%, transparent);
   box-shadow: 0 0 12px color-mix(in srgb, var(--part-subject, var(--accent)) 15%, transparent);
@@ -3462,7 +3473,8 @@ p {
 
 .part-card__prose {
   margin-top: var(--space-base);
-  font-size: var(--text-base);
+  /* The core reading surface never drops below 16px (readability floor). */
+  font-size: 16px;
   color: var(--text-primary);
   line-height: var(--leading-relaxed);
   max-width: 100%;
@@ -4683,7 +4695,7 @@ p {
   color: var(--text-primary);
   padding: 0;
   font-family: var(--font-inter), sans-serif;
-  font-size: 15px;
+  font-size: 16px; /* <16px input text triggers iOS zoom-on-focus */
   line-height: 1.5;
 }
 .followup__listening {
@@ -5122,6 +5134,10 @@ p {
 .legal-tab {
   padding: 12px 18px;
   margin-bottom: -1px;
+  min-height: 44px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
@@ -5273,7 +5289,7 @@ p {
 /* Goal chips — snappy capsule toggles */
 .goal-chip {
   min-width: 48px;
-  min-height: 40px;
+  min-height: 44px;
   padding: 6px 16px;
   border: 1px solid var(--border-default);
   border-radius: var(--radius-pill);
@@ -5541,7 +5557,7 @@ p {
   border: 1px solid var(--border-subtle);
   background: var(--bg-surface);
   color: var(--text-primary);
-  font-size: 14px;
+  font-size: 16px; /* <16px input text triggers iOS zoom-on-focus */
   font-family: inherit;
   line-height: 1.6;
   resize: vertical;
@@ -5818,7 +5834,7 @@ p {
   width: 100%;
   box-sizing: border-box;
   padding: 8px 30px;
-  font-size: 13px;
+  font-size: 16px; /* <16px input text triggers iOS zoom-on-focus */
   color: var(--text-primary);
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
@@ -7311,7 +7327,8 @@ html[data-theme="light"] {
   font-weight: 700;
   cursor: pointer;
   box-shadow: var(--glass-edge, none);
-  transition: transform 380ms var(--ease-spring, ease), border-color 320ms var(--ease-color, ease), box-shadow 320ms var(--ease-color, ease);
+  /* Press feedback must land fast — matches the tactile system's ~150-180ms bar. */
+  transition: transform 160ms var(--ease-spring, ease), border-color 180ms var(--ease-color, ease), box-shadow 180ms var(--ease-color, ease);
 }
 .onboarding-google-btn:hover:not(:disabled),
 .onboarding-google-btn:focus-visible {
@@ -7644,11 +7661,16 @@ html[data-theme="light"] {
 }
 .feedback-star {
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: none;
   cursor: pointer;
   line-height: 1;
-  padding: 4px;
+  /* hit-slop: 28px glyph + padding = 44px touch target */
+  padding: 8px;
+  min-width: 44px;
+  min-height: 44px;
   color: var(--border-accent);
   transition:
     transform 180ms var(--ease-spring),
@@ -8164,4 +8186,107 @@ html[data-theme="light"] {
   border: 2px solid var(--accent);
   color: var(--on-accent);
   background: var(--accent);
+}
+
+/* ── Legal documents (.legal-doc) — shared shell for the Privacy / Terms /
+   Cookie policy bodies (standalone routes and /legal hub embeds). Replaces
+   the ~330 repeated inline style objects that used to live in each
+   content.tsx. Body copy is 15px (up from 13–14px) because multi-screen
+   legal text needs full reading size, with the same relaxed 1.7 leading. */
+.legal-doc {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-breath) 28px;
+  line-height: 1.7;
+}
+.legal-doc__title {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  margin: 0 0 var(--space-md);
+}
+/* "Last updated" line — caption-sized on purpose; it is metadata, not body. */
+.legal-doc__meta {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  margin: 0 0 var(--space-base);
+}
+.legal-doc__section {
+  margin-bottom: 28px;
+}
+.legal-doc__section:last-child {
+  margin-bottom: 0;
+}
+/* Section headings render as h2 standalone / h3 embedded (one level under
+   the document title either way) but share one visual size. */
+.legal-doc__heading {
+  font-weight: 700;
+  font-size: 16px;
+  margin: 0 0 8px;
+}
+.legal-doc__body {
+  font-size: 15px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+.legal-doc__list {
+  font-size: 15px;
+  color: var(--text-secondary);
+  padding-left: 20px;
+  margin: 0;
+}
+.legal-doc__list li {
+  margin-bottom: 4px;
+}
+.legal-doc__list li:last-child {
+  margin-bottom: 0;
+}
+/* Rhythm between adjacent paragraphs/lists lives on the siblings, so the
+   markup never needs per-element margin overrides. */
+.legal-doc__body + .legal-doc__body,
+.legal-doc__body + .legal-doc__list,
+.legal-doc__list + .legal-doc__body {
+  margin-top: 8px;
+}
+.legal-doc a {
+  color: var(--accent);
+}
+
+/* ── Select controls (language / level pickers) ──
+   One shared anatomy for the two dropdown pickers: 44px touch target,
+   16px text (sub-16px selects trigger iOS zoom-on-focus), icon caret. */
+.select-control {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.select-control__field {
+  appearance: none;
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+  border-radius: 12px;
+  padding: 8px 32px 8px 12px;
+  min-height: 44px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: border-color var(--dur-base) var(--ease-color), box-shadow var(--dur-base) var(--ease-color);
+}
+.select-control--compact .select-control__field {
+  border-radius: 10px;
+  padding: 6px 30px 6px 10px;
+  font-size: 16px;
+}
+.select-control__field:focus-visible {
+  outline: none;
+  border-color: var(--border-accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.select-control__caret {
+  position: absolute;
+  right: 10px;
+  display: inline-flex;
+  color: var(--text-secondary);
+  pointer-events: none;
 }

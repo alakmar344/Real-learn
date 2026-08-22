@@ -147,11 +147,10 @@ function synthesizeEdgeTtsInMemory({
       if (!isDone) {
         isDone = true;
         clearTimeout(timeout);
-        if (chunks.length > 0) {
-          resolve(Buffer.concat(chunks));
-        } else {
-          reject(new Error("Edge TTS connection closed before audio complete"));
-        }
+        // Never resolve partial audio on a premature close (no turn.end seen):
+        // a truncated buffer would be cached for 24h both server-side (LRU)
+        // and client-side (ETag), serving cut-off speech to every listener.
+        reject(new Error("Edge TTS connection closed before audio complete"));
       }
     });
   });

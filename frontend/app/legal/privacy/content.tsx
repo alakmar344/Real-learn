@@ -6,40 +6,26 @@
 // the standalone route renders the title as the document h1 instead.
 export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean }) {
   const Title = embedded ? ("h2" as const) : ("h1" as const);
+  const Heading = embedded ? ("h3" as const) : ("h2" as const);
   return (
-    <article
-      style={{
-        background: "var(--bg-card)",
-        borderRadius: "var(--radius-lg)",
-        padding: "32px 28px",
-        border: "1px solid var(--border-subtle)",
-        lineHeight: 1.7,
-      }}
-    >
-      <Title
-        style={{
-          fontFamily: "var(--font-display)",
-          fontWeight: 700,
-          fontSize: 24,
-          marginBottom: 16,
-        }}
-      >
+    <article className="legal-doc">
+      <Title className="legal-doc__title">
         Privacy Policy
       </Title>
-      <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
+      <p className="legal-doc__meta">
         Last updated: August 17, 2026 (version 3.6)
       </p>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>Who We Are (Data Controller)</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">Who We Are (Data Controller)</Heading>
+        <p className="legal-doc__body">
           RealLearn (&quot;RealLearn&quot;, &quot;we&quot;, &quot;us&quot;) is the data controller /
           data fiduciary responsible for the personal data described in this policy. For all privacy,
           data-protection, and grievance matters — including requests to exercise your rights under
           the GDPR, the California Consumer Privacy Act (as amended by the CPRA), or India&apos;s
           Digital Personal Data Protection Act, 2023 (DPDP Act) — you can reach our privacy contact
           and designated grievance officer at{" "}
-          <a href="mailto:esamzai365@gmail.com" style={{ color: "var(--accent)" }}>
+          <a href="mailto:esamzai365@gmail.com">
             esamzai365@gmail.com
           </a>
           . We aim to acknowledge grievances promptly and respond within the timelines required by
@@ -47,9 +33,9 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>1. What RealLearn Is</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">1. What RealLearn Is</Heading>
+        <p className="legal-doc__body">
           RealLearn is an AI-powered educational platform. Depending on the answer mode you choose,
           it generates either a quick single-part direct answer (&quot;Fast&quot; mode) or a 3-part
           learning journey (Foundation, Mechanism, Real World — &quot;Explain&quot; mode) for any
@@ -72,28 +58,28 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>2. Information We Collect</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 8 }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">2. Information We Collect</Heading>
+        <p className="legal-doc__body">
           We collect the following information to provide and improve our service:
         </p>
-        <ul style={{ fontSize: 14, color: "var(--text-secondary)", paddingLeft: 20, margin: 0 }}>
-          <li style={{ marginBottom: 4 }}>
+        <ul className="legal-doc__list">
+          <li>
             <strong>Account Information:</strong> Your email address and Clerk ID (provided by our
             authentication provider, Clerk).
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>Usage Data:</strong> The questions you ask, your selected answer mode (Fast or
             Explain), language and learning level, quiz scores, and lesson progress.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>Device Information:</strong> Your IP address and browser User-Agent (for security,
             consent tracking, and rate limiting). Before an IP address is written to a stored
             consent record we <strong>anonymize it by truncation</strong> (the last part of the
             address is removed, e.g. 203.0.113.0), so stored records never contain your full IP
             address; the User-Agent is stored only as a salted one-way hash.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>Consent Records:</strong> Timestamps of when you accepted our Privacy Policy
             (version 3.4), Terms of Service (version 3.1), and cookie/analytics consent, together
             with the policy version, an <strong>anonymized (truncated) device IP</strong>, and a
@@ -102,20 +88,20 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
             Clerk, our authentication provider. Email fields written to consent records by older
             versions of the app have been removed from our database.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>Cached Lessons (temporary, not linked to you):</strong> To make the Service
             faster, generated lessons may be temporarily cached on our servers, keyed by a
             one-way hash of the question text, language, level, and answer mode. Cached lessons contain no
             account information, are not linked to your identity, and expire automatically
             (typically within a few hours).
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>Voice Input (optional):</strong> If you choose to use the microphone button,
             your speech is converted to text by your browser&apos;s built-in speech recognition.
             We never receive, record, or store your audio — only the resulting text appears in
             the question box, exactly as if you had typed it. See Section 16 for details.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>Read-Aloud Audio (temporary, not linked to you):</strong> If you use the
             &quot;Listen&quot; feature, the lesson text to be read aloud is sent to our server,
             which generates the audio using Microsoft&apos;s Edge text-to-speech service. The
@@ -124,7 +110,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
             identity — so that repeated playback of the same text does not need to be
             re-synthesized. See Section 16 for details.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>Saved Lessons:</strong> Your learning journeys (chats) are stored locally on
             your device, split across two browser storage areas for performance: the full lesson
             content (lesson text and quizzes) of <strong>every</strong> journey is stored in your
@@ -158,7 +144,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
             our servers</strong>, and clearing your browser data or using &quot;Delete My Data&quot;
             removes it.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>Personalization &amp; Delight Data (stored locally):</strong> To make the app
             feel personal, we keep a small amount of information in your browser&apos;s
             localStorage only: (1) the date you first used RealLearn on this device, used to show a
@@ -201,54 +187,54 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
         </ul>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>3. How We Use Your Information</h3>
-        <ul style={{ fontSize: 14, color: "var(--text-secondary)", paddingLeft: 20, margin: 0 }}>
-          <li style={{ marginBottom: 4 }}>To generate personalized learning content for you.</li>
-          <li style={{ marginBottom: 4 }}>To track your progress and quiz performance.</li>
-          <li style={{ marginBottom: 4 }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">3. How We Use Your Information</Heading>
+        <ul className="legal-doc__list">
+          <li>To generate personalized learning content for you.</li>
+          <li>To track your progress and quiz performance.</li>
+          <li>
             To power gamification and engagement features — experience points, levels, daily
             streaks, daily goals, and achievement badges — which are calculated and stored locally
             on your device to help you build a learning habit.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             To show friendly, personalized touches — a time-of-day greeting (optionally using your
             first name, rendered only in your browser), a local counter of how many days you have
             used RealLearn, and small once-per-day seasonal surprises — all computed and stored
             locally on your device.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             To tailor lesson generation using your optional, locally-stored learning preferences
             (learning-style checklist and free-text notes), which are sent with each lesson request
             and not retained on our servers.
           </li>
-          <li style={{ marginBottom: 4 }}>To analyze usage patterns through Google Analytics and improve our service.</li>
-          <li style={{ marginBottom: 4 }}>To comply with legal obligations and age-appropriate content rules.</li>
-          <li style={{ marginBottom: 4 }}>To improve our educational content quality and service experience.</li>
+          <li>To analyze usage patterns through Google Analytics and improve our service.</li>
+          <li>To comply with legal obligations and age-appropriate content rules.</li>
+          <li>To improve our educational content quality and service experience.</li>
           <li>To communicate important service updates (if you provide contact consent).</li>
         </ul>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>4. Legal Bases for Processing (GDPR)</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 8 }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">4. Legal Bases for Processing (GDPR)</Heading>
+        <p className="legal-doc__body">
           For users in the European Economic Area and other jurisdictions that require a specified
           legal basis, we process personal data only where we have a valid legal basis. The table
           below lists the main categories of processing and the basis that applies:
         </p>
-        <ul style={{ fontSize: 14, color: "var(--text-secondary)", paddingLeft: 20, margin: 0 }}>
-          <li style={{ marginBottom: 4 }}>
+        <ul className="legal-doc__list">
+          <li>
             <strong>Performance of a contract / taking steps at your request:</strong> account
             creation and authentication, generating the lessons and read-aloud audio you request,
             and providing the core Service features tied to your account.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>Consent:</strong> optional Google Analytics cookies and usage analytics,
             optional anonymous feedback, and optional learning personalization (learning-style
             checklist and free-text notes). You can withdraw consent anytime in Settings or through
             your browser&apos;s cookie controls.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>Legitimate interests:</strong> keeping the Service secure, preventing abuse and
             fraud, rate limiting, transient IP and request-header processing by our hosting
             infrastructure (Vercel and Render) to deliver pages and API responses, pseudonymized
@@ -263,15 +249,15 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
             necessary to comply with legal or regulatory requirements.
           </li>
         </ul>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+        <p className="legal-doc__body">
           Where we rely on consent, you have the right to withdraw it at any time. Withdrawing consent
           will not affect the lawfulness of processing carried out before the withdrawal.
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>5. Data Storage and Security</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">5. Data Storage and Security</Heading>
+        <p className="legal-doc__body">
           Your consent records are stored securely in MongoDB, keyed to your Clerk account ID
           (your email address is held by Clerk, our authentication provider). Your saved
           lessons, preferences, and all learning-progress and achievement data (XP, level, streaks,
@@ -279,7 +265,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
           areas on your own device — full lesson content in IndexedDB, and the history index,
           preferences, and progress data in localStorage — and never leave it.
         </p>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+        <p className="legal-doc__body">
           We apply a defense-in-depth approach to security. Measures that are in place include:
           Clerk-managed authentication with cryptographically verified JWT session tokens and
           rotating signing keys; encrypted network connections using HTTPS with HSTS; per-request
@@ -300,9 +286,9 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>6. AI-Generated Content</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">6. AI-Generated Content</Heading>
+        <p className="legal-doc__body">
           RealLearn generates content using high-performance open AI models. Our primary
           inference provider is <strong>Groq Cloud</strong> (running GPT-OSS 120B, GPT-OSS 20B and Qwen 3.6 27B on LPUs); if Groq is
           temporarily slow or unavailable, the request automatically falls back to{" "}
@@ -317,12 +303,12 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
           is for educational purposes only and does not provide professional advice (medical, legal,
           financial, etc.).
         </p>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+        <p className="legal-doc__body">
           Lesson content is written in a natural, conversational, human-like style — but it is
           entirely AI-generated. Nothing in the Service is written or reviewed by a human tutor
           before you see it.
         </p>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+        <p className="legal-doc__body">
           <strong>RealLearn does not use your data to train, fine-tune, or improve any AI model.</strong>{" "}
           Your questions are sent to our primary inference provider, <strong>Groq Cloud</strong>{" "}
           (which runs open models on LPUs), for one-time inference only. If Groq is temporarily slow
@@ -341,25 +327,25 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
           is deleted automatically when it expires. However, please note that your questions are
           transmitted to these providers&apos; APIs, and their own terms may govern how they handle
           that data. We recommend reviewing{" "}
-          <a href="https://groq.com/privacy-policy/" style={{ color: "var(--accent)" }}>
+          <a href="https://groq.com/privacy-policy/">
             Groq&apos;s Privacy Policy
           </a>{", "}
-          <a href="https://mistral.ai/terms/#privacy-policy" style={{ color: "var(--accent)" }}>
+          <a href="https://mistral.ai/terms/#privacy-policy">
             Mistral&apos;s Privacy Policy
           </a>{", "}
-          <a href="https://www.nvidia.com/en-us/about-nvidia/privacy-policy/" style={{ color: "var(--accent)" }}>
+          <a href="https://www.nvidia.com/en-us/about-nvidia/privacy-policy/">
             NVIDIA&apos;s Privacy Policy
           </a>{", and "}
-          <a href="https://www.cloudflare.com/privacypolicy/" style={{ color: "var(--accent)" }}>
+          <a href="https://www.cloudflare.com/privacypolicy/">
             Cloudflare&apos;s Privacy Policy
           </a>{" "}
           for details on their data practices.
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>7. Cookies and Local Storage</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">7. Cookies and Local Storage</Heading>
+        <p className="legal-doc__body">
           We use browser localStorage to store your consent preferences, theme settings, your
           saved-lesson history index, your learning-progress and achievement data (XP, level,
           streaks, daily goals, activity history, and badges), and your personalization data (the
@@ -370,11 +356,11 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
           (loaded only after consent) for service improvement.
           We do not use tracking cookies for advertising. Clerk, our authentication provider,
           uses essential cookies for session management. For more details, please see our{" "}
-          <a href="/legal?tab=cookies" style={{ color: "var(--accent)" }}>Cookie Policy</a>.
+          <a href="/legal?tab=cookies">Cookie Policy</a>.
           You can clear your localStorage and IndexedDB at any time through your browser settings
           or by using the &quot;Delete My Data&quot; feature in the app, which clears both.
         </p>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 12 }}>
+        <p className="legal-doc__body">
           <strong>Personalized learning profile (your knowledge context):</strong> RealLearn builds
           a compact proficiency profile entirely on your device from the saved-lesson history index
           and progress data already described above — no lesson content is uploaded and the profile
@@ -391,34 +377,34 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>8. Your Rights and Choices</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 8 }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">8. Your Rights and Choices</Heading>
+        <p className="legal-doc__body">
           Depending on where you live, you may have the following rights regarding your personal data:
         </p>
-        <ul style={{ fontSize: 14, color: "var(--text-secondary)", paddingLeft: 20, margin: 0 }}>
-          <li style={{ marginBottom: 4 }}>
+        <ul className="legal-doc__list">
+          <li>
             <strong>Access:</strong> You can request a copy of the personal data we hold about you
             using the &quot;Export My Data&quot; feature.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>Correction / Rectification:</strong> You can update your email through your Clerk
             account settings and correct locally-stored preferences directly in Settings.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>Erasure (&quot;right to be forgotten&quot;):</strong> You can delete your account
             and all associated data using the &quot;Delete My Data&quot; feature. This removes your
             MongoDB records, Clerk account, and all local data.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>Objection / Restriction:</strong> You may object to certain processing based on
             legitimate interests or ask us to restrict processing in specific circumstances.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>Data portability:</strong> You can receive your data in a structured, commonly
             used format through the export tool.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>Withdraw consent:</strong> Where we rely on consent, you can withdraw it at any
             time from Settings → Privacy or through your browser&apos;s cookie controls. Previously
             collected data may remain until deletion.
@@ -428,9 +414,9 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
             supervisory authority in your country or region.
           </li>
         </ul>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+        <p className="legal-doc__body">
           To exercise any of these rights, use the in-product tools or contact us at{" "}
-          <a href="mailto:esamzai365@gmail.com" style={{ color: "var(--accent)" }}>
+          <a href="mailto:esamzai365@gmail.com">
             esamzai365@gmail.com
           </a>
           . We will verify your identity through your authenticated account before acting on your
@@ -438,16 +424,16 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>9. Third-Party Services</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">9. Third-Party Services</Heading>
+        <p className="legal-doc__body">
           We use the following third-party services:
         </p>
-        <ul style={{ fontSize: 14, color: "var(--text-secondary)", paddingLeft: 20, margin: 0 }}>
-          <li style={{ marginBottom: 4 }}>
+        <ul className="legal-doc__list">
+          <li>
             <strong>Clerk</strong> (clerk.com) — Authentication and user management.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>Groq Cloud</strong> (groq.com) — Our <strong>primary</strong> AI content
             generation provider. Your question, chosen language, and difficulty level are sent to
             Groq&apos;s API (which runs open models GPT-OSS 120B, GPT-OSS 20B and Qwen 3.6 27B on LPUs) for one-time
@@ -455,19 +441,19 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
             not sent to Groq). No user identity is included in the API call. Groq&apos;s own
             data practices apply to API requests.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>Mistral AI</strong> (mistral.ai) — Our <strong>low-latency European fallback</strong> AI
             provider (Mistral AI SAS, France/EU). Used when Groq is temporarily slow or during parallel hedging.
             Mistral receives the same question, language, and difficulty level for one-time inference with no user
             identity attached, and no user data is used for training.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>NVIDIA NIM</strong> (nvidia.com) — Our <strong>high-capacity fallback</strong> AI
             provider. Used when Groq is temporarily slow or unavailable. NVIDIA receives the
             same question, language, and difficulty level for one-time inference with no user
             identity attached, and no user data is used for training.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>Cloudflare Workers AI</strong> (cloudflare.com) — Our <strong>last-resort</strong>
             AI provider. Used only when the primary and NVIDIA fallback paths are temporarily slow
             or unavailable, so lessons can still be generated. It runs open models (such as Llama 3.3 70B FP8)
@@ -475,36 +461,36 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
             difficulty level are sent for one-time inference with no user identity attached, and no
             user data is used for training.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>MongoDB Atlas</strong> (mongodb.com) — Managed database hosting. Stores your
             consent records (keyed to your Clerk account ID — your email address is held by Clerk,
             not in our database), moderation logs, and anonymous feedback as described in Section
             5, encrypted in transit and at rest. MongoDB acts as our storage processor and does not
             use your data for its own purposes.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>Vercel</strong> (vercel.com) — Hosts and serves the RealLearn web application.
             As the delivery infrastructure, Vercel transiently processes network request data (such
             as your IP address and request headers) to serve pages and protect against abuse. It
             does not receive your questions&apos; lesson content or your consent records.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>Render</strong> (render.com) — Hosts our backend API. Requests you make to
             generate lessons, save consent, or use read-aloud pass through Render&apos;s
             infrastructure, which transiently processes network request data (such as your IP
             address) to route and serve those requests. Our own application code truncates IPs
             before anything is stored (see Section 2).
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>Google Analytics</strong> — Website analytics to understand usage patterns
             and improve our service. Loaded only after cookie consent.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>Serper</strong> (google.serper.dev) — Real-world news context fetching for the
             &quot;Real World&quot; part of Explain-mode lessons. Only your question topic and
             language are sent; Fast-mode answers do not use this service.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>Browser Speech Recognition (Web Speech API)</strong> — Voice <em>input</em> is
             provided by your own browser. Depending on your browser and device, speech recognition
             may be processed by the browser vendor&apos;s speech service (for example, Google for
@@ -517,20 +503,20 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
             service. Only the lesson text to be read and the chosen language/voice settings are
             sent; no account identity, email, or IP address of yours is included in the request
             to Microsoft. Microsoft&apos;s own data practices apply to that processing — see{" "}
-            <a href="https://privacy.microsoft.com/privacystatement" style={{ color: "var(--accent)" }}>
+            <a href="https://privacy.microsoft.com/privacystatement">
               Microsoft&apos;s Privacy Statement
             </a>.
           </li>
         </ul>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>10. Data Retention</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 8 }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">10. Data Retention</Heading>
+        <p className="legal-doc__body">
           We keep personal data only as long as needed for the purpose it was collected:
         </p>
-        <ul style={{ fontSize: 14, color: "var(--text-secondary)", paddingLeft: 20, margin: "0 0 8px" }}>
-          <li style={{ marginBottom: 4 }}>
+        <ul className="legal-doc__list">
+          <li>
             <strong>Account &amp; consent records</strong> (Clerk ID, consent timestamps,
             anonymized/truncated IP, hashed User-Agent; your email address is held by our
             authentication provider Clerk, not stored in our own database) — for as long as your
@@ -539,7 +525,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
             never retained: they are truncated before storage, and records created before policy
             version 2.3 have been retroactively anonymized the same way.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>Moderation logs</strong> (pseudonymous account identifier, the reason a
             question or response was flagged, and the flagged question itself, capped at 500
             characters) — retained for abuse prevention for a <strong>maximum of 90 days</strong>,
@@ -547,7 +533,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
             They are deleted earlier if you delete your account. Unlinked/aggregate safety
             metrics may be retained longer.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>Cached lessons and read-aloud audio</strong> (not linked to your identity) —
             expire automatically, typically within a few hours (lessons) or up to 24 hours (audio).
           </li>
@@ -558,15 +544,15 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
             both storage areas.
           </li>
         </ul>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+        <p className="legal-doc__body">
           We may retain limited data beyond these periods only where required by law or for the
           establishment, exercise, or defense of legal claims.
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>11. International Transfers</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">11. International Transfers</Heading>
+        <p className="legal-doc__body">
           RealLearn relies on global service providers (including Clerk, Cloudflare, Microsoft,
           Google, MongoDB Atlas, Serper, Vercel, and Render), so your data may be processed in
           countries other than your own, including the United States. RealLearn is a small,
@@ -581,14 +567,14 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>12. Changes to This Policy</h3>
-         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+         <Heading className="legal-doc__heading">12. Changes to This Policy</Heading>
+         <p className="legal-doc__body">
            We may update this Privacy Policy from time to time. We will notify you of any changes
            by posting the new policy on this page and updating the &quot;Last updated&quot; date.
            Continued use of the service after changes constitutes acceptance of the updated policy.
          </p>
-          <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+          <p className="legal-doc__body">
             <strong>Version 3.6 (effective August 17, 2026).</strong> This update adds{" "}
             <strong>Mistral AI</strong> (Mistral AI SAS, France/EU) as a fast fallback inference provider
             alongside Groq Cloud, NVIDIA NIM, and Cloudflare Workers AI. Requests to Mistral AI are sent for one-time
@@ -596,7 +582,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
             Because this introduces a new AI subprocessor, we are re-prompting all users to review and
             re-accept this Privacy Policy and our Terms of Service before continuing.
           </p>
-          <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+          <p className="legal-doc__body">
             <strong>Version 3.5 (effective August 17, 2026).</strong> This update upgrades our
             core AI inference architecture: our <strong>primary</strong> model provider is now{" "}
             <strong>Groq Cloud</strong> (running open models Qwen 3.6 27B and GPT-OSS 120B on LPUs),
@@ -607,7 +593,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
             processor disclosure, we are re-prompting all users to review and re-accept this Privacy
             Policy and our Terms of Service before continuing.
           </p>
-          <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+          <p className="legal-doc__body">
             <strong>Version 3.4 (effective August 11, 2026).</strong> This update replaces the
             standalone &quot;Find&quot; page with an internal, quiz-driven personalization layer.
             RealLearn now builds a compact <strong>learning profile</strong> from your quiz results
@@ -624,7 +610,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
             Because this is a material change to how your learning data is used, we are re-prompting
             all users to review and re-accept this Privacy Policy before continuing.
           </p>
-          <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+          <p className="legal-doc__body">
             <strong>Version 3.3 (effective August 10, 2026).</strong> This update adds the new{" "}
             <strong>&quot;Find&quot;</strong> feature. Find builds a personalized map of the concepts
             you have proven you know (by passing lesson quizzes) <strong>entirely on your device</strong>{" "}
@@ -634,7 +620,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
             cache; that request is processed in memory to build your results and is not stored, logged
             with any identifier, or linked to you. No new categories of personal data are collected.
           </p>
-          <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+          <p className="legal-doc__body">
             <strong>Version 3.2 (effective August 8, 2026).</strong> This update aligns the policy
             with the way the Service actually operates. (1){" "}
             <strong>Email removed from consent records</strong> — our database no longer stores
@@ -652,7 +638,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
             changes, we are re-prompting all users to review and re-accept this Privacy Policy and
             the updated Terms of Service before continuing.
           </p>
-          <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+          <p className="legal-doc__body">
             <strong>Version 3.1 (effective August 7, 2026).</strong> This update expands our
             children&apos;s privacy disclosures and parental controls, adds an explicit GDPR legal
             bases section, expands the DPDP Act rights list, strengthens the security section with
@@ -661,7 +647,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
             review and re-accept this Privacy Policy and the updated Terms of Service before
             continuing.
           </p>
-          <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+          <p className="legal-doc__body">
             <strong>Version 3.0 (effective August 7, 2026).</strong> This update discloses our
             hosting infrastructure providers — <strong>Vercel</strong> (serves the web app) and{" "}
             <strong>Render</strong> (hosts our backend API) — which transiently process network
@@ -672,14 +658,14 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
             consent submissions. Because this changes our processor disclosures, we are
             re-prompting all users to review and re-accept this Privacy Policy.
           </p>
-          <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+          <p className="legal-doc__body">
             <strong>Version 2.9 (effective August 5, 2026).</strong> This update adds
             <strong> NVIDIA NIM</strong> as the automatic AI fallback after Cerebras and moves
             <strong> Cloudflare Workers AI</strong> to a last-resort provider role. Because this is a
             material provider-routing disclosure change, we are re-prompting all users to review and
             re-accept this Privacy Policy and the updated Terms before continuing.
           </p>
-          <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+          <p className="legal-doc__body">
             <strong>Version 2.7 (effective July 22, 2026).</strong> This update discloses the new
             optional <strong>learning personalization</strong> feature: signed-in users can choose
             learning-style preferences (for example, simple language, step-by-step explanations, or
@@ -691,7 +677,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
             changes our local-storage and data-processing disclosures, we are re-prompting all users
             to review and re-accept this Privacy Policy before continuing.
           </p>
-          <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+          <p className="legal-doc__body">
             <strong>Version 2.6 (effective July 17, 2026).</strong> This update discloses the new
             optional, anonymous <strong>feedback</strong> feature: soon after a user completes
             their first learning journey, RealLearn may invite an optional 1–10 star rating plus
@@ -702,7 +688,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
             and no change to analytics. We are surfacing this disclosure for transparency; the
             change does not re-prompt consent because no new server-side personal data is collected.
           </p>
-          <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+          <p className="legal-doc__body">
             <strong>Version 2.5 (effective July 15, 2026).</strong> This update discloses new{" "}
            <strong>locally-stored personalization data</strong> introduced with our friendlier
            experience: the date you first used RealLearn on this device (shown as a
@@ -715,7 +701,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
            change to analytics. Because this changes our local-storage disclosures, we are
            re-prompting all users to review and re-accept this Privacy Policy before continuing.
          </p>
-         <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+         <p className="legal-doc__body">
            <strong>Version 2.4 (effective July 14, 2026).</strong> This update changes where your
            saved lessons live on your device: the full content of <strong>every</strong> saved
            lesson (chat) is now stored in your browser&apos;s <strong>IndexedDB</strong> instead of
@@ -726,7 +712,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
            local-storage disclosures, we are re-prompting all users to review and re-accept this
            Privacy Policy (and the updated Terms of Service) before continuing.
          </p>
-         <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+         <p className="legal-doc__body">
            <strong>Version 2.3 (effective July 14, 2026).</strong> This update strengthens data
            minimization: (1) <strong>IP anonymization</strong> — consent records now store only a
            truncated network prefix (e.g. 203.0.113.0) instead of your full IP address, and all
@@ -736,7 +722,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
            instead of being deleted. Because this changes our data-processing disclosures, we are
            re-prompting all users to review and re-accept this Privacy Policy before continuing.
          </p>
-         <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+         <p className="legal-doc__body">
            <strong>Version 2.2 (effective July 13, 2026).</strong> This update clarifies our AI
            inference providers: our <strong>primary</strong> model provider is now{" "}
            <strong>Cerebras Cloud</strong> (running Google&apos;s Gemma 4 31B), with{" "}
@@ -749,26 +735,25 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
          </p>
        </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>13. Contact Us</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">13. Contact Us</Heading>
+        <p className="legal-doc__body">
           If you have questions about this Privacy Policy or your data, please contact us at{" "}
-          <a href="mailto:esamzai365@gmail.com" style={{ color: "var(--accent)" }}>
+          <a href="mailto:esamzai365@gmail.com">
             esamzai365@gmail.com
           </a>{" "}
           or visit our website at{" "}
           <a
             href="https://reallearn.site"
-            style={{ color: "var(--accent)" }}
           >
             reallearn.site
           </a>.
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>14. Accessibility</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">14. Accessibility</Heading>
+        <p className="legal-doc__body">
           We try to make the Service usable by as many learners as possible and follow common
           accessibility practices where we can. As a small service, we do not represent or warrant
           conformance with WCAG or any other formal accessibility standard. If you encounter an
@@ -777,9 +762,9 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>15. Sharing Your Results</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">15. Sharing Your Results</Heading>
+        <p className="legal-doc__body">
           When you finish a learning journey, RealLearn lets you optionally share a result card.
           This card is generated entirely on your device and may include the question you asked,
           your quiz score, your level, and your current streak. Nothing is shared automatically —
@@ -791,15 +776,15 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">
           16. Voice Features (Microphone &amp; Read-Aloud)
-        </h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+        </Heading>
+        <p className="legal-doc__body">
           RealLearn offers two optional voice features:
         </p>
-        <ul style={{ fontSize: 14, color: "var(--text-secondary)", paddingLeft: 20, margin: "8px 0 0" }}>
-          <li style={{ marginBottom: 4 }}>
+        <ul className="legal-doc__list">
+          <li>
             <strong>Voice input (browser-based):</strong> The microphone is used only while you
             actively hold a voice-input session, and only after you grant your browser permission.
             Your speech is converted to text by the browser&apos;s built-in Web Speech API (or the
@@ -823,11 +808,11 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
         </ul>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">
           17. Automated Content Generation &amp; Moderation
-        </h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+        </Heading>
+        <p className="legal-doc__body">
           Lessons are produced by an automated AI system, and both your inputs and the generated
           outputs pass through automated, rule-based (pattern-matching) safety filters that run on
           our own servers — not a third-party AI classifier — before or shortly after content is
@@ -839,11 +824,11 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">
           18. Security Events and Incident Response
-        </h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+        </Heading>
+        <p className="legal-doc__body">
           We maintain technical safeguards such as token verification, strict input validation,
           rate limiting, and hardened security headers. If we confirm a personal data breach
           affecting your information, we will investigate, take reasonable containment and
@@ -852,46 +837,46 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">
           19. Children&apos;s Privacy
-        </h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 8 }}>
+        </Heading>
+        <p className="legal-doc__body">
           RealLearn is intended for learners aged <strong>13 and older</strong>. We do not knowingly
           create accounts for, or collect personal data from, children under 13. If your
           jurisdiction sets a higher minimum digital-consent age (for example, 16 in parts of the
           EEA, or 18 under India&apos;s DPDP Act for certain processing without verifiable parental
           consent), the same age-gating and parental-involvement requirements apply.
         </p>
-        <ul style={{ fontSize: 14, color: "var(--text-secondary)", paddingLeft: 20, margin: "0 0 8px" }}>
-          <li style={{ marginBottom: 4 }}>
+        <ul className="legal-doc__list">
+          <li>
             <strong>Age gating:</strong> During onboarding we ask for your date of birth, and users
             who tell us they are under 13 cannot accept the consents required to use RealLearn —
             the Service is blocked for them. We store only an age bracket (under 13, 13–17, or
             18+), never your exact date of birth.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>Parental approval for minors:</strong> If you are 13–17, you must check a box
             confirming that a parent or legal guardian has reviewed and approved your use of
             RealLearn. This is a self-attested confirmation; we do not currently require
             independent identity verification of the parent or guardian.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>What data we collect from minors:</strong> We collect the same limited categories
             described in Section 2. We do not knowingly collect precise geolocation, government
             identifiers, or other sensitive personal data from children beyond what is necessary to
             provide the Service.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>No ads or behavioral tracking:</strong> We do not serve targeted advertising to
             children and do not sell or &quot;share&quot; children&apos;s personal information for
             behavioral advertising. Analytics cookies are loaded only with consent.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>Parent/guardian controls:</strong> A parent or legal guardian may review the
             personal data we hold about a minor, revoke consent, request correction or deletion of
             the minor&apos;s account and data, or raise any concern by contacting us at{" "}
-            <a href="mailto:esamzai365@gmail.com" style={{ color: "var(--accent)" }}>
+            <a href="mailto:esamzai365@gmail.com">
               esamzai365@gmail.com
             </a>
             . We will respond promptly and take reasonable steps to verify the requestor&apos;s
@@ -904,18 +889,18 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
             data without proper consent may contact us at the email above.
           </li>
         </ul>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+        <p className="legal-doc__body">
           This section supports our obligations under laws such as the U.S. Children&apos;s Online
           Privacy Protection Act (COPPA), the GDPR provisions on children&apos;s data, and the
           parental-consent requirements of India&apos;s DPDP Act.
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">
           20. Your California Privacy Rights (CCPA/CPRA)
-        </h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 8 }}>
+        </Heading>
+        <p className="legal-doc__body">
           If you are a California resident, you have the right to know what personal information we
           collect, to access and delete it, to correct inaccuracies, and to limit the use of
           sensitive personal information — and the right not to be discriminated against for
@@ -924,7 +909,7 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
           an anonymized/truncated IP and hashed User-Agent; and usage/education information such as
           questions, scores, and preferences), collected for the purposes in Section 3.
         </p>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 8 }}>
+        <p className="legal-doc__body">
           <strong>We do not sell your personal information, and we do not &quot;share&quot; it for
           cross-context behavioral advertising</strong>, as those terms are defined under the CPRA.
           We use Google Analytics only with your consent and with IP anonymization enabled. Because
@@ -933,40 +918,40 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
           Privacy, and we honor browser-based opt-out signals such as the Global Privacy Control
           (GPC) as a valid request to not sell or share.
         </p>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+        <p className="legal-doc__body">
           You (or an authorized agent) may exercise these rights using the in-product
           &quot;Export My Data&quot; and &quot;Delete My Data&quot; tools or by contacting us; we
           will verify requests through your authenticated account.
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">
           21. India — Digital Personal Data Protection Act, 2023
-        </h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 8 }}>
+        </Heading>
+        <p className="legal-doc__body">
           If you are in India, we process your personal data as a Data Fiduciary on the basis of
           your consent and for the legitimate uses permitted under the DPDP Act. The DPDP Act grants
           you the following rights:
         </p>
-        <ul style={{ fontSize: 14, color: "var(--text-secondary)", paddingLeft: 20, margin: "0 0 8px" }}>
-          <li style={{ marginBottom: 4 }}>
+        <ul className="legal-doc__list">
+          <li>
             <strong>Right to access:</strong> obtain confirmation and a copy of the personal data we
             process about you.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>Right to correction:</strong> request correction of inaccurate or misleading
             personal data.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>Right to erasure:</strong> request deletion of your personal data, subject to
             applicable exceptions.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>Right to grievance redressal:</strong> raise a complaint with our grievance
             officer if you are unhappy with how we handle your data.
           </li>
-          <li style={{ marginBottom: 4 }}>
+          <li>
             <strong>Right to nominate:</strong> nominate another person to exercise your rights in
             the event of your death or incapacity.
           </li>
@@ -975,10 +960,10 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
             ease of doing so being comparable to the ease of giving consent.
           </li>
         </ul>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+        <p className="legal-doc__body">
           <strong>Grievance Officer:</strong> you may raise any grievance regarding the processing
           of your personal data by writing to our grievance officer at{" "}
-          <a href="mailto:esamzai365@gmail.com" style={{ color: "var(--accent)" }}>
+          <a href="mailto:esamzai365@gmail.com">
             esamzai365@gmail.com
           </a>
           . If your concern is not resolved, you may escalate it to the Data Protection Board of
@@ -989,15 +974,15 @@ export function PrivacyPolicyContent({ embedded = false }: { embedded?: boolean 
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">
           22. Grievance Officer
-        </h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+        </Heading>
+        <p className="legal-doc__body">
           For users in India and any other jurisdiction that requires a designated grievance officer,
           our grievance officer is the privacy contact listed in Section 13. You may contact the
           grievance officer at{" "}
-          <a href="mailto:esamzai365@gmail.com" style={{ color: "var(--accent)" }}>
+          <a href="mailto:esamzai365@gmail.com">
             esamzai365@gmail.com
           </a>
           . We will acknowledge your grievance promptly and use reasonable efforts to resolve it
