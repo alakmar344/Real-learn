@@ -86,7 +86,19 @@
 
 ---
 
-**Today — August 21, 2026**
+**Today — August 22, 2026**
+- **Fix Lite Mode Answer / Part Card Visibility & Pre-Paint Theme Initialization (`globals.css`, `layout.tsx`):**
+  - **Issue**: When a user selected "Lite" performance mode (`data-perf="low"`) or when "Auto" device detection routed them to the Lite tier, unlocked lesson part cards on `/learn` were dimmed to `opacity: 0.12` (dark, near-black), appearing broken and unreadable. Furthermore, the pre-paint `themeInitScript` in `layout.tsx` only set `document.documentElement.dataset.theme = t` when `t === "dark"`, causing Light mode pre-paint styling to fall back to dark tokens before React hydration.
+  - **Root Cause**: `html[data-perf="low"] .part-locked-content` lacked the `:not(.is-unlocked)` pseudo-class exclusion and had higher specificity than `.part-locked-content.is-unlocked`, overriding the unlocked rule and crushing all part cards to 12% opacity. Additionally, `--surface-glass` and `--surface-glass-strong` were missing solid background overrides under low-performance mode.
+  - **Fix**:
+    - Scoped low-performance obfuscation to `html[data-perf="low"] .part-locked-content:not(.is-unlocked)` and explicitly declared `html[data-perf="low"] .part-locked-content.is-unlocked { filter: none; opacity: 1; pointer-events: auto; user-select: auto; }`.
+    - Added solid `--surface-glass: #FFFFFF` and `--surface-glass-strong: #FFFFFF` under `html[data-perf="low"][data-theme="light"]` (and matching `#161A12` under dark mode) to ensure crisp, solid, bright card backgrounds when backdrop filters are disabled.
+    - Updated `themeInitScript` in `frontend/app/layout.tsx` to unconditionally apply `document.documentElement.dataset.theme = t` for both Light and Dark themes prior to first paint.
+  - **Verification**:
+    - Frontend: `npx tsc --noEmit` clean (0 errors), ESLint clean (0 errors, 0 warnings), all 8 verification scripts passing (`verify:quiz`, `verify:achievements`, `verify:frontier`, `verify:profile`, `verify:reconsent`, `verify:personalization`, `verify:special-days`, `verify:onboarding`), and Next.js 16 production build (`next build`) green across 14 routes.
+    - Backend: 117/117 unit, integration, and security tests passing (`npm test`).
+
+**August 21, 2026**
 - **Radically Zero-Friction, Beginner-First Pedagogical Upgrade & Unified Linear Onboarding:**
   - **🧠 Doubt-Killing Pedagogical Architecture (`backend/src/lib/prompts.js`)**:
     - Upgraded `VOICE_AND_SAFETY`, `GENERATE_FAST_ANSWER_PROMPT`, and `GENERATE_LESSON_PROMPT` to enforce **casual, friendly, conversational English** (no niche Gen-Z slang or memes, no stiff academic lecturing) and **universal daily-life analogies** (buying groceries, cooking, traffic, queues, charging phones — strictly no gaming references) across the **Four Pillars of Understanding**:
