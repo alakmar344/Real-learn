@@ -12,6 +12,7 @@ export type IconName =
   | "book-open"
   | "calendar"
   | "check"
+  | "chevron-down"
   | "clipboard-check"
   | "clock"
   | "close"
@@ -89,6 +90,7 @@ const PATHS: Record<IconName, ReactNode> = {
     </>
   ),
   check: <path d="m4 12 5 5L20 7" />,
+  "chevron-down": <path d="m6 9 6 6 6-6" />,
   "clipboard-check": (
     <>
       <rect x="8" y="2" width="8" height="4" rx="1" />

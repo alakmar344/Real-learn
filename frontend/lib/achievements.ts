@@ -787,10 +787,13 @@ export const BADGE_BY_ID: Record<string, Badge> = BADGES.reduce(
   {} as Record<string, Badge>
 );
 
+// Theme-aware via the --tier-* tokens in globals.css: the raw hexes here
+// failed WCAG AA as text on light backgrounds (and "gold" wore a banned gold
+// hue). Consumers only use these in DOM styles, so CSS vars resolve per theme.
 export const TIER_COLOR: Record<BadgeTier, string> = {
-  bronze: "#CD7F32",
-  silver: "#94A3B8",
-  gold: "#F59E0B",
-  // legendary outranks gold in the brand's own voice: glowing lime-olive
-  legendary: "#84CC16",
+  bronze: "var(--tier-bronze)",
+  silver: "var(--tier-silver)",
+  gold: "var(--tier-gold)",
+  // legendary outranks gold in the brand's own voice: lime-olive
+  legendary: "var(--tier-legendary)",
 };

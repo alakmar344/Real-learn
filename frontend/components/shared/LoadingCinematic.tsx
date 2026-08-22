@@ -122,6 +122,10 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
     isRevealingRef.current = isRevealing;
   }, [isRevealing]);
   useEffect(() => {
+    // The CSS reduced-motion kill-switch can't reach JS-driven motion: under
+    // reduce, tick slower and snap straight to the target instead of easing —
+    // progress stays honest without continuous animation.
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const id = window.setInterval(() => {
       const elapsed = Date.now() - startTimeRef.current;
       const revealing = isRevealingRef.current;
@@ -130,17 +134,19 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
         AUTO_PROGRESS_CEILING * (1 - Math.exp(-elapsed / AUTO_PROGRESS_TAU_MS));
       const realLead = latestPercent > 0 ? Math.min(latestPercent + 6, 99) : 0;
       const target = revealing ? 100 : Math.min(Math.max(autoProgress, realLead), 99);
-      const rate = revealing ? 1 : 0.12;
+      const rate = revealing || reduce ? 1 : 0.12;
       const eased = displayRef.current + (target - displayRef.current) * rate;
       const next = Math.min(100, Math.max(displayRef.current, eased));
       displayRef.current = next;
       setDisplayProgress(next);
-    }, 100);
+    }, reduce ? 500 : 100);
     return () => window.clearInterval(id);
   }, []);
 
   // Rotate the encouraging facts so there's always something fresh to read.
+  // Auto-advancing content stays frozen under reduced motion (WCAG 2.2.2).
   useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const id = window.setInterval(() => {
       setFactIndex((prev) => (prev + 1) % facts.length);
     }, 4200);

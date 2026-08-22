@@ -6,42 +6,28 @@
 // the standalone route renders the title as the document h1 instead.
 export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean }) {
   const Title = embedded ? ("h2" as const) : ("h1" as const);
+  const Heading = embedded ? ("h3" as const) : ("h2" as const);
   return (
-    <article
-      style={{
-        background: "var(--bg-card)",
-        borderRadius: "var(--radius-lg)",
-        padding: "32px 28px",
-        border: "1px solid var(--border-subtle)",
-        lineHeight: 1.7,
-      }}
-    >
-      <Title
-        style={{
-          fontFamily: "var(--font-display)",
-          fontWeight: 700,
-          fontSize: 24,
-          marginBottom: 16,
-        }}
-      >
+    <article className="legal-doc">
+      <Title className="legal-doc__title">
         Terms of Service
       </Title>
-      <p style={{ fontSize: 13, color: "var(--text-tertiary)", marginBottom: 24 }}>
+      <p className="legal-doc__meta">
         Last updated: August 17, 2026 (version 3.3)
       </p>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>1. Acceptance of Terms</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">1. Acceptance of Terms</Heading>
+        <p className="legal-doc__body">
           By accessing or using RealLearn (&quot;the Service&quot;), you agree to be bound by these Terms of Service
           (&quot;Terms&quot;). If you do not agree to these Terms, you may not use the Service. These Terms
           apply to all visitors, users, and others who access or use the Service.
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>2. Description of Service</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">2. Description of Service</Heading>
+        <p className="legal-doc__body">
           RealLearn is an AI-powered educational platform that generates learning content for
           user-requested topics in two answer modes: &quot;Fast&quot; (a single direct answer part
           with a quick quiz) and &quot;Explain&quot; (a 3-part learning journey — Foundation,
@@ -74,9 +60,9 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>3. Eligibility and Age Requirements</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">3. Eligibility and Age Requirements</Heading>
+        <p className="legal-doc__body">
           You must be at least <strong>13 years old</strong> to use this Service (or older where your
           jurisdiction sets a higher minimum digital-consent age). By using RealLearn, you represent
           and warrant that you meet this age requirement. If you are under 18, you confirm that you
@@ -85,40 +71,40 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
           consent has been given. We do not knowingly allow children under 13 to create accounts or
           use this Service.
         </p>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+        <p className="legal-doc__body">
           During onboarding we collect only an age bracket (under 13, 13–17, or 18+), not your exact
           date of birth. Users aged 13–17 must confirm that a parent or legal guardian has reviewed
           and approved their use of RealLearn. Parents or guardians may review the minor&apos;s data,
           revoke consent, request correction or deletion, or raise concerns by contacting us at{" "}
-          <a href="mailto:esamzai365@gmail.com" style={{ color: "var(--accent)" }}>
+          <a href="mailto:esamzai365@gmail.com">
             esamzai365@gmail.com
           </a>
           . See Section 19 of our Privacy Policy for how we handle children&apos;s data.
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>4. User Accounts</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">4. User Accounts</Heading>
+        <p className="legal-doc__body">
           You are responsible for safeguarding your account credentials (managed via Clerk). You
           agree to notify us immediately of any unauthorized use of your account. We are not liable
           for any loss or damage arising from your failure to comply with this security obligation.
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>5. Acceptable Use</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 8 }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">5. Acceptable Use</Heading>
+        <p className="legal-doc__body">
           You agree not to use the Service:
         </p>
-        <ul style={{ fontSize: 14, color: "var(--text-secondary)", paddingLeft: 20, margin: 0 }}>
-          <li style={{ marginBottom: 4 }}>For any unlawful purpose or in violation of any laws.</li>
-          <li style={{ marginBottom: 4 }}>To harass, abuse, or harm another person or entity.</li>
-          <li style={{ marginBottom: 4 }}>To generate content that is harmful, violent, sexually explicit, or discriminatory.</li>
-          <li style={{ marginBottom: 4 }}>To interfere with or disrupt the integrity or performance of the Service.</li>
-          <li style={{ marginBottom: 4 }}>To attempt to gain unauthorized access to the Service or related systems.</li>
-          <li style={{ marginBottom: 4 }}>To reverse engineer, decompile, or attempt to extract the source code of the Service.</li>
-          <li style={{ marginBottom: 4 }}>
+        <ul className="legal-doc__list">
+          <li>For any unlawful purpose or in violation of any laws.</li>
+          <li>To harass, abuse, or harm another person or entity.</li>
+          <li>To generate content that is harmful, violent, sexually explicit, or discriminatory.</li>
+          <li>To interfere with or disrupt the integrity or performance of the Service.</li>
+          <li>To attempt to gain unauthorized access to the Service or related systems.</li>
+          <li>To reverse engineer, decompile, or attempt to extract the source code of the Service.</li>
+          <li>
             To use scripts, bots, automation, or other artificial means to inflate or manipulate
             engagement metrics such as XP, levels, streaks, daily goals, or achievement badges.
           </li>
@@ -128,9 +114,9 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </ul>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>6. AI Content Disclaimer</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">6. AI Content Disclaimer</Heading>
+        <p className="legal-doc__body">
           <strong>Important:</strong> You are interacting with an AI system. All responses (in both
           Fast and Explain modes) are generated by high-performance open AI models. Our{" "}
           <strong>primary</strong> inference provider is <strong>Groq Cloud</strong> (running
@@ -153,9 +139,9 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>7. Intellectual Property</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">7. Intellectual Property</Heading>
+        <p className="legal-doc__body">
           The Service and its original content, features, and functionality are owned by RealLearn
           and are protected by applicable copyright and other intellectual property laws, to the
           extent such rights exist or are registered. Your saved lessons and progress data remain
@@ -164,16 +150,16 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>8. Account Suspension and Termination</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">8. Account Suspension and Termination</Heading>
+        <p className="legal-doc__body">
           We may <strong>suspend</strong> your access to the Service at any time, including while we
           investigate suspected violations of these Terms, security incidents, or abusive behavior.
           Suspension may be temporary and may occur without prior notice where necessary to protect
           the Service or other users. We will use reasonable efforts to inform you of the reason for
           suspension unless prohibited by law or safety concerns.
         </p>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+        <p className="legal-doc__body">
           We may <strong>terminate</strong> or suspend your access to the Service immediately, without
           prior notice or liability, for any reason, including if you breach these Terms. Upon
           termination, your right to use the Service will immediately cease. You may also terminate
@@ -184,9 +170,9 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>9. Disclaimer of Warranties</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">9. Disclaimer of Warranties</Heading>
+        <p className="legal-doc__body">
           The Service is provided on an <strong>&quot;AS IS&quot; and &quot;AS AVAILABLE&quot;</strong>{" "}
           basis, without warranties of any kind, whether express, implied, or statutory. To the
           maximum extent permitted by law, RealLearn disclaims all warranties, including implied
@@ -201,9 +187,9 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>10. Limitation of Liability</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">10. Limitation of Liability</Heading>
+        <p className="legal-doc__body">
           To the maximum extent permitted by law, RealLearn shall not be liable for any indirect,
           incidental, special, consequential, or punitive damages, or any loss of profits, data,
           or goodwill, arising out of or in connection with your use of the Service. Our total
@@ -217,9 +203,9 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>11. Indemnification</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">11. Indemnification</Heading>
+        <p className="legal-doc__body">
           You agree to defend, indemnify, and hold harmless RealLearn, its operator, affiliates,
           officers, agents, and employees from and against any claims, liabilities, damages,
           losses, and expenses (including reasonable legal fees) arising out of or in any way
@@ -228,9 +214,9 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>12. Content Moderation and Guardrails</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">12. Content Moderation and Guardrails</Heading>
+        <p className="legal-doc__body">
           We employ automated content filtering — a rule-based (pattern-matching) safety classifier
           that runs on our own servers, with no third-party AI call and no human in the loop at the
           moment of the check — on the questions you submit and on the AI-generated responses, to
@@ -257,29 +243,29 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>13. Governing Law</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">13. Governing Law</Heading>
+        <p className="legal-doc__body">
           These Terms shall be governed by and construed in accordance with the laws of India,
           without regard to its conflict of law provisions.
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>14. Dispute Resolution</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 8 }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">14. Dispute Resolution</Heading>
+        <p className="legal-doc__body">
           We hope to resolve any concerns informally. If a dispute arises out of or relates to these
           Terms or your use of the Service, the party raising the dispute must first send written
           notice to the other party describing the dispute in reasonable detail. The parties will
           then negotiate in good faith for at least <strong>30 days</strong> (the &quot;Informal
           Resolution Period&quot;) before commencing any formal proceedings.
         </p>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+        <p className="legal-doc__body">
           If the dispute is not resolved informally, the parties agree to attempt to resolve the
           dispute through non-binding mediation in <strong>Mandsaur, Madhya Pradesh, India</strong>,
           conducted in English or Hindi, in accordance with the laws of India.
         </p>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+        <p className="legal-doc__body">
           If mediation does not resolve the dispute, either party may pursue final resolution
           through binding arbitration or litigation, at the initiating party&apos;s election,
           exclusively in the courts or arbitration forum located in{" "}
@@ -291,9 +277,9 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>15. Force Majeure</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">15. Force Majeure</Heading>
+        <p className="legal-doc__body">
           RealLearn will not be liable or responsible to you, nor be treated as having breached these
           Terms, for any failure or delay in performing our obligations under these Terms to the
           extent the failure or delay is caused by events beyond our reasonable control, including
@@ -304,9 +290,9 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>16. Export Control and Sanctions</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">16. Export Control and Sanctions</Heading>
+        <p className="legal-doc__body">
           You may use the Service only in compliance with all applicable export-control and economic
           sanctions laws and regulations, including those of India, the United States, the United
           Nations, the European Union, and any other jurisdiction that applies to you. You may not
@@ -318,9 +304,9 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>17. Service Availability</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">17. Service Availability</Heading>
+        <p className="legal-doc__body">
           We aim to keep RealLearn available, but the Service is provided on a best-effort basis and
           we do not guarantee uninterrupted, timely, secure, or error-free operation. The Service may
           be unavailable from time to time for maintenance, upgrades, or reasons outside our control.
@@ -331,9 +317,9 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-         <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>18. Changes to Terms</h3>
-         <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+         <Heading className="legal-doc__heading">18. Changes to Terms</Heading>
+         <p className="legal-doc__body">
            We reserve the right to modify or replace these Terms at any time. If a revision is
            material, we will notify you — typically by requiring you to review and re-accept the
            updated Terms in the app before continuing, and/or by an updated notice on this page.
@@ -342,7 +328,7 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
            to access or use the Service after any revisions become effective, you agree to be
            bound by the updated Terms; if you do not agree, you must stop using the Service.
          </p>
-           <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+           <p className="legal-doc__body">
              <strong>Version 3.3 (effective August 17, 2026).</strong> This update updates our AI
              content disclaimer (Section 6) and service provider disclosures (Section 17) to reflect
              <strong> Mistral AI</strong> alongside Groq Cloud, NVIDIA NIM, and Cloudflare Workers AI.
@@ -350,7 +336,7 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
              for educational purposes. Because this introduces a new provider disclosure, we are re-prompting
              all users to review and re-accept these Terms and our updated Privacy Policy before continuing.
            </p>
-           <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+           <p className="legal-doc__body">
              <strong>Version 3.2 (effective August 17, 2026).</strong> This update updates our AI
              content disclaimer (Section 6) and service provider disclosures (Section 17) to reflect
              <strong> Groq Cloud</strong> as our primary AI inference provider (running open models Qwen 3.6 27B and GPT-OSS 120B on LPUs),
@@ -360,7 +346,7 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
              Because this is a material provider disclosure change, we are re-prompting all users to
              review and re-accept these Terms and our updated Privacy Policy before continuing.
            </p>
-           <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+           <p className="legal-doc__body">
              <strong>Version 3.1 (effective August 11, 2026).</strong> This update replaces the
              standalone &quot;Find&quot; feature described in Section 2 with an internal, quiz-driven
              personalization layer. RealLearn now builds a compact learning profile from your quiz
@@ -372,7 +358,7 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
              Because this is a material change, we are re-prompting all users to review and re-accept
              these Terms before continuing.
            </p>
-           <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+           <p className="legal-doc__body">
              <strong>Version 3.0 (effective August 10, 2026).</strong> This update adds the new{" "}
              <strong>&quot;Find&quot;</strong> feature described in Section 2. Find builds a
              personalized map of what you have proven you know (computed on your device) and
@@ -382,7 +368,7 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
              are provided &quot;as is&quot; without any guarantee of accuracy, completeness, or
              suitability.
            </p>
-           <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+           <p className="legal-doc__body">
              <strong>Version 2.9 (effective August 8, 2026).</strong> This update aligns the Terms
              with the way the Service actually operates and adds standard protective clauses. It
              (1) clarifies in Section 6 that the Cloudflare last-resort AI provider may run a
@@ -396,7 +382,7 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
              changes, we are re-prompting all users to review and re-accept these Terms and the
              updated Privacy Policy before continuing.
            </p>
-           <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+           <p className="legal-doc__body">
              <strong>Version 2.8 (effective August 7, 2026).</strong> This update adds Section 14
              (Dispute Resolution), Section 15 (Force Majeure), Section 16 (Export Control and
              Sanctions), Section 17 (Service Availability), Section 11 (Indemnification), and Section
@@ -405,7 +391,7 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
              termination. Because these are material changes, we are re-prompting all users to review
              and re-accept these Terms and the updated Privacy Policy before continuing.
            </p>
-           <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+           <p className="legal-doc__body">
              <strong>Version 2.5 (effective July 22, 2026).</strong> This update adds Section 28
              (&quot;Optional Learning Personalization&quot;), describing the new optional feature that
              lets signed-in users choose learning-style preferences and add free-text notes (capped
@@ -414,7 +400,7 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
              this changes our Privacy Policy disclosures, all users are re-prompted to review and
              re-accept both documents before continuing.
            </p>
-           <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+           <p className="legal-doc__body">
              <strong>Version 2.4 (effective July 17, 2026).</strong> This update adds Section 27
              (&quot;Optional Feedback&quot;), describing the new optional, anonymous review feature
              offered soon after a user&apos;s first completed lesson. The review is submitted with
@@ -423,7 +409,7 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
              a transparency update; because it introduces no new required data and no new third
              parties, existing consent remains valid.
            </p>
-           <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+           <p className="legal-doc__body">
              <strong>Version 2.3 (effective July 14, 2026).</strong> This update describes where your
             saved lesson history is stored: the full content of every saved lesson (chat) now lives
             in your browser&apos;s <strong>IndexedDB</strong> on your own device (with only a
@@ -432,14 +418,14 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
             Because our Privacy Policy changed alongside this (version 2.4), we are re-prompting
             all users to review and re-accept both documents before continuing.
           </p>
-          <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+          <p className="legal-doc__body">
             <strong>Version 2.7 (effective August 5, 2026).</strong> This update adds
             <strong> NVIDIA NIM</strong> as the automatic AI fallback after Cerebras and moves
             <strong> Cloudflare Workers AI</strong> to a last-resort provider role. Because this is a
             material provider-routing change, we are re-prompting all users to review and re-accept
             these Terms and the updated Privacy Policy before continuing.
           </p>
-          <p style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 8 }}>
+          <p className="legal-doc__body">
             <strong>Version 2.2 (effective July 13, 2026).</strong> This update clarifies our AI
             inference providers: our <strong>primary</strong> provider is now{" "}
             <strong>Cerebras Cloud</strong> (running Google&apos;s Gemma 4 31B), with{" "}
@@ -450,27 +436,26 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
           </p>
         </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>19. Contact Information</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">19. Contact Information</Heading>
+        <p className="legal-doc__body">
           If you have any questions about these Terms of Service or our legal policies, please
           contact us at{" "}
-          <a href="mailto:esamzai365@gmail.com" style={{ color: "var(--accent)" }}>
+          <a href="mailto:esamzai365@gmail.com">
             esamzai365@gmail.com
           </a>.
           You may also visit our website at{" "}
           <a
             href="https://reallearn.site"
-            style={{ color: "var(--accent)" }}
           >
             reallearn.site
           </a>.
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>20. Copyright and Trademark</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">20. Copyright and Trademark</Heading>
+        <p className="legal-doc__body">
           RealLearn, the RealLearn logo, and all related names, logos, and slogans are the
           intellectual property of alakmar344 (the operator of RealLearn), to the extent such
           rights exist under applicable law. All content generated by the Service is the property
@@ -479,9 +464,9 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>21. Data Retention and Deletion</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">21. Data Retention and Deletion</Heading>
+        <p className="legal-doc__body">
           We retain your account and conversation data only as long as necessary to provide the
           service or comply with legal obligations. When you delete your account, we delete your
           data from our servers within 30 days. Anonymously cached lessons (used to answer repeat
@@ -489,13 +474,13 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
           automatically, typically within a few hours. Moderation log entries expire automatically
           after at most 90 days. Saved lessons in your browser remain until you
           clear them or use the &quot;Delete My Data&quot; feature. For more details, see our{" "}
-          <a href="/legal?tab=privacy" style={{ color: "var(--accent)" }}>Privacy Policy</a>.
+          <a href="/legal?tab=privacy">Privacy Policy</a>.
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>22. Accessibility</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">22. Accessibility</Heading>
+        <p className="legal-doc__body">
           We try to make the Service usable by as many learners as possible and follow common
           accessibility practices where we can. We do not represent or warrant conformance with
           WCAG or any other formal accessibility standard. If you experience accessibility issues,
@@ -503,9 +488,9 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>23. Gamification &amp; Virtual Rewards</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">23. Gamification &amp; Virtual Rewards</Heading>
+        <p className="legal-doc__body">
           The Service offers engagement features including experience points (XP), levels, daily
           streaks, streak freezes, daily goals, and achievement badges (collectively,
           &quot;Virtual Rewards&quot;). Virtual Rewards are provided for motivational and entertainment
@@ -521,9 +506,9 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>24. Voice Features</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">24. Voice Features</Heading>
+        <p className="legal-doc__body">
           The Service offers optional voice input (speech-to-text) and &quot;Listen&quot; read-aloud
           (text-to-speech) features. <strong>Voice input</strong> relies on your browser&apos;s
           built-in Web Speech API: availability and accuracy depend on your browser, device, and
@@ -542,11 +527,11 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">
           25. AI Safety and User Responsibility
-        </h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+        </Heading>
+        <p className="legal-doc__body">
           RealLearn includes automated safety filters, but no automated system is perfect. You agree
           not to rely on the Service for emergency, medical, legal, financial, or other high-risk
           decisions, and you are responsible for independently verifying critical information.
@@ -555,11 +540,11 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">
           26. Privacy Rights and Compliance
-        </h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+        </Heading>
+        <p className="legal-doc__body">
           Your privacy rights are described in our Privacy Policy, including rights available under
           applicable laws such as GDPR and U.S. state privacy laws. By using the Service, you
           acknowledge that we may process data as described there to provide the product, prevent
@@ -568,11 +553,11 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">
           27. Optional Feedback
-        </h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+        </Heading>
+        <p className="legal-doc__body">
           Soon after you complete your first learning journey, RealLearn may invite you to leave
           an optional review — a 1–10 star rating plus free-text notes on what you liked and what we
           should improve. This feedback is <strong>entirely optional and never required</strong> to
@@ -586,11 +571,11 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">
           28. Optional Learning Personalization
-        </h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+        </Heading>
+        <p className="legal-doc__body">
           RealLearn offers optional learning personalization for signed-in users. You may select
           learning-style preferences (for example, simple language, step-by-step explanations, or
           visual analogies) and add free-text notes about how you learn best. This information is
@@ -603,9 +588,9 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>29. Severability</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">29. Severability</Heading>
+        <p className="legal-doc__body">
           If any provision of these Terms is held to be invalid, illegal, or unenforceable by a court
           of competent jurisdiction, that provision will be modified to the minimum extent necessary
           to make it valid and enforceable, or if not possible, severed from these Terms; the
@@ -613,9 +598,9 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>30. Entire Agreement</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">30. Entire Agreement</Heading>
+        <p className="legal-doc__body">
           These Terms, together with the Privacy Policy and Cookie Policy, constitute the entire
           agreement between you and RealLearn regarding the Service and supersede all prior or
           contemporaneous understandings, communications, or agreements, whether written or oral,
@@ -625,9 +610,9 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>31. No Waiver</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">31. No Waiver</Heading>
+        <p className="legal-doc__body">
           Our failure to enforce any right or provision of these Terms will not be considered a
           waiver of that right or provision. Any waiver must be in writing to be effective, and a
           waiver on one occasion does not waive the same or any other provision on a future
@@ -635,9 +620,9 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>32. Assignment</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">32. Assignment</Heading>
+        <p className="legal-doc__body">
           You may not assign or transfer these Terms, or any rights or obligations under them,
           without our prior written consent; any attempted assignment in violation of this section
           is void. We may assign these Terms without restriction — for example, in connection with
@@ -646,18 +631,18 @@ export function TermsOfServiceContent({ embedded = false }: { embedded?: boolean
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>33. No Third-Party Beneficiaries</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">33. No Third-Party Beneficiaries</Heading>
+        <p className="legal-doc__body">
           These Terms are for the benefit of you and RealLearn only. Nothing in these Terms is
           intended to confer any right or remedy on any other person or entity, including our
           third-party service providers.
         </p>
       </section>
 
-      <section style={{ marginBottom: 28 }}>
-        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>34. Time Limit on Claims</h3>
-        <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+      <section className="legal-doc__section">
+        <Heading className="legal-doc__heading">34. Time Limit on Claims</Heading>
+        <p className="legal-doc__body">
           To the extent permitted by applicable law, any claim arising out of or relating to these
           Terms or the Service must be commenced within <strong>twelve (12) months</strong> after
           the cause of action accrues; otherwise, the claim is permanently barred. This section

@@ -151,7 +151,9 @@ function isRetryableMessage(message: string) {
     normalized.includes("fetch failed") ||
     normalized.includes("unable to generate lesson") ||
     normalized.includes("server is busy") ||
-    normalized.includes("connection closed")
+    normalized.includes("connection closed") ||
+    // matches "Backend closed connection before returning a lesson"
+    normalized.includes("closed connection")
   );
 }
 

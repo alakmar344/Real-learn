@@ -33,11 +33,21 @@ if (cluster.isPrimary) {
   const FAST_DEATH_MS = 5000;
   const MAX_CONSECUTIVE_FAST_DEATHS = 5;
   let consecutiveFastDeaths = 0;
+  let shuttingDown = false;
   cluster.on("exit", (worker, code, signal) => {
     const startedAt = workerStartTimes.get(worker.id);
     workerStartTimes.delete(worker.id);
-    if (worker.exitedAfterDisconnect) {
+    // Workers terminate via their own shutdown handler + process.exit(0), so
+    // exitedAfterDisconnect is false during a signal-driven shutdown; without
+    // the shuttingDown check every gracefully-exiting worker would be treated
+    // as an unexpected death and re-forked forever, keeping the port bound
+    // until the platform SIGKILLs the primary.
+    if (shuttingDown || worker.exitedAfterDisconnect) {
       console.log(`[cluster] Worker ${worker.process.pid} shut down gracefully`);
+      if (shuttingDown && Object.keys(cluster.workers ?? {}).length === 0) {
+        console.log("[cluster] All workers exited — primary shutting down");
+        process.exit(0);
+      }
       return;
     }
     const diedFast = startedAt != null && Date.now() - startedAt < FAST_DEATH_MS;
@@ -57,9 +67,17 @@ if (cluster.isPrimary) {
   // Forward termination signals to all active workers
   const forwardSignal = (sig) => {
     console.log(`[cluster] Primary received ${sig}, terminating workers...`);
+    shuttingDown = true;
     for (const id in cluster.workers) {
       cluster.workers[id]?.process.kill(sig);
     }
+    // Backstop: if a worker hangs past its own shutdown deadline, exit anyway
+    // so the platform's grace window is never exceeded by the primary.
+    const backstop = setTimeout(() => {
+      console.error("[cluster] Workers did not exit in time — forcing primary exit");
+      process.exit(1);
+    }, 25_000);
+    backstop.unref();
   };
 
   process.on("SIGTERM", () => forwardSignal("SIGTERM"));

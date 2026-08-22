@@ -138,15 +138,38 @@ export async function startServer() {
       console.warn("[startup] Non-fatal warm-up error:", warmupError);
     }
 
-    // Graceful shutdown handling
+    // Graceful shutdown handling — with a deadline. Active hijacked SSE
+    // lesson streams can legitimately run for minutes; without a deadline
+    // fastify.close() outlives the platform's kill grace window (~30s), the
+    // process is SIGKILLed, and the Mongo pool never drains.
+    const SHUTDOWN_TIMEOUT_MS = 15_000;
     const shutdown = async (signal) => {
       console.log(`[shutdown] ${signal} received, starting graceful shutdown`);
+      const severTimer = setTimeout(() => {
+        console.warn(
+          `[shutdown] ${SHUTDOWN_TIMEOUT_MS}ms deadline hit — severing remaining connections`
+        );
+        try {
+          fastify.server.closeAllConnections?.();
+        } catch {
+          // best-effort
+        }
+      }, SHUTDOWN_TIMEOUT_MS);
+      severTimer.unref();
       try {
-        await fastify.close();
-        console.log("[shutdown] Fastify server closed");
+        await Promise.race([
+          fastify.close().then(() => {
+            console.log("[shutdown] Fastify server closed");
+          }),
+          new Promise((resolve) => {
+            const t = setTimeout(resolve, SHUTDOWN_TIMEOUT_MS + 5_000);
+            t.unref();
+          }),
+        ]);
       } catch (err) {
         console.error("[shutdown] Error closing fastify server:", err);
       } finally {
+        clearTimeout(severTimer);
         await closeMongo();
         process.exit(0);
       }
