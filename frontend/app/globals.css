@@ -2068,6 +2068,15 @@ html[data-perf="low"] body::before {
 html[data-perf="low"][data-theme="light"] {
   --bg-card: #FFFFFF;
   --bg-glass: #FFFFFF;
+  --surface-glass: #FFFFFF;
+  --surface-glass-strong: #FFFFFF;
+}
+
+html[data-perf="low"][data-theme="dark"] {
+  --bg-card: #161A12;
+  --bg-glass: #161A12;
+  --surface-glass: #161A12;
+  --surface-glass-strong: #161A12;
 }
 
 /* MID tier: nothing extra to strip anymore — the ambient wash is static
@@ -2078,9 +2087,18 @@ html[data-perf="low"] .accent-pulse-dot {
 }
 
 /* Locked-part obfuscation without the blur. */
-html[data-perf="low"] .part-locked-content {
+html[data-perf="low"] .part-locked-content:not(.is-unlocked) {
   filter: none;
   opacity: 0.12;
+  pointer-events: none;
+  user-select: none;
+}
+
+html[data-perf="low"] .part-locked-content.is-unlocked {
+  filter: none;
+  opacity: 1;
+  pointer-events: auto;
+  user-select: auto;
 }
 
 /* ── Firefox / Gecko: protect the compositor ──
