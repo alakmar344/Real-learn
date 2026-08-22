@@ -48,9 +48,9 @@ const subjectColors: Record<string, string> = {
 };
 
 const PART_INTENT = [
-  "The core idea, built from first intuition.",
-  "How it actually works, step by step.",
-  "Where it shows up in the real world right now.",
+  "Foundation — Core mental model & intuition built without jargon.",
+  "Mechanism — How it works step-by-step & disarming common doubts.",
+  "Application & Next — Real-world impact & what connects next.",
 ];
 
 function CopyIcon() {
