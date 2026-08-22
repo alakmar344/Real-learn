@@ -197,7 +197,8 @@ function sanitizeTtsProsody(value, pattern) {
 }
 
 const SPEECH_LANG_TO_VOICE = {
-  "en-IN": "en-IN-NeerjaNeural",
+  // Indian languages
+  "en-US": "en-US-AriaNeural",
   "hi-IN": "hi-IN-SwaraNeural",
   "gu-IN": "gu-IN-NiranjanNeural",
   "ta-IN": "ta-IN-ValluvarNeural",
@@ -209,7 +210,64 @@ const SPEECH_LANG_TO_VOICE = {
   "pa-IN": "pa-IN-GurpreetNeural",
   "ur-IN": "ur-IN-SalmanNeural",
   "or-IN": "or-IN-LisaNeural",
-  "en-US": "en-US-AriaNeural",
+  // European languages
+  "es-ES": "es-ES-ElviraNeural",
+  "fr-FR": "fr-FR-DeniseNeural",
+  "de-DE": "de-DE-KatjaNeural",
+  "it-IT": "it-IT-ElsaNeural",
+  "pt-BR": "pt-BR-FranciscaNeural",
+  "nl-NL": "nl-NL-ColetteNeural",
+  "ru-RU": "ru-RU-SvetlanaNeural",
+  "pl-PL": "pl-PL-AgnieszkaNeural",
+  "ro-RO": "ro-RO-AlinaNeural",
+  "el-GR": "el-GR-AthinaNeural",
+  "cs-CZ": "cs-CZ-VlastaNeural",
+  "hu-HU": "hu-HU-NoemiNeural",
+  "sv-SE": "sv-SE-SofieNeural",
+  "nb-NO": "nb-NO-PernilleNeural",
+  "da-DK": "da-DK-ChristelNeural",
+  "fi-FI": "fi-FI-SelmaNeural",
+  "uk-UA": "uk-UA-PolinaNeural",
+  "tr-TR": "tr-TR-EmelNeural",
+  "ca-ES": "ca-ES-JoanaNeural",
+  "bg-BG": "bg-BG-KalinaNeural",
+  "hr-HR": "hr-HR-GabrijelaNeural",
+  "sr-RS": "sr-RS-SophieNeural",
+  "sk-SK": "sk-SK-ViktoriaNeural",
+  "sl-SI": "sl-SI-PetraNeural",
+  "et-EE": "et-EE-AnuNeural",
+  "lv-LV": "lv-LV-EveritaNeural",
+  "lt-LT": "lt-LT-OnaNeural",
+  // East Asian languages
+  "zh-CN": "zh-CN-XiaoxiaoNeural",
+  "zh-TW": "zh-TW-HsiaoChenNeural",
+  "ja-JP": "ja-JP-NanamiNeural",
+  "ko-KR": "ko-KR-SunHiNeural",
+  // Southeast Asian languages
+  "vi-VN": "vi-VN-HoaiMyNeural",
+  "th-TH": "th-TH-PremwadeeNeural",
+  "id-ID": "id-ID-GadisNeural",
+  "ms-MY": "ms-MY-YasminNeural",
+  "fil-PH": "fil-PH-BlessicaNeural",
+  "my-MM": "my-MM-NilarNeural",
+  // Middle Eastern languages
+  "ar-SA": "ar-SA-ZariyahNeural",
+  "he-IL": "he-IL-HilaNeural",
+  "fa-IR": "fa-IR-DilaraNeural",
+  // South Asian languages
+  "ne-NP": "ne-NP-HemkalaNeural",
+  "si-LK": "si-LK-ThiliniNeural",
+  // African languages
+  "sw-KE": "sw-KE-ZuriNeural",
+  "am-ET": "am-ET-MekdesNeural",
+  "yo-NG": "yo-NG-EzinneNeural",
+  "zu-ZA": "zu-ZA-ThandoNeural",
+  // Central Asian & Caucasian languages
+  "ka-GE": "ka-GE-EkaNeural",
+  "hy-AM": "hy-AM-AnahitNeural",
+  "kk-KZ": "kk-KZ-AigulNeural",
+  "az-AZ": "az-AZ-BanuNeural",
+  "uz-UZ": "uz-UZ-MadinaNeural",
 };
 
 export async function ttsHandler(req, res) {
@@ -234,8 +292,8 @@ export async function ttsHandler(req, res) {
     const requestedLang = typeof req.body?.lang === "string" ? req.body.lang.trim() : "";
     const lang = Object.prototype.hasOwnProperty.call(SPEECH_LANG_TO_VOICE, requestedLang)
       ? requestedLang
-      : "en-IN";
-    const voice = SPEECH_LANG_TO_VOICE[lang] || "en-IN-NeerjaNeural";
+      : "en-US";
+    const voice = SPEECH_LANG_TO_VOICE[lang] || "en-US-AriaNeural";
 
     const rate = sanitizeTtsProsody(req.body?.rate, TTS_RATE_VOLUME_PATTERN);
     const pitch = sanitizeTtsProsody(req.body?.pitch, TTS_PITCH_PATTERN);

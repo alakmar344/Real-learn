@@ -33,6 +33,7 @@ function contextCacheSet(cacheKey, context) {
 }
 
 const SERPER_LANGUAGE_MAP = {
+  // Indian languages
   bengali: "bn",
   english: "en",
   gujarati: "gu",
@@ -45,6 +46,64 @@ const SERPER_LANGUAGE_MAP = {
   tamil: "ta",
   telugu: "te",
   urdu: "ur",
+  // European languages
+  spanish: "es",
+  french: "fr",
+  german: "de",
+  italian: "it",
+  portuguese: "pt",
+  dutch: "nl",
+  russian: "ru",
+  polish: "pl",
+  romanian: "ro",
+  greek: "el",
+  czech: "cs",
+  hungarian: "hu",
+  swedish: "sv",
+  norwegian: "no",
+  danish: "da",
+  finnish: "fi",
+  ukrainian: "uk",
+  turkish: "tr",
+  catalan: "ca",
+  bulgarian: "bg",
+  croatian: "hr",
+  serbian: "sr",
+  slovak: "sk",
+  slovenian: "sl",
+  estonian: "et",
+  latvian: "lv",
+  lithuanian: "lt",
+  // East Asian languages
+  "chinese (simplified)": "zh",
+  "chinese (traditional)": "zh",
+  japanese: "ja",
+  korean: "ko",
+  // Southeast Asian languages
+  vietnamese: "vi",
+  thai: "th",
+  indonesian: "id",
+  malay: "ms",
+  filipino: "tl",
+  burmese: "my",
+  // Middle Eastern languages
+  arabic: "ar",
+  hebrew: "he",
+  persian: "fa",
+  // South Asian languages
+  nepali: "ne",
+  sinhala: "si",
+  // African languages
+  swahili: "sw",
+  amharic: "am",
+  yoruba: "yo",
+  zulu: "zu",
+  // Central Asian & Caucasian languages
+  georgian: "ka",
+  armenian: "hy",
+  kazakh: "kk",
+  azerbaijani: "az",
+  uzbek: "uz",
 };
 
 function normalizeSerperLanguage(language) {

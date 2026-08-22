@@ -61,7 +61,7 @@ export const metadata: Metadata = {
     template: "%s | RealLearn",
   },
   description:
-    "RealLearn turns any question into a structured 3-part lesson — Foundation, Mechanism, Real World — with quiz-gated progression, 12 Indian languages, and live news grounding.",
+    "RealLearn turns any question into a structured 3-part lesson — Foundation, Mechanism, Real World — with quiz-gated progression, 63 languages, and live news grounding.",
   applicationName: "RealLearn",
   category: "education",
   // Kept deliberately short: search engines ignore stuffed keyword lists, and
@@ -72,7 +72,7 @@ export const metadata: Metadata = {
     "AI learning platform",
     "interactive lessons",
     "quiz-gated learning",
-    "Indian languages learning app",
+    "multilingual learning app",
   ],
   authors: [{ name: "RealLearn" }],
   creator: "RealLearn",
@@ -287,7 +287,7 @@ export default async function RootLayout({
                   name: "Which languages does RealLearn support?",
                   acceptedAnswer: {
                     "@type": "Answer",
-                    text: "RealLearn generates lessons natively in 12 languages: English, Hindi, Gujarati, Tamil, Bengali, Marathi, Telugu, Kannada, Malayalam, Punjabi, Urdu, and Odia.",
+                    text: "RealLearn generates lessons natively in 63 languages including English, Spanish, French, German, Hindi, Chinese, Japanese, Arabic, and many more global languages.",
                   },
                 },
                 {

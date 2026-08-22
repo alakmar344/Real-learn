@@ -18,8 +18,27 @@ const VALID_THEMES: Theme[] = ["light", "dark"];
 // tampered legacy value inject an invalid enum that no downstream code
 // expects (it is sent verbatim to the lesson API).
 const VALID_LANGUAGES: Language[] = [
+  // Indian languages
   "English", "Hindi", "Gujarati", "Tamil", "Bengali", "Marathi",
   "Telugu", "Kannada", "Malayalam", "Punjabi", "Urdu", "Odia",
+  // European languages
+  "Spanish", "French", "German", "Italian", "Portuguese", "Dutch",
+  "Russian", "Polish", "Romanian", "Greek", "Czech", "Hungarian",
+  "Swedish", "Norwegian", "Danish", "Finnish", "Ukrainian", "Turkish",
+  "Catalan", "Bulgarian", "Croatian", "Serbian", "Slovak", "Slovenian",
+  "Estonian", "Latvian", "Lithuanian",
+  // East Asian languages
+  "Chinese (Simplified)", "Chinese (Traditional)", "Japanese", "Korean",
+  // Southeast Asian languages
+  "Vietnamese", "Thai", "Indonesian", "Malay", "Filipino", "Burmese",
+  // Middle Eastern languages
+  "Arabic", "Hebrew", "Persian",
+  // South Asian languages
+  "Nepali", "Sinhala",
+  // African languages
+  "Swahili", "Amharic", "Yoruba", "Zulu",
+  // Central Asian & Caucasian languages
+  "Georgian", "Armenian", "Kazakh", "Azerbaijani", "Uzbek",
 ];
 const VALID_LEVELS: Level[] = ["Class 6-8", "Class 9-10", "College / Advanced"];
 

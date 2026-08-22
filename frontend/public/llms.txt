@@ -14,7 +14,7 @@ search engine — it is a teaching system.
 - Generates complete lessons powered by Groq LPUs (Qwen 3.6 27B / GPT-OSS 120B primary), backed by NVIDIA NIM 70B–150B parameter models and Cloudflare Workers AI last-resort fallback.
 - Three-stage progression: Foundation -> Mechanism -> Real World.
 - Quiz-gated comprehension: 100% pass required before advancing.
-- Native multilingual generation in 12 languages (English, Hindi, Gujarati, Tamil, Bengali, Marathi, Telugu, Kannada, Malayalam, Punjabi, Urdu, Odia).
+- Native multilingual generation in 63 languages including English, Spanish, French, German, Hindi, Chinese, Japanese, Arabic, and many more global languages.
 - Adaptive difficulty: Class 6-8, Class 9-10, College/Advanced.
 - Real-world grounding via live news context.
 - Full security and privacy: Clerk auth, content moderation, GDPR-minded consent, data export and permanent deletion.

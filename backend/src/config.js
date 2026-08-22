@@ -29,6 +29,7 @@ export const COOKIE_POLICY_VERSION = process.env.COOKIE_POLICY_VERSION || "2.3";
 // fields that are interpolated into the LLM prompt to known values) ──
 export const MAX_QUESTION_LENGTH = 1000;
 export const ALLOWED_LANGUAGES = new Set([
+  // Indian languages
   "English",
   "Hindi",
   "Gujarati",
@@ -41,6 +42,64 @@ export const ALLOWED_LANGUAGES = new Set([
   "Punjabi",
   "Urdu",
   "Odia",
+  // European languages
+  "Spanish",
+  "French",
+  "German",
+  "Italian",
+  "Portuguese",
+  "Dutch",
+  "Russian",
+  "Polish",
+  "Romanian",
+  "Greek",
+  "Czech",
+  "Hungarian",
+  "Swedish",
+  "Norwegian",
+  "Danish",
+  "Finnish",
+  "Ukrainian",
+  "Turkish",
+  "Catalan",
+  "Bulgarian",
+  "Croatian",
+  "Serbian",
+  "Slovak",
+  "Slovenian",
+  "Estonian",
+  "Latvian",
+  "Lithuanian",
+  // East Asian languages
+  "Chinese (Simplified)",
+  "Chinese (Traditional)",
+  "Japanese",
+  "Korean",
+  // Southeast Asian languages
+  "Vietnamese",
+  "Thai",
+  "Indonesian",
+  "Malay",
+  "Filipino",
+  "Burmese",
+  // Middle Eastern languages
+  "Arabic",
+  "Hebrew",
+  "Persian",
+  // South Asian languages
+  "Nepali",
+  "Sinhala",
+  // African languages
+  "Swahili",
+  "Amharic",
+  "Yoruba",
+  "Zulu",
+  // Central Asian & Caucasian languages
+  "Georgian",
+  "Armenian",
+  "Kazakh",
+  "Azerbaijani",
+  "Uzbek",
 ]);
 export const ALLOWED_LEVELS = new Set(["Class 6-8", "Class 9-10", "College / Advanced"]);
 const DEFAULT_RATE_LIMIT_WINDOW_MS = 60000;
