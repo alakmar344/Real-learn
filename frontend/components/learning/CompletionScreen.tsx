@@ -96,7 +96,12 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
             {(lesson.parts?.length ?? 3) === 1 ? t("completion.gotIt") : t("completion.journeyComplete")}
           </h3>
           <p className="completion__subtitle">
-            {t("completion.scored", { score: totalScore, total: maxScore })} — {pct >= 80 ? t("completion.cleanRun") : pct >= 50 ? t("completion.solid") : t("completion.tough")}
+            {t("completion.scored", {
+              score: totalScore,
+              max: maxScore,
+              total: maxScore,
+              msg: pct >= 80 ? t("completion.cleanRun") : pct >= 50 ? t("completion.solid") : t("completion.tough"),
+            })}
           </p>
         </div>
       </div>

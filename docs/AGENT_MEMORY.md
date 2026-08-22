@@ -1595,10 +1595,10 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
     - `FeedbackPrompt.tsx`: Localized first lesson review modal, rating prompts, text placeholders, and action buttons.
     - `CookieConsent.tsx`: Localized analytics choice banner copy, policy links, and allow/decline buttons.
     - `KeyboardShortcuts.tsx`: Localized shortcut actions, modal title, and toggle hint.
-    - `AchievementsGrid.tsx`: Localized achievement hub header, unlock counters, tier names, and progress status.
     - `app/learn/page.tsx` & `app/settings/page.tsx`: Localized quiz pass toasts, cookie status indicators, and data export/deletion notifications.
+    - `app/progress/page.tsx`, `ActivityHeatmap.tsx`, `DailyGoalRing.tsx`, `CompletionScreen.tsx`: Fixed raw logic and template parameter mismatches (e.g. `{num}` vs `{level}`, `{current}/{total}` vs `{into}/{forNext}`, `{count}/{goal}`, `{score}/{max}` and `{msg}`) where raw template brackets like `Level {level}` and `{into} / {forNext} XP to Level 2` were previously leaking un-interpolated into the UI. Added localized rank titles (`levelTitleKey`) and heatmap labels.
   - **✅ Empirical Verification**:
-    - `npm run verify:i18n` passed 100% (all 63 languages have complete 256 keys).
+    - `npm run verify:i18n` passed 100% (all 63 languages have complete 268 keys).
     - All 10 verification suites passed cleanly.
     - Backend: 117/117 unit and security tests passed.
     - Frontend: `npx tsc --noEmit` clean (0 errors), ESLint clean (0 errors, 0 warnings), Next.js 16 production build (`next build`) green across all 14 routes.

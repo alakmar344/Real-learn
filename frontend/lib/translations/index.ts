@@ -256,7 +256,19 @@ export type TranslationKey =
   | "settings.analyticsNotSet"
   | "settings.dataDeleted"
   | "settings.exportDownloaded"
-  | "settings.exportFailed";
+  | "settings.exportFailed"
+  | "progress.levelTitle.finalBoss"
+  | "progress.levelTitle.mainCharacter"
+  | "progress.levelTitle.bigBrain"
+  | "progress.levelTitle.lockedIn"
+  | "progress.levelTitle.onTheGrind"
+  | "progress.levelTitle.explorer"
+  | "progress.levelTitle.freshSpawn"
+  | "progress.heatmapLess"
+  | "progress.heatmapMore"
+  | "progress.heatmapAria"
+  | "progress.heatmapCell"
+  | "progress.dailyGoalAria";
 
 export type Translations = Record<TranslationKey, string>;
 
@@ -517,4 +529,16 @@ export const en: Translations = {
   "settings.dataDeleted": "Your data and account have been deleted.",
   "settings.exportDownloaded": "Data export downloaded",
   "settings.exportFailed": "Could not export data. Please try again.",
+  "progress.levelTitle.finalBoss": "Final Boss",
+  "progress.levelTitle.mainCharacter": "Main Character",
+  "progress.levelTitle.bigBrain": "Big Brain",
+  "progress.levelTitle.lockedIn": "Locked In",
+  "progress.levelTitle.onTheGrind": "On the Grind",
+  "progress.levelTitle.explorer": "Explorer",
+  "progress.levelTitle.freshSpawn": "Fresh Spawn",
+  "progress.heatmapLess": "Less",
+  "progress.heatmapMore": "More",
+  "progress.heatmapAria": "Study activity over the last {weeks} weeks: {activeDays} active days, {totalParts} parts completed.",
+  "progress.heatmapCell": "{key}: {count} parts",
+  "progress.dailyGoalAria": "{value} of {goal} daily parts completed",
 };

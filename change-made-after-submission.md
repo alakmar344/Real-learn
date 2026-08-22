@@ -1590,8 +1590,9 @@ vendors). All of these live between `2b239b5` (start) and now:
     - `KeyboardShortcuts.tsx`: Localized shortcut actions and modal dialog.
     - `AchievementsGrid.tsx`: Localized achievements header, counter, tier badges, and status.
     - `app/learn/page.tsx` & `app/settings/page.tsx`: Localized quiz pass toasts, cookie status labels, and export/delete feedback.
+    - `app/progress/page.tsx`, `ActivityHeatmap.tsx`, `DailyGoalRing.tsx`, `CompletionScreen.tsx`: Fixed template interpolation parameter mismatches (`{num}` vs `{level}`, `{current}/{total}` vs `{into}/{forNext}`, `{count}/{goal}`, `{score}/{max}` and `{msg}`) where raw brackets like `Level {level}` were leaking into the interface. Added localized rank titles (`levelTitleKey`) and heatmap labels.
   - **Empirical Verification**:
-    - `npm run verify:i18n` verified 100% completeness for all 63 languages across all 256 keys.
+    - `npm run verify:i18n` verified 100% completeness for all 63 languages across all 268 keys.
     - Backend: 117/117 unit and integration tests passed.
     - Frontend: `npx tsc --noEmit` passed (0 errors), ESLint passed (0 errors), Next.js 16 production build (`next build`) green across 14 routes.
 

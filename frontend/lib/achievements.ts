@@ -9,6 +9,7 @@
 // file in plain Node (type stripping erases them; runtime imports would break).
 
 import type { IconName } from "@/components/shared/icons";
+import type { TranslationKey } from "./translations/index";
 
 /* ─────────────────────────── XP & Levels ─────────────────────────── */
 
@@ -51,6 +52,17 @@ export function levelInfo(totalXp: number): LevelInfo {
     progress: need > 0 ? remaining / need : 0,
     totalXp: xp,
   };
+}
+
+/** Translation key for level title. */
+export function levelTitleKey(level: number): TranslationKey {
+  if (level >= 30) return "progress.levelTitle.finalBoss";
+  if (level >= 20) return "progress.levelTitle.mainCharacter";
+  if (level >= 14) return "progress.levelTitle.bigBrain";
+  if (level >= 9) return "progress.levelTitle.lockedIn";
+  if (level >= 5) return "progress.levelTitle.onTheGrind";
+  if (level >= 3) return "progress.levelTitle.explorer";
+  return "progress.levelTitle.freshSpawn";
 }
 
 /** A friendly title for a level band — pure flavour, drives pride.
@@ -570,7 +582,7 @@ export const BADGES: Badge[] = [
     icon: "map",
     title: "Polyglot",
     description: "Learn in 3 different languages.",
-    how: "Complete parts in three different languages — RealLearn speaks twelve; try a new one.",
+    how: "Complete parts in three different languages — RealLearn speaks 63 languages; try a new one.",
     tier: "gold",
     progress: (s) => ratio(s.languagesUsed.length, 3),
     earned: (s) => s.languagesUsed.length >= 3,

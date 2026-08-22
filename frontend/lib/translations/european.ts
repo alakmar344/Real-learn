@@ -201,6 +201,18 @@ export const es: Translations = {
   "settings.dataDeleted": "Tus datos y cuenta han sido eliminados.",
   "settings.exportDownloaded": "Exportación de datos descargada",
   "settings.exportFailed": "No se pudieron exportar los datos. Inténtalo de nuevo.",
+  "progress.levelTitle.finalBoss": "Jefe Final",
+  "progress.levelTitle.mainCharacter": "Protagonista",
+  "progress.levelTitle.bigBrain": "Mente Brillante",
+  "progress.levelTitle.lockedIn": "Enfocado",
+  "progress.levelTitle.onTheGrind": "En Marcha",
+  "progress.levelTitle.explorer": "Explorador",
+  "progress.levelTitle.freshSpawn": "Principiante",
+  "progress.heatmapLess": "Menos",
+  "progress.heatmapMore": "Más",
+  "progress.heatmapAria": "Actividad de estudio durante las últimas {weeks} semanas: {activeDays} días activos, {totalParts} partes completadas.",
+  "progress.heatmapCell": "{key}: {count} partes",
+  "progress.dailyGoalAria": "{value} de {goal} partes diarias completadas",
 };
 
 export const fr: Translations = {

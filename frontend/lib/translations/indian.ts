@@ -260,6 +260,18 @@ export const hi: Translations = {
   "settings.dataDeleted": "आपका डेटा और खाता हटा दिया गया है।",
   "settings.exportDownloaded": "डेटा निर्यात डाउनलोड हो गया",
   "settings.exportFailed": "डेटा निर्यात नहीं किया जा सका। कृपया पुनः प्रयास करें।",
+  "progress.levelTitle.finalBoss": "फ़ाइनल बॉस",
+  "progress.levelTitle.mainCharacter": "मुख्य पात्र",
+  "progress.levelTitle.bigBrain": "महा ज्ञानी",
+  "progress.levelTitle.lockedIn": "पूर्णतः केंद्रित",
+  "progress.levelTitle.onTheGrind": "मेहनत जारी",
+  "progress.levelTitle.explorer": "अन्वेषक",
+  "progress.levelTitle.freshSpawn": "नई शुरुआत",
+  "progress.heatmapLess": "कम",
+  "progress.heatmapMore": "अधिक",
+  "progress.heatmapAria": "पिछले {weeks} हफ्तों की अध्ययन गतिविधि: {activeDays} सक्रिय दिन, {totalParts} भाग पूरे किए।",
+  "progress.heatmapCell": "{key}: {count} भाग",
+  "progress.dailyGoalAria": "{goal} में से {value} दैनिक भाग पूरे किए",
 };
 
 export const gu: Translations = {
