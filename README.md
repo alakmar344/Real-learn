@@ -27,7 +27,7 @@ When a learner asks a question:
    - **Part 2: Mechanism** — Step-by-step inner workings & mechanics.
    - **Part 3: Real World** — Real-life applications grounded with live news updates (via Serper API).
 2. **Quiz-Gated Mastery**: Each part is locked behind a 2-question quiz. Learners must achieve **100% score** to unlock the next part.
-3. **Multilingual & Adaptive**: Supports 12 Indian languages and 3 difficulty levels — from middle-school foundations to college/advanced. (RealLearn is intended for learners aged 13+; the entry-level tier reflects content difficulty, not target age.)
+3. **Multilingual & Adaptive**: Supports 63 global languages and 3 difficulty levels — from middle-school foundations to college/advanced. (RealLearn is intended for learners aged 13+; the entry-level tier reflects content difficulty, not target age.)
 4. **Learning Personalization**: Optional user learning preferences and notes seamlessly injected into AI prompt generation.
 5. **Olive Frenzy Minimal Design System**: "frenzy in minimalism" — one rich-olive accent family (`#556B2F` on warm cream `#FAF9F3` light mode, glowing lime-olive `#A4C639` on deep olive-black `#121510` dark mode), emerald success, expressive script display type tilted over stark geometric cards, a kinetic hero ticker, and razor-sharp geometric sans UI micro-copy (strictly zero purple/violet, zero gold). Canonical spec: [`docs/AGENT_MEMORY.md`](docs/AGENT_MEMORY.md) §1; history: [`docs/REDESIGN.md`](docs/REDESIGN.md).
 

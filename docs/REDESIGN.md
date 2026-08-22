@@ -373,7 +373,7 @@ The owner's "frenzy in minimalism" concept, mediated for this product:
   ghosts, `.hero-ticker` kinetic marquee (transform-only, hover-pause,
   static under reduced-motion / low perf tier), `.script-display` utility.
   Script is decorative-Latin-only — never functional UI or lesson prose
-  (12-language coverage stays on Inter).
+  (63-language coverage stays on Inter).
 - **Re-synced surfaces** — `lib/palette.ts` (confetti spectrum + share
   card), `lib/themes.ts`, `ThemeApplier` fallback, pre-paint theme-color
   script, `viewport.themeColor`, `manifest.json`, tactile key edge tokens

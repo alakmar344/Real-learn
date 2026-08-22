@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Create your free account",
   description:
-    "Join RealLearn free — ask any question and get a personalized 3-part AI lesson in 12 languages, with quiz-gated progress, streaks, and achievements.",
+    "Join RealLearn free — ask any question and get a personalized 3-part AI lesson in 63 languages, with quiz-gated progress, streaks, and achievements.",
   alternates: {
     canonical: "/sign-up/",
   },

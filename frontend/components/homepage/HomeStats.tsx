@@ -96,7 +96,7 @@ export default function HomeStats({ onStartTopic }: Props) {
             <ol className="how-strip" aria-label="How RealLearn works">
               <li className="how-strip__step">
                 <span className="how-strip__num" aria-hidden="true">1</span>
-                Ask any question in 12 languages
+                Ask any question in 63 languages
               </li>
               <li className="how-strip__step">
                 <span className="how-strip__num" aria-hidden="true">2</span>
