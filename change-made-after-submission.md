@@ -97,7 +97,7 @@
   - **🚀 Unified Linear Onboarding & Single Sign-In Flow (`OnboardingWizard.tsx`, `QuestionInput.tsx`, `sign-in/page.tsx`, `sign-up/page.tsx`)**:
     - Replaced fragmented Clerk modal popups on the homepage with a unified, linear 5-step onboarding flow (`/onboarding`).
     - Questions typed before sign-in are preserved in `sessionStorage` (`reallearn_draft_question`) and carried through to Step 5, allowing learners to immediately launch into their custom question upon completion.
-    - Integrated both 1-click Google OAuth and seamless email/password authentication directly inside Step 3 of `OnboardingWizard`, eliminating disjointed external redirects.
+    - Integrated 1-click Google OAuth directly inside Step 3 of `OnboardingWizard` matching Clerk's OAuth-only strategy, eliminating disjointed modal popups and unconfigured form fields.
     - Configured `/sign-in` and `/sign-up` routes to redirect into the linear `/onboarding` wizard, enforcing a single intuitive entry path.
   - **✨ Refined Learning UX & Knowledge Continuity (`PartCard.tsx`, `CompletionScreen.tsx`)**:
     - Upgraded `PART_INTENT` descriptors in `PartCard.tsx` with explicit Foundation, Mechanism, and Application & Next landmarks.

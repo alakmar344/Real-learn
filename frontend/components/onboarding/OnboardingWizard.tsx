@@ -25,7 +25,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useAuth, useSignIn, useUser, SignIn } from "@clerk/nextjs";
+import { useAuth, useSignIn, useUser } from "@clerk/nextjs";
 import { Icon } from "@/components/shared/icons";
 import { usePreferenceStore } from "@/store/preferenceStore";
 import type { Level } from "@/types";
@@ -126,7 +126,6 @@ export default function OnboardingWizard() {
   // Step 3 — account
   const [oauthBusy, setOauthBusy] = useState(false);
   const [oauthError, setOauthError] = useState(false);
-  const [showEmailForm, setShowEmailForm] = useState(false);
 
   // Step 4 — personalization
   const [level, setLevel] = useState<Level>("Class 9-10");
@@ -563,7 +562,7 @@ export default function OnboardingWizard() {
                       <strong>
                         {user?.primaryEmailAddress?.emailAddress ||
                           user?.fullName ||
-                          "your account"}
+                          "your Google account"}
                       </strong>
                     </span>
                   </div>
@@ -580,60 +579,27 @@ export default function OnboardingWizard() {
               ) : (
                 <>
                   <p className="onboarding-sub">
-                    Sign in with Google or your email. Your questions, quizzes, streaks, and progress are saved across devices.
+                    One tap with Google — your questions, quizzes, streaks, and progress are saved across all devices. No new password needed.
                   </p>
 
-                  {!showEmailForm ? (
-                    <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-md)", width: "100%" }}>
-                      <button
-                        type="button"
-                        className="onboarding-google-btn"
-                        onClick={startGoogleSignIn}
-                        disabled={!signIn || oauthBusy}
-                      >
-                        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-                          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z" />
-                          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z" />
-                          <path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84z" />
-                          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
-                        </svg>
-                        {oauthBusy ? "Opening Google…" : "Continue with Google"}
-                      </button>
-
-                      <button
-                        type="button"
-                        className="btn-toggle"
-                        onClick={() => setShowEmailForm(true)}
-                        style={{ alignSelf: "center", fontSize: "14px" }}
-                      >
-                        Sign in with email or password instead
-                      </button>
-                    </div>
-                  ) : (
-                    <div style={{ width: "100%", margin: "var(--space-sm) 0" }}>
-                      <SignIn
-                        path="/onboarding"
-                        routing="path"
-                        forceRedirectUrl="/onboarding"
-                        appearance={{
-                          elements: {
-                            rootBox: { boxShadow: "none", width: "100%" },
-                            card: { background: "transparent", border: "none", boxShadow: "none", padding: 0 },
-                            headerTitle: { display: "none" },
-                            headerSubtitle: { display: "none" },
-                            formButtonPrimary: {
-                              background: "var(--accent)",
-                              "&:hover": { background: "var(--accent-hover)" },
-                            },
-                          },
-                        }}
-                      />
-                    </div>
-                  )}
+                  <button
+                    type="button"
+                    className="onboarding-google-btn"
+                    onClick={startGoogleSignIn}
+                    disabled={!signIn || oauthBusy}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z" />
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z" />
+                      <path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84z" />
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                    </svg>
+                    {oauthBusy ? "Opening Google…" : "Continue with Google"}
+                  </button>
 
                   {oauthError && (
                     <p className="onboarding-error" role="alert">
-                      Hmm, that didn&apos;t work. Please try again or use the email option.
+                      Hmm, that didn&apos;t work. Please try again.
                     </p>
                   )}
 
