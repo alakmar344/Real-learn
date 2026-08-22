@@ -5,42 +5,50 @@ import { useLessonStore } from "@/store/lessonStore";
 import { usePreferenceStore } from "@/store/preferenceStore";
 import { Icon } from "@/components/shared/icons";
 import MathText from "@/components/shared/MathText";
+import { useTranslation } from "@/hooks/useTranslation";
+import { TranslationKey } from "@/lib/i18n";
 
-// The lesson stages, in order. Each carries the honest progress ceiling it
-// represents AND the real backend `stage` tokens that map to it, so the UI can
-// snap to the truth the instant the server reports it — and fall back to the
-// smooth local curve in the gaps between events.
+type StageKey =
+  | "loading.stage.understand"
+  | "loading.stage.research"
+  | "loading.stage.ground"
+  | "loading.stage.writeLesson"
+  | "loading.stage.writeDirect"
+  | "loading.stage.polish"
+  | "loading.stage.craftQuizzes"
+  | "loading.stage.craftQuiz";
+
 type StageDef = {
   key: string;
-  label: string;
+  translationKey: StageKey;
   at: number;
   stages: string[];
 };
 
 const EXPLAIN_STAGES: StageDef[] = [
-  { key: "understand", label: "Understanding your question", at: 5, stages: ["starting", ""] },
-  { key: "research", label: "Researching real-world context", at: 15, stages: ["searching"] },
-  { key: "ground", label: "Grounding it in today's world", at: 30, stages: ["searched"] },
-  { key: "write", label: "Writing your lesson", at: 45, stages: ["generating"] },
-  { key: "polish", label: "Polishing the explanation", at: 85, stages: ["generated"] },
-  { key: "quiz", label: "Crafting your quizzes", at: 95, stages: ["validating", "retrying"] },
+  { key: "understand", translationKey: "loading.stage.understand", at: 5, stages: ["starting", ""] },
+  { key: "research", translationKey: "loading.stage.research", at: 15, stages: ["searching"] },
+  { key: "ground", translationKey: "loading.stage.ground", at: 30, stages: ["searched"] },
+  { key: "write", translationKey: "loading.stage.writeLesson", at: 45, stages: ["generating"] },
+  { key: "polish", translationKey: "loading.stage.polish", at: 85, stages: ["generated"] },
+  { key: "quiz", translationKey: "loading.stage.craftQuizzes", at: 95, stages: ["validating", "retrying"] },
 ];
 
-// Fast mode generates a single direct answer + quiz — no 3-part journey, no
-// research pass.
 const FAST_STAGES: StageDef[] = [
-  { key: "understand", label: "Understanding your question", at: 5, stages: ["starting", "searching", "searched", ""] },
-  { key: "write", label: "Writing a direct answer", at: 45, stages: ["generating", "generated"] },
-  { key: "quiz", label: "Crafting your quiz", at: 95, stages: ["validating", "retrying"] },
+  { key: "understand", translationKey: "loading.stage.understand", at: 5, stages: ["starting", "searching", "searched", ""] },
+  { key: "write", translationKey: "loading.stage.writeDirect", at: 45, stages: ["generating", "generated"] },
+  { key: "quiz", translationKey: "loading.stage.craftQuiz", at: 95, stages: ["validating", "retrying"] },
 ];
 
-const EXPLAIN_PARTS = [
-  { num: 1, title: "Foundation", at: 45 },
-  { num: 2, title: "Mechanism", at: 60 },
-  { num: 3, title: "Real World", at: 74 },
+const EXPLAIN_PARTS: { num: number; translationKey: TranslationKey; at: number }[] = [
+  { num: 1, translationKey: "loading.part.foundation", at: 45 },
+  { num: 2, translationKey: "loading.part.mechanism", at: 60 },
+  { num: 3, translationKey: "loading.part.realWorld", at: 74 },
 ];
 
-const FAST_PARTS = [{ num: 1, title: "Your Answer", at: 45 }];
+const FAST_PARTS: { num: number; translationKey: TranslationKey; at: number }[] = [
+  { num: 1, translationKey: "loading.part.yourAnswer", at: 45 },
+];
 
 const facts = [
   "Short spaced sessions beat one giant cram — your brain saves in checkpoints, not one big file.",
@@ -79,6 +87,7 @@ const AUTO_PROGRESS_CEILING = 90;
 const AUTO_PROGRESS_TAU_MS = 3400;
 
 export default function LoadingCinematic({ question, onCancel, isRevealing = false }: Props) {
+  const { t } = useTranslation();
   const progressPercent = useLessonStore((s) => s.progressPercent);
   const progressStage = useLessonStore((s) => s.progressStage);
   // The "taking longer than expected" banner is driven EXCLUSIVELY by this
@@ -172,7 +181,7 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
   return (
     <div
       role="group"
-      aria-label={isFast ? "Generating your answer" : "Generating your lesson"}
+      aria-label={t(isFast ? "loading.generatingAnswer" : "loading.generatingLesson")}
       className={`lc${isRevealing ? " is-revealing" : ""}${notice ? " is-slow" : ""}`}
     >
       <div className="lc__aurora" aria-hidden="true">
@@ -189,7 +198,7 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
           aria-valuenow={pct}
           aria-valuemin={0}
           aria-valuemax={100}
-          aria-label="Lesson generation progress"
+          aria-label={t("loading.progressLabel")}
         >
           <span className="lc__dial-track" aria-hidden="true" />
           <span className="lc__dial-fill" aria-hidden="true" />
@@ -205,7 +214,7 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
             stage change (~a handful) instead of the 100ms percentage tick. */}
         <p className="lc__status" role="status" aria-live="polite">
           <span className="lc__status-pulse" aria-hidden="true" />
-          {stages[activeIndex]?.label ?? "Working on it"}
+          {stages[activeIndex] ? t(stages[activeIndex].translationKey) : t("loading.stage.working")}
         </p>
 
         <p className="lc__question">
@@ -240,7 +249,7 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
                       <CheckIcon />
                     </span>
                   ) : null}
-                  {part.title}
+                  {t(part.translationKey)}
                 </span>
               </div>
             );
@@ -258,7 +267,7 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
                 <span className={`lc__step-marker ${state}`} aria-hidden="true">
                   {done ? <CheckIcon /> : active ? <span className="lc__step-dot" /> : null}
                 </span>
-                {step.label}
+                {t(step.translationKey)}
               </li>
             );
           })}
@@ -278,17 +287,17 @@ export default function LoadingCinematic({ question, onCancel, isRevealing = fal
           <div className="lc__slow animate-fade-up" role="status">
             <span className="lc__slow-orbit" aria-hidden="true" />
             <p className="lc__slow-text">
-              <strong>Sorry, it&apos;s taking longer than expected.</strong>{" "}
+              <strong>{t("loading.slow.title")}</strong>{" "}
               {notice === "resilient-tier"
-                ? "We routed your lesson through our most resilient engine so it still lands — hang tight, it's on the way."
-                : "We're taking extra care to fact-check this one instead of rushing it. Hang tight — it's on the way."}
+                ? t("loading.slow.resilient")
+                : t("loading.slow.factCheck")}
             </p>
           </div>
         )}
 
         {onCancel && (
           <button type="button" onClick={onCancel} className="lc__cancel">
-            Cancel
+            {t("common.cancel")}
           </button>
         )}
       </div>

@@ -1,5 +1,3 @@
-"use client";
-
 import { useCallback, useEffect, useState } from "react";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { showToast } from "@/components/shared/ToastContainer";
@@ -10,6 +8,7 @@ import {
 import { starColor } from "@/lib/palette";
 import { Icon } from "@/components/shared/icons";
 import { BACKEND_URL } from "@/lib/api";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface Props {
   /** Closes/removes the prompt from the parent (used after submit/dismiss). */
@@ -18,16 +17,8 @@ interface Props {
 
 const MAX_TEXT_LENGTH = 1000;
 
-/**
- * Optional, non-blocking review prompt shown as a centered modal over a scrim.
- * Escapable three ways — Escape key, backdrop click, and the × button — all
- * of which snooze ("ask later") rather than dismiss forever, so an accidental
- * close never silences the prompt permanently.
- *
- * Privacy: every field is submitted anonymously (see lib/feedback.ts and the
- * backend /api/feedback route). No Clerk ID, email, or IP is ever attached.
- */
 export default function FeedbackPrompt({ onDone }: Props) {
+  const { t } = useTranslation();
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [likes, setLikes] = useState("");
@@ -56,7 +47,7 @@ export default function FeedbackPrompt({ onDone }: Props) {
 
   async function handleSubmit() {
     if (rating < 1) {
-      showToast("Please pick a star rating (1–10), or tap “No thanks”.", "info");
+      showToast(t("feedback.pickRating"), "info");
       return;
     }
     setSubmitting(true);
@@ -68,7 +59,7 @@ export default function FeedbackPrompt({ onDone }: Props) {
     }
     markFeedbackGiven({ rating, likes: likes.trim(), improvements: improvements.trim() });
     setSubmitting(false);
-    showToast("Thanks for the feedback!", "success");
+    showToast(t("feedback.thankYou"), "success");
     onDone?.();
   }
 
@@ -79,9 +70,9 @@ export default function FeedbackPrompt({ onDone }: Props) {
 
   const handleSnooze = useCallback(() => {
     snoozeFeedback(7);
-    showToast("We'll ask another time.", "info");
+    showToast(t("feedback.snoozed"), "info");
     onDone?.();
-  }, [onDone]);
+  }, [onDone, t]);
 
   // Escape = snooze. Capture + stopPropagation so shell-level Escape handlers
   // (sidebar close, shortcuts overlay) don't also fire underneath.
@@ -99,7 +90,7 @@ export default function FeedbackPrompt({ onDone }: Props) {
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="How was your first lesson?"
+      aria-label={t("feedback.modalTitle")}
       className="modal-scrim modal-scrim--top modal-scrim--high"
       onClick={handleSnooze}
     >
@@ -112,25 +103,25 @@ export default function FeedbackPrompt({ onDone }: Props) {
         <button
           type="button"
           className="btn-icon feedback-modal__close"
-          aria-label="Close and ask later"
+          aria-label={t("feedback.askLater")}
           onClick={handleSnooze}
         >
           <Icon name="close" size={16} />
         </button>
 
-        <h3 className="feedback-modal__title">How was your first lesson?</h3>
+        <h3 className="feedback-modal__title">{t("feedback.modalTitle")}</h3>
         <p className="feedback-modal__sub">
-          A quick, optional review — no account needed and nothing tied to you. Takes under a minute.
+          {t("feedback.modalSub")}
         </p>
 
         {/* Star rating 1–10 */}
         <div className="feedback-modal__field">
           <label className="feedback-modal__label">
-            How would you rate RealLearn? (1–10 stars)
+            {t("feedback.rateLabel")}
           </label>
           <div
             role="radiogroup"
-            aria-label="Star rating from 1 to 10"
+            aria-label={t("feedback.rateLabel")}
             className="feedback-modal__stars"
             onMouseLeave={() => setHoverRating(0)}
           >
@@ -163,7 +154,7 @@ export default function FeedbackPrompt({ onDone }: Props) {
         {/* What they like */}
         <div className="feedback-modal__field">
           <label htmlFor="feedback-likes" className="feedback-modal__label">
-            What did you like? <span className="feedback-modal__optional">(optional)</span>
+            {t("feedback.likeLabel")} <span className="feedback-modal__optional">{t("feedback.optional")}</span>
           </label>
           <textarea
             id="feedback-likes"
@@ -171,7 +162,7 @@ export default function FeedbackPrompt({ onDone }: Props) {
             maxLength={MAX_TEXT_LENGTH}
             onChange={(e) => setLikes(e.target.value)}
             rows={3}
-            placeholder="The explanations, the quizzes, the vibe…"
+            placeholder={t("feedback.likePlaceholder")}
             className="glass-textarea"
           />
         </div>
@@ -179,7 +170,7 @@ export default function FeedbackPrompt({ onDone }: Props) {
         {/* What to improve */}
         <div className="feedback-modal__field">
           <label htmlFor="feedback-improvements" className="feedback-modal__label">
-            What should we improve? <span className="feedback-modal__optional">(optional)</span>
+            {t("feedback.improveLabel")} <span className="feedback-modal__optional">{t("feedback.optional")}</span>
           </label>
           <textarea
             id="feedback-improvements"
@@ -187,17 +178,17 @@ export default function FeedbackPrompt({ onDone }: Props) {
             maxLength={MAX_TEXT_LENGTH}
             onChange={(e) => setImprovements(e.target.value)}
             rows={3}
-            placeholder="Anything that felt slow, confusing, or missing…"
+            placeholder={t("feedback.improvePlaceholder")}
             className="glass-textarea"
           />
         </div>
 
         <div className="feedback-modal__actions">
           <button type="button" onClick={handleSubmit} disabled={submitting} className="btn-primary">
-            {submitting ? "Sending…" : "Send feedback"}
+            {submitting ? t("feedback.sending") : t("feedback.send")}
           </button>
           <button type="button" onClick={handleSnooze} disabled={submitting} className="btn-ghost">
-            Ask later
+            {t("feedback.askLater")}
           </button>
           <button
             type="button"
@@ -205,7 +196,7 @@ export default function FeedbackPrompt({ onDone }: Props) {
             disabled={submitting}
             className="btn-ghost feedback-modal__quiet"
           >
-            No thanks
+            {t("feedback.noThanks")}
           </button>
         </div>
       </div>

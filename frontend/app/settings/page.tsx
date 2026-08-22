@@ -101,14 +101,14 @@ export default function SettingsPage() {
         const db = await fetchCookieConsentStatus(getToken);
         if (db) {
           setCookieChoiceLabel(
-            db.accepted ? "Analytics allowed" : "Analytics off"
+            db.accepted ? t("settings.analyticsAllowed") : t("settings.analyticsOff")
           );
           return;
         }
       }
       const consent = readCookieConsent();
       setCookieChoiceLabel(
-        consent == null ? "Not set" : consent.accepted ? "Analytics allowed" : "Analytics off"
+        consent == null ? t("settings.analyticsNotSet") : consent.accepted ? t("settings.analyticsAllowed") : t("settings.analyticsOff")
       );
     };
     const onVisibilityChange = () => {
@@ -130,7 +130,7 @@ export default function SettingsPage() {
       window.removeEventListener("focus", onFocus);
       window.removeEventListener("visibilitychange", onVisibilityChange);
     };
-  }, [isSignedIn, getToken]);
+  }, [isSignedIn, getToken, t]);
 
   // Navigation is a side effect — calling router.push during render is
   // illegal (React "Cannot update Router while rendering" error) and can
@@ -189,7 +189,7 @@ export default function SettingsPage() {
         // storage clear is best-effort; backend deletion already succeeded
       }
 
-      showToast("Your data and account have been deleted.", "success");
+      showToast(t("settings.dataDeleted"), "success");
       // Sign out via Clerk SDK so its cookies/tokens are cleaned up cleanly.
       await signOut(() => router.push("/"));
     } catch (e: unknown) {
@@ -255,9 +255,9 @@ export default function SettingsPage() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      showToast("Data export downloaded", "success");
+      showToast(t("settings.exportDownloaded"), "success");
     } catch {
-      showToast("Could not export data. Please try again.", "error");
+      showToast(t("settings.exportFailed"), "error");
     } finally {
       setExporting(false);
     }
