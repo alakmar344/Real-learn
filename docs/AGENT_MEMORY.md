@@ -1531,6 +1531,8 @@ changed: `backend/src/lib/personalization.js`, `backend/test/offensive-audit.tes
   - **Issue**: Emitting and mounting partial parts mid-stream caused premature unmounting of `LoadingCinematic` and violent UI re-renders/layout shifts as subsequent parts arrived.
   - **Fix**: Removed mid-stream partial state mounting; user is seamlessly transitioned on lesson completion (`event: lesson`) via the 420ms `LoadingCinematic` reveal animation, eliminating mid-stream clutter and layout flashing.
   - **Verification**: Backend 117/117 tests; frontend `tsc` clean, ESLint clean, 9/9 verify scripts pass, `next build` green.
-
-
-
+- 2026-08-22 — **Radically Zero-Friction, Beginner-First Pedagogical Upgrade & Unified Linear Onboarding.**
+  - **Doubt-Killing Four Pillars AI Architecture**: Upgraded `prompts.js` (`VOICE_AND_SAFETY`, `GENERATE_FAST_ANSWER_PROMPT`, `GENERATE_LESSON_PROMPT`) with the Four Pillars (Foundation mental models, Mechanism with proactive doubt-busting disarming common misconceptions, Application real-world grounding, and Knowledge Bridge to what connects next) and 1-sentence principle-focused quiz explanations.
+  - **Unified Linear Onboarding & Single Sign-In Flow**: Consolidated all sign-in triggers to direct to `/onboarding`. Drafted questions in `QuestionInput` survive in `sessionStorage` into Step 5 for 1-tap start. Step 3 embeds Google OAuth and email/password sign-in in-place without modal popups or external breaks. `/sign-in` and `/sign-up` auto-redirect to `/onboarding`.
+  - **Learning UI & Knowledge Scaffolding**: Updated `PartCard.tsx` `PART_INTENT` descriptors with explicit Foundation, Mechanism, and Application & Next landmarks; updated `CompletionScreen.tsx` with "What Connects Next" pathways and doubt-busting explorations.
+  - **Verification**: Backend 117/117 tests pass; frontend `tsc` clean, ESLint clean (0 errors), 9/9 verify scripts pass 100%, Next.js 16 production build (`next build`) green across 14 routes.

@@ -1,8 +1,6 @@
-"use client";
-
 import { FormEvent, useEffect, useRef, useState, useLayoutEffect } from "react";
-import { useAuth, useClerk } from "@clerk/nextjs";
-import { SignInButton } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
 import ExampleQuestions from "@/components/homepage/ExampleQuestions";
 import MicButton from "@/components/shared/MicButton";
 import { Icon } from "@/components/shared/icons";
@@ -49,13 +47,13 @@ function preconnectBackend() {
 }
 
 export default function QuestionInput({ question, setQuestion, onSubmit }: Props) {
+  const router = useRouter();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const initialQuestionRef = useRef(question);
   const [focused, setFocused] = useState(false);
   const [interimSpeech, setInterimSpeech] = useState("");
   const [cachedHint, setCachedHint] = useState<{ cached: boolean; expectedParts: number } | null>(null);
   const { isSignedIn, getToken } = useAuth();
-  const { openSignIn } = useClerk();
   const language = usePreferenceStore((s) => s.language);
   const level = usePreferenceStore((s) => s.level);
   const persistedMode = usePreferenceStore((s) => s.mode);
@@ -163,9 +161,15 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
     e?.preventDefault();
     if (!question.trim()) return;
     if (!isSignedIn) {
-      // Enter is the primary gesture — open the same modal the Sign in
-      // button uses. The draft stays in sessionStorage for after sign-in.
-      openSignIn();
+      // Direct user into the linear onboarding flow — preserving draft in sessionStorage.
+      if (question.trim()) {
+        try {
+          sessionStorage.setItem("reallearn_draft_question", question.trim());
+        } catch {
+          // ignore
+        }
+      }
+      router.push("/onboarding");
       return;
     }
     try {
@@ -307,16 +311,24 @@ export default function QuestionInput({ question, setQuestion, onSubmit }: Props
               <span className="q-form__enter-symbol" aria-hidden="true">↵</span>
             </button>
           ) : (
-            <SignInButton mode="modal">
-              <button
-                type="button"
-                aria-label="Sign in to Enter"
-                className="btn-primary q-form__enter-btn"
-              >
-                <span>Sign in</span>
-                <span className="q-form__enter-symbol" aria-hidden="true">↵</span>
-              </button>
-            </SignInButton>
+            <button
+              type="button"
+              onClick={() => {
+                if (question.trim()) {
+                  try {
+                    sessionStorage.setItem("reallearn_draft_question", question.trim());
+                  } catch {
+                    // ignore
+                  }
+                }
+                router.push("/onboarding");
+              }}
+              aria-label="Sign in to Enter"
+              className="btn-primary q-form__enter-btn"
+            >
+              <span>Sign in</span>
+              <span className="q-form__enter-symbol" aria-hidden="true">↵</span>
+            </button>
           )}
         </div>
       </div>

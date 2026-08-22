@@ -87,6 +87,25 @@
 ---
 
 **Today — August 21, 2026**
+- **Radically Zero-Friction, Beginner-First Pedagogical Upgrade & Unified Linear Onboarding:**
+  - **🧠 Doubt-Killing Pedagogical Architecture (`backend/src/lib/prompts.js`)**:
+    - Upgraded `VOICE_AND_SAFETY`, `GENERATE_FAST_ANSWER_PROMPT`, and `GENERATE_LESSON_PROMPT` to enforce the **Four Pillars of Understanding**:
+      - *Foundation (Part 1)*: "What is it?" — Crystal-clear mental model, everyday physical/digital analogies, zero unanchored jargon.
+      - *Mechanism (Part 2)*: "How & Why does it work?" — Step-by-step cause-and-effect with explicit **Doubt-Busting** that disarms common beginner misconceptions ("Why doesn't X happen instead?").
+      - *Application & Beyond (Part 3)*: "Where does it live & what connects next?" — Modern real-world context and concrete knowledge bridges to subsequent frontiers.
+    - Upgraded active recall quizzes to provide crisp 1-sentence principle-focused explanations for every question.
+  - **🚀 Unified Linear Onboarding & Single Sign-In Flow (`OnboardingWizard.tsx`, `QuestionInput.tsx`, `sign-in/page.tsx`, `sign-up/page.tsx`)**:
+    - Replaced fragmented Clerk modal popups on the homepage with a unified, linear 5-step onboarding flow (`/onboarding`).
+    - Questions typed before sign-in are preserved in `sessionStorage` (`reallearn_draft_question`) and carried through to Step 5, allowing learners to immediately launch into their custom question upon completion.
+    - Integrated both 1-click Google OAuth and seamless email/password authentication directly inside Step 3 of `OnboardingWizard`, eliminating disjointed external redirects.
+    - Configured `/sign-in` and `/sign-up` routes to redirect into the linear `/onboarding` wizard, enforcing a single intuitive entry path.
+  - **✨ Refined Learning UX & Knowledge Continuity (`PartCard.tsx`, `CompletionScreen.tsx`)**:
+    - Upgraded `PART_INTENT` descriptors in `PartCard.tsx` with explicit Foundation, Mechanism, and Application & Next landmarks.
+    - Enhanced `CompletionScreen.tsx` follow-up suggestions to generate "What Connects Next" pathways and doubt-busting explorations.
+  - **✅ Verification**:
+    - Backend: 117/117 unit, integration, and security tests passing (`npm test`).
+    - Frontend: `npx tsc --noEmit` clean (0 errors), ESLint clean (0 errors, 0 warnings), all 9 verify scripts passed 100% (`verify:onboarding`, `verify:quiz`, `verify:achievements`, `verify:frontier`, `verify:profile`, `verify:personalization`, `verify:special-days`, `verify:reconsent`, `verify:user-scoping`), and Next.js 16 production build (`next build`) green across all 14 routes.
+
 - **Production Deployment Node Engine Compatibility Fix:**
   - **Issue**: Render deployment failed during default `yarn install` because `reallearn-backend` specified `"engines": { "node": ">=24.0.0" }` while Render runs Node 22.23.2 via `.node-version`.
   - **Fix**: Updated `engines.node` across `backend/package.json`, `frontend/package.json`, and root `package.json` to `">=20.0.0"` to support both Node 22 LTS (Render/Vercel) and Node 24+ LTS. Created `.nvmrc` aligned with `.node-version` (`22`).

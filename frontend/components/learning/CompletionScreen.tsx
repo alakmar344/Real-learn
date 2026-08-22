@@ -23,15 +23,15 @@ function generateFollowUpSuggestions(lesson: LessonJourney): string[] {
   const suggestions: string[] = [];
 
   if (topic.length > 0) {
-    suggestions.push(`What are the real-world applications of ${topic.slice(0, 60)}?`);
+    suggestions.push(`What is the next key concept connected to ${topic.slice(0, 50)}?`);
   }
 
   if (takeaways[0]) {
-    const short = takeaways[0].slice(0, 80).replace(/\.$/, "");
-    suggestions.push(`Can you explain ${short.toLowerCase()} in simpler terms?`);
+    const short = takeaways[0].slice(0, 70).replace(/\.$/, "");
+    suggestions.push(`How does ${short.toLowerCase()} apply in real life?`);
   }
 
-  suggestions.push(`How does this compare to similar concepts?`);
+  suggestions.push(`What is the most common misconception about this?`);
 
   return suggestions.slice(0, 3);
 }
@@ -112,7 +112,7 @@ export default function CompletionScreen({ lesson, totalScore, onRestart, onReta
           salvaged lessons still get a next step instead of a dead end. */}
       {followUps.length > 0 && (
         <div>
-          <p className="completion__section-label">Go deeper</p>
+          <p className="completion__section-label">What Connects Next · Go deeper</p>
           <div className="completion__suggests">
             {followUps.map((suggestion, i) => (
               <button

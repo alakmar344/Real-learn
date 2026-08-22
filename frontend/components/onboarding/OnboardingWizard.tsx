@@ -25,7 +25,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useAuth, useSignIn, useUser } from "@clerk/nextjs";
+import { useAuth, useSignIn, useUser, SignIn } from "@clerk/nextjs";
 import { Icon } from "@/components/shared/icons";
 import { usePreferenceStore } from "@/store/preferenceStore";
 import type { Level } from "@/types";
@@ -126,14 +126,30 @@ export default function OnboardingWizard() {
   // Step 3 — account
   const [oauthBusy, setOauthBusy] = useState(false);
   const [oauthError, setOauthError] = useState(false);
+  const [showEmailForm, setShowEmailForm] = useState(false);
 
   // Step 4 — personalization
   const [level, setLevel] = useState<Level>("Class 9-10");
   const [goal, setGoal] = useState("");
   const [styles, setStyles] = useState<string[]>([]);
 
+  // Step 5 — draft question restoration
+  const [draftQuestion, setDraftQuestion] = useState("");
+
   const slideRef = useRef<HTMLDivElement>(null);
   const skipInitialFocus = useRef(true);
+
+  // Restore draft question on mount
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem("reallearn_draft_question");
+      if (saved?.trim()) {
+        setDraftQuestion(saved.trim());
+      }
+    } catch {
+      // Best-effort
+    }
+  }, []);
 
   const ageStatus = useMemo(
     () => computeAgeStatus(dobYear, dobMonth, dobDay),
@@ -276,8 +292,15 @@ export default function OnboardingWizard() {
     goTo(5, "fwd");
   };
 
-  const finish = () => {
+  const finish = (customQuestion?: string) => {
     markOnboardingComplete();
+    if (customQuestion?.trim()) {
+      try {
+        sessionStorage.setItem("reallearn_draft_question", customQuestion.trim());
+      } catch {
+        // ignore
+      }
+    }
     router.push("/");
   };
 
@@ -343,46 +366,37 @@ export default function OnboardingWizard() {
               </div>
               <h1 className="onboarding-title">Welcome to RealLearn</h1>
               <p className="onboarding-sub">
-                Ask any question — big or small — and RealLearn turns it into a
-                short, friendly lesson made just for you.
+                Ask any question — big or small — and understand deeply in 3 simple steps. Zero jargon, effortless mastery.
               </p>
               <ul className="onboarding-points">
                 <li>
                   <Icon name="message-circle" size={18} aria-hidden="true" />
                   <span>
-                    <strong>Ask anything.</strong> From fractions to the French
-                    Revolution — no question is too simple.
+                    <strong>Open, Ask, Understand.</strong> Immediate mental models and everyday analogies.
                   </span>
                 </li>
                 <li>
                   <Icon name="layers" size={18} aria-hidden="true" />
                   <span>
-                    <strong>Learn step by step.</strong> Clear parts, your pace,
-                    and a tiny quiz to unlock the next one.
+                    <strong>3-Step Scaffolding.</strong> Foundation → Mechanism → Real-World Application.
                   </span>
                 </li>
                 <li>
-                  <Icon name="heart" size={18} aria-hidden="true" />
+                  <Icon name="trophy" size={18} aria-hidden="true" />
                   <span>
-                    <strong>Made for you.</strong> Lessons adapt to your level,
-                    language, and goals.
+                    <strong>Doubt-Killing Active Recall.</strong> Quick quizzes that lock concepts in your memory permanently.
                   </span>
                 </li>
               </ul>
               <div className="onboarding-actions">
                 <span className="onboarding-hint">
-                  <Icon name="clock" size={14} aria-hidden="true" /> Setup takes
-                  about 2 minutes
+                  <Icon name="clock" size={14} aria-hidden="true" /> Takes less than 1 minute
                 </span>
                 <button type="button" className="btn-primary" onClick={() => goTo(2, "fwd")}>
-                  Let&apos;s get started
+                  Get Started
                   <Icon name="arrow-right" size={16} aria-hidden="true" />
                 </button>
               </div>
-              <p className="onboarding-footnote">
-                Already have an account?{" "}
-                <Link href="/sign-in">Sign in</Link>
-              </p>
             </>
           )}
 
@@ -536,10 +550,10 @@ export default function OnboardingWizard() {
           {/* ── 3 · Account ── */}
           {step === 3 && (
             <>
-              <h1 className="onboarding-title">Create your account</h1>
+              <h1 className="onboarding-title">Save your learning journey</h1>
               {isSignedIn ? (
                 <>
-                  <p className="onboarding-sub">You&apos;re all signed in — nice!</p>
+                  <p className="onboarding-sub">You&apos;re all signed in — your progress will be saved!</p>
                   <div className="onboarding-signed-in">
                     <span className="onboarding-signed-in__badge">
                       <Icon name="check" size={16} aria-hidden="true" />
@@ -549,7 +563,7 @@ export default function OnboardingWizard() {
                       <strong>
                         {user?.primaryEmailAddress?.emailAddress ||
                           user?.fullName ||
-                          "your Google account"}
+                          "your account"}
                       </strong>
                     </span>
                   </div>
@@ -566,36 +580,64 @@ export default function OnboardingWizard() {
               ) : (
                 <>
                   <p className="onboarding-sub">
-                    One click with Google — your progress and lessons will be
-                    saved to your account. No new password to remember.
+                    Sign in with Google or your email. Your questions, quizzes, streaks, and progress are saved across devices.
                   </p>
-                  <button
-                    type="button"
-                    className="onboarding-google-btn"
-                    onClick={startGoogleSignIn}
-                    disabled={!signIn || oauthBusy}
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z" />
-                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z" />
-                      <path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84z" />
-                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
-                    </svg>
-                    {oauthBusy ? "Opening Google…" : "Continue with Google"}
-                  </button>
+
+                  {!showEmailForm ? (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-md)", width: "100%" }}>
+                      <button
+                        type="button"
+                        className="onboarding-google-btn"
+                        onClick={startGoogleSignIn}
+                        disabled={!signIn || oauthBusy}
+                      >
+                        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z" />
+                          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z" />
+                          <path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84z" />
+                          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                        </svg>
+                        {oauthBusy ? "Opening Google…" : "Continue with Google"}
+                      </button>
+
+                      <button
+                        type="button"
+                        className="btn-toggle"
+                        onClick={() => setShowEmailForm(true)}
+                        style={{ alignSelf: "center", fontSize: "14px" }}
+                      >
+                        Sign in with email or password instead
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{ width: "100%", margin: "var(--space-sm) 0" }}>
+                      <SignIn
+                        path="/onboarding"
+                        routing="path"
+                        forceRedirectUrl="/onboarding"
+                        appearance={{
+                          elements: {
+                            rootBox: { boxShadow: "none", width: "100%" },
+                            card: { background: "transparent", border: "none", boxShadow: "none", padding: 0 },
+                            headerTitle: { display: "none" },
+                            headerSubtitle: { display: "none" },
+                            formButtonPrimary: {
+                              background: "var(--accent)",
+                              "&:hover": { background: "var(--accent-hover)" },
+                            },
+                          },
+                        }}
+                      />
+                    </div>
+                  )}
+
                   {oauthError && (
                     <p className="onboarding-error" role="alert">
-                      Hmm, that didn&apos;t work. Please try again, or{" "}
-                      <Link href="/sign-in?redirect_url=%2Fonboarding">
-                        use the classic sign-in page
-                      </Link>.
+                      Hmm, that didn&apos;t work. Please try again or use the email option.
                     </p>
                   )}
-                  <p className="onboarding-footnote">
-                    Prefer email instead?{" "}
-                    <Link href="/sign-in?redirect_url=%2Fonboarding">Sign in another way</Link>
-                  </p>
-                  <div className="onboarding-actions">
+
+                  <div className="onboarding-actions" style={{ marginTop: "var(--space-md)" }}>
                     <button type="button" className="btn-ghost" onClick={goBack}>
                       <Icon name="arrow-left" size={16} aria-hidden="true" /> Back
                     </button>
@@ -722,31 +764,59 @@ export default function OnboardingWizard() {
               </div>
               <h1 className="onboarding-title">You&apos;re all set!</h1>
               <p className="onboarding-sub">
-                That&apos;s everything. Ask your first question and watch it turn
-                into a lesson made just for you.
+                {draftQuestion ? (
+                  <>Ready to explore your question: <strong>&ldquo;{draftQuestion}&rdquo;</strong></>
+                ) : (
+                  <>That&apos;s everything! RealLearn is tuned to your level and ready for your first question.</>
+                )}
               </p>
-              <ul className="onboarding-points">
-                <li>
-                  <Icon name="lightbulb" size={18} aria-hidden="true" />
-                  <span>
-                    <strong>Try asking:</strong> “Why is the sky blue?” or “How
-                    do vaccines work?”
-                  </span>
-                </li>
-                <li>
-                  <Icon name="settings" size={18} aria-hidden="true" />
-                  <span>
-                    <strong>Change anything anytime</strong> — language, level,
-                    and goals live in Settings.
-                  </span>
-                </li>
-              </ul>
+
+              {!draftQuestion ? (
+                <div className="onboarding-points" style={{ margin: "var(--space-md) 0", background: "none", border: "none", padding: 0 }}>
+                  <p className="onboarding-label" style={{ marginBottom: "var(--space-xs)" }}>
+                    Popular questions to start with:
+                  </p>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                    {[
+                      "Why is the sky blue?",
+                      "How do vaccines work?",
+                      "How does gravity bend light?",
+                      "What is compound interest?",
+                    ].map((sampleQ) => (
+                      <button
+                        key={sampleQ}
+                        type="button"
+                        className="suggest-pill"
+                        onClick={() => finish(sampleQ)}
+                      >
+                        {sampleQ}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <ul className="onboarding-points">
+                  <li>
+                    <Icon name="lightbulb" size={18} aria-hidden="true" />
+                    <span>
+                      <strong>Instant answers.</strong> Your question will be answered in 3 structured, quiz-gated parts.
+                    </span>
+                  </li>
+                  <li>
+                    <Icon name="settings" size={18} aria-hidden="true" />
+                    <span>
+                      <strong>Change anything anytime.</strong> Language, level, and goals live in Settings.
+                    </span>
+                  </li>
+                </ul>
+              )}
+
               <div className="onboarding-actions">
                 <button type="button" className="btn-ghost" onClick={goBack}>
                   <Icon name="arrow-left" size={16} aria-hidden="true" /> Back
                 </button>
-                <button type="button" className="btn-primary" onClick={finish}>
-                  Start learning
+                <button type="button" className="btn-primary" onClick={() => finish(draftQuestion)}>
+                  {draftQuestion ? "Answer My Question" : "Start Learning"}
                   <Icon name="rocket" size={16} aria-hidden="true" />
                 </button>
               </div>
