@@ -6,6 +6,7 @@ import QuizQuestion from "@/components/learning/QuizQuestion";
 import { reshuffleQuestion, sanitizeQuestion } from "@/lib/quizShuffle";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { Icon } from "@/components/shared/icons";
+import { useTranslation } from "@/hooks/useTranslation";
 
 /** In-flight attempt for one part, held by the parent across close/reopen so
  * banked correct answers survive AND a failed first attempt can't be laundered
@@ -27,6 +28,7 @@ interface Props {
 }
 
 const QuizSheetBase = ({ open, questions, partNumber, initialState, onStateChange, onClose, onPass }: Props) => {
+  const { t } = useTranslation();
   // Derive the quiz length from the actual questions instead of hardcoding 2.
   // The backend can legitimately deliver a salvaged single-question quiz
   // (e.g. when the model's output was truncated); with a hardcoded total of 2
@@ -210,13 +212,13 @@ const QuizSheetBase = ({ open, questions, partNumber, initialState, onStateChang
         <div className="quiz-sheet__accent" aria-hidden="true" />
 
         {/* Close button */}
-        <button type="button" onClick={onClose} aria-label="Close quiz" className="quiz-sheet__close">
+        <button type="button" onClick={onClose} aria-label={t("quiz.close")} className="quiz-sheet__close">
           <Icon name="close" size={16} />
         </button>
 
-        <h3 className="quiz-sheet__title">Quick Check</h3>
+        <h3 className="quiz-sheet__title">{t("quiz.quickCheck")}</h3>
         <p className="quiz-sheet__subtitle">
-          {totalQuestions} question{totalQuestions === 1 ? "" : "s"} about what you just read
+          {t("quiz.subtitle", { count: totalQuestions, s: totalQuestions === 1 ? "" : "s" })}
         </p>
 
         {/* Progress dots — show where you are in the quiz at a glance. */}
@@ -239,8 +241,8 @@ const QuizSheetBase = ({ open, questions, partNumber, initialState, onStateChang
           <>
             <div className="quiz-sheet__status animate-fade-up" role="status">
               {remaining === 1
-                ? "Almost there — one question to revisit. Your correct answers are saved."
-                : `Almost there — ${remaining} questions to revisit. Your correct answers are saved.`}
+                ? t("quiz.revisitOne")
+                : t("quiz.revisitMulti", { count: remaining })}
             </div>
             <button
               type="button"
@@ -259,7 +261,7 @@ const QuizSheetBase = ({ open, questions, partNumber, initialState, onStateChang
               }}
               className="quiz-sheet__reread"
             >
-              Re-read the section before retrying
+              {t("quiz.reread")}
             </button>
           </>
         ) : null}
@@ -280,18 +282,18 @@ const QuizSheetBase = ({ open, questions, partNumber, initialState, onStateChang
             onClick={nextAction}
             aria-label={
               hasNextUnanswered
-                ? "Next question"
+                ? t("quiz.nextQuestion")
                 : success
-                  ? "Unlock next part"
-                  : "Retry missed questions"
+                  ? t("quiz.unlockNextPart")
+                  : t("quiz.retryMissed")
             }
             className={`quiz-sheet__action${success ? " is-success" : ""}`}
           >
             {hasNextUnanswered
-              ? "Next Question →"
+              ? t("quiz.nextQuestion")
               : success
-                ? "Unlock Next Part →"
-                : "Retry the Missed Ones →"}
+                ? t("quiz.unlockNextPart")
+                : t("quiz.retryMissed")}
           </button>
         ) : null}
       </div>

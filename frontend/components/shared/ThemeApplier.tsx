@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { usePreferenceStore } from "@/store/preferenceStore";
 import { THEME_OPTIONS } from "@/lib/themes";
 import { resolvePerfTier } from "@/lib/performance";
+import { bcp47For, dirFor } from "@/lib/locale";
 
 export default function ThemeApplier() {
   const theme = usePreferenceStore((s) => s.theme);
@@ -14,6 +15,14 @@ export default function ThemeApplier() {
   useEffect(() => {
     document.documentElement.dataset.perf = resolvePerfTier(perfMode);
   }, [perfMode]);
+
+  const language = usePreferenceStore((s) => s.language);
+
+  // Sync document language and reading direction (RTL/LTR)
+  useEffect(() => {
+    document.documentElement.lang = bcp47For(language);
+    document.documentElement.dir = dirFor(language);
+  }, [language]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;

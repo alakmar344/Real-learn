@@ -18,6 +18,7 @@ import { clearTtsCache } from "@/lib/ttsCache";
 import { useMounted } from "@/hooks/useMounted";
 import { Icon } from "@/components/shared/icons";
 import { Skeleton, SkeletonCard } from "@/components/shared/Skeleton";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   COOKIE_CONSENT_ACCEPTED_EVENT,
   COOKIE_CONSENT_REVOKED_EVENT,
@@ -62,6 +63,7 @@ function CheckNode() {
 }
 
 export default function SettingsPage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { isLoaded, isSignedIn, getToken } = useAuth();
   const { signOut } = useClerk();
@@ -158,111 +160,88 @@ export default function SettingsPage() {
       try {
         // Clear the in-memory stores FIRST (this navigation is client-side —
         // no reload — so stale in-memory state could otherwise re-persist),
-        // then drop any debounced write that was scheduled before deletion,
-        // then remove the persisted keys.
-        try {
-          useLessonStore.getState().resetAll();
-          useProgressStore.getState().resetEngagement();
-          useSavedJourneysStore.setState({ journeys: [] });
-        } catch { /* ignore */ }
+        // cancel any pending debounced writes that could race the clear,
+        // then wipe the user's localStorage keys directly.
         cancelPendingDebouncedWrites();
-        try {
-          const allKeys = Object.keys(localStorage);
-          for (const key of allKeys) {
-            if (key.startsWith("reallearn-") || key.startsWith("reallearn_")) {
-              localStorage.removeItem(key);
+        useSavedJourneysStore.setState({ journeys: [] });
+        useProgressStore.getState().resetEngagement();
+        useLessonStore.getState().resetAll();
+        // Clear full lesson bodies cached locally in IndexedDB and edge TTS audio
+        void clearArchivedLessons();
+        void clearTtsCache();
+
+        if (typeof window !== "undefined") {
+          const keysToRemove: string[] = [];
+          for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (
+              k &&
+              (k.startsWith("reallearn-") ||
+                k.startsWith("reallearn_") ||
+                k.includes("reallearn"))
+            ) {
+              keysToRemove.push(k);
             }
           }
-        } catch { /* ignore */ }
-        // Synthesized read-aloud audio blobs live in their own cache.
-        clearTtsCache();
-        // Also wipe the IndexedDB lesson archive (full bodies of older
-        // journeys live there, not in localStorage).
-        await clearArchivedLessons().catch(() => { /* best-effort */ });
+          keysToRemove.forEach((k) => localStorage.removeItem(k));
+        }
       } catch {
-        // ignore storage errors
+        // storage clear is best-effort; backend deletion already succeeded
       }
 
-      await signOut();
-      showToast("Account deleted successfully", "success");
-      router.push("/");
-    } catch (err) {
-      console.error("[frontend][Settings] delete data failed", err);
-      showToast(
-        err instanceof Error
-          ? `Could not delete your data: ${err.message}`
-          : "Could not delete your data. Please try again.",
-        "error"
-      );
+      showToast("Your data and account have been deleted.", "success");
+      // Sign out via Clerk SDK so its cookies/tokens are cleaned up cleanly.
+      await signOut(() => router.push("/"));
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Failed to delete data";
+      showToast(msg, "error");
+    } finally {
       setDeleting(false);
     }
   };
 
   const handleExportData = async () => {
-    if (exporting) return;
     setExporting(true);
     try {
-      const backendUrl = BACKEND_URL;
       const token = await getToken();
       const headers: Record<string, string> = {};
       if (token) headers["Authorization"] = `Bearer ${token}`;
 
-      let backendData = null;
-      try {
-        const res = await fetch(`${backendUrl}/api/export-data`, {
-          method: "GET",
-          headers,
-        });
-        if (res.ok) {
-          backendData = await res.json();
-        }
-      } catch {
-        // backend export may fail if not authenticated
-      }
+      const res = await fetch(`${BACKEND_URL}/api/account/export`, {
+        headers,
+      });
+      if (!res.ok) throw new Error("Failed to fetch account export");
+      const serverData = await res.json();
 
-      const localData: Record<string, unknown> = {};
-      try {
-        const readStorageItem = (baseKey: string) => {
-          try {
-            const scopedKey = getScopedStorageKey(baseKey);
-            const val = localStorage.getItem(scopedKey) ?? localStorage.getItem(baseKey);
-            return val ? JSON.parse(val) : null;
-          } catch {
-            return null;
-          }
-        };
-
-        localData.savedJourneys = readStorageItem("reallearn-saved-journeys");
-        localData.cookieConsent = readStorageItem("reallearn-cookie-consent");
-        localData.legalConsent = readStorageItem("reallearn-legal-consent");
-        localData.preferences = readStorageItem("reallearn-preferences");
-        localData.legacyTheme = readStorageItem("reallearn-theme");
-        localData.lessonState = readStorageItem("reallearn-journey");
-        localData.progress = readStorageItem("reallearn-progress");
-
-        localData.feedback = (() => {
-          try {
-            return JSON.parse(localStorage.getItem("reallearn-feedback") || "null");
-          } catch {
-            return null;
-          }
-        })();
-
-        localData.personalizationSkipped = (() => {
-          try {
-            return JSON.parse(localStorage.getItem("reallearn-personalization-skipped") || "null");
-          } catch {
-            return null;
-          }
-        })();
-      } catch {
-        // ignore local storage errors
-      }
-
+      // Bundle local preference and progress state alongside server records
       const exportPayload = {
         exportedAt: new Date().toISOString(),
-        backend: backendData,
-        local: localData,
+        server: serverData,
+        local: {
+          preferences: {
+            theme,
+            language,
+            level,
+            mode,
+            personalization,
+          },
+          savedJourneys: (() => {
+            try {
+              const raw = localStorage.getItem(getScopedStorageKey("reallearn-journeys-storage"));
+              return raw ? JSON.parse(raw) : null;
+            } catch {
+              return null;
+            }
+          })(),
+          progress: (() => {
+            try {
+              const raw = localStorage.getItem(getScopedStorageKey("reallearn-progress-storage"));
+              return raw ? JSON.parse(raw) : null;
+            } catch {
+              return null;
+            }
+          })(),
+        },
       };
 
       const blob = new Blob([JSON.stringify(exportPayload, null, 2)], {
@@ -271,47 +250,28 @@ export default function SettingsPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `reallearn-export-${Date.now()}.json`;
+      a.download = `reallearn-data-export-${new Date().toISOString().slice(0, 10)}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      showToast("Data exported successfully", "success");
-    } catch (err) {
-      console.error("[frontend][Settings] export data failed", err);
-      showToast(
-        err instanceof Error
-          ? `Could not export data: ${err.message}`
-          : "Could not export data. Please try again.",
-        "error"
-      );
+      showToast("Data export downloaded", "success");
+    } catch {
+      showToast("Could not export data. Please try again.", "error");
     } finally {
       setExporting(false);
     }
   };
 
-  if (!isLoaded || !mounted) {
+  if (!isLoaded || !isSignedIn) {
     return (
-      <main className="flow-page" aria-label="Loading settings...">
-        <div className="flow-page__inner flow-page__inner--narrow flow-stack">
-          <Skeleton height={32} width="40%" borderRadius="6px" />
-          <SkeletonCard height={140} />
-          <SkeletonCard height={180} />
-          <SkeletonCard height={160} />
-        </div>
-      </main>
-    );
-  }
-
-  if (!isSignedIn) {
-    // The redirect is handled by the effect above — show the same skeleton
-    // instead of a blank screen while it runs.
-    return (
-      <main className="flow-page" aria-label="Redirecting to sign-in…">
-        <div className="flow-page__inner flow-page__inner--narrow flow-stack">
-          <p className="settings-sub" role="status">Redirecting to sign-in…</p>
-          <SkeletonCard height={140} />
-          <SkeletonCard height={180} />
+      <main className="flow-page">
+        <Navbar />
+        <div className="flow-page__inner">
+          <div className="flow-stack">
+            <Skeleton height={32} width={200} />
+            <SkeletonCard height={240} />
+          </div>
         </div>
       </main>
     );
@@ -320,30 +280,37 @@ export default function SettingsPage() {
   return (
     <main className="flow-page">
       <Navbar />
-      <div className="flow-page__inner flow-page__inner--narrow">
-        <button type="button" onClick={() => router.back()} className="settings-back">
-          <span className="settings-back__arrow" aria-hidden="true">
+
+      <div className="flow-page__inner">
+        {/* Invisible back navigation: breadcrumb / escape hatch */}
+        <nav aria-label="Breadcrumb" className="breadcrumb-nav">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="breadcrumb-back"
+            aria-label={t("settings.back")}
+          >
             <Icon name="arrow-left" size={14} />
-          </span>{" "}
-          Back
-        </button>
+            <span>{t("settings.back")}</span>
+          </button>
+        </nav>
 
         <header className="page-hero">
-          <h1 className="page-hero__title">Settings</h1>
-          <p className="page-hero__sub">Manage your account, data, and preferences.</p>
+          <h1 className="page-hero__title">{t("settings.title")}</h1>
+          <p className="page-hero__sub">{t("settings.sub")}</p>
         </header>
 
         {/* Preferences Section */}
         <section className="settings-panel-glass">
-          <h2 className="settings-title">Preferences</h2>
+          <h2 className="settings-title">{t("settings.preferences")}</h2>
           <p className="settings-sub">
-            Appearance, language, and learning level are saved on this device.
+            {t("settings.prefSub")}
           </p>
 
           <div className="settings-group">
             <div>
               <h3 id="theme-heading" className="flow-label">
-                Theme
+                {t("settings.theme")}
               </h3>
               <div role="radiogroup" aria-labelledby="theme-heading" className="option-stack">
                 {THEMES.map((opt) => {
@@ -375,7 +342,7 @@ export default function SettingsPage() {
 
             <div>
               <h3 id="answer-mode-heading" className="flow-label">
-                Answer mode
+                {t("settings.answerMode")}
               </h3>
               <div role="radiogroup" aria-labelledby="answer-mode-heading" className="option-stack">
                 {MODES.map((opt) => {
@@ -402,21 +369,21 @@ export default function SettingsPage() {
 
             <div>
               <label className="flow-label" htmlFor="settings-language">
-                Language
+                {t("settings.language")}
               </label>
               <LanguageSelector id="settings-language" value={language} onChange={setLanguage} />
             </div>
 
             <div>
               <label className="flow-label" htmlFor="settings-level">
-                Learning level
+                {t("settings.level")}
               </label>
               <LevelSelector id="settings-level" value={level} onChange={setLevel} />
             </div>
 
             <div>
               <h3 id="perf-mode-heading" className="flow-label">
-                Visual performance
+                {t("settings.perf")}
               </h3>
               <div role="radiogroup" aria-labelledby="perf-mode-heading" className="option-stack">
                 {PERF_MODE_OPTIONS.map((opt) => {
@@ -445,14 +412,13 @@ export default function SettingsPage() {
 
         {/* Learning Preferences Section */}
         <section className="settings-panel-glass">
-          <h2 className="settings-title">Learning preferences</h2>
+          <h2 className="settings-title">{t("settings.learningPref")}</h2>
           <p className="settings-sub">
-            Optional: tell us how you learn best. This is stored on this device and sent with each
-            lesson request so explanations can be tailored to you.
+            {t("settings.learningPrefSub")}
           </p>
 
           <fieldset className="fieldset-reset">
-            <legend className="flow-label">Select any that apply</legend>
+            <legend className="flow-label">{t("settings.checklistLegend")}</legend>
             <div className="option-stack">
               {PERSONALIZATION_CHECKLIST_OPTIONS.map((option) => {
                 const active = personalization.checklist.includes(option);
@@ -484,7 +450,7 @@ export default function SettingsPage() {
 
           <div>
             <label htmlFor="settings-personalization-notes" className="flow-label">
-              Anything else you&apos;d like us to know?
+              {t("settings.notesLabel")}
             </label>
             <textarea
               id="settings-personalization-notes"
@@ -496,7 +462,7 @@ export default function SettingsPage() {
                   notes: sanitizeNotes(e.target.value),
                 })
               }
-              placeholder="For example: I understand concepts better with pictures..."
+              placeholder={t("settings.notesPlaceholder")}
               rows={4}
             />
             <p className="char-count">
@@ -507,13 +473,13 @@ export default function SettingsPage() {
 
         {/* Account Section */}
         <section className="settings-panel-glass">
-          <h2 className="settings-title">Account</h2>
+          <h2 className="settings-title">{t("settings.account")}</h2>
           <div className="account-row">
             <UserButton />
             <div>
-              <p className="account-row__name">Your account</p>
+              <p className="account-row__name">{t("settings.yourAccount")}</p>
               <p className="account-row__hint">
-                Manage your profile, sign out, or delete your account via the menu above.
+                {t("settings.accountHint")}
               </p>
             </div>
           </div>
@@ -521,10 +487,9 @@ export default function SettingsPage() {
 
         {/* Privacy Section */}
         <section className="settings-panel-glass">
-          <h2 className="settings-title">Privacy</h2>
+          <h2 className="settings-title">{t("settings.privacy")}</h2>
           <p className="settings-sub">
-            Change your cookie and analytics choice anytime — withdrawing consent
-            is as easy as giving it.
+            {t("settings.privacySub")}
           </p>
           <button
             type="button"
@@ -533,7 +498,7 @@ export default function SettingsPage() {
           >
             <span className="settings-action__label">
               <Icon name="cookie" size={18} />
-              Cookie &amp; analytics preferences
+              {t("settings.cookieAction")}
             </span>
             <span className="settings-action__note">{cookieChoiceLabel}</span>
           </button>
@@ -541,9 +506,9 @@ export default function SettingsPage() {
 
         {/* Data Section */}
         <section className="settings-panel-glass">
-          <h2 className="settings-title">Data</h2>
+          <h2 className="settings-title">{t("settings.data")}</h2>
           <p className="settings-sub">
-            Export or permanently delete your data stored on RealLearn.
+            {t("settings.dataSub")}
           </p>
 
           <div className="option-stack option-stack--loose">
@@ -555,9 +520,9 @@ export default function SettingsPage() {
             >
               <span className="settings-action__label">
                 <Icon name="download" size={18} />
-                {exporting ? "Exporting…" : "Export my data"}
+                {exporting ? t("settings.exporting") : t("settings.exportBtn")}
               </span>
-              <span className="settings-action__note">Download JSON</span>
+              <span className="settings-action__note">{t("settings.downloadJson")}</span>
             </button>
 
             <button
@@ -568,18 +533,18 @@ export default function SettingsPage() {
             >
               <span className="settings-action__label">
                 <Icon name="trash" size={18} />
-                {deleting ? "Deleting…" : "Delete my data"}
+                {deleting ? t("settings.deleting") : t("settings.deleteBtn")}
               </span>
-              <span className="settings-action__note">Permanent</span>
+              <span className="settings-action__note">{t("settings.permanent")}</span>
             </button>
           </div>
         </section>
 
         {/* Legal Section */}
         <section className="settings-panel-glass">
-          <h2 className="settings-title">Legal</h2>
+          <h2 className="settings-title">{t("settings.legal")}</h2>
           <p className="settings-sub">
-            Review our policies, exercise your privacy rights, or contact our grievance officer.
+            {t("settings.legalSub")}
           </p>
 
           <div className="option-stack option-stack--loose">
@@ -593,7 +558,7 @@ export default function SettingsPage() {
             >
               <span className="settings-action__label">
                 <Icon name="book-open" size={18} />
-                Privacy Policy
+                {t("settings.privacyPolicy")}
               </span>
               <span className="settings-action__note">v{CURRENT_PRIVACY_VERSION}</span>
             </a>
@@ -608,7 +573,7 @@ export default function SettingsPage() {
             >
               <span className="settings-action__label">
                 <Icon name="book-open" size={18} />
-                Terms of Service
+                {t("settings.terms")}
               </span>
               <span className="settings-action__note">v{CURRENT_TERMS_VERSION}</span>
             </a>
@@ -619,9 +584,9 @@ export default function SettingsPage() {
             >
               <span className="settings-action__label">
                 <Icon name="message-circle" size={18} />
-                Parent/guardian request
+                {t("settings.parentRequest")}
               </span>
-              <span className="settings-action__note">Email grievance officer</span>
+              <span className="settings-action__note">{t("settings.emailGrievance")}</span>
             </a>
           </div>
         </section>
@@ -629,10 +594,10 @@ export default function SettingsPage() {
 
       <ConfirmModal
         open={deleteConfirmOpen}
-        title="Delete everything?"
-        message="This will permanently delete your account, erase your stored cookie-consent records, and clear all saved lessons on this device. This cannot be undone."
-        confirmLabel="Delete everything"
-        cancelLabel="Keep my data"
+        title={t("settings.deleteModalTitle")}
+        message={t("settings.deleteModalMsg")}
+        confirmLabel={t("settings.deleteModalConfirm")}
+        cancelLabel={t("settings.deleteModalCancel")}
         destructive
         onConfirm={() => {
           setDeleteConfirmOpen(false);

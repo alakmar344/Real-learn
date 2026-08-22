@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
 import BrandMark from "@/components/shared/BrandMark";
 
+import { useTranslation } from "@/hooks/useTranslation";
+
 const ProgressHub = dynamic(() => import("@/components/shared/ProgressHub"), {
   ssr: false,
   loading: () => null,
@@ -14,23 +16,24 @@ interface Props {
   compact?: boolean;
 }
 
-const NAV_ITEMS = [
-  { href: "/", label: "Home" },
-  { href: "/learn", label: "Learn" },
-  { href: "/progress", label: "Stats" },
-];
-
 export default function Navbar({ compact = false }: Props) {
+  const { t } = useTranslation();
   const pathname = usePathname();
   const isHome = pathname === "/";
   // /progress restates the hub's streak/level/goal in its own hero, and
   // clicking the hub there is a no-op — keep the slot, drop the duplicate.
   const onProgress = pathname?.startsWith("/progress") ?? false;
 
+  const navItems = [
+    { href: "/", label: t("nav.home") },
+    { href: "/learn", label: t("nav.learn") },
+    { href: "/progress", label: t("nav.stats") },
+  ];
+
   return (
     <header className={`navbar${compact ? " navbar--compact" : ""}${isHome ? " navbar--home" : ""}`}>
       <div className="navbar-inner">
-        <Link href="/" aria-label="RealLearn – Home" className="navbar-brand">
+        <Link href="/" aria-label={`RealLearn – ${t("nav.home")}`} className="navbar-brand">
           {/* Plain logo mark, filled in currentColor (theme-aware), no background. */}
           <BrandMark className="navbar-logo" />
           <span className="navbar-wordmark">
@@ -40,7 +43,7 @@ export default function Navbar({ compact = false }: Props) {
         </Link>
 
         <nav aria-label="Primary" className="navbar-links">
-          {NAV_ITEMS.map((item) => {
+          {navItems.map((item) => {
             const active =
               item.href === "/"
                 ? pathname === "/"

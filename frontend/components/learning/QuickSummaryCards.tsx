@@ -4,12 +4,14 @@ import { useState } from "react";
 import { LessonJourney } from "@/types";
 import { Icon } from "@/components/shared/icons";
 import { contentLangAttrs } from "@/lib/locale";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface Props {
   lesson: LessonJourney;
 }
 
 export default function QuickSummaryCards({ lesson }: Props) {
+  const { t } = useTranslation();
   const takeaways = lesson.keyTakeaways ?? [];
   const parts = lesson.parts ?? [];
   const [activeCardIndex, setActiveCardIndex] = useState(0);
@@ -49,17 +51,17 @@ export default function QuickSummaryCards({ lesson }: Props) {
         <span className="summary-deck__label">
           <Icon name="zap" size={14} />{" "}
           {totalCards > 1
-            ? `Quick Takeaway Cards (${activeCardIndex + 1} of ${totalCards})`
-            : "Key Takeaway"}
+            ? `${t("summary.keyTakeaways")} (${t("summary.cardIndex", { current: activeCardIndex + 1, total: totalCards })})`
+            : t("summary.keyTakeaways")}
         </span>
         <button
           type="button"
           onClick={handleCopyCard}
-          aria-label={totalCards > 1 ? "Copy summary card text" : "Copy key takeaway text"}
+          aria-label={t("summary.copySummary")}
           className="btn-ghost summary-deck__copy"
         >
           <Icon name={copied ? "check" : "clipboard-check"} size={13} />
-          {copied ? "Copied" : totalCards > 1 ? "Copy Card" : "Copy Takeaway"}
+          {copied ? t("learn.copied") : t("summary.copySummary")}
         </button>
       </div>
 

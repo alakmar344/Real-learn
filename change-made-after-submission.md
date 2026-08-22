@@ -1522,3 +1522,24 @@ vendors). All of these live between `2b239b5` (start) and now:
   - **Frontend — no home-strip layout shift (`components/homepage/HomeStats.tsx`)**: the strip returned `null` pre-hydration then injected the resume / how-it-works card, shoving the ask box down. It now reserves space with the (previously unused) `.home-strip--skeleton` placeholder so the card fades in without a jump.
   - **Frontend — loading a11y (`components/shared/LoadingCinematic.tsx`)**: the whole cinematic was a `role=status`/`aria-live` region wrapping a percentage that ticks every 100ms — screen readers re-announced the count continuously. The container is now a non-live `role=group`, the changing dial number is `aria-hidden` (the `progressbar` still exposes progress on demand), and the single polite live region is the coarse stage label (announces ~a handful of times).
   - **Verification**: backend `node --test` **117/117** green; frontend `tsc --noEmit` clean, ESLint clean, `next build` green (14 routes).
+
+- 2026-08-22 (i18n) — **App-Wide 63-Language Internationalization Architecture & Full UI Localization.**
+  - **Comprehensive Multi-Language Dictionaries (`frontend/lib/translations/`)**:
+    - Created modular regional translation dictionaries across all **63 supported global languages** (`indian.ts`, `european.ts`, `asian.ts`, `middleEasternAfricanCaucasian.ts`, and base `index.ts`), covering **167 UI keys** spanning every corner of the app.
+  - **Reactive Translation System (`frontend/hooks/useTranslation.ts`, `frontend/lib/i18n.ts`)**:
+    - Implemented `useTranslation()` connected directly to `usePreferenceStore`. Switching languages in the navbar/settings immediately and seamlessly updates all text across the entire UI with zero page reload.
+    - Implemented `translate(key, params)` supporting dynamic parameter interpolation (e.g. `{score}`, `{total}`, `{xp}`, `{streak}`) and resilient fallback to English.
+    - Added automatic RTL (`dir="rtl"`) and document language tagging via `ThemeApplier.tsx` for Arabic, Hebrew, Urdu, and Persian.
+  - **Complete UI Wiring Across All Components & Pages**:
+    - **Navigation & Brand**: `Navbar.tsx`, `Sidebar.tsx`, `Footer.tsx`.
+    - **Language Selection**: `LanguageSelector.tsx` rendering authentic native script typography for all 63 languages alongside English names.
+    - **Home & Question Box**: `app/page.tsx`, `QuestionInput.tsx`, `HomeStats.tsx`, `ExampleQuestions.tsx`.
+    - **Learning & Lesson Journey**: `app/learn/page.tsx`, `PartCard.tsx`, `FollowUpBox.tsx`.
+    - **Quizzes, Takeaways, & Flashcards**: `QuizSheet.tsx`, `QuizQuestion.tsx`, `QuickSummaryCards.tsx`, `Flashcards.tsx`, `CompletionScreen.tsx`.
+    - **Progress, Badges, & Streak Hub**: `app/progress/page.tsx`.
+    - **Settings & Privacy**: `app/settings/page.tsx`.
+  - **Empirical Verification**:
+    - Added automated dictionary verification test script `scripts/verify-i18n.mjs` (`npm run verify:i18n`) verifying 100% dictionary completeness across all 63 languages.
+    - Full TypeScript typecheck (`tsc --noEmit`) passed with 0 errors.
+    - All 10 verification test suites passed 100%.
+    - Next.js 16 production build (`next build`) green across all 14 routes.

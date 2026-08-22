@@ -5,6 +5,7 @@ import { QuizQuestion as Question } from "@/types";
 import MathText from "@/components/shared/MathText";
 import { useLessonStore } from "@/store/lessonStore";
 import { contentLangAttrs } from "@/lib/locale";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface Props {
   question: Question;
@@ -28,6 +29,7 @@ const QuizQuestionBase = ({
   answered,
   onSelect,
 }: Props) => {
+  const { t } = useTranslation();
   const optionRefs = useRef<(HTMLButtonElement | null)[]>([]);
   // Quiz text is model-generated in the lesson language — mark it so screen
   // readers switch voices (WCAG 3.1.2). Surrounding UI chrome stays English.
@@ -79,7 +81,7 @@ const QuizQuestionBase = ({
   return (
     <div role="group" aria-label={`Question ${index + 1} of ${totalQuestions}`} className="quiz-question">
       <p className="quiz-question__meta">
-        Question {index + 1} of {totalQuestions}
+        {t("quiz.questionMeta", { current: index + 1, total: totalQuestions })}
       </p>
       <p className="quiz-question__text" {...langAttrs}><MathText text={question.question} /></p>
       <div role="radiogroup" aria-label="Answer options" className="quiz-question__options" {...langAttrs}>

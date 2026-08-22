@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/shared/icons";
+import { useTranslation } from "@/hooks/useTranslation";
 
 /* Questions from the learner's world — algorithms, games, money, brains,
    internet culture — each one a real lesson in disguise (CS, econ, bio,
@@ -33,6 +34,7 @@ interface Props {
  * zero motion tax, stable target.
  */
 export default function ExampleQuestions({ onPick }: Props) {
+  const { t } = useTranslation();
   const [index, setIndex] = useState(0);
 
   // Vary the starting suggestion per visit (after mount, so SSR markup
@@ -51,7 +53,7 @@ export default function ExampleQuestions({ onPick }: Props) {
         disabled={!onPick}
         className="chip suggest-duo__pick"
       >
-        <span className="suggest-duo__label">Try:</span>{" "}
+        <span className="suggest-duo__label">{t("hero.try")}</span>{" "}
         <span>{RECOMMENDATIONS[index]}</span>
       </button>
       <button
